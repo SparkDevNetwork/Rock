@@ -1736,10 +1736,19 @@ namespace RockWeb.Blocks.Connection
 
             // Status
             rblStatus.Items.Clear();
-            foreach ( var status in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Name ) )
+
+            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Name );
+
+            foreach ( var status in allStatuses )
             {
-                rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                // Add Status to selection list only if marked as active or currently selected.
+                if ( status.IsActive
+                     || status.Id == connectionRequest.ConnectionStatusId )
+                {
+                    rblStatus.Items.Add( new ListItem( status.Name, status.Id.ToString().ToUpper() ) );
+                }
             }
+
             rblStatus.SelectedValue = connectionRequest.ConnectionStatusId.ToString();
 
             // Campus

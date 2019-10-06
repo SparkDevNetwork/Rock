@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -161,6 +163,20 @@ namespace Rock.Model
         {
             get => !InactiveDateTime.HasValue;
         }
+
+        /// <summary>
+        /// Gets or sets the streak achievement attempts.
+        /// </summary>
+        /// <value>
+        /// The streak type achievement types.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakAchievementAttempt> StreakAchievementAttempts
+        {
+            get => _streakAchievementAttempts ?? ( _streakAchievementAttempts = new Collection<StreakAchievementAttempt>() );
+            set => _streakAchievementAttempts = value;
+        }
+        private ICollection<StreakAchievementAttempt> _streakAchievementAttempts;
 
         #endregion Virtual Properties
 

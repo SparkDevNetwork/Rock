@@ -97,6 +97,8 @@ namespace Rock.Model
             target.ActivatedDateTime = source.ActivatedDateTime;
             target.CompletedDateTime = source.CompletedDateTime;
             target.Description = source.Description;
+            target.EntityId = source.EntityId;
+            target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.InitiatorPersonAliasId = source.InitiatorPersonAliasId;

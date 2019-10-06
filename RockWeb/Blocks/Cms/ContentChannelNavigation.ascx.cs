@@ -42,12 +42,52 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a menu of content channels/items that user is authorized to view." )]
 
-    [LinkedPage( "Detail Page", "Page used to view a content item.", order: 1 )]
+    #region Block Attributes
 
-    [ContentChannelTypesField( "Content Channel Types Include", "Select any specific content channel types to show in this block. Leave all unchecked to show all content channel types ( except for excluded content channel types )", false, key: "ContentChannelTypesInclude", order: 2 )]
-    [ContentChannelTypesField( "Content Channel Types Exclude", "Select content channel types to exclude from this block. Note that this setting is only effective if 'Content Channel Types Include' has no specific content channel types selected.", false, key: "ContentChannelTypesExclude", order: 3 )]
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Description = "Page used to view a content item.",
+        Order = 1 )]
+
+    [ContentChannelTypesField(
+        "Content Channel Types Include",
+        Key = AttributeKey.ContentChannelTypesInclude,
+        Description = "Select any specific content channel types to show in this block. Leave all unchecked to show all content channel types ( except for excluded content channel types )",
+        IsRequired = false,
+        Order = 2 )]
+
+    [ContentChannelTypesField(
+        "Content Channel Types Exclude",
+        Key = AttributeKey.ContentChannelTypesExclude,
+        Description = "Select content channel types to exclude from this block. Note that this setting is only effective if 'Content Channel Types Include' has no specific content channel types selected.",
+        IsRequired = false,
+        Order = 3 )]
+
+    [ContentChannelsField(
+        "Content Channels Filter",
+        Key = AttributeKey.ContentChannelsFilter,
+        Description = "Select the content channels you would like displayed. This setting will override the Content Channel Types Include/Exclude settings.",
+        IsRequired = false,
+        Order = 4 )]
+
+    #endregion Block Attributes
+
     public partial class ContentChannelNavigation : Rock.Web.UI.RockBlock
     {
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string ContentChannelTypesInclude = "ContentChannelTypesInclude";
+            public const string ContentChannelTypesExclude = "ContentChannelTypesExclude";
+            public const string ContentChannelsFilter = "ContentChannelsFilter";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         private const string STATUS_FILTER_SETTING = "ContentChannelNavigation_StatusFilter";
@@ -318,7 +358,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( SelectedChannelId.HasValue )
             {
-                NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", SelectedChannelId.Value );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", 0, "contentChannelId", SelectedChannelId.Value );
             }
         }
 
@@ -332,7 +372,7 @@ namespace RockWeb.Blocks.Cms
             var contentItem = new ContentChannelItemService( new RockContext() ).Get( e.RowKeyId );
             if ( contentItem != null )
             {
-                NavigateToLinkedPage( "DetailPage", "contentItemId", contentItem.Id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", contentItem.Id );
             }
         }
 
@@ -437,21 +477,31 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Gets the data to display.
+        /// </summary>
         private void GetData()
         {
             var rockContext = new RockContext();
             var itemService = new ContentChannelItemService( rockContext );
 
             // Get all of the content channels
-            var contentChannelsQry = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" );
+            var contentChannelsQry = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" ).AsNoTracking();
 
-            List<Guid> contentChannelTypeGuidsInclude = GetAttributeValue( "ContentChannelTypesInclude" ).SplitDelimitedValues().AsGuidList();
-            List<Guid> contentChannelTypeGuidsExclude = GetAttributeValue( "ContentChannelTypesExclude" ).SplitDelimitedValues().AsGuidList();
+            List<Guid> contentChannelGuidsFilter = GetAttributeValue( AttributeKey.ContentChannelsFilter ).SplitDelimitedValues().AsGuidList();
+            List<Guid> contentChannelTypeGuidsInclude = GetAttributeValue( AttributeKey.ContentChannelTypesInclude ).SplitDelimitedValues().AsGuidList();
+            List<Guid> contentChannelTypeGuidsExclude = GetAttributeValue( AttributeKey.ContentChannelTypesExclude ).SplitDelimitedValues().AsGuidList();
 
-            if ( contentChannelTypeGuidsInclude.Any() )
+            if ( contentChannelGuidsFilter.Any() )
+            {
+                // if contentChannelGuidsFilter is specified, only get those content channels.
+                // NOTE: This take precedence over all the other Include/Exclude settings.
+                contentChannelsQry = contentChannelsQry.Where( a => contentChannelGuidsFilter.Contains( a.Guid ) );
+            }
+            else if ( contentChannelTypeGuidsInclude.Any() )
             {
                 // if contentChannelTypeGuidsInclude is specified, only get contentChannelTypes that are in the contentChannelTypeGuidsInclude
-                // NOTE: no need to factor in contentChannelTypeGuidsExclude since included would take precendance and the excluded ones would already not be included
+                // NOTE: no need to factor in contentChannelTypeGuidsExclude since included would take precedence and the excluded ones would already not be included
                 contentChannelsQry = contentChannelsQry.Where( a => contentChannelTypeGuidsInclude.Contains( a.ContentChannelType.Guid ) || a.ContentChannelType.ShowInChannelList );
             }
             else if ( contentChannelTypeGuidsExclude.Any() )

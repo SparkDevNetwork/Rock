@@ -287,6 +287,35 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Group RSVP
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Illness.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_ILLNESS = "15B4124E-9717-4161-9974-86C4925053E3";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Vacation.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_VACATION = "759E0745-727B-493D-A44C-3A042A11B761";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Schedule Conflict.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_SCHEDULE_CONFLICT = "D5989FA4-2CE0-4427-83E4-E43F30045B43";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Childcare Not Available.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_CHILDCARE = "0E728945-3D74-4E03-9799-0CF5EE8D6B3D";
+
+        /// <summary>
+        /// Group RSVP Decline Reason - Other.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON_OTHER = "1634AC71-0054-4F3C-A76D-A75A48E6BA56";
+
+        #endregion
+
         #region Location Types
 
         /// <summary>

@@ -129,5 +129,24 @@ namespace Rock.SystemGuid
 
         #endregion Assessment Block Types
 
+        #region Group RSVP Block Types
+
+        /// <summary>
+        /// Group RSVP List block type guid.
+        /// </summary>
+        public const string RSVP_LIST = "16CE8B41-FD1B-43F2-8C8E-4E878470E8BD";
+
+        /// <summary>
+        /// Group RSVP Detail block type guid.
+        /// </summary>
+        public const string RSVP_DETAIL = "2BC5CC6B-3618-4848-BCD9-1796AA35E7FD";
+
+        /// <summary>
+        /// Group RSVP Response block type guid.
+        /// </summary>
+        public const string RSVP_RESPONSE = "EEFD83FB-6EE1-44F4-A012-7569F979CD6B";
+
+        #endregion
+
     }
 }

@@ -27,24 +27,9 @@
                     <Rock:Grid ID="gBusinessList" runat="server" RowItemText="Business" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowSelected="gBusinessList_RowSelected">
                         <Columns>
                             <Rock:RockBoundField DataField="BusinessName" HeaderText="Business Name" SortExpression="LastName" />
-                            <Rock:RockTemplateField>
-                                <HeaderTemplate>Contact Information</HeaderTemplate>
-                                <ItemTemplate>
-                                    <%# FormatContactInfo( (string)Eval( "PhoneNumber" ), (string)Eval( "Email" ) ) %>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
-                            <Rock:RockTemplateField>
-                                <HeaderTemplate>Address</HeaderTemplate>
-                                <ItemTemplate>
-                                    <%# Eval( "Address.FormattedHtmlAddress" ) %>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
-                            <Rock:RockTemplateField>
-                                <HeaderTemplate>Contacts</HeaderTemplate>
-                                <ItemTemplate>
-                                    <%# string.Join( "<br/> ", ((List<string>)Eval("Contacts")).ToArray() ) %>
-                                </ItemTemplate>
-                            </Rock:RockTemplateField>
+                            <Rock:RockLiteralField SortExpression="PhoneNumber, Email" HeaderText="Contact Information" ID="lContactInformation" OnDataBound="lContactInformation_DataBound" />
+                            <Rock:RockLiteralField SortExpression="Address.City,Address.Street1" HeaderText="Address" ID="lAddress" OnDataBound="lAddress_DataBound" />
+                            <Rock:RockLiteralField HeaderText="Contacts" ID="lContacts" OnDataBound="lContacts_DataBound" />
                         </Columns>
                     </Rock:Grid>
 

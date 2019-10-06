@@ -286,16 +286,6 @@ namespace RockWeb.Blocks.Connection
                     return;
                 }
 
-                // load campus dropdown
-                var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
-                cpCampus.Campuses = campuses;
-                //cpCampus.Visible = campuses.Count > 1;
-
-                if ( campuses.Count > 1 )
-                {
-                    cpCampus.SetValue( campuses.First().Id );
-                }
-
                 pnlSignup.Visible = true;
 
                 if ( !string.IsNullOrWhiteSpace( opportunity.IconCssClass ) )
@@ -350,29 +340,42 @@ namespace RockWeb.Blocks.Connection
                             pnMobile.CountryCode = cellPhoneNumber.CountryCode;
                         }
                     }
+                }
 
+                // load campus dropdown
+                var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
+                cpCampus.Campuses = campuses;
+                cpCampus.Visible = campuses.Count > 1;
+
+                bool campusSelected = false;
+
+                // If there is only one campus for this opportunity then select it automatically.
+                if ( campuses.Count == 1 )
+                {
+                    cpCampus.SetValue( campuses.First().Id );
+                    campusSelected = true;
+                }
+
+                // If there is more than one campus for the opportunity then try to set it to the Page Campus context
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() && campusSelected == false )
+                {
+                    var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus;
+                    if ( contextCampus != null && campuses.Where( c => c.Id == contextCampus.Id ).Any() )
+                    {
+                        cpCampus.SelectedCampusId = contextCampus.Id;
+                        campusSelected = true;
+                    }
+                }
+
+                if ( registrant != null && campusSelected == false )
+                {
+                    // If a campus has not yet been selected then use the registrant's campus if it is in the list of campuses for the opportunity.
                     var campus = registrant.GetCampus();
-                    if ( campus != null )
+                    if ( campus != null && campuses.Where( c => c.Id == campus.Id ).Any() )
                     {
                         cpCampus.SelectedCampusId = campus.Id;
                     }
                 }
-                else
-                {
-                    // set the campus to the context
-                    if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
-                    {
-                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
-                        var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
-
-                        if ( contextCampus != null )
-                        {
-                            cpCampus.SelectedCampusId = contextCampus.Id;
-                        }
-                    }
-                }
-
-                cpCampus.Visible = campuses.Count > 1;
 
                 // show debug info
                 var mergeFields = new Dictionary<string, object>();

@@ -282,6 +282,7 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
@@ -405,6 +406,9 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
+    <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
+    <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
@@ -419,15 +423,19 @@
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
     <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\GroupDemographicType.cs" />
+    <Compile Include="Model\GroupDemographicValue.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
+    <Compile Include="Model\StreakAchievementAttempts.cs" />
+    <Compile Include="Model\StreakTypeAchievementType.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
-    <Compile Include="Plugin\HotFixes\087_AddNonCashAssetTypes.cs" />
+    <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="SystemGuid\Person.cs" />
@@ -451,8 +459,6 @@
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemList.cs" />
     <Compile Include="Blocks\Types\Mobile\Content.cs" />
-    <Compile Include="Blocks\Types\Mobile\DynamicContent.cs" />
-    <Compile Include="Blocks\Types\Mobile\Image.cs" />
     <Compile Include="Blocks\Types\Mobile\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\ProfileDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Register.cs" />
@@ -550,16 +556,16 @@
     <Compile Include="Model\PersonScheduleExclusion.cs" />
     <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
-    <Compile Include="BulkExport\AttributesExport.cs" />
-    <Compile Include="BulkExport\FinancialTransactionExport.cs" />
-    <Compile Include="BulkExport\FinancialTransactionExportOptions.cs" />
-    <Compile Include="BulkExport\FinancialTransactionsExport.cs" />
-    <Compile Include="BulkExport\ModelExport.cs" />
-    <Compile Include="BulkExport\ExportOptions.cs" />
-    <Compile Include="BulkExport\LocationExport.cs" />
-    <Compile Include="BulkExport\ExportResult.cs" />
-    <Compile Include="BulkExport\PeopleExport.cs" />
-    <Compile Include="BulkExport\PersonExport.cs" />
+    <Compile Include="Bulk\BulkExport\AttributesExport.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionExport.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionExportOptions.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionsExport.cs" />
+    <Compile Include="Bulk\BulkExport\ModelExport.cs" />
+    <Compile Include="Bulk\BulkExport\ExportOptions.cs" />
+    <Compile Include="Bulk\BulkExport\LocationExport.cs" />
+    <Compile Include="Bulk\BulkExport\ExportResult.cs" />
+    <Compile Include="Bulk\BulkExport\PeopleExport.cs" />
+    <Compile Include="Bulk\BulkExport\PersonExport.cs" />
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -616,6 +622,11 @@
     <Compile Include="Plugin\HotFixes\084_FixSpiritualGiftsAssessmentBadge.cs" />
     <Compile Include="Plugin\HotFixes\083_MigrationRollupsForV9_1_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\091_SecureGetImpersonationParameter.cs" />
+    <Compile Include="Plugin\HotFixes\090_FixNonCashCurrencyDefinedValue.cs" />
+    <Compile Include="Plugin\HotFixes\089_MigrationRollupsForV9_3.cs" />
+    <Compile Include="Plugin\HotFixes\088_FixAttributeQualifierMotivatorDefinedType.cs" />
+    <Compile Include="Plugin\HotFixes\087_AddNonCashAssetTypes.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

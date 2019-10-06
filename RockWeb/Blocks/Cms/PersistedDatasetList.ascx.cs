@@ -202,9 +202,7 @@ namespace RockWeb.Blocks.Cms
 
             var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
 
-
             lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", persistedDataset.ResultData ) ).Truncate( maxPreviewSizeLength );
-
 
             nbPreviewMessage.Visible = false;
             nbPreviewMaxLengthWarning.Visible = false;
@@ -218,7 +216,7 @@ namespace RockWeb.Blocks.Cms
                     nbPreviewMaxLengthWarning.Visible = true;
                 }
 
-                nbPreviewMessage.Text = string.Format( "Time to build Dataset: {0:F}ms", persistedDataset.TimeToBuildMS );
+                nbPreviewMessage.Text = string.Format( "Time to build Dataset: {0:F0}ms", persistedDataset.TimeToBuildMS );
                 nbPreviewMessage.Details = null;
                 nbPreviewMessage.NotificationBoxType = NotificationBoxType.Success;
                 nbPreviewMessage.Visible = true;

@@ -31,6 +31,8 @@ RockWeb/App_Data/MobileAppBundles
 *.sln.GhostDoc.xml
 .vs/
 .localhistory/
+TestResults/
+
 /RockWeb/Plugins/*
 !/RockWeb/Plugins/cc_newspring
 Packages/*
