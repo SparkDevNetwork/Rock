@@ -30,6 +30,8 @@ using Rock.Web.UI.Controls;
 
 /*
  * BEMA Modified Core Block ( v9.2.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ * 
  * Additional Features:
  * - FE1) Added Ability to launch a workflow when a benevolence request is saved
  * - UI1) Added Ability to customize the label on Case Worker controls

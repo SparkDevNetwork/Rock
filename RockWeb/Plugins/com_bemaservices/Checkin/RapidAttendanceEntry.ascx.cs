@@ -31,6 +31,8 @@ using Rock.Web.UI;
 
 /*
  * BEMA Modified Core Block ( v9.2.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ * 
  * Additional Features:
  * - FE1) Added Ability to add the attendee to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin
  */
