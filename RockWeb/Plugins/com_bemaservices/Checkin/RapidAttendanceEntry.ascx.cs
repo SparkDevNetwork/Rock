@@ -32,7 +32,7 @@ using Rock.Web.UI;
 /*
  * BEMA Modified Core Block ( v9.2.1)
  * Additional Features:
- * - F1) Added Ability to add the attendee to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin
+ * - FE1) Added Ability to add the attendee to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin
  */
 
 namespace RockWeb.Plugins.com_bemaservices.CheckIn
@@ -45,15 +45,15 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
     [BooleanField( "Include Parent Group", "If true then the parent group will be included as an option in addition to its children.", false, order: 1 )]
     [BooleanField( "Default Show Current Attendees", "Should the Current Attendees grid be visible by default. When the grid is enabled performance will be reduced.", false, order: 1 )]
 
-    /* BEMA.F1.Start */
+    /* BEMA.FE1.Start */
     [BooleanField(
         "Is Attendee Saved to Group",
         Key = AttributeKey.ShouldAttendeeBeSavedToGroup,
         Description = "Should the attendee be added to the selected Group if the GroupType's CheckinRule is set to AddOnCheckin",
         DefaultBooleanValue = true,
         Order = 2,
-        Category = "BEMA Additional Feature: Add Person to Group" )]
-    /* BEMA.F1.End */
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE1.End */
 
     public partial class RapidAttendanceEntry : RockBlock
     {
@@ -341,7 +341,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
 
             attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, dateTime, group.Id, groupLocation.LocationId, scheduleId, group.CampusId );
 
-            /* BEMA.F1.Start */
+            /* BEMA.FE1.Start */
             var groupMemberService = new GroupMemberService( rockContext );
             if ( group.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn )
             {
@@ -362,7 +362,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                     }
                 }
             }
-            /* BEMA.F1.End */		
+            /* BEMA.FE1.End */		
            
             // If the user is using the activate and save button then mark the
             // person as active too.
