@@ -116,8 +116,6 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         )]
     /* BEMA.UI5.End */
 
-
-
     public partial class BenevolenceRequestDetail : Rock.Web.UI.RockBlock
     {
         /* BEMA.Start */
