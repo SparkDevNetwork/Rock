@@ -23,11 +23,14 @@ namespace Rock.Tests.Integration.RockTests.Model
 
         /*
          * Occurrences    01110011110011110011110011110011110011110011110011110011
-         * Engagements    01001010100011000011010000001111111100001111111111110001
-         * Result          1XX  1X1X  21XX  21X1  XXXX  4321  XXXX  8765  4321  X1
+         * Engagements    01001010100011000011010000001111111100101111111111110001
+         * Exclusions     01000010000000000000000000000000000000110000000000000000
+         * Result          1XX  1X1X  21XX  21X1  XXXX  4321  XX9E  8765  4321  X1
          * Day            54321098765432109876543211098765432109876543210987654321
          * Month                                  2                              1
          */
+
+        #region Setup Methods
 
         /// <summary>
         /// Create the streak type used to test
@@ -50,7 +53,8 @@ namespace Rock.Tests.Integration.RockTests.Model
             var streak = new Streak
             {
                 PersonAliasId = _personAliasId,
-                EngagementMap = new byte[] { 0b_0100_1010, 0b_1000_1100, 0b_0011_0100, 0b_0000_1111, 0b_1111_0000, 0b_1111_1111, 0b_1111_0001 }
+                EngagementMap = new byte[] { 0b_0100_1010, 0b_1000_1100, 0b_0011_0100, 0b_0000_1111, 0b_1111_0010, 0b_1111_1111, 0b_1111_0001 },
+                ExclusionMap = new byte[] { 0b_0100_0010, 0b_0000_0000, 0b_0000_0000, 0b_0000_0000, 0b_0000_0011, 0b_0000_0000, 0b_0000_0000 }
             };
 
             streakType.Streaks.Add( streak );
@@ -99,6 +103,8 @@ namespace Rock.Tests.Integration.RockTests.Model
             _streakTypeService = null;
         }
 
+        #endregion Setup Methods
+
         /// <summary>
         /// Tests GetStreakData
         /// </summary>
@@ -113,9 +119,9 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( string.Empty, errorMessage );
             Assert.IsNotNull( result );
 
-            Assert.AreEqual( 8, result.LongestStreakCount );
+            Assert.AreEqual( 9, result.LongestStreakCount );
             Assert.AreEqual( new DateTime( 2019, 1, 5 ), result.LongestStreakStartDate );
-            Assert.AreEqual( new DateTime( 2019, 1, 14 ), result.LongestStreakEndDate );
+            Assert.AreEqual( new DateTime( 2019, 1, 18 ), result.LongestStreakEndDate );
 
             Assert.AreEqual( 1, result.CurrentStreakCount );
             Assert.AreEqual( new DateTime( 2019, 2, 4 ), result.CurrentStreakStartDate );
@@ -126,9 +132,9 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( new DateTime( 2019, 1, 1 ), result.ComputedStreaks[0].StartDate );
             Assert.AreEqual( new DateTime( 2019, 1, 1 ), result.ComputedStreaks[0].EndDate );
 
-            Assert.AreEqual( 8, result.ComputedStreaks[1].Count );
+            Assert.AreEqual( 9, result.ComputedStreaks[1].Count );
             Assert.AreEqual( new DateTime( 2019, 1, 5 ), result.ComputedStreaks[1].StartDate );
-            Assert.AreEqual( new DateTime( 2019, 1, 14 ), result.ComputedStreaks[1].EndDate );
+            Assert.AreEqual( new DateTime( 2019, 1, 18 ), result.ComputedStreaks[1].EndDate );
 
             Assert.AreEqual( 4, result.ComputedStreaks[2].Count );
             Assert.AreEqual( new DateTime( 2019, 1, 23 ), result.ComputedStreaks[2].StartDate );
@@ -139,10 +145,44 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.IsNull( result.ComputedStreaks[3].EndDate );
 
             Assert.AreEqual( 0, result.EngagementsThisMonth );
-            Assert.AreEqual( RockDateTime.Now.Year == 2019 ? 21 : 0, result.EngagementsThisYear );
+            Assert.AreEqual( RockDateTime.Now.Year == 2019 ? 22 : 0, result.EngagementsThisYear );
             Assert.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentEngagementDate );
             Assert.AreEqual( new DateTime( 2019, 2, 24 ), result.MostRecentOccurrenceDate );
             Assert.IsTrue( result.EngagedAtMostRecentOccurrence );
+        }
+
+        /// <summary>
+        /// Tests GetRecentEngagementBits
+        /// </summary>
+        [TestMethod]
+        public void GetRecentEngagementBits()
+        {
+            var unitCount = 5;
+            var result = _streakTypeService.GetRecentEngagementBits( _streakTypeId, _personId, unitCount, out var errorMessage );
+
+            Assert.AreEqual( string.Empty, errorMessage );
+            Assert.IsNotNull( result );
+            Assert.AreEqual( unitCount, result.Length );
+
+            Assert.AreEqual( new DateTime( 2019, 2, 24 ), result[0].DateTime );
+            Assert.IsTrue( result[0].HasEngagement );
+            Assert.IsTrue( result[0].HasExclusion );
+
+            Assert.AreEqual( new DateTime( 2019, 2, 23 ), result[1].DateTime );
+            Assert.IsFalse( result[1].HasEngagement );
+            Assert.IsFalse( result[1].HasExclusion );
+
+            Assert.AreEqual( new DateTime( 2019, 2, 22 ), result[2].DateTime );
+            Assert.IsFalse( result[2].HasEngagement );
+            Assert.IsFalse( result[2].HasExclusion );
+
+            Assert.AreEqual( new DateTime( 2019, 2, 19 ), result[3].DateTime );
+            Assert.IsTrue( result[3].HasEngagement );
+            Assert.IsTrue( result[3].HasExclusion );
+
+            Assert.AreEqual( new DateTime( 2019, 2, 18 ), result[4].DateTime );
+            Assert.IsFalse( result[4].HasEngagement );
+            Assert.IsFalse( result[4].HasExclusion );
         }
     }
 }
