@@ -162,11 +162,11 @@ namespace Rock.Reporting.DataFilter.Person
         {
             return @"
 function() {
-  var dataViewName = $('.rock-drop-down-list,select:first', $content).find(':selected').text();
-  var locationType = $('.rock-drop-down-list,select:last', $content).find(':selected').text();
+  var dataViewName = $('.js-data-view-picker', $content).find('.js-item-name-value').val().trim();
+  var locationType = $('.js-location-type-picker', $content).find(':selected').text();
   var result = 'Location';
   if (locationType) {
-     result = result + ' type ""' + locationType + "";
+     result = result + ' type ""' + locationType + '""';
   }  
   result = result + ' is in filter: ' + dataViewName;
   return result;
@@ -226,6 +226,7 @@ function() {
             // Define Control: Location Data View Picker
             var dvpDataView = new DataViewItemPicker();
             dvpDataView.ID = parentControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.CssClass = "js-data-view-picker";
             dvpDataView.Label = "Connected to Locations";
             dvpDataView.Help = "A Data View that provides the list of Locations to which the Person may be connected.";
 
@@ -234,6 +235,7 @@ function() {
             // Define Control: Location Type DropDown List
             var ddlLocationType = new RockDropDownList();
             ddlLocationType.ID = parentControl.GetChildControlInstanceName( _CtlLocationType );
+            ddlLocationType.CssClass = "js-location-type-picker";
             ddlLocationType.Label = "Address Type";
             ddlLocationType.Help = "Specifies the type of Address the filter will be applied to. If no value is selected, all of the Person's Addresses will be considered.";
 

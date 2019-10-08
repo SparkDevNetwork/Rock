@@ -437,6 +437,7 @@
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="SystemGuid\Person.cs" />
