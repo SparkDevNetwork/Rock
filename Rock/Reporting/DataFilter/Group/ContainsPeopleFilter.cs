@@ -167,7 +167,7 @@ namespace Rock.Reporting.DataFilter.Group
             return @"
 function ()
 {
-    var dataViewName = $('.rock-drop-down-list,select:first', $content).find(':selected').text();
+    var dataViewName = $('.js-data-view-picker', $content).find('.js-item-name-value').val().trim();
     var comparisonName = $('.js-filter-compare', $content).find(':selected').text();
     var comparisonCount = $('.js-member-count', $content).val();
 
@@ -237,6 +237,7 @@ function ()
             // Define Control: Person Data View Picker
             var dvpDataView = new DataViewItemPicker();
             dvpDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.CssClass = "js-data-view-picker";
             dvpDataView.Label = "Contains People from this Data View";
             dvpDataView.Help = "A Person Data View that provides the set of possible Group Members.";
             filterControl.Controls.Add( dvpDataView );
