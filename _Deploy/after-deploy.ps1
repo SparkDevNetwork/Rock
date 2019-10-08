@@ -15,6 +15,8 @@ $AppRoot       = $env:APPLICATION_PATH;
 $OldBackupRoot = "$AppRoot.backup";
 $NewBackupRoot = "$AppRoot.backup.new";
 
+$REMOTE_STORE_ROOT = "\\newpointe.file.core.windows.net\rock-content-files";
+
 
 # Restore per-instance files
 
@@ -25,26 +27,76 @@ try { Copy-ContentsRecursively "$NewBackupRoot\App_Data\LuceneSearchIndex" "$App
 try { Copy-ContentsRecursively "$NewBackupRoot\App_Data\Uploads"           "$AppRoot\App_Data\Uploads" -ErrorAction SilentlyContinue; } catch { }
 
 
+# Restore old compiled theme files (It takes a while to compile them on startup, so we'll use the old ones until they're done)
+
+Write-Host "Restoring compiled theme files";
+
+$Themes = Get-RockThemes $AppRoot;
+
+foreach ($Theme in $Themes) {
+
+    if($Theme.AllowsCompile) {
+
+        $StylesRelativePath = Join-Path $Theme.RelativePath "Styles";
+
+        $NewStylesPath = Join-Path $AppRoot $StylesRelativePath;
+        $OldStylesPath = Join-Path $NewBackupRoot $StylesRelativePath;
+
+        $CompilableFiles = Get-ChildItem $NewStylesPath | Where-Object { ($_.Name.EndsWith(".less")) -and (-not ($_.Name.StartsWith("_"))) }
+        $CompiledFiles = $CompilableFiles -replace ".less", ".css";
+
+        foreach($File in $CompiledFiles) {
+
+            $NewFilePath = Join-Path $OldStylesPath $File.Name;
+            $NewFilePath = Join-Path $NewStylesPath $File.Name;
+
+            if( Test-Path $OldFilePath) {
+                Copy-Item $NewFilePath $NewFilePath;
+            }
+
+        }
+
+    }
+
+}
+
+
 # Get files needing templated
+# Do this before linking to remote files so it doesn't take forever searching through all of them
 $TemplatedFiles = Get-TemplateFiles $AppRoot;
 
 # Recreate links
 
 Write-Host "Recreating links";
 
+# Clean out any pre-existing links (There shouldn't be any, but just in case)
 Get-FilesystemLinks $AppRoot | ForEach-Object { $_.Delete() }
 
-Remove-Item -Path "$AppRoot\Content" -Force -Recurse -ErrorAction SilentlyContinue; ;
-Remove-Item -Path "$AppRoot\wp-content" -Force -Recurse -ErrorAction SilentlyContinue; ;
-Remove-Item -Path "$AppRoot\App_Data\Files" -Force -Recurse -ErrorAction SilentlyContinue; ;
-Remove-Item -Path "$AppRoot\App_Data\RockShop" -Force -Recurse -ErrorAction SilentlyContinue; ;
-Remove-Item -Path "$AppRoot\App_Data\InstalledStorePackages.json" -Force -Recurse -ErrorAction SilentlyContinue; ;
+# Connect the various content files
+Connect-RemoteFile $AppRoot "Content"                               $REMOTE_STORE_ROOT "Content";
+Connect-RemoteFile $AppRoot "wp-content"                            $REMOTE_STORE_ROOT "wp-content";
+Connect-RemoteFile $AppRoot "App_Data\Files"                        $REMOTE_STORE_ROOT "Files";
+Connect-RemoteFile $AppRoot "App_Data\RockShop"                     $REMOTE_STORE_ROOT "RockShop";
+Connect-RemoteFile $AppRoot "App_Data\InstalledStorePackages.json"  $REMOTE_STORE_ROOT "InstalledStorePackages.json";
 
-New-Item -ItemType SymbolicLink -Path $AppRoot            -Name "Content"                     -Target "\\newpointe.file.core.windows.net\rock-content-files\Content"                     | Out-Null;
-New-Item -ItemType SymbolicLink -Path $AppRoot            -Name "wp-content"                  -Target "\\newpointe.file.core.windows.net\rock-content-files\wp-content"                  | Out-Null;
-New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "Files"                       -Target "\\newpointe.file.core.windows.net\rock-content-files\Files"                       | Out-Null;
-New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "RockShop"                    -Target "\\newpointe.file.core.windows.net\rock-content-files\RockShop"                    | Out-Null;
-New-Item -ItemType SymbolicLink -Path "$AppRoot\App_Data" -Name "InstalledStorePackages.json" -Target "\\newpointe.file.core.windows.net\rock-content-files\InstalledStorePackages.json" | Out-Null;
+# Connect the various theme customizations
+$Themes = Get-RockThemes $AppRoot;
+
+foreach ($Theme in $Themes) {
+
+    $LocalStylesPath = Join-Path $Theme.AbsolutePath "Styles";
+
+    $OverrideFiles = Get-ChildItem $LocalStylesPath | Where-Object { $_.Name.EndsWith("-overrides.less") };
+
+    foreach ($File in $OverrideFiles) {
+
+        $RelativeFilePath = Join-Paths "Themes" $Theme.Name "Styles" $File.Name;
+
+        Connect-RemoteFile $AppRoot $RelativeFilePath  $REMOTE_STORE_ROOT $RelativeFilePath;
+
+    }
+
+}
 
 
 # Re-install plugins
@@ -68,12 +120,31 @@ try {
 catch { }
 
 
+# Try to clear the asp.net temporary files
+# This seems to keep some weird things from happening. For example, we had a
+# problem with plugin Rest APIs disappearing for no reason with no way of
+# reproducing the issue - but this fixed it so ¯\_(ツ)_/¯
+
+Write-Host "Clearing temp files";
+try {
+    Remove-ContentsAgressively "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files\root";
+}
+catch { }
+
+
+# Start the IIS site
+
 Start-IISSite "Default Web Site";
 
 
 # Move the new backup
 
 Write-Host "Finishing up";
+
+Get-FilesystemLinks $AppOldBackupRootRoot | ForEach-Object { $_.Delete() };
 Remove-Item -Recurse -Force $OldBackupRoot;
+
 Copy-ContentsRecursively -Force $NewBackupRoot $OldBackupRoot;
+
+Get-FilesystemLinks $NewBackupRoot | ForEach-Object { $_.Delete() };
 Remove-Item -Recurse -Force $NewBackupRoot;

@@ -203,3 +203,65 @@ Function Install-TemplatedFile {
     }
 
 }
+
+Function Connect-RemoteFile {
+
+    param(
+        [parameter( Mandatory, Position = 0 )]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $LocalRootPath,
+
+        [parameter( Mandatory, Position = 1 )]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $LocalRelativePath,
+
+        [parameter( Mandatory, Position = 2 )]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $RemoteRootPath,
+
+        [parameter( Mandatory, Position = 3 )]
+        [ValidateNotNullOrEmpty()]
+        [string]
+        $RemoteRelativePath
+    )
+
+    $LocalPath = Join-Path $LocalRootPath $LocalRelativePath;
+    $RemotePath = Join-Path $LocalRootPath $LocalRelativePath;
+
+    # Make sure the remote path exists
+    if( -not (Test-Path $RemotePath)) {
+
+        if( Test-Path -PathType Container $LocalPath ) {
+
+            # Copy the local folder to the remote location
+            Copy-ContentsRecursively $LocalPath $RemotePath;
+
+        }
+        elseif (Test-Path -PathType Leaf $LocalPath) {
+
+            # Copy the local file to the remote location
+            Copy-Item $LocalPath $RemotePath -Force;
+
+        }
+        else {
+
+            # Create a new file in the remote location
+            New-Item -ItemType File -Path $RemotePath | Out-Null;
+
+        }
+
+    }
+
+    # Remove all links inside the local path (Remove-Item might throw an error if it finds one with an invalid target)
+    Get-FilesystemLinks $LocalPath | ForEach-Object { $_.Delete() };
+
+    # Remove the local path
+    Remove-Item -Path $LocalPath -Force -Recurse -ErrorAction SilentlyContinue | Out-Null;
+
+    # Link the local path to the remote path
+    New-Item -ItemType SymbolicLink -Path $LocalPath -Target $RemotePath | Out-Null;
+
+}

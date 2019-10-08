@@ -97,6 +97,8 @@ Function Install-RockPlugin() {
 
         foreach ( $PluginPath in $PluginPaths) {
 
+            Write-Host "Installing Plugin from '$PluginPath'..."
+
             $TempDir = [System.IO.Path]::GetTempPath();
 
             $PackageHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $PluginPath).Hash;

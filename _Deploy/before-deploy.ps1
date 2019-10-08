@@ -27,14 +27,7 @@ if( -not $null -eq $process ) {
 
 # See if the new backup already exists (Indicates the previous deploy script failed to complete)
 
-if (Test-Path $NewBackupRoot) {
-
-    # Restore the web root
-    Write-Host "Restoring files";
-    Copy-ContentsRecursively $NewBackupRoot $AppRoot -Force;
-
-}
-else {
+if ( -not (Test-Path $NewBackupRoot) ) {
 
     # Backup the web root
     Write-Host "Backing up files";
@@ -73,10 +66,11 @@ Set-Content "$AppRoot/web.config" @"
 
 # Make a request to load the new web.config
 
-try {
-    Invoke-WebRequest -UseBasicParsing -Uri "http://localhost" -ErrorAction SilentlyContinue | Out-Null;
-}
-catch { }
+# Skipping this because we already killed IIS
+# try {
+#     Invoke-WebRequest -UseBasicParsing -Uri "http://localhost" -ErrorAction SilentlyContinue | Out-Null;
+# }
+# catch { }
 
 # Remove any filesystem links since they break the web deploy
 
@@ -86,7 +80,7 @@ Get-FilesystemLinks $AppRoot | ForEach-Object { $_.Delete() };
 
 # Try to clear the asp.net temporary files
 # This seems to keep some weird things from happening. For example, we had a
-# problem with plugin Rest APIs dissapearing for no reason with no way of
+# problem with plugin Rest APIs disappearing for no reason with no way of
 # reproducing the issue - but this fixed it so ¯\_(ツ)_/¯
 
 Write-Host "Clearing temp files";
