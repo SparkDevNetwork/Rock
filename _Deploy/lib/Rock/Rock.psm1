@@ -114,7 +114,7 @@ Function Install-RockPlugin() {
             if (Test-Path $ContentPath) {
 
                 # Copy the content files to Rock
-                Copy-ContentsRecursively $ContentPath $RootPath -Filter { $InstallSkipFiles -contains $_.Name } -Force;
+                Copy-ContentsRecursively $ContentPath $RootPath -Filter { -not ($InstallSkipFiles -contains $_.Name) } -Force;
             }
             else {
                 if (Test-Path $ExtractPath) {
