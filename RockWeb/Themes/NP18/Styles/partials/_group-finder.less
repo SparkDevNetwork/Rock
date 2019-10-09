@@ -1,0 +1,183 @@
+
+// Group Finder Block
+.block-instance.group-finder {
+
+    .field-criteria > div {
+        display: block;
+        float: none;
+        vertical-align: unset;
+    }
+    // Main Search Panel
+    .block-content > div > .panel {
+        border: none;
+        margin: 0;
+        padding: 0;
+        // Panel Heading
+        & > .panel-heading {
+            background-color: #282828;
+            color: white;
+            border: none;
+            padding: 2em 1em 1.5em 1em;
+            text-align: center;
+
+            & > h1 {
+                color: white;
+                font-size: 1.5em;
+                text-transform: uppercase;
+                text-align: center;
+                float: none !important;
+                padding: 0;
+                margin: 0;
+
+                & > .fa {
+                    display: none;
+                }
+            }
+        }
+        // Panel Body
+        & > .panel-body {
+            padding: 0;
+            margin: 0;
+            // Search Filter Group
+            .form-group {
+                box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+                padding: 1.333rem;
+                margin: 1.333rem;
+
+                & > .control-label {
+                    text-align: center;
+                    display: block;
+                    font-size: 2.5em;
+                    text-transform: uppercase;
+                    font-weight: bold;
+                    color: black;
+                    margin: 0 0 1rem 0;
+                    padding: 0;
+                }
+
+                .rockcheckboxlist-horizontal,
+                .rockcheckboxlist-horizontal .checkboxlist-group {
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                    column-count: unset;
+                    column-width: unset;
+                    column-gap: unset;
+                }
+                // Style Checkboxes as Toggle Buttons
+                .rockcheckboxlist-horizontal .checkbox-inline {
+                    display: inline-block;
+                    padding: 0;
+                    margin: 0.5em;
+                    min-width: 5em;
+
+                    & > input {
+                        opacity: 0;
+                        position: absolute;
+
+                        &:checked + .label-text {
+                            background-color: #8bc540;
+                            color: white;
+                        }
+                    }
+
+                    & > .label-text {
+                        display: inline-block;
+                        margin: 0;
+                        padding: 1em 0.5em;
+                        border: 3px solid #8bc540;
+                        text-align: center;
+                        font-size: 1.1em;
+                        font-weight: bold;
+                        color: #8bc540;
+                        min-width: 5em;
+                        width: 100%;
+                    }
+                }
+            }
+            // Search Actions
+            .actions {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 0;
+                margin: 1.333rem;
+            }
+            // Results Views
+            & > div > div.margin-v-sm {
+                margin: 0 !important;
+            }
+        }
+    }
+}
+
+.group-card {
+    padding: 1em;
+
+    h1 {
+        font-size: 2em;
+        color: #3e3e3e;
+    }
+
+    h4 {
+        font-size: 1.4em;
+        font-weight: normal;
+        color: #8c8c8c;
+    }
+
+    p {
+        margin: 0.5rem 0;
+    }
+}
+
+
+
+
+
+// Phone view
+@media (max-width: @screen-xs-max) {
+
+    // Group Finder Block
+    .block-instance.group-finder {
+        // Main Search Panel
+        .block-content > div > .panel {
+            // Panel Body
+            & > .panel-body {
+                // Search Filter Group
+                .form-group {
+                    & > .control-label {
+                        font-size: 2em;
+                    }
+
+                    .rockcheckboxlist-horizontal,
+                    .rockcheckboxlist-horizontal .checkboxlist-group {
+                        flex-direction: column;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Tablet view
+@media (max-width: @screen-sm-max) {
+
+    // Group Finder Block
+    .block-instance.group-finder {
+        // Main Search Panel
+        .block-content > div > .panel {
+            // Panel Body
+            & > .panel-body {
+                padding: 0;
+            }
+        }
+    }
+}
+
+// Small Desktop view
+@media (min-width: @screen-md-min) {
+}
+
+// Large Desktop view
+@media (min-width: @screen-xl-min) {
+}

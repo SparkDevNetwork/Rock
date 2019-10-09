@@ -1,0 +1,25 @@
+
+.grid-responsive {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 2em;
+}
+
+
+// Phone view
+@media (max-width: @screen-xs-max) {
+
+    .grid-responsive {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+// Tablet view
+@media (max-width: @screen-sm-max) {
+
+    .grid-responsive {
+        grid-gap: 1em;
+    }
+
+}
