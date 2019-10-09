@@ -209,11 +209,11 @@ namespace Rock.Model
             {
                 HasRequired( stat => stat.StreakType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.StreakTypeId ).WillCascadeOnDelete( true );
                 HasRequired( stat => stat.AchievementEntityType ).WithMany().HasForeignKey( stat => stat.AchievementEntityTypeId ).WillCascadeOnDelete( true );
-                HasRequired( stat => stat.AchievementStartWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementStartWorkflowTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementEndWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementEndWorkflowTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementStepType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
 
+                HasOptional( stat => stat.AchievementStartWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementStartWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementEndWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementEndWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementStepType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.Category ).WithMany().HasForeignKey( stat => stat.CategoryId ).WillCascadeOnDelete( false );
             }
         }
