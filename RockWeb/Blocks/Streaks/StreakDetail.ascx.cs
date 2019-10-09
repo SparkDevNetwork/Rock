@@ -249,9 +249,10 @@ namespace RockWeb.Blocks.Streaks
         /// Show a validation error
         /// </summary>
         /// <param name="message"></param>
-        private void ShowValidationError(string message)
+        private void ShowValidationError( string message )
         {
-            ShowBlockNotification( nbEditModeMessage, message, NotificationBoxType.Validation );
+            nbEditModeMessage.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", message );
+            nbEditModeMessage.NotificationBoxType = NotificationBoxType.Validation;
         }
 
         /// <summary>
