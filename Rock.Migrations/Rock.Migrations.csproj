@@ -65,6 +65,10 @@
     <Compile Include="Migrations\201910081427244_StreakDetailColumns.Designer.cs">
       <DependentUpon>201910081427244_StreakDetailColumns.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.cs" />
+    <Compile Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.Designer.cs">
+      <DependentUpon>201910091520216_AchievementTypeOptionalForeignKeys.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -857,6 +861,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201910081427244_StreakDetailColumns.resx">
       <DependentUpon>201910081427244_StreakDetailColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.resx">
+      <DependentUpon>201910091520216_AchievementTypeOptionalForeignKeys.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
