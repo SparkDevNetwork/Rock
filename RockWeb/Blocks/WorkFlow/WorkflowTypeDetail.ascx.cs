@@ -1290,7 +1290,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             nbEditModeMessage.Text = string.Empty;
             // User must have 'Edit' rights to block, or 'Administrate' rights to workflow type
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !( IsUserAuthorized( Authorization.EDIT ) || workflowType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";
@@ -1307,6 +1307,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 btnSecurity.Visible = false;
                 ShowReadonlyDetails( workflowType );
             }
