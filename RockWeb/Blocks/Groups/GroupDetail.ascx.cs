@@ -58,15 +58,21 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Prevent Selecting Inactive Campus", "Should inactive campuses be excluded from the campus field when editing a group?.", false, "", 14 )]
     [LinkedPage( "Group History Page", "The page to display group history.", false, "", "", 15 )]
 
-
     [LinkedPage( "Group Scheduler Page",
         Key = "GroupSchedulerPage",
         Description ="The page to schedule this group.",
         IsRequired = false,
         DefaultValue = "1815D8C6-7C4A-4C05-A810-CF23BA937477,D0F198E2-6111-4EC1-8D1D-55AC10E28D04",
-        Order = 16)]
+        Order = 16 )]
 
-    [BooleanField( "Enable Group Tags", "If enabled, the tags will be shown.", true, "", 17 )]
+    [LinkedPage("Group RSVP List Page",
+        Key = "GroupRSVPPage",
+        Description = "The page to manage RSVPs for this group.",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_RSVP_LIST,
+        Order = 17 )]
+
+    [BooleanField( "Enable Group Tags", "If enabled, the tags will be shown.", true, "", 18 )]
 
     [ContextAware( typeof(Group) )]
     public partial class GroupDetail : ContextEntityBlock, IDetailBlock
@@ -1848,7 +1854,7 @@ namespace RockWeb.Blocks.Groups
         /// <param name="group">The group.</param>
         private void ShowReadonlyDetails( Group group )
         {
-            btnDelete.Visible = !group.IsSystem;
+            btnDelete.Visible = btnDelete.Visible && !group.IsSystem;
             btnArchive.Visible = false;
 
             var rockContext = new RockContext();
@@ -1945,6 +1951,17 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlMap.Visible = false;
+            }
+
+            string groupRSVPUrl = LinkedPageUrl( "GroupRSVPPage", pageParams );
+            if ( groupRSVPUrl.IsNotNullOrWhiteSpace() )
+            {
+                hlGroupRSVP.Visible = ( groupType != null ) && ( groupType.EnableRSVP == true );
+                hlGroupRSVP.NavigateUrl = groupRSVPUrl;
+            }
+            else
+            {
+                hlGroupRSVP.Visible = false;
             }
 
             string groupSchedulerUrl = LinkedPageUrl( "GroupSchedulerPage", pageParams );

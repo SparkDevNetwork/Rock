@@ -32,6 +32,10 @@
                 </div>
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <div class="panel-body">
+                    <Rock:NotificationBox ID="nbArchivedPlacementGroupWarning" runat="server" NotificationBoxType="Warning" Text="One or more placement groups on this opportunity have been archived." Visible="false" />
+
+                    <Rock:NotificationBox ID="nbArchivedConnectorGroupWarning" runat="server" NotificationBoxType="Warning" Text="One or more connector groups on this opportunity have been archived." Visible="false" />
+
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <Rock:NotificationBox ID="nbIncorrectOpportunity" runat="server" NotificationBoxType="Danger" Visible="false"
@@ -104,7 +108,14 @@
                             <div class="grid">
                                 <Rock:Grid ID="gConnectionOpportunityGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Group" ShowConfirmDeleteDialog="false">
                                     <Columns>
-                                        <Rock:RockBoundField DataField="GroupName" HeaderText="Name" />
+                                        <Rock:RockTemplateField HeaderText="Name">
+                                            <ItemTemplate>
+                                                <asp:Literal ID="lGroupName" runat="server" Text='<%# Eval("GroupName") %>' />
+                                                <asp:Literal ID="lArchivedWarning" runat="server" Visible='<%# Eval("IsArchived") %>'>
+                                                    <span class="label label-warning">Archived</span>
+                                                </asp:Literal>
+                                            </ItemTemplate>
+                                        </Rock:RockTemplateField>
                                         <Rock:RockBoundField DataField="GroupTypeName" HeaderText="Group Type" />
                                         <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                                         <Rock:DeleteField OnClick="gConnectionOpportunityGroups_Delete" />
@@ -119,7 +130,14 @@
                                     <div class="grid">
                                         <Rock:Grid ID="gConnectionOpportunityConnectorGroups" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Campus Connector Group" ShowConfirmDeleteDialog="false">
                                             <Columns>
-                                                <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                                <Rock:RockTemplateField HeaderText="Group">
+                                                    <ItemTemplate>
+                                                        <asp:Literal ID="lGroupName" runat="server" Text='<%# Eval("GroupName") %>' />
+                                                        <asp:Literal ID="lArchivedWarning" runat="server" Visible='<%# Eval("IsArchived") %>'>
+                                                            <span class="label label-warning">Archived</span>
+                                                        </asp:Literal>
+                                                    </ItemTemplate>
+                                                </Rock:RockTemplateField>
                                                 <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" />
                                                 <Rock:EditField OnClick="gConnectionOpportunityConnectorGroups_Edit" />
                                                 <Rock:DeleteField OnClick="gConnectionOpportunityConnectorGroups_Delete" />

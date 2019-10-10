@@ -1692,12 +1692,12 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Nexts the day of the week.
+        /// Advances the date to a specific day in the next 7 days.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="sDayOfWeek">The s day of week.</param>
-        /// <param name="includeCurrentDay">if set to <c>true</c> [include current day].</param>
-        /// <param name="numberOfWeeks">The number of weeks.</param>
+        /// <param name="sDayOfWeek">The starting day of week.</param>
+        /// <param name="includeCurrentDay">if set to <c>true</c> includes the current day as the current week.</param>
+        /// <param name="numberOfWeeks">The number of weeks (must be non-zero).</param>
         /// <returns></returns>
         public static DateTime? NextDayOfTheWeek( object input, string sDayOfWeek, bool includeCurrentDay = false, int numberOfWeeks = 1 )
         {
@@ -1705,6 +1705,12 @@ namespace Rock.Lava
             DayOfWeek dayOfWeek;
 
             if ( input == null )
+            {
+                return null;
+            }
+
+            // Check for invalid number of weeks
+            if ( numberOfWeeks == 0 )
             {
                 return null;
             }
@@ -1749,7 +1755,15 @@ namespace Rock.Lava
                 daysUntilWeekDay = ( ( ( ( int ) dayOfWeek - 1 ) - ( int ) date.DayOfWeek + 7 ) % 7 ) + 1;
             }
 
-            return date.AddDays( daysUntilWeekDay * numberOfWeeks );
+            // When a positive number of weeks is given, since the number of weeks defaults to 1
+            // (which means the current week) we need to shift the numberOfWeeks down by 1 so
+            // the calculation below is correct.
+            if ( numberOfWeeks >= 1 )
+            {
+                numberOfWeeks--;
+            }
+
+            return date.AddDays( daysUntilWeekDay + ( numberOfWeeks * 7 ) );
         }
 
         /// <summary>
@@ -4139,10 +4153,11 @@ namespace Rock.Lava
 
             if ( page != null )
             {
+                
                 HtmlMeta metaTag = new HtmlMeta();
                 metaTag.Attributes.Add( attributeName, attributeValue );
                 metaTag.Content = input;
-                page.Header.Controls.Add( metaTag );
+                page.AddMetaTag( metaTag );
             }
 
             return null;

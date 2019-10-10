@@ -73,17 +73,9 @@
                                         </fieldset>
                                     </div>
                                     <div class="col-md-4 hidden-sm hidden-xs">
-                                        <div class="row">
-                                            <div class="col-sm-4">
-                                                <asp:Image ID="imgAppIcon" runat="server" CssClass="mobile-app-icon" />
-                                            </div>
-
-                                            <div class="col-sm-8">
-                                                <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
-                                                    <asp:Image ID="imgAppPreview" runat="server" />
-                                                </asp:Panel>
-                                            </div>
-                                        </div>
+                                        <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
+                                            <asp:Image ID="imgAppPreview" runat="server" />
+                                        </asp:Panel>
                                     </div>
                                 </div>
 
@@ -202,7 +194,7 @@
                             </asp:Panel>
 
                             <asp:Panel ID="pnlPages" runat="server">
-                                <Rock:Grid ID="gPages" runat="server" RowItemText="Page" DisplayType="Light" OnGridRebind="gPages_GridRebind" OnRowSelected="gPages_RowSelected" OnGridReorder="gPages_GridReorder">
+                                <Rock:Grid ID="gPages" runat="server" RowItemText="Page" DisplayType="Light" OnGridRebind="gPages_GridRebind" OnRowSelected="gPages_RowSelected" OnGridReorder="gPages_GridReorder" OnRowDataBound="gPages_RowDataBound">
                                     <Columns>
                                         <Rock:ReorderField />
                                         <Rock:RockBoundField DataField="InternalName" SortExpression="Name" HeaderText="Name" />

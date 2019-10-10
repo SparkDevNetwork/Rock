@@ -21,6 +21,8 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+using System.Text;
+using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
@@ -130,7 +132,7 @@ namespace Rock.Model
                 bool syncMatchingStreaks )
         {
             // Check to see if an occurrence exists already
-            var occurrenceService = new AttendanceOccurrenceService( (RockContext)Context );
+            var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
             var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees" );
 
             // If we still don't have an occurrence record (i.e. validation failed) return null 
@@ -1076,7 +1078,7 @@ namespace Rock.Model
 
                     DateRange personExclusionDateRange = personScheduleExclusionLookupByPersonId.GetValueOrNull( schedulerResource.PersonId );
 
-                    if ( personExclusionDateRange != null)
+                    if ( personExclusionDateRange != null )
                     {
                         schedulerResource.BlackoutDates = scheduleOccurrenceDateList.Where( d => personExclusionDateRange.Contains( d ) ).ToList();
                     }
@@ -1147,7 +1149,7 @@ namespace Rock.Model
                                                                                     && ( c.RequestedToAttend == true || c.ScheduledToAttend == true )
                                                                                     && c.Occurrence.ScheduleId == scheduleId
                                                                                     && c.Occurrence.OccurrenceDate == occurrenceDate ),
-                    BlackoutDateRanges = personScheduleExclusionQueryForOccurrence.Where( e => e.PersonAlias.PersonId == a.PersonAlias.PersonId ).Select(s => new { s.StartDate, s.EndDate } ).ToList ()
+                    BlackoutDateRanges = personScheduleExclusionQueryForOccurrence.Where( e => e.PersonAlias.PersonId == a.PersonAlias.PersonId ).Select( s => new { s.StartDate, s.EndDate } ).ToList()
                 } );
 
             var result = scheduledAttendancesQuery.ToList().Select( a =>
@@ -1600,6 +1602,189 @@ namespace Rock.Model
         }
 
         #endregion GroupScheduling Related
+
+        #region RSVP Related
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
+        /// <param name="personIds">A comma-delimited list of Person IDs.</param>
+        public void RegisterRSVPRecipients( int occurrenceId, string personIds )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var personIdList = personIds.Split( ',' ).Select( int.Parse ).ToList();
+
+            // Get Occurrence.
+            var occurrence = new AttendanceOccurrenceService( rockContext ).Queryable().AsNoTracking()
+                .Where( o => o.Id == occurrenceId ).FirstOrDefault();
+            DateTime startDateTime = occurrence.Schedule != null && occurrence.Schedule.HasSchedule() ? occurrence.OccurrenceDate.Date.Add( occurrence.Schedule.StartTimeOfDay ) : occurrence.OccurrenceDate;
+
+            // Get PersonAliasIDs from PersonIDs
+            var people = new PersonService( rockContext ).Queryable().AsNoTracking()
+                .Where( p => personIdList.Contains( p.Id ) )
+                .ToList();
+            var personAliasIds = people.Select( p => p.PrimaryAliasId ).ToList();
+
+            // Check for existing records.
+            var attendanceService = new AttendanceService( rockContext );
+            var existingAttendanceRecords = attendanceService.Queryable().AsNoTracking()
+                .Where( a => personAliasIds.Contains( a.PersonAliasId ) )
+                .Where( a => a.OccurrenceId == occurrenceId )
+                .ToList();
+
+            var newAttendanceRecords = new List<Attendance>();
+            foreach ( int personAliasId in personAliasIds )
+            {
+                // If record doesn't exist, create a new attendance record and set RSVP to "Unknown".
+                if ( !existingAttendanceRecords.Where( a => a.PersonAliasId == personAliasId ).Any() )
+                {
+                    newAttendanceRecords.Add(
+                        new Attendance()
+                        {
+                            OccurrenceId = occurrenceId,
+                            PersonAliasId = personAliasId,
+                            StartDateTime = startDateTime,
+                            RSVP = Rock.Model.RSVP.Unknown
+                        } );
+                }
+            }
+
+            attendanceService.AddRange( newAttendanceRecords );
+            rockContext.SaveChanges();
+        }
+
+        #endregion RSVP Related
+
+        #region BulkImport related
+
+        /// <summary>
+        /// BulkInserts Attendance Records
+        /// </summary>
+        /// <param name="attendancesImport">The attendances import.</param>
+        public static void BulkAttendanceImport( AttendancesImport attendancesImport )
+        {
+            if ( attendancesImport == null )
+            {
+                throw new Exception( "AttendancesImport must be assigned a value." );
+            }
+
+            var attendanceImportList = attendancesImport.Attendances;
+            RockContext rockContext = new RockContext();
+
+            DateTime importDateTime = RockDateTime.Now;
+
+            var occurrenceMinDate = attendanceImportList.Min( a => a.OccurrenceDate );
+            var occurrenceMaxDate = attendanceImportList.Max( a => a.OccurrenceDate );
+
+            var occurrenceIdLookupList = new AttendanceOccurrenceService( rockContext ).Queryable()
+                .Select( o => new
+                {
+                    Id = o.Id,
+                    GroupId = o.GroupId,
+                    LocationId = o.LocationId,
+                    ScheduleId = o.ScheduleId,
+                    OccurrenceDate = o.OccurrenceDate
+                } ).Where( a => a.OccurrenceDate >= occurrenceMinDate && a.OccurrenceDate <= occurrenceMaxDate )
+                .ToList();
+
+            // Get list of existing occurrence records that have already been created, using the combination of pipe delimited GroupId,LocationId,ScheduleId,OccurenceDate (for quick lookup).
+            // We'll use this to see what occurrences need to be added, then we'll rebuild this lookup to use for bulk inserting Attendances
+            var occurrenceIdLookup = occurrenceIdLookupList.ToDictionary( k => AttendanceImport.GetOccurrenceLookupKey( k.GroupId, k.LocationId, k.ScheduleId, k.OccurrenceDate ), v => v.Id );
+
+            // Create a list of *imported* occurrence records, using the combination of pipe delimited GroupId,LocationId,ScheduleId,OccurenceDate (for quick lookup).
+            // We'll compare this to what is already in the database to figure out what occurrences need to be bulk inserted
+            var importedAttendancesOccurrenceList = attendanceImportList
+                .GroupBy( a => new
+                {
+                    a.GroupId,
+                    a.LocationId,
+                    a.ScheduleId,
+                    a.OccurrenceDate
+                } ).Select( a => new
+                {
+                    a.Key,
+                    AttendanceImportOccurrence = a.FirstOrDefault()
+                } ).ToList();
+
+            var importedAttendancesOccurrenceKeys = importedAttendancesOccurrenceList.ToDictionary( k => $"{k.Key.GroupId}|{k.Key.LocationId}|{k.Key.ScheduleId}|{k.Key.OccurrenceDate}", v => v.AttendanceImportOccurrence );
+
+            // Create list of occurrences to be bulk inserted
+            List<AttendanceOccurrence> occurrencesToBulkImport = importedAttendancesOccurrenceKeys.Where( a => !occurrenceIdLookup.ContainsKey( a.Key ) )
+                .Select( a => new AttendanceOccurrence
+                {
+                    GroupId = a.Value.GroupId,
+                    LocationId = a.Value.LocationId,
+                    ScheduleId = a.Value.ScheduleId,
+                    OccurrenceDate = a.Value.OccurrenceDate
+                } ).ToList();
+
+            // Add all the new occurrences
+            rockContext.BulkInsert( occurrencesToBulkImport );
+
+            // Load all the existing occurrences again.
+            occurrenceIdLookup = new AttendanceOccurrenceService( rockContext ).Queryable()
+                .Select( o => new
+                {
+                    Id = o.Id,
+                    GroupId = o.GroupId,
+                    LocationId = o.LocationId,
+                    ScheduleId = o.ScheduleId,
+                    OccurrenceDate = o.OccurrenceDate
+                } ).Where( a => a.OccurrenceDate >= occurrenceMinDate && a.OccurrenceDate <= occurrenceMaxDate )
+                .ToDictionary( k => $"{k.GroupId}|{k.LocationId}|{k.ScheduleId}|{k.OccurrenceDate}", v => v.Id );
+
+            var importedPersonIds = attendanceImportList.Where( a => a.PersonId.HasValue ).Select( a => a.PersonId.Value ).Distinct().ToList();
+
+            // create a PersonAliasId to PersonId lookup so we don't have to individually query for each primary alias
+            var primaryAliasIdFromPersonIdLookup = new PersonAliasService( rockContext )
+                .GetPrimaryAliasQuery()
+                .Where( a => importedPersonIds.Contains( a.PersonId ) )
+                .Select( a => new { PersonAliasId = a.Id, a.PersonId } )
+                .ToDictionary( k => k.PersonId, v => ( int? ) v.PersonAliasId );
+
+            // create a list of Attendances to BulkImport (specify the number of records we are going to put in the list initialize the list 
+            List<Attendance> attendancesToBulkInsert = attendanceImportList.Select( attendanceImport =>
+             {
+                 var attendance = new Attendance
+                 {
+                     StartDateTime = attendanceImport.StartDateTime,
+                     PersonAliasId = attendanceImport.PersonAliasId
+                 };
+
+                 // If PersonId was specified, we'll use that (and ignore the imported PersonAliasId if there is one)
+                 // Then we'll use the PrimaryAliasId associated with the specified PersonId 
+                 if ( attendanceImport.PersonId.HasValue )
+                 {
+                     var personAliasId = primaryAliasIdFromPersonIdLookup.GetValueOrNull( attendanceImport.PersonId.Value );
+                     if ( !personAliasId.HasValue )
+                     {
+                         // primaryAliasIdFromPersonIdLookup.GetValueOrNull(personId) returned NULL.
+                         // This would be due to the import specifying a PersonId that doesn't exist.
+                         // So let's set personAliasId to -1 to let the ForeignKey exception happen
+                         personAliasId = -1;
+                     }
+
+                     attendance.PersonAliasId = personAliasId;
+                 }
+
+                 var occurrenceKey = attendanceImport.GetOccurrenceLookupKey();
+
+                 var occurrenceId = occurrenceIdLookup.GetValueOrNull( occurrenceKey );
+
+                 // occurrenceId from the lookup should never return null since we just created all the ones we needed.
+                 // So if it is null, throw an exception, since that would be a bug
+                 attendance.OccurrenceId = occurrenceId.Value;
+
+                 return attendance;
+             } ).ToList();
+
+            // NOTE: This can insert 100,000 records in less than 10 seconds, but the documentation will recommend a limit of 1000 records at a time
+            rockContext.BulkInsert( attendancesToBulkInsert );
+        }
+
+        #endregion BulkImport related
     }
 
     #region Group Scheduling related classes and types

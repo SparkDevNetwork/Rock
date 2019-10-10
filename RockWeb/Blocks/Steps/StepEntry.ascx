@@ -17,6 +17,41 @@
 
                 <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Warning" />
 
+                <div id="pnlViewDetails" runat="server">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <asp:Literal ID="lStepDescription" runat="server"></asp:Literal>
+                        </div>
+                        <div class="col-md-6">
+                            <%-- Manual Workflow Triggers --%>
+                            <Rock:ModalAlert ID="mdWorkflowResult" runat="server" />
+                            <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
+                            <div class="margin-b-md">
+                                <asp:Repeater ID="rptWorkflows" runat="server">
+                                    <ItemTemplate>
+                                        <asp:LinkButton runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
+                                        <%# Eval("WorkflowType.Name") %>
+                                        </asp:LinkButton>
+                                    </ItemTemplate>
+
+                                </asp:Repeater>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <Rock:AttributeValuesContainer ID="avcAttributesView" runat="server" NumberOfColumns="2" />
+                        </div>
+                    </div>
+
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                    </div>
+                </div>
+
                 <div id="pnlEditDetails" runat="server">
 
                     <asp:ValidationSummary ID="valGatewayDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
@@ -39,24 +74,6 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" NumberOfColumns="2" />
-                        </div>
-                    </div>
-
-                    <%-- Manual Workflow Triggers --%>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:ModalAlert ID="mdWorkflowResult" runat="server" />
-                            <asp:Label ID="lblWorkflows" Text="Available Workflows" Font-Bold="true" runat="server" />
-                            <div class="margin-b-md">
-                                <asp:Repeater ID="rptWorkflows" runat="server">
-                                    <ItemTemplate>
-                                        <asp:LinkButton runat="server" CssClass="btn btn-default btn-xs" CommandArgument='<%# Eval("Id") %>' CommandName="LaunchWorkflow">
-                                        <%# Eval("WorkflowType.Name") %>
-                                        </asp:LinkButton>
-                                    </ItemTemplate>
-
-                                </asp:Repeater>
-                            </div>
                         </div>
                     </div>
 

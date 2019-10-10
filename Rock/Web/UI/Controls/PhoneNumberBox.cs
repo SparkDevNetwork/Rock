@@ -418,14 +418,17 @@ namespace Rock.Web.UI.Controls
         {
             string cssClass = this.CssClass;
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group phone-number-box" + cssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group phone-number-box " + cssClass );
             if ( this.Style[HtmlTextWriterStyle.Display] == "none" )
             {
                 // render the display:none in the inputgroup div instead of the control itself
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 this.Style[HtmlTextWriterStyle.Display] = string.Empty;
             }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            _hfCountryCode.RenderControl( writer );
 
             this.CssClass = string.Empty;
 
@@ -493,7 +496,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            _hfCountryCode.RenderControl( writer );
+            
 
             ( (WebControl)this ).AddCssClass( "form-control js-phone-format" );
             if ( !string.IsNullOrWhiteSpace( Placeholder ) )
@@ -502,8 +505,6 @@ namespace Rock.Web.UI.Controls
             }
 
             this.Attributes["type"] = "tel";
-
-            ( ( WebControl ) this ).AddCssClass( cssClass );
 
             base.RenderControl( writer );
 

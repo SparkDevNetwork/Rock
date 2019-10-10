@@ -107,6 +107,29 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// NOTE: Only use this in case where we don't know if this is a property name, attribute key, or EntityField.UniqueName (for example, it is specified in a Query parameter or entity command).
+        /// Returns all the possible EntityFields that have the specified PropertyName or AttributeKey
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="fieldNameOrAttributeKey">The field name or attribute key.</param>
+        /// <returns></returns>
+        public static List<EntityField> FindFromFieldName( Type entityType, string fieldNameOrAttributeKey )
+        {
+            var entityFields = EntityHelper.GetEntityFields( entityType, true, true )
+                .Where( a =>
+                    a.UniqueName == fieldNameOrAttributeKey
+                    ||
+                    ( a.FieldKind == FieldKind.Property && a.Name == fieldNameOrAttributeKey )
+                    ||
+                    ( a.FieldKind == FieldKind.Attribute
+                      && a.AttributeGuid.HasValue
+                      && AttributeCache.Get( a.AttributeGuid.Value )?.Key == fieldNameOrAttributeKey )
+                    );
+
+            return entityFields.ToList();
+        }
+
+        /// <summary>
         /// Gets the entity fields.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>

@@ -176,6 +176,30 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the model with the Guid value, with any related objects to include in the query results (Eager-Loading)
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public virtual T GetInclude<TProperty>( Guid guid, Expression<Func<T, TProperty>> path )
+        {
+            return AsNoFilter().Include( path ).FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the model with the id value, with any related objects to include in the query results (Eager-Loading)
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="id">id</param>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public virtual T GetInclude<TProperty>( int id, Expression<Func<T, TProperty>> path )
+        {
+            return AsNoFilter().Include( path ).FirstOrDefault( t => t.Id == id );
+        }
+
+        /// <summary>
         /// Gets the model with the id value but doesn't load it into the EF ChangeTracker.
         /// Use this if you won't be making any changes to the record
         /// </summary>

@@ -38,6 +38,16 @@ namespace RockWeb.Blocks.Communication
     [Description( "List unmatched phone numbers with an option to link to a person that has the same phone number." )]
     public partial class NamelessPersonList : RockBlock, ICustomGridColumns
     {
+        #region PageParameterKeys
+
+        public static class PageParameterKey
+        {
+            public const string NamelessPersonId = "NamelessPersonId";
+        }
+
+        #endregion PageParameterKeys
+
+
         #region Base Control Methods
 
         /// <summary>
@@ -111,6 +121,12 @@ namespace RockWeb.Blocks.Communication
             var qry = phoneNumberService.Queryable()
                     .Where( p => p.Person.RecordTypeValueId == namelessPersonRecordTypeId )
                     .AsNoTracking();
+
+            int? namelessPersonId = PageParameter( PageParameterKey.NamelessPersonId ).AsIntegerOrNull();
+            if ( namelessPersonId.HasValue )
+            {
+                qry = qry.Where( a => a.PersonId == namelessPersonId.Value );
+            }
 
             // sort the query based on the column that was selected to be sorted
             var sortProperty = gNamelessPersonPhoneNumberList.SortProperty;
