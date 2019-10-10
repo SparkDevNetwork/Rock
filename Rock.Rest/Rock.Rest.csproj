@@ -119,6 +119,7 @@
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />
+    <Compile Include="Controllers\CheckinController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
