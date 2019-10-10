@@ -180,9 +180,9 @@ namespace RockWeb.Blocks.CheckIn
                         mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
                         mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
                         mergeFields.Add( "Messages", CurrentCheckInState.Messages );
-                        if ( CurrentGroupTypeIds != null )
+                        if ( LocalDeviceConfig.CurrentGroupTypeIds != null )
                         {
-                            var checkInAreas = CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );
+                            var checkInAreas = LocalDeviceConfig.CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );
                             mergeFields.Add( "CheckinAreas", checkInAreas );
                         }
 

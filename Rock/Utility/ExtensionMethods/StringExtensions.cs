@@ -219,6 +219,25 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes all non numeric characters.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonNumericCharacters( this string str )
+        {
+            Regex digitsOnly = new Regex( @"[^\d]" );
+
+            if ( !string.IsNullOrEmpty( str ) )
+            {
+                return digitsOnly.Replace( str, string.Empty );
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Determines whether the string is not null or whitespace.
         /// </summary>
         /// <param name="str">The string.</param>
