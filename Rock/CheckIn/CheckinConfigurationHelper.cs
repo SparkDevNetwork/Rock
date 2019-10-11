@@ -148,7 +148,7 @@ namespace Rock.CheckIn
 
             if ( !hasGroupTypes )
             {
-                return CheckinStatus.InActive;
+                return CheckinStatus.Inactive;
             }
 
             if ( IsTemporarilyClosed( kiosk, configuredGroupTypeIds, checkInType ) )
@@ -178,7 +178,7 @@ namespace Rock.CheckIn
             /// <summary>
             /// Checkin is Inactive
             /// </summary>
-            InActive,
+            Inactive,
 
             /// <summary>
             /// Checkin is temporarily closed

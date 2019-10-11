@@ -857,7 +857,7 @@ namespace Rock.Model
             }
             else if ( originalInactiveDateTime.HasValue )
             {
-                // group was changed to from InActive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
+                // group was changed to from Inactive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
                 foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 ).ToList() )
                 {
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
