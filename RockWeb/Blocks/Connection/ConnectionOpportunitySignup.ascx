@@ -45,6 +45,12 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+                    </div>
+                </div>
+
                 <Rock:RockTextBox ID="tbComments" runat="server" Label="Comments" TextMode="MultiLine" Rows="4" />
 
                 <div class="actions">
