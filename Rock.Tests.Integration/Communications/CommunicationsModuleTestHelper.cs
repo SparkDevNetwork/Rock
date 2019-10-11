@@ -236,6 +236,7 @@ namespace Rock.Tests.Integration.Communications
             List<Guid> recipientGuidList;
             List<CommunicationRecipientStatus> availableStatusList;
             Dictionary<Guid, int> personMap;
+            List<Guid> communicationMediumGuidList;
 
             var dataContextFactory = new DataContextFactory();
 
@@ -253,8 +254,9 @@ namespace Rock.Tests.Integration.Communications
 
             recipientGuidList = new List<Guid> { TestPeople.TedDeckerPersonGuid, TestPeople.SarahSimmonsPersonGuid };
             availableStatusList = GetAvailableCommunicationStatusList( 0, 0, 0 );
+            communicationMediumGuidList = new List<Guid> { SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() };
 
-            this.CreateCommunicationRecipients( dataContext, singleCommunication, recipientGuidList, availableStatusList );
+            this.CreateCommunicationRecipients( dataContext, singleCommunication, recipientGuidList, availableStatusList, communicationMediumGuidList );
             this.CreateCommunicationInteractions( dataContextFactory, singleCommunication, 1 );
 
             // Add bulk email to 50 recipients, all failed with no interactions.
@@ -273,9 +275,9 @@ namespace Rock.Tests.Integration.Communications
             recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 50 );
             availableStatusList = GetAvailableCommunicationStatusList( 0, 100, 0 );
 
-            this.CreateCommunicationRecipients( dataContext, bulkCommunicationFailed, recipientGuidList, availableStatusList );
+            this.CreateCommunicationRecipients( dataContext, bulkCommunicationFailed, recipientGuidList, availableStatusList, communicationMediumGuidList );
 
-            // Add bulk email to 525 recipients, with associated interactions.
+            // Add bulk email to 525 recipients via Email or SMS, with associated interactions.
             var bulkCommunication = this.CreateEmailCommunication( dataContextFactory,
                 Constants.TestCommunicationBulkEmail1Guid,
                 new DateTime( 2019, 1, 30 ),
@@ -290,8 +292,9 @@ namespace Rock.Tests.Integration.Communications
 
             recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 525 );
             availableStatusList = GetAvailableCommunicationStatusList( 20, 10, 5 );
+            communicationMediumGuidList = new List<Guid> { SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid(), SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() };
 
-            this.CreateCommunicationRecipients( dataContext, bulkCommunication, recipientGuidList, availableStatusList );
+            this.CreateCommunicationRecipients( dataContext, bulkCommunication, recipientGuidList, availableStatusList, communicationMediumGuidList );
             this.CreateCommunicationInteractions( dataContextFactory, bulkCommunication, 0.5M );
         }
 
@@ -339,10 +342,9 @@ namespace Rock.Tests.Integration.Communications
             recipientGuidList = personMap.Keys.ToList().GetRandomizedList( 175 );
             availableStatusList = GetAvailableCommunicationStatusList( 20, 10, 0 );
 
-            this.CreateCommunicationRecipients( dataContext, bulkSms, recipientGuidList, availableStatusList );
+            var communicationMediumGuidList = new List<Guid> { SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() };
 
-            
-
+            this.CreateCommunicationRecipients( dataContext, bulkSms, recipientGuidList, availableStatusList, communicationMediumGuidList );
             this.CreateCommunicationInteractions( dataContextFactory, bulkSms, 0M );
 
             this.AddNamelessPersonRecords();
@@ -627,18 +629,27 @@ namespace Rock.Tests.Integration.Communications
         /// <param name="communication"></param>
         /// <param name="recipientPersonGuidList"></param>
         /// <param name="possibleRecipientStatusList"></param>
-        private void CreateCommunicationRecipients( RockContext dataContext, Rock.Model.Communication communication, List<Guid> recipientPersonGuidList, List<CommunicationRecipientStatus> possibleRecipientStatusList )
+        private void CreateCommunicationRecipients( RockContext dataContext, Rock.Model.Communication communication, List<Guid> recipientPersonGuidList, List<CommunicationRecipientStatus> possibleRecipientStatusList, List<Guid> possibleMediumEntityGuidList )
         {
             int communicationId = communication.Id;
 
             // Add recipients
             var recipientService = new CommunicationRecipientService( dataContext );
-            var interactionService = new InteractionService( dataContext );
 
             var communicationDateTime = communication.SendDateTime ?? communication.CreatedDateTime ?? DateTime.Now;
 
             var personMap = this.GetPersonGuidToAliasIdMap( dataContext );
 
+            var failureReasonList = new List<string>();
+
+            failureReasonList.Add( "No Email Address." );
+            failureReasonList.Add( "Email is not active." );
+            failureReasonList.Add( "Communication Preference of 'No Bulk Communication'." );
+            failureReasonList.Add( "Communication Preference of 'Do Not Send Communication'." );
+            failureReasonList.Add( "Person is deceased." );
+            failureReasonList.Add( "Delivery to this address has previously bounced." );
+            failureReasonList.Add( "User has marked your messages as spam." );
+            
             foreach ( var recipientPersonGuid in recipientPersonGuidList )
             {
                 var recipientPersonAliasId = personMap[recipientPersonGuid];
@@ -655,6 +666,8 @@ namespace Rock.Tests.Integration.Communications
 
                 newRecipient.Status = status;
 
+                newRecipient.MediumEntityTypeId = EntityTypeCache.GetId( possibleMediumEntityGuidList.GetRandomElement() ).Value;
+
                 if ( status == CommunicationRecipientStatus.Opened )
                 {
                     // Get a randomized open time for the communication, within 7 days after it was sent.
@@ -663,6 +676,11 @@ namespace Rock.Tests.Integration.Communications
                     newRecipient.OpenedDateTime = openedDateTime;
 
                     newRecipient.OpenedClient = "Gmail";
+                }
+                else if (status == CommunicationRecipientStatus.Failed )
+                {
+                    // Add a failure reason.
+                    newRecipient.StatusNote = failureReasonList.GetRandomElement();
                 }
 
                 recipientService.Add( newRecipient );
@@ -700,7 +718,7 @@ namespace Rock.Tests.Integration.Communications
             dataContext.SaveChanges();
 
             // Create an interaction for each communication recipient where the communication has been opened or delivered.
-            // An interaction may occur for a communication that is not marked as delivered but not opened if the user opts to open the message without loading associated images.
+            // An interaction may occur for a communication that is marked as delivered but not opened if the user opts to open the message without loading associated images.
             var recipients = recipientService.Queryable()
                 .AsNoTracking()
                 .Where( x => x.CommunicationId == communicationId
@@ -709,8 +727,16 @@ namespace Rock.Tests.Integration.Communications
 
             InteractionService interactionService = null;
 
+            var emailMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Value;
+
             foreach ( var recipient in recipients )
             {
+                // Only create interactions for email messages.
+                if ( recipient.MediumEntityTypeId != emailMediumEntityTypeId )
+                {
+                    continue;
+                }
+
                 dataContext = dataContextFactory.GetDataContext();
 
                 if ( interactionService == null
