@@ -169,6 +169,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( !string.IsNullOrWhiteSpace( LocalDeviceConfig.CurrentTheme ) )
             {
                 ddlTheme.SetValue( LocalDeviceConfig.CurrentTheme );
+                SetSelectedTheme( LocalDeviceConfig.CurrentTheme );
             }
             else
             {
@@ -443,10 +444,24 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlTheme_SelectedIndexChanged( object sender, EventArgs e )
         {
-            if ( LocalDeviceConfig.CurrentTheme != ddlTheme.SelectedValue )
+            SetSelectedTheme( ddlTheme.SelectedValue );
+        }
+
+        /// <summary>
+        /// Sets the configured theme and updates the theme cookie if needed
+        /// </summary>
+        /// <param name="theme">The theme.</param>
+        private void SetSelectedTheme( string theme )
+        {
+            if ( LocalDeviceConfig.CurrentTheme != theme )
             {
                 LocalDeviceConfig.CurrentTheme = ddlTheme.SelectedValue;
                 SaveState();
+            }
+
+            if ( !RockPage.Site.Theme.Equals(LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // if the site's theme doesn't match the configured theme, reload the page with the theme parameter so that the correct theme gets loaded and the theme cookie gets set
                 Dictionary<string, string> themeParameters = new Dictionary<string, string>();
                 themeParameters.Add( "theme", LocalDeviceConfig.CurrentTheme );
 
