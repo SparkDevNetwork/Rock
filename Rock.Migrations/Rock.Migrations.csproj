@@ -69,6 +69,10 @@
     <Compile Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.Designer.cs">
       <DependentUpon>201910091520216_AchievementTypeOptionalForeignKeys.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201910112158508_Rollups_20191011.cs" />
+    <Compile Include="Migrations\201910112158508_Rollups_20191011.Designer.cs">
+      <DependentUpon>201910112158508_Rollups_20191011.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -864,6 +868,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.resx">
       <DependentUpon>201910091520216_AchievementTypeOptionalForeignKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910112158508_Rollups_20191011.resx">
+      <DependentUpon>201910112158508_Rollups_20191011.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
