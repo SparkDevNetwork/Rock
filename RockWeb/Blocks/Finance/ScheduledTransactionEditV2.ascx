@@ -16,7 +16,7 @@
         <asp:Panel ID="pnlPromptForChanges" runat="server">
             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
-            <Rock:RockDropDownList ID="ddlFrequency" runat="server" FormGroupCssClass="margin-t-md" />
+            <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency"  FormGroupCssClass="margin-t-md" />
 
             <div class="margin-t-md">
                 <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Next Gift" />
