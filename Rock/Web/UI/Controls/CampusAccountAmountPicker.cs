@@ -144,7 +144,7 @@ namespace Rock.Web.UI.Controls
                     using ( var rockContext = new RockContext() )
                     {
                         _financialAccountsCache = new FinancialAccountService( rockContext ).Queryable().AsNoTracking()
-                            .Select(a => new
+                            .Select( a => new
                             {
                                 a.Id,
                                 a.ParentAccountId,
@@ -539,6 +539,54 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to include Inactive Campus (default is false)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include inactive campuses]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactiveCampuses
+        {
+            get => ViewState["IncludeInactiveCampuses"] as bool? ?? false;
+            set
+            {
+                ViewState["IncludeInactiveCampuses"] = value;
+                LoadCampuses();
+            }
+        }
+
+        /// <summary>
+        /// Set this to limit campuses based on campus type
+        /// </summary>
+        /// <value>
+        /// The included campus type ids.
+        /// </value>
+        public int[] IncludedCampusTypeIds
+        {
+            get => ViewState["IncludedCampusTypeIds"] as int[];
+            set
+            {
+                ViewState["IncludedCampusTypeIds"] = value;
+                LoadCampuses();
+            }
+        }
+
+        /// <summary>
+        /// Set this to limit campuses based on campus status
+        /// </summary>
+        /// <value>
+        /// The included campus status ids.
+        /// </value>
+        public int[] IncludedCampusStatusIds
+        {
+            get => ViewState["IncludedCampusStatusIds"] as int[];
+            set
+            {
+                ViewState["IncludedCampusStatusIds"] = value;
+                LoadCampuses();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the Campus and Account DropDowns will fire a PostBack
         /// </summary>
         /// <value>
@@ -593,7 +641,19 @@ namespace Rock.Web.UI.Controls
         {
             _ddlSingleAccountCampus.Items.Clear();
             _ddlMultiAccountCampus.Items.Clear();
-            foreach ( var campus in CampusCache.All().OrderBy( a => a.Order ) )
+            var campusList = CampusCache.All( this.IncludeInactiveCampuses );
+
+            if ( IncludedCampusTypeIds?.Any() == true )
+            {
+                campusList = campusList.Where( a => a.CampusTypeValueId.HasValue && IncludedCampusTypeIds.Contains( a.CampusTypeValueId.Value ) ).ToList();
+            }
+
+            if ( IncludedCampusStatusIds?.Any() == true )
+            {
+                campusList = campusList.Where( a => a.CampusStatusValueId.HasValue && IncludedCampusStatusIds.Contains( a.CampusStatusValueId.Value ) ).ToList();
+            }
+
+            foreach ( var campus in campusList.OrderBy( a => a.Order ) )
             {
                 _ddlSingleAccountCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
                 _ddlMultiAccountCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
@@ -780,6 +840,7 @@ namespace Rock.Web.UI.Controls
 
             _ddlSingleAccountCampus = new RockDropDownList();
             _ddlSingleAccountCampus.ID = "_ddlSingleAccountCampus";
+            _ddlSingleAccountCampus.Label = "Campus";
             _ddlSingleAccountCampus.CssClass = "single-account-campus";
             _ddlSingleAccountCampus.SelectedIndexChanged += _ddlCampus_SelectedIndexChanged;
             pnlSingleCampusDiv.Controls.Add( _ddlSingleAccountCampus );
@@ -810,6 +871,7 @@ namespace Rock.Web.UI.Controls
             _ddlMultiAccountCampus.ID = "_ddlMultiAccountCampus";
             _ddlMultiAccountCampus.CssClass = "multi-account-campus";
             _ddlMultiAccountCampus.SelectedIndexChanged += _ddlCampus_SelectedIndexChanged;
+            _ddlMultiAccountCampus.Label = "Campus";
             _pnlAccountAmountEntryMulti.Controls.Add( _ddlMultiAccountCampus );
 
             LoadCampuses();
