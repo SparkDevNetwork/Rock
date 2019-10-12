@@ -432,15 +432,15 @@ namespace Rock.TransNational.Pi
         /// </summary>
         /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
-        /// <param name="customerId">The customer identifier.</param>
-        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="referencePaymentInfo">The payment information.</param>
         /// <returns></returns>
-        private UpdateCustomerAddressResponse UpdateCustomerAddress( string gatewayUrl, string apiKey, string customerId, PaymentInfo paymentInfo )
+        private UpdateCustomerAddressResponse UpdateCustomerAddress( string gatewayUrl, string apiKey, ReferencePaymentInfo referencePaymentInfo )
         {
+            string customerId = referencePaymentInfo.GatewayPersonIdentifier;
             var customer = GetCustomer( gatewayUrl, apiKey, customerId );
             var billingAddressId = customer?.Data?.BillingAddress?.Id;
 
-            UpdateCustomerAddressRequest updateCustomerAddressRequest = CreateBillingAddress<UpdateCustomerAddressRequest>( paymentInfo );
+            UpdateCustomerAddressRequest updateCustomerAddressRequest = CreateBillingAddress<UpdateCustomerAddressRequest>( referencePaymentInfo );
 
             var restClient = new RestClient( gatewayUrl );
             RestRequest restRequest = new RestRequest( $"api/customer/{customerId}/address/{billingAddressId}", Method.POST );
@@ -1201,7 +1201,7 @@ namespace Rock.TransNational.Pi
 
             if ( referencedPaymentInfo.IncludesAddressData() )
             {
-                var updateCustomerAddressResponse = this.UpdateCustomerAddress( gatewayUrl, apiKey, scheduledTransaction.TransactionCode, referencedPaymentInfo );
+                var updateCustomerAddressResponse = this.UpdateCustomerAddress( gatewayUrl, apiKey, referencedPaymentInfo );
                 if ( !updateCustomerAddressResponse.IsSuccessStatus() )
                 {
                     errorMessage = updateCustomerAddressResponse.Message;
@@ -1222,6 +1222,7 @@ namespace Rock.TransNational.Pi
             }
 
             scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( paymentInfo, customerInfo?.Data?.PaymentMethod, customerInfo?.Data?.BillingAddress );
+            scheduledTransaction.TransactionCode = customerId;
             try
             {
                 GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
