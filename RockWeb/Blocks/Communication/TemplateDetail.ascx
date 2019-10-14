@@ -49,10 +49,10 @@
                 <Rock:PanelWidget ID="pnlEmailTemplate" Title="Email" TitleIconCssClass="fa fa-envelope" CssClass="js-email-template" runat="server" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" />
+                            <Rock:RockTextBox ID="tbFromName" runat="server" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:EmailBox ID="tbFromAddress" runat="server" Label="From Address" AllowMultiple="false" />
+                            <Rock:EmailBox ID="tbFromAddress" runat="server" Label="From Address" AllowMultiple="false" Help="<small><span class='tip tip-lava'></span></small>" AllowLava="true" />
                             <asp:HiddenField ID="hfShowAdditionalFields" runat="server" />
                             <div class="pull-right">
                                 <a href="#" class="btn btn-xs btn-link js-show-additional-fields">Show Additional Fields</a>

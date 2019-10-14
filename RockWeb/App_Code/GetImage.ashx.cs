@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -86,17 +87,11 @@ namespace RockWeb
                 return;
             }
 
-            // Count of query parameters used. Start at 2 since "isBinaryFile" and "fileName" are required to get here.
-            var queryCount = 2;
-
             string trustedRootFolder = string.Empty;
 
             // If a rootFolder was specified in the URL
             if ( !string.IsNullOrWhiteSpace( encryptedRootFolder ) )
             {
-                // Bump query count
-                queryCount++;
-
                 // Decrypt it (It is encrypted to help prevent direct access to filesystem).
                 trustedRootFolder = Encryption.DecryptString( encryptedRootFolder );
             }
@@ -142,7 +137,7 @@ namespace RockWeb
                         context.Response.ContentType = mimeType;
 
                         // If extra query string params are passed in and it isn't an SVG file, assume resize is needed
-                        if ( ( context.Request.QueryString.Count > queryCount ) && ( mimeType != "image/svg+xml" ) )
+                        if ( ( context.Request.QueryString.Count > GetQueryCount( context ) ) && ( mimeType != "image/svg+xml" ) )
                         {
                             using ( var resizedStream = GetResized( context.Request.QueryString, fileContents ) )
                             {
@@ -163,13 +158,13 @@ namespace RockWeb
                     }
                 }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 if ( ex is ArgumentException || ex is ArgumentNullException || ex is NotSupportedException )
                 {
-                    SendBadRequest( context, "fileName is invalid.");
+                    SendBadRequest( context, "fileName is invalid." );
                 }
-                else if( ex is DirectoryNotFoundException || ex is FileNotFoundException )
+                else if ( ex is DirectoryNotFoundException || ex is FileNotFoundException )
                 {
                     SendNotFound( context );
                 }
@@ -278,7 +273,7 @@ namespace RockWeb
                     {
                         // If more than 1 query string param is passed in, or the mime type is TIFF, assume resize is needed
                         // Note: we force "image/tiff" to get resized so that it gets converted into a jpg (browsers don't like tiffs)
-                        if ( context.Request.QueryString.Count > 1 || binaryFile.MimeType == "image/tiff" )
+                        if ( context.Request.QueryString.Count > GetQueryCount( context ) || binaryFile.MimeType == "image/tiff" )
                         {
                             // if it isn't an SVG file, do a Resize
                             if ( binaryFile.MimeType != "image/svg+xml" )
@@ -418,7 +413,7 @@ namespace RockWeb
             AsyncCallback cb = ( IAsyncResult asyncResult ) =>
             {
                 // restore the context from the asyncResult.AsyncState 
-                HttpContext asyncContext = (HttpContext)asyncResult.AsyncState;
+                HttpContext asyncContext = ( HttpContext ) asyncResult.AsyncState;
                 binaryFile = new BinaryFileService( rockContext ).EndGet( asyncResult, context );
                 completedEvent.Set();
             };
@@ -557,6 +552,32 @@ namespace RockWeb
             context.Response.StatusCode = System.Net.HttpStatusCode.BadRequest.ConvertToInt();
             context.Response.StatusDescription = message;
             context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Gets the number of parameters from the query string which do not require a resize
+        /// </summary>
+        /// <param name="context">The HttpContext</param>
+        /// <returns></returns>
+        private int GetQueryCount( HttpContext context )
+        {
+            int count = 0;
+            List<string> nonResizeQueryStrings = new List<string>()
+            {
+                "id",
+                "guid",
+                "isbinaryfile",
+                "rootfolder",
+                "fileName"
+            };
+            foreach ( string key in context.Request.QueryString )
+            {
+                if ( nonResizeQueryStrings.Contains( key.ToLower() ) )
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         /// <summary>

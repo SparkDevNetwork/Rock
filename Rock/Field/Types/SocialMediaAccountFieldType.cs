@@ -20,10 +20,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types

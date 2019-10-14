@@ -1107,6 +1107,8 @@ namespace RockWeb.Blocks.Reporting
                     if ( dataView != null )
                     {
                         entityTypeId = dataView.EntityTypeId;
+                        tbName.Text = dataView.Name;
+                        tbDescription.Text = dataView.Description;
                     }
                 }
             }

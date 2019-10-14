@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 namespace Rock.UniversalSearch.Crawler.RobotsTxt.Enums
 {
     internal enum LineType

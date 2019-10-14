@@ -12414,6 +12414,8 @@ BEGIN
         
 		if (@personCounter % 500 = 0)
 		begin
+		  COMMIT TRANSACTION
+		  BEGIN TRANSACTION
   		  print concat(@personCounter, '/', @maxPerson);
         end
 

@@ -16,9 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-using Rock.Attribute;
 using Rock.Extension;
 using Rock.UniversalSearch.IndexModels;
 

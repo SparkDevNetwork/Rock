@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Store
     /// </summary>
     [DisplayName( "Promo List Lava" )]
     [Category( "Store" )]
-    [Description( "Lists Rock Store promotions using a Liquid template." )]
+    [Description( "Lists Rock Store promotions using a Lava template." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the promotions", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PromoList.lava' %}", "", 2 )]
     [CustomRadioListField("Promo Type", "Display the promos of the specified type", "All, Top Paid, Top Free, Featured", true, "Normal", "", 0)]
     [TextField("Category Id", "Filters promos for a specific category id. If none is provided it will show promos with no category.", false, "","", 1)]
@@ -132,7 +132,7 @@ namespace RockWeb.Blocks.Store
             }
 
             promos = promoService.GetPromos( categoryId, out errorResponse, isTopFree, isFeatured, isTopPaid );
-            
+
             // check for errors
             ErrorCheck( errorResponse );
 

@@ -301,6 +301,9 @@ function() {
         /// </summary>
         protected class SelectionConfig
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SelectionConfig"/> class.
+            /// </summary>
             public SelectionConfig()
             {
                 AccountGuids = new List<Guid>();

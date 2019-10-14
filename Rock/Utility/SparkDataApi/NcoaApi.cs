@@ -23,9 +23,12 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Web.Http;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 using RestSharp;
+
 using Rock.Jobs;
 
 namespace Rock.Utility.SparkDataApi

@@ -76,6 +76,12 @@ namespace Rock.Financial
         public string BatchNamePrefix { get; set; }
 
         /// <summary>
+        /// If the charge should be made immediately, leave this null.  If not null, a Rock job will charge
+        /// this automated payment at or soon after the FutureProcessingDateTime is in the past.
+        /// </summary>
+        public DateTime? FutureProcessingDateTime { get; set; }
+
+        /// <summary>
         /// 
         /// </summary>
         public class AutomatedPaymentDetailArgs

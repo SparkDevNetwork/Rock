@@ -70,7 +70,7 @@
                 if ($control && $control.length) {
                     var $modalBody = $control.closest('.modal-body');
                     if ($modalBody.is(':visible')) {
-                        $modalBody[0].style.minHeight = "0px";
+                        $modalBody[0].style.minHeight = "0";
                         var scrollHeight = $modalBody.prop('scrollHeight');
                         if ($modalBody.outerHeight() != scrollHeight) {
                             // if modalbody didn't already grow to fit (maybe because of a bootstrap dropdown) make modal-body big enough to fit.

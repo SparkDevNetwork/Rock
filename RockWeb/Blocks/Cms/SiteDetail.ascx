@@ -36,6 +36,7 @@
                             <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
+                               <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
                         </div>
                     </div>
 

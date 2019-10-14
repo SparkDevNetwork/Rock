@@ -24,7 +24,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Security;
 
 namespace Rock.Workflow.Action
 {

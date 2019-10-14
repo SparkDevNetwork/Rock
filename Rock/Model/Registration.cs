@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,9 +23,11 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+
 using Rock.Data;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -127,6 +129,7 @@ namespace Rock.Model
         /// The group identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? GroupId { get; set; }
 
         /// <summary>
@@ -1559,7 +1562,7 @@ Registration By: {0} Total Cost/Fees:{1}
         /// <value>
         /// The registration template fee item identifier.
         /// </value>
-        public int RegistrationTemplateFeeItemId { get; set; }
+        public int? RegistrationTemplateFeeItemId { get; set; }
 
         /// <summary>
         /// Gets or sets the quantity.
@@ -1666,14 +1669,13 @@ Registration By: {0} Total Cost/Fees:{1}
         public FeeInfo( RegistrationRegistrantFee fee )
             : this()
         {
-            FeeLabel = fee.RegistrationTemplateFeeItem.Name;
-            RegistrationTemplateFeeItemId = fee.RegistrationTemplateFeeItemId.Value;
+            FeeLabel = fee.RegistrationTemplateFeeItem?.Name;
+            RegistrationTemplateFeeItemId = fee.RegistrationTemplateFeeItemId;
             Quantity = fee.Quantity;
             Cost = fee.Cost;
             PreviousCost = fee.Cost;
             DiscountApplies = fee.RegistrationTemplateFee != null && fee.RegistrationTemplateFee.DiscountApplies;
         }
-
     }
 
     /// <summary>

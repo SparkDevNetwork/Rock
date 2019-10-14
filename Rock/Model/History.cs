@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -1422,7 +1423,7 @@ namespace Rock.Model
                 var service = new Service<T>( rockContext );
                 if ( service != null )
                 {
-                    entity = service.Get( id.Value );
+                    entity = service.GetNoTracking( id.Value );
                 }
             }
 
@@ -1495,7 +1496,7 @@ namespace Rock.Model
             }
             else if ( personAliasId.HasValue )
             {
-                person = new PersonAliasService( rockContext ).GetPerson( personAliasId.Value );
+                person = new PersonAliasService( rockContext ).GetPersonNoTracking( personAliasId.Value );
             }
 
             return person != null ? string.Format( "{0} [{1}]", person.FullName, person.Id ) : blankValue;
@@ -1682,10 +1683,10 @@ namespace Rock.Model
 
             if ( groupTypeRoleId.HasValue )
             {
-                var role = new GroupTypeRoleService( rockContext ).Get( groupTypeRoleId.Value );
-                if ( role != null )
+                var roleName = new GroupTypeRoleService( rockContext ).GetSelect( groupTypeRoleId.Value, a=> a.Name );
+                if ( roleName != null )
                 {
-                    return role.Name;
+                    return roleName;
                 }
             }
 

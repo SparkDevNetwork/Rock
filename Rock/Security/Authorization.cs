@@ -18,15 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using System.Web.Security;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using System.Runtime.Serialization;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Security
 {
@@ -54,7 +54,7 @@ namespace Rock.Security
         public const string EDIT = "Edit";
 
         /// <summary>
-        /// Authorization to delete object (only used in few places where delete needs to be securred differently that EDIT, i.e. Financial Batch )
+        /// Authorization to delete object (only used in few places where delete needs to be secured differently that EDIT, i.e. Financial Batch )
         /// </summary>
         public const string DELETE = "Delete";
 
@@ -82,6 +82,16 @@ namespace Rock.Security
         /// Authorization to manage the group members
         /// </summary>
         public const string MANAGE_MEMBERS = "ManageMembers";
+
+        /// <summary>
+        /// Authorization to perform scheduling
+        /// </summary>
+        public const string SCHEDULE = "Schedule";
+
+        /// <summary>
+        /// Authorization action for using (tagging with) the Tag.
+        /// </summary>
+        public const string TAG = "Tag";
 
         #endregion
 

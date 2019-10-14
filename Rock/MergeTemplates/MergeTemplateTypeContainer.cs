@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+
 using Rock.Extension;
 
 namespace Rock.MergeTemplates

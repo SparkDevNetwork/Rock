@@ -75,9 +75,6 @@ namespace RockWeb.Blocks.Administration
             gExceptionList.DataKeyNames = new string[] { "Id" };
             gExceptionList.GridRebind += gExceptionList_GridRebind;
             gExceptionList.RowItemText = "Exception";
-
-            RockPage.AddScriptLink( this.Page, "https://www.google.com/jsapi", false );
-            RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.smartresize.js" );
         }
 
         /// <summary>
@@ -127,7 +124,7 @@ function(item) {
 
             if ( exceptionListCount == 1 )
             {
-                // if there is only one x datapoint for the Chart, show it as a barchart 
+                // if there is only one x datapoint for the Chart, show it as a barchart
                 lcExceptions.Visible = false;
                 bcExceptions.Visible = true;
             }
@@ -193,7 +190,7 @@ function(item) {
                 fExceptionList.SaveUserPreference( "Site", String.Empty );
             }
 
-            
+
             if ( ppUser.PersonId.HasValue )
             {
                 fExceptionList.SaveUserPreference( "User", ppUser.PersonId.ToString() );
@@ -215,7 +212,7 @@ function(item) {
             fExceptionList.SaveUserPreference( "Status Code", txtStatusCode.Text );
 
             fExceptionList.SaveUserPreference( "Date Range", sdpDateRange.DelimitedValues );
-           
+
             BindExceptionListGrid();
         }
 
@@ -274,7 +271,7 @@ function(item) {
                 case "Date Range":
                     e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
                     break;
-                        
+
             }
         }
 

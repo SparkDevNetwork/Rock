@@ -15,15 +15,15 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -63,6 +63,15 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public Device Device { get; set; }
+
+        /// <summary>
+        /// Gets the campus identifier based on the Device's Location(s)
+        /// </summary>
+        /// <value>
+        /// The campus identifier.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether Registration Mode is enabled for the device
@@ -312,6 +321,8 @@ namespace Rock.CheckIn
             {
                 currentDateTime = CampusCache.Get( campusId.Value )?.CurrentDateTime ?? RockDateTime.Now;
             }
+
+            kioskDevice.CampusId = campusId;
 
             var activeSchedules = new Dictionary<int, KioskSchedule>();
 

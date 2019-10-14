@@ -1,5 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
 
+<Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Text="The information provided is not valid or you are not authorized to view this content." Visible="false" />
+
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
 

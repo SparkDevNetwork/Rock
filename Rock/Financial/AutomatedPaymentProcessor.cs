@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -28,15 +29,29 @@ namespace Rock.Financial
     /// This class handles charging and then storing a payment. Payments must be made through a gateway
     /// supporting automated charging. Payments must be made for an existing person with a saved account.
     /// Use a new instance of this class for every payment.
+    ///
+    /// There are three modes that this operates under:
+    ///
+    /// 1. Charging a payment immediately (most common)
+    /// 2. "Dry-run" a payment that will be made in the future (probably from text-to-give)
+    /// 3. Charging a "future payment" that originated from mode 2.
+    ///
     /// </summary>
     public class AutomatedPaymentProcessor
     {
+        /// <summary>
+        /// Use this key to set metadata that will be used as the description of the transaction
+        /// in some gateways
+        /// </summary>
+        public const string DescriptionMetadataKey = "description";
+
         // Constructor params
         private RockContext _rockContext;
         private AutomatedPaymentArgs _automatedPaymentArgs;
         private int? _currentPersonAliasId;
-        private bool _ignoreRepeatChargeProtection;
-        private bool _ignoreScheduleAdherenceProtection;
+        private bool _enableDuplicateChecking;
+        private bool _enableScheduleAdherenceProtection;
+        private FinancialTransaction _futureTransaction;
 
         // Declared services
         private PersonAliasService _personAliasService;
@@ -68,25 +83,77 @@ namespace Rock.Financial
         /// <param name="currentPersonAliasId">The current user's person alias ID. Possibly the REST user.</param>
         /// <param name="automatedPaymentArgs">The arguments describing how toi charge the payment and store the resulting transaction</param>
         /// <param name="rockContext">The context to use for loading and saving entities</param>
-        /// <param name="ignoreRepeatChargeProtection">If true, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
-        /// <param name="ignoreScheduleAdherenceProtection">If true and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
-        public AutomatedPaymentProcessor( int? currentPersonAliasId, AutomatedPaymentArgs automatedPaymentArgs, RockContext rockContext, bool ignoreRepeatChargeProtection, bool ignoreScheduleAdherenceProtection )
+        /// <param name="enableDuplicateChecking">If false, the payment will be charged even if there is a similar transaction for the same person within a short time period.</param>
+        /// <param name="enableScheduleAdherenceProtection">If false and a schedule is indicated in the args, the payment will be charged even if the schedule has already been processed accoring to it's frequency.</param>
+        public AutomatedPaymentProcessor( int? currentPersonAliasId, AutomatedPaymentArgs automatedPaymentArgs, RockContext rockContext, bool enableDuplicateChecking = true, bool enableScheduleAdherenceProtection = true )
         {
             _rockContext = rockContext;
             _automatedPaymentArgs = automatedPaymentArgs;
             _currentPersonAliasId = currentPersonAliasId;
-            _ignoreRepeatChargeProtection = ignoreRepeatChargeProtection;
-            _ignoreScheduleAdherenceProtection = ignoreScheduleAdherenceProtection;
+            _enableDuplicateChecking = enableDuplicateChecking;
+            _enableScheduleAdherenceProtection = enableScheduleAdherenceProtection;
+            _futureTransaction = null;
 
-            _personAliasService = new PersonAliasService( rockContext );
-            _financialGatewayService = new FinancialGatewayService( rockContext );
+            _personAliasService = new PersonAliasService( _rockContext );
+            _financialGatewayService = new FinancialGatewayService( _rockContext );
             _financialAccountService = new FinancialAccountService( _rockContext );
-            _financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+            _financialPersonSavedAccountService = new FinancialPersonSavedAccountService( _rockContext );
+            _financialBatchService = new FinancialBatchService( _rockContext );
+            _financialTransactionService = new FinancialTransactionService( _rockContext );
+            _financialScheduledTransactionService = new FinancialScheduledTransactionService( _rockContext );
+
+            _payment = null;
+        }
+
+        /// <summary>
+        /// Create a new payment processor to handle a single automated payment from a future transaction (probably generated from text-to-give).
+        /// </summary>
+        /// <param name="futureTransaction">The transaction with a FutureProcessingDateTime</param>
+        /// <param name="rockContext">The context to use for loading and saving entities</param>
+        public AutomatedPaymentProcessor( FinancialTransaction futureTransaction, RockContext rockContext )
+        {
+            _rockContext = rockContext;
+            _automatedPaymentArgs = null;
+            _currentPersonAliasId = futureTransaction.CreatedByPersonAliasId;
+            _futureTransaction = futureTransaction;
+
+            // The job charging these future transactions could have a variable run frequency and be charging a days worth at a time, so the duplicate
+            // checking could very easily provide false positives. Therefore, we rely on the "dry-run" to have previously validated
+            _enableDuplicateChecking = false; // These future transactions should have already had a "dry-run" and been validated.
+            _enableScheduleAdherenceProtection = false; // These future transactions should have already had a "dry-run" and been validated
+
+            _personAliasService = new PersonAliasService( _rockContext );
+            _financialGatewayService = new FinancialGatewayService( _rockContext );
+            _financialAccountService = new FinancialAccountService( _rockContext );
+            _financialPersonSavedAccountService = new FinancialPersonSavedAccountService( _rockContext );
             _financialBatchService = new FinancialBatchService( rockContext );
             _financialTransactionService = new FinancialTransactionService( _rockContext );
             _financialScheduledTransactionService = new FinancialScheduledTransactionService( _rockContext );
 
             _payment = null;
+
+            CopyFutureTransactionToArgs();
+        }
+
+        /// <summary>
+        /// Allow access to the automated gateway's most recent exception property.
+        /// </summary>
+        /// <returns></returns>
+        public Exception GetMostRecentException()
+        {
+            if ( _automatedGatewayComponent == null )
+            {
+                return null;
+            }
+
+            var castedComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
+
+            if ( castedComponent == null )
+            {
+                return null;
+            }
+
+            return castedComponent.MostRecentException;
         }
 
         /// <summary>
@@ -99,13 +166,14 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
-            if ( _ignoreRepeatChargeProtection )
+            if ( !_enableDuplicateChecking )
             {
                 return false;
             }
 
             LoadEntities();
 
+            // Get all the person aliases in the giving group
             var personAliasIds = _personAliasService.Queryable()
                 .AsNoTracking()
                 .Where( a => a.Person.GivingId == _authorizedPerson.GivingId )
@@ -114,15 +182,25 @@ namespace Rock.Financial
 
             // Check to see if a transaction exists for the person aliases within the last 5 minutes. This should help eliminate accidental repeat charges.
             var minDateTime = RockDateTime.Now.AddMinutes( -5 );
-            var repeatTransaction = _financialTransactionService.Queryable()
+            var recentTransactions = _financialTransactionService.Queryable()
                 .AsNoTracking()
-                .Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) )
-                .Where( t => t.TransactionDateTime >= minDateTime )
-                .FirstOrDefault();
+                .Include( t => t.TransactionDetails )
+                .Where( t =>
+                    // Check for transactions in the giving group
+                    t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
+                    // Check for recent transactions
+                    ( t.TransactionDateTime >= minDateTime || t.FutureProcessingDateTime >= minDateTime ) )
+                .ToList();
+
+            // Look for a recent transaction that has the same account/amount combinations
+            var repeatTransaction = recentTransactions.FirstOrDefault( t => t.TransactionDetails.All( d =>
+                _automatedPaymentArgs.AutomatedPaymentDetails.Any( ad =>
+                    ad.AccountId == d.AccountId &&
+                    ad.Amount == d.Amount ) ) );
 
             if ( repeatTransaction != null )
             {
-                errorMessage = string.Format( "Found a likely repeat charge. Check transaction id: {0}. Use IgnoreRepeatChargeProtection option to disable this protection.", repeatTransaction.Id );
+                errorMessage = string.Format( "Found a likely repeat charge. Check transaction id: {0}. Toggle EnableDuplicateChecking to disable this protection.", repeatTransaction.Id );
                 return true;
             }
 
@@ -130,7 +208,7 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Validates that the frequency of the scheduled transaction appears to be adhered to 
+        /// Validates that the frequency of the scheduled transaction appears to be adhered to
         /// </summary>
         /// <param name="errorMessage">Will be set to empty string if charge appears to follow the schedule frequency. Otherwise a message will be set indicating the problem.</param>
         /// <returns>True if the charge appears to follow the schedule. False otherwise</returns>
@@ -138,13 +216,13 @@ namespace Rock.Financial
         {
             errorMessage = string.Empty;
 
-            if ( _ignoreScheduleAdherenceProtection || !_automatedPaymentArgs.ScheduledTransactionId.HasValue )
+            if ( !_enableScheduleAdherenceProtection || !_automatedPaymentArgs.ScheduledTransactionId.HasValue )
             {
                 return true;
             }
 
             LoadEntities();
-            var instructionsToIgnore = "Use IgnoreScheduleAdherenceProtection option to disable this protection.";
+            var instructionsToIgnore = "Toggle EnableScheduleAdherenceProtection to disable this protection.";
 
             if ( _financialScheduledTransaction == null )
             {
@@ -179,7 +257,7 @@ namespace Rock.Financial
 
                 if ( _currentNumberOfPaymentsForSchedule.Value >= _financialScheduledTransaction.NumberOfPayments.Value )
                 {
-                    errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurence. {0}", instructionsToIgnore );
+                    errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurrences. {0}", instructionsToIgnore );
                     return false;
                 }
             }
@@ -409,13 +487,25 @@ namespace Rock.Financial
             _referencePaymentInfo.Amount = _automatedPaymentArgs.AutomatedPaymentDetails.Sum( d => d.Amount );
             _referencePaymentInfo.Email = _authorizedPerson.Email;
 
-            var transactionGuid = Guid.NewGuid();
+            var transactionGuid = _futureTransaction != null ? _futureTransaction.Guid : Guid.NewGuid();
+
+            // If this is a future transaction, then stop the "dry-run" at this point and save
+            if ( _automatedPaymentArgs.FutureProcessingDateTime.HasValue )
+            {
+                return SaveTransaction( transactionGuid );
+            }
 
             var metadata = new Dictionary<string, string>
             {
                 ["giving_system"] = "RockRMS",
-                ["transaction_guid"] = transactionGuid.ToString(),
+                ["transaction_guid"] = transactionGuid.ToString()
             };
+
+            var description = GetDescription();
+            if ( !description.IsNullOrWhiteSpace() )
+            {
+                metadata[DescriptionMetadataKey] = description;
+            }
 
             var automatedGatewayComponent = _automatedGatewayComponent as IAutomatedGatewayComponent;
             _payment = automatedGatewayComponent.AutomatedCharge( _financialGateway, _referencePaymentInfo, out errorMessage, metadata );
@@ -525,96 +615,133 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Once _financialTransaction is set, this method stores the transaction in the database along with the
-        /// appropriate details and batch information.
+        /// This method stores the transaction in the database along with the appropriate details and batch information.
         /// </summary>
         private FinancialTransaction SaveTransaction( Guid transactionGuid )
         {
-            var financialTransaction = new FinancialTransaction
+            // if this is a future transaction, the payment hasn't been charged yet
+            if ( _payment == null && _automatedPaymentArgs.FutureProcessingDateTime.HasValue )
             {
-                TransactionCode = _payment.TransactionCode,
-                Guid = transactionGuid,
-                CreatedByPersonAliasId = _currentPersonAliasId,
-                ScheduledTransactionId = _automatedPaymentArgs.ScheduledTransactionId,
-                AuthorizedPersonAliasId = _automatedPaymentArgs.AuthorizedPersonAliasId,
-                ShowAsAnonymous = _automatedPaymentArgs.ShowAsAnonymous,
-                TransactionDateTime = RockDateTime.Now,
-                FinancialGatewayId = _financialGateway.Id,
-                TransactionTypeValueId = _transactionType.Id,
-                Summary = _referencePaymentInfo.Comment1,
-                SourceTypeValueId = _financialSource.Id,
-                IsSettled = _payment.IsSettled,
-                Status = _payment.Status,
-                StatusMessage = _payment.StatusMessage,
-                SettledDate = _payment.SettledDate,
-                ForeignKey = _payment.ForeignKey
-            };
+                _payment = new Payment
+                {
+                    Status = "PreProcessing",
+                    StatusMessage = "This transaction is scheduled to be processed in the future",
+                    TransactionCode = _financialPersonSavedAccount.Id.ToStringSafe()
+                };
+            }
 
-            financialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail
-            {
-                AccountNumberMasked = _payment.AccountNumberMasked,
-                NameOnCardEncrypted = _payment.NameOnCardEncrypted,
-                ExpirationMonthEncrypted = _payment.ExpirationMonthEncrypted,
-                ExpirationYearEncrypted = _payment.ExpirationYearEncrypted,
-                CreatedByPersonAliasId = _currentPersonAliasId,
-                ForeignKey = _payment.ForeignKey
-            };
+            // Create a new transaction or update the future transaction now that it has been charged
+            var financialTransaction = _futureTransaction ?? new FinancialTransaction();
+            financialTransaction.TransactionCode = _payment.TransactionCode;
+            financialTransaction.Guid = transactionGuid;
+            financialTransaction.CreatedByPersonAliasId = _currentPersonAliasId;
+            financialTransaction.ScheduledTransactionId = _automatedPaymentArgs.ScheduledTransactionId;
+            financialTransaction.AuthorizedPersonAliasId = _automatedPaymentArgs.AuthorizedPersonAliasId;
+            financialTransaction.ShowAsAnonymous = _automatedPaymentArgs.ShowAsAnonymous;
+            financialTransaction.TransactionDateTime = _automatedPaymentArgs.FutureProcessingDateTime.HasValue ? ( DateTime? ) null : RockDateTime.Now;
+            financialTransaction.FinancialGatewayId = _financialGateway.Id;
+            financialTransaction.TransactionTypeValueId = _transactionType.Id;
+            financialTransaction.Summary = string.Format( "{0} {1}", financialTransaction.Summary, _referencePaymentInfo.Comment1 ).Trim();
+            financialTransaction.SourceTypeValueId = _financialSource.Id;
+            financialTransaction.IsSettled = _payment.IsSettled;
+            financialTransaction.Status = _payment.Status;
+            financialTransaction.StatusMessage = _payment.StatusMessage;
+            financialTransaction.SettledDate = _payment.SettledDate;
+            financialTransaction.ForeignKey = _payment.ForeignKey;
+            financialTransaction.FutureProcessingDateTime = _automatedPaymentArgs.FutureProcessingDateTime;
+
+            // Create a new payment detail or update the future transaction's payment detail now that it has been charged
+            var financialPaymentDetail = financialTransaction.FinancialPaymentDetail ?? new FinancialPaymentDetail();
+            financialPaymentDetail.AccountNumberMasked = _payment.AccountNumberMasked;
+            financialPaymentDetail.NameOnCardEncrypted = _payment.NameOnCardEncrypted;
+            financialPaymentDetail.ExpirationMonthEncrypted = _payment.ExpirationMonthEncrypted;
+            financialPaymentDetail.ExpirationYearEncrypted = _payment.ExpirationYearEncrypted;
+            financialPaymentDetail.CreatedByPersonAliasId = _currentPersonAliasId;
+            financialPaymentDetail.ForeignKey = _payment.ForeignKey;
 
             if ( _payment.CurrencyTypeValue != null )
             {
-                financialTransaction.FinancialPaymentDetail.CurrencyTypeValueId = _payment.CurrencyTypeValue.Id;
+                financialPaymentDetail.CurrencyTypeValueId = _payment.CurrencyTypeValue.Id;
             }
 
             if ( _payment.CreditCardTypeValue != null )
             {
-                financialTransaction.FinancialPaymentDetail.CreditCardTypeValueId = _payment.CreditCardTypeValue.Id;
+                financialPaymentDetail.CreditCardTypeValueId = _payment.CreditCardTypeValue.Id;
             }
 
-            financialTransaction.FinancialPaymentDetail.SetFromPaymentInfo( _referencePaymentInfo, _automatedGatewayComponent, _rockContext );
+            financialPaymentDetail.SetFromPaymentInfo( _referencePaymentInfo, _automatedGatewayComponent, _rockContext );
+            financialTransaction.FinancialPaymentDetail = financialPaymentDetail;
+            financialTransaction.FinancialPaymentDetailId = financialPaymentDetail.Id == 0 ? ( int? ) null : financialPaymentDetail.Id;
 
-            foreach ( var detailArgs in _automatedPaymentArgs.AutomatedPaymentDetails )
+            // Future transactions already have the appropriate FinancialTransactionDetail models
+            if ( _futureTransaction == null )
             {
-                var transactionDetail = new FinancialTransactionDetail
+                foreach ( var detailArgs in _automatedPaymentArgs.AutomatedPaymentDetails )
                 {
-                    Amount = detailArgs.Amount,
-                    AccountId = detailArgs.AccountId
-                };
+                    var transactionDetail = new FinancialTransactionDetail
+                    {
+                        Amount = detailArgs.Amount,
+                        AccountId = detailArgs.AccountId
+                    };
 
-                financialTransaction.TransactionDetails.Add( transactionDetail );
+                    financialTransaction.TransactionDetails.Add( transactionDetail );
+                }
             }
 
+            // New transactions and future transactions need fee info
             financialTransaction.SetApportionedFeesOnDetails( _payment.FeeAmount );
 
-            var batch = _financialBatchService.Get(
-                _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",
-                _referencePaymentInfo.CurrencyTypeValue,
-                _referencePaymentInfo.CreditCardTypeValue,
-                financialTransaction.TransactionDateTime.Value,
-                _financialGateway.GetBatchTimeOffset() );
+            // Get an existing or new batch according to the name prefix and payment type
+            FinancialBatch batch;
+
+            if ( !financialTransaction.BatchId.HasValue )
+            {
+                batch = _financialBatchService.Get(
+                    _automatedPaymentArgs.BatchNamePrefix ?? "Online Giving",
+                    string.Empty,
+                    _referencePaymentInfo.CurrencyTypeValue,
+                    _referencePaymentInfo.CreditCardTypeValue,
+                    financialTransaction.TransactionDateTime ?? financialTransaction.FutureProcessingDateTime.Value,
+                    _financialGateway.GetBatchTimeOffset(),
+                    _financialGateway.BatchDayOfWeek );
+            }
+            else
+            {
+                batch = _financialBatchService.Get( financialTransaction.BatchId.Value );
+            }
 
             var batchChanges = new History.HistoryChangeList();
+            var isNewBatch = batch.Id == 0;
 
-            if ( batch.Id == 0 )
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id and also
+            // add history entries about the batch creation
+            if ( isNewBatch )
             {
                 batchChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
                 History.EvaluateChange( batchChanges, "Batch Name", string.Empty, batch.Name );
                 History.EvaluateChange( batchChanges, "Status", null, batch.Status );
                 History.EvaluateChange( batchChanges, "Start Date/Time", null, batch.BatchStartDateTime );
                 History.EvaluateChange( batchChanges, "End Date/Time", null, batch.BatchEndDateTime );
+
+                _rockContext.SaveChanges();
             }
 
-            var newControlAmount = batch.ControlAmount + financialTransaction.TotalAmount;
-            History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
-            batch.ControlAmount = newControlAmount;
+            if ( _futureTransaction == null )
+            {
+                // Add the new transaction amount into the batch control amount
+                var newControlAmount = batch.ControlAmount + financialTransaction.TotalAmount;
+                History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
+                batch.ControlAmount = newControlAmount;
 
-            financialTransaction.BatchId = batch.Id;
-            financialTransaction.LoadAttributes( _rockContext );
-
-            batch.Transactions.Add( financialTransaction );
+                // use the financialTransactionService to add the transaction instead of batch.Transactions
+                // to avoid lazy-loading the transactions already associated with the batch
+                financialTransaction.BatchId = batch.Id;
+                _financialTransactionService.Add( financialTransaction );
+            }
 
             _rockContext.SaveChanges();
-            financialTransaction.SaveAttributeValues();
 
+            // Save the changes history for the batch
             HistoryService.SaveChanges(
                 _rockContext,
                 typeof( FinancialBatch ),
@@ -624,6 +751,51 @@ namespace Rock.Financial
             );
 
             return financialTransaction;
+        }
+
+        /// <summary>
+        /// If this payment porocessor is handling charging a future transaction, this method copies that future transaction into the appropriate args
+        /// </summary>
+        private void CopyFutureTransactionToArgs()
+        {
+            if ( _futureTransaction == null || _automatedPaymentArgs != null )
+            {
+                return;
+            }
+
+            _automatedPaymentArgs = new AutomatedPaymentArgs
+            {
+                AuthorizedPersonAliasId = _futureTransaction.AuthorizedPersonAliasId ?? -1,
+                AutomatedGatewayId = _futureTransaction.FinancialGatewayId ?? -1,
+                FinancialPersonSavedAccountId = _futureTransaction.TransactionCode.AsInteger(),
+                ScheduledTransactionId = _futureTransaction.ScheduledTransactionId,
+                ShowAsAnonymous = _futureTransaction.ShowAsAnonymous,
+                TransactionTypeGuid = _futureTransaction.TransactionTypeValue?.Guid,
+                FinancialSourceGuid = _futureTransaction.SourceTypeValue?.Guid,
+                AutomatedPaymentDetails = _futureTransaction.TransactionDetails?.Select( td => new AutomatedPaymentArgs.AutomatedPaymentDetailArgs
+                {
+                    AccountId = td.AccountId,
+                    Amount = td.Amount
+                } ).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Get a description of the transaction following the pattern:  "Source: Account Name".
+        /// Example:  Online: Building Fund
+        /// </summary>
+        /// <returns></returns>
+        private string GetDescription()
+        {
+            var firstAccountName = _financialAccounts?.Values.FirstOrDefault()?.Name;
+            var sourceName = _financialSource?.Value;
+
+            if ( firstAccountName.IsNullOrWhiteSpace() || sourceName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return $"{sourceName}: {firstAccountName}";
         }
     }
 }

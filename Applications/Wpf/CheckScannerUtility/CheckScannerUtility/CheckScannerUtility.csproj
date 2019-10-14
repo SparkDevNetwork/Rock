@@ -113,19 +113,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="..\..\..\..\Rock.Version\AssemblySharedInfo.cs">
+      <Link>AssemblySharedInfo.cs</Link>
+    </Compile>
     <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\BooleanExtensions.cs">
       <Link>RockExtensions\BooleanExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\DictionaryExtensions.cs">
+      <Link>RockExtensions\DictionaryExtensions.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\EnumExtensions.cs">
       <Link>RockExtensions\EnumExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\..\Rock\Utility\ExtensionMethods\StringExtensions.cs">
+      <Link>RockExtensions\StringExtensions.cs</Link>
+    </Compile>
     <Compile Include="BatchItemDetailPage.xaml.cs">
       <DependentUpon>BatchItemDetailPage.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Behaviors\FocusExtension.cs" />
-    <Compile Include="Behaviors\NumberOnlyBehaviour.cs" />
-    <Compile Include="CaptureAmountScanningPage.xaml.cs">
-      <DependentUpon>CaptureAmountScanningPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImageSafe\CheckData.cs" />
     <Compile Include="ImageSafe\ImageSafeHelper.cs" />
@@ -135,6 +139,7 @@
     <Compile Include="Models\DisplayAccountValueModel.cs" />
     <Compile Include="Models\DisplayAccountModel.cs" />
     <Compile Include="Models\DisplayFinancialTransactionDetailModel.cs" />
+    <Compile Include="Models\FinancialBatchWithControlVariance.cs" />
     <Compile Include="OptionsPage.xaml.cs">
       <DependentUpon>OptionsPage.xaml</DependentUpon>
     </Compile>
@@ -146,7 +151,6 @@
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
     <Compile Include="RockConfig.cs" />
-    <Compile Include="RockExtensions\StringExtensions.cs" />
     <Compile Include="ScannedDocInfo.cs" />
     <Compile Include="ScanningPage.xaml.cs">
       <DependentUpon>ScanningPage.xaml</DependentUpon>
@@ -155,16 +159,11 @@
     <Compile Include="ScanningPromptPage.xaml.cs">
       <DependentUpon>ScanningPromptPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ZeroCurrencyConverter.cs" />
     <Page Include="BatchItemDetailPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="BatchPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="CaptureAmountScanningPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -307,6 +306,12 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\check-image-back.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Behaviors\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="images\empty-check.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

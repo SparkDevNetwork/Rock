@@ -35,7 +35,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         /// <summary>
-        /// The attribute matrix template Id
+        /// The attribute matrix template (stored as AttributeMatrixTemplate.Id)
         /// </summary>
         public const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
 

@@ -519,12 +519,7 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             // Set the Campus for new families to the Campus of this Kiosk
-            int? kioskCampusId = null;
-            var deviceLocation = new DeviceService( rockContext ).GetSelect( CurrentCheckInState.Kiosk.Device.Id, a => a.Locations.FirstOrDefault() );
-            if ( deviceLocation != null )
-            {
-                kioskCampusId = deviceLocation.CampusId;
-            }
+            int? kioskCampusId = CurrentCheckInState.Kiosk.CampusId;
 
             UpdateFamilyAttributesState();
 

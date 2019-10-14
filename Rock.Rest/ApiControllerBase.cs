@@ -14,19 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Rest.Filters;
-using Rock.Security;
 
 namespace Rock.Rest
 {

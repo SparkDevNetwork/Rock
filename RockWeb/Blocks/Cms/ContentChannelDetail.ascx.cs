@@ -860,13 +860,21 @@ namespace RockWeb.Blocks.Cms
         private void LoadDropdowns()
         {
             ddlChannelType.Items.Clear();
-            foreach ( var contentType in new ContentChannelTypeService( new RockContext() ).Queryable().OrderBy( c => c.Name ) )
+            var visibleContentChannelTypeList = new ContentChannelTypeService( new RockContext() ).Queryable()
+                .Where( a => a.ShowInChannelList )
+                .OrderBy( c => c.Name ).Select( a => new
+                {
+                    a.Id,
+                    a.Name
+                } )
+                .ToList();
+
+            foreach ( var contentType in visibleContentChannelTypeList )
             {
                 ddlChannelType.Items.Add( new ListItem( contentType.Name, contentType.Id.ToString() ) );
             }
 
             ddlContentControlType.BindToEnum<ContentControlType>();
-
         }
 
         /// <summary>

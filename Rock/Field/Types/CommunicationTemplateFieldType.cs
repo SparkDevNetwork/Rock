@@ -79,7 +79,12 @@ namespace Rock.Field.Types
             var editControl = new RockDropDownList { ID = id };
             editControl.Items.Add( new ListItem() );
 
-            var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name );
+            var templates = new CommunicationTemplateService( new RockContext() ).Queryable().OrderBy( t => t.Name ).Select( a => new
+            {
+                a.Guid,
+                a.Name
+            } );
+
             if ( templates.Any() )
             {
                 foreach ( var template in templates )

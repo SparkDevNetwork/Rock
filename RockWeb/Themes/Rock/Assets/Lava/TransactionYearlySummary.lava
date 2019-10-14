@@ -36,7 +36,7 @@
             {{ summaryRow.Account }}
         </div>
         <div class="col-xs-6 text-right">
-            {{ 'Global' | Attribute:'CurrencySymbol' }}{{ summaryRow.TotalAmount | Format:'#,##0.00' }}
+          {{ summaryRow.TotalAmount | FormatAsCurrency }}
         </div>
         </div>
         {% endfor %}
@@ -45,7 +45,7 @@
             <strong>Total:</strong>
         </div>
         <div class="col-xs-6 text-right">
-            <strong>{{ 'Global' | Attribute:'CurrencySymbol' }}{{ yearTotal | Format:'#,##0.00' }}</strong>
+            <strong>{{ yearTotal | FormatAsCurrency }}</strong>
         </div>
         </div>
         {% if forloop.index >= 3 and forloop.index == rowCount %}

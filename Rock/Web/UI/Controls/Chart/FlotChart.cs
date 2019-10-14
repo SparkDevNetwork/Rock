@@ -21,8 +21,9 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
-using Rock.Chart;
+
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls

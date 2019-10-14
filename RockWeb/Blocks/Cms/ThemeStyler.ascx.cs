@@ -215,7 +215,8 @@ $('.js-panel-toggle').on('click', function (e) {
             var theme = new RockTheme( _themeName );
             if ( !theme.Compile( out messages ) )
             {
-                nbMessages.Text = "Unable to compile";
+                nbMessages.NotificationBoxType = NotificationBoxType.Danger;
+                nbMessages.Text = string.Format( "An error occurred while compiling the {0} theme.\nMessage: <pre>{1}</pre>", theme.Name, messages );;
                 nbMessages.Visible = true;
             }
             else
@@ -436,7 +437,7 @@ $('.js-panel-toggle').on('click', function (e) {
 
                             content.Append( "<div class='panel panel-widget'>" );
                             content.Append( "<div class='panel-heading'>" );
-                            content.Append( string.Format( "<h1 class='panel-title'>{0} <div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
+                            content.Append( string.Format( "<h1 class='panel-title'>{0}<div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
                             content.Append( "</div>" );
                             content.Append( "<div class='panel-body'>" );
 
@@ -585,6 +586,7 @@ $('.js-panel-toggle').on('click', function (e) {
                 if ( phThemeControls.Controls.Count == 0 && !pnlFontAwesomeSettings.Visible )
                 {
                     btnSave.Visible = false;
+                    nbMessages.NotificationBoxType = NotificationBoxType.Warning;
                     nbMessages.Text = "This theme does not define any variables for editing.";
                 }
             }

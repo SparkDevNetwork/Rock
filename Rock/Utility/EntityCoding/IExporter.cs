@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Rock.Data;
 
 namespace Rock.Utility.EntityCoding

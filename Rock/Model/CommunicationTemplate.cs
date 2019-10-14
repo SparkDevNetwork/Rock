@@ -25,8 +25,8 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
-using Rock.Data;
 using Rock.Communication;
+using Rock.Data;
 using Rock.Security;
 
 namespace Rock.Model
@@ -152,7 +152,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the name of the communication.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
+        [MaxLength( 1000 )]
         public string Subject { get; set; }
 
         /// <summary>

@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -146,6 +141,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.FinancialBatch entity.
         /// </summary>
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
+
+        /// <summary>
+        /// The guid for the Rock.Model.FinancialScheduledTransaction entity.
+        /// </summary>
+        public const string FINANCIAL_SCHEDULED_TRANSACTION = "76824E8A-CCC4-4085-84D9-8AF8C0807E20";
 
         /// <summary>
         /// The guid for the Rock.Model.FinancialTransaction entity.

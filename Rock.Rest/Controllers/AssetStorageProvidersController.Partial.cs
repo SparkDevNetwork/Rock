@@ -46,7 +46,7 @@ namespace Rock.Rest.Controllers
                 {
                     var component = assetStorageProvider.GetAssetStorageComponent();
                     var treeViewItem = new TreeViewItem();
-                    treeViewItem.Id = assetStorageProvider.Id.ToString();
+                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{component.GetAttributeValue( assetStorageProvider,"RootFolder" )},{true}");
                     treeViewItem.IconCssClass = component.IconCssClass;
                     treeViewItem.Name = assetStorageProvider.Name;
                     treeViewItem.HasChildren = true;

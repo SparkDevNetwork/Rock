@@ -209,21 +209,19 @@
                     </asp:Panel>
 
                     <h3>Contact Info</h3>
-                    <div class="form-horizontal">
-                        <div class="form-group">
-                            <div class="controls col-md-10 col-md-offset-2">
+                    <div class="row">
+                        <div class="col-md-10 col-md-offset-2">
+                            <div class="form-group">
                                 <Rock:DataTextBox ID="tbEmail" PrependText="<i class='fa fa-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Label="Email Address" />
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <div class="controls col-md-10 col-md-offset-2">
+                            <div class="form-group">
                                 <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
                                     <asp:ListItem Text="Email Allowed" Value="EmailAllowed" />
                                     <asp:ListItem Text="No Mass Emails" Value="NoMassEmails" />
                                     <asp:ListItem Text="Do Not Email" Value="DoNotEmail" />
                                 </Rock:RockRadioButtonList>
-                                
+
                                 <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" >
                                     <asp:ListItem Text="Email" Value="1" />
                                     <asp:ListItem Text="SMS" Value="2" />
@@ -241,7 +239,7 @@
                                     <div class="control-label col-md-2"><%# Eval("NumberTypeValue.Value")  %></div>
                                     <div class="controls col-md-10">
                                         <div class="row">
-                                            <div class="controls col-md-7 form-group">
+                                            <div class="col-md-7">
                                                 <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
                                                 <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode")  %>' Number='<%# Eval("NumberFormatted")  %>' />
                                             </div>
@@ -266,8 +264,8 @@
 
                     <asp:Panel ID="pnlAddress" runat="server">
                         <fieldset>
-                            <legend>
-                                <asp:Literal ID="lAddressTitle" runat="server" /></legend>
+                            <h3><asp:Literal ID="lAddressTitle" runat="server" /></h3>
+
 
                             <div class="clearfix">
                                 <div class="pull-left margin-b-md">

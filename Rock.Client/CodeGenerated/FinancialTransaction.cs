@@ -62,6 +62,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public DateTime? FutureProcessingDateTime { get; set; }
+
+        /// <summary />
         public bool? IsReconciled { get; set; }
 
         /// <summary />
@@ -74,6 +77,9 @@ namespace Rock.Client
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public int? NonCashAssetTypeValueId { get; set; }
 
         /// <summary />
         public int? ProcessedByPersonAliasId { get; set; }
@@ -156,10 +162,12 @@ namespace Rock.Client
             this.FinancialPaymentDetailId = source.FinancialPaymentDetailId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.FutureProcessingDateTime = source.FutureProcessingDateTime;
             this.IsReconciled = source.IsReconciled;
             this.IsSettled = source.IsSettled;
             this.MICRStatus = source.MICRStatus;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.NonCashAssetTypeValueId = source.NonCashAssetTypeValueId;
             this.ProcessedByPersonAliasId = source.ProcessedByPersonAliasId;
             this.ProcessedDateTime = source.ProcessedDateTime;
             this.ScheduledTransactionId = source.ScheduledTransactionId;
@@ -199,6 +207,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<FinancialTransactionImage> Images { get; set; }
+
+        /// <summary />
+        public DefinedValue NonCashAssetTypeValue { get; set; }
 
         /// <summary />
         public DefinedValue SourceTypeValue { get; set; }

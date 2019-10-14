@@ -112,9 +112,8 @@ namespace Rock.Model
         /// <value>
         /// The maximum attendees.
         /// </value>
-        [Required]
         [DataMember]
-        public int MaxAttendees { get; set; }
+        public int? MaxAttendees { get; set; }
 
         /// <summary>
         /// Gets or sets the account identifier.

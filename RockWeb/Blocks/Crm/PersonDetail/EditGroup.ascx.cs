@@ -278,6 +278,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             _showEmail = GetAttributeValue( "NewPersonEmail" ).AsBoolean();
             _showPhoneType = DefinedValueCache.Get( GetAttributeValue( "NewPersonPhone" ).AsGuid() );
             _showCounty = GetAttributeValue( "ShowCounty" ).AsBoolean();
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -501,6 +502,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
             }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // Currently we need to go through the whole page cycle to get all of the data.
+            NavigateToCurrentPageReference();
         }
 
         #region Events
@@ -1498,6 +1510,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         #region Private Methods
 
+        private void InitializeValues()
+        {
+
+        }
+
         /// <summary>
         /// Sets the active tab.
         /// </summary>
@@ -1892,7 +1909,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             get
             {
                 string result = string.Empty;
-                if ( !ShowCounty )
+                if ( ShowCounty )
                 {
                     result = string.Format(
                         "{0}{1}{2}{3}, {4} {5}",

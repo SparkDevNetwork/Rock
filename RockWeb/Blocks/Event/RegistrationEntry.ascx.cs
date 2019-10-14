@@ -30,6 +30,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
@@ -37,6 +38,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Helper = Rock.Attribute.Helper;
 
 namespace RockWeb.Blocks.Event
 {
@@ -88,7 +90,7 @@ namespace RockWeb.Blocks.Event
 
         private enum PanelIndex
         {
-            PanelHowMany = 0,
+            PanelStart = 0,
             PanelRegistrationAttributesStart = 1,
             PanelRegistrant = 2,
             PanelRegistrationAttributesEnd = 3,
@@ -400,12 +402,12 @@ namespace RockWeb.Blocks.Event
                 // Otherwise if template allows multiple, set the max amount
                 if ( RegistrationTemplate != null && RegistrationTemplate.AllowMultipleRegistrants )
                 {
-                    if ( RegistrationTemplate.MaxRegistrants <= 0 )
+                    if ( !RegistrationTemplate.MaxRegistrants.HasValue )
                     {
                         return int.MaxValue;
                     }
 
-                    return RegistrationTemplate.MaxRegistrants;
+                    return RegistrationTemplate.MaxRegistrants.Value;
                 }
 
                 // Default is a maximum of one
@@ -545,7 +547,7 @@ namespace RockWeb.Blocks.Event
 
             GroupId = ViewState[GROUP_ID_KEY] as int?;
             CampusId = ViewState[CAMPUS_ID_KEY] as int?;
-            CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelHowMany;
+            CurrentPanel = ViewState[CURRENT_PANEL_KEY] as PanelIndex? ?? PanelIndex.PanelStart;
             CurrentRegistrantIndex = ViewState[CURRENT_REGISTRANT_INDEX_KEY] as int? ?? 0;
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
@@ -593,7 +595,7 @@ namespace RockWeb.Blocks.Event
             // Change the display when family members are allowed
             rblFamilyOptions.Label = RegistrantTerm + " is in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
             rblRegistrarFamilyOptions.Label = "You are in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
-            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = pnlFamilyMembers.Visible && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes ? "block" : "none";
+            pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = RegistrationTemplate != null && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes ? "block" : "none";
 
             if ( !Page.IsPostBack )
             {
@@ -644,8 +646,8 @@ namespace RockWeb.Blocks.Event
                                     }
                                     else
                                     {
-                                        // show the panel for asking how many registrants ( it may be skipped )
-                                        ShowHowMany();
+                                        // show the panel with the instructions and/or asking how many registrants ( it may be skipped if there are neither )
+                                        ShowStart();
                                     }
                                 }
                             }
@@ -733,7 +735,7 @@ namespace RockWeb.Blocks.Event
             if ( _saveNavigationHistory )
             {
                 // make sure that a URL with navigation history parameters is really from a browser navigation and not a Link or Refresh
-                hfAllowNavigate.Value = true.ToTrueFalse();
+                hfAllowNavigate.Value = ( CurrentPanel == PanelIndex.PanelSummary ? false : true ).ToTrueFalse();
                 try
                 {
                     if ( CurrentPanel != PanelIndex.PanelRegistrant )
@@ -773,13 +775,13 @@ namespace RockWeb.Blocks.Event
             {
                 string[] commands = state.Split( ',' );
 
-                PanelIndex panelIndex = PanelIndex.PanelHowMany;
+                PanelIndex panelIndex = PanelIndex.PanelStart;
                 int registrantId = 0;
                 int formId = 0;
 
                 if ( commands.Count() == 3 )
                 {
-                    panelIndex = commands[0].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelHowMany;
+                    panelIndex = commands[0].ConvertToEnumOrNull<PanelIndex>() ?? PanelIndex.PanelStart;
                     registrantId = int.Parse( commands[1] );
                     formId = int.Parse( commands[2] );
                 }
@@ -820,14 +822,23 @@ namespace RockWeb.Blocks.Event
 
                     default:
                         {
-                            ShowHowMany();
+                            ShowStart();
                             break;
                         }
                 }
             }
+            else if ( CurrentPanel == PanelIndex.PanelSummary && !hfAllowNavigate.Value.AsBoolean() )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                if ( RegistrationInstanceState != null )
+                {
+                    qryParams.Add( REGISTRATION_INSTANCE_ID_PARAM_NAME, RegistrationInstanceState.Id.ToString() );
+                }
+                this.NavigateToCurrentPageReference( qryParams );
+            }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
         }
 
@@ -961,7 +972,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnRegistrationAttributesStartPrev_Click( object sender, EventArgs e )
         {
-            ShowHowMany();
+            ShowStart();
             hfTriggerScroll.Value = "true";
         }
 
@@ -1035,7 +1046,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1056,7 +1067,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1117,7 +1128,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1148,7 +1159,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1209,7 +1220,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1230,7 +1241,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1273,7 +1284,7 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
-                ShowHowMany();
+                ShowStart();
             }
 
             hfTriggerScroll.Value = "true";
@@ -1773,7 +1784,8 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationState != null )
             {
-                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees > 0 )
+                // Calculate the available slots. If maxAttendees is 0 that means unlimited since this is not a nullable.
+                if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees.HasValue )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
                     var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
@@ -1806,6 +1818,7 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationTemplate != null )
             {
+                // NOTE, we only want to require VIEW auth for a person to be able to enter a value for an attribute since they are just entering a value for themselves (not for other people)
                 RegistrationAttributesState = new AttributeService( rockContext ).GetByEntityTypeId( new Registration().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "RegistrationTemplateId", StringComparison.OrdinalIgnoreCase ) &&
@@ -1813,7 +1826,7 @@ namespace RockWeb.Blocks.Event
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToAttributeCacheList()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
                 .ToList();
 
                 // only show the Registration Attributes Before Registrants that have a category of REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION
@@ -1847,84 +1860,87 @@ namespace RockWeb.Blocks.Event
         /// <param name="registrantCount">The number of registrants that registration should have.</param>
         private void SetRegistrantState( int registrantCount )
         {
-            if ( RegistrationState != null )
+            if ( RegistrationState == null )
             {
-                decimal cost = RegistrationTemplate.Cost;
-                if ( ( RegistrationTemplate.SetCostOnInstance ?? false ) && RegistrationInstanceState != null )
-                {
-                    cost = RegistrationInstanceState.Cost ?? 0.0m;
-                }
-
-                // If this is the first registrant being added and all are in the same family, default it to the current person
-                if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes )
-                {
-                    var registrant = new RegistrantInfo( RegistrationInstanceState, CurrentPerson );
-                    if ( RegistrationTemplate.ShowCurrentFamilyMembers )
-                    {
-                        // If currentfamily members can be selected, the firstname and lastname fields will be
-                        // disabled so values need to be set (in case those fields did not have the 'showCurrentValue'
-                        // option selected
-                        foreach ( var field in RegistrationTemplate.Forms
-                            .SelectMany( f => f.Fields )
-                            .Where( f =>
-                                ( f.PersonFieldType == RegistrationPersonFieldType.FirstName ||
-                                f.PersonFieldType == RegistrationPersonFieldType.LastName ) &&
-                                f.FieldSource == RegistrationFieldSource.PersonField ) )
-                        {
-                            registrant.FieldValues.AddOrReplace(
-                                field.Id,
-                                new FieldValueObject( field, field.PersonFieldType == RegistrationPersonFieldType.FirstName ? CurrentPerson.NickName : CurrentPerson.LastName ) );
-                        }
-                    }
-
-                    registrant.Cost = cost;
-                    registrant.FamilyGuid = RegistrationState.FamilyGuid;
-                    if ( RegistrationState.Registrants.Count >= RegistrationState.SlotsAvailable )
-                    {
-                        registrant.OnWaitList = true;
-                    }
-
-                    RegistrationState.Registrants.Add( registrant );
-                }
-
-                // While the number of registrants belonging to registration is less than the selected count, add another registrant
-                while ( RegistrationState.RegistrantCount < registrantCount )
-                {
-                    var registrant = new RegistrantInfo { Cost = cost };
-                    if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.No )
-                    {
-                        registrant.FamilyGuid = Guid.NewGuid();
-                    }
-                    else if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes )
-                    {
-                        registrant.FamilyGuid = RegistrationState.FamilyGuid;
-                    }
-
-                    if ( RegistrationState.Registrants.Count >= RegistrationState.SlotsAvailable )
-                    {
-                        registrant.OnWaitList = true;
-                    }
-
-                    RegistrationState.Registrants.Add( registrant );
-                }
-
-                // Get the number of registrants that needs to be removed.
-                int removeCount = RegistrationState.RegistrantCount - registrantCount;
-                if ( removeCount > 0 )
-                {
-                    // If removing any, reverse the order of registrants, so that most recently added will be removed first
-                    RegistrationState.Registrants.Reverse();
-
-                    // Try to get the registrants to remove. Most recently added will be taken first
-                    foreach ( var registrant in RegistrationState.Registrants.Take( removeCount ).ToList() )
-                    {
-                        RegistrationState.Registrants.Remove( registrant );
-                    }
-
-                    // Reset the order after removing any registrants
-                    RegistrationState.Registrants.Reverse();
-                }
+                return;
             }
+
+            decimal cost = RegistrationTemplate.Cost;
+            if ( ( RegistrationTemplate.SetCostOnInstance ?? false ) && RegistrationInstanceState != null )
+            {
+                cost = RegistrationInstanceState.Cost ?? 0.0m;
+            }
+
+            // If this is the first registrant being added and all are in the same family, default it to the current person
+            if ( RegistrationState.RegistrantCount == 0 && registrantCount == 1 && CurrentPerson != null && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes )
+            {
+                var registrant = new RegistrantInfo( RegistrationInstanceState, CurrentPerson );
+                if ( RegistrationTemplate.ShowCurrentFamilyMembers )
+                {
+                    // If currentfamily members can be selected, the firstname and lastname fields will be
+                    // disabled so values need to be set (in case those fields did not have the 'showCurrentValue'
+                    // option selected
+                    foreach ( var field in RegistrationTemplate.Forms
+                        .SelectMany( f => f.Fields )
+                        .Where( f =>
+                            ( f.PersonFieldType == RegistrationPersonFieldType.FirstName ||
+                            f.PersonFieldType == RegistrationPersonFieldType.LastName ) &&
+                            f.FieldSource == RegistrationFieldSource.PersonField ) )
+                    {
+                        registrant.FieldValues.AddOrReplace(
+                            field.Id,
+                            new FieldValueObject( field, field.PersonFieldType == RegistrationPersonFieldType.FirstName ? CurrentPerson.NickName : CurrentPerson.LastName ) );
+                    }
+                }
+
+                registrant.Cost = cost;
+                registrant.FamilyGuid = RegistrationState.FamilyGuid;
+                if ( RegistrationState.Registrants.Count >= RegistrationState.SlotsAvailable )
+                {
+                    registrant.OnWaitList = true;
+                }
+
+                RegistrationState.Registrants.Add( registrant );
+            }
+
+            // While the number of registrants belonging to registration is less than the selected count, add another registrant
+            while ( RegistrationState.RegistrantCount < registrantCount )
+            {
+                var registrant = new RegistrantInfo { Cost = cost };
+                if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.No )
+                {
+                    registrant.FamilyGuid = Guid.NewGuid();
+                }
+                else if ( RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes )
+                {
+                    registrant.FamilyGuid = RegistrationState.FamilyGuid;
+                }
+
+                if ( RegistrationState.Registrants.Count >= RegistrationState.SlotsAvailable )
+                {
+                    registrant.OnWaitList = true;
+                }
+
+                RegistrationState.Registrants.Add( registrant );
+            }
+
+            // Get the number of registrants that needs to be removed.
+            int removeCount = RegistrationState.RegistrantCount - registrantCount;
+            if ( removeCount > 0 )
+            {
+                // If removing any, reverse the order of registrants, so that most recently added will be removed first
+                RegistrationState.Registrants.Reverse();
+
+                // Try to get the registrants to remove. Most recently added will be taken first
+                foreach ( var registrant in RegistrationState.Registrants.Take( removeCount ).ToList() )
+                {
+                    RegistrationState.Registrants.Remove( registrant );
+                }
+
+                // Reset the order after removing any registrants
+                RegistrationState.Registrants.Reverse();
+            }
+
         }
 
         #endregion
@@ -2759,7 +2775,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 dbFee = new RegistrationRegistrantFee();
                                 dbFee.RegistrationTemplateFeeId = uiFee.Key;
-                                var registrationTemplateFeeItem = registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId );
+                                var registrationTemplateFeeItem = uiFeeOption.RegistrationTemplateFeeItemId != null ? registrationTemplateFeeItemService.GetNoTracking( uiFeeOption.RegistrationTemplateFeeItemId.Value ) : null;
                                 if ( registrationTemplateFeeItem != null )
                                 {
                                     dbFee.Option = registrationTemplateFeeItem.Name;
@@ -3004,26 +3020,29 @@ namespace RockWeb.Blocks.Event
                     familyGroup,
                     true,
                     false );
-
-                if ( existingLocation == null )
+                
+                var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
+                if ( homeLocationType != null && familyGroup != null )
                 {
-                    var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
-                    if ( homeLocationType != null )
+                    if ( existingLocation != null )
                     {
-                        if ( familyGroup != null )
-                        {
-                            GroupService.AddNewGroupAddress(
-                                rockContext,
-                                familyGroup,
-                                Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-                                location.Street1,
-                                location.Street2,
-                                location.City,
-                                location.State,
-                                location.PostalCode,
-                                location.Country,
-                                true );
-                        }
+                        // A location exists but is not associated with this family group
+                        GroupService.AddNewGroupAddress( rockContext, familyGroup, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, existingLocation );
+                    }
+                    else
+                    {
+                        // Create a new location and save it to the family group
+                        GroupService.AddNewGroupAddress(
+                            rockContext,
+                            familyGroup,
+                            Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+                            location.Street1,
+                            location.Street2,
+                            location.City,
+                            location.State,
+                            location.PostalCode,
+                            location.Country,
+                            true );
                     }
                 }
             }
@@ -3358,8 +3377,18 @@ namespace RockWeb.Blocks.Event
                     History.EvaluateChange( batchChanges, "Control Amount", batch.ControlAmount.FormatAsCurrency(), newControlAmount.FormatAsCurrency() );
                     batch.ControlAmount = newControlAmount;
 
+                    var financialTransactionService = new FinancialTransactionService( rockContext );
+
+                    // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+                    if ( batch.Id == 0 )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
                     transaction.BatchId = batch.Id;
-                    batch.Transactions.Add( transaction );
+
+                    // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
+                    financialTransactionService.Add( transaction );
 
                     rockContext.SaveChanges();
                 } );
@@ -3531,20 +3560,25 @@ namespace RockWeb.Blocks.Event
 
         #region Display Methods
 
-        /// <summary>
-        /// Shows the how many panel
-        /// </summary>
-        private void ShowHowMany()
+        private bool ShowInstructions()
         {
             string instructions = string.IsNullOrEmpty( RegistrationInstanceState.RegistrationInstructions ) ?
-                                    RegistrationTemplate.RegistrationInstructions :
-                                    RegistrationInstanceState.RegistrationInstructions;
+                RegistrationTemplate.RegistrationInstructions :
+                RegistrationInstanceState.RegistrationInstructions;
 
             if ( !string.IsNullOrEmpty( instructions ) )
             {
                 lInstructions.Text = string.Format( "<div class='text-left'>{0}</div>", instructions );
             }
 
+            return instructions.IsNotNullOrWhiteSpace();
+        }
+
+        /// <summary>
+        /// Shows the how many panel
+        /// </summary>
+        private void ShowStart()
+        {
             lRegistrantTerm.Text = RegistrantTerm.Pluralize().ToLower();
 
             // If this is an existing registration, go directly to the summary
@@ -3562,12 +3596,15 @@ namespace RockWeb.Blocks.Event
             }
             else
             {
+                bool hasInstructions = ShowInstructions();
+                SetPanel( PanelIndex.PanelStart );
+
                 int max = MaxRegistrants;
                 if ( !RegistrationTemplate.WaitListEnabled && RegistrationState.SlotsAvailable.HasValue && RegistrationState.SlotsAvailable.Value < max )
                 {
                     max = RegistrationState.SlotsAvailable.Value;
                 }
-
+                
                 if ( max > MinRegistrants )
                 {
                     // If registration allows multiple registrants show the 'How Many' panel
@@ -3577,17 +3614,24 @@ namespace RockWeb.Blocks.Event
 
                     ShowWaitingListNotice();
 
-                    SetPanel( PanelIndex.PanelHowMany );
+                    pnlHowMany.Visible = true;
                 }
                 else
                 {
-                    // ... else skip to the registrant panel
                     CurrentRegistrantIndex = 0;
                     CurrentFormIndex = 0;
 
                     SetRegistrantState( MinRegistrants );
                     numHowMany.Value = MinRegistrants;
-                    ShowRegistrationAttributesStart( true );
+
+                    // Hide the number selection panel
+                    pnlHowMany.Visible = false;
+
+                    if ( !hasInstructions )
+                    {
+                        // If there are no instructions to display then skip to the registrant panel
+                        ShowRegistrationAttributesStart( true );
+                    }
                 }
             }
         }
@@ -3698,7 +3742,7 @@ namespace RockWeb.Blocks.Event
         /// <returns>true or the value of ShowOnWaitlist</returns>
         private bool FormHasWaitFields()
         {
-            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex )
+            if ( RegistrationTemplate != null && RegistrationState != null && RegistrationState.Registrants.Count > CurrentRegistrantIndex && FormCount > CurrentFormIndex )
             {
                 var registrant = RegistrationState.Registrants[CurrentRegistrantIndex];
                 if ( registrant.OnWaitList )
@@ -4018,7 +4062,7 @@ namespace RockWeb.Blocks.Event
         {
             CurrentPanel = currentPanelIndex;
 
-            if ( CurrentPanel == PanelIndex.PanelSummary )
+            if ( CurrentPanel == PanelIndex.PanelSummary && !( RegistrationState.RegistrationId.HasValue && RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() ) )
             {
                 AutoApplyDiscounts();
             }
@@ -4027,7 +4071,7 @@ namespace RockWeb.Blocks.Event
 
             CreateDynamicControls( true );
 
-            pnlHowMany.Visible = CurrentPanel <= 0;
+            pnlStart.Visible = CurrentPanel <= 0;
             pnlRegistrationAttributesStart.Visible = CurrentPanel == PanelIndex.PanelRegistrationAttributesStart;
             pnlRegistrant.Visible = CurrentPanel == PanelIndex.PanelRegistrant;
             pnlRegistrationAttributesEnd.Visible = CurrentPanel == PanelIndex.PanelRegistrationAttributesEnd;
@@ -4357,6 +4401,8 @@ namespace RockWeb.Blocks.Event
                     if ( CurrentFormIndex < FormCount )
                     {
                         ParseRegistrantControls();
+                        decimal currentStep = ( FormCount * CurrentRegistrantIndex ) + CurrentFormIndex + 1;
+                        PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
                     }
 
                     break;
@@ -4381,10 +4427,10 @@ namespace RockWeb.Blocks.Event
 
             if ( FormCount > CurrentFormIndex )
             {
-                // Get the current and previous registrant ( previous is used when a field has the 'IsSharedValue' property )
-                // so that current registrant can use the previous registrants value
+                // Get the current and previous registrant ( first is used when a field has the 'IsSharedValue' property )
+                // so that current registrant can use the first registrant's value
                 RegistrantInfo registrant = null;
-                RegistrantInfo previousRegistrant = null;
+                RegistrantInfo firstRegistrant = null;
                 var preselectCurrentPerson = RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes;
 
                 if ( RegistrationState != null && RegistrationState.RegistrantCount >= CurrentRegistrantIndex )
@@ -4425,7 +4471,7 @@ namespace RockWeb.Blocks.Event
                     {
                         if ( CurrentRegistrantIndex > 0 )
                         {
-                            previousRegistrant = RegistrationState.Registrants[CurrentRegistrantIndex - 1];
+                            firstRegistrant = RegistrationState.Registrants[0];
                         }
 
                         rblFamilyOptions.SetValue( registrant.FamilyGuid.ToString() );
@@ -4447,18 +4493,20 @@ namespace RockWeb.Blocks.Event
                         value = registrant.FieldValues[field.Id].FieldValue;
                     }
 
-                    if ( value == null && field.IsSharedValue && previousRegistrant != null && previousRegistrant.FieldValues.ContainsKey( field.Id ) )
+                    if ( value == null && field.IsSharedValue && firstRegistrant != null && firstRegistrant.FieldValues.ContainsKey( field.Id ) )
                     {
-                        value = previousRegistrant.FieldValues[field.Id].FieldValue;
+                        value = firstRegistrant.FieldValues[field.Id].FieldValue;
                     }
+
+                    bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.RuleList.Any( r => r.ComparedToRegistrationTemplateFormFieldGuid == field.Guid ) );
 
                     if ( field.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        CreatePersonField( field, setValues, value, familyMemberSelected, BlockValidationGroup, phRegistrantControls );
+                        CreatePersonField( hasDependantVisibilityRule, field, setValues, value, familyMemberSelected, BlockValidationGroup, phRegistrantControls );
                     }
                     else
                     {
-                        CreateAttributeField( form, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
+                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
                     }
                 }
 
@@ -4491,22 +4539,50 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreatePersonField( RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected, string validationGroup, Control parentControl )
+        private static void CreatePersonField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool familyMemberSelected, string validationGroup, Control parentControl )
         {
             Control personFieldControl = field.GetPersonControl( setValue, fieldValue, familyMemberSelected, validationGroup );
 
             if ( personFieldControl != null )
             {
+                var fieldVisibilityWrapper = new FieldVisibilityWrapper
+                {
+                    ID = "_fieldVisibilityWrapper_field_" + field.Guid.ToString( "N" ),
+                    RegistrationTemplateFormFieldId = field.Id,
+                    FieldVisibilityRules = field.FieldVisibilityRules
+                };
+
+                fieldVisibilityWrapper.EditValueUpdated += ( object sender, FieldVisibilityWrapper.FieldEventArgs args ) =>
+                {
+                    FieldVisibilityWrapper.ApplyFieldVisibilityRules( parentControl );
+                };
+
+                parentControl.Controls.Add( fieldVisibilityWrapper );
+
                 if ( !string.IsNullOrWhiteSpace( field.PreText ) )
                 {
-                    parentControl.Controls.Add( new LiteralControl( field.PreText ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PreText ) );
                 }
 
-                parentControl.Controls.Add( personFieldControl );
+                fieldVisibilityWrapper.Controls.Add( personFieldControl );
+                fieldVisibilityWrapper.EditControl = personFieldControl;
 
                 if ( !string.IsNullOrWhiteSpace( field.PostText ) )
                 {
-                    parentControl.Controls.Add( new LiteralControl( field.PostText ) );
+                    fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
+                }
+
+                if ( hasDependantVisibilityRule && FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                {
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType ).Field;
+
+                    if ( fieldType.HasChangeHandler( personFieldControl ) )
+                    {
+                        fieldType.AddChangeHandler( personFieldControl, () =>
+                        {
+                            fieldVisibilityWrapper.TriggerEditValueUpdated( personFieldControl, new FieldVisibilityWrapper.FieldEventArgs( null, personFieldControl ) );
+                        } );
+                    }
                 }
             }
         }
@@ -4518,7 +4594,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="field">The field.</param>
         /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="fieldValue">The field value.</param>
-        private static void CreateAttributeField( RegistrationTemplateForm form, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
+        private static void CreateAttributeField( bool hasDependantVisibilityRule, RegistrationTemplateFormField field, bool setValue, object fieldValue, bool showFieldDescriptions, string validationGroup, Control parentControl )
         {
             if ( field.AttributeId.HasValue )
             {
@@ -4536,7 +4612,7 @@ namespace RockWeb.Blocks.Event
                 FieldVisibilityWrapper fieldVisibilityWrapper = new FieldVisibilityWrapper
                 {
                     ID = "_fieldVisibilityWrapper_attribute_" + attribute.Id.ToString(),
-                    AttributeId = attribute.Id,
+                    RegistrationTemplateFormFieldId = field.Id,
                     FieldVisibilityRules = field.FieldVisibilityRules
                 };
 
@@ -4559,8 +4635,6 @@ namespace RockWeb.Blocks.Event
                 {
                     fieldVisibilityWrapper.Controls.Add( new LiteralControl( field.PostText ) );
                 }
-
-                bool hasDependantVisibilityRule = form.Fields.Any( a => a.FieldVisibilityRules.Any( r => r.ComparedToAttributeGuid == attribute.Guid ) );
 
                 if ( hasDependantVisibilityRule && attribute.FieldType.Field.HasChangeHandler( editControl ) )
                 {
@@ -4912,6 +4986,7 @@ namespace RockWeb.Blocks.Event
                         lUseLoggedInPersonFirstName.Text = CurrentPerson.NickName;
                         lUseLoggedInPersonLastName.Text = CurrentPerson.LastName;
                         lUseLoggedInPersonEmail.Text = CurrentPerson.Email;
+                        tbUseLoggedInPersonEmail.Text = CurrentPerson.Email;
                         lUseLoggedInPersonEmail.Visible = !CurrentPerson.Email.IsNullOrWhiteSpace();
                         tbUseLoggedInPersonEmail.Visible = CurrentPerson.Email.IsNullOrWhiteSpace();
                     }
@@ -5403,8 +5478,6 @@ namespace RockWeb.Blocks.Event
         {
             if ( RegistrationState != null )
             {
-                RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
-
                 var discounts = RegistrationTemplate.Discounts
                         .Where( d => d.AutoApplyDiscount )
                         .OrderBy( d => d.Order )
@@ -5412,6 +5485,7 @@ namespace RockWeb.Blocks.Event
 
                 foreach ( var discount in discounts )
                 {
+                    RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
                     bool validDiscount = true;
 
                     if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )

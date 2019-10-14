@@ -20,7 +20,7 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading clearfix">
+                <div class="panel-heading">
                     <h1 class="panel-title pull-left">
                         <asp:Literal ID="lIcon" runat="server" />
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -140,7 +140,7 @@
 
                         <Rock:PanelWidget ID="wpConnectionOpportunityWorkflow" runat="server" Title="Workflows">
                             <div class="grid">
-                                <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow" 
+                                <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow"
                                     ShowConfirmDeleteDialog="false" OnRowDataBound="gConnectionOpportunityWorkflows_RowDataBound">
                                     <Columns>
                                         <Rock:RockBoundField DataField="WorkflowTypeName" HeaderText="Workflow Type" HtmlEncode="false" />
@@ -173,7 +173,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When" 
+                        <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When"
                             OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="WorkflowDetails" >
                             <asp:ListItem Value="0" Text="Request Started" />
                             <asp:ListItem Value="8" Text="Request Assigned" />

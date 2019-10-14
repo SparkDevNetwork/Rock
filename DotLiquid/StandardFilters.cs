@@ -207,7 +207,7 @@ namespace DotLiquid
 		{
 			return input.IsNullOrWhiteSpace()
 				? input
-				: Regex.Replace(input, @"<.*?>", string.Empty);
+				: Regex.Replace(input, @"<.*?>|<!--(.|\r|\n)*?-->", string.Empty);
 		}
 
 		/// <summary>

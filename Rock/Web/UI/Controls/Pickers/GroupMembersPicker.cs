@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Linq;
-using System.Web.UI.WebControls;
-
-using Rock.Data;
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>

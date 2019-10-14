@@ -510,7 +510,7 @@ $(document).ready(function() {
 
             if ( outputContents == null )
             {
-                var pageRef = CurrentPageReference;
+                var pageRef = new Rock.Web.PageReference( CurrentPageReference );
                 pageRef.Parameters.AddOrReplace( "Page", "PageNum" );
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
@@ -787,6 +787,7 @@ $(document).ready(function() {
                             .Queryable()
                             .Include(a => a.ContentChannel)
                             .Include(a => a.ContentChannelType)
+                            .Include(a => a.ContentChannelItemSlugs)
                             .Where( i => i.ContentChannelId == contentChannel.Id );
 
                         int? itemId = PageParameter( "Item" ).AsIntegerOrNull();

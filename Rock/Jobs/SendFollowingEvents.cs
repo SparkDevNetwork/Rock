@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;

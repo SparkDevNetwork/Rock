@@ -17,6 +17,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.BulkExport;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -64,6 +65,15 @@ namespace Rock.Model
                 return qry.FirstOrDefault();
             }
             return null;
+        }
+
+        /// <summary>
+        /// Get transactions that have a FutureProcessingDateTime.
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<FinancialTransaction> GetFutureTransactions()
+        {
+            return Queryable().Where( t => t.FutureProcessingDateTime.HasValue );
         }
 
         /// <summary>
@@ -257,8 +267,14 @@ namespace Rock.Model
             decimal controlAmount = batch.ControlAmount + refundTransaction.TotalAmount;
             batch.ControlAmount = controlAmount;
 
+            // If this is a new Batch, SaveChanges so that we can get the Batch.Id
+            if ( batch.Id == 0)
+            {
+                rockContext.SaveChanges();
+            }
+
             refundTransaction.BatchId = batch.Id;
-            batch.Transactions.Add( refundTransaction );
+            Add( refundTransaction );
 
             errorMessage = string.Empty;
             return refundTransaction;

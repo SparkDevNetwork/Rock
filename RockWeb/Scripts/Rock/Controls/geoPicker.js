@@ -76,7 +76,7 @@
             //  }
             //];
 
-            /** 
+            /**
             * Initializes the map viewport boundary coordinates.
             */
             this.initMinMaxLatLng = function () {
@@ -114,7 +114,7 @@
                 $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "");
 
                 obj.selectedShape = shape;
-                
+
                 if (type == "polygon") {
                     shape.setEditable(true);
                     var coordinates = new Array();
@@ -180,21 +180,15 @@
             */
             this.getMarkerImage = function getMarkerImage() {
 
-                return new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + obj.strokeColor,
-                    new google.maps.Size(21, 34),
-                    new google.maps.Point(0, 0),
-                    new google.maps.Point(10, 34));
-            }
-
-            /**
-            * Returns a marker image shadow.
-            */
-            this.getMarkerImageShadow = function getMarkerImageShadow() {
-
-                return new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_shadow',
-                    new google.maps.Size(40, 37),
-                    new google.maps.Point(0, 0),
-                    new google.maps.Point(12, 35));
+                return {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: '#FE7569',
+                    fillOpacity: 1,
+                    strokeColor: '#000',
+                    strokeWeight: 1,
+                    scale: 1,
+                    labelOrigin: new google.maps.Point(0, -28)
+                }
             }
 
             /**
@@ -352,8 +346,7 @@
                                 position: pathArray[0],
                                 map: map,
                                 clickable: true,
-                                icon: obj.getMarkerImage(),
-                                shadow: obj.getMarkerImageShadow()
+                                icon: obj.getMarkerImage()
                             });
 
                             // Select the point
@@ -490,7 +483,7 @@
                 // Shrink to regular size
                 if ( isExpaned ) {
                     $myElement.data("fullscreen", false);
-                    
+
                     $(this).closest('.picker-menu').css({
                         position: 'absolute',
                         top: 0,
@@ -575,7 +568,7 @@
             }
 
             /**
-            * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field. 
+            * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field.
             */
             $('#btnSelect_' + controlId).click(function () {
                 var geoInput = $('#' + controlId).find('input:checked'),
@@ -666,7 +659,7 @@
 
             // If we have coordinates we should plot them here...
             self.plotPath(self.map);
-            
+
             // Set up the Drawing Manager for creating polygons, circles, etc.
             self.drawingManager = new google.maps.drawing.DrawingManager({
                 drawingControl: true,
@@ -680,11 +673,10 @@
                     strokeWeight: 2
                 },
                 markerOptions: {
-                    icon: self.getMarkerImage(),
-                    shadow: self.getMarkerImageShadow()
+                    icon: self.getMarkerImage()
                 }
             });
-            
+
             self.drawingManager.setMap(self.map);
 
             // but disable the drawing manager if we already have a point/polygon selected:

@@ -22,7 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -68,7 +68,7 @@ namespace Rock.Model
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the date of the Attendance
+        /// Gets or sets the date of the Attendance. Only the date is used.
         /// </summary>
         /// <value>
         /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
@@ -76,7 +76,19 @@ namespace Rock.Model
         [DataMember]
         [Column( TypeName = "Date" )]
         [Index( "IX_OccurrenceDate" )]
-        public DateTime OccurrenceDate { get; set; }
+        public DateTime OccurrenceDate
+        {
+            get
+            {
+                return _occurrenceDate.Date;
+            }
+            set
+            {
+                _occurrenceDate = value.Date;
+            }
+        }
+
+        private DateTime _occurrenceDate;
 
         /// <summary>
         /// Gets or sets the did not occur.
@@ -198,7 +210,7 @@ namespace Rock.Model
                 var totalCount = Attendees.Count();
                 if ( totalCount > 0 )
                 {
-                    return (double)( DidAttendCount ) / (double)totalCount;
+                    return ( double ) ( DidAttendCount ) / ( double ) totalCount;
                 }
                 else
                 {
@@ -222,15 +234,18 @@ namespace Rock.Model
             get
             {
                 var result = base.IsValid;
-                if (!result) return result;
+                if ( !result )
+                    return result;
 
                 using ( var rockContext = new RockContext() )
                 {
                     // validate cases where the group type requires that a location/schedule is required
-                    if (GroupId == null) return result;
+                    if ( GroupId == null )
+                        return result;
 
-                    var group = Group ?? new GroupService( rockContext ).Queryable( "GroupType" ).FirstOrDefault(g => g.Id == GroupId);
-                    if (group == null) return result;
+                    var group = Group ?? new GroupService( rockContext ).Queryable( "GroupType" ).FirstOrDefault( g => g.Id == GroupId );
+                    if ( group == null )
+                        return result;
 
                     if ( group.GroupType.GroupAttendanceRequiresLocation && LocationId == null )
                     {
@@ -249,6 +264,17 @@ namespace Rock.Model
 
                 return result;
             }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return $"Occurrence for {Schedule} {Group} at {Location} on { OccurrenceDate }";
         }
 
         #endregion

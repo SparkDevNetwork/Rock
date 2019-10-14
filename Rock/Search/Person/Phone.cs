@@ -19,9 +19,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
-using Rock.Model;
-using System.Text.RegularExpressions;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Search.Person
 {

@@ -35,18 +35,11 @@
                                 <Rock:RockBoundField DataField="AccountingSystemCode" HeaderText="Accounting Code" SortExpression="AccountingSystemCode" />
                                 <Rock:RockBoundField DataField="TransactionCount" HeaderText="<span class='hidden-print'>Transaction Count</span><span class='visible-print-inline'>Txns</span>" HtmlEncode="false" SortExpression="TransactionCount" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                 <Rock:CurrencyField DataField="TransactionAmount" HeaderText="<span class='hidden-print'>Transaction Total</span><span class='visible-print-inline'>Txn Total</span>" HtmlEncode="false" SortExpression="TransactionAmount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                                <Rock:RockTemplateField HeaderText="Variance" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right">
-                                    <ItemTemplate>
-                                        <span class='<%# (decimal)Eval("Variance") != 0 ? "label label-danger" : "" %>'><%# this.FormatValueAsCurrency((decimal)Eval("Variance")) %></span>
-                                    </ItemTemplate>
-                                </Rock:RockTemplateField>
+                                <Rock:RockLiteralField HeaderText="Amount Variance" ItemStyle-HorizontalAlign="Right" ID="lVarianceAmount" HeaderStyle-HorizontalAlign="Right" OnDataBound="lVarianceAmount_DataBound" />
+                                <Rock:RockLiteralField HeaderText="Count Variance " ItemStyle-HorizontalAlign="Right" ID="lVarianceItemCount" HeaderStyle-HorizontalAlign="Right" OnDataBound="lVarianceItemCount_DataBound" />
                                 <Rock:RockBoundField DataField="AccountSummaryHtml" HeaderText="Accounts" HtmlEncode="false" />
                                 <Rock:RockBoundField DataField="CampusName" HeaderText="Campus" SortExpression="Campus.Name" ColumnPriority="Desktop" />
-                                <Rock:RockTemplateField HeaderText="Status" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center">
-                                    <ItemTemplate>
-                                        <span class='<%# Eval("StatusLabelClass") %>'><%# Eval("StatusText") %></span>
-                                    </ItemTemplate>
-                                </Rock:RockTemplateField>
+                                <Rock:RockLiteralField HeaderText="Status" ID="lBatchStatus" SortExpression="Status" HeaderStyle-CssClass="grid-columnstatus" ItemStyle-CssClass="grid-columnstatus" FooterStyle-CssClass="grid-columnstatus" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" OnDataBound="lBatchStatus_DataBound" />
                                 <Rock:RockBoundField DataField="Notes" HeaderText="Note" HtmlEncode="false" ColumnPriority="Desktop" />
                             </Columns>
                         </Rock:Grid>

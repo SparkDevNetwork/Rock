@@ -21,6 +21,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -376,7 +377,7 @@ function() {
                     groupTypeId = groupType.Id;
                 }
 
-                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId );
+                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId && xx.Group.IsArchived != true );
 
                 bool? groupStatus = null;
                 if ( selectionValues.Length >= 4 )

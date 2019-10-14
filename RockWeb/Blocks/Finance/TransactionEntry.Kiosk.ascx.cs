@@ -355,6 +355,8 @@ namespace RockWeb.Blocks.Finance
                     // create swipe object
                     SwipePaymentInfo swipeInfo = new SwipePaymentInfo( swipeData );
                     swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
+                    var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                    swipeInfo.TransactionTypeValueId = txnType.Id;
 
                     // if not anonymous then add contact info to the gateway transaction
                     if ( this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId )
@@ -428,7 +430,6 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionDateTime = RockDateTime.Now;
                             transaction.FinancialGatewayId = financialGateway.Id;
 
-                            var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
                             transaction.TransactionTypeValueId = txnType.Id;
 
                             transaction.Summary = swipeInfo.Comment1;
@@ -842,6 +843,8 @@ namespace RockWeb.Blocks.Finance
                     tb.ID = "tbAccount_" + account.Key;
                     tb.Attributes.Add( "name", tb.ID );
                     tb.Attributes.Add( "type", "number" );
+                    tb.Attributes.Add( "min", "0" );
+                    tb.Attributes.Add( "oninput", "validity.valid||(value='')" );
                     tb.CssClass = "input-account";
 
                     if ( firstAccount )

@@ -16,13 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Net.Mail;
 using System.Linq;
 
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Communication
 {

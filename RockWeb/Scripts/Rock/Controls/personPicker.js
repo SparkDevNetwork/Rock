@@ -285,7 +285,7 @@
                 function () {
 
                     // only show the X if there is something picked
-                    if ($pickerPersonId.val() || '0' !== '0') {
+                    if (($pickerPersonId.val() || '0') !== '0') {
                         $pickerSelectNone.stop().show();
                     }
                 },

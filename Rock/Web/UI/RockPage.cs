@@ -15,28 +15,30 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Text;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Transactions;
 using Rock.Security;
-using Rock.Web.UI.Controls;
-using Page = System.Web.UI.Page;
-using Rock.Attribute;
+using Rock.Transactions;
 using Rock.Utility;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+
+using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
 {
@@ -844,7 +846,7 @@ namespace Rock.Web.UI
                 }
 
                 // Add CSS class to body
-                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) && this.Master != null )
                 {
                     // attempt to find the body tag
                     var body = (HtmlGenericControl)this.Master.FindControl( "body" );
@@ -878,6 +880,12 @@ namespace Rock.Web.UI
                 if ( !WebRequestHelper.IsSecureConnection(HttpContext.Current)  && ( _pageCache.RequiresEncryption || Site.RequiresEncryption ) )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
+
+                    // Clear the session state cookie so it can be recreated as secured (see engineering note in Global.asax EndRequest)
+                    SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
+                    string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
+                    Response.Cookies[sidCookieName].Expires = DateTime.Now.AddDays( -1 );
+
                     Response.Redirect( redirectUrl, false );
                     Context.ApplicationInstance.CompleteRequest();
                     return;
@@ -1819,7 +1827,7 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Adds a new script tag to the page header prior to the page being rendered.
+        /// Adds a new script tag to the page body prior to the page being rendered.
         /// </summary>
         /// <param name="path">A <see cref="System.String" /> representing the path to the script link.</param>
         /// <param name="fingerprint">if set to <c>true</c> [fingerprint].</param>
@@ -2784,7 +2792,7 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Adds a new script tag to the page header prior to the page being rendered
+        /// Adds a new script tag to the page body prior to the page being rendered
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="path">A <see cref="System.String" /> representing the path to script file.  Should be relative to layout template.  Will be resolved at runtime.</param>
@@ -2792,7 +2800,7 @@ Sys.Application.add_load(function () {
         public static void AddScriptLink( Page page, string path, bool fingerprint = true )
         {
             var scriptManager = ScriptManager.GetCurrent( page );
-
+             
             if ( fingerprint )
             {
                 path = Fingerprint.Tag( page.ResolveUrl( path ) );
@@ -2833,6 +2841,40 @@ Sys.Application.add_load(function () {
                 }
 
                 header.Controls.Add( l );
+            }
+        }
+
+        /// <summary>
+        /// Adds a script tag with the specified id and source to head (if it doesn't already exist)
+        /// </summary>
+        /// <param name="scriptId">The script identifier.</param>
+        /// <param name="src">The source.</param>
+        public void AddScriptSrcToHead( string scriptId, string src )
+        {
+            RockPage.AddScriptSrcToHead( this.Page, scriptId, src );
+        }
+
+        /// <summary>
+        /// Adds a script tag with the specified id and source to head (if it doesn't already exist)
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="scriptId">The script identifier.</param>
+        /// <param name="src">The source.</param>
+        public static void AddScriptSrcToHead( Page page, string scriptId, string src )
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+
+                if ( !header.Controls.OfType<Literal>().Any( a => a.ID == scriptId ) )
+                {
+                    Literal l = new Literal {
+                        ID = scriptId,
+                        Text = $"<script id='{scriptId}' src='{src}'></script>"
+                    };
+
+                    header.Controls.Add( l );
+                }
             }
         }
 

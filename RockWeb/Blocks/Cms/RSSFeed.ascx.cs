@@ -36,12 +36,12 @@ namespace RockWeb.Blocks.Cms
 
     [DisplayName( "RSS Feed" )]
     [Category( "CMS" )]
-    [Description( "Gets and consumes and RSS Feed. The feed is rendered based on a provided liquid template. " )]
+    [Description( "Gets and consumes and RSS Feed. The feed is rendered based on a provided lava template. " )]
     [TextField( "RSS Feed Url", "The Url of the RSS Feed to retrieve and consume", true, "", "Feed" )]
     [IntegerField( "Results per page", "How many results/articles to display on the page at a time. Default is 10.", false, 10, "Feed" )]
     [IntegerField( "Cache Duration", "The length of time (in minutes) that the RSS Feed data is stored in cache. If this value is 0, the feed will not be cached. Default is 20 minutes", false, 20, "Feed" )]
     [TextField( "CSS File", "An optional CSS file to add to the page for styling. Example \"Styles/rss.css\" would point to the stylesheet in the current theme's styles folder.", false, "", "Layout" )]
-    [CodeEditorField( "Template", "The liquid template to use for rendering. This template would typically be in the theme's \"Assets/Liquid\" folder.",
+    [CodeEditorField( "Template", "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
         CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/RSSFeed.lava' %}", "Layout" )]
     [BooleanField( "Include RSS Link", "Flag indicating that an RSS link should be included in the page header.", true, "Feed" )]
     [LinkedPage( "Detail Page" )]
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Cms
         }
         #endregion
 
-        #region Page Events 
+        #region Page Events
         protected void RSSFeed_BlockUpdated( object sender, EventArgs e )
         {
             ClearCache();

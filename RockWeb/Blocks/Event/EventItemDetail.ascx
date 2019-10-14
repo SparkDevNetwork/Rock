@@ -20,7 +20,7 @@
 
             <asp:HiddenField ID="hfEventItemId" runat="server" />
 
-            <div class="panel-heading panel-follow clearfix">
+            <div class="panel-heading panel-follow">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-calendar-check-o"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -52,8 +52,8 @@
                                 <div id="divImage" runat="server" class="margin-b-sm">
                                     <asp:Literal ID="lImage" runat="server" />
                                 </div>
-                                    
-                                <Rock:DynamicPlaceHolder id="phAttributesView" runat="server" /> 
+
+                                <Rock:DynamicPlaceHolder id="phAttributesView" runat="server" />
                             </div>
                         </div>
 

@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
-using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Communication;
 using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
@@ -34,7 +32,7 @@ namespace Rock.Workflow.Action
     [ActionCategory( "Workflow Control" )]
     [Description( "Prompts user for attribute values" )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "User Entry Form" )]
+    [ExportMetadata( "ComponentName", "Form" )]
 
     public class UserEntryForm : ActionComponent
     {

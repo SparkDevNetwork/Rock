@@ -18,12 +18,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
+
 using DotLiquid;
-using DotLiquid.Exceptions;
+
 using Rock.Data;
-using System.Dynamic;
 
 namespace Rock.Lava.Blocks
 {

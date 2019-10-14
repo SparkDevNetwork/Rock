@@ -18,8 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {

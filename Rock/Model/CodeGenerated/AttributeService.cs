@@ -94,6 +94,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Attribute target, Attribute source )
         {
             target.Id = source.Id;
+            target.AbbreviatedName = source.AbbreviatedName;
             target.AllowSearch = source.AllowSearch;
             target.DefaultValue = source.DefaultValue;
             target.Description = source.Description;

@@ -18,11 +18,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using DDay.iCal;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -229,7 +232,7 @@ namespace Rock.Model
         {
             get
             {
-                DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+                DDay.iCal.Event calendarEvent = this.GetCalendarEvent();
                 if ( calendarEvent != null && calendarEvent.DTStart != null )
                 {
                     return !string.IsNullOrWhiteSpace( this.Name ) ?
@@ -269,7 +272,7 @@ namespace Rock.Model
             if ( this.IsActive )
             {
                 var occurrences = GetScheduledStartTimes( currentDateTime, currentDateTime.AddYears( 1 ) );
-                return occurrences.Min( o => (DateTime?)o );
+                return occurrences.Min( o => ( DateTime? ) o );
             }
             else
             {
@@ -302,7 +305,7 @@ namespace Rock.Model
                 var endDate = RockDateTime.Today.SundayDate();
                 var startDate = endDate.AddDays( -7 );
                 var occurrences = GetScheduledStartTimes( startDate, endDate );
-                return occurrences.Min( o => (DateTime?)o );
+                return occurrences.Min( o => ( DateTime? ) o );
             }
         }
 
@@ -317,7 +320,7 @@ namespace Rock.Model
         {
             get
             {
-                DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+                DDay.iCal.Event calendarEvent = this.GetCalendarEvent();
                 if ( calendarEvent != null && calendarEvent.DTStart != null )
                 {
                     return calendarEvent.DTStart.TimeOfDay;
@@ -379,13 +382,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
-            var calEvent = GetCalenderEvent();
+            var calEvent = GetCalendarEvent();
             if ( calEvent != null )
             {
-                EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : (DateTime?)null;
-                EffectiveEndDate = calEvent.DTEnd != null ? calEvent.DTEnd.Value.Date : (DateTime?)null;
+                EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : ( DateTime? ) null;
+                EffectiveEndDate = calEvent.DTEnd != null ? calEvent.DTEnd.Value.Date : ( DateTime? ) null;
             }
 
             base.PreSaveChanges( dbContext, state );
@@ -397,9 +400,21 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
         /// </value>
-        public virtual DDay.iCal.Event GetCalenderEvent()  
+        [Obsolete( "Use GetCalendarEvent() instead " )]
+        public virtual DDay.iCal.Event GetCalenderEvent()
         {
-            return ScheduleICalHelper.GetCalenderEvent( iCalendarContent );
+            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
+        }
+
+        /// <summary>
+        /// Gets the Schedule's iCalender Event.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
+        /// </value>
+        public virtual DDay.iCal.Event GetCalendarEvent()  
+        {
+            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
         }
 
         /// <summary>
@@ -410,10 +425,32 @@ namespace Rock.Model
         /// <returns></returns>
         public IList<Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime = null )
         {
+            return this.GetOccurrences( beginDateTime, endDateTime, null );
+        }
+
+        /// <summary>
+        /// Gets the occurrences with option to override the ICal.Event.DTStart
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
+        /// <returns></returns>
+        public IList<Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        {
             var occurrences = new List<Occurrence>();
 
-            DDay.iCal.Event calEvent = GetCalenderEvent();
-            if ( calEvent != null && calEvent.DTStart != null )
+            DDay.iCal.Event calEvent = GetCalendarEvent();
+            if ( calEvent == null )
+            {
+                return occurrences;
+            }
+
+            if ( scheduleStartDateTimeOverride.HasValue )
+            {
+                calEvent.DTStart = new DDay.iCal.iCalDateTime( scheduleStartDateTimeOverride.Value );
+            }
+
+            if ( calEvent.DTStart != null )
             {
                 var exclusionDates = new List<DateRange>();
                 if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
@@ -427,7 +464,7 @@ namespace Rock.Model
                     }
                 }
 
-                foreach( var occurrence in endDateTime.HasValue ?
+                foreach ( var occurrence in endDateTime.HasValue ?
                     ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime.Value ) :
                     ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime ) )
                 {
@@ -470,10 +507,11 @@ namespace Rock.Model
                         a.Period != null &&
                         a.Period.StartTime != null &&
                         a.Period.EndTime != null )
-                    .Select( a => new {
+                    .Select( a => new
+                    {
                         Start = a.Period.StartTime.Value,
-                        End = a.Period.EndTime.Value 
-                    }) )
+                        End = a.Period.EndTime.Value
+                    } ) )
                 {
                     var checkInTimes = new CheckInTimes();
                     checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
@@ -543,7 +581,7 @@ namespace Rock.Model
         public virtual DateTime? GetFirstStartDateTime()
         {
             DateTime? firstStartTime = null;
-            
+
             if ( this.EffectiveStartDate.HasValue )
             {
                 var scheduledStartTimes = this.GetScheduledStartTimes( this.EffectiveStartDate.Value, this.EffectiveStartDate.Value.AddMonths( 1 ) );
@@ -562,7 +600,7 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual bool HasSchedule()
         {
-            DDay.iCal.Event calEvent = GetCalenderEvent();
+            DDay.iCal.Event calEvent = GetCalendarEvent();
             if ( calEvent != null && calEvent.DTStart != null )
             {
                 return true;
@@ -580,7 +618,7 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual bool HasScheduleWarning()
         {
-            DDay.iCal.Event calEvent = GetCalenderEvent();
+            DDay.iCal.Event calEvent = GetCalendarEvent();
             if ( calEvent != null && calEvent.DTStart != null )
             {
                 if ( calEvent.RecurrenceRules.Any() )
@@ -637,7 +675,7 @@ namespace Rock.Model
             // init the result to just the schedule name just in case we can't figure out the FriendlyText
             string result = this.Name;
 
-            DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+            DDay.iCal.Event calendarEvent = this.GetCalendarEvent();
             if ( calendarEvent != null && calendarEvent.DTStart != null )
             {
                 string startTimeText = calendarEvent.DTStart.Value.TimeOfDay.ToTimeString();
@@ -757,7 +795,7 @@ namespace Rock.Model
                             result = listHtml;
                         }
                     }
-                    else if ( dates.Count() == 1)
+                    else if ( dates.Count() == 1 )
                     {
                         result = "Once at " + calendarEvent.DTStart.Value.ToShortDateTimeString();
                     }
@@ -794,7 +832,7 @@ namespace Rock.Model
         /// <returns></returns>
         public bool WasScheduleActive( DateTime time )
         {
-            var calEvent = this.GetCalenderEvent();
+            var calEvent = this.GetCalendarEvent();
             if ( calEvent != null && calEvent.DTStart != null )
             {
                 if ( time.TimeOfDay.TotalSeconds < calEvent.DTStart.TimeOfDay.TotalSeconds )
@@ -826,7 +864,7 @@ namespace Rock.Model
                 return false;
             }
 
-            var calEvent = this.GetCalenderEvent();
+            var calEvent = this.GetCalendarEvent();
             if ( calEvent != null && calEvent.DTStart != null )
             {
                 var checkInStart = calEvent.DTStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
@@ -892,12 +930,12 @@ namespace Rock.Model
         /// <summary>
         /// The "nth" names for DayName of Month (First, Second, Third, Forth, Last)
         /// </summary>
-        public static readonly Dictionary<int, string> NthNames = new Dictionary<int, string> { 
-            {1, "First"}, 
-            {2, "Second"}, 
-            {3, "Third"}, 
-            {4, "Fourth"}, 
-            {-1, "Last"} 
+        public static readonly Dictionary<int, string> NthNames = new Dictionary<int, string> {
+            {1, "First"},
+            {2, "Second"},
+            {3, "Third"},
+            {4, "Fourth"},
+            {-1, "Last"}
         };
 
         #endregion
@@ -1121,7 +1159,7 @@ namespace Rock.Model
             {
                 if ( TotalCount > 0 )
                 {
-                    return (double)( DidAttendCount ) / (double)TotalCount;
+                    return ( double ) ( DidAttendCount ) / ( double ) TotalCount;
                 }
                 else
                 {
@@ -1167,11 +1205,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the calender event.
+        /// Gets the calendar event.
         /// </summary>
         /// <param name="iCalendarContent">Content of the i calendar.</param>
         /// <returns></returns>
+        [Obsolete( "Use GetCalendarEvent( iCalendarContent ) instead " )]
         public static DDay.iCal.Event GetCalenderEvent( string iCalendarContent )
+        {
+            return GetCalendarEvent( iCalendarContent );
+        }
+
+        /// <summary>
+        /// Gets the calendar event.
+        /// </summary>
+        /// <param name="iCalendarContent">Content of the i calendar.</param>
+        /// <returns></returns>
+        public static DDay.iCal.Event GetCalendarEvent( string iCalendarContent )
         {
             string trimmedContent = iCalendarContent.Trim();
 

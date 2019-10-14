@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -231,6 +232,16 @@ namespace Rock.Web.Cache
         public string PostHtml { get; private set; }
 
         /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The abbreviated name of the Attribute.
+        /// </value>
+        [DataMember]
+        public string  AbbreviatedName { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -393,6 +404,7 @@ namespace Rock.Web.Cache
             EnableHistory = attribute.EnableHistory;
             PreHtml = attribute.PreHtml;
             PostHtml = attribute.PostHtml;
+            AbbreviatedName = attribute.AbbreviatedName;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -773,7 +785,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="entityState">State of the entity.</param>
-        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, System.Data.Entity.EntityState entityState )
+        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, EntityState entityState )
         {
             EntityAttributesCache.UpdateCacheEntityAttributes( attribute, entityState );
         }

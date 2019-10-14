@@ -174,6 +174,7 @@ namespace Rock.Model
         /// <param name="message">The message.</param>
         /// <param name="fromPhone">From phone.</param>
         /// <param name="responseCode">The response code. If null/empty/whitespace then one is generated</param>
+        /// <param name="communicationName">Name of the communication.</param>
         /// <returns></returns>
         public Communication CreateSMSCommunication( Person fromPerson, int? toPersonAliasId, string message, DefinedValueCache fromPhone, string responseCode, string communicationName )
         {

@@ -14,21 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
 using DotLiquid;
-using DotLiquid.Exceptions;
 using DotLiquid.Util;
-using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Model;
-using System;
+
 using Rock.Lava.Blocks;
-using System.Dynamic;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Shortcodes
 {

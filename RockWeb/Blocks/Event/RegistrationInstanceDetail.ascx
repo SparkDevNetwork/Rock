@@ -59,7 +59,7 @@
 
             <div class="panel panel-block">
 
-                <div class="panel-heading panel-follow clearfix">
+                <div class="panel-heading panel-follow">
                     <h1 class="panel-title">
                         <i class="fa fa-file-o"></i>
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
@@ -182,14 +182,9 @@
                                 PersonIdField="PersonAlias.PersonId" CssClass="js-grid-registration" ExportSource="ColumnOutput">
                                 <Columns>
                                     <Rock:SelectField ItemStyle-Width="48px" />
-                                    <Rock:RockLiteralField ID="lRegisteredBy" HeaderText="Registered By" />
+                                    <Rock:RockLiteralField ID="lRegisteredBy" HeaderText="Registered By" SortExpression="RegisteredBy" />
                                     <Rock:RockBoundField DataField="ConfirmationEmail" HeaderText="Confirmation Email" ExcelExportBehavior="AlwaysInclude" Visible="false" />
                                     <Rock:RockLiteralField ID="lRegistrants" HeaderText="Registrants" />
-                                    <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="When" SortExpression="CreatedDateTime" />
-                                    <Rock:RockLiteralField ID="lDiscount" HeaderText="Discount Code" HeaderStyle-HorizontalAlign="Left" ItemStyle-HorizontalAlign="Left" SortExpression="DiscountCode" Visible="false" />
-                                    <Rock:RockLiteralField ID="lRegistrationCost" HeaderText="Total Cost"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="TotalCost" />
-                                    <Rock:RockLiteralField ID="lBalance" HeaderText="Balance Due"  HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="BalanceDue" />
-                                    <Rock:DeleteField OnClick="gRegistrations_Delete" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

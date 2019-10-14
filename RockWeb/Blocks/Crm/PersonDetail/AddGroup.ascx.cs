@@ -57,23 +57,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [CustomDropdownListField( "Grade", "When Family group type, should Grade be required for each child added?", "True^Require a grade for each child,False^Don't require,None^Grade is not displayed", false, "", "", 11 )]
     [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 12 )]
     [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 13 )]
-    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 14 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 15 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Family group type, the marital status to use for children in the family.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 16 )]
-    [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 17 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 18 )]
-    [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 19 )]
-    [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 20 )]
-    [BooleanField( "Adult Phone Number", "Require a phone number for each adult", "Don't require", "When Family group type, should a phone number be required for each adult added?", false, "", 21 )]
-    [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 22 )]
-    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 23 )]
-    [WorkflowTypeField( "Person Workflow(s)", "The workflow(s) to launch for every person added.", true, false, "", "", 24, "PersonWorkflows" )]
-    [WorkflowTypeField( "Adult Workflow(s)", "When Family group type, the workflow(s) to launch for every adult added.", true, false, "", "", 25, "AdultWorkflows" )]
-    [WorkflowTypeField( "Child Workflow(s)", "When Family group type, the workflow(s) to launch for every child added.", true, false, "", "", 26, "ChildWorkflows" )]
-    [WorkflowTypeField( "Group Workflow(s)", "The workflow(s) to launch for the group (family) that is added.", true, false, "", "", 27, "GroupWorkflows" )]
-    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 28 )]
-    [BooleanField( "Enable Alternate Identifier", "If enabled, an additional step will be shown for supplying a custom alternate identifier for each person.", false, order: 29 )]
-    [BooleanField( "Generate Alternate Identifier", "If enabled, a custom alternate identifier will be generated for each person.", true, order: 30 )]
+    [BooleanField( "Show County", "Should County be displayed when editing an address?.", false, "", 14 )]
+    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 15 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 16 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Family group type, the marital status to use for children in the family.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 17 )]
+    [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 18 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 19 )]
+    [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 20 )]
+    [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 21 )]
+    [BooleanField( "Adult Phone Number", "Require a phone number for each adult", "Don't require", "When Family group type, should a phone number be required for each adult added?", false, "", 22 )]
+    [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 23 )]
+    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 24 )]
+    [WorkflowTypeField( "Person Workflow(s)", "The workflow(s) to launch for every person added.", true, false, "", "", 25, "PersonWorkflows" )]
+    [WorkflowTypeField( "Adult Workflow(s)", "When Family group type, the workflow(s) to launch for every adult added.", true, false, "", "", 28, "AdultWorkflows" )]
+    [WorkflowTypeField( "Child Workflow(s)", "When Family group type, the workflow(s) to launch for every child added.", true, false, "", "", 27, "ChildWorkflows" )]
+    [WorkflowTypeField( "Group Workflow(s)", "The workflow(s) to launch for the group (family) that is added.", true, false, "", "", 28, "GroupWorkflows" )]
+    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 29 )]
+    [BooleanField( "Enable Alternate Identifier", "If enabled, an additional step will be shown for supplying a custom alternate identifier for each person.", false, order: 30 )]
+    [BooleanField( "Generate Alternate Identifier", "If enabled, a custom alternate identifier will be generated for each person.", true, order: 31 )]
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -244,6 +245,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             nfciContactInfo.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
 
             acAddress.Required = GetAttributeValue( "Address" ) == "REQUIRED";
+            acAddress.ShowCounty = GetAttributeValue( "ShowCounty" ).AsBoolean();
+
             cbHomeless.Visible = GetAttributeValue( "Address" ) == "HOMELESS";
 
             _homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );

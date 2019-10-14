@@ -16,10 +16,6 @@
 
 using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
@@ -45,6 +41,7 @@ namespace Rock.Storage.AssetStorage
         /// <value>
         /// The name.
         /// </value>
+        [JsonProperty( "Name" )]
         public string Name { get; set; }
 
         /// <summary>
@@ -78,6 +75,7 @@ namespace Rock.Storage.AssetStorage
         /// <value>
         /// The icon CSS class.
         /// </value>
+        [JsonProperty( "IconPath" )]
         public string IconPath { get; set; }
 
         /// <summary>

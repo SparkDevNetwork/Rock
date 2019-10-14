@@ -17,15 +17,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Services;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
-using System.Text;
+using Rock.Web.Cache;
 
 namespace Rock.Data
 {
@@ -214,7 +216,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="state"></param>
-        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public virtual void PreSaveChanges(  Rock.Data.DbContext dbContext, EntityState state )
         {
         }
 
@@ -223,24 +225,24 @@ namespace Rock.Data
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             PreSaveChanges( dbContext, entry.State );
         }
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
+        /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        public virtual void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
             PreSaveChanges( dbContext, entry );
         }
 
         /// <summary>
-        /// Posts the save changes.
+        /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         public virtual void PostSaveChanges( Rock.Data.DbContext dbContext )
@@ -368,7 +370,9 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual bool IsAllowedByDefault( string action )
         {
-            return action == Authorization.VIEW;
+            // Model is the ultimate base Parent Authority of child classes of Models, so if Authorization wasn't specifically Denied until now, this is what all actions default to.
+            // In the case of VIEW or TAG, we want to default to Allowed.
+            return action == Authorization.VIEW || action == Authorization.TAG;
         }
 
         /// <summary>

@@ -16,10 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock
@@ -147,6 +149,31 @@ namespace Rock
                     if ( parentControl is T )
                     {
                         return parentControl as T;
+                    }
+
+                    parentControl = parentControl.Parent;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Finds the first parent control matching the specified condition
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="condition">The condition.</param>
+        /// <returns></returns>
+        public static System.Web.UI.Control FindFirstParentWhere( this System.Web.UI.Control control, Func<System.Web.UI.Control, bool> condition )
+        {
+            if ( control != null )
+            {
+                var parentControl = control.Parent;
+                while ( parentControl != null )
+                {
+                    if ( condition( parentControl ) )
+                    {
+                        return parentControl;
                     }
 
                     parentControl = parentControl.Parent;
@@ -303,7 +330,7 @@ namespace Rock
         #region CheckBoxList Extensions
 
         /// <summary>
-        /// Sets the Selected property of each item to true for each given matching string values.
+        /// Sets the Selected property of each item to true for each of the given matching string values.
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
@@ -324,25 +351,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Sets the Selected property of each item to true for each given matching int values.
+        /// Sets the Selected property of each item to true for each of the given matching Guid values.
+        /// </summary>
+        /// <param name="checkBoxList">The check box list.</param>
+        /// <param name="values">The values.</param>
+        public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<Guid> values )
+        {
+            checkBoxList.SetValues( values.Select( v => v.ToString()).ToList() );
+        }
+
+        /// <summary>
+        /// Sets the Selected property of each item to true for each of the given matching int values.
         /// </summary>
         /// <param name="checkBoxList">The check box list.</param>
         /// <param name="values">The values.</param>
         public static void SetValues( this CheckBoxList checkBoxList, IEnumerable<int> values )
         {
-            if ( checkBoxList is Rock.Web.UI.Controls.CampusesPicker )
-            {
-                // Campus Picker will add the items if necessary, so needs to be handled differently
-                ( (Rock.Web.UI.Controls.CampusesPicker)checkBoxList ).SelectedCampusIds = values.ToList();
-            }
-            else
-            {
-                foreach ( ListItem item in checkBoxList.Items )
-                {
-                    int numValue = int.MinValue;
-                    item.Selected = int.TryParse( item.Value, out numValue ) && values.Contains( numValue );
-                }
-            }
+            checkBoxList.SetValues( values.Select( v => v.ToString() ).ToList() );
         }
 
         #endregion CheckBoxList Extensions
@@ -474,7 +499,10 @@ namespace Rock
                 }
                 else
                 {
-                    dictionary.Add( Convert.ToInt32( value ), name.SplitCase() );
+                    // if the Enum has a [Description] attribute, use the description text
+                    var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
+
+                    dictionary.Add( Convert.ToInt32( value ), description );
                 }
             }
 

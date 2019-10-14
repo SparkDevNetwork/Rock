@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Cms
     [LavaCommandsField("Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, order: 1)]
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
-    [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the stylesheet in the current theme's styles folder.", false, "" )]
-    [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
-    [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
+    [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the style sheet in the current theme's styles folder.", false, "" )]
+    [BooleanField( "Include Current Parameters", "Flag indicating if current page's route parameters should be used when building URL for child pages", false )]
+    [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building URL for child pages", false )]
     [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
     [KeyValueListField( "Include Page List", "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.", false, "", "Title", "Link" )]
 

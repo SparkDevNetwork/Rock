@@ -17,11 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Communication;
-using Rock.Field;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -56,7 +55,7 @@ namespace Rock.Web.UI.Controls.Communication
             int charLimit = this.CharacterLimit;
             if ( charLimit > 0 )
             {
-                string script = $"$('#{tbMessage.ClientID}').limit({{maxChars: {charLimit}, counter:'#{lblCount.ClientID}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}})";
+                string script = $"$('#{tbMessage.ClientID}').limit({{maxChars: {charLimit}, counter:'#{lblCount.ClientID}', normalClass:'badge', warningClass:'badge-warning', overLimitClass: 'badge-danger'}});";
                 ScriptManager.RegisterStartupScript( this, this.GetType(), $"limit-{this.ClientID}", script, true );
             }
         }
@@ -145,6 +144,7 @@ namespace Rock.Web.UI.Controls.Communication
             {
                 dvpFrom.DefinedTypeId = definedType.Id;
             }
+            dvpFrom.DisplayDescriptions = true;
             dvpFrom.Required = true;
             Controls.Add( dvpFrom );
 

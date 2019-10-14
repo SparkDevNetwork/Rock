@@ -114,6 +114,30 @@ namespace Rock.Tests.Rock.Lava
             Assert.Null( output );
         }
 
+        /// <summary>
+        /// Verfies that the StripHtml filter handles standard HTML tags.
+        /// </summary>
+        [Fact]
+        public void StripHtml_ShouldStripStandardTags()
+        {
+            var html = "<p>Lorem <a href=\"#\">ipsum</a> <b>dolor</b> sit amet, <strong>consectetur</strong> adipiscing <t>elit</t>.</p>";
+            var text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+
+            Assert.Equal( text, DotLiquid.StandardFilters.StripHtml( html ) );
+        }
+
+        /// <summary>
+        /// Verifies that the StripHtml filter handles multi-line HTML comments.
+        /// </summary>
+        [Fact]
+        public void StripHtml_ShouldStripHtmlComments()
+        {
+            var html = @"<p>Lorem ipsum <!-- this is
+a comment --> sit amet</p>";
+            var text = @"Lorem ipsum  sit amet";
+
+            Assert.Equal( text, StandardFilters.StripHtml( html ) );
+        }
 
         #endregion
 
