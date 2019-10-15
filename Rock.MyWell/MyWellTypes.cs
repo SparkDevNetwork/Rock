@@ -23,7 +23,7 @@ using Newtonsoft.Json.Converters;
 //// <summary>
 //// from JSON structures on https://sandbox.gotnpgateway.com/docs/api/
 //// </summary>
-namespace Rock.TransNational.Pi
+namespace Rock.MyWell
 {
     #region Customer Related
 
@@ -681,7 +681,7 @@ namespace Rock.TransNational.Pi
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.TransNational.Pi.BillingAddress" />
+    /// <seealso cref="Rock.MyWell.BillingAddress" />
     public class ShippingAddress : BillingAddress
     {
     }
@@ -760,14 +760,14 @@ namespace Rock.TransNational.Pi
         /// The next bill date.
         /// </value>
         [JsonProperty( "next_bill_date" )]
-        [JsonConverter( typeof( PiGatewayUTCIsoDateConverter ) )]
+        [JsonConverter( typeof( MyWellGatewayUTCIsoDateConverter ) )]
         public DateTime? NextBillDateUTC { get; set; }
     }
 
     /// <summary>
     /// The Response from the Tokenizer (Hosted Payment Info Collector) process
     /// </summary>
-    /// <seealso cref="Rock.TransNational.Pi.BaseResponseData" />
+    /// <seealso cref="Rock.MyWell.BaseResponseData" />
     public class TokenizerResponse : BaseResponseData
     {
         /// <summary>
@@ -1315,7 +1315,7 @@ namespace Rock.TransNational.Pi
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.TransNational.Pi.BaseResponseData" />
+    /// <seealso cref="Rock.MyWell.BaseResponseData" />
     public class TransactionVoidRefundResponse : BaseResponseData
     {
         /// <summary>
@@ -1336,7 +1336,7 @@ namespace Rock.TransNational.Pi
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.TransNational.Pi.BaseResponseData" />
+    /// <seealso cref="Rock.MyWell.BaseResponseData" />
     public class TransactionStatusResponse : BaseResponseData
     {
         /// <summary>
@@ -1358,7 +1358,7 @@ namespace Rock.TransNational.Pi
     /// <summary>
     /// 
     /// </summary>
-    /// <seealso cref="Rock.TransNational.Pi.TransactionQueryResultData" />
+    /// <seealso cref="Rock.MyWell.TransactionQueryResultData" />
     public class TransactionStatusResponseData : TransactionQueryResultData
     {
     }
@@ -1711,7 +1711,7 @@ namespace Rock.TransNational.Pi
         /// The next bill date.
         /// </value>
         [JsonProperty( "next_bill_date" )]
-        [JsonConverter( typeof( PiGatewayUTCIsoDateConverter ) )]
+        [JsonConverter( typeof( MyWellGatewayUTCIsoDateConverter ) )]
         public DateTime? NextBillDateUTC { get; set; }
 
         /// <summary>
@@ -1760,7 +1760,7 @@ namespace Rock.TransNational.Pi
         }
 
         /// <summary>
-        /// Gets or sets the limit (pi default is 10, but we can set it to 0 to get all of them )
+        /// Gets or sets the limit (MyWell default is 10, but we can set it to 0 to get all of them )
         /// </summary>
         /// <value>
         /// The limit.
@@ -1850,7 +1850,7 @@ namespace Rock.TransNational.Pi
 
         /// <summary>
         /// Maximum records to return (0-100, optional)
-        /// Gets or sets the limit (pi default is 10, but we can set it to 0 to get all of them )
+        /// Gets or sets the limit (MyWell default is 10, but we can set it to 0 to get all of them )
         /// https://sandbox.gotnpgateway.com/docs/api/#query-transactions
         /// </summary>
         /// <value>
@@ -1966,7 +1966,7 @@ namespace Rock.TransNational.Pi
         /// <value>
         /// The start date.
         /// </value>
-        [JsonConverter( typeof( PiGatewayUTCIsoDateTimeConverter ) )]
+        [JsonConverter( typeof( MyWellGatewayUTCIsoDateTimeConverter ) )]
         [JsonProperty( "start_date" )]
         public DateTime? UTCStartDateTime { get; set; }
 
@@ -1976,7 +1976,7 @@ namespace Rock.TransNational.Pi
         /// <value>
         /// The end date.
         /// </value>
-        [JsonConverter( typeof( PiGatewayUTCIsoDateTimeConverter ) )]
+        [JsonConverter( typeof( MyWellGatewayUTCIsoDateTimeConverter ) )]
         [JsonProperty( "end_date" )]
         public DateTime? UTCEndDateTime { get; set; }
     }
@@ -2383,13 +2383,13 @@ namespace Rock.TransNational.Pi
     /// <summary>
     /// see DateFormat spec https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription
     /// </summary>
-    /// <seealso cref="Rock.TransNational.Pi.PiGatewayUTCIsoDateTimeConverter" />
-    internal class PiGatewayUTCIsoDateConverter : PiGatewayUTCIsoDateTimeConverter
+    /// <seealso cref="Rock.MyWell.MyWellGatewayUTCIsoDateTimeConverter" />
+    internal class MyWellGatewayUTCIsoDateConverter : MyWellGatewayUTCIsoDateTimeConverter
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PiGatewayUTCIsoDateConverter"/> class.
+        /// Initializes a new instance of the <see cref="MyWellGatewayUTCIsoDateConverter"/> class.
         /// </summary>
-        public PiGatewayUTCIsoDateConverter()
+        public MyWellGatewayUTCIsoDateConverter()
         {
             DateTimeFormat = "yyyy-MM-dd";
         }
@@ -2399,12 +2399,12 @@ namespace Rock.TransNational.Pi
     /// see DateFormats specs from https://sandbox.gotnpgateway.com/docs/api/#query-transactions
     /// </summary>
     /// <seealso cref="Newtonsoft.Json.Converters.IsoDateTimeConverter" />
-    internal class PiGatewayUTCIsoDateTimeConverter : Newtonsoft.Json.Converters.IsoDateTimeConverter
+    internal class MyWellGatewayUTCIsoDateTimeConverter : Newtonsoft.Json.Converters.IsoDateTimeConverter
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="PiGatewayUTCIsoDateTimeConverter"/> class.
+        /// Initializes a new instance of the <see cref="MyWellGatewayUTCIsoDateTimeConverter"/> class.
         /// </summary>
-        public PiGatewayUTCIsoDateTimeConverter() : base()
+        public MyWellGatewayUTCIsoDateTimeConverter() : base()
         {
             DateTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
         }
@@ -2486,7 +2486,7 @@ namespace Rock.TransNational.Pi
     /// 
     /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
-    public enum PiPaymentType
+    public enum MyWellPaymentType
     {
         /// <summary>
         /// The card

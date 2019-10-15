@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Rock.TransNational.Pi {
+namespace Rock.MyWell {
     using System;
     
     
@@ -19,7 +19,7 @@ namespace Rock.TransNational.Pi {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Scripts {
@@ -39,7 +39,7 @@ namespace Rock.TransNational.Pi {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Rock.TransNational.Pi.Scripts", typeof(Scripts).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Rock.MyWell.Scripts", typeof(Scripts).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,26 +61,20 @@ namespace Rock.TransNational.Pi {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to var gatewayTokenizer;
+        ///   Looks up a localized string similar to function initializeTokenizer(controlId) {
         ///
-        ///Sys.Application.add_load(function () {
-        ///    initializeTokenizer();
-        ///});
+        ///    var $control = $(&apos;#&apos; + controlId);
         ///
-        ///function initializeTokenizer() {
+        ///    if ($control.length == 0) {
+        ///        // control hasn&apos;t been rendered so skip
+        ///        return;
+        ///    }
+        ///    var postbackScript = $control.attr(&apos;data-postback-script&apos;);
         ///
-        ///    var enabledPaymentTypes = JSON.parse($(&apos;.js-enabled-payment-types&apos;).val());;
+        ///    var enabledPaymentTypes = JSON.parse($(&apos;.js-enabled-payment-types&apos;, $control).val());;
         ///
-        ///    var $container = $(&apos;#&lt;%=this.gatewayIFrameContainer.ClientID%&gt;&apos;);
-        ///
-        ///    var containerStyles = function (style) {
-        ///        return $container.css(style);
-        ///    };
-        ///    var inputStyles = function (style) {
-        ///        return $(&apos;.js-input-style-hook&apos;).css(style)
-        ///    };
-        ///
-        ///    // create PI Gate [rest of string was truncated]&quot;;.
+        ///    var $creditCardContainer = $(&apos;.js-gateway-creditcard-iframe-container&apos;, $control);
+        ///    var $achContainer = $(&apos;.js-gateway-ach-iframe-container&apos;, $control [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string gatewayTokenizer {
             get {
