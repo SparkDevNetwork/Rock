@@ -181,6 +181,10 @@ namespace Rock.Model
         [DataMember]
         public int? StepTypeId { get; set; }
 
+        [MaxLength( 250 )]
+        [DataMember]
+        public string Name { get; set; }
+
         #endregion
 
         #region Virtual Properties

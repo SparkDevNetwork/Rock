@@ -74,6 +74,9 @@ namespace Rock.Client
         public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
+        public bool EnableExclusiveRoutes { get; set; }
+
+        /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
@@ -213,6 +216,7 @@ namespace Rock.Client
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
             this.EnabledForShortening = source.EnabledForShortening;
+            this.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
