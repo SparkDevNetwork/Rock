@@ -107,6 +107,7 @@ namespace Rock.Model
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
             target.EnabledForShortening = source.EnabledForShortening;
+            target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
             target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
