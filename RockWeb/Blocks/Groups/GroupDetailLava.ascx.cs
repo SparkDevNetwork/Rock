@@ -32,9 +32,6 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
-    /// <summary>
-    /// Template block for developers to use to start a new block.
-    /// </summary>
     [DisplayName( "Group Detail Lava" )]
     [Category( "Groups" )]
     [Description( "Presents the details of a group using Lava" )]
@@ -45,19 +42,21 @@ namespace RockWeb.Blocks.Groups
     [LinkedPage( "Attendance Page", "The page to link to to manage the group's attendance.", true, "", "", 3 )]
     [LinkedPage( "Communication Page", "The communication page to use for sending emails to the group members.", true, "", "", 4 )]
     [LinkedPage( "Alternate Communication Page", "The communication page to use for sending an alternate communication to the group members.", false, "", "", 5 )]
-    [BooleanField( "Hide the 'Active' Group checkbox", "Set this to true to hide the checkbox for 'Active' for the group.", false, key: "HideActiveGroupCheckbox", order: 6 )]
-    [BooleanField( "Hide the 'Public' Group checkbox", "Set this to true to hide the checkbox for 'Public' for the group.", true, key: "HidePublicGroupCheckbox", order: 7 )]
-    [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 8 )]
-    [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 9 )]
-    [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 10 )]
-    [BooleanField( "Enable Group Capacity Edit", "Enables changing Group Capacity when editing a group. Note: The group type must have a 'Group Capacity Rule'.", false, "", 11 )]
+    [LinkedPage( "Parent Roster Page", "The page to link to to view the parent roster.", false, "", "", 6 )]
+    [BooleanField( "Hide the 'Active' Group checkbox", "Set this to true to hide the checkbox for 'Active' for the group.", false, key: "HideActiveGroupCheckbox", order: 7 )]
+    [BooleanField( "Hide the 'Public' Group checkbox", "Set this to true to hide the checkbox for 'Public' for the group.", true, key: "HidePublicGroupCheckbox", order: 8 )]
+    [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 9 )]
+    [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 10 )]
+    [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 11 )]
     [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 12 )]
-    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 13 )]
-    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 14 )]
-    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 18 )]
+    [BooleanField( "Enable Parent Support", "Enables a Parent Roster tab and Email Parent button for any groups containing children.", false, "", 13 )]
+    [BooleanField( "Enable Group Capacity Edit", "Enables changing Group Capacity when editing a group. Note: The group type must have a 'Group Capacity Rule'.", false, "", 14 )]
+    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 15 )]
+    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 16 )]
+    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
+    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 18 )]
+    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 19 )]
+    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 20 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -590,13 +589,15 @@ namespace RockWeb.Blocks.Groups
                                 sm.AddHistoryPoint( "Action", "DeleteMember" );
                             }
                             break;
-                            
+
                         case "SendCommunication":
-                            SendCommunication();
+                            // include the transformParent parameter
+                            SendCommunication( parameters );
                             break;
 
                         case "SendAlternateCommunication":
-                            SendAlternateCommunication();
+                            // include the transformParent parameter
+                            SendAlternateCommunication( parameters );
                             break;
                     }
                 }
@@ -691,6 +692,26 @@ namespace RockWeb.Blocks.Groups
                 currentPageProperties.Add( "Id", RockPage.PageId );
                 currentPageProperties.Add( "Path", Request.Path );
                 mergeFields.Add( "CurrentPage", currentPageProperties );
+
+                if ( GetAttributeValue( "EnableParentSupport" ).AsBoolean() )
+                {
+                    var parents = GetGroupMemberPeople( rockContext, transformParent: true );
+                    if ( parents.Any() )
+                    {
+                        var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                        // add collection for each child's parents
+                        var childParents = new Dictionary<string, object>();
+                        foreach ( var member in group.Members )
+                        {
+                            var memberParents = parents.Where( p => p.Members.Any( m => m.Group.GroupTypeId == familyGroupType.Id && m.Group.Members.Any( gm => gm.PersonId == member.PersonId ) ) ).ToList();
+                            childParents.Add( member.PersonId.ToString(), memberParents );
+                        }
+
+                        mergeFields.Add( "Parents", childParents );
+                        linkedPages.Add( "ParentRosterPage", LinkedPageRoute( "ParentRosterPage" ) );
+                        mergeFields.AddOrReplace( "LinkedPages", linkedPages );
+                    }
+                }
 
                 string template = GetAttributeValue( "LavaTemplate" );
 
@@ -1077,7 +1098,8 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Sends the communication.
         /// </summary>
-        private void SendCommunication()
+        /// <param name="transformParent">The transform parent flag.</param>
+        private void SendCommunication( string transformParent )
         {
             // create communication
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
@@ -1092,14 +1114,10 @@ namespace RockWeb.Blocks.Groups
 
                 service.Add( communication );
 
-                var personAliasIds = new GroupMemberService( rockContext ).Queryable()
-                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
-                                    .ToList()
-                                    .Select( m => m.Person.PrimaryAliasId )
-                                    .ToList();
+                var groupMemberPeople = GetGroupMemberPeople( rockContext, transformParent.AsBoolean() );
 
                 // Get the primary aliases
-                foreach ( int personAlias in personAliasIds )
+                foreach ( int personAlias in groupMemberPeople.Select( m => m.PrimaryAliasId ).ToList() )
                 {
                     var recipient = new Rock.Model.CommunicationRecipient();
                     recipient.PersonAliasId = personAlias;
@@ -1118,7 +1136,7 @@ namespace RockWeb.Blocks.Groups
         /// <summary>
         /// Sends the communication.
         /// </summary>
-        private void SendAlternateCommunication()
+        private void SendAlternateCommunication( string transformParent )
         {
             // create communication
             if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( "CommunicationPage" ) ) )
@@ -1133,14 +1151,10 @@ namespace RockWeb.Blocks.Groups
 
                 service.Add( communication );
 
-                var personAliasIds = new GroupMemberService( rockContext ).Queryable()
-                                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
-                                    .ToList()
-                                    .Select( m => m.Person.PrimaryAliasId )
-                                    .ToList();
+                var groupMemberPeople = GetGroupMemberPeople( rockContext, transformParent.AsBoolean() );
 
                 // Get the primary aliases
-                foreach ( int personAlias in personAliasIds )
+                foreach ( int personAlias in groupMemberPeople.Select( m => m.PrimaryAliasId ).ToList() )
                 {
                     var recipient = new Rock.Model.CommunicationRecipient();
                     recipient.PersonAliasId = personAlias;
@@ -1154,6 +1168,44 @@ namespace RockWeb.Blocks.Groups
 
                 NavigateToLinkedPage( "AlternateCommunicationPage", queryParameters );
             }
+        }
+
+        /// <summary>
+        /// Gets the group members (or the group member's parents).
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="transformParent">Flag to transform result to Parents</param>
+        /// <returns></returns>
+        private List<Person> GetGroupMemberPeople( RockContext rockContext, bool transformParent = false )
+        {
+            var groupMemberPeople = new List<Person>();
+            if ( !transformParent )
+            {
+                // Linq to Entities doesn't support virtual properties (PrimaryAliasId), so call ToList twice
+                groupMemberPeople = new GroupMemberService( rockContext ).Queryable()
+                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                    .ToList()
+                    .Select( m => m.Person )
+                    .ToList();
+            }
+            else
+            {
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                var idQuery = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
+                    .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                    .Select( m => m.PersonId );
+
+                groupMemberPeople = new PersonService( rockContext ).Queryable()
+                    .Where( p =>
+                        p.Members.Where( a => a.Person.AgeClassification == AgeClassification.Adult && a.Group.GroupTypeId == familyGroupType.Id )
+                                 .Any( a => a.Group.Members
+                                             .Any( c => c.Person.AgeClassification == AgeClassification.Child && idQuery.Contains( c.PersonId ) )
+                                 )
+                          )
+                    .ToList();
+            }
+
+            return groupMemberPeople;
         }
 
         #endregion
