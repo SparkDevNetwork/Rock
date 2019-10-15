@@ -24,9 +24,10 @@
                         <div class="col-md-6">
                             <asp:Literal ID="lStreakTypeDescription" runat="server" />
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6 text-right">
                             <asp:LinkButton ID="btnMapEditor" runat="server" CssClass="btn btn-default" OnClick="btnMapEditor_Click" CausesValidation="false"><i class="fa fa-calendar-check"></i> Map Editor</asp:LinkButton>
                             <asp:LinkButton ID="btnExclusions" runat="server" CssClass="btn btn-default" OnClick="btnExclusions_Click" CausesValidation="false"><i class="fa fa-calendar-times"></i> Exclusions</asp:LinkButton>
+                            <asp:LinkButton ID="btnRebuild" runat="server" CausesValidation="false" OnClick="btnRebuild_Click" CssClass="btn btn-danger"><i class="fa fa-redo-alt"></i> Rebuild</asp:LinkButton>
                         </div>
                     </div>
 
@@ -35,8 +36,7 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
                         <span class="pull-right">
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
-                            <asp:LinkButton runat="server" ID="btnRebuild" CausesValidation="false" OnClick="btnRebuild_Click" CssClass="btn btn-danger btn-sm margin-l-md" Text="Rebuild" />
+                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />                            
                         </span>
                     </div>
                 </div>

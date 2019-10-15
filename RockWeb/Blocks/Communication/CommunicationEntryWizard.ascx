@@ -26,7 +26,14 @@
 
                     <Rock:NotificationBox ID="nbRecipientsAlert" runat="server" NotificationBoxType="Validation" />
 
-                    <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="Select From List" OffText="Select Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <Rock:Toggle ID="tglRecipientSelection" runat="server" CssClass="margin-b-lg" OnText="List" OffText="Specific Individuals" Checked="true" OnCssClass="btn-info" OffCssClass="btn-info" ValidationGroup="vgRecipientSelection" OnCheckedChanged="tglRecipientSelection_CheckedChanged" ButtonSizeCssClass="btn-sm" />
+                        </div>
+                        <div class="col-sm-6">
+                            <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default btn-sm pull-right" Text="View List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
+                        </div>
+                    </div>
 
                     <div class="row">
                         <asp:Panel ID="pnlRecipientSelectionList" runat="server" CssClass="col-lg-6">
@@ -51,9 +58,6 @@
                     <asp:Panel ID="pnlRecipientSelectionIndividual" runat="server">
                         <div class="row">
                             <div class="col-md-6">
-
-                                <asp:LinkButton ID="btnViewIndividualRecipients" runat="server" CssClass="btn btn-default btn-sm" Text="Show List" CausesValidation="false" OnClick="btnViewIndividualRecipients_Click" />
-
                                 <p>
                                     <asp:Panel ID="pnlIndividualRecipientCount" runat="server" CssClass="label label-info">
                                         <asp:Literal ID="lIndividualRecipientCount" runat="server" Text="" />
@@ -76,6 +80,7 @@
                     <%-- Recipient Selection: Individual Recipients Modal --%>
                     <Rock:ModalDialog Id="mdIndividualRecipients" runat="server" Title="Individual Recipients" ValidationGroup="mdIndividualRecipientsModal">
                         <Content>
+                            <Rock:NotificationBox ID="nbListWarning" runat="server" NotificationBoxType="Info" />
                             <Rock:Grid ID="gIndividualRecipients" runat="server" OnRowDataBound="gIndividualRecipients_RowDataBound" HideDeleteButtonForIsSystem="false" ShowConfirmDeleteDialog="false">
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>

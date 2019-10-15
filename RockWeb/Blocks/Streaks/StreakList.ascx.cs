@@ -220,19 +220,25 @@ namespace RockWeb.Blocks.Streaks
 
             if ( lBiStateGraph != null )
             {
+                var streakTypeService = GetStreakTypeService();
                 var streakType = GetStreakType();
 
                 if ( streakType != null )
                 {
-                    var occurrenceEngagements = StreakTypeService.GetMostRecentEngagementBits( enrollmentViewModel.EngagementMap, streakType.OccurrenceMap,
-                        streakType.StartDate, streakType.OccurrenceFrequency );
+                    var errorMessage = string.Empty;
+                    var occurrenceEngagements = streakTypeService.GetRecentEngagementBits( streakType.Id, person.Id, 24, out errorMessage );
                     var stringBuilder = new StringBuilder();
 
                     foreach ( var occurrence in occurrenceEngagements )
                     {
-                        var bitIsSet = occurrence != null && occurrence.HasEngagement;
+                        var hasEngagement = occurrence != null && occurrence.HasEngagement;
+                        var hasExclusion = occurrence != null && occurrence.HasExclusion;
                         var title = occurrence != null ? occurrence.DateTime.ToShortDateString() : string.Empty;
-                        stringBuilder.Insert( 0, string.Format( @"<li title=""{0}""><span style=""height: {1}%""></span></li>", title, ( bitIsSet ? "100" : "5" ) ) );
+                        stringBuilder.Insert( 0, string.Format( @"<li class=""binary-state-graph-bit {2} {3}"" title=""{0}""><span style=""height: {1}%""></span></li>",
+                            title, // 0
+                            hasEngagement ? "100" : "5", // 1
+                            hasEngagement ? "has-engagement" : string.Empty, // 2
+                            hasExclusion ? "has-exclusion" : string.Empty ) ); // 3
                     }
 
                     lBiStateGraph.Text = string.Format( @"
