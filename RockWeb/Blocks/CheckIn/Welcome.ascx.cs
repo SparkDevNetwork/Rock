@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.CheckIn
 
             switch ( checkinStatus )
             {
-                case CheckinConfigurationHelper.CheckinStatus.InActive:
+                case CheckinConfigurationHelper.CheckinStatus.Inactive:
                     {
                         pnlNotActive.Visible = true;
                         break;
