@@ -439,6 +439,14 @@
     -ms-flex-preferred-size: 0;
     -ms-flex-positive: 1;
 
+    &:hover {
+      opacity: .85;
+    }
+
+    &.has-exclusion {
+      opacity: .3;
+    }
+
     span {
       display: block;
       width: 8px;
@@ -446,10 +454,6 @@
       min-width: 2px;
       min-height: 1px;
       background: @persondetails-badge-color;
-
-      &:hover {
-        opacity: .85;
-      }
 
       @media screen and (-webkit-min-device-pixel-ratio: 0) {
         // needed for chrome but kills ie

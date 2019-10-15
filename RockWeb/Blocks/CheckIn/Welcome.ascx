@@ -321,7 +321,7 @@
 
                             <asp:Panel ID="pnlSearchName" CssClass="clearfix center-block" runat="server">
                                 <Rock:RockTextBox ID="tbNameOrPhone" runat="server" Label="Phone or Name" AutoCompleteType="Disabled" spellcheck="false" autocorrect="off" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
-                                <Rock:ScreenKeyboard id="skKeyboard" runat="server" ControlToTarget="tbNameOrPhone" KeyboardType="TenKey" KeyCssClass="checkin btn-default" WrapperCssClass="center-block" ></Rock:ScreenKeyboard>
+                                <Rock:ScreenKeyboard id="skKeyboard" runat="server" ControlToTarget="tbNameOrPhone" KeyboardType="TenKey" KeyCssClass="checkin btn btn-default btn-lg btn-keypad digit" WrapperCssClass="center-block" ></Rock:ScreenKeyboard>
                             </asp:Panel>
 
                             <div class="checkin-actions margin-t-md">
@@ -424,7 +424,7 @@
                 </div>
             </div>
 
-            <div class="checkin-footer">   
+            <div class="checkin-footer">
                 <div class="checkin-actions">
                     <asp:LinkButton CssClass="btn btn-primary" ID="lbMangerReprintDone" runat="server" OnClick="lbManagerReprintDone_Click" Text="Done" />
                 </div>
