@@ -77,31 +77,32 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants\Constants.cs" />
-    <Compile Include="ExternalSupportClasses\HttpSimulator.cs" />
-    <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
-    <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
-    <Compile Include="RestTests\ControllersTests\AttendanceControllerTests.cs" />
-    <Compile Include="RockTests\Attendances\AttendanceBulkImportTest.cs" />
-    <Compile Include="RockTests\Communications\CommunicationsModuleTestHelper.cs" />
-    <Compile Include="RockTests\Communications\SmsTests.cs" />
-    <Compile Include="RockTests\Core\CoreModuleTestHelper.cs" />
-    <Compile Include="RockTests\Crm\StepsTests.cs" />
-    <Compile Include="RockTests\DatabaseTests.cs" />
-    <Compile Include="RockTests\Migrations\MigrationTests.cs" />
-    <Compile Include="RockTests\Model\StreakTypeServiceTests.cs" />
-    <Compile Include="RockTests\Model\AttendanceCodeTests.cs" />
+    <Compile Include="Utility\HttpSimulator.cs" />
+    <Compile Include="Utility\ReflectionHelper.cs" />
+    <Compile Include="Utility\SimulatedHttpRequest.cs" />
+    <Compile Include="Rest\ControllersTests\AttendanceControllerTests.cs" />
+    <Compile Include="Attendances\AttendanceBulkImportTest.cs" />
+    <Compile Include="Communications\CommunicationsModuleTestHelper.cs" />
+    <Compile Include="Communications\SmsTests.cs" />
+    <Compile Include="Core\CoreModuleTestHelper.cs" />
+    <Compile Include="Core\SundayDateTest.cs" />
+    <Compile Include="Crm\StepsTests.cs" />
+    <Compile Include="DatabaseTests.cs" />
+    <Compile Include="Migrations\MigrationTests.cs" />
+    <Compile Include="Model\StreakTypeServiceTests.cs" />
+    <Compile Include="Model\AttendanceCodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RockTests\Model\GroupTests.cs" />
-    <Compile Include="RockTests\Model\PersonTests.cs" />
-    <Compile Include="RockTests\Reporting\DataFilter\TextPropertyFilterSettings.cs" />
-    <Compile Include="RockTests\Reporting\ReportingModuleTestHelper.cs" />
-    <Compile Include="RockTests\Reporting\DataFilter\DataFilterTestBase.cs" />
-    <Compile Include="RockTests\Reporting\DataFilter\Group\GroupsModuleTestHelper.cs" />
-    <Compile Include="RockTests\Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
-    <Compile Include="RockTests\Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
-    <Compile Include="RockTests\Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
-    <Compile Include="RockTests\Reporting\ReportBuilder\ReportBuilderTests.cs" />
-    <Compile Include="RockTests\TestInitializer.cs" />
+    <Compile Include="Model\GroupTests.cs" />
+    <Compile Include="Model\PersonTests.cs" />
+    <Compile Include="Reporting\DataFilter\TextPropertyFilterSettings.cs" />
+    <Compile Include="Reporting\ReportingModuleTestHelper.cs" />
+    <Compile Include="Reporting\DataFilter\DataFilterTestBase.cs" />
+    <Compile Include="Reporting\DataFilter\Group\GroupsModuleTestHelper.cs" />
+    <Compile Include="Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
+    <Compile Include="Reporting\ReportBuilder\ReportBuilderTests.cs" />
+    <Compile Include="TestInitializer.cs" />
     <Compile Include="StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="test.Designer.cs">
@@ -109,7 +110,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>test.runsettings</DependentUpon>
     </Compile>
-    <Compile Include="RockTests\Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
     <Compile Include="Utility\ArrayExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -153,9 +154,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="RockTests\NewFolder1\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -29,8 +29,7 @@ using Rock.Storage;
 using Rock.Storage.AssetStorage;
 using Rock.Model;
 using Rock.Data;
-
-using Subtext.TestLibrary;
+using Rock.Tests.Integration.Utility;
 
 namespace Rock.Tests.Integration.StorageTests
 {

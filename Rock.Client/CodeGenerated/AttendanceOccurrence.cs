@@ -67,6 +67,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
         public string Notes { get; set; }
 
         /// <summary />
@@ -80,6 +83,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? StepTypeId { get; set; }
+
+        /// <summary />
+        public DateTime SundayDate { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -124,11 +130,13 @@ namespace Rock.Client
             this.GroupId = source.GroupId;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
             this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
             this.ScheduleId = source.ScheduleId;
             this.ShowDeclineReasons = source.ShowDeclineReasons;
             this.StepTypeId = source.StepTypeId;
+            this.SundayDate = source.SundayDate;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -149,9 +157,6 @@ namespace Rock.Client
 
         /// <summary />
         public StepType StepType { get; set; }
-
-        /// <summary />
-        public DateTime SundayDate { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

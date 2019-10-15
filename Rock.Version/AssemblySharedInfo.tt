@@ -1,9 +1,10 @@
 ﻿<#@ template debug="false" hostspecific="true" language="C#" #>
 <#@ import namespace="System.IO" #>
+<# // NOTE: if this generates file with a numeric suffix (AssemblySharedInfo1.cs) , see https://stackoverflow.com/a/1943084/1755417 #>
 <#@ output extension=".cs" #>
 <#
      int major = 1; 
-     int minor = 10; 
+     int minor = 11; 
      int build = 0; 
      int revision = 0; 
   

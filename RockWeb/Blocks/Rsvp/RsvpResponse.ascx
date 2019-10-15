@@ -24,6 +24,8 @@
                     </Rock:NotificationBox>
                 </asp:Panel>
 
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+
                 <asp:Panel ID="pnlForm" runat="server" Visible="false">
                     <div class="row">
                         <div class="col-sm-6">
@@ -87,7 +89,7 @@
 
                     <asp:Repeater ID="rptrValues" runat="server" OnItemDataBound="rptrValues_ItemDataBound">
                         <ItemTemplate>
-                            <div class="defined-type-checklist">
+                            <div class="js-rsvp-item">
                                 <article class="panel panel-widget checklist-item">
                                     <header class="panel-heading clearfix">
                                         <asp:HiddenField ID="hfOccurrenceId" runat="server" Value='<%# Eval("OccurrenceId") %>' />

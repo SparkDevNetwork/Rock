@@ -118,6 +118,7 @@ namespace Rock.Model
             target.Status = source.Status;
             target.StatusMessage = source.StatusMessage;
             target.Summary = source.Summary;
+            target.SundayDate = source.SundayDate;
             target.TransactionCode = source.TransactionCode;
             target.TransactionDateTime = source.TransactionDateTime;
             target.TransactionTypeValueId = source.TransactionTypeValueId;

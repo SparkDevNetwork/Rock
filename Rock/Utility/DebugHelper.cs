@@ -60,6 +60,14 @@ namespace Rock
             internal List<System.Data.Entity.DbContext> DbContextList { get; set; } = new List<System.Data.Entity.DbContext>();
 
             /// <summary>
+            /// Gets or sets a value indicating whether [enable for all database contexts].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [enable for all database contexts]; otherwise, <c>false</c>.
+            /// </value>
+            internal bool EnableForAllDbContexts { get; set; } = false;
+
+            /// <summary>
             /// </summary>
             /// <param name="command"></param>
             /// <param name="interceptionContext"></param>
@@ -135,7 +143,7 @@ namespace Rock
             private void CommandExecuting( DbCommand command, DbCommandInterceptionContext interceptionContext, out object userState )
             {
                 userState = null;
-                if ( !interceptionContext.DbContexts.Any( a => this.DbContextList.Contains( a ) ) )
+                if ( !interceptionContext.DbContexts.Any( a => this.DbContextList.Contains( a ) || this.EnableForAllDbContexts ) )
                 {
                     return;
                 }
@@ -263,7 +271,16 @@ namespace Rock
             _callCounts = 0;
             _callMSTotal = 0.00;
             SQLLoggingStop();
-            _debugLoggingDbCommandInterceptor.DbContextList.Add( dbContext );
+
+            if ( dbContext != null )
+            {
+                _debugLoggingDbCommandInterceptor.DbContextList.Add( dbContext );
+            }
+            else
+            {
+                _debugLoggingDbCommandInterceptor.EnableForAllDbContexts = true;
+            }
+
             DbInterception.Add( _debugLoggingDbCommandInterceptor );
         }
 
@@ -293,8 +310,16 @@ namespace Rock
             }
             else
             {
-                _debugLoggingDbCommandInterceptor.DbContextList.Remove( dbContext );
-                if ( !_debugLoggingDbCommandInterceptor.DbContextList.Any() )
+                if ( dbContext == null )
+                {
+                    _debugLoggingDbCommandInterceptor.EnableForAllDbContexts = false;
+                }
+                else
+                {
+                    _debugLoggingDbCommandInterceptor.DbContextList.Remove( dbContext );
+                }
+
+                if ( !_debugLoggingDbCommandInterceptor.DbContextList.Any() && !_debugLoggingDbCommandInterceptor.EnableForAllDbContexts )
                 {
                     DebugHelper.SQLLoggingStop();
                 }

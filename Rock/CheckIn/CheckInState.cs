@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-
-using Newtonsoft.Json;
 
 namespace Rock.CheckIn
 {
@@ -25,7 +25,7 @@ namespace Rock.CheckIn
     /// Object for maintaining the state of a check-in kiosk and workflow
     /// </summary>
     [DataContract]
-    public class CheckInState 
+    public class CheckInState
     {
         /// <summary>
         /// Gets or sets the device id
@@ -45,13 +45,18 @@ namespace Rock.CheckIn
         [DataMember]
         public int? CheckinTypeId
         {
-            get { return _checkinTypeId; }
+            get
+            {
+                return _checkinTypeId;
+            }
+
             set
             {
                 _checkinTypeId = value;
                 _checkinType = null;
             }
         }
+
         private int? _checkinTypeId;
 
         /// <summary>
@@ -96,7 +101,7 @@ namespace Rock.CheckIn
         public bool ManagerLoggedIn { get; set; }
 
         /// <summary>
-        /// Gets or sets the configured group types.
+        /// Gets or sets the configured group types (Checkin Areas)
         /// </summary>
         /// <value>
         /// The configured group types.
@@ -151,15 +156,125 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CheckInState"/> class.
+        /// </summary>
+        /// <param name="localDeviceConfiguration">The local device configuration.</param>
+        public CheckInState( LocalDeviceConfiguration localDeviceConfiguration )
+        {
+            DeviceId = localDeviceConfiguration.CurrentKioskId ?? 0;
+            CheckinTypeId = localDeviceConfiguration.CurrentCheckinTypeId;
+            ConfiguredGroupTypes = localDeviceConfiguration.CurrentGroupTypeIds.ToList();
+            CheckIn = new CheckInStatus();
+            Messages = new List<CheckInMessage>();
+        }
+
+        /// <summary>
         /// Creates a new CheckInState object Froms a json string.
         /// </summary>
         /// <param name="json">The json.</param>
         /// <returns></returns>
+        [Obsolete( "use the FromJson() string extension instead" )]
+        [RockObsolete( "1.10" )]
         public static CheckInState FromJson( string json )
         {
-            return JsonConvert.DeserializeObject( json, typeof( CheckInState ) ) as CheckInState;
-          
+            return json.FromJsonOrNull<CheckInState>();
         }
+    }
 
+    /// <summary>
+    /// Checkin Device Configuration
+    /// Used for the Checkin Cookie and REST status operations
+    /// </summary>
+    [System.Diagnostics.DebuggerDisplay( "CurrentTheme:{CurrentTheme}, CurrentKioskId:{CurrentKioskId}, CurrentCheckinTypeId:{CurrentCheckinTypeId}, CurrentGroupTypeIds:{CurrentGroupTypeIds}" )]
+    public class LocalDeviceConfiguration
+    {
+        /// <summary>
+        /// Gets or sets the current theme.
+        /// </summary>
+        /// <value>
+        /// The current theme.
+        /// </value>
+        public string CurrentTheme { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current kiosk identifier.
+        /// </summary>
+        /// <value>
+        /// The current kiosk identifier.
+        /// </value>
+        public int? CurrentKioskId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current checkin type identifier.
+        /// </summary>
+        /// <value>
+        /// The current checkin type identifier.
+        /// </value>
+        public int? CurrentCheckinTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the current group type ids.
+        /// </summary>
+        /// <value>
+        /// The current group type ids.
+        /// </value>
+        public List<int> CurrentGroupTypeIds { get; set; }
+
+        /// <summary>
+        /// Determines whether this instance is configured.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is configured; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsConfigured()
+        {
+            return this.CurrentKioskId.HasValue && this.CurrentGroupTypeIds.Any() && this.CurrentCheckinTypeId.HasValue;
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class LocalDeviceConfigurationStatus
+    {
+        /// <summary>
+        /// Gets or sets the configuration hash.
+        /// </summary>
+        /// <value>
+        /// The configuration hash.
+        /// </value>
+        public string ConfigurationHash { get; set; }
+
+        /// <summary>
+        /// Gets or sets the next active date time.
+        /// </summary>
+        /// <value>
+        /// The next active date time.
+        /// </value>
+        public DateTime NextActiveDateTime { get; set; }
+
+        /// <summary>
+        /// Gets the campus date time.
+        /// </summary>
+        /// <value>
+        /// The campus date time.
+        /// </value>
+        public DateTime CampusDateTime { get; set; }
+
+        /// <summary>
+        /// Gets the server current date time.
+        /// </summary>
+        /// <value>
+        /// The server current date time.
+        /// </value>
+        public DateTime ServerCurrentDateTime { get; set; }
+
+        /// <summary>
+        /// Gets the campus current date time.
+        /// </summary>
+        /// <value>
+        /// The campus current date time.
+        /// </value>
+        public DateTime CampusCurrentDateTime { get; set; }
     }
 }

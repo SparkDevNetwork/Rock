@@ -468,7 +468,8 @@ namespace RockWeb.Blocks.Security
             {
                 var userLoginService = new Rock.Model.UserLoginService( new RockContext() );
                 var userLogins = userLoginService.GetByPersonId( personId )
-                .ToList();
+                    .Where( l => l.IsLockedOut != true )
+                    .ToList();
 
                 if ( userLogins.Any( ul => !AuthenticationContainer.GetComponent( ul.EntityType.Name ).RequiresRemoteAuthentication ) )
                 {
