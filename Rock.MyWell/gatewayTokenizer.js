@@ -1,5 +1,4 @@
 ﻿function initializeTokenizer(controlId) {
-
     var $control = $('#' + controlId);
 
     if ($control.length == 0) {
@@ -12,6 +11,9 @@
 
     var $creditCardContainer = $('.js-gateway-creditcard-iframe-container', $control);
     var $achContainer = $('.js-gateway-ach-iframe-container', $control);
+    var $selectedPaymentType = $('.js-selected-payment-type', $control);
+    var $paymentButtonACH = $control.find('.js-payment-ach');
+    var $paymentButtonCreditCard = $control.find('.js-payment-creditcard');
 
     var containerStyles = function (style) {
         return $creditCardContainer.css(style);
@@ -101,10 +103,9 @@
         creditCardGatewayTokenizer.create();
         $creditCardContainer.data('gatewayTokenizer', creditCardGatewayTokenizer);
 
-        var $paymentButtonCreditCard = $control.find('.js-payment-creditcard');
-
         $paymentButtonCreditCard.off().on('click', function () {
             $(this).addClass("active").siblings().removeClass("active");
+            $selectedPaymentType.val('card');
             $creditCardContainer.show();
             $achContainer.hide();
         });
@@ -122,10 +123,10 @@
         // Initiate creation on container element
         achGatewayTokenizer.create();
         $achContainer.data('gatewayTokenizer', achGatewayTokenizer);
-
-        var $paymentButtonACH = $control.find('.js-payment-ach');
+        
         $paymentButtonACH.off().on('click', function () {
             $(this).addClass("active").siblings().removeClass("active");
+            $selectedPaymentType.val('ach');
             $creditCardContainer.hide();
             $achContainer.show();
         });
@@ -133,19 +134,28 @@
 
     var $paymentTypeSelector = $control.find('.js-gateway-paymenttype-selector');
     if (enabledPaymentTypes.length > 1) {
-
         $paymentTypeSelector.show();
     }
     else {
         $paymentTypeSelector.hide();
     }
 
-    // show default payment type
-    if (enabledPaymentTypes.includes('card')) {
+    var selectedPaymentTypeVal = $selectedPaymentType.val();
+    if (selectedPaymentTypeVal == '') {
+        selectedPaymentTypeVal = 'card';
+    }
+    
+    if (selectedPaymentTypeVal == 'card' && enabledPaymentTypes.includes('card')) {
+        $paymentButtonACH.removeClass('active');
+        $paymentButtonCreditCard.addClass('active');
+        $selectedPaymentType.val('card');
         $creditCardContainer.show();
         $achContainer.hide();
     }
     else {
+        $paymentButtonCreditCard.removeClass('active');
+        $paymentButtonACH.addClass('active');
+        $selectedPaymentType.val('ach');
         $creditCardContainer.hide();
         $achContainer.show();
     }
