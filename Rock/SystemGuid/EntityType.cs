@@ -321,5 +321,10 @@ namespace Rock.SystemGuid
         /// The guid for the Step program entity
         /// </summary>
         public const string STEP_PROGRAM = "E89F9528-A74E-41B7-8B65-B56B4CE7A122";
+
+        /// <summary>
+        /// The MyWell financial gateway
+        /// </summary>
+        public const string MYWELL_FINANCIAL_GATEWAY = "E81ED723-E807-4BDE-ADF1-AB9686241637";
     }
 }

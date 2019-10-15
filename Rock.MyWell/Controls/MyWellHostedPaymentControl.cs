@@ -21,14 +21,14 @@ using System.Web.UI.WebControls;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace Rock.TransNational.Pi.Controls
+namespace Rock.MyWell.Controls
 {
     /// <summary>
-    /// Control for hosting the Pi Gateway Payment Info HTML and scripts
+    /// Control for hosting the MyWell Gateway Payment Info HTML and scripts
     /// </summary>
     /// <seealso cref="System.Web.UI.WebControls.CompositeControl" />
     /// <seealso cref="System.Web.UI.INamingContainer" />
-    public class PiHostedPaymentControl : CompositeControl, INamingContainer, Rock.Financial.IHostedGatewayPaymentControlTokenEvent
+    public class MyWellHostedPaymentControl : CompositeControl, INamingContainer, Rock.Financial.IHostedGatewayPaymentControlTokenEvent
     {
         #region Controls
 
@@ -44,7 +44,7 @@ namespace Rock.TransNational.Pi.Controls
 
         #endregion
 
-        private PiGateway _piGateway;
+        private MyWellGateway _myWellGateway;
 
         #region Rock.Financial.IHostedGatewayPaymentControlTokenEvent
 
@@ -82,7 +82,7 @@ namespace Rock.TransNational.Pi.Controls
         /// <value>
         /// The enabled payment types.
         /// </value>
-        public PiPaymentType[] EnabledPaymentTypes
+        public MyWellPaymentType[] EnabledPaymentTypes
         {
             set
             {
@@ -107,21 +107,21 @@ namespace Rock.TransNational.Pi.Controls
         }
 
         /// <summary>
-        /// Gets or sets the pi gateway.
+        /// Gets or sets the MyWell gateway.
         /// </summary>
         /// <value>
-        /// The pi gateway.
+        /// The MyWell gateway.
         /// </value>
-        public PiGateway PiGateway
+        public MyWellGateway MyWellGateway
         {
             private get
             {
-                return _piGateway;
+                return _myWellGateway;
             }
 
             set
             {
-                _piGateway = value;
+                _myWellGateway = value;
             }
         }
 
@@ -165,9 +165,9 @@ namespace Rock.TransNational.Pi.Controls
             RockPage.AddScriptSrcToHead( this.Page, "gotnpgatewayTokenizer", $"{GatewayBaseUrl}/tokenizer/tokenizer.js" );
 
             // Script that contains the initializeTokenizer scripts for us to use on the client
-            System.Web.UI.ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "piGatewayTokenizerBlock", Scripts.gatewayTokenizer, true );
+            System.Web.UI.ScriptManager.RegisterClientScriptBlock( this, this.GetType(), "myWellGatewayTokenizerBlock", Scripts.gatewayTokenizer, true );
 
-            System.Web.UI.ScriptManager.RegisterStartupScript( this, this.GetType(), "piGatewayTokenizerStartup", $"initializeTokenizer('{this.ClientID}');", true );
+            System.Web.UI.ScriptManager.RegisterStartupScript( this, this.GetType(), "myWellGatewayTokenizerStartup", $"initializeTokenizer('{this.ClientID}');", true );
 
             base.OnInit( e );
         }
@@ -216,7 +216,7 @@ namespace Rock.TransNational.Pi.Controls
                     {
                         Rock.Financial.HostedGatewayPaymentControlTokenEventArgs hostedGatewayPaymentControlTokenEventArgs = new Financial.HostedGatewayPaymentControlTokenEventArgs();
 
-                        var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<Pi.TokenizerResponse>();
+                        var tokenResponse = PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
 
                         if ( tokenResponse?.IsSuccessStatus() != true )
                         {

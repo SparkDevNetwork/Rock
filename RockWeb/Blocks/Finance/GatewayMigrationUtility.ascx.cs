@@ -30,7 +30,7 @@ using Rock;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
-using Rock.TransNational.Pi;
+using Rock.MyWell;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Finance
     /// </summary>
     [DisplayName( "Financial Gateway Migration Utility" )]
     [Category( "Finance" )]
-    [Description( "Tool to assist in migrating records from NMI a Pi." )]
+    [Description( "Tool to assist in migrating records from NMI to My Well." )]
 
     #region Block Attributes
     #endregion Block Attributes
@@ -136,18 +136,18 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var activeGatewayList = financialGatewayService.Queryable().Where( a => a.IsActive == true ).AsNoTracking().ToList();
-            var piGateways = activeGatewayList.Where( a => a.GetGatewayComponent() is Rock.TransNational.Pi.PiGateway ).ToList();
-            ddlPiGateway.Items.Clear();
-            foreach ( var piGateway in piGateways )
+            var myWellGateways = activeGatewayList.Where( a => a.GetGatewayComponent() is MyWellGateway ).ToList();
+            ddlMyWellGateway.Items.Clear();
+            foreach ( var myWellGateway in myWellGateways )
             {
-                ddlPiGateway.Items.Add( new ListItem( piGateway.Name, piGateway.Id.ToString() ) );
+                ddlMyWellGateway.Items.Add( new ListItem( myWellGateway.Name, myWellGateway.Id.ToString() ) );
             }
 
             var nmiGateways = activeGatewayList.Where( a => a.GetGatewayComponent() is Rock.NMI.Gateway ).ToList();
             ddlNMIGateway.Items.Clear();
             foreach ( var nmiGateway in nmiGateways )
             {
-                ddlNMIGateway.Items.Add( new ListItem( nmiGateway.Name, nmiGateway.Id.ToString() ) );
+                ddlMyWellGateway.Items.Add( new ListItem( nmiGateway.Name, nmiGateway.Id.ToString() ) );
             }
         }
 
@@ -179,12 +179,12 @@ namespace RockWeb.Blocks.Finance
             public string NMICustomerId { get; set; }
 
             /// <summary>
-            /// Gets or sets the Pi customer identifier.
+            /// Gets or sets the My Well customer identifier.
             /// </summary>
             /// <value>
-            /// The pi customer identifier.
+            /// The My Well customer identifier.
             /// </value>
-            public string PiCustomerId { get; set; }
+            public string MyWellCustomerId { get; set; }
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Finance
                 binaryFile = binaryFileService.Get( binaryFileId.Value );
             }
 
-            Dictionary<string, string> nmiToPiCustomerIdLookup = null;
+            Dictionary<string, string> nmiToMyWellCustomerIdLookup = null;
 
             var importData = binaryFile.ContentsToString();
 
@@ -211,15 +211,15 @@ namespace RockWeb.Blocks.Finance
             CsvReader csvReader = new CsvReader( stringReader );
             csvReader.Configuration.HasHeaderRecord = false;
 
-            nmiToPiCustomerIdLookup = csvReader.GetRecords<CustomerVaultImportRecord>().ToDictionary( k => k.NMICustomerId, v => v.PiCustomerId );
+            nmiToMyWellCustomerIdLookup = csvReader.GetRecords<CustomerVaultImportRecord>().ToDictionary( k => k.NMICustomerId, v => v.MyWellCustomerId );
 
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var nmiFinancialGatewayID = ddlNMIGateway.SelectedValue.AsInteger();
             var nmiFinancialGateway = financialGatewayService.Get( nmiFinancialGatewayID );
             var nmiGatewayComponent = nmiFinancialGateway.GetGatewayComponent();
-            var piFinancialGatewayId = ddlPiGateway.SelectedValue.AsInteger();
-            var piFinancialGateway = financialGatewayService.Get( piFinancialGatewayId );
-            var piGatewayComponent = piFinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+            var myWellFinancialGatewayId = ddlMyWellGateway.SelectedValue.AsInteger();
+            var myWellFinancialGateway = financialGatewayService.Get( myWellFinancialGatewayId );
+            var myWellGatewayComponent = myWellFinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
 
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
             var nmiPersonSavedAccountList = financialPersonSavedAccountService.Queryable().Where( a => a.FinancialGatewayId == nmiFinancialGatewayID ).ToList();
@@ -231,20 +231,20 @@ namespace RockWeb.Blocks.Finance
             foreach ( var nmiPersonSavedAccount in nmiPersonSavedAccountList )
             {
                 var nmiCustomerId = nmiPersonSavedAccount.GatewayPersonIdentifier ?? nmiPersonSavedAccount.ReferenceNumber;
-                var piCustomerId = nmiToPiCustomerIdLookup.GetValueOrNull( nmiCustomerId );
+                var myWellCustomerId = nmiToMyWellCustomerIdLookup.GetValueOrNull( nmiCustomerId );
 
-                nmiPersonSavedAccount.GatewayPersonIdentifier = piCustomerId;
-                nmiPersonSavedAccount.FinancialGatewayId = piFinancialGatewayId;
+                nmiPersonSavedAccount.GatewayPersonIdentifier = myWellCustomerId;
+                nmiPersonSavedAccount.FinancialGatewayId = myWellFinancialGatewayId;
 
-                // NOTE: NMI Customer IDs created after the Vault import file was created won't have a piCustomerId
+                // NOTE: NMI Customer IDs created after the Vault import file was created won't have a myWellCustomerId
 
                 personSavedAccountResultsBuilder.AppendFormat(
-                    "FinancialPersonSavedAccount.Id: {0} NMI CustomerId: '{1}', NMI GatewayPersonIdentifier: '{2}', NMI ReferenceNumber: '{3}', Pi CustomerId: '{4}'" + Environment.NewLine,
+                    "FinancialPersonSavedAccount.Id: {0} NMI CustomerId: '{1}', NMI GatewayPersonIdentifier: '{2}', NMI ReferenceNumber: '{3}', My Well CustomerId: '{4}'" + Environment.NewLine,
                     nmiPersonSavedAccount.Id,
                     nmiCustomerId,
                     nmiPersonSavedAccount.GatewayPersonIdentifier,
                     nmiPersonSavedAccount.ReferenceNumber,
-                    piCustomerId
+                    myWellCustomerId
                     );
             }
 
@@ -290,12 +290,12 @@ namespace RockWeb.Blocks.Finance
             public string NMISubscriptionId { get; set; }
 
             /// <summary>
-            /// Gets or sets the Pi customer identifier.
+            /// Gets or sets the My Well customer identifier.
             /// </summary>
             /// <value>
-            /// The pi customer identifier.
+            /// The My Well customer identifier.
             /// </value>
-            public string PiCustomerId { get; set; }
+            public string MyWellCustomerId { get; set; }
         }
 
         /// <summary>
@@ -334,15 +334,15 @@ namespace RockWeb.Blocks.Finance
             CsvReader csvReader = new CsvReader( stringReader );
             csvReader.Configuration.HasHeaderRecord = false;
 
-            subscriptionImportRecordLookup = csvReader.GetRecords<SubscriptionCustomerImportRecord>().ToDictionary( k => k.NMISubscriptionId, v => v.PiCustomerId );
+            subscriptionImportRecordLookup = csvReader.GetRecords<SubscriptionCustomerImportRecord>().ToDictionary( k => k.NMISubscriptionId, v => v.MyWellCustomerId );
 
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var nmiFinancialGatewayId = ddlNMIGateway.SelectedValue.AsInteger();
             var nmiFinancialGateway = financialGatewayService.Get( nmiFinancialGatewayId );
             var nmiGatewayComponent = nmiFinancialGateway.GetGatewayComponent();
-            var piFinancialGatewayId = ddlPiGateway.SelectedValue.AsInteger();
-            var piFinancialGateway = financialGatewayService.Get( piFinancialGatewayId );
-            var piGatewayComponent = piFinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+            var myWellFinancialGatewayId = ddlMyWellGateway.SelectedValue.AsInteger();
+            var myWellFinancialGateway = financialGatewayService.Get( myWellFinancialGatewayId );
+            var myWellGatewayComponent = myWellFinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
 
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
 
@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Finance
             // Limit to active subscriptions that have a NextPaymentDate (onetime or canceled schedules might not have a NextPaymentDate)
             var scheduledTransactions = financialScheduledTransactionService.Queryable().Where( a => a.FinancialGatewayId == nmiFinancialGatewayId & a.IsActive && a.NextPaymentDate.HasValue ).AsNoTracking().ToList();
 
-            var earliestPiStartDate = piGatewayComponent.GetEarliestScheduledStartDate( piFinancialGateway );
+            var earliestMyWellStartDate = myWellGatewayComponent.GetEarliestScheduledStartDate( myWellFinancialGateway );
             var oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() );
 
             string errorMessage;
@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Finance
             var scheduledTransactionCount = scheduledTransactions.Count();
             var scheduledTransactionProgress = 0;
 
-            // Migrating Scheduled Transactions might take a while. Each migrated Scheduled Payment may take a half second or so to create on the Pi Gateway.
+            // Migrating Scheduled Transactions might take a while. Each migrated Scheduled Payment may take a half second or so to create on the MyWell Gateway.
             var importTask = new Task( () =>
             {
                 // wait a little so the browser can render and start listening to events
@@ -376,20 +376,20 @@ namespace RockWeb.Blocks.Finance
                     scheduledTransactionProgress++;
                     var nmiSubscriptionId = scheduledTransaction.GatewayScheduleId;
                     var nmiCustomerId = scheduledTransaction.ForeignKey;
-                    var piCustomerId = subscriptionImportRecordLookup.GetValueOrNull( nmiSubscriptionId );
-                    if ( piCustomerId == null )
+                    var myWellCustomerId = subscriptionImportRecordLookup.GetValueOrNull( nmiSubscriptionId );
+                    if ( myWellCustomerId == null )
                     {
                         scheduledTransactionResultsBuilder.AppendFormat(
-        "WARNING: No Pi CustomerId found for Financial Scheduled Transaction with Id: {0} which is associated NMI SubscriptionId: '{1}'" + Environment.NewLine,
+        "WARNING: No My Well CustomerId found for Financial Scheduled Transaction with Id: {0} which is associated NMI SubscriptionId: '{1}'" + Environment.NewLine,
         scheduledTransaction.Id,
         nmiSubscriptionId
         );
                         continue;
                     }
 
-                    // Pi requires that NextPaymentDate is in the Future (using UTC). That math is done in the gateway implementation...
-                    // if the NextPayment null or earlier than whatever Pi considers the earliest start date, see if we can fix that up by calling GetStatus
-                    if ( scheduledTransaction.NextPaymentDate == null || scheduledTransaction.NextPaymentDate < earliestPiStartDate )
+                    // My Well requires that NextPaymentDate is in the Future (using UTC). That math is done in the gateway implementation...
+                    // if the NextPayment null or earlier than whatever My Well considers the earliest start date, see if we can fix that up by calling GetStatus
+                    if ( scheduledTransaction.NextPaymentDate == null || scheduledTransaction.NextPaymentDate < earliestMyWellStartDate )
                     {
                         financialScheduledTransactionService.GetStatus( scheduledTransaction, out errorMessage );
                     }
@@ -406,12 +406,12 @@ namespace RockWeb.Blocks.Finance
                     }
 
 
-                    if ( scheduledTransaction.NextPaymentDate < earliestPiStartDate )
+                    if ( scheduledTransaction.NextPaymentDate < earliestMyWellStartDate )
                     {
-                        if ( ( scheduledTransaction.NextPaymentDate > RockDateTime.Today ) && earliestPiStartDate.Subtract( scheduledTransaction.NextPaymentDate.Value ).TotalDays <= 2 )
+                        if ( ( scheduledTransaction.NextPaymentDate > RockDateTime.Today ) && earliestMyWellStartDate.Subtract( scheduledTransaction.NextPaymentDate.Value ).TotalDays <= 2 )
                         {
-                            // if the NextPaymentDate is after Today but before the Earliest Pi Start Date, it'll be off by less than 24 hrs, so just reschedule it for the Earliest Pi Start Date
-                            scheduledTransaction.NextPaymentDate = earliestPiStartDate;
+                            // if the NextPaymentDate is after Today but before the Earliest My Well Start Date, it'll be off by less than 24 hrs, so just reschedule it for the Earliest My Well Start Date
+                            scheduledTransaction.NextPaymentDate = earliestMyWellStartDate;
                         }
                         else
                         {
@@ -421,12 +421,12 @@ namespace RockWeb.Blocks.Finance
             scheduledTransaction.NextPaymentDate,
             scheduledTransaction.Id,
             nmiSubscriptionId,
-            earliestPiStartDate
+            earliestMyWellStartDate
             );
                         }
                     }
 
-                    // create a subscription in the Pi System, then cancel the one on the NMI system
+                    // create a subscription in the My Well System, then cancel the one on the NMI system
                     PaymentSchedule paymentSchedule = new PaymentSchedule
                     {
                         TransactionFrequencyValue = DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId ),
@@ -436,29 +436,29 @@ namespace RockWeb.Blocks.Finance
 
                     ReferencePaymentInfo referencePaymentInfo = new ReferencePaymentInfo
                     {
-                        GatewayPersonIdentifier = piCustomerId,
+                        GatewayPersonIdentifier = myWellCustomerId,
                         Description = string.Format( "Migrated from NMI SubscriptionID:{0}", nmiSubscriptionId )
                     };
 
-                    var piGateway = ( piGatewayComponent as PiGateway );
-                    string alreadyMigratedPiSubscriptionId = null;
+                    var myWellGateway = ( myWellGatewayComponent as MyWellGateway );
+                    string alreadyMigratedMyWellSubscriptionId = null;
 
-                    if ( piGateway != null )
+                    if ( myWellGateway != null )
                     {
-                        var customerPiSubscriptions = piGateway.SearchCustomerSubscriptions( piFinancialGateway, piCustomerId );
-                        alreadyMigratedPiSubscriptionId = customerPiSubscriptions.Data.Where( a => a.Description.Contains( referencePaymentInfo.Description ) ).Select( a => a.Customer.Id ).FirstOrDefault();
+                        var customerMyWellSubscriptions = myWellGateway.SearchCustomerSubscriptions( myWellFinancialGateway, myWellCustomerId );
+                        alreadyMigratedMyWellSubscriptionId = customerMyWellSubscriptions.Data.Where( a => a.Description.Contains( referencePaymentInfo.Description ) ).Select( a => a.Customer.Id ).FirstOrDefault();
                     }
 
-                    if ( string.IsNullOrEmpty( alreadyMigratedPiSubscriptionId ) )
+                    if ( string.IsNullOrEmpty( alreadyMigratedMyWellSubscriptionId ) )
                     {
                         // hasn't already been migrated, so go ahead and migrate it
-                        var tempFinancialScheduledTransaction = piGatewayComponent.AddScheduledPayment( piFinancialGateway, paymentSchedule, referencePaymentInfo, out errorMessage );
+                        var tempFinancialScheduledTransaction = myWellGatewayComponent.AddScheduledPayment( myWellFinancialGateway, paymentSchedule, referencePaymentInfo, out errorMessage );
                         if ( tempFinancialScheduledTransaction != null )
                         {
-                            ////////////#### DISABLE this when debugger #####
+                            ////////////#### DISABLE this when debugging #####
                             nmiGatewayComponent.CancelScheduledPayment( scheduledTransaction, out errorMessage );
 
-                            // update the scheduled transaction to point to the Pi scheduled transaction
+                            // update the scheduled transaction to point to the MyWell scheduled transaction
                             using ( var updateRockContext = new RockContext() )
                             {
                                 // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
@@ -470,32 +470,32 @@ namespace RockWeb.Blocks.Finance
                             }
 
                             scheduledTransactionResultsBuilder.AppendFormat(
-                                "SUCCESS: Scheduled Transaction migration succeeded. (FinancialScheduledTransaction.Id: {0}, NMI SubscriptionId: '{1}', Pi CustomerId: {2}, Pi SubscriptionId: {3})" + Environment.NewLine,
+                                "SUCCESS: Scheduled Transaction migration succeeded. (FinancialScheduledTransaction.Id: {0}, NMI SubscriptionId: '{1}', My Well CustomerId: {2}, My Well SubscriptionId: {3})" + Environment.NewLine,
                                 scheduledTransaction.Id,
                                 nmiSubscriptionId,
-                                piCustomerId,
+                                myWellCustomerId,
                                 scheduledTransaction.GatewayScheduleId
                                 );
                         }
                         else
                         {
                             scheduledTransactionResultsBuilder.AppendFormat(
-                                "ERROR: Scheduled Transaction migration failed. ErrorMessage: {0}, FinancialScheduledTransaction.Id: {1}, NMI SubscriptionId: '{2}', Pi CustomerId: {3}" + Environment.NewLine,
+                                "ERROR: Scheduled Transaction migration failed. ErrorMessage: {0}, FinancialScheduledTransaction.Id: {1}, NMI SubscriptionId: '{2}', My Well CustomerId: {3}" + Environment.NewLine,
                                 errorMessage,
                                 scheduledTransaction.Id,
                                 nmiSubscriptionId,
-                                piCustomerId
+                                myWellCustomerId
                                 );
                         }
                     }
                     else
                     {
                         scheduledTransactionResultsBuilder.AppendFormat(
-                            "INFO: Scheduled Transaction already migrated to PI. FinancialScheduledTransaction.Id: {0}, NMI SubscriptionId: '{1}', Pi SubscriptionId: '{2}', Pi CustomerId: {3}" + Environment.NewLine,
+                            "INFO: Scheduled Transaction already migrated to My Well. FinancialScheduledTransaction.Id: {0}, NMI SubscriptionId: '{1}', My Well SubscriptionId: '{2}', My Well CustomerId: {3}" + Environment.NewLine,
                             scheduledTransaction.Id,
                             nmiSubscriptionId,
-                            alreadyMigratedPiSubscriptionId,
-                            piCustomerId
+                            alreadyMigratedMyWellSubscriptionId,
+                            myWellCustomerId
                             );
                     }
                 }

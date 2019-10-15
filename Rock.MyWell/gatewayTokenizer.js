@@ -86,12 +86,12 @@
         }
     };
 
-    // NOTE: the PI Tokenizer supports doing both ACH and CC in the same tokenizer, but we want to have two tokenizers for each so that we can take care of the toggling between them in the UI
+    // NOTE: the MyWell Tokenizer supports doing both ACH and CC in the same tokenizer, but we want to have two tokenizers for each so that we can take care of the toggling between them in the UI
 
 
     //// Credit Card
     if (enabledPaymentTypes.includes('card')) {
-        // create PI Gateway Tokenizer object for CreditCard (from example on https://sandbox.gotnpgateway.com/docs/tokenizer/)
+        // create MyWell Gateway Tokenizer object for CreditCard (from example on https://sandbox.gotnpgateway.com/docs/tokenizer/)
         var tokenizerCreditCardSettings = $.extend(true, {}, tokenizerBaseSettings);
         tokenizerCreditCardSettings.container = $creditCardContainer[0];
         tokenizerCreditCardSettings.settings.payment.types = ['card'];
@@ -113,7 +113,7 @@
 
     //// ACH
     if (enabledPaymentTypes.includes('ach')) {
-        // create PI Gateway Tokenizer object for ACH (from example on https://sandbox.gotnpgateway.com/docs/tokenizer/)
+        // create MyWell Gateway Tokenizer object for ACH (from example on https://sandbox.gotnpgateway.com/docs/tokenizer/)
         var tokenizerACHSettings = $.extend(true, {}, tokenizerBaseSettings);
         tokenizerACHSettings.container = $achContainer[0];
         tokenizerACHSettings.settings.payment.types = ['ach'];

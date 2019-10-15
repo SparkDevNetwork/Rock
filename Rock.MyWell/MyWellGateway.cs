@@ -28,22 +28,22 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
-using Rock.TransNational.Pi.Controls;
+using Rock.MyWell.Controls;
 using Rock.Web.Cache;
 
 // Use Newtonsoft RestRequest which is the same as RestSharp.RestRequest but uses the JSON.NET serializer
 using RestRequest = RestSharp.Newtonsoft.Json.RestRequest;
 
-namespace Rock.TransNational.Pi
+namespace Rock.MyWell
 {
     /// <summary>
     /// 
     /// </summary>
     /// <seealso cref="Rock.Financial.GatewayComponent" />
-    [Description( "The TransNational Pi Gateway is the primary gateway to use with My Well giving." )]
-    [DisplayName( "TransNational Pi Gateway" )]
+    [Description( "The My Well Gateway is the primary gateway to use with My Well giving." )]
+    [DisplayName( "My Well Gateway" )]
     [Export( typeof( GatewayComponent ) )]
-    [ExportMetadata( "ComponentName", "TransNational Pi Gateway" )]
+    [ExportMetadata( "ComponentName", "My Well Gateway" )]
 
     #region Component Attributes
 
@@ -69,7 +69,7 @@ namespace Rock.TransNational.Pi
         DefaultValue = "Live" )]
 
     #endregion Component Attributes
-    public class PiGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent
+    public class MyWellGateway : GatewayComponent, IHostedGatewayComponent, IAutomatedGatewayComponent
     {
         #region Attribute Keys
 
@@ -158,7 +158,7 @@ namespace Rock.TransNational.Pi
         /// <exception cref="ReferencePaymentInfoRequired"></exception>
         public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
         {
-            // TODO - Fees? If Pi provides fee info, we won't be able to use the Charge method as the transaction it returns
+            // TODO - Fees? If MyWell provides fee info, we won't be able to use the Charge method as the transaction it returns
             // doesn't have the capacity to relay fee info (also the reason this method returns a Payment rather than a
             // transaction.
 
@@ -225,25 +225,25 @@ namespace Rock.TransNational.Pi
         /// <returns></returns>
         public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options )
         {
-            PiHostedPaymentControl piHostedPaymentControl = new PiHostedPaymentControl { ID = controlId };
-            piHostedPaymentControl.PiGateway = this;
-            piHostedPaymentControl.GatewayBaseUrl = this.GetGatewayUrl( financialGateway );
-            List<PiPaymentType> enabledPaymentTypes = new List<PiPaymentType>();
+            MyWellHostedPaymentControl myWellHostedPaymentControl = new MyWellHostedPaymentControl { ID = controlId };
+            myWellHostedPaymentControl.MyWellGateway = this;
+            myWellHostedPaymentControl.GatewayBaseUrl = this.GetGatewayUrl( financialGateway );
+            List<MyWellPaymentType> enabledPaymentTypes = new List<MyWellPaymentType>();
             if ( options?.EnableACH ?? true )
             {
-                enabledPaymentTypes.Add( PiPaymentType.ach );
+                enabledPaymentTypes.Add( MyWellPaymentType.ach );
             }
 
             if ( options?.EnableCreditCard ?? true )
             {
-                enabledPaymentTypes.Add( PiPaymentType.card );
+                enabledPaymentTypes.Add( MyWellPaymentType.card );
             }
 
-            piHostedPaymentControl.EnabledPaymentTypes = enabledPaymentTypes.ToArray();
+            myWellHostedPaymentControl.EnabledPaymentTypes = enabledPaymentTypes.ToArray();
 
-            piHostedPaymentControl.PublicApiKey = this.GetPublicApiKey( financialGateway );
+            myWellHostedPaymentControl.PublicApiKey = this.GetPublicApiKey( financialGateway );
 
-            return piHostedPaymentControl;
+            return myWellHostedPaymentControl;
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace Rock.TransNational.Pi
         public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
         {
             errorMessage = null;
-            var tokenResponse = ( hostedPaymentInfoControl as PiHostedPaymentControl ).PaymentInfoTokenRaw.FromJsonOrNull<Pi.TokenizerResponse>();
+            var tokenResponse = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
             if ( tokenResponse?.IsSuccessStatus() != true )
             {
                 if ( tokenResponse.HasValidationError() )
@@ -268,11 +268,11 @@ namespace Rock.TransNational.Pi
                 }
 
                 errorMessage = $"Failure: {tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken"}";
-                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as PiHostedPaymentControl ).PaymentInfoToken;
+                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoToken;
             }
             else
             {
-                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as PiHostedPaymentControl ).PaymentInfoToken;
+                referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoToken;
             }
         }
 
@@ -335,14 +335,14 @@ namespace Rock.TransNational.Pi
         /// <returns></returns>
         public DateTime GetEarliestScheduledStartDate( FinancialGateway financialGateway )
         {
-            // Pi Gateway requires that a subscription has to have a start date at least 24 after the current UTC Date
+            // MyWell Gateway requires that a subscription has to have a start date at least 24 after the current UTC Date
             // This sometimes will make the minimum date 2 days from now if it is already currently tomorrow in UTC (for example after 5PM Arizona Time which is offset by -7 hours from UTC)
             return DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Local ).AddDays( 1 ).ToUniversalTime().Date;
         }
 
         #endregion IHostedGatewayComponent
 
-        #region PiGateway Rock Wrappers
+        #region MyWellGateway Rock Wrappers
 
         #region Customers
 
@@ -381,7 +381,7 @@ namespace Rock.TransNational.Pi
         /// <summary>
         /// Creates the customer.
         /// https://sandbox.gotnpgateway.com/docs/api/#create-a-new-customer
-        /// NOTE: Pi Gateway supports multiple payment tokens per customer, but Rock will implement it as one Payment Method per Customer, and 0 or more Pi Customers (one for each payment entry) per Rock Person.
+        /// NOTE: MyWell Gateway supports multiple payment tokens per customer, but Rock will implement it as one Payment Method per Customer, and 0 or more MyWell Customers (one for each payment entry) per Rock Person.
         /// </summary>
         /// <param name="gatewayUrl">The gateway URL.</param>
         /// <param name="apiKey">The API key.</param>
@@ -476,7 +476,7 @@ namespace Rock.TransNational.Pi
             var tokenizerToken = referencedPaymentInfo.ReferenceNumber;
             var amount = referencedPaymentInfo.Amount;
 
-            var transaction = new Rock.TransNational.Pi.CreateTransaction
+            var transaction = new Rock.MyWell.CreateTransaction
             {
                 Type = type,
                 Amount = amount
@@ -484,11 +484,11 @@ namespace Rock.TransNational.Pi
 
             if ( customerId.IsNotNullOrWhiteSpace() )
             {
-                transaction.PaymentMethodRequest = new Rock.TransNational.Pi.PaymentMethodRequest( new Rock.TransNational.Pi.PaymentMethodCustomer( customerId ) );
+                transaction.PaymentMethodRequest = new Rock.MyWell.PaymentMethodRequest( new Rock.MyWell.PaymentMethodCustomer( customerId ) );
             }
             else
             {
-                transaction.PaymentMethodRequest = new Rock.TransNational.Pi.PaymentMethodRequest( tokenizerToken );
+                transaction.PaymentMethodRequest = new Rock.MyWell.PaymentMethodRequest( tokenizerToken );
             }
 
             StringBuilder stringBuilderDescription = new StringBuilder();
@@ -637,7 +637,7 @@ namespace Rock.TransNational.Pi
             int startDayOfMonth = subscriptionRequestParameters.NextBillDateUTC.Value.Day;
             int twiceMonthlySecondDayOfMonth = subscriptionRequestParameters.NextBillDateUTC.Value.AddDays( 15 ).Day;
 
-            // PiGateway doesn't allow Day of Month over 28, but will automatically schedule for the last day of the month if you pass in 31
+            // MyWell Gateway doesn't allow Day of Month over 28, but will automatically schedule for the last day of the month if you pass in 31
             if ( startDayOfMonth > 28 )
             {
                 startDayOfMonth = 31;
@@ -878,7 +878,7 @@ namespace Rock.TransNational.Pi
 
         #endregion Subscriptions
 
-        #endregion PiGateway Rock wrappers
+        #endregion MyWellGateway Rock wrappers
 
         #region Exceptions
 
@@ -892,7 +892,7 @@ namespace Rock.TransNational.Pi
             /// Initializes a new instance of the <see cref="ReferencePaymentInfoRequired"/> class.
             /// </summary>
             public ReferencePaymentInfoRequired()
-                : base( "PiGateway requires a token or customer reference" )
+                : base( "MyWellGateway requires a token or customer reference" )
             {
             }
         }
@@ -1073,7 +1073,7 @@ namespace Rock.TransNational.Pi
         /// <exception cref="ReferencePaymentInfoRequired"></exception>
         public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
-            // create a guid to include in the Pi Subscription Description so that we can refer back to it to ensure an orphaned subscription doesn't exist when an exception occurs
+            // create a guid to include in the MyWell Subscription Description so that we can refer back to it to ensure an orphaned subscription doesn't exist when an exception occurs
             var descriptionGuid = Guid.NewGuid();
 
             var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
@@ -1281,7 +1281,7 @@ namespace Rock.TransNational.Pi
         /// <returns></returns>
         public override bool ReactivateScheduledPayment( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
         {
-            errorMessage = "The payment gateway associated with this scheduled transaction (Pi) does not support reactivating scheduled transactions. A new scheduled transaction should be created instead.";
+            errorMessage = "The payment gateway associated with this scheduled transaction (MyWell) does not support reactivating scheduled transactions. A new scheduled transaction should be created instead.";
             return false;
         }
 
@@ -1395,7 +1395,7 @@ namespace Rock.TransNational.Pi
         /// <returns></returns>
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
-            // PI Gateway uses either a PiGateway CustomerId for this, which is stored in FinancialPersonSavedAccount.GatewayPersonIdentifier, not a previously processed transaction
+            // MyWell Gateway uses either a MyWellGateway CustomerId for this, which is stored in FinancialPersonSavedAccount.GatewayPersonIdentifier, not a previously processed transaction
             // Note: GatewayPersonIdentifer comes from CreateCustomerAccount
             errorMessage = string.Empty;
             return string.Empty;
@@ -1410,7 +1410,7 @@ namespace Rock.TransNational.Pi
         public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
         {
             // we can figure out the customerId from scheduledTransaction.TransactionCode since
-            // that is what our implementation of PiGateway stores customerId (see AddScheduledPayment)
+            // that is what our implementation of MyWellGateway stores customerId (see AddScheduledPayment)
             errorMessage = null;
             return scheduledTransaction.TransactionCode;
         }
