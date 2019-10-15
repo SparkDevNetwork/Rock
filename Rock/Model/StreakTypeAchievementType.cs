@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -34,6 +33,20 @@ namespace Rock.Model
     public partial class StreakTypeAchievementType : Model<StreakTypeAchievementType>, IHasActiveFlag
     {
         #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the name of the achievement type. This property is required.
+        /// </summary>
+        [MaxLength( 250 )]
+        [DataMember( IsRequired = true )]
+        [Required]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a description of the achievement type.
+        /// </summary>
+        [DataMember]
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Model.StreakType"/> to which this StreakTypeAchievementType belongs. This property is required.
