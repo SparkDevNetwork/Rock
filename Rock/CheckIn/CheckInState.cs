@@ -174,6 +174,7 @@ namespace Rock.CheckIn
         /// <param name="json">The json.</param>
         /// <returns></returns>
         [Obsolete( "use the FromJson() string extension instead" )]
+        [RockObsolete( "1.10" )]
         public static CheckInState FromJson( string json )
         {
             return json.FromJsonOrNull<CheckInState>();

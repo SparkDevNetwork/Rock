@@ -176,6 +176,12 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.CAMPUS_TYPE )]
         public int? CampusTypeValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the team group identifier.
+        /// </summary>
+        /// <value>
+        /// The team group identifier.
+        /// </value>
         [DataMember]
         public int? TeamGroupId { get; set; }
 
@@ -243,6 +249,12 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue CampusTypeValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the team group.
+        /// </summary>
+        /// <value>
+        /// The team group.
+        /// </value>
         [DataMember]
         public virtual Group TeamGroup { get; set; }
 
