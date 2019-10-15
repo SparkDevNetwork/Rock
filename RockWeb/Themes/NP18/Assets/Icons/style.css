@@ -1,12 +1,13 @@
 @font-face {
   font-family: 'Icons';
-  src:  url('fonts/Icons.eot?yhztf9');
-  src:  url('fonts/Icons.eot?yhztf9#iefix') format('embedded-opentype'),
-    url('fonts/Icons.ttf?yhztf9') format('truetype'),
-    url('fonts/Icons.woff?yhztf9') format('woff'),
-    url('fonts/Icons.svg?yhztf9#Icons') format('svg');
+  src:  url('fonts/Icons.eot?5m8e6r');
+  src:  url('fonts/Icons.eot?5m8e6r#iefix') format('embedded-opentype'),
+    url('fonts/Icons.ttf?5m8e6r') format('truetype'),
+    url('fonts/Icons.woff?5m8e6r') format('woff'),
+    url('fonts/Icons.svg?5m8e6r#Icons') format('svg');
   font-weight: normal;
   font-style: normal;
+  font-display: block;
 }
 
 [class^="np-"], [class*=" np-"] {
@@ -24,6 +25,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.np-prayer:before {
+  content: "\e912";
+}
 .np-caret:before {
   content: "\e911";
 }

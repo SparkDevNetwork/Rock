@@ -42,10 +42,10 @@
     <!-- jQuery (Used by Rock RMS & Themes) -->
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
 
-    <!-- Dynamicly added head tags -->
-    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+    <!-- Per-layout head tags -->
+    <asp:ContentPlaceHolder ID="head" runat="server" />
 
-    <!-- Dynamicly added css tags -->
+    <!-- Per-layout css tags -->
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
     <!-- NewPointe 2018 Theme CSS Files -->
@@ -55,7 +55,7 @@
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Assets/Icons/style.css", false) %>" />
 
     <!-- Adobe Fonts (Din 2014) -->
-    <link rel="stylesheet" href="https://use.typekit.net/nuz3ykm.css" integrity="sha384-3Oksn1rfcunmyufe4U77X7mx3tf2WwJYDR9pMmX7iOZBO53RWIGodHaZtFkFBVZB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.typekit.net/nuz3ykm.css" crossorigin="anonymous">
 
     <!-- NewPointe 2018 Theme scripts -->
     <script src="<%# ResolveRockUrl("~~/Scripts/scripts.js", true ) %>"></script>
@@ -137,12 +137,16 @@
     </form>
 
     <script>
-        var animate = new Animate({
-            remove: false
-        });
-        animate.init();
+
+        // Setup scroll-in animations
+        new Animate({ remove: false }).init();
+
+        // Setup parallax animations
         $('.paroller').paroller();
+
+        // Polyfill for the sticky header
         Stickyfill.add(document.querySelectorAll('#zone-navigation'));
+
     </script>
 
 </body>

@@ -34,6 +34,8 @@
         {% assign CapacityColor = '#8bc540' %}
     {% endif %}
 
+    {% assign GroupTags = Group | Attribute:'Hub' | Split:',' %}
+
 {% endcapture %}
 
 
@@ -55,6 +57,11 @@
         {% else %}
             {{ Group.Members.size }} of {{ Group.GroupCapacity }} {{ "member" | PluralizeForQuantity:Group.GroupCapacity }}
         {% endif %}
+    </p>
+    <p class="">
+        {% for Tag in GroupTags %}
+            <span class="label label-default">{{ Tag }}</span>
+        {% endfor %}
     </p>
     {% if showbutton %}
         <a class="btn btn-primary btn-sm btn-block" href="{{ GroupDetailsLink }}">Learn More</a>

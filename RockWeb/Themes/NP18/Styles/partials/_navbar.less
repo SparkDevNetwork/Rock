@@ -70,23 +70,23 @@
 @media (min-width: @screen-md-min) {
 
     .navbar {
-        padding: 25px 45px;
+        padding: 2.5rem 4.5rem;
         color: @white;
         background-color: transparent;
     }
 
     .noheader .navbar {
-        padding: 20px 45px;
+        padding: 2rem 4.5rem;
         color: gray;
         background-color: @truewhite;
     }
 
     .opaque .navbar {
-        padding: 10px 45px;
-        margin-bottom: 15px; // Needed so the 
+        padding: 1rem 4.5rem;
+        margin-bottom: 1.5rem;
         color: gray;
         background-color: @truewhite;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+        box-shadow: @box-shadow;
     }
 
     .navbar-toggler {
@@ -97,22 +97,4 @@
     .zone-highlight .navbar-toggle-content {
         position: relative;
     }
-}
-
-// Large Desktop view
-@media (min-width: @screen-xl-min) {
-
-    .navbar {
-        padding: 35px 70px;
-    }
-
-    .noheader .navbar {
-        padding: 20px 70px;
-    }
-
-    .opaque .navbar {
-        padding: 10px 70px;
-    }
-
-
 }
