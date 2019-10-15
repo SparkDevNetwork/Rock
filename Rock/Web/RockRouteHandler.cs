@@ -323,7 +323,6 @@ namespace Rock.Web
         /// </summary>
         /// <param name="requestingSite">The requesting site.</param>
         /// <param name="pageId">The page identifier.</param>
-        /// <param name="route">The route.</param>
         /// <returns>
         ///   <c>true</c> if [is site match] [the specified requesting site]; otherwise, <c>false</c>.
         /// </returns>
@@ -349,7 +348,6 @@ namespace Rock.Web
         /// </summary>
         /// <param name="requestingSite">The requesting site.</param>
         /// <param name="pageId">The page identifier.</param>
-        /// <param name="route">The route.</param>
         /// <returns>
         ///   <c>true</c> if [is page exclusive to another site] [the specified requesting site]; otherwise, <c>false</c>.
         /// </returns>
