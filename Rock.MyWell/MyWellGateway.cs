@@ -158,11 +158,11 @@ namespace Rock.MyWell
         /// <exception cref="ReferencePaymentInfoRequired"></exception>
         public Payment AutomatedCharge( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage, Dictionary<string, string> metadata = null )
         {
-            // TODO - Fees? If MyWell provides fee info, we won't be able to use the Charge method as the transaction it returns
-            // doesn't have the capacity to relay fee info (also the reason this method returns a Payment rather than a
-            // transaction.
+            //// TODO - Fees? If MyWell provides fee info, we won't be able to use the Charge method as the transaction it returns
+            //// doesn't have the capacity to relay fee info (also the reason this method returns a Payment rather than a
+            //// transaction.
 
-            // payment.FeeAmount and payment.NetAmount
+            //// payment.FeeAmount and payment.NetAmount
 
             MostRecentException = null;
 
@@ -261,13 +261,10 @@ namespace Rock.MyWell
             {
                 if ( tokenResponse.HasValidationError() )
                 {
-                    if ( tokenResponse.Invalid.Any() )
-                    {
-                        errorMessage = $"Invalid {tokenResponse.Invalid.ToList().AsDelimited( "," ) }";
-                    }
+                    errorMessage = tokenResponse.ValidationMessage;
                 }
 
-                errorMessage = $"Failure: {tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken"}";
+                errorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
                 referencePaymentInfo.ReferenceNumber = ( hostedPaymentInfoControl as MyWellHostedPaymentControl ).PaymentInfoToken;
             }
             else
@@ -318,7 +315,7 @@ namespace Rock.MyWell
 
             if ( createCustomerResponse?.IsSuccessStatus() != true )
             {
-                errorMessage = $"Failure: {createCustomerResponse?.Message ?? "null response from CreateCustomerAccount"}";
+                errorMessage = createCustomerResponse?.Message ?? "null response from CreateCustomerAccount";
                 return null;
             }
             else
@@ -658,6 +655,7 @@ namespace Rock.MyWell
                 // see https://sandbox.gotnpgateway.com/docs/api/#bill-once-month-on-the-1st-and-the-15th-until-canceled
                 var twiceMonthlyDays = new int[2] { startDayOfMonth, twiceMonthlySecondDayOfMonth };
                 billingFrequency = BillingFrequency.twice_monthly;
+
                 // twiceMonthly Days have to be in numeric order
                 billingDays = $"{twiceMonthlyDays.OrderBy( a => a ).ToList().AsDelimited( "," )}";
             }
@@ -1156,7 +1154,6 @@ namespace Rock.MyWell
             }
         }
 
-
         /// <summary>
         /// Updates the scheduled payment.
         /// </summary>
@@ -1414,8 +1411,6 @@ namespace Rock.MyWell
             errorMessage = null;
             return scheduledTransaction.TransactionCode;
         }
-
-
 
         #endregion GatewayComponent implementation
     }

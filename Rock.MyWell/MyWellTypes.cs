@@ -144,7 +144,6 @@ namespace Rock.MyWell
         public DateTime? UpdateDateTime { get; set; }
     }
 
-
     /// <summary>
     /// https://sandbox.gotnpgateway.com/docs/api/#update-a-specific-customer-address
     /// </summary>
@@ -458,7 +457,6 @@ namespace Rock.MyWell
         /// </value>
         [JsonProperty( "cvv_response_code" )]
         public string CVVResponseCode { get; set; }
-
     }
 
     /// <summary>
@@ -530,9 +528,6 @@ namespace Rock.MyWell
     /// </summary>
     public class BillingAddress
     {
-
-
-
         /// <summary>
         /// Gets or sets the identifier.
         /// </summary>
@@ -771,13 +766,28 @@ namespace Rock.MyWell
     public class TokenizerResponse : BaseResponseData
     {
         /// <summary>
-        /// Gets or sets the message.
+        /// Gets or sets the message. NOTE: since the json fieldname is different than BasesReponseData, we have to declare this as a 'new'
         /// </summary>
         /// <value>
         /// The message.
         /// </value>
         [JsonProperty( "message" )]
-        public new string Message { get; set; }
+        public new string ApiMessage { get; set; }
+
+        /// <summary>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
+        /// </summary>
+        /// <value>
+        /// The friendly message.
+        /// </value>
+        [JsonIgnore]
+        public override string Message
+        {
+            get
+            {
+                return FriendlyMessageHelper.GetFriendlyMessage( this.ApiMessage );
+            }
+        }
 
         /// <summary>
         /// Determines whether [has validation error].
@@ -787,7 +797,7 @@ namespace Rock.MyWell
         /// </returns>
         public bool HasValidationError()
         {
-            return this.Status == "validation" || ( !this.IsSuccessStatus() && this.Invalid?.Any() == true );
+            return this.Status == "validation" || ( !this.IsSuccessStatus() && this.ApiInvalid?.Any() == true );
         }
 
         /// <summary>
@@ -797,7 +807,22 @@ namespace Rock.MyWell
         /// The invalid.
         /// </value>
         [JsonProperty( "invalid" )]
-        public string[] Invalid { get; set; }
+        public string[] ApiInvalid { get; set; }
+
+        /// <summary>
+        /// Gets the validation message.
+        /// </summary>
+        /// <value>
+        /// The validation message.
+        /// </value>
+        [JsonIgnore]
+        public string ValidationMessage
+        {
+            get
+            {
+                return FriendlyMessageHelper.GetFriendlyValidationMessage( this.ApiInvalid );
+            }
+        }
     }
 
     /// <summary>
@@ -832,7 +857,22 @@ namespace Rock.MyWell
         /// The message.
         /// </value>
         [JsonProperty( "msg" )]
-        public string Message { get; set; }
+        public string ApiMessage { get; set; }
+
+        /// <summary>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
+        /// </summary>
+        /// <value>
+        /// The friendly message.
+        /// </value>
+        [JsonIgnore]
+        public virtual string Message
+        {
+            get
+            {
+                return FriendlyMessageHelper.GetFriendlyMessage( ApiMessage );
+            }
+        }
 
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -848,7 +888,7 @@ namespace Rock.MyWell
         /// The <seealso cref="System.Net.HttpStatusCode"/> that the HTTP Response returned
         /// </summary>
         [JsonIgnore]
-        public System.Net.HttpStatusCode StatusCode;
+        public System.Net.HttpStatusCode StatusCode { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -858,7 +898,7 @@ namespace Rock.MyWell
         /// </returns>
         public override string ToString()
         {
-            return $"{Status} - { Message } [{StatusCode}]";
+            return $"{Status} - { ApiMessage } [{StatusCode}]";
         }
     }
 
@@ -1332,7 +1372,6 @@ namespace Rock.MyWell
 
     #region Transaction Status
 
-
     /// <summary>
     /// 
     /// </summary>
@@ -1801,7 +1840,6 @@ namespace Rock.MyWell
         [JsonProperty( "data" )]
         public SubscriptionData[] Data { get; set; }
     }
-
 
     #endregion Subscriptions
 
@@ -2378,7 +2416,65 @@ namespace Rock.MyWell
 
     #endregion
 
-    #region Rock Wrapper Types
+    #region Rock Wrapper Type
+
+    /// <summary>
+    /// 
+    /// </summary>
+    internal static class FriendlyMessageHelper
+    {
+        /// <summary>
+        /// Gets the friendly message.
+        /// </summary>
+        /// <param name="apiMessage">The API message.</param>
+        /// <returns></returns>
+        internal static string GetFriendlyMessage( string apiMessage )
+        {
+            System.Diagnostics.Debug.WriteLine( apiMessage );
+
+
+            if ( apiMessage.IsNullOrWhiteSpace() )
+            {
+                return string.Empty;
+            }
+
+            return FriendlyMessageMap.GetValueOrNull( apiMessage ) ?? apiMessage;
+        }
+
+        /// <summary>
+        /// Gets the friendly validation message.
+        /// </summary>
+        /// <param name="apiInvalid">The API invalid.</param>
+        /// <returns></returns>
+        internal static string GetFriendlyValidationMessage( string[] apiInvalid )
+        {
+            if ( apiInvalid?.Any() == true )
+            {
+                var apiValidationMessage = "Invalid " + apiInvalid?.ToList().AsDelimited( "," );
+                return GetFriendlyMessage( apiValidationMessage );
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// The friendly message map
+        /// </summary>
+        private static readonly Dictionary<string, string> FriendlyMessageMap = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
+        {
+            { "invalid cc", "Invalid Credit Card Number" },
+            { "invalid cc,exp", "Invalid Credit Card Number and Expiration Date" },
+            { "invalid exp,cc", "Invalid Credit Card Number and Expiration Date" },
+            { "invalid exp", "Invalid Expiration Date" },
+            { "Invalid account,routing", "Invalid Account Number and Routing Number" },
+            { "Invalid routing", "Invalid Routing Number" },
+            { "Invalid account", "Invalid Account Number" },
+            { "Invalid card expiration - to far in the future", "Invalid Expiration Date" },
+            { "Invalid card expiration - expired", "Card is expired" },
+            { "Invalid routing_number", "Invalid Routing Number" },
+            { "Invalid account_number", "Invalid Account Number" }
+        };
+    }
 
     /// <summary>
     /// see DateFormat spec https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription

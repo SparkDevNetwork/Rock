@@ -35,6 +35,7 @@ namespace Rock.MyWell.Controls
         private HiddenFieldWithClass _hfPaymentInfoToken;
         private HiddenFieldWithClass _hfTokenizerRawResponse;
         private HiddenFieldWithClass _hfEnabledPaymentTypesJSON;
+        private HiddenFieldWithClass _hfSelectedPaymentType;
         private HiddenFieldWithClass _hfPublicApiKey;
         private HiddenFieldWithClass _hfGatewayUrl;
         private TextBox _hiddenInputStyleHook;
@@ -222,13 +223,13 @@ namespace Rock.MyWell.Controls
                         {
                             hostedGatewayPaymentControlTokenEventArgs.IsValid = false;
 
-                            if ( tokenResponse.HasValidationError() && tokenResponse.Invalid.Any() )
+                            if ( tokenResponse.HasValidationError() )
                             {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = $"Invalid {tokenResponse.Invalid.ToList().AsDelimited( "," ) }";
+                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse.ValidationMessage;
                             }
                             else
                             {
-                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = $"Failure: {tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken"}";
+                                hostedGatewayPaymentControlTokenEventArgs.ErrorMessage = tokenResponse?.Message ?? "null response from GetHostedPaymentInfoToken";
                             }
                         }
                         else
@@ -259,6 +260,9 @@ namespace Rock.MyWell.Controls
 
             _hfEnabledPaymentTypesJSON = new HiddenFieldWithClass() { ID = "_hfEnabledPaymentTypesJSON", CssClass = "js-enabled-payment-types" };
             Controls.Add( _hfEnabledPaymentTypesJSON );
+
+            _hfSelectedPaymentType = new HiddenFieldWithClass() { ID = "_hfSelectedPaymentType", CssClass = "js-selected-payment-type" };
+            Controls.Add( _hfSelectedPaymentType );
 
             _hfPublicApiKey = new HiddenFieldWithClass() { ID = "_hfPublicApiKey", CssClass = "js-public-api-key" };
             Controls.Add( _hfPublicApiKey );
