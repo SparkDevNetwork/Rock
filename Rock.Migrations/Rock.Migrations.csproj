@@ -61,6 +61,22 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\201910081427244_StreakDetailColumns.cs" />
+    <Compile Include="Migrations\201910081427244_StreakDetailColumns.Designer.cs">
+      <DependentUpon>201910081427244_StreakDetailColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.cs" />
+    <Compile Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.Designer.cs">
+      <DependentUpon>201910091520216_AchievementTypeOptionalForeignKeys.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910112158508_Rollups_20191011.cs" />
+    <Compile Include="Migrations\201910112158508_Rollups_20191011.Designer.cs">
+      <DependentUpon>201910112158508_Rollups_20191011.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910151326433_AchievementNameAndDescription.cs" />
+    <Compile Include="Migrations\201910151326433_AchievementNameAndDescription.Designer.cs">
+      <DependentUpon>201910151326433_AchievementNameAndDescription.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -851,6 +867,18 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201910081427244_StreakDetailColumns.resx">
+      <DependentUpon>201910081427244_StreakDetailColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910091520216_AchievementTypeOptionalForeignKeys.resx">
+      <DependentUpon>201910091520216_AchievementTypeOptionalForeignKeys.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910112158508_Rollups_20191011.resx">
+      <DependentUpon>201910112158508_Rollups_20191011.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910151326433_AchievementNameAndDescription.resx">
+      <DependentUpon>201910151326433_AchievementNameAndDescription.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
     </EmbeddedResource>

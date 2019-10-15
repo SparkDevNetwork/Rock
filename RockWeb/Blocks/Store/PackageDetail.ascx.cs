@@ -267,6 +267,7 @@ namespace RockWeb.Blocks.Store
                 rptScreenshots.DataBind();
 
                 lLatestVersionLabel.Text = latestVersion.VersionLabel;
+                lLatestVersionDate.Text = latestVersion.AddedDate.ToString("MMMM d, yyyy");
                 lLatestVersionDescription.Text = latestVersion.Description;
 
                 var versionReviews = new PackageVersionRatingService().GetPackageVersionRatings( latestVersion.Id );
