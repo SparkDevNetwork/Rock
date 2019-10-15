@@ -144,6 +144,17 @@ namespace Rock.CodeGeneration
                     var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
                     tbResults.Text += missingDbSets.Select( a => a.Name + " is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
 
+                    if ( cbClient.Checked )
+                    {
+                        var codeGenFolder = Path.Combine( rockClientFolder, "CodeGenerated" );
+                        if ( Directory.Exists( codeGenFolder ) )
+                        {
+                            Directory.Delete( codeGenFolder, true );
+                        }
+
+                        Directory.CreateDirectory( Path.Combine( rockClientFolder, "CodeGenerated" ) );
+                    }
+
                     foreach ( object item in cblModels.CheckedItems )
                     {
                         progressBar1.Value++;

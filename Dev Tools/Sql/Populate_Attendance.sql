@@ -28,20 +28,12 @@ declare
 declare
     @attendanceGroupIds table ( id Int );
 
-declare
-    @personAliasIds table ( id Int );
-
-declare
-    @scheduleIds table ( id Int );
 
 declare
     @locationIds table ( id Int );
 
 declare
 	@campusIds table ( id int);
-
-declare
-    @attendanceCodeIds table ( id Int );
 
 declare
      @attendanceTable TABLE(
@@ -59,16 +51,35 @@ declare
 begin
 
     insert into @attendanceGroupIds select Id from [Group] where GroupTypeId in (select Id from GroupType where TakesAttendance = 1 or IsSchedulingEnabled = 1);
-    insert into @personAliasIds select top (@personSampleSize) Id from PersonAlias
-    insert into @attendanceCodeIds select top 10 id from AttendanceCode
-	insert into @scheduleIds select Id from Schedule where CategoryId = @categoryServiceTimes
 	insert into @locationIds select Id from [Location] where ParentLocationId = 3 or [Name] like 'A/V Booth'
 	insert into @campusIds select Id from Campus;
 	set @StartDateTime = DATEADD(DAY, -@daysBack, SYSDATETIME())
 
-	-- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
-	declare personAliasIdCursor cursor for select Id from @personAliasIds order by newid();
+    
+    IF CURSOR_STATUS('global','personAliasIdCursor')>=-1
+    BEGIN
+     DEALLOCATE personAliasIdCursor;
+    END
+
+    -- put all personIds in randomly ordered cursor to speed up getting a random personAliasId for each attendance
+	declare personAliasIdCursor cursor LOCAL FAST_FORWARD for select top (@personSampleSize) Id from PersonAlias order by newid();
 	open personAliasIdCursor;
+
+    IF CURSOR_STATUS('global','scheduleIdCursor')>=-1
+    BEGIN
+     DEALLOCATE scheduleIdCursor;
+    END
+
+    declare scheduleIdCursor cursor LOCAL FAST_FORWARD for select Id from Schedule where CategoryId = @categoryServiceTimes
+	open scheduleIdCursor;
+
+    IF CURSOR_STATUS('global','attendanceCodeIdCursor')>=-1
+    BEGIN
+     DEALLOCATE attendanceCodeIdCursor;
+    END
+
+    declare attendanceCodeIdCursor cursor LOCAL FAST_FORWARD for select Id from AttendanceCode
+	open attendanceCodeIdCursor;
 
     while @attendanceCounter < @maxAttendanceCount
     begin
@@ -77,6 +88,7 @@ begin
             set @GroupId = (select top 1 Id from @attendanceGroupIds order by newid()) 
             set @DeviceId =  (select top 1 Id from Device where DeviceTypeValueId = 41 order by newid())
             set @LocationId = (select top 1 Id from @locationIds order by newid())
+            set @CampusId = (select top 1 Id from @campusIds order by newid()) 
         end
 		
 		fetch next from personAliasIdCursor into @PersonAliasId;
@@ -87,16 +99,26 @@ begin
 		   fetch next from personAliasIdCursor into @PersonAliasId;
 		end
 
+        fetch next from attendanceCodeIdCursor into @AttendanceCodeId;
+
+		if (@@FETCH_STATUS != 0) begin
+		   close attendanceCodeIdCursor;
+		   open attendanceCodeIdCursor;
+		   fetch next from attendanceCodeIdCursor into @AttendanceCodeId;
+		end
+
         if (@attendanceCounter % 10 = 0) begin
-            set @randomDateInc = rand()
-            set @ScheduleId = (select top 1 Id from @scheduleIds order by newid()) 
+            fetch next from scheduleIdCursor into @ScheduleId;
+		    if (@@FETCH_STATUS != 0) begin
+		       close scheduleIdCursor;
+		       open scheduleIdCursor;
+		       fetch next from scheduleIdCursor into @ScheduleId;
+		    end
         end
 
 		set @StartDateTime = DATEADD(ss, (86000*@daysBack/@maxAttendanceCount), @StartDateTime);
 		set @OccurrenceDate = convert(date, @StartDateTime);
         set @DidAttend = (select case when FLOOR(rand() * 50) > 10 then 1 else 0 end) -- select random didattend with ~80% true
-        set @CampusId = (select top 1 Id from @campusIds order by newid()) 
-        set @AttendanceCodeId = (select top 1 Id from @attendanceCodeIds order by newid())
 
 		set @AttendanceOccurrenceId = (select top 1 id from AttendanceOccurrence where GroupId = @GroupId and ScheduleId = @ScheduleId and LocationId = @LocationId and OccurrenceDate = @OccurrenceDate);
 		if (@AttendanceOccurrenceId is null) begin
@@ -133,22 +155,23 @@ begin
 				   
         )
 
-		if (@attendanceCounter % 1000 = 0) begin
+		if (@attendanceCounter % 10000 = 0) begin
 		print @attendanceCounter
 		end
-
         
 		set @attendanceCounter += 1;
     end
 
 	close personAliasIdCursor;
-
+    close scheduleIdCursor;
+    close attendanceCodeIdCursor;
 
     insert into Attendance 
         ( OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] ) 
     select OccurrenceId, PersonAliasId, DeviceId, AttendanceCodeId, StartDateTime, CampusId, DidAttend, [Guid] from @attendanceTable order by StartDateTime
 
-	select count(*) from Attendance
+	select count(*) [AttendanceCount] from Attendance
+    select count(*) [AttendanceOccurrenceCount] from AttendanceOccurrence
 end;
 
 

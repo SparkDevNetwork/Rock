@@ -154,14 +154,27 @@ $('input.rsvp-list-input').on('click', function (e) {
 
     if ($cbx.checked) {
         $header.siblings('.panel-body').slideDown();
+        $header.siblings('.panel-body').find('span[id$=rfv]').each(function () {
+            document.getElementById($(this).attr('id')).enabled = true;
+        });
     } else {
         $header.siblings('.panel-body').slideUp();
+        $header.siblings('.panel-body').find('span[id$=rfv]').each(function () {
+            document.getElementById($(this).attr('id')).enabled = false;
+        });
     }
 });
 
+$(document).ready(function () {
+
+    $('.js-rsvp-item').find('span[id$=rfv]').each(function () {
+        document.getElementById($(this).attr('id')).enabled = false;
+    });
+
+});
 
 ";
-            ScriptManager.RegisterStartupScript(this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true);
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "DefinedValueChecklistScript", script, true );
 
             lbAccept_Multiple.Text = GetAttributeValue( AttributeKey.AcceptButtonLabel );
             lbAccept_Single.Text = GetAttributeValue( AttributeKey.AcceptButtonLabel );
@@ -239,7 +252,7 @@ $('input.rsvp-list-input').on('click', function (e) {
                 var attendanceOccurrenceIdList = GetMultipleOccurrenceIds();
                 if ( attendanceOccurrenceIdList.Any() )
                 {
-                    BindMultipleOccurrenceRepeater();
+                    RebuildMultipleOccurrenceDataItems( attendanceOccurrenceIdList, person );
                 }
             }
         }
@@ -250,29 +263,6 @@ $('input.rsvp-list-input').on('click', function (e) {
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( Page.IsPostBack )
-            {
-                BindMultipleOccurrenceRepeater();
-            }
-        }
-
-        /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        protected override void LoadViewState(object savedState)
-        {
-            base.LoadViewState(savedState);
-
-            string json = ViewState["MultipleOccurrenceDataItems"] as string;
-            if ( string.IsNullOrWhiteSpace( json ) )
-            {
-                MultipleOccurrenceDataItems = new List<OccurrenceDataItem>();
-            }
-            else
-            {
-                MultipleOccurrenceDataItems = JsonConvert.DeserializeObject<List<OccurrenceDataItem>>( json );
-            }
         }
 
         /// <summary>
@@ -516,7 +506,7 @@ $('input.rsvp-list-input').on('click', function (e) {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -555,7 +545,7 @@ $('input.rsvp-list-input').on('click', function (e) {
                 var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
                 if ( publicAttributes.Attributes.Any() )
                 {
-                    Helper.AddEditControls( publicAttributes, phAttributes, false, BlockValidationGroup );
+                    Helper.AddEditControls( publicAttributes, phAttributes, true );
                 }
             }
         }
@@ -565,7 +555,7 @@ $('input.rsvp-list-input').on('click', function (e) {
         /// </summary>
         private void BuildAttributeControls()
         {
-            using (var rockContext = new RockContext())
+            using ( var rockContext = new RockContext() )
             {
                 var person = GetPerson();
                 var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
@@ -581,7 +571,7 @@ $('input.rsvp-list-input').on('click', function (e) {
                 var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
                 if ( publicAttributes.Attributes.Any() )
                 {
-                    Helper.AddEditControls( publicAttributes, phAttributes, false, BlockValidationGroup );
+                    Helper.AddEditControls( publicAttributes, phAttributes, false );
                 }
             }
         }
@@ -592,7 +582,7 @@ $('input.rsvp-list-input').on('click', function (e) {
         /// <returns></returns>
         private bool GroupHasAttributes()
         {
-            using (var rockContext = new RockContext())
+            using ( var rockContext = new RockContext() )
             {
                 var person = GetPerson();
                 var occurrenceId = PageParameter( PageParameterKey.AttendanceOccurrenceId ).AsInteger();
@@ -629,7 +619,7 @@ $('input.rsvp-list-input').on('click', function (e) {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -706,7 +696,7 @@ $('input.rsvp-list-input').on('click', function (e) {
 
                 groupMember.LoadAttributes();
 
-                Helper.GetEditValues( phAttributes, groupMember );
+                Helper.GetEditValues( attributePlaceHolder, groupMember );
 
                 groupMember.SaveAttributeValues();
             }
@@ -731,7 +721,7 @@ $('input.rsvp-list-input').on('click', function (e) {
                     Show404();
                     return;
                 }
-                else if ( occurrence.OccurrenceDate < DateTime.Now )
+                else if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                 {
                     // This event has expired.
                     Show404( true, GetOccurrenceTitle( occurrence ) );
@@ -823,7 +813,7 @@ $('input.rsvp-list-input').on('click', function (e) {
                 foreach ( int occurrenceId in occurrenceIds )
                 {
                     var occurrence = attendanceOccurrenceService.Get( occurrenceId );
-                    if ( occurrence.OccurrenceDate < DateTime.Now )
+                    if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
                     {
                         // This event has expired.
                         isExpired = true;
@@ -872,6 +862,50 @@ $('input.rsvp-list-input').on('click', function (e) {
             }
         }
 
+        private void RebuildMultipleOccurrenceDataItems( List<int> occurrenceIds, Person person )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                List<OccurrenceDataItem> repeaterItems = new List<OccurrenceDataItem>();
+                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+                foreach ( int occurrenceId in occurrenceIds )
+                {
+                    var occurrence = attendanceOccurrenceService.Get( occurrenceId );
+                    if ( occurrence.OccurrenceDate.EndOfDay() < DateTime.Now )
+                    {
+                        continue;
+                    }
+
+                    var groupMember = occurrence.Group.Members.Where( gm => gm.PersonId == person.Id ).FirstOrDefault();
+                    if ( groupMember == null )
+                    {
+                        //Person is not a member of the group associated with this invitation.
+                        groupMember = new GroupMember();
+                        groupMember.PersonId = person.Id;
+                        groupMember.GroupId = occurrence.Group.Id;
+                        groupMember.GroupRoleId = occurrence.Group.GroupType.DefaultGroupRoleId ?? 0;
+                    }
+
+                    groupMember.LoadAttributes();
+
+                    // This collection object is created to limit attribute values to those marked "IsPublic".
+                    var publicAttributes = new GroupMemberPublicAttriuteCollection( groupMember );
+
+                    // Add item to collection for data binding.
+                    repeaterItems.Add(
+                        new OccurrenceDataItem()
+                        {
+                            Title = GetOccurrenceTitle( occurrence ),
+                            OccurrenceId = occurrenceId.ToString(),
+                            PublicAttributes = publicAttributes
+                        } );
+                }
+
+                MultipleOccurrenceDataItems = repeaterItems;
+                BindMultipleOccurrenceRepeater();
+            }
+        }
+
         /// <summary>
         /// Binds the repeater control for multiple occurrences.
         /// </summary>
@@ -896,7 +930,7 @@ $('input.rsvp-list-input').on('click', function (e) {
 
                 foreach ( RepeaterItem item in rptrValues.Items )
                 {
-                    if ( ProcessOccurrence( person, item, rockContext) )
+                    if ( ProcessOccurrence( person, item, rockContext ) )
                     {
                         occurrenceProcessed = true;
                     }
@@ -991,7 +1025,7 @@ $('input.rsvp-list-input').on('click', function (e) {
             {
                 var def = new DefinedValueService( rockContext );
                 values = def.Queryable()
-                    .Where(v => declineReasonIds.Contains( v.Id ) )
+                    .Where( v => declineReasonIds.Contains( v.Id ) )
                     .AsNoTracking().ToList();
             }
 
@@ -1070,18 +1104,18 @@ $('input.rsvp-list-input').on('click', function (e) {
         #endregion
 
 
-        protected void rptrValues_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        protected void rptrValues_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var dataItem = e.Item.DataItem as OccurrenceDataItem;
             var phOccurrenceAttributes = e.Item.FindControl( "phOccurrenceAttributes" );
             if ( dataItem.PublicAttributes.Attributes.Any() )
             {
-                Helper.AddEditControls( dataItem.PublicAttributes, phOccurrenceAttributes, false, BlockValidationGroup );
+                Helper.AddEditControls( dataItem.PublicAttributes, phOccurrenceAttributes, !Page.IsPostBack );
             }
         }
     }
 
-    #region Helper Class
+    #region Helper Classes
 
     /// <summary>
     /// This class is used to obtain a list of attributes which are marked IsPublic.
@@ -1185,12 +1219,18 @@ $('input.rsvp-list-input').on('click', function (e) {
             Id = groupMember.Id;
             groupMember.LoadAttributes();
             Attributes = groupMember.Attributes.Where( a => a.Value.IsPublic == true ).ToDictionary( a => a.Key, a => a.Value );
-            groupMember.AttributeValues.Where( a => Attributes.Keys.Contains( a.Value.AttributeKey ) ).ToDictionary( a => a.Key, a => a.Value );
-            AttributeValues = new Dictionary<string, AttributeValueCache>();
+            AttributeValues = groupMember.AttributeValues.Where( a => Attributes.Keys.Contains( a.Value.AttributeKey ) ).ToDictionary( a => a.Key, a => a.Value );
         }
 
         public GroupMemberPublicAttriuteCollection() { }
     }
 
+    public static class DateEndOfDayStaticFunction
+    {
+        public static DateTime EndOfDay( this DateTime input )
+        {
+            return input.Date.AddDays( 1 ).AddMilliseconds( -1 );
+        }
+    }
     #endregion
 }

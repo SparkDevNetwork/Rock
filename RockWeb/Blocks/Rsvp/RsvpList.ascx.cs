@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        private string MakeKeyUniqueToGroup(string key)
+        private string MakeKeyUniqueToGroup( string key )
         {
             int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
 
@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.RSVP
                 ddlSchedule.DataBind();
 
                 string scheduleValue = rFilter.GetUserPreference( MakeKeyUniqueToGroup( UserPreferenceKey.Schedule ) );
-                if ( !string.IsNullOrWhiteSpace(scheduleValue) )
+                if ( !string.IsNullOrWhiteSpace( scheduleValue ) )
                 {
                     int? scheduleId = scheduleValue.AsIntegerOrNull();
                     if ( locations.Select( l => l.Key == scheduleId ).Any() )
@@ -566,7 +566,7 @@ namespace RockWeb.Blocks.RSVP
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        protected void gRSVPItems_Sorting(object sender, GridViewSortEventArgs e)
+        protected void gRSVPItems_Sorting( object sender, GridViewSortEventArgs e )
         {
             BindRSVPItemsGrid();
         }
@@ -599,7 +599,7 @@ namespace RockWeb.Blocks.RSVP
         {
             get
             {
-                if (InvitedCount == 0)
+                if ( InvitedCount == 0 )
                 {
                     return 0;
                 }
@@ -645,12 +645,12 @@ namespace RockWeb.Blocks.RSVP
             }
 
             LocationName = occurrence.Location != null ? occurrence.Location.Name : string.Empty;
-            ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : (int?)null;
+            ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : ( int? ) null;
             ScheduleId = occurrence.ScheduleId;
 
-            if (occurrence.Schedule != null)
+            if ( occurrence.Schedule != null )
             {
-                if (occurrence.Schedule.Name.IsNotNullOrWhiteSpace())
+                if ( occurrence.Schedule.Name.IsNotNullOrWhiteSpace() )
                 {
                     ScheduleName = occurrence.Schedule.Name;
                 }
