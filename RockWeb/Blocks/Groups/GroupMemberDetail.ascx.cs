@@ -811,14 +811,14 @@ namespace RockWeb.Blocks.Groups
             if ( editableAttributes.Any() )
             {
                 avcAttributes.Visible = true;
-                avcAttributes.AddEditControls( groupMember );
                 avcAttributes.ExcludedAttributes = groupMember.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
+                avcAttributes.AddEditControls( groupMember );
             }
 
             if ( viewableAttributes.Any() )
             {
                 avcAttributesReadOnly.Visible = true;
-                var excludeKeys = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                avcAttributesReadOnly.ExcludedAttributes = groupMember.Attributes.Where( a => !viewableAttributes.Contains( a.Key ) ).Select( a => a.Value ).ToArray();
                 avcAttributesReadOnly.AddDisplayControls( groupMember );
             }
 
