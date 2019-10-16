@@ -3403,7 +3403,8 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupMemberAttributesInheritedGrid()
         {
-            if ( CurrentGroupTypeCache != null )
+            // Don't make the Group Member Attributes PanelWidget visible if it's already hidden (due to permissions)
+            if ( CurrentGroupTypeCache != null && wpGroupMemberAttributes.Visible )
             {
                 wpGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || GroupMemberAttributesState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
                 rcwGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || GroupMemberAttributesState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
