@@ -77,6 +77,10 @@
     <Compile Include="Migrations\201910151326433_AchievementNameAndDescription.Designer.cs">
       <DependentUpon>201910151326433_AchievementNameAndDescription.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201910151751013_MyWellRename.cs" />
+    <Compile Include="Migrations\201910151751013_MyWellRename.Designer.cs">
+      <DependentUpon>201910151751013_MyWellRename.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -878,6 +882,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201910151326433_AchievementNameAndDescription.resx">
       <DependentUpon>201910151326433_AchievementNameAndDescription.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910151751013_MyWellRename.resx">
+      <DependentUpon>201910151751013_MyWellRename.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>

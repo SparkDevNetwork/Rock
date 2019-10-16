@@ -804,19 +804,27 @@ namespace Rock.Model
 
             // Apply default values to parameters
             var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            dateOfEngagement = ( dateOfEngagement ?? RockDateTime.Now ).Date;
+            var maxDate = RockDateTime.Today;
             var minDate = streakTypeCache.StartDate.Date;
+            dateOfEngagement = ( dateOfEngagement ?? maxDate ).Date;
 
             if ( !isDaily )
             {
                 dateOfEngagement = dateOfEngagement.Value.SundayDate();
                 minDate = minDate.SundayDate();
+                maxDate = maxDate.SundayDate();
             }
 
             // Validate the engagement date
             if ( dateOfEngagement < minDate )
             {
                 errorMessage = "Cannot mark engagement before the streak type start date";
+                return;
+            }
+
+            if ( dateOfEngagement > maxDate )
+            {
+                errorMessage = "Cannot mark engagement in the future";
                 return;
             }
 
@@ -834,7 +842,7 @@ namespace Rock.Model
             if ( streak == null )
             {
                 // Enroll the person since they are marking engagement and enrollment is not required
-                streak = Enroll( streakTypeCache, personId, out errorMessage );
+                streak = Enroll( streakTypeCache, personId, out errorMessage, dateOfEngagement, locationId );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -858,8 +866,7 @@ namespace Rock.Model
             }
 
             // Ensure the occurrence bit is set on the streak type model
-            var streakTypeService = new StreakTypeService( rockContext );
-            var streakType = streakTypeService.Get( streakTypeCache.Id );
+            var streakType = Get( streakTypeCache.Id );
 
             streakType.OccurrenceMap = SetBit( streakType.OccurrenceMap, streakType.StartDate, dateOfEngagement.Value,
                 streakType.OccurrenceFrequency, true, out errorMessage );
@@ -870,8 +877,20 @@ namespace Rock.Model
             }
 
             // Entity Framework cannot detect in-place changes to byte arrays, so force set the properties to modified state
-            rockContext.Entry( streak ).Property( se => se.EngagementMap ).IsModified = true;
-            rockContext.Entry( streakType ).Property( s => s.OccurrenceMap ).IsModified = true;
+            var streakContextEntry = rockContext.Entry( streak );
+            var streakTypeContextEntry = rockContext.Entry( streakType );
+
+            if ( streakContextEntry.State == EntityState.Unchanged )
+            {
+                streakContextEntry.State = EntityState.Modified;
+                streakContextEntry.Property( se => se.EngagementMap ).IsModified = true;
+            }
+
+            if ( streakTypeContextEntry.State == EntityState.Unchanged )
+            {
+                streakTypeContextEntry.State = EntityState.Modified;
+                streakTypeContextEntry.Property( s => s.OccurrenceMap ).IsModified = true;
+            }
 
             // If attendance is enabled then update attendance models
             if ( streakTypeCache.EnableAttendance && addOrUpdateAttendanceRecord )
