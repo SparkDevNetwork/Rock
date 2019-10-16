@@ -515,7 +515,7 @@ namespace Rock.Web.UI.Controls
             // only show heading labels if ShowCategoryLabel and there is at least attribute to show
             bool showHeadingLabels = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
 
-            var exclude = ( ExcludedAttributes != null ) ? ExcludedAttributes.Select( k => k.Key ).ToList() : null;
+            var exclude = ( ExcludedAttributes != null && ExcludedAttributes.Count() != 0 ) ? ExcludedAttributes.Select( k => k.Key ).ToList() : null;
             Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, exclude, showHeadingLabels );
         }
 
