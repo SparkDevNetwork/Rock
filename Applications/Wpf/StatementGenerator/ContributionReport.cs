@@ -73,6 +73,7 @@ namespace Rock.Apps.StatementGenerator
         /// <summary>
         /// Runs the report returning the number of statements that were generated
         /// </summary>
+        /// <returns></returns>
         public int RunReport()
         {
             UpdateProgress( "Connecting..." );
@@ -104,7 +105,7 @@ namespace Rock.Apps.StatementGenerator
             var tasks = new List<Task>();
 
             // initialize the pdfStreams list for all the recipients so that it can be populated safely in the pdf generation threads
-            List<Stream> pdfStreams = recipientList.Select( a => ( Stream ) null ).ToList();
+            List<Stream> pdfDataStreams = recipientList.Select( a => ( Stream ) null ).ToList();
 
             bool cancel = false;
 
@@ -129,7 +130,7 @@ namespace Rock.Apps.StatementGenerator
                 if ( ( this.Options.ExcludeOptedOutIndividuals && recipentResult.OptedOut ) || ( string.IsNullOrWhiteSpace( recipentResult.Html ) ) )
                 {
                     // don't generate a statement if opted out or no statement html
-                    pdfStreams[documentNumber] = null;
+                    pdfDataStreams[documentNumber] = null;
                 }
                 else
                 {
@@ -148,7 +149,7 @@ namespace Rock.Apps.StatementGenerator
                             File.WriteAllText( footerHtmlPath, footerHtml );
                             footerUrl = "file:///" + footerHtmlPath.Replace( '\\', '/' );
                         }
-                        
+
                         foreach ( var pdfObjectSetting in pdfObjectSettings )
                         {
                             if ( pdfObjectSetting.Key.StartsWith( "margin." ) || pdfObjectSetting.Key.StartsWith( "size." ) )
@@ -177,15 +178,15 @@ namespace Rock.Apps.StatementGenerator
                                 pdfGenerator = pdfGenerator.WithObjectSetting( "footer.right", "Page [page] of [topage]" );
                             }
                         }
-                        
+
                         var pdfBytes = pdfGenerator
                             .WithoutOutline()
                             .Portrait()
                             .Content();
 
                         var pdfStream = new MemoryStream( pdfBytes );
-                        System.Diagnostics.Debug.Assert( pdfStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
-                        pdfStreams[documentNumber] = pdfStream;
+                        System.Diagnostics.Debug.Assert( pdfDataStreams[documentNumber] == null, "Threading issue: pdfStream shouldn't already be assigned" );
+                        pdfDataStreams[documentNumber] = pdfStream;
 
                         if ( File.Exists( footerHtmlPath ) )
                         {
@@ -213,8 +214,8 @@ namespace Rock.Apps.StatementGenerator
             this.RecordIndex = 0;
 
             // remove any statements that didn't get generated due to OptedOut
-            pdfStreams = pdfStreams.Where( a => a != null ).ToList();
-            this.RecordCount = pdfStreams.Count();
+            pdfDataStreams = pdfDataStreams.Where( a => a != null ).ToList();
+            this.RecordCount = pdfDataStreams.Count();
 
             int maxStatementsPerChapter = RecordCount;
 
@@ -235,17 +236,22 @@ namespace Rock.Apps.StatementGenerator
             int statementsInChapter = 0;
             int chapterIndex = 1;
 
+            var pdfDocumentList = pdfDataStreams.Select( a => PdfReader.Open( a, PdfDocumentOpenMode.Import ) ).ToList();
+            if ( this.Options.OrderBy == Rock.StatementGenerator.OrderBy.PageCount )
+            {
+                pdfDocumentList = pdfDocumentList.OrderBy( a => a.PageCount ).ToList();
+            }
+
             PdfDocument resultPdf = new PdfDocument();
             try
             {
-                if ( pdfStreams.Any() )
+                if ( pdfDocumentList.Any() )
                 {
-                    var lastPdfStream = pdfStreams.LastOrDefault();
-                    foreach ( var pdfStream in pdfStreams )
+                    var lastPdfDocument = pdfDocumentList.LastOrDefault();
+                    foreach ( var pdfDocument in pdfDocumentList )
                     {
                         UpdateProgress( "Creating PDF..." );
                         this.RecordIndex++;
-                        PdfDocument pdfDocument = PdfReader.Open( pdfStream, PdfDocumentOpenMode.Import );
 
                         foreach ( var pdfPage in pdfDocument.Pages.OfType<PdfPage>() )
                         {
@@ -253,7 +259,8 @@ namespace Rock.Apps.StatementGenerator
                         }
 
                         statementsInChapter++;
-                        if ( useChapters && ( ( statementsInChapter >= maxStatementsPerChapter ) || pdfStream == lastPdfStream ) )
+
+                        if ( useChapters && ( ( statementsInChapter >= maxStatementsPerChapter ) || pdfDocument == lastPdfDocument ) )
                         {
                             string filePath = string.Format( @"{0}\{1}-chapter{2}.pdf", this.Options.SaveDirectory, this.Options.BaseFileName, chapterIndex );
                             SavePdfFile( resultPdf, filePath );

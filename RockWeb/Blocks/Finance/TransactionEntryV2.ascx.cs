@@ -109,6 +109,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.IncludedCampusTypes,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
         AllowMultiple = true,
+        IsRequired = false,
         Description = "Set this to limit campuses by campus type.",
         Category = AttributeCategory.None,
         Order = 11 )]
@@ -118,6 +119,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.IncludedCampusStatuses,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
         AllowMultiple = true,
+        IsRequired = false,
         Description = "Set this to limit campuses by campus status.",
         Category = AttributeCategory.None,
         Order = 12 )]
@@ -1200,6 +1202,7 @@ mission. We are so grateful for your commitment.</p>
         {
             if ( !this.GetAttributeValue( AttributeKey.ShowScheduledTransactions ).AsBoolean() )
             {
+                HideScheduledTransactionsPanel();
                 return;
             }
 
@@ -1208,7 +1211,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( targetPerson == null )
             {
-                pnlScheduledTransactions.Visible = false;
+                HideScheduledTransactionsPanel();
                 return;
             }
 
@@ -1247,7 +1250,14 @@ mission. We are so grateful for your commitment.</p>
 
             rockContext.SaveChanges();
 
-            pnlScheduledTransactions.Visible = scheduledTransactionList.Any();
+            if ( !scheduledTransactionList.Any() )
+            {
+                HideScheduledTransactionsPanel();
+            }
+            else
+            {
+                ShowScheduledTransactionsPanel();
+            }
 
             scheduledTransactionList = scheduledTransactionList.OrderByDescending( a => a.NextPaymentDate ).ToList();
 
@@ -1649,12 +1659,12 @@ mission. We are so grateful for your commitment.</p>
 
             if ( this.GetAttributeValue( AttributeKey.ShowScheduledTransactions ).AsBoolean() )
             {
-                pnlScheduledTransactions.Visible = true;
+                ShowScheduledTransactionsPanel();
                 BindScheduledTransactions();
             }
             else
             {
-                pnlScheduledTransactions.Visible = false;
+                HideScheduledTransactionsPanel();
             }
 
             tbEmailIndividual.Visible = GetAttributeValue( AttributeKey.PromptForEmail ).AsBoolean();
@@ -1663,6 +1673,24 @@ mission. We are so grateful for your commitment.</p>
             pnbPhoneBusiness.Visible = GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
 
             UpdateGivingControlsForSelections();
+        }
+
+        /// <summary>
+        /// Shows the scheduled transactions panel.
+        /// </summary>
+        public void ShowScheduledTransactionsPanel()
+        {
+            pnlScheduledTransactions.Visible = true;
+            pnlTransactionEntryPanel.RemoveCssClass( "col-sm-12" ).AddCssClass( "col-sm-8" );
+        }
+
+        /// <summary>
+        /// Hides the scheduled transactions panel.
+        /// </summary>
+        public void HideScheduledTransactionsPanel()
+        {
+            pnlScheduledTransactions.Visible = false;
+            pnlTransactionEntryPanel.RemoveCssClass( "col-sm-8" ).AddCssClass( "col-sm-12" );
         }
 
         /// <summary>
