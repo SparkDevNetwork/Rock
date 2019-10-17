@@ -62,7 +62,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
         "Person Picker CSS Override",
         Key = AttributeKey.PersonPickerCssOverride,
         Description = "This attribute will override the person picker's css with whatever class is specified here.",
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = "",
         Category = "BEMA Additional Features" )]
     // UMC Value = "js-person"

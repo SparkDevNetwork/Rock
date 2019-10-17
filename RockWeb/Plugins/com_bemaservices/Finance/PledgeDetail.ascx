@@ -23,18 +23,18 @@
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" IncludeBusinesses="true" OnSelectPerson="ppPerson_SelectPerson"/>
                         </div>
                         <div class="col-md-6">
-                            <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" />
+                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
-                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
+                            <Rock:DefinedValuePicker ID="dvpFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Help="How often the person is expected to give some portion of the total amount." />
                             <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" MinimumValue="0" Required="true" Help="The total amount that is being pledged. If they intend to give $100 monthly for one year, enter $1200." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DefinedValuePicker ID="dvpFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Help="How often the person is expected to give some portion of the total amount." />
+                            <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" />
                         </div>
                     </div>
 
@@ -48,7 +48,7 @@
 
                     <div class="actions">
                         <!--BEMA.FE1.Start -->
-                        <asp:LinkButton ID="btnSaveNew" runat="server" AccessKey="n" Text="Save & Add" CssClass="btn btn-primary" OnClick="btnSaveNew_Click" Visible="false" />
+                        <asp:LinkButton ID="btnSaveNew" TabIndex="3" runat="server" AccessKey="n" Text="Save & Add" CssClass="btn btn-primary" OnClick="btnSaveNew_Click" Visible="false" />
                         <!-- BEMA.FE1.End -->
                         <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
