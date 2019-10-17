@@ -3372,7 +3372,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupMemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                // get the non-editable stuff from the GroupTypeAttributesState and put it back into the object...
+                // get the non-editable stuff from the state and put it back into the object...
                 var attributeState = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
                 if ( attributeState != null )
                 {
