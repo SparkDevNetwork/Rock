@@ -75,14 +75,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified occurrence record, creating it if necessary.
+        /// Gets the specified occurrence record, creating it if necessary. Ensures that an AttendanceOccurrence
+        /// record exists for the specified date, schedule, locationId and group. If it doesn't exist, it is
+        /// created and saved to the database.
+        /// NOTE: When looking for a matching occurrence, if null groupId, locationId or scheduleId is given
+        /// any matching record must also not have a group, location or schedule.
         /// </summary>
         /// <param name="occurrenceDate">The occurrence date.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="includes">Allows including attendance occurrence virtual properties like Attendees.</param>
-        /// <returns></returns>
+        /// <returns>An existing or new attendance occurrence</returns>
         public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId, string includes )
         {
             var occurrence = Get( occurrenceDate, groupId, locationId, scheduleId, includes );
@@ -114,13 +118,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified occurrence record, creating it if necessary.
+        /// Gets the specified occurrence record, creating it if necessary. Ensures that an AttendanceOccurrence
+        /// record exists for the specified date, schedule, locationId and group. If it doesn't exist, it is
+        /// created and saved to the database.
+        /// NOTE: When looking for a matching occurrence, if null groupId, locationId or scheduleId is given
+        /// any matching record must also not have a group, location or schedule.
         /// </summary>
         /// <param name="occurrenceDate">The occurrence date.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns></returns>
+        /// <returns>An existing or new attendance occurrence</returns>
         public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
         {
             return GetOrAdd( occurrenceDate, groupId, locationId, scheduleId, null );
@@ -458,6 +466,8 @@ namespace Rock.Model
         /// <param name="locationId">The location identifier.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <returns>AttendanceOccurrence</returns>
+        [Obsolete( "Use GetOrAdd instead" )]
+        [RockObsolete( "1.10" )]
         public AttendanceOccurrence GetOrCreateAttendanceOccurrence( DateTime occurrenceDate, int scheduleId, int? locationId, int groupId )
         {
             // There is a unique constraint on OccurrenceDate, ScheduleId, LocationId and GroupId. So there is at most one record.
