@@ -604,6 +604,18 @@ mission. We are so grateful for your commitment.</p>
                 ddlPersonSavedAccount.Items.Add( new ListItem( displayName, personSavedAccount.Id.ToString() ) );
             }
 
+            if ( personSavedAccountList.Any())
+            {
+                pnlSelectSavedAccount.Visible = true;
+                hfAddPaymentInfoVisible.Value = "0";
+            }
+            else
+            {
+                // no saved account, so just prompt for payment info
+                pnlSelectSavedAccount.Visible = false;
+                hfAddPaymentInfoVisible.Value = "1";
+            }
+
             string errorMessage;
             var financialGateComponent = this.FinancialGatewayComponent;
             var gatewayPersonIdentifier = ( financialGateComponent as GatewayComponent ).GetReferenceNumber( scheduledTransaction, out errorMessage );
