@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// AttendanceOccurrence Service class
+    /// EntityCampusFilter Service class
     /// </summary>
-    public partial class AttendanceOccurrenceService : Service<AttendanceOccurrence>
+    public partial class EntityCampusFilterService : Service<EntityCampusFilter>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AttendanceOccurrenceService"/> class
+        /// Initializes a new instance of the <see cref="EntityCampusFilterService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public AttendanceOccurrenceService(RockContext context) : base(context)
+        public EntityCampusFilterService(RockContext context) : base(context)
         {
         }
 
@@ -48,11 +48,9 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( AttendanceOccurrence item, out string errorMessage )
+        public bool CanDelete( EntityCampusFilter item, out string errorMessage )
         {
             errorMessage = string.Empty;
-            
-            // ignoring Attendance,OccurrenceId 
             return true;
         }
     }
@@ -60,52 +58,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class AttendanceOccurrenceExtensionMethods
+    public static partial class EntityCampusFilterExtensionMethods
     {
         /// <summary>
-        /// Clones this AttendanceOccurrence object to a new AttendanceOccurrence object
+        /// Clones this EntityCampusFilter object to a new EntityCampusFilter object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static AttendanceOccurrence Clone( this AttendanceOccurrence source, bool deepCopy )
+        public static EntityCampusFilter Clone( this EntityCampusFilter source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as AttendanceOccurrence;
+                return source.Clone() as EntityCampusFilter;
             }
             else
             {
-                var target = new AttendanceOccurrence();
+                var target = new EntityCampusFilter();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another AttendanceOccurrence object to this AttendanceOccurrence object
+        /// Copies the properties from another EntityCampusFilter object to this EntityCampusFilter object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this AttendanceOccurrence target, AttendanceOccurrence source )
+        public static void CopyPropertiesFrom( this EntityCampusFilter target, EntityCampusFilter source )
         {
             target.Id = source.Id;
-            target.AcceptConfirmationMessage = source.AcceptConfirmationMessage;
-            target.AnonymousAttendanceCount = source.AnonymousAttendanceCount;
-            target.DeclineConfirmationMessage = source.DeclineConfirmationMessage;
-            target.DeclineReasonValueIds = source.DeclineReasonValueIds;
-            target.DidNotOccur = source.DidNotOccur;
+            target.CampusId = source.CampusId;
+            target.EntityId = source.EntityId;
+            target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GroupId = source.GroupId;
-            target.LocationId = source.LocationId;
-            target.Name = source.Name;
-            target.Notes = source.Notes;
-            target.OccurrenceDate = source.OccurrenceDate;
-            target.ScheduleId = source.ScheduleId;
-            target.ShowDeclineReasons = source.ShowDeclineReasons;
-            target.StepTypeId = source.StepTypeId;
-            target.SundayDate = source.SundayDate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
