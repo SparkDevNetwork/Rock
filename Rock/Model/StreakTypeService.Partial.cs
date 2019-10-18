@@ -565,7 +565,7 @@ namespace Rock.Model
             var aggregateEngagementMap = GetAggregateMap( engagementMaps );
 
             // Make sure there are no engagements where occurrences do not exist
-            AndBitOperation( aggregateEngagementMap, streakTypeCache.OccurrenceMap );
+            AndBitOperation( aggregateEngagementMap ?? new byte[0], streakTypeCache.OccurrenceMap ?? new byte[0] );
 
             // Calculate the exclusion map
             var aggregateExclusionMap = GetAggregateExclusionMap( streaks, streakTypeCache, locationId );
