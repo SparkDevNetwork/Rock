@@ -1228,7 +1228,7 @@ namespace Rock.Model
             {
                 foreach ( var locationId in locationIdOrderedList )
                 {
-                    var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrCreateAttendanceOccurrence( scheduleOccurrenceDate.OccurrenceDate.Value, scheduleOccurrenceDate.ScheduleId, locationId, groupId );
+                    var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( scheduleOccurrenceDate.OccurrenceDate.Value, groupId, locationId, scheduleOccurrenceDate.ScheduleId );
                     attendanceOccurrenceIdList.Add( attendanceOccurrence.Id );
                 }
             }
