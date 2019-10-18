@@ -97,10 +97,12 @@ namespace Rock.Model
             target.AllowOverAchievement = source.AllowOverAchievement;
             target.BadgeLavaTemplate = source.BadgeLavaTemplate;
             target.CategoryId = source.CategoryId;
+            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
+            target.Name = source.Name;
             target.ResultsLavaTemplate = source.ResultsLavaTemplate;
             target.StreakTypeId = source.StreakTypeId;
             target.CreatedDateTime = source.CreatedDateTime;

@@ -99,6 +99,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.LocationId = source.LocationId;
+            target.Name = source.Name;
             target.Notes = source.Notes;
             target.OccurrenceDate = source.OccurrenceDate;
             target.ScheduleId = source.ScheduleId;

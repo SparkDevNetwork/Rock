@@ -67,6 +67,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
         public string Notes { get; set; }
 
         /// <summary />
@@ -127,6 +130,7 @@ namespace Rock.Client
             this.GroupId = source.GroupId;
             this.LocationId = source.LocationId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
             this.Notes = source.Notes;
             this.OccurrenceDate = source.OccurrenceDate;
             this.ScheduleId = source.ScheduleId;
