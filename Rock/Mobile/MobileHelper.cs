@@ -270,7 +270,8 @@ namespace Rock.Mobile
                 CssStyles = cssStyles,
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
-                PhoneFormats = phoneFormats
+                PhoneFormats = phoneFormats,
+                TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom
             };
 
             //
