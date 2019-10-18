@@ -489,6 +489,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Wheres the campus.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        public static IQueryable<T> WhereCampus<T>( this IQueryable<T> source, RockContext rockContext, int campusId ) where T : Entity<T>, new()
+        {
+            int entityTypeId = EntityTypeCache.GetId( typeof( T ) ) ?? 0;
+
+            var entityCampusFilterService = new EntityCampusFilterService( rockContext )
+                .Queryable()
+                .Where( e => e.CampusId == campusId )
+                .Where( e => e.EntityTypeId == entityTypeId )
+                .Select( e => e.EntityId );
+
+            var result = source.Where( s => entityCampusFilterService.Contains( ( s as T ).Id ) );
+            return result;
+        }
+
+        /// <summary>
         /// Forces an Inner Join to the Person table using the specified key selector expression.
         /// Handy for optimizing a query that would have normally done an outer join 
         /// </summary>
