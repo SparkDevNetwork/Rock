@@ -23,17 +23,17 @@
 
 {% endcapture %}
 
-<div class="css-grid-item {{ Channel.Name | ToCssClass }} {{ Item.StartDateTime | Date:'dddd' | ToCssClass }}">
-	<div class="blog-header"><a class="" href="{{ Card_ActionUrl }}" style="background-image:url('{{ Card_HeaderImg }}')"></a></div>
-	<div class="blog-content">
-		<h6 class="blog-name">{{ Channel.Name }}</h6>
-		<h2>{{ Item.Title }}</h2>
-		<p class="blogpost-summary">
+<div class="clickable-card {{ Channel.Name | ToCssClass }}" style="font-size:0.75em;">
+	<a href="{{ Card_ActionUrl }}"><img class="card-img" src="{{ Card_HeaderImg }}" /></a>
+	<div class="card-body">
+		<h6 class="subtitle margin-none">{{ Channel.Name }}</h6>
+		<h4>{{ Item.Title }}</h4>
+		<p class="text-muted">
 			{% assign Item_Summary = Item | Attribute:'Summary' | StripHtml | Trim %}
 			{% if Item_Summary == "" %}{% assign Item_Summary = Item | Attribute:'Subtitle' | StripHtml | Trim %}{% endif %}
 			{% if Item_Summary == "" %}{% assign Item_Summary = Item.Content | StripHtml | Trim %}{% endif %}
 			{{ Item_Summary | TruncateWords:15 }}
 		</p>
+    	<p class="margin-none"><a class="point-right" href="{{ Card_ActionUrl }}">{{ Card_ActionLabel }}</a></p>
 	</div>
-	<p class="readmore"><a href="{{ Card_ActionUrl }}">{{ Card_ActionLabel }}</a></p>
 </div>

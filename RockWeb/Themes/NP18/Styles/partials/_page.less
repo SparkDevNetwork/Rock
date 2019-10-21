@@ -1,6 +1,17 @@
+p {
+    font-size: 1.25em;
+}
+
+/**
+ *  .section is a copy of Bootstrap's .container that can be added to a block's
+ *  CSS Class (it applies to the child .block-content instead of itself), while
+ *  still allowing us add background styles/etc that cover the entire width of
+ *  the page. It also adds some extra padding, and an extra-large breakpoint.
+ */
 .section {
     padding-top: 16px;
     padding-bottom: 16px;
+    background-color: tint(@white,90%);
 
     @media (min-width: @screen-sm) {
         padding-top: 30px;
@@ -17,15 +28,12 @@
         padding-bottom: 120px;
     }
 
-    background-color: tint(@white,90%);
-
     > .block-content {
         position: relative;
-        //.make-row();
-        //padding-left: 0;
-        //padding-right:0;
+        .container-fixed();
+        .clearfix();
+
         @media (min-width: @screen-sm-min) {
-            .container-fixed();
             width: @container-sm;
         }
 
@@ -40,15 +48,82 @@
         @media (min-width: @screen-xl-min) {
             width: @container-xl;
         }
+    }
+    /**
+     *  .narrow variant
+     */
+    &.narrow > .block-content {
+        @media (min-width: @screen-sm-min) {
+            width: @container-sm * 10 / 12;
+        }
 
-        .clearfix();
+        @media (min-width: @screen-md-min) {
+            width: @container-md * 8 / 12;
+        }
 
-        > div:last-child {
-            //.make-sm-column(12);
-            //.clearfix();
+        @media (min-width: @screen-lg-min) {
+            width: @container-lg * 6 / 12;
+        }
+
+        @media (min-width: @screen-xl-min) {
+            width: @container-xl * 6 / 12;
         }
     }
+    /**
+     *  .medium variant
+     */
+    &.medium > .block-content {
+        @media (min-width: @screen-sm-min) {
+            width: @container-sm * 10 / 12;
+        }
 
+        @media (min-width: @screen-md-min) {
+            width: @container-md * 8 / 12;
+        }
+
+        @media (min-width: @screen-lg-min) {
+            width: @container-lg * 8 / 12;
+        }
+
+        @media (min-width: @screen-xl-min) {
+            width: @container-xl * 8 / 12;
+        }
+    }
+    /**
+     *  .wide variant
+     */
+    &.wide > .block-content {
+        @media (min-width: @screen-sm-min) {
+            width: @container-sm * 10 / 12;
+        }
+
+        @media (min-width: @screen-md-min) {
+            width: @container-md * 10 / 12;
+        }
+
+        @media (min-width: @screen-lg-min) {
+            width: @container-lg * 10 / 12;
+        }
+
+        @media (min-width: @screen-xl-min) {
+            width: @container-xl * 10 / 12;
+        }
+    }
+    /**
+     *  .no-padding option
+     */
+    &.nopad {
+        padding: 0;
+    }
+}
+
+
+
+
+
+
+// TODO: figure out what this all does
+.section {
     &.highlight-green {
         h3, h4, h5,
         a:not(.btn) {
@@ -92,9 +167,6 @@
                 }
             }
         }
-    }
-
-    &.nobg {
     }
 
     &.hasbg {
@@ -249,23 +321,6 @@
         }
     }
 
-    &.lightgray {
-        background-color: tint(@white,35%);
-    }
-
-    &.mediumgray {
-        background-color: tint(@white,50%);
-    }
-
-    &.darkgray,
-    &.gray-80 {
-        background-color: tint(@white,20%);
-    }
-
-    &.gray {
-        background-color: @white;
-    }
-
     &.overlay-gray-dark {
         position: relative;
 
@@ -306,66 +361,6 @@
         }
     }
 
-    &.nopad {
-        padding-top: 0;
-        padding-bottom: 0;
-    }
-
-    &.intro {
-        .block-content {
-            > div:last-child {
-                .make-lg-column(10);
-                .make-lg-column-push(1);
-            }
-        }
-    }
-
-    &.wide {
-        .block-content {
-            > div:last-child {
-                .make-sm-column(10);
-                .make-sm-column-push(1);
-            }
-        }
-    }
-
-    &.medium {
-        .block-content {
-            > div:last-child {
-                .make-sm-column(10);
-                .make-sm-column-push(1);
-                .make-md-column(8);
-                .make-md-column-push(2);
-            }
-        }
-    }
-
-    &.narrow {
-        .block-content {
-            > div:last-child {
-                .make-sm-column(10);
-                .make-sm-column-push(1);
-                .make-md-column(8);
-                .make-md-column-push(2);
-                .make-lg-column(6);
-                .make-lg-column-push(3);
-            }
-        }
-    }
-}
-
-#homepage-intro-box {
-    font-size: 1.5em;
-    background-color: @brand-primary;
-    color: @truewhite;
-    padding: 6rem 8%;
-    margin-top: -2em;
-    margin-bottom: 2em;
-    z-index: 20;
-
-    h2 {
-        color: @truewhite;
-    }
 }
 
 .callstoaction {
@@ -396,11 +391,6 @@
             color: @brand-primary;
         }
 
-        a.btn {
-            border-color: @brand-primary;
-            &:extend(.btn all, .btn-primary all, .btn-outline-primary all);
-        }
-
         &:first-child {
             h2, h3, h4, h5, h6 {
                 color: @truewhite;
@@ -419,21 +409,6 @@
                 left: 0;
                 width: 50%;
                 padding-left: 5%;
-            }
-
-            a.btn {
-                border-color: @truewhite;
-                color: @truewhite;
-                &:extend(.btn all, .btn-primary all, .btn-outline-white all);
-
-                &:hover {
-                    border-color: @truewhite;
-                    color: @brand-primary;
-
-                    &:before {
-                        background-color: @truewhite;
-                    }
-                }
             }
         }
     }

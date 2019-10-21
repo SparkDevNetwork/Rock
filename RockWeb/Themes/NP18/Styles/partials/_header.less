@@ -52,12 +52,6 @@ header {
     }
 }
 
-body.noheader {
-    h1, .h1 {
-        color: @brand-primary;
-    }
-}
-
 body.header-contain {
     .headerImage {
         background-size: contain;
@@ -171,6 +165,7 @@ body.header-contain {
     }
 
     &.hero {
+        z-index: 0;
         min-height: 511px;
         max-height: 95vh;
 
@@ -202,18 +197,22 @@ body.header-contain {
     }
 }
 
-.noheader .pagetitle {
+.pagetitle {
     background-color: @brand-primary;
     color: @truewhite;
 
     h1 {
-        .font(36,bold);
         text-transform: uppercase;
-        color: @truewhite;
+        color: inherit;
         line-height: 1;
         margin: 20px 0;
+        font-size: 1.666em;
+    }
+}
 
-        @media (min-width: @screen-xl) {
+@media (min-width: @screen-xl) {
+    .pagetitle {
+        h1 {
             margin: 30px 0;
         }
     }

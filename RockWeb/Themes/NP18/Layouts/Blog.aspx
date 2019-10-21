@@ -18,11 +18,7 @@
 
     <Rock:Zone Name="Main" runat="server" />
 
-    <div id="blogslist" class="css-grid-section">
-
-        <Rock:Zone Name="Section A" runat="server" />
-
-    </div>
+    <Rock:Zone Name="Section A" runat="server" />
 
     <Rock:Zone Name="Section B" runat="server" />
 

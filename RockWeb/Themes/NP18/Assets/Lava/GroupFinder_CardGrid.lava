@@ -1,4 +1,4 @@
-<div class="section mediumgray">
+<div class="section bg-light">
     <div class="container">
         <div class="grid-responsive">
             {% for Group in Groups %}

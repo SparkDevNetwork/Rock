@@ -1,0 +1,188 @@
+
+
+// -------------------------------------------------- //
+//                    Button Base                     //
+// -------------------------------------------------- //
+
+.btn {
+    position: relative;
+    border-width: 4px;
+    font-family: @font-family-narrow;
+    text-transform: uppercase;
+
+    &.active, &:active {
+        box-shadow: none !important;
+    }
+
+}
+
+.point-left:after {
+    font-size: 1em;
+    .np-icon();
+    content: @np-caret;
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: 0.25em;
+    margin-left: -0.25em;
+    margin-right: 0.25em;
+    transform: rotate(180deg);
+    float: left;
+}
+
+.point-right:after {
+    font-size: 1em;
+    .np-icon();
+    content: @np-caret;
+    vertical-align: middle;
+    display: inline-block;
+    margin-top: -0.25em;
+    margin-left: 0.25em;
+    margin-right: -0.25em;
+}
+
+
+// -------------------------------------------------- //
+//                    Button Sizes                    //
+// -------------------------------------------------- //
+
+.btn-xs,
+.btn-sm {
+    border-width: 2px;
+}
+
+
+// -------------------------------------------------- //
+//                   Button Themes                    //
+// -------------------------------------------------- //
+
+// NewPointe Button variants
+// This is a modified copy of Bootstrap's .button-variant() for NewPointe-styled fancy buttons
+.newpointe-button-variant(@color; @border; @hover-color; @hover-background) {
+    position: relative;
+    display: inline-block;
+    color: @color;
+    background-color: transparent;
+    border-color: @border;
+    z-index: 0;
+    transition: all .6s cubic-bezier(.85,0,.14,1.01);
+
+    &:focus,
+    &.focus {
+        color: @hover-color;
+        background-color: transparent;
+        border-color: @hover-background;
+    }
+
+    &:hover {
+        color: @hover-color;
+        background-color: transparent;
+        border-color: @hover-background;
+    }
+
+    &:active,
+    &.active,
+    .open > .dropdown-trigger& {
+        color: @hover-color;
+        background-color: transparent;
+        border-color: @hover-background;
+
+        &:hover,
+        &:focus,
+        &.focus {
+            color: @hover-color;
+            background-color: transparent;
+            border-color: @hover-background;
+        }
+    }
+
+    &:active,
+    &.active,
+    .open > .dropdown-trigger& {
+        background-image: none;
+    }
+
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+        &:hover,
+        &:focus,
+        &.focus {
+            color: @color;
+            background-color: transparent;
+            border-color: @border;
+        }
+    }
+
+    .badge {
+        color: @border;
+        background-color: @color;
+    }
+
+    &:before {
+        background-color: @hover-background;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 0;
+        z-index: -1;
+        transition: width .6s cubic-bezier(.85,0,.14,1.01);
+    }
+
+    &:active:before,
+    &.active:before,
+    &:focus:before,
+    &.focus:before,
+    &:hover:before {
+        width: 101%;
+    }
+}
+
+// Define animated outlined styles
+// If we overwrite a default style, we provide a *-solid version for the old style
+
+.btn-outline-default {
+    .newpointe-button-variant(@btn-default-border, @btn-default-border, @btn-default-color, @btn-default-bg);
+}
+
+.btn-primary,
+.btn-outline-primary {
+    .newpointe-button-variant(@brand-primary, @brand-primary, @truewhite, @brand-primary);
+}
+
+.btn-primary-solid {
+    .button-variant(@btn-primary-color; @btn-primary-bg; @btn-primary-border);
+}
+
+.btn-outline-success {
+    .newpointe-button-variant(@btn-success-border, @btn-success-border, @btn-success-color, @btn-success-bg);
+}
+
+.btn-outline-info {
+    .newpointe-button-variant(@btn-info-border, @btn-info-border, @btn-info-color, @btn-info-bg);
+}
+
+.btn-outline-warning {
+    .newpointe-button-variant(@btn-warning-border, @btn-warning-border, @btn-warning-color, @btn-warning-bg);
+}
+
+.btn-danger,
+.btn-outline-danger {
+    .newpointe-button-variant(@btn-danger-border, @btn-danger-border, @btn-danger-color, @btn-danger-bg);
+}
+
+.btn-danger-solid {
+    .button-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
+}
+
+// Extra styles
+
+.btn-outline-white {
+    .newpointe-button-variant(@truewhite, @truewhite, @truewhite, @brand-primary);
+}
+
+.btn-inverted {
+    .newpointe-button-variant(@truewhite, @truewhite, @brand-primary, @truewhite);
+}

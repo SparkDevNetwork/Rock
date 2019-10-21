@@ -1,0 +1,91 @@
+
+.card {
+    display: block;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16);
+    background-color: #fff;
+
+    h1, h2, h3, h4, h5, h6 {
+        word-break: break-word;
+    }
+}
+
+a.card,
+.card-clickable {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: solid #fff 4px;
+    transition: transform ease-in-out 300ms, border-color ease-in-out 300ms;
+
+    &:hover,
+    &:active,
+    &:visited,
+    &:focus {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    &:hover {
+        border-bottom: solid #8bc540 4px;
+        transform: translateY(-5px);
+
+        h1 {
+            color: #8bc540;
+        }
+    }
+}
+
+.card-body {
+    padding: 1.5em;
+}
+
+.card-img {
+    width: 100%;
+}
+
+.card-primary {
+    color: @truewhite;
+    background-color: @brand-primary;
+
+    h1, h2, h3, h4, h5, h6 {
+        color: inherit;
+    }
+}
+
+.card-overlay-group {
+    margin-bottom: 5%;
+    position: relative;
+
+    .card-left {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 50%;
+        z-index: 10;
+    }
+
+    .card-right {
+        width: 55%;
+        padding: 3%;
+        padding-left: 7%;
+        margin: 5% 0 0;
+        float: right;
+        position: relative;
+        z-index: 5;
+    }
+
+    &::before, &::after {
+        display: table;
+        content: " ";
+    }
+
+    &::after {
+        clear: both;
+    }
+}
+
+.card-small {
+    font-size: 0.75em;
+    .card-body {
+        padding: 1.75em;
+    }
+}

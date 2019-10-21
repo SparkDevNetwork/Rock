@@ -1,6 +1,7 @@
-//
-// Variables
-// --------------------------------------------------
+
+// -------------------------------------------------- //
+//                Bootstrap Variables                 //
+// -------------------------------------------------- //
 
 @box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
 
@@ -48,21 +49,19 @@
 @font-family-narrow:        "din-2014-narrow",sans-serif;
 
 @font-size-base:            16px;
-@font-size-large:           ceil((@font-size-base * 1.5)); // 24px
-@font-size-small:           ceil((@font-size-base * 0.85)); // 13.6px
+@font-size-large:           ceil((@font-size-base * 1.5));
+@font-size-small:           ceil((@font-size-base * 0.85));
 
-@font-size-h1:              floor((@font-size-base * 4)); // 64px
-@font-size-h2:              floor((@font-size-base * 3)); // 48px
-@font-size-h3:              ceil((@font-size-base * 2.5)); // 40px
-@font-size-h4:              ceil((@font-size-base * 2)); // 32px
-@font-size-h5:              ceil((@font-size-base * 1.5)); // 24px
-@font-size-h6:              ceil((@font-size-base * 1.5)); // 24px
+@font-size-h1:              4em;
+@font-size-h2:              3em;
+@font-size-h3:              2.5em;
+@font-size-h4:              2em;
+@font-size-h5:              1.5em;
+@font-size-h6:              1.25em;
 
 //** By default, this inherits from the `<body>`.
 @headings-font-weight:      900;
 @headings-color:            @gray-dark;
-
-@header-text-color:         @gray-dark;
 
 
 //== Components
@@ -100,11 +99,11 @@
 //##
 
 //** Default `.form-control` height
-@input-height-base:         (@line-height-computed + (@padding-base-vertical * 2) + 6);
+@input-height-base:         (@line-height-computed + (@padding-base-vertical * 2));
 //** Large `.form-control` height
-@input-height-large:        (ceil(@font-size-large * @line-height-large) + (@padding-large-vertical * 2) + 6);
+@input-height-large:        (ceil(@font-size-large * @line-height-large) + (@padding-large-vertical * 2));
 //** Small `.form-control` height
-@input-height-small:        (floor(@font-size-small * @line-height-small) + (@padding-small-vertical * 2) + 6);
+@input-height-small:        (floor(@font-size-small * @line-height-small) + (@padding-small-vertical * 2));
 
 
 //== Media queries breakpoints
@@ -164,3 +163,17 @@
 //** Blockquote font size
 @blockquote-font-size:      @font-size-base;
 
+
+// -------------------------------------------------- //
+//                   Rock Variables                   //
+// -------------------------------------------------- //
+
+
+//// Header
+@header-text-color: @gray-dark;
+
+// Modals
+@modal-header-bg: #282828;
+@modal-header-text-color: #b3b3b3;
+@modal-footer-bg: #efefef;
+@modal-footer-text-color: #666;

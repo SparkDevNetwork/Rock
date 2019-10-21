@@ -30,13 +30,9 @@
 
 {% elseif CurrentPage.PageDisplayTitle %}
 
-    <div class="pagetitle noheader">
+    <div class="pagetitle">
         <div class="container">
-            <div class="row">
-                <div class="col-xs-12">
-                    <h1>{{ 'Global' | Page:'Title' }}</h1>
-                </div>
-            </div>
+            <h1>{{ 'Global' | Page:'Title' }}</h1>
         </div>
     </div>
 
