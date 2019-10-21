@@ -484,6 +484,8 @@
             <Content>
                 <asp:HiddenField ID="hfDiscountGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryDiscount" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Discount" />
+                <Rock:NotificationBox ID="nbDuplicateDiscountCode" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="input-width-xl" Label="Discount Code" ValidationGroup="Discount" Required="true" />

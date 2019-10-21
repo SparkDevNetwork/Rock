@@ -38,7 +38,7 @@
 
             <div class="row">
                 <%-- Transaction Entry Panel --%>
-                <div class="col-sm-8">
+                <asp:Panel ID="pnlTransactionEntryPanel" runat="server" CssClass="col-sm-8">
                     <div class="transaction-entry-v2">
 
                      <%-- Collect Transaction Info (step 1) --%>
@@ -50,7 +50,7 @@
 
                         <asp:Panel ID="pnlScheduledTransaction" runat="server">
                             <div class="form-group">
-                                <Rock:RockDropDownList ID="ddlFrequency" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlFrequency_SelectedIndexChanged" />
+                                <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" AutoPostBack="true" OnSelectedIndexChanged="ddlFrequency_SelectedIndexChanged" />
                             </div>
 
                             <asp:Panel ID="pnlSavedAccounts" runat="server" class="form-group" Visible="false">
@@ -71,10 +71,8 @@
 
                      <%-- Show Amount Summary (step 2)--%>
                     <asp:Panel ID="pnlAmountSummary" runat="server" Visible="false" CssClass="amount-summary">
-                        <div class="account-campus">
-                            <span class="account-name"><asp:Literal runat="server" ID="lAmountSummaryAccounts" /></span>
-                            -
-                            <span class="account-campus"><asp:Literal runat="server" ID="lAmountSummaryCampus" /></span>
+                        <div class="amount-summary-text">
+                            <asp:Literal ID="lAmountSummaryText" runat="server" />
                         </div>
                         <div class="amount-display">
                             <asp:Literal runat="server" ID="lAmountSummaryAmount" />
@@ -100,7 +98,7 @@
                     <%-- Collect/Update Personal Information (step 3) --%>
                     <asp:Panel ID="pnlPersonalInformation" runat="server" Visible="false">
 
-                        <Rock:Toggle ID="tglIndividualOrBusiness" runat="server" OnText="Business" OffText="Individual" OnCheckedChanged="tglIndividualOrBusiness_CheckedChanged" />
+                         <Rock:Toggle ID="tglIndividualOrBusiness" runat="server" ButtonGroupCssClass="btn-group-justified" OnText="Business" OffText="Individual" OnCheckedChanged="tglIndividualOrBusiness_CheckedChanged" />
 
                         <asp:Panel ID="pnlPersonInformationAsIndividual" runat="server">
                             <asp:Panel ID="pnlLoggedInNameDisplay" runat="server">
@@ -197,7 +195,7 @@
                     </asp:Panel>
 
                 </div>
-                </div>
+                </asp:Panel>
 
                 <%-- Scheduled Gifts Panel --%>
                 <asp:Panel ID="pnlScheduledTransactions" runat="server" CssClass="col-sm-4 scheduled-transactions" Visible="false">

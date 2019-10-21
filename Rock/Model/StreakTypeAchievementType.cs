@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -34,6 +33,20 @@ namespace Rock.Model
     public partial class StreakTypeAchievementType : Model<StreakTypeAchievementType>, IHasActiveFlag
     {
         #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the name of the achievement type. This property is required.
+        /// </summary>
+        [MaxLength( 250 )]
+        [DataMember( IsRequired = true )]
+        [Required]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a description of the achievement type.
+        /// </summary>
+        [DataMember]
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Model.StreakType"/> to which this StreakTypeAchievementType belongs. This property is required.
@@ -100,7 +113,7 @@ namespace Rock.Model
         /// </value>
         [Range( 1, int.MaxValue )]
         [DataMember]
-        public int MaxAccomplishmentsAllowed { get; set; } = 1;
+        public int? MaxAccomplishmentsAllowed { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets whether over achievement is allowed. This cannot be true if <see cref="MaxAccomplishmentsAllowed"/> is greater than 1.
@@ -209,11 +222,11 @@ namespace Rock.Model
             {
                 HasRequired( stat => stat.StreakType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.StreakTypeId ).WillCascadeOnDelete( true );
                 HasRequired( stat => stat.AchievementEntityType ).WithMany().HasForeignKey( stat => stat.AchievementEntityTypeId ).WillCascadeOnDelete( true );
-                HasRequired( stat => stat.AchievementStartWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementStartWorkflowTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementEndWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementEndWorkflowTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementStepType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
 
+                HasOptional( stat => stat.AchievementStartWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementStartWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementEndWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementEndWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementStepType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.Category ).WithMany().HasForeignKey( stat => stat.CategoryId ).WillCascadeOnDelete( false );
             }
         }

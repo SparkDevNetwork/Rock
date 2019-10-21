@@ -33,16 +33,16 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Follow
 {
     /// <summary>
-    /// "Block for users to select which following events they would like to subscribe to."
+    /// Block for users to select which following events they would like to subscribe to.
     /// </summary>
     [DisplayName( "Event Subscription" )]
     [Category( "Follow" )]
     [Description( "Block for users to select which following events they would like to subscribe to." )]
     public partial class EventSubscription : RockBlock
     {
-
         #region Fields
 
+        // private global rockContext that is specifically for binding in ItemDataBound
         private RockContext _rockContext = null;
         protected List<int> _currentSubscriptions = new List<int>();
 

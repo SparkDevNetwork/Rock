@@ -16,15 +16,17 @@
     <Ignore>Admin</Ignore>
     <Ignore>api</Ignore>
     <Ignore>auth</Ignore>
-    <Ignore>deserialize</Ignore>
-    <Ignore>deserialized</Ignore>
-    <Ignore>Queryable</Ignore>
-    <Ignore>workflow</Ignore>
-    <Ignore>nullable</Ignore>
-    <Ignore>linq</Ignore>
     <Ignore>birthdate</Ignore>
     <Ignore>birthyear</Ignore>
+    <Ignore>deserialize</Ignore>
+    <Ignore>deserialized</Ignore>
+    <Ignore>linq</Ignore>
+    <Ignore>nullable</Ignore>
+    <Ignore>Queryable</Ignore>
     <Ignore>texting</Ignore>
+    <Ignore>workflow</Ignore>
+    <Ignore>geocode</Ignore>
+    <Ignore>Checkin</Ignore>
   </IgnoredWords>
   <IgnoredFilePatterns>
     <FilePattern>*.Designer.cs</FilePattern>
