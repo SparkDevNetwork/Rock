@@ -1,0 +1,23 @@
+{% if guid != empty and guid != null %}{% capture ids %}
+    {% sql %}
+        SELECT TOP {{ limit }} ContentChannelItem.Id 'Id'
+        FROM TaggedItem
+        INNER JOIN ContentChannelItem
+        ON TaggedItem.EntityGuid = ContentChannelItem.Guid
+        WHERE TaggedItem.EntityGuid != '{{ guid }}' AND
+        ContentChannelItem.Status = 2 AND
+        ContentChannelItem.ContentChannelId IN ({{ ccids | Replace:'%2C',',' }}) AND
+        TagId IN (
+            SELECT TagId
+            FROM TaggedItem
+            WHERE EntityGuid = '{{ guid }}'
+        )
+        GROUP BY ContentChannelItem.Id, ContentChannelItem.ModifiedDateTime
+        ORDER BY COUNT(*) desc, ContentChannelItem.ModifiedDateTime desc
+    {% endsql %}
+    
+    {% for item in results %}
+        {{ item.Id }}{% if forloop.last == false %},{% endif %}
+    {% endfor %}
+    
+{% endcapture %}{% endif %}{{ ids | Trim | Replace:' ','' }}
