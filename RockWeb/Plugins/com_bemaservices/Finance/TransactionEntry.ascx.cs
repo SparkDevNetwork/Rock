@@ -39,6 +39,7 @@ using Rock.Web.UI.Controls;
  *
  * Additional Features:
  * - FE1) Added Ability to make Comment Optional
+ * - FE2) Added Ability to use the first name instead of the nickname
  */
 
 namespace Rock.Plugins.com_bemaservices.Finance
@@ -155,10 +156,13 @@ TransactionAccountDetails: [
     [BooleanField( "Comment Required", "If Comment Entry is Allowed, should it be required", false, "", 31 )]
     /* Bema.FE1.End */
     /* Bema.FE1.Start The order Block attributes below has been updated.  But the Attributes are part of the core block*/
-    [BooleanField( "Enable Business Giving", "Should the option to give as a business be displayed", true, "", 32 )]  
+    [BooleanField( "Enable Business Giving", "Should the option to give as a business be displayed", true, "", 32 )]
     [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 33 )]
     [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order: 34 )]
     /* Bema.FE1. End */
+    /* Bema.FE2.Start */
+    [BooleanField( "UseFirstName", "Should the block use a person's first name instead of their nickname.", false, "", 31 )]
+    /* Bema.FE2.End */
 
     #endregion
 
@@ -296,7 +300,7 @@ TransactionAccountDetails: [
 
         protected bool DisplayPhone
         {
-            get {return ViewState["DisplayPhone"].ToString().AsBoolean(); }
+            get { return ViewState["DisplayPhone"].ToString().AsBoolean(); }
             set { ViewState["DisplayPhone"] = value; }
         }
         #endregion
@@ -556,7 +560,7 @@ TransactionAccountDetails: [
             }
 
             // Update the total amount
-            lblTotalAmount.Text = GlobalAttributesCache.Value("CurrencySymbol") + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
+            lblTotalAmount.Text = GlobalAttributesCache.Value( "CurrencySymbol" ) + SelectedAccounts.Sum( f => f.Amount ).ToString( "F2" );
 
             // Set the frequency date label based on if 'One Time' is selected or not
             if ( btnFrequency.Items.Count > 0 )
@@ -896,7 +900,7 @@ TransactionAccountDetails: [
 
                         if ( !ScheduleId.HasValue )
                         {
-                            var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( (financialGateway != null ? financialGateway.Id : (int?)null), TransactionCode );
+                            var transaction = new FinancialTransactionService( rockContext ).GetByTransactionCode( ( financialGateway != null ? financialGateway.Id : ( int? ) null ), TransactionCode );
                             if ( transaction != null && transaction.AuthorizedPersonAlias != null )
                             {
                                 if ( transaction.FinancialGateway != null )
@@ -1607,6 +1611,14 @@ TransactionAccountDetails: [
             if ( person != null )
             {
                 txtCurrentName.Text = person.FullName;
+
+                /* BEMA.FE2.Start */
+                if ( GetAttributeValue( "UseFirstName" ).AsBoolean() )
+                {
+                    txtCurrentName.Text = Person.FormatFullName( person.FirstName, person.LastName, person.SuffixValueId );
+                }
+                /* BEMA.FE2.End */
+
                 txtEmail.Text = person.Email;
 
                 var rockContext = new RockContext();
@@ -1757,7 +1769,7 @@ TransactionAccountDetails: [
                         !string.IsNullOrWhiteSpace( txtLastName.Text ) )
                     {
                         // Same logic as PledgeEntry.ascx.cs
-                        var personQuery = new PersonService.PersonMatchQuery( txtFirstName.Text, txtLastName.Text, txtEmail.Text, pnbPhone.Text.Trim());
+                        var personQuery = new PersonService.PersonMatchQuery( txtFirstName.Text, txtLastName.Text, txtEmail.Text, pnbPhone.Text.Trim() );
                         person = personService.FindPerson( personQuery, true );
                     }
 
@@ -3088,10 +3100,18 @@ TransactionAccountDetails: [
                 NotificationBox nb = nbMessage;
                 switch ( hfCurrentPage.Value.AsInteger() )
                 {
-                    case 1: nb = nbSelectionMessage; break;
-                    case 2: nb = nbSelectionMessage; break;
-                    case 3: nb = nbConfirmationMessage; break;
-                    case 4: nb = nbSuccessMessage; break;
+                    case 1:
+                        nb = nbSelectionMessage;
+                        break;
+                    case 2:
+                        nb = nbSelectionMessage;
+                        break;
+                    case 3:
+                        nb = nbConfirmationMessage;
+                        break;
+                    case 4:
+                        nb = nbSuccessMessage;
+                        break;
                 }
 
                 nb.Text = text;
