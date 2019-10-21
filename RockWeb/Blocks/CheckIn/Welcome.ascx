@@ -20,6 +20,9 @@
     <ContentTemplate>
 
         <asp:HiddenField ID="hfSearchEntry" runat="server" ClientIDMode="Static" />
+        <Rock:HiddenFieldWithClass ID="hfConfigurationHash" runat="server" CssClass="js-configuration-hash" />
+
+        <Rock:HiddenFieldWithClass ID="hfLocalDeviceConfiguration" runat="server" CssClass="js-local-device-configuration" />
 
         <script>
 
@@ -28,7 +31,7 @@
                 // expire events. There is a visual anomaly with doing this. Depending on when the response
                 // from the server is received the displayed time could display the same second for more
                 // than one second and/or skip displaying a second entirely.
-                $('.countdown-timer').countdown('destroy');
+                $('.js-countdown-timer').countdown('destroy');
                 if (timeout)
                 {
                     window.clearTimeout(timeout)
@@ -36,7 +39,7 @@
             });
 
             function PostRefresh() {
-                window.location = "javascript:__doPostBack('<%=lbRefresh.UniqueID %>','')";
+                window.location = "javascript:__doPostBack('<%=lbTimerRefresh.UniqueID %>','')";
             }
 
             function GetLabelTypeSelection() {
@@ -68,22 +71,63 @@
                 });
 
                 var timeoutSeconds = $('.js-refresh-timer-seconds').val();
-                timeout = window.setTimeout(refreshKiosk, timeoutSeconds * 1000);
+                var isGettingConfigurationStatus = false;
+                timeout = window.setInterval(checkForConfigurationChange, timeoutSeconds * 1000);
+
+                function checkForConfigurationChange() {
+                    if (isGettingConfigurationStatus) {
+                        return;
+                    }
+
+                    isGettingConfigurationStatus = true;
+
+                    var getConfigurationStatusUrl = Rock.settings.get('baseUrl') + 'api/checkin/configuration/status';
+
+                    var localDeviceConfiguration = JSON.parse($('.js-local-device-configuration').val());
+                    var $configurationHash = $('.js-configuration-hash');
+
+                    // check if the configuration has changed by making a REST call. If it has changed, refresh the page.
+                    $.ajax({
+                        type: "POST",
+                        url: getConfigurationStatusUrl,
+                        timeout: 10000,
+                        data: localDeviceConfiguration,
+                        success: function (data) {
+                            
+                            var localConfigurationStatus = data;
+
+                            if ($configurationHash.val() != localConfigurationStatus.ConfigurationHash) {
+                                $configurationHash.val(localConfigurationStatus.ConfigurationHash);
+                                refreshKiosk();
+                            }
+                        },
+                        dataType: 'json'
+                    }).then(function () {
+                        isGettingConfigurationStatus = false;
+                    }).catch(function () {
+                        console.log('offline');
+                        isGettingConfigurationStatus = false;
+                    });
+                }
 
                 function refreshKiosk() {
-                    $('.countdown-timer').countdown('destroy');
+                    $('.js-countdown-timer').countdown('destroy')
+
+                    setTimeout(function () {
+                        $('.js-countdown-timer')
+                            .text('00:00');
+                    }, 0)
+
                     PostRefresh();
                 }
 
-                var $ActiveWhen = $('.active-when');
-                var $CountdownTimer = $('.countdown-timer');
+                var $CountdownTimer = $('.js-countdown-timer');
 
-                if ($ActiveWhen.text() != '') {
-                    // Ensure date is parsed as local timezone
-                    var tc = $ActiveWhen.text().split(/\D/);
-                    var timeActive = new Date(tc[0], tc[1]-1, tc[2], tc[3], tc[4], tc[5]);
+                var secondsUntil = Number($('.js-countdown-seconds-until').val());
+                if (secondsUntil > 0) {
+
                     $CountdownTimer.countdown({
-                        until: timeActive,
+                        until: secondsUntil,
                         compact: true,
                         onExpiry: refreshKiosk
                     });
@@ -96,7 +140,6 @@
                 $(document).off('keypress');
                 $(document).on('keypress', function (e) {
 
-                    //console.log('Keypressed: ' + e.which + ' - ' + String.fromCharCode(e.which));
                     var date = new Date();
 
                     if ($(".js-active").is(":visible")) {
@@ -194,8 +237,9 @@
         <Rock:ModalAlert ID="maWarning" runat="server" />
 
         <span style="display: none">
-            <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
-            <asp:Label ID="lblActiveWhen" runat="server" CssClass="active-when" />
+            <asp:LinkButton ID="lbTimerRefresh" runat="server" OnClick="lbTimerRefresh_Click" />
+            <Rock:HiddenFieldWithClass ID="hfCountdownSecondsUntil" runat="server" CssClass="js-countdown-seconds-until" />
+            <Rock:HiddenFieldWithClass ID="hfActiveWhen" runat="server" CssClass="js-active-when" />
         </span>
 
         <%-- Panel for no schedules --%>
@@ -226,6 +270,7 @@
                 <div class="checkin-scroll-panel">
                     <div class="scroller">
 
+                        <!-- NOTE: lNotActiveYetCaption will rendered with a css class of 'js-countdown-timer'  -->
                         <p><asp:Literal ID="lNotActiveYetCaption" runat="server" /></p>
                         <asp:HiddenField ID="hfActiveTime" runat="server" />
 
@@ -321,7 +366,7 @@
 
                             <asp:Panel ID="pnlSearchName" CssClass="clearfix center-block" runat="server">
                                 <Rock:RockTextBox ID="tbNameOrPhone" runat="server" Label="Phone or Name" AutoCompleteType="Disabled" spellcheck="false" autocorrect="off" CssClass="search-input namesearch input-lg" FormGroupCssClass="search-name-form-group" />
-                                <Rock:ScreenKeyboard id="skKeyboard" runat="server" ControlToTarget="tbNameOrPhone" KeyboardType="TenKey" KeyCssClass="checkin btn-default" WrapperCssClass="center-block" ></Rock:ScreenKeyboard>
+                                <Rock:ScreenKeyboard id="skKeyboard" runat="server" ControlToTarget="tbNameOrPhone" KeyboardType="TenKey" KeyCssClass="checkin btn btn-default btn-lg btn-keypad digit" WrapperCssClass="center-block" ></Rock:ScreenKeyboard>
                             </asp:Panel>
 
                             <div class="checkin-actions margin-t-md">
@@ -424,7 +469,7 @@
                 </div>
             </div>
 
-            <div class="checkin-footer">   
+            <div class="checkin-footer">
                 <div class="checkin-actions">
                     <asp:LinkButton CssClass="btn btn-primary" ID="lbMangerReprintDone" runat="server" OnClick="lbManagerReprintDone_Click" Text="Done" />
                 </div>

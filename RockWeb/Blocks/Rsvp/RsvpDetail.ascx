@@ -15,6 +15,12 @@
             $('.js-decline-reasons').slideToggle();
         });
 
+        if ($('input.js-show-decline-reasons').length > 0) {
+            if ($('input.js-show-decline-reasons')[0].checked) {
+                $('.js-decline-reasons').show();
+            }
+        }
+
     });
 
 </script>

@@ -408,12 +408,14 @@
     <Compile Include="Blocks\RockMobileBlockType.cs" />
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
+    <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
+    <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Mobile\AdditionalBlockSettings.cs" />
     <Compile Include="Jobs\UpdatePersistedDatasets.cs" />
@@ -436,6 +438,7 @@
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="SystemGuid\Person.cs" />
@@ -622,6 +625,7 @@
     <Compile Include="Plugin\HotFixes\084_FixSpiritualGiftsAssessmentBadge.cs" />
     <Compile Include="Plugin\HotFixes\083_MigrationRollupsForV9_1_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\092_DiscProfileAttributeFix.cs" />
     <Compile Include="Plugin\HotFixes\091_SecureGetImpersonationParameter.cs" />
     <Compile Include="Plugin\HotFixes\090_FixNonCashCurrencyDefinedValue.cs" />
     <Compile Include="Plugin\HotFixes\089_MigrationRollupsForV9_3.cs" />
@@ -2589,6 +2593,7 @@
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="App.config" />
     <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />
@@ -2670,10 +2675,14 @@ if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll" del "$(SolutionDir
 if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
+if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
 
-
-
+if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
 </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

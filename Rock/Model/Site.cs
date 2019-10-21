@@ -444,6 +444,15 @@ namespace Rock.Model
         public DateTime? LatestVersionDateTime { get; set; }
 
         /// <summary>
+        /// Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable exclusive routes]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableExclusiveRoutes { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
         /// <value>

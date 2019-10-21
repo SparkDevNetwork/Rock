@@ -1358,6 +1358,73 @@ a comment --> sit amet</p>";
 
         #endregion
 
+        #region Tags (if/else)
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElse_ShouldIf()
+        {
+            AssertTemplateResult( " CORRECT ", "{% if true %} CORRECT {% else %} NO {% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElse_ShouldElse()
+        {
+            AssertTemplateResult( " CORRECT ", "{% if false %} NO {% else %} CORRECT {% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 1 %}CORRECT{% elsif 1 == 1%}1{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldElsIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elsif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldElse()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 2 == 0 %}0{% elsif 2 == 1%}1{% else %}CORRECT{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void LiquidCustom_IfElseIf_ShouldElseIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void LiquidCustom_IfElseIf_ShouldElse()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 2%}1{% else %}CORRECT{% endif %}" );
+        }
+
+        #endregion
+
         #region Date Filters
 
         /// <summary>
@@ -1839,6 +1906,18 @@ a comment --> sit amet</p>";
             webContentFolder = System.IO.Path.Combine( dirPath, "Content" );
         }
 
+        #endregion
+
+        #region Lava Test helper methods
+        private static void AssertTemplateResult( string expected, string template )
+        {
+            AssertTemplateResult( expected, template, null );
+        }
+
+        private static void AssertTemplateResult( string expected, string template, Hash localVariables )
+        {
+            Assert.Equal( expected, Template.Parse( template ).Render( localVariables ) );
+        }
         #endregion
     }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).

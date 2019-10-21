@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.RSVP
                 rcbDecline.InputAttributes.Add( "data-paired-checkbox", rcbAccept.ClientID );
 
                 var rsvpData = ( RSVPAttendee ) e.Row.DataItem;
-                if (rsvpData.DeclineReason.HasValue)
+                if ( rsvpData.DeclineReason.HasValue )
                 {
                     try
                     {
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.RSVP
             }
 
             bool editSuccessful = false;
-            if ( ( occurrenceId != null) && ( occurrenceId != 0 ) )
+            if ( ( occurrenceId != null ) && ( occurrenceId != 0 ) )
             {
                 editSuccessful = UpdateExistingOccurrence( occurrenceId.Value );
             }
@@ -304,7 +304,7 @@ namespace RockWeb.Blocks.RSVP
 
             GetAllDeclineReasons();
             List<DefinedValue> values = new List<DefinedValue>();
-            int? occurrenceId = PageParameter(PageParameterKey.OccurrenceId).AsIntegerOrNull();
+            int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
             if ( ( occurrenceId == null ) || ( occurrenceId == 0 ) )
             {
                 occurrenceId = hfNewOccurrenceId.Value.AsIntegerOrNull();
@@ -363,7 +363,7 @@ namespace RockWeb.Blocks.RSVP
         protected void GetAllDeclineReasons()
         {
             // If the collection is already initialized, this method is unnecessary.
-            if ( _allDeclineReasons != null)
+            if ( _allDeclineReasons != null )
             {
                 return;
             }
@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.RSVP
 
             if ( occurrenceId == 0 )
             {
-                ShowNewOccurrence();
+                ShowNewOccurrence( rockContext, group );
             }
             else
             {
@@ -408,15 +408,83 @@ namespace RockWeb.Blocks.RSVP
         /// <summary>
         /// Displays the edit form for a new occurrence.
         /// </summary>
-        private void ShowNewOccurrence()
+        private void ShowNewOccurrence( RockContext rockContext, Group group )
         {
             pnlEdit.Visible = true;
             pnlDetails.Visible = false;
             pnlAttendees.Visible = false;
+
+            GetPreviousOccurrenceDetails( rockContext, group );
+
             string occurrenceDate = PageParameter( PageParameterKey.OccurrenceDate );
             if ( !string.IsNullOrWhiteSpace( occurrenceDate ) )
             {
                 dpOccurrenceDate.SelectedDate = occurrenceDate.AsDateTime();
+            }
+        }
+
+        private void GetPreviousOccurrenceDetails( RockContext rockContext, Group group )
+        {
+            var occurrence = new AttendanceOccurrenceService( rockContext ).Queryable().AsNoTracking()
+                .Where( o => o.GroupId == group.Id )
+                .OrderByDescending( o => o.Id ).FirstOrDefault();
+
+            if ( occurrence != null )
+            {
+                heAcceptMessage.Text = occurrence.AcceptConfirmationMessage;
+                heDeclineMessage.Text = occurrence.DeclineConfirmationMessage;
+
+                rcbShowDeclineReasons.Checked = occurrence.ShowDeclineReasons;
+                List<int> selectedDeclineReasons = occurrence.DeclineReasonValueIds.SplitDelimitedValues().Select( int.Parse ).ToList();
+                foreach ( int declineReasonId in selectedDeclineReasons )
+                {
+                    foreach ( ListItem liItem in rcblAvailableDeclineReasons.Items )
+                    {
+                        if ( liItem.Value == declineReasonId.ToString() )
+                        {
+                            liItem.Selected = true;
+                        }
+                    }
+                }
+
+                if ( occurrence.LocationId.HasValue )
+                {
+                    var location = occurrence.Location;
+                    if ( location == null )
+                    {
+                        location = new LocationService( rockContext ).Get( occurrence.LocationId.Value );
+                    }
+                    lLocation.Visible = true;
+                    lLocation.Text = location.ToString();
+                    locpLocation.Location = location;
+                }
+                else
+                {
+                    lLocation.Visible = false;
+                    lLocation.Text = string.Empty;
+                    locpLocation.Location = null;
+                }
+
+                if ( occurrence.ScheduleId.HasValue && occurrence.Schedule == null )
+                {
+                    occurrence.Schedule = new ScheduleService( rockContext ).GetNoTracking( occurrence.ScheduleId.Value );
+                }
+
+                if ( occurrence.Schedule == null )
+                {
+                    lSchedule.Visible = false;
+                    lSchedule.Text = string.Empty;
+                    lScheduleText.Text = string.Empty;
+                    spSchedule.SetValue( null );
+                }
+                else
+                {
+                    lSchedule.Visible = true;
+                    lSchedule.Text = occurrence.Schedule.FriendlyScheduleText;
+                    lScheduleText.Text = occurrence.Schedule.FriendlyScheduleText;
+                    spSchedule.SetValue( occurrence.Schedule );
+                }
+
             }
         }
 
@@ -781,19 +849,19 @@ var dnutChart = new Chart(dnutCtx, {{
                 // The schedule is OK to be null
                 occurrence.ScheduleId = spSchedule.SelectedValueAsId();
 
-                if (dpOccurrenceDate.SelectedDate.HasValue)
+                if ( dpOccurrenceDate.SelectedDate.HasValue )
                 {
                     occurrence.OccurrenceDate = dpOccurrenceDate.SelectedDate.Value;
                 }
 
-                var occurrenceService = new AttendanceOccurrenceService(rockContext);
+                var occurrenceService = new AttendanceOccurrenceService( rockContext );
 
                 // If this occurrence has already been created, just use the existing one.
                 var existingOccurrences = occurrenceService.Queryable()
-                    .Where( o => o.GroupId == occurrence.GroupId)
-                    .Where( o => o.OccurrenceDate == occurrence.OccurrenceDate)
-                    .Where( o => o.ScheduleId == occurrence.ScheduleId)
-                    .Where( o => o.LocationId == occurrence.LocationId)
+                    .Where( o => o.GroupId == occurrence.GroupId )
+                    .Where( o => o.OccurrenceDate == occurrence.OccurrenceDate )
+                    .Where( o => o.ScheduleId == occurrence.ScheduleId )
+                    .Where( o => o.LocationId == occurrence.LocationId )
                     .ToList();
 
                 if ( existingOccurrences.Any() )
