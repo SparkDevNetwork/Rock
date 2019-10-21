@@ -2,11 +2,10 @@
 
 <!DOCTYPE html>
 
-<html class="no-js">
+<html>
 <head runat="server">
     <title></title>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
 
     <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
