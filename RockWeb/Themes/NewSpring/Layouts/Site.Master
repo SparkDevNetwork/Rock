@@ -43,7 +43,6 @@
 
         <!-- Libraries -->
         <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
-        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
@@ -94,6 +93,7 @@
             });
         </script>
 
+        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     </head>
      
