@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? AchievementEndWorkflowTypeId { get; set; }
+        public int AchievementEntityTypeId { get; set; }
 
         /// <summary />
-        public int AchievementEntityTypeId { get; set; }
+        public int? AchievementFailureWorkflowTypeId { get; set; }
 
         /// <summary />
         public string AchievementIconCssClass { get; set; }
@@ -51,6 +51,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? AchievementStepTypeId { get; set; }
+
+        /// <summary />
+        public int? AchievementSuccessWorkflowTypeId { get; set; }
 
         /// <summary />
         public bool AllowOverAchievement { get; set; }
@@ -123,12 +126,13 @@ namespace Rock.Client
         public void CopyPropertiesFrom( StreakTypeAchievementType source )
         {
             this.Id = source.Id;
-            this.AchievementEndWorkflowTypeId = source.AchievementEndWorkflowTypeId;
             this.AchievementEntityTypeId = source.AchievementEntityTypeId;
+            this.AchievementFailureWorkflowTypeId = source.AchievementFailureWorkflowTypeId;
             this.AchievementIconCssClass = source.AchievementIconCssClass;
             this.AchievementStartWorkflowTypeId = source.AchievementStartWorkflowTypeId;
             this.AchievementStepStatusId = source.AchievementStepStatusId;
             this.AchievementStepTypeId = source.AchievementStepTypeId;
+            this.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
             this.AllowOverAchievement = source.AllowOverAchievement;
             this.BadgeLavaTemplate = source.BadgeLavaTemplate;
             this.CategoryId = source.CategoryId;
@@ -157,10 +161,10 @@ namespace Rock.Client
     public partial class StreakTypeAchievementType : StreakTypeAchievementTypeEntity
     {
         /// <summary />
-        public WorkflowType AchievementEndWorkflowType { get; set; }
+        public EntityType AchievementEntityType { get; set; }
 
         /// <summary />
-        public EntityType AchievementEntityType { get; set; }
+        public WorkflowType AchievementFailureWorkflowType { get; set; }
 
         /// <summary />
         public WorkflowType AchievementStartWorkflowType { get; set; }
@@ -170,6 +174,9 @@ namespace Rock.Client
 
         /// <summary />
         public StepType AchievementStepType { get; set; }
+
+        /// <summary />
+        public WorkflowType AchievementSuccessWorkflowType { get; set; }
 
         /// <summary />
         public Category Category { get; set; }
