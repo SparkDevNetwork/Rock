@@ -36,11 +36,9 @@
 
                     <div class="row">
                         <div class="col-lg-6">
-                            <h5 id="h5Left" runat="server">This Enrollment</h5>                            
                             <asp:Literal ID="lEnrollmentDescription" runat="server" />
                         </div>
                         <div class="col-lg-6">
-                            <h5 id="h5Right" runat="server">Aggregate Data</h5>
                             <asp:Literal ID="lStreakData" runat="server" />
                         </div>
                     </div>
