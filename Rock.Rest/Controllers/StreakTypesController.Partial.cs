@@ -207,7 +207,7 @@ namespace Rock.Rest.Controllers
         /// <param name="streakTypeIdList">The comma separated list of streak type identifiers</param>
         /// <param name="personId">Defaults to the current person</param>
         /// <param name="startDate">Defaults to the streak type start date</param>
-        /// <param name="endDate">Defaults to now</param>
+        /// <param name="endDate">Defaults to the last elapsed frequency unit (yesterday or last week)</param>
         /// <param name="createObjectArray">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="includeBitMaps">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="maxStreaksToReturn">Specify the maximum number of streak objects "ComputedStreaks" to include in the response</param>

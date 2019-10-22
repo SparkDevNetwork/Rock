@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Streaks
             }
 
             var errorMessage = string.Empty;
-            StreakTypeService.RebuildStreakFromAttendance( streak.StreakTypeId, streak.PersonAliasId, out errorMessage );
+            StreakTypeService.RebuildStreakFromAttendance( streak.StreakTypeId, streak.PersonAlias.PersonId, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -586,25 +586,10 @@ namespace RockWeb.Blocks.Streaks
 
             lEnrollmentDescription.Text = descriptionList.Html;
 
-            var streakData = GetStreakData();
             var streakDetailsList = new DescriptionList();
 
-            if ( streakData != null )
-            {
-                if ( streakData.EnrollmentCount > 1 )
-                {
-                    var enrollments = GetPersonStreaks();
-                    streakDetailsList.Add( "First Enrollment Date", streakData.FirstEnrollmentDate.ToShortDateString() );
-                }
-                else
-                {
-                    h5Left.Visible = false;
-                    h5Right.Visible = false;
-                }
-
-                streakDetailsList.Add( "Current Streak", GetStreakStateString( streakData.CurrentStreakCount, streakData.CurrentStreakStartDate ) );
-                streakDetailsList.Add( "Longest Streak", GetStreakStateString( streakData.LongestStreakCount, streakData.LongestStreakStartDate, streakData.LongestStreakEndDate ) );
-            }
+            streakDetailsList.Add( "Current Streak", GetStreakStateString( enrollment.CurrentStreakCount, enrollment.CurrentStreakStartDate ) );
+            streakDetailsList.Add( "Longest Streak", GetStreakStateString( enrollment.LongestStreakCount, enrollment.LongestStreakStartDate, enrollment.LongestStreakEndDate ) );
 
             lStreakData.Text = streakDetailsList.Html;
 
@@ -789,7 +774,7 @@ namespace RockWeb.Blocks.Streaks
                 if ( streakId.HasValue && streakId.Value > 0 )
                 {
                     var service = GetStreakService();
-                    _streak = service.Get( streakId.Value );
+                    _streak = service.Queryable( "PersonAlias" ).FirstOrDefault( s => s.Id == streakId.Value );
                 }
             }
 
@@ -832,30 +817,6 @@ namespace RockWeb.Blocks.Streaks
             return _rockContext;
         }
         private RockContext _rockContext = null;
-
-        /// <summary>
-        /// Get the streak data for the person
-        /// </summary>
-        /// <returns></returns>
-        private StreakData GetStreakData()
-        {
-            if ( _streakData == null )
-            {
-                var streakType = GetStreakType();
-                var person = GetPerson();
-
-                if ( streakType != null && person != null )
-                {
-                    var service = GetStreakTypeService();
-                    var streakTypeCache = StreakTypeCache.Get( streakType.Id );
-                    var errorMessage = string.Empty;
-                    _streakData = service.GetStreakData( streakTypeCache, person.Id, out errorMessage );
-                }
-            }
-
-            return _streakData;
-        }
-        private StreakData _streakData = null;
 
         /// <summary>
         /// Get the recent bits data for the chart
