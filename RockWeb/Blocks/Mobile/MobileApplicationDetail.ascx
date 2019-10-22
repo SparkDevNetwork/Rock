@@ -258,7 +258,11 @@
                         </div>
                     </div>
 
-                    <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout Xaml" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
+                    <Rock:DataViewItemPicker ID="dvpCampusFilter" runat="server" Label="Campus Filter" Help="Select a data view of campuses to use for the campus lists within the application. Leave blank if your application does not need to filter content by campus"></Rock:DataViewItemPicker>
+
+                    <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
+
+                    <Rock:CodeEditor ID="ceEditNavBarActionXaml" runat="server" Label="Navigation Bar Action XAML" Help="The XAML template to use for placing content into the top navigation bar." EditorMode="Xml"></Rock:CodeEditor>
 
                     <div class="row">
                         <%--<div class="col-md-4">
