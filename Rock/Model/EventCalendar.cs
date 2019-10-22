@@ -34,7 +34,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventCalendar" )]
     [DataContract]
-    public partial class EventCalendar : Model<EventCalendar>, ISecured, IHasActiveFlag, ICacheable
+    public partial class EventCalendar : Model<EventCalendar>, ISecured, IHasActiveFlag, ICacheable, ICampusFilterable
     {
         /// <summary>
         /// Gets or sets the Name of the EventCalendar. This property is required.
