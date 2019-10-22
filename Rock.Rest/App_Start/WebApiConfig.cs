@@ -190,6 +190,34 @@ namespace Rock.Rest
                     controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
                 } );
 
+            // Add GetByCampus API methods for controllers of types that implement ICampusFilterable
+            foreach ( var type in Reflection.FindTypes( typeof( Rock.Data.ICampusFilterable ) ) )
+            {
+                try
+                {
+                    Type typeValue = ( Type ) type.Value;
+                    string pluralizedName = typeValue.Name.Pluralize();
+
+                    config.Routes.MapHttpRoute(
+                    name: $"Api{pluralizedName}GetByCampus",
+                    routeTemplate: $"api/{pluralizedName}/GetByCampus",
+                    defaults: new
+                    {
+                        action = "GetByCampus",
+                        controller = pluralizedName
+                    },
+                    constraints: new
+                    {
+                        httpMethod = new HttpMethodConstraint( new string[] { "GET", "OPTIONS" } ),
+                        controllerName = new Rock.Rest.Constraints.ValidControllerNameConstraint()
+                    } );
+                }
+                catch
+                {
+                    // ignore, and skip adding routes if the controller raises an exception
+                }
+            }
+
             config.Routes.MapHttpRoute(
                 name: "DefaultApiGetById",
                 routeTemplate: "api/{controller}/{id}",
