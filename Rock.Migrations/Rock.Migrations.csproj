@@ -85,6 +85,10 @@
     <Compile Include="Migrations\201910171633288_EntityCampusFilter.Designer.cs">
       <DependentUpon>201910171633288_EntityCampusFilter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201910221414252_AchievementTypeWorkflowTypes.cs" />
+    <Compile Include="Migrations\201910221414252_AchievementTypeWorkflowTypes.Designer.cs">
+      <DependentUpon>201910221414252_AchievementTypeWorkflowTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -892,6 +896,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201910171633288_EntityCampusFilter.resx">
       <DependentUpon>201910171633288_EntityCampusFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910221414252_AchievementTypeWorkflowTypes.resx">
+      <DependentUpon>201910221414252_AchievementTypeWorkflowTypes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
