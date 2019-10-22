@@ -35,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
-    public partial class ContentChannel : Model<ContentChannel>, ICacheable
+    public partial class ContentChannel : Model<ContentChannel>, ICacheable, ICampusFilterable
     {
         #region Entity Properties
 

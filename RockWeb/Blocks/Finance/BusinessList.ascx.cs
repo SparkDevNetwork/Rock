@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.Finance
         {
             Literal lAddress = e.Row.FindControl( "lAddress" ) as Literal;
             BusinessSelectInfo businessSelectInfo = e.Row.DataItem as BusinessSelectInfo;
-            if ( lAddress != null && businessSelectInfo != null )
+            if ( lAddress != null && businessSelectInfo != null && businessSelectInfo.Address != null )
             {
                 lAddress.Text = businessSelectInfo.Address.FormattedHtmlAddress;
             }

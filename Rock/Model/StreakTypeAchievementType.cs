@@ -69,10 +69,16 @@ namespace Rock.Model
         public int? AchievementStartWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="WorkflowType"/> to be triggered when an achievement is ended
+        /// Gets or sets the Id of the <see cref="WorkflowType"/> to be triggered when an achievement is successful
         /// </summary>
         [DataMember]
-        public int? AchievementEndWorkflowTypeId { get; set; }
+        public int? AchievementSuccessWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="WorkflowType"/> to be triggered when an achievement is failed (closed and not successful)
+        /// </summary>
+        [DataMember]
+        public int? AchievementFailureWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="StepType"/> of which a <see cref="Step"/> will be created when an achievement is completed
@@ -169,10 +175,16 @@ namespace Rock.Model
         public virtual WorkflowType AchievementStartWorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="WorkflowType"/> to be launched when the achievement ends.
+        /// Gets or sets the <see cref="WorkflowType"/> to be launched when the achievement is successful.
         /// </summary>
         [DataMember]
-        public virtual WorkflowType AchievementEndWorkflowType { get; set; }
+        public virtual WorkflowType AchievementSuccessWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="WorkflowType"/> to be launched when the achievement is failed (closed and not successful).
+        /// </summary>
+        [DataMember]
+        public virtual WorkflowType AchievementFailureWorkflowType { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="StepType"/> to be created when the achievement is completed.
@@ -224,7 +236,8 @@ namespace Rock.Model
                 HasRequired( stat => stat.AchievementEntityType ).WithMany().HasForeignKey( stat => stat.AchievementEntityTypeId ).WillCascadeOnDelete( true );
 
                 HasOptional( stat => stat.AchievementStartWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementStartWorkflowTypeId ).WillCascadeOnDelete( false );
-                HasOptional( stat => stat.AchievementEndWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementEndWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementSuccessWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementSuccessWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementFailureWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementFailureWorkflowTypeId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.AchievementStepType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.Category ).WithMany().HasForeignKey( stat => stat.CategoryId ).WillCascadeOnDelete( false );
