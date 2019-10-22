@@ -408,6 +408,7 @@
     <Compile Include="Blocks\RockMobileBlockType.cs" />
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
+    <Compile Include="Data\ICampusFilterable.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
@@ -423,6 +424,7 @@
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\EntityCampusFilterService.cs" />
     <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\GroupDemographicType.cs" />
