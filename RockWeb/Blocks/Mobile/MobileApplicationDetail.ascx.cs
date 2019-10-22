@@ -247,6 +247,8 @@ namespace RockWeb.Blocks.Mobile
             cpEditPersonAttributeCategories.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Attribute ) ).Id;
             cpEditPersonAttributeCategories.EntityTypeQualifierColumn = "EntityTypeId";
             cpEditPersonAttributeCategories.EntityTypeQualifierValue = EntityTypeCache.Get( typeof( Person ) ).Id.ToString();
+
+            dvpCampusFilter.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.CAMPUS ) ?? 0;
         }
 
         /// <summary>
@@ -440,7 +442,11 @@ namespace RockWeb.Blocks.Mobile
             ddlEditLockTabletOrientation.SetValue( ( int ) additionalSettings.LockedTabletOrientation );
             
             ceEditFlyoutXaml.Text = additionalSettings.FlyoutXaml;
+            ceEditNavBarActionXaml.Text = additionalSettings.NavigationBarActionXaml;
+
             cpEditPersonAttributeCategories.SetValues( CategoryCache.All( rockContext ).Where( c => additionalSettings.PersonAttributeCategories.Contains( c.Id ) ).Select( c => c.Id ) );
+
+            dvpCampusFilter.SetValue( additionalSettings.CampusFilterDataViewId );
 
             rblEditAndroidTabLocation.Visible = rblEditApplicationType.SelectedValueAsInt() == ( int ) ShellType.Tabbed;
 
@@ -794,6 +800,8 @@ namespace RockWeb.Blocks.Mobile
             additionalSettings.FlyoutXaml = ceEditFlyoutXaml.Text;
             additionalSettings.LockedPhoneOrientation = ddlEditLockPhoneOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
             additionalSettings.LockedTabletOrientation = ddlEditLockTabletOrientation.SelectedValueAsEnumOrNull<DeviceOrientation>() ?? DeviceOrientation.Unknown;
+            additionalSettings.CampusFilterDataViewId = dvpCampusFilter.SelectedValueAsId();
+            additionalSettings.NavigationBarActionXaml = ceEditNavBarActionXaml.Text;
 
             //
             // Save the image.
