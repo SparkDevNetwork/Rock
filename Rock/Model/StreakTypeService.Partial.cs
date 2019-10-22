@@ -391,7 +391,11 @@ namespace Rock.Model
             // Validate the parameters
             if ( person == null )
             {
-                errorMessage = $"A person with id {personId} was not found";
+                // This probably happened because the person is deceased
+                streakService.DeleteRange(
+                    streakService.Queryable().Where( se =>
+                        se.StreakTypeId == streakTypeId &&
+                        se.PersonAlias.PersonId == personId ) );
                 return;
             }
 
@@ -452,7 +456,7 @@ namespace Rock.Model
                 && se.PersonAlias.PersonId == personId ).ToList();
 
             var streak = streaks.FirstOrDefault( s => s.PersonAliasId == person.PrimaryAliasId );
-            var streaksToDelete = streaks.Where( s => s.Id != streak.Id );
+            var streaksToDelete = streaks.Where( s => s.Id != streak?.Id );
 
             if ( streaksToDelete.Any() )
             {
@@ -1174,10 +1178,15 @@ namespace Rock.Model
             }
 
             var isDaily = streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var maxDate = isDaily ? RockDateTime.Today : RockDateTime.Now.SundayDate();
+            var maxDate = GetMaxDateForDenormalizedStreakData( streakOccurrenceFrequency );
             var minDate = isDaily ? mapStartDate : mapStartDate.SundayDate();
             var occurrenceEngagements = new OccurrenceEngagement[unitCount];
             var occurrencesFound = 0;
+
+            if ( maxDate < minDate )
+            {
+                maxDate = minDate;
+            }
 
             bool iterationAction( int currentUnit, DateTime currentDate, bool hasOccurrence, bool hasEngagement, bool hasExclusion )
             {
@@ -1480,6 +1489,22 @@ namespace Rock.Model
         /// <summary>
         /// Gets the maximum date for denormalized streak data. This is the end of the last fully elapsed frequency unit (day or week).
         /// </summary>
+        /// <param name="streakOccurrenceFrequency"></param>
+        /// <returns></returns>
+        public static DateTime GetMaxDateForDenormalizedStreakData( StreakOccurrenceFrequency streakOccurrenceFrequency )
+        {
+            if ( streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                return RockDateTime.Today.AddDays( -1 );
+            }
+
+            // Weekly - this will need to be adjusted when the SundayDate method is replaced the with configurable start/end of week
+            return RockDateTime.Now.SundayDate().AddDays( -7 );
+        }
+
+        /// <summary>
+        /// Gets the maximum date for denormalized streak data. This is the end of the last fully elapsed frequency unit (day or week).
+        /// </summary>
         /// <param name="streakTypeCache">The streak type cache.</param>
         /// <returns></returns>
         public static DateTime GetMaxDateForDenormalizedStreakData( StreakTypeCache streakTypeCache )
@@ -1488,14 +1513,8 @@ namespace Rock.Model
             {
                 throw new ArgumentNullException( "streakTypeCache" );
             }
-
-            if ( streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
-            {
-                return RockDateTime.Today.AddDays( -1 );
-            }
-
-            // Weekly - this will need to be adjusted when the SundayDate method is replaced the with configurable start/end of week
-            return RockDateTime.Now.SundayDate().AddDays( -7 );
+            
+            return GetMaxDateForDenormalizedStreakData( streakTypeCache.OccurrenceFrequency );
         }
 
         /// <summary>
