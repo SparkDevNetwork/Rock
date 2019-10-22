@@ -118,6 +118,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Duplicate Streak Enrollments Cleanup", () => MergeStreaks() );
 
+            RunCleanupTask( "Streak Denormalized Data Refreshes", () => RefreshStreaksDenormalizedData() );
+
             RunCleanupTask( "Calendar EffectiveStart and EffectiveEnd dates Cleanup", () => EnsureScheduleEffectiveStartEndDates() );
 
             RunCleanupTask( "Nameless person for SMS Responses Cleanup", () => EnsureNamelessPersonForSMSResponses() );
@@ -1275,33 +1277,53 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
         {
             var recordsDeleted = 0;
 
-            using ( var rockContext = new RockContext() )
+            var rockContext = new RockContext();
+            var streakService = new StreakService( rockContext );
+            var duplicateGroups = streakService.Queryable()
+                .GroupBy( s => new { s.PersonAlias.PersonId, s.StreakTypeId } )
+                .Where( g => g.Count() > 1 )
+                .ToList();
+
+            foreach ( var duplicateGroup in duplicateGroups )
             {
-                var streakService = new StreakService( rockContext );
-                var duplicateGroups = streakService.Queryable().GroupBy( s => new { s.PersonAlias.PersonId, s.StreakTypeId } ).Where( g => g.Count() > 1 );
+                var recordToKeep = duplicateGroup.OrderByDescending( s => s.ModifiedDateTime ).First();
+                recordToKeep.InactiveDateTime = duplicateGroup.Min( s => s.InactiveDateTime );
+                recordToKeep.EnrollmentDate = duplicateGroup.Min( s => s.EnrollmentDate );
 
-                foreach ( var duplicateGroup in duplicateGroups )
-                {
-                    var recordToKeep = duplicateGroup.OrderByDescending( s => s.ModifiedDateTime ).First();
-                    recordToKeep.InactiveDateTime = duplicateGroup.Min( s => s.InactiveDateTime );
-                    recordToKeep.EnrollmentDate = duplicateGroup.Min( s => s.EnrollmentDate );
+                var engagementMaps = duplicateGroup.Select( s => s.EngagementMap ?? new byte[0] ).ToArray();
+                recordToKeep.EngagementMap = StreakTypeService.GetAggregateMap( engagementMaps );
 
-                    var engagementMaps = duplicateGroup.Select( s => s.EngagementMap ?? new byte[0] ).ToArray();
-                    recordToKeep.EngagementMap = StreakTypeService.GetAggregateMap( engagementMaps );
+                var exclusionMaps = duplicateGroup.Select( s => s.ExclusionMap ?? new byte[0] ).ToArray();
+                recordToKeep.ExclusionMap = StreakTypeService.GetAggregateMap( exclusionMaps );
 
-                    var exclusionMaps = duplicateGroup.Select( s => s.ExclusionMap ?? new byte[0] ).ToArray();
-                    recordToKeep.ExclusionMap = StreakTypeService.GetAggregateMap( exclusionMaps );
+                var recordsToDelete = duplicateGroup.Where( s => s.Id != recordToKeep.Id );
+                streakService.DeleteRange( recordsToDelete );
 
-                    var recordsToDelete = duplicateGroup.Where( s => s.Id != recordToKeep.Id );
-                    streakService.DeleteRange( recordsToDelete );
+                rockContext.SaveChanges( true );
 
-                    rockContext.SaveChanges();
-
-                    recordsDeleted += recordsToDelete.Count();
-                }
+                recordsDeleted += recordsToDelete.Count();
             }
 
             return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Refreshes the streaks denormalized data.
+        /// </summary>
+        /// <returns></returns>
+        private int RefreshStreaksDenormalizedData()
+        {
+            var recordsUpdated = 0;
+
+            foreach ( var streakTypeCache in StreakTypeCache.All().Where( st => st.IsActive ) )
+            {
+                if ( StreakTypeService.IsDayAfterOccurrenceFrequency( streakTypeCache ) )
+                {
+                    recordsUpdated += StreakTypeService.UpdateEnrollmentStreakProperties( streakTypeCache.Id );
+                }
+            }
+
+            return recordsUpdated;
         }
 
         /// <summary>
