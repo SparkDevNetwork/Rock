@@ -106,10 +106,11 @@ namespace Rock.Jobs
         public void Execute( IJobExecutionContext context )
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
-            var sendreminderDateTime = DateTime.Now.Date.AddDays( -1 * dataMap.GetInt( "ReminderEveryDays" ) );
-            var cutOffDateTime = DateTime.Now.Date.AddDays( dataMap.GetInt( "CutoffDays" ) );
-            var assessmentSystemEmailGuid = dataMap.GetString( "AssessmentSystemEmail" ).AsGuid();
+            DateTime sendreminderDateTime = DateTime.Now.Date.AddDays( -1 * dataMap.GetInt( AttributeKeys.ReminderEveryDays ) );
+            int cutOffDays = dataMap.GetInt( AttributeKeys.CutoffDays );
+            var assessmentSystemEmailGuid = dataMap.GetString( AttributeKeys.AssessmentSystemEmail ).AsGuid();
 
+            DateTime currentDate = DateTime.Now.Date;
             int assessmentRemindersSent = 0;
             int errorCount = 0;
             var errorMessages = new List<string>();
@@ -122,7 +123,7 @@ namespace Rock.Jobs
                     .Queryable()
                     .AsNoTracking()
                     .Where( a => a.Status == AssessmentRequestStatus.Pending )
-                    .Where( a => a.RequestedDateTime < cutOffDateTime )
+                    .Where( a => currentDate <= DbFunctions.AddDays( a.RequestedDateTime, cutOffDays ) )
                     .Where( a => ( a.LastReminderDate == null && sendreminderDateTime >= DbFunctions.TruncateTime( a.RequestedDateTime ) ) ||
                         ( sendreminderDateTime >= DbFunctions.TruncateTime( a.LastReminderDate ) ) )
                     .Select( a => a.PersonAliasId )
