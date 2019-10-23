@@ -113,8 +113,24 @@
             </Rock:Lava>
 
             <div id="navigation">
+                <Rock:Lava ID="HideNav" runat="server">
+                    {% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav'  %}
+                    
+                    {% if hideNav == 'true' %}
+                        <div class="hidden">
+                    {% endif %}
+                </Rock:Lava>
+
                 <Rock:Zone Name="Login" runat="server" />
                 <Rock:Zone Name="Navigation" runat="server" />
+
+                <Rock:Lava ID="HideNavClose" runat="server">
+                    {% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav'  %}
+                    
+                    {% if hideNav == 'true' %}
+                        </div>
+                    {% endif %}
+                </Rock:Lava>
 
             </div>
             <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
