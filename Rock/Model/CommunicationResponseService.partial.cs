@@ -31,11 +31,19 @@ namespace Rock.Model
     {
         #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationRecipientResponse"/> class.
+        /// </summary>
         public CommunicationRecipientResponse()
         {
             //
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationRecipientResponse"/> class.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="recordTypeValueId">The record type value identifier.</param>
         public CommunicationRecipientResponse( int personId, int recordTypeValueId )
         {
             PersonId = personId;
@@ -218,7 +226,11 @@ namespace Rock.Model
                 .OrderByDescending( a => a.cr.CreatedDateTime ).Select( a => a.cr );
 
             IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
-                .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId && r.CreatedDateTime >= startDateTime );
+                .Where( r =>
+                    r.MediumEntityTypeId == smsMediumEntityTypeId
+                    && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
+                    && r.CreatedDateTime >= startDateTime
+                    && r.Status == CommunicationRecipientStatus.Delivered );
 
             IQueryable<CommunicationRecipient> mostRecentCommunicationRecipientQuery = communicationRecipientQuery
                 .GroupBy( r => r.PersonAlias.PersonId )
@@ -318,8 +330,8 @@ namespace Rock.Model
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = communicationResponse.CreatedDateTime,
-                    PersonId = communicationResponse.FromPersonAlias.PersonId,
-                    FullName = communicationResponse.FromPersonAlias.Person.FullName,
+                    PersonId = communicationResponse?.FromPersonAlias?.PersonId,
+                    FullName = communicationResponse?.FromPersonAlias?.Person.FullName,
                     IsRead = communicationResponse.IsRead,
                     MessageKey = communicationResponse.MessageKey,
                     IsOutbound = false,
@@ -331,7 +343,11 @@ namespace Rock.Model
             }
 
             IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
-                .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId && r.PersonAliasId == personAliasId );
+                .Where( r =>
+                    r.MediumEntityTypeId == smsMediumEntityTypeId
+                    && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
+                    && r.PersonAliasId == personAliasId
+                    && r.Status == CommunicationRecipientStatus.Delivered );
 
             var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
             {
@@ -346,18 +362,18 @@ namespace Rock.Model
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = communicationRecipient.CreatedDateTime,
-                    PersonId = communicationRecipient.Person.Id,
-                    FullName = communicationRecipient.Person.FullName,
+                    PersonId = communicationRecipient.Person?.Id,
+                    FullName = communicationRecipient.Person?.FullName,
                     IsRead = true,
                     IsOutbound = true,
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
                     SMSMessage = communicationRecipient.SentMessage
                 };
 
-                if ( communicationRecipient.Person.IsNameless() )
+                if ( communicationRecipient.Person?.IsNameless() == true )
                 {
                     // if the person is nameless, we'll need to know their number since we don't know their name
-                    communicationRecipientResponse.MessageKey = communicationRecipient.Person.PhoneNumbers.FirstOrDefault()?.Number;
+                    communicationRecipientResponse.MessageKey = communicationRecipient.Person?.PhoneNumbers.FirstOrDefault()?.Number;
                 }
                 else
                 {

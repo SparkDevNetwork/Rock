@@ -31,10 +31,22 @@ namespace Rock.Field.Types
     /// </summary>
     public class BooleanFieldType : FieldType
     {
+        /// <summary>
+        /// Boolean FieldType Configuration Keys
+        /// </summary>
         public static class ConfigurationKey
         {
+            /// <summary>
+            /// The key for true text
+            /// </summary>
             public const string TrueText = "truetext";
+            /// <summary>
+            /// The key for false text
+            /// </summary>
             public const string FalseText = "falsetext";
+            /// <summary>
+            /// The key for the boolean control type
+            /// </summary>
             public const string BooleanControlType = "BooleanControlType";
         }
 

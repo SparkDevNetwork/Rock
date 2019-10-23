@@ -528,9 +528,9 @@ namespace RockWeb.Blocks.Steps
 
             var stepTypeService = new StepTypeService( rockContext );
 
-            var stepProgram = stepTypeService.Get( stepTypeId );
+            var stepType = stepTypeService.Get( stepTypeId );
 
-            if ( stepProgram == null )
+            if ( stepType == null )
             {
                 mdGridWarning.Show( "This item could not be found.", ModalAlertType.Information );
                 return;
@@ -538,13 +538,15 @@ namespace RockWeb.Blocks.Steps
 
             string errorMessage;
 
-            if ( !stepTypeService.CanDelete( stepProgram, out errorMessage ) )
+            if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
             {
                 mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                 return;
             }
 
-            stepTypeService.Delete( stepProgram );
+            stepTypeService.Delete( stepType );
+
+            rockContext.SaveChanges();
 
             BindGrid();
         }

@@ -12,10 +12,10 @@
                     <Rock:Grid ID="gDonations" runat="server" DisplayType="Full" AllowSorting="true" EmptyDataText="No Donations Found" PersonIdField="DonorId" RowItemText="Donations" DataKeyNames="DonorId" ExportSource="ColumnOutput" OnRowDataBound="gDonations_RowDataBound" >
                         <Columns>
                             <Rock:SelectField />
-                            <Rock:RockLiteralField HeaderText="Donor" SortExpression="Donor.LastName, Donor.NickName" />
+                            <Rock:RockLiteralField ID="lDonor" HeaderText="Donor" SortExpression="Donor.LastName, Donor.NickName" />
                             <Rock:RockBoundField DataField="Address" HeaderText="Donor Address" HtmlEncode="false" ExcelExportBehavior="IncludeIfVisible" />
                             <Rock:RockBoundField DataField="Donor.Email" HeaderText="Donor Email" SortExpression="Donor.Email" ExcelExportBehavior="IncludeIfVisible" />
-                            <Rock:RockLiteralField HeaderText="Participant" SortExpression="Participant.Person.LastName, Participant.Person.NickName" ExcelExportBehavior="IncludeIfVisible" />
+                            <Rock:RockLiteralField ID="lParticipant" HeaderText="Participant" SortExpression="Participant.Person.LastName, Participant.Person.NickName" ExcelExportBehavior="IncludeIfVisible" />
                             <Rock:DateField DataField="Date" HeaderText="Date" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Date" ExcelExportBehavior="AlwaysInclude" />
                             <Rock:CurrencyField DataField="Amount" HeaderText="Amount" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" SortExpression="Amount" ExcelExportBehavior="IncludeIfVisible" />
                         </Columns>

@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.RSVP
         }
 
         /// <summary>
-        /// Handles the GridRebind event of the gEventCalendarItems control.
+        /// Handles the GridRebind event of the gRSVPItems control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
@@ -345,7 +345,11 @@ namespace RockWeb.Blocks.RSVP
             int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             if ( groupId != null )
             {
-                gRSVPItems.DataSource = GetGroupRSVP( groupId.Value );
+                if ( items == null )
+                {
+                    items = GetGroupRSVP( groupId.Value );
+                }
+                gRSVPItems.DataSource = items;
                 gRSVPItems.DataBind();
             }
         }
@@ -555,6 +559,16 @@ namespace RockWeb.Blocks.RSVP
                 }
                 NavigateToLinkedPage( AttributeKey.RSVPDetailPage, queryParams );
             }
+        }
+
+        /// <summary>
+        /// Handles the Sorting event of gRSVPItems.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void gRSVPItems_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            BindRSVPItemsGrid();
         }
 
         #endregion
