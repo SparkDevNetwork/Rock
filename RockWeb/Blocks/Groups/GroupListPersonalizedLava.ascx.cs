@@ -79,14 +79,9 @@ namespace RockWeb.Blocks.Groups
 
             if ( this.GetAttributeValue( "DisplayInactiveGroups" ).AsBoolean() )
             {
-                var hideInactiveGroups = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull();
-                if ( !hideInactiveGroups.HasValue )
-                {
-                    hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
-                }
-
-                _hideInactive = hideInactiveGroups ?? true;
+                _hideInactive = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
             }
+
         }
 
         /// <summary>

@@ -20,6 +20,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -92,7 +93,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 // create a limited-use personkey that will last long enough for them to go thru all the 'postbacks' while posting a transaction
                 var personKey = this.Person.GetImpersonationToken( RockDateTime.Now.AddMinutes( this.GetAttributeValue( "PersonTokenExpireMinutes" ).AsIntegerOrNull() ?? 60 ), this.GetAttributeValue( "PersonTokenUsageLimit" ).AsIntegerOrNull(), addTransactionPage.PageId );
-                Response.Redirect( string.Format( "~/AddTransaction?Person={0}", personKey ) );
+                addTransactionPage.QueryString["Person"] = personKey;
+                Response.Redirect( addTransactionPage.BuildUrl() );
             }
         }
 
