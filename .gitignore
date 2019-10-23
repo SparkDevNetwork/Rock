@@ -30,6 +30,7 @@ RockWeb/App_Data/MobileAppBundles
 *.sln.GhostDoc.xml
 .vs/
 .localhistory/
+TestResults/
 
 Packages/*
 

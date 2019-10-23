@@ -373,7 +373,7 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         /// <summary>
         /// The Checkr table row columns tags
         /// </summary>
-        private class BackgroundCheckRow
+        private class BackgroundCheckRow : Rock.Utility.RockDynamic
         {
             public string Name { get; set; }
 

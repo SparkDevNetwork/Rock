@@ -157,8 +157,14 @@ namespace Rock.Model
 
     #region Entity Configuration
 
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class GroupDemographicTypeConfiguration : EntityTypeConfiguration<GroupDemographicType>
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupDemographicTypeConfiguration"/> class.
+        /// </summary>
         public GroupDemographicTypeConfiguration()
         {
             this.HasRequired( x => x.GroupType ).WithMany().HasForeignKey( x => x.GroupTypeId ).WillCascadeOnDelete( true );

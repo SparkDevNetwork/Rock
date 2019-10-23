@@ -838,6 +838,10 @@ namespace Rock.Data
             Migration.Sql( sql );
         }
 
+        /// <summary>
+        /// Deletes the page route.
+        /// </summary>
+        /// <param name="pageRouteGuid">The page route unique identifier.</param>
         public void DeletePageRoute( string pageRouteGuid )
         {
             string sql = $@"
