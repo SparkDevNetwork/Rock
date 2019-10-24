@@ -357,6 +357,14 @@ namespace RockWeb.Blocks.Connection
                     ShowError( "Inactive Opportunity Type", "The opportunity is not currently active." );
                     return;
                 }
+                
+                var opportunityConnectionTypeId = opportunity.ConnectionTypeId;
+                var connectionType = new ConnectionTypeService( rockContext ).Get( opportunityConnectionTypeId );
+                if ( !connectionType.IsActive ){
+                    pnlSignup.Visible = false;
+                    ShowError("Sorry this opportunity isn't active at this time","The requested type is inactive");
+                    return;
+                }
 
                 pnlSignup.Visible = true;
 
