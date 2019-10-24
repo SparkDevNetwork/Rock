@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.GroupScheduling
      [BooleanField(
         "Show Names instead of Times on schedules?",
         Key = AttributeKey.ShowScheduleNames,
-        Description = "Set to false to show the time's instead.",
+        Description = "Set to true to show the Names's.",
         DefaultBooleanValue = false,
         Order = 3 )]
         
