@@ -73,11 +73,11 @@ Write-Host "Recreating links";
 Get-FilesystemLinks $AppRoot | ForEach-Object { $_.Delete() }
 
 # Connect the various content files
-Connect-RemoteFile $AppRoot "Content"                               $REMOTE_STORE_ROOT "Content";
-Connect-RemoteFile $AppRoot "wp-content"                            $REMOTE_STORE_ROOT "wp-content";
-Connect-RemoteFile $AppRoot "App_Data\Files"                        $REMOTE_STORE_ROOT "Files";
-Connect-RemoteFile $AppRoot "App_Data\RockShop"                     $REMOTE_STORE_ROOT "RockShop";
-Connect-RemoteFile $AppRoot "App_Data\InstalledStorePackages.json"  $REMOTE_STORE_ROOT "InstalledStorePackages.json";
+Connect-RemoteFile $AppRoot             $REMOTE_STORE_ROOT "Content";
+Connect-RemoteFile $AppRoot             $REMOTE_STORE_ROOT "wp-content";
+Connect-RemoteFile "$AppRoot\App_Data"  $REMOTE_STORE_ROOT "Files";
+Connect-RemoteFile "$AppRoot\App_Data"  $REMOTE_STORE_ROOT "RockShop";
+Connect-RemoteFile "$AppRoot\App_Data"  $REMOTE_STORE_ROOT "InstalledStorePackages.json";
 
 # Connect the various theme customizations
 $Themes = Get-RockThemes $AppRoot;
@@ -90,9 +90,10 @@ foreach ($Theme in $Themes) {
 
     foreach ($File in $OverrideFiles) {
 
-        $RelativeFilePath = Join-Paths "Themes" $Theme.Name "Styles" $File.Name;
+        $LocalRoot = Join-Paths $AppRoot "Themes" $Theme.Name "Styles";
+        $RemoteRoot = Join-Paths $REMOTE_STORE_ROOT "Themes" $Theme.Name "Styles";
 
-        Connect-RemoteFile $AppRoot $RelativeFilePath  $REMOTE_STORE_ROOT $RelativeFilePath;
+        Connect-RemoteFile $LocalRoot $RemoteRoot $File.Name;
 
     }
 

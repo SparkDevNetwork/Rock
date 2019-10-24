@@ -212,11 +212,6 @@ Function Connect-RemoteFile {
         [string]
         $LocalRootPath,
 
-        [parameter( Mandatory, Position = 1 )]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $LocalRelativePath,
-
         [parameter( Mandatory, Position = 2 )]
         [ValidateNotNullOrEmpty()]
         [string]
@@ -225,11 +220,11 @@ Function Connect-RemoteFile {
         [parameter( Mandatory, Position = 3 )]
         [ValidateNotNullOrEmpty()]
         [string]
-        $RemoteRelativePath
+        $ItemName
     )
 
-    $LocalPath = Join-Path $LocalRootPath $LocalRelativePath;
-    $RemotePath = Join-Path $LocalRootPath $LocalRelativePath;
+    $LocalPath = Join-Path $LocalRootPath $ItemName;
+    $RemotePath = Join-Path $LocalRootPath $ItemName;
 
     # Make sure the remote path exists
     if( -not (Test-Path $RemotePath)) {
@@ -255,13 +250,18 @@ Function Connect-RemoteFile {
 
     }
 
-    # Remove all links inside the local path (Remove-Item might throw an error if it finds one with an invalid target)
-    Get-FilesystemLinks $LocalPath | ForEach-Object { $_.Delete() };
+    # Check if the local path exists
+    if(Test-Path $LocalPath) {
 
-    # Remove the local path
-    Remove-Item -Path $LocalPath -Force -Recurse -ErrorAction SilentlyContinue | Out-Null;
+        # Remove all links inside the local path (Remove-Item might throw an error if it finds one with an invalid target)
+        Get-FilesystemLinks $LocalPath | ForEach-Object { $_.Delete() };
+
+        # Remove the local path
+        Remove-Item -Path $LocalPath -Force -Recurse -ErrorAction SilentlyContinue | Out-Null;
+
+    }
 
     # Link the local path to the remote path
-    New-Item -ItemType SymbolicLink -Path $LocalPath -Target $RemotePath | Out-Null;
+    New-Item -ItemType SymbolicLink -Path $LocalRootPath -Name $ItemName -Target $RemotePath | Out-Null;
 
 }
