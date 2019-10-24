@@ -14,13 +14,16 @@
 	</returns>
     <param name='PersonId' datatype='int'>The Person to get a full name for. NULL means use the GroupId paramter </param>
 	<param name='@GroupId' datatype='int'>The Group (family) to get the list of names for</param>
+	<param name='@GroupPersonIds' datatype='varchar(max)'>The Persons within the Group (family) to get the list of names for</param>
+	<param name='@UseNickName' datatype='bit'>Determines if nickname (1) or firstname (0,default) is used in list of names</param>
+	<param name='@IncludeInactive' datatype='bit'>Determines if list of names contains inactive records (1,default) or active records (0)</param>
 	<remarks>
-		[ufnCrm_GetFamilyTitle] is used by spFinance_ContributionStatementQuery as part of generating Contribution Statements
+		[ufnCrm_GetFamilyTitleIncludeInactive] is called by [ufn_GetFamilyTitle] which is used by spFinance_ContributionStatementQuery as part of generating Contribution Statements
 	</remarks>
 	<code>
-		SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](2, null, default, default, default) -- Single Person
-        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 68, default, default, default) -- Family
-        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 68, '2,3', default, default, default) -- Family, limited to the specified PersonIds
+		SELECT * FROM [dbo].[ufnCrm_GetFamilyTitleIncludeInactive](2, null, default, default, default) -- Single Person
+        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitleIncludeInactive](null, 68, default, default, default) -- Family
+        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitleIncludeInactive](null, 68, '2,3', default, default) -- Family, limited to the specified PersonIds
 	</code>
 </doc>
 */
@@ -58,7 +61,7 @@ BEGIN
                 WHEN 1
                     THEN ISNULL([p].[NickName], '')
                 ELSE ISNULL([p].[FirstName], '')
-                END + ' ' + ISNULL([p].[LastName], '') + ' ' + ISNULL([dv].[Value], '')
+                END + ' ' + ISNULL([p].[LastName], '') + ISNULL(' ' + [dv].[Value], '')
         FROM [Person] [p]
         LEFT OUTER JOIN [DefinedValue] [dv] ON [dv].[Id] = [p].[SuffixValueId]
         WHERE [p].[Id] = @PersonId;
@@ -78,7 +81,7 @@ BEGIN
                 WHEN 1
                     THEN ISNULL([p].[NickName], '')
                 ELSE ISNULL([p].[FirstName], '')
-                END + ' ' + ISNULL([p].[LastName], '') + ' ' + ISNULL([dv].[Value], '') [FullName]
+                END + ' ' + ISNULL([p].[LastName], '') + ISNULL(' ' + [dv].[Value], '') [FullName]
             ,[p].Gender
             ,[gr].[Guid]
         FROM [GroupMember] [gm]
