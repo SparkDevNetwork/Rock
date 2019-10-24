@@ -80,6 +80,13 @@ namespace RockWeb.Blocks.GroupScheduling
 </div>",
         Order = 2
          )]
+         
+    [BooleanField(
+        "Show Names on schedules instead of Times?",
+        Key = AttributeKey.ShowScheduleNames,
+        Description = "Set to true to show the Names's.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
     public partial class GroupScheduleToolbox : RockBlock
     {
         protected class AttributeKey
@@ -87,6 +94,7 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string FutureWeeksToShow = "FutureWeeksToShow";
             public const string EnableSignup = "EnableSignup";
             public const string SignupInstructions = "SignupInstructions";
+            public const string ShowScheduleNames = "ShowScheduleNames";
         }
 
         protected const string ALL_GROUPS_STRING = "All Groups";
@@ -365,7 +373,14 @@ $('#{0}').tooltip();
         /// <returns></returns>
         protected string GetOccurrenceTime( Attendance attendance )
         {
-            return attendance.Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString();
+            if ( this.GetAttributeValue( AttributeKey.ShowScheduleNames ).AsBoolean() == true )
+            {
+                return attendance.Occurrence.Schedule.Name.ToString();
+            } 
+            else 
+            { 
+                return attendance.Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString();
+            }
         }
 
         /// <summary>
