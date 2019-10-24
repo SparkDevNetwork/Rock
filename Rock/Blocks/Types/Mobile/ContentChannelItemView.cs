@@ -149,7 +149,7 @@ namespace Rock.Blocks.Types.Mobile
 
             return new Dictionary<string, object>
             {
-                { "Xaml", content },
+                { "Content", content },
                 { "ProcessLava", false },
                 { "CacheDuration", 0 },
                 { "DynamicContent", true }
