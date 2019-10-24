@@ -14,13 +14,15 @@
 	</returns>
     <param name='PersonId' datatype='int'>The Person to get a full name for. NULL means use the GroupId paramter </param>
 	<param name='@GroupId' datatype='int'>The Group (family) to get the list of names for</param>
+	<param name='@GroupPersonIds' datatype='varchar(max)'>The Persons within the Group (family) to get the list of names for</param>
+	<param name='@UseNickName' datatype='bit'>Determines if nickname (1) or firstname (0,default) is used in list of names</param>
 	<remarks>
 		[ufnCrm_GetFamilyTitle] is used by spFinance_ContributionStatementQuery as part of generating Contribution Statements
 	</remarks>
 	<code>
 		SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](2, null, default, default) -- Single Person
         SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, default, default) -- Family
-        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, '2,3', default, default) -- Family, limited to the specified PersonIds
+        SELECT * FROM [dbo].[ufnCrm_GetFamilyTitle](null, 44, '2,3', default) -- Family, limited to the specified PersonIds
 	</code>
 </doc>
 */
