@@ -4291,6 +4291,8 @@ namespace RockWeb.Blocks.Event
 
     // Detect credit card type
     $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
+    // Trigger the keyup event in situations where the user has clicked the Previous button and is returning to this page
+    $('.credit-card').keyup();
 
     // Toggle credit card display if saved card option is available
     $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
