@@ -113,6 +113,8 @@ We have unsubscribed you from the following lists:
                 _person = CurrentPerson;
             }
 
+            LoadDropdowns( mergeFields );
+
             if ( _person != null )
             {
                 nbEmailPreferenceSuccessMessage.NotificationBoxType = NotificationBoxType.Success;
@@ -125,8 +127,6 @@ We have unsubscribed you from the following lists:
                 nbEmailPreferenceSuccessMessage.Visible = true;
                 btnSubmit.Visible = false;
             }
-
-            LoadDropdowns( mergeFields );
         }
 
         /// <summary>
@@ -443,38 +443,36 @@ We have unsubscribed you from the following lists:
 
                 int communicationListGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ).Id;
 
+                // Get a list of all the Active CommunicationLists that the person is an active member of
+                int? personId = _person != null ? (int?)_person.Id:null;
+                var communicationListQry = groupService.Queryable()
+                    .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
+
+                var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
+
+                var communicationLists = communicationListQry.ToList();
                 var viewableCommunicationLists = new List<Group>();
-                if ( _person != null )
+                foreach ( var communicationList in communicationLists )
                 {
-                    // Get a list of all the Active CommunicationLists that the person is an active member of
-                    var communicationListQry = groupService.Queryable()
-                        .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == _person.Id && m.GroupMemberStatus == GroupMemberStatus.Active ) );
-
-                    var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
-
-                    var communicationLists = communicationListQry.ToList();
-                    
-                    foreach ( var communicationList in communicationLists )
+                    communicationList.LoadAttributes( rockContext );
+                    if ( !categoryGuids.Any() )
                     {
-                        communicationList.LoadAttributes( rockContext );
-                        if ( !categoryGuids.Any() )
+                        // if no categories where specified, only show lists that the person has VIEW auth
+                        if ( communicationList.IsAuthorized( Rock.Security.Authorization.VIEW, _person ) )
                         {
-                            // if no categories where specified, only show lists that the person has VIEW auth
-                            if ( communicationList.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) )
-                            {
-                                viewableCommunicationLists.Add( communicationList );
-                            }
+                            viewableCommunicationLists.Add( communicationList );
                         }
-                        else
+                    }
+                    else
+                    {
+                        Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
+                        if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
                         {
-                            Guid? categoryGuid = communicationList.GetAttributeValue( "Category" ).AsGuidOrNull();
-                            if ( categoryGuid.HasValue && categoryGuids.Contains( categoryGuid.Value ) )
-                            {
-                                viewableCommunicationLists.Add( communicationList );
-                            }
+                            viewableCommunicationLists.Add( communicationList );
                         }
                     }
                 }
+
                 viewableCommunicationLists = viewableCommunicationLists.OrderBy( a =>
                 {
                     var name = a.GetAttributeValue( "PublicName" );
