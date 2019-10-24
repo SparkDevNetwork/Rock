@@ -20,6 +20,11 @@
     grid-gap: 2em;
 }
 
+.grid-responsive-fullwidth {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
 // Tablet view
 @media (max-width: @screen-sm-max) {
 
@@ -33,6 +38,10 @@
     .zone-grid-responsive-3 > .zone-content,
     .zone-grid-responsive-4 > .zone-content {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .grid-responsive-fullwidth {
+        grid-template-columns: 1fr;
     }
 
 }

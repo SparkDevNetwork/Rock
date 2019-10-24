@@ -34,7 +34,8 @@
         {% assign CapacityColor = '#8bc540' %}
     {% endif %}
 
-    {% assign GroupTags = Group | Attribute:'Hub' | Split:',' %}
+    {% assign GroupTypes = Group | Attribute:'Hub' | Split:',' %}
+    {% assign GroupCharacteristics = Group | Attribute:'GroupCharacteristics' | Split:',' %}
 
 {% endcapture %}
 
@@ -58,8 +59,12 @@
             {{ Group.Members.size }} of {{ Group.GroupCapacity }} {{ "member" | PluralizeForQuantity:Group.GroupCapacity }}
         {% endif %}
     </p>
-    <p class="">
-        {% for Tag in GroupTags %}
+    <p style="line-height: 1.5;">
+        <span class="label label-primary">{{ Group.Campus.Name }}</span>
+        {% for Tag in GroupTypes %}
+            <span class="label label-info">{{ Tag }}</span>
+        {% endfor %}
+        {% for Tag in GroupCharacteristics %}
             <span class="label label-default">{{ Tag }}</span>
         {% endfor %}
     </p>

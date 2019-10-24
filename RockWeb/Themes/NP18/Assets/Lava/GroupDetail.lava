@@ -1,80 +1,110 @@
 {% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.ManageMembers == true or AllowedActions.Administrate == true %}
 
-<div id="group-details" class="section lightgray css-grid nopad">
-	<div class="css-grid-item">
-		<div class="infobox">
-		<h2 class="group-name">{{ Group.Name }}</h2>
-	
-    <p class="group-schedule">
-        {{ Group.Schedule.FriendlyScheduleText }}
-        {% assign PrimaryLocation = Group.GroupLocations | First | Property:'Location' %}
-        {% if PrimaryLocation != '' %} | {{ PrimaryLocation.City }}, {{ PrimaryLocation.State }}{% endif %}
-    </p>
-    <p class="group-description">{{ Group.Description }}</p>
-	
-		{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
-			{% assign warningLevel = 'warning' %}
-	
-			{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
-				{% assign warningLevel = 'danger' %}
-			{% endif %}
-	
-			{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
-			{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
-	
-			{% if overageAmount > 0 %}
-				<div class="alert alert-{{ warningLevel }} margin-t-sm">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
-			{% endif %}
-		{% endif %}
-	
-		<div class="row">
-			<div class="col-md-6">
-			<h4>Group Details:</h4>
+{% capture _ %}
 
-			{{ Group | Attribute:'' }}
-			{% assign Attributes = Group | Property:'Attributes.Values' | Sort:'Order' %}
-			{% for Attribute in Attributes %}
-				{% assign Value = Group | Attribute:Attribute.Key %}
-				{% if Value != "" %}
-					<strong>{{ Attribute.Name }}:</strong> {{ Value }} <br />
-				{% endif %}
-			{% endfor %}
-			</div>
-	
-			<div class="col-md-6">
-			<h4>Leaders:</h4>
-			<ul class="list-unstyled">
-				{% for member in Group.Members %}
-	
-				{% if member.GroupRole.IsLeader %}
-				<li>
-				{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
-				</li>
-				{% endif %}
-				{% endfor %}
-			</ul>
-			</div>
-		</div>
-		</div>
-		<p>
-			<a class="btn btn-outline-default backlink" href="/groupfinder"><i class="np-icon np-caret"></i> Back</a>
-			<a class="btn btn-primary pull-right" href="{{ Group.Id }}/register">Sign Up <i class="np-icon np-caret"></i></a>
-		</p>
-	</div>
+    {% assign GroupId = Group.Id %}
+    {% capture GroupDetailsLink %}{[ FormatLink url:'{{ LinkedPages.GroupDetailPage }}' keys:'GroupId' ]}{% endcapture %}
+
+    {% assign LineFeed = "&#x0A;" | HtmlDecode %}
+
+    {% assign MeetingTime = Group.Schedule.FriendlyScheduleText %}
+    {% if MeetingTime contains LineFeed %}{% assign MeetingTime = null %}{% endif %}
+
+    {% assign MeetingLocation = Group.GroupLocations | First | Property:'Location' %}
+
+    {% capture GroupSubtitle %}
+
+        {% if MeetingTime != null %}{{ MeetingTime }}{% endif %}
+
+        {% if MeetingTime != null and MeetingLocation != null %} | {% endif %}
+
+        {% if MeetingLocation != null %}{{ MeetingLocation.City }}, {{ MeetingLocation.State }}{% endif %}
+
+    {% endcapture %}
+
+    {% if Group.GroupCapacity != null %}
+        {% assign GroupFullness = Group.Members.size | DividedBy:Group.GroupCapacity %}
+    {% else %}
+        {% assign GroupFullness = 0 %}
+    {% endif %}
+
+    {% if GroupFullness >= 1 %}
+        {% assign CapacityColor = '#ff0000' %}
+    {% elseif GroupFullness > 0.8 %}
+        {% assign CapacityColor = '#ffcc00' %}
+    {% else %}
+        {% assign CapacityColor = '#8bc540' %}
+    {% endif %}
+
+    {% assign GroupTypes = Group | Attribute:'Hub' | Split:',' %}
+    {% assign GroupCharacteristics = Group | Attribute:'GroupCharacteristics' | Split:',' %}
+
+
+    {% assign MapGeoPoint = null %}
 	{% for groupLocation in Group.GroupLocations %}
 		{% if groupLocation.Location.GeoPoint != '' %}
-
-		{% assign Latitude = groupLocation.Location.GeoPoint | Split:',' | First | DividedBy:1,3 %}
-		{% assign Longitude = groupLocation.Location.GeoPoint | Split:',' | Last | DividedBy:1,3 %}
-
-		<div class="grouplocationmap-image css-grid-item"
-			 style="background-image: url('https://maps.googleapis.com/maps/api/staticmap?size=960x960&zoom=13&maptype=roadmap&markers={{ Latitude }},{{ Longitude }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}');">
-		</div>
-
+            {% assign MapGeoPoint = groupLocation.Location.GeoPoint %}
 		{% endif %}
 	{% endfor %}
+
+{% endcapture %}
+
+<div id="group-details" class="bg-light{% if MapGeoPoint != null %} grid-responsive-fullwidth{% endif %}">
+    <div class="padding-lg">
+        <div class="card">
+            <div class="card-body padding-lg">
+
+                <h3 class="margin-b-none">{{ Group.Name }}</h3>
+                <h5 class="text-muted margin-t-none margin-b-sm">{{ GroupSubtitle }}</h5>
+                <p style="font-size:1.1em; line-height: 1.5;">
+                    <span class="label label-primary">{{ Group.Campus.Name }}</span>
+                    {% for Tag in GroupTypes %}
+                        <span class="label label-info">{{ Tag }}</span>
+                    {% endfor %}
+                    {% for Tag in GroupCharacteristics %}
+                        <span class="label label-default">{{ Tag }}</span>
+                    {% endfor %}
+                </p>
+                <p>{{ Group | Attribute:'GroupGoal' }}</p>
+                <h5>Leaders:</h5>
+                <ul class="list-unstyled">
+                    {% for member in Group.Members %}
+                        {% if member.GroupRole.IsLeader %}
+                        <li>
+                            {{ member.Person.FullName }} {% if member.GroupRole.Name != "Leader" %}<small>({{ member.GroupRole.Name }})</small>{% endif %}
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+                <p>
+                    <span style="font-size: 1em; color: {{ CapacityColor }};"><i class="fas fa-circle"></i></span>&nbsp;
+                    {% if Group.GroupCapacity == null %}
+                        {{ Group.Members.size }} {{ "member" | PluralizeForQuantity:Group.Members.size }}
+                    {% else %}
+                        {{ Group.Members.size }} of {{ Group.GroupCapacity }} {{ "member" | PluralizeForQuantity:Group.GroupCapacity }}
+                    {% endif %}
+                </p>
+
+            </div>
+        </div>
+		<div class="padding-t-lg">
+			<a class="btn btn-outline-default backlink" href="/groupfinder"><i class="np-icon np-caret"></i> Back</a>
+			<a class="btn btn-primary pull-right" href="{{ Group.Id }}/register">Request Info<i class="np-icon np-caret"></i></a>
+		</div>
+    </div>
+
+	{% if MapGeoPoint != null %}
+
+		{% assign Latitude = MapGeoPoint | Split:',' | First | DividedBy:1,3 %}
+		{% assign Longitude = MapGeoPoint | Split:',' | Last | DividedBy:1,3 %}
+
+		<div class="grouplocationmap-image"
+			 style="background-image: url('https://maps.googleapis.com/maps/api/staticmap?size=960x960&zoom=13&maptype=roadmap&markers={{ Latitude }},{{ Longitude }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}');background-size:cover;background-position:center;min-height:600px;">
+		</div>
+
+    {% endif %}
 </div>
-</div>
+
 
 {% else %}
 	{% if Group.Id %}
