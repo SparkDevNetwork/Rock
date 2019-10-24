@@ -38,6 +38,9 @@ namespace RockWeb.Blocks.Reporting
     [DefinedValueField( Rock.SystemGuid.DefinedType.POWERBI_ACCOUNTS, "Power BI Account", "The Power BI account to use to retrieve the report.", true, false, "", "CustomSetting", 0, "PowerBiAccount" )]
     [TextField( "Workspace", "The PowerBI workspace that the report belongs to", true, "", "CustomSetting", 1, key: "GroupId" )]
     [TextField( "Report URL", "The URL of the report to display.", true, "", "CustomSetting", 2, "ReportUrl" )]
+    [BooleanField("Show Right Pane", "Determines whether the right pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowRightPane" )]
+    [BooleanField("Show Navigation Pane", "Determines whether the navigation pane in the embedded report should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowNavPane" )]
+    [BooleanField("Show Fullsize Button", "Determines whether the fullsize button should be shown.", defaultValue: true, category: "CustomSetting", key: "ShowFullsizeBtn" )]
     public partial class PowerBiReportViewer : Rock.Web.UI.RockBlockCustomSettings
     {
         #region Base Control Methods
@@ -109,6 +112,10 @@ namespace RockWeb.Blocks.Reporting
 
             ddlSettingPowerBiReportUrl.SetValue( GetAttributeValue( "ReportUrl" ) );
 
+            cbSettingPowerBIFullsizeBtn.Checked = GetAttributeValue( "ShowFullsizeBtn" ).AsBoolean();
+            cbSettingPowerBIRightPane.Checked = GetAttributeValue( "ShowRightPane" ).AsBoolean();
+            cbSettingPowerBINavPane.Checked = GetAttributeValue( "ShowNavPane" ).AsBoolean();
+
             upnlContent.Update();
             mdEdit.Show();
         }
@@ -123,6 +130,9 @@ namespace RockWeb.Blocks.Reporting
             SetAttributeValue( "PowerBiAccount", ddlSettingPowerBiAccount.SelectedValue );
             SetAttributeValue( "GroupId", ddlSettingPowerBiGroup.SelectedValue );
             SetAttributeValue( "ReportUrl", ddlSettingPowerBiReportUrl.SelectedValue );
+            SetAttributeValue( "ShowFullsizeBtn", cbSettingPowerBIFullsizeBtn.Checked.ToString() );
+            SetAttributeValue( "ShowRightPane", cbSettingPowerBIRightPane.Checked.ToString() );
+            SetAttributeValue( "ShowNavPane", cbSettingPowerBINavPane.Checked.ToString() );
             SaveAttributeValues();
 
             mdEdit.Hide();
@@ -207,16 +217,25 @@ namespace RockWeb.Blocks.Reporting
             pnlEditModal.Visible = false;
             pnlView.Visible = true;
 
-            nbError.Text = string.Empty;
-            hfReportEmbedUrl.Value = GetAttributeValue( "ReportUrl" );
+            fullsizer.Visible = GetAttributeValue( "ShowFullsizeBtn" ).AsBoolean();
 
-            if ( hfReportEmbedUrl.Value.IsNullOrWhiteSpace() )
+            string reportUrl = GetAttributeValue( "ReportUrl" );
+            bool showRightPane = GetAttributeValue( "ShowRightPane" ).AsBoolean();
+            bool showNavPane = GetAttributeValue( "ShowNavPane" ).AsBoolean();
+
+            nbError.Text = string.Empty;
+
+            if ( reportUrl.IsNullOrWhiteSpace() )
             {
                 pnlView.Visible = false;
                 nbError.NotificationBoxType = NotificationBoxType.Warning;
                 nbError.Text = "No report has been configured.";
                 return;
             }
+
+            hfReportEmbedUrl.Value = reportUrl +
+                ( showRightPane ? "" : "&filterPaneEnabled=false" ) +
+                ( showNavPane ? "" : "&navContentPaneEnabled=false" );
 
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PowerBiAccount" ) ) )
             {

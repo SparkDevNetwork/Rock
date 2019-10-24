@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+
 using Rock.Data;
 
 namespace Rock
@@ -32,6 +34,11 @@ namespace Rock
         /// The _call counts
         /// </summary>
         public static int _callCounts = 0;
+
+        /// <summary>
+        /// The call ms total
+        /// </summary>
+        public static double _callMSTotal = 0.00;
 
         private class DebugHelperUserState
         {
@@ -50,7 +57,15 @@ namespace Rock
             /// <value>
             /// The rock context.
             /// </value>
-            internal System.Data.Entity.DbContext DbContext { get; set; }
+            internal List<System.Data.Entity.DbContext> DbContextList { get; set; } = new List<System.Data.Entity.DbContext>();
+
+            /// <summary>
+            /// Gets or sets a value indicating whether [enable for all database contexts].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [enable for all database contexts]; otherwise, <c>false</c>.
+            /// </value>
+            internal bool EnableForAllDbContexts { get; set; } = false;
 
             /// <summary>
             /// </summary>
@@ -128,7 +143,7 @@ namespace Rock
             private void CommandExecuting( DbCommand command, DbCommandInterceptionContext interceptionContext, out object userState )
             {
                 userState = null;
-                if ( this.DbContext != null && !interceptionContext.DbContexts.Any( a => a == this.DbContext ) )
+                if ( !interceptionContext.DbContexts.Any( a => this.DbContextList.Contains( a ) || this.EnableForAllDbContexts ) )
                 {
                     return;
                 }
@@ -220,6 +235,7 @@ namespace Rock
                     var commandExecutionTimeInMs = ( long ) stats["ExecutionTime"];
 
                     System.Diagnostics.Debug.Write( $"\n/* Call# {debugHelperUserState.CallNumber}: ElapsedTime [{debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds}ms], SQLConnection.Statistics['ExecutionTime'] = [{commandExecutionTimeInMs}ms] */\n" );
+                    _callMSTotal += debugHelperUserState.Stopwatch.Elapsed.TotalMilliseconds;
                 }
             }
         }
@@ -253,8 +269,18 @@ namespace Rock
         public static void SQLLoggingStart( System.Data.Entity.DbContext dbContext )
         {
             _callCounts = 0;
+            _callMSTotal = 0.00;
             SQLLoggingStop();
-            _debugLoggingDbCommandInterceptor.DbContext = dbContext;
+
+            if ( dbContext != null )
+            {
+                _debugLoggingDbCommandInterceptor.DbContextList.Add( dbContext );
+            }
+            else
+            {
+                _debugLoggingDbCommandInterceptor.EnableForAllDbContexts = true;
+            }
+
             DbInterception.Add( _debugLoggingDbCommandInterceptor );
         }
 
@@ -263,6 +289,11 @@ namespace Rock
         /// </summary>
         public static void SQLLoggingStop()
         {
+            if ( _callCounts != 0 )
+            {
+                Debug.WriteLine( $"####SQLLogging Summary: _callCounts:{_callCounts}, _callMSTotal:{_callMSTotal}, _callMSTotal/_callCounts:{_callMSTotal / _callCounts}####" );
+            }
+
             DbInterception.Remove( _debugLoggingDbCommandInterceptor );
         }
 
@@ -279,7 +310,19 @@ namespace Rock
             }
             else
             {
-                DebugHelper.SQLLoggingStop();
+                if ( dbContext == null )
+                {
+                    _debugLoggingDbCommandInterceptor.EnableForAllDbContexts = false;
+                }
+                else
+                {
+                    _debugLoggingDbCommandInterceptor.DbContextList.Remove( dbContext );
+                }
+
+                if ( !_debugLoggingDbCommandInterceptor.DbContextList.Any() && !_debugLoggingDbCommandInterceptor.EnableForAllDbContexts )
+                {
+                    DebugHelper.SQLLoggingStop();
+                }
             }
 
         }

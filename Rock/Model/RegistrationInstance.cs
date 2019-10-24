@@ -23,7 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-
+using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
 
@@ -112,9 +112,8 @@ namespace Rock.Model
         /// <value>
         /// The maximum attendees.
         /// </value>
-        [Required]
         [DataMember]
-        public int MaxAttendees { get; set; }
+        public int? MaxAttendees { get; set; }
 
         /// <summary>
         /// Gets or sets the account identifier.
@@ -126,7 +125,7 @@ namespace Rock.Model
         public int? AccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the cost (if template is configured to allow cost on instance).
+        /// Gets or sets the cost (if <see cref="RegistrationTemplate.SetCostOnInstance"/> == true).
         /// </summary>
         /// <value>
         /// The cost.
@@ -135,13 +134,23 @@ namespace Rock.Model
         public decimal? Cost { get; set; }
 
         /// <summary>
-        /// Gets or sets the minimum initial payment (if template is configured to allow cost on instance).
+        /// Gets or sets the minimum initial payment (if <see cref="RegistrationTemplate.SetCostOnInstance"/> == true).
         /// </summary>
         /// <value>
         /// The minimum initial payment.
         /// </value>
         [DataMember]
         public decimal? MinimumInitialPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default amount to pay per registrant (if <see cref="RegistrationTemplate.SetCostOnInstance"/> == true).
+        /// If this is null, the default payment will be the <see cref="Cost"/>
+        /// </summary>
+        /// <value>
+        /// The default payment.
+        /// </value>
+        [DataMember]
+        public decimal? DefaultPayment { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -303,6 +312,27 @@ namespace Rock.Model
             get
             {
                 return RegistrationTemplate != null ? RegistrationTemplate : base.ParentAuthority;
+            }
+        }
+
+        /// <summary>
+        /// Gets the contact recipient as either an email to the person that registered, or as an anonymous email to the specified contact email if it is different than the person's email.
+        /// </summary>
+        /// <param name="mergeObjects">The merge objects.</param>
+        /// <returns></returns>
+        public RockMessageRecipient GetContactRecipient( Dictionary<string, object> mergeObjects )
+        {
+            var person = this.ContactPersonAlias?.Person;
+            string personEmail = person?.Email;
+
+            var contactEmail = this.ContactEmail;
+            if ( personEmail == contactEmail )
+            {
+                return new RockEmailMessageRecipient( person, mergeObjects );
+            }
+            else
+            {
+                return RockEmailMessageRecipient.CreateAnonymous( contactEmail, mergeObjects );
             }
         }
 

@@ -34,7 +34,7 @@ using System.Data;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// Used to look at pledges using various criteria.
     /// </summary>
     [DisplayName( "Pledge Analytics" )]
     [Category( "Finance" )]
@@ -43,8 +43,6 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        // used for private variables
-        private RockContext _rockContext = null;
         #endregion
 
         #region Properties
@@ -71,8 +69,6 @@ namespace RockWeb.Blocks.Finance
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
-
-            _rockContext = new RockContext();
         }
 
         /// <summary>
@@ -148,54 +144,57 @@ namespace RockWeb.Blocks.Finance
             pnlResults.Visible = true;
 
             int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
-            if ( accountId.HasValue )
+            if ( !accountId.HasValue )
             {
-                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
-                var start = dateRange.Start;
-                var end = dateRange.End;
+                return;
+            }
 
-                var minPledgeAmount = nrePledgeAmount.LowerValue;
-                var maxPledgeAmount = nrePledgeAmount.UpperValue;
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( drpSlidingDateRange.DelimitedValues );
+            DateTime? start = dateRange.Start ?? (DateTime?) System.Data.SqlTypes.SqlDateTime.MinValue;
+            DateTime? end = dateRange.End ?? ( DateTime? ) System.Data.SqlTypes.SqlDateTime.MaxValue;
 
-                var minComplete = nrePercentComplete.LowerValue;
-                var maxComplete = nrePercentComplete.UpperValue;
+            var minPledgeAmount = nrePledgeAmount.LowerValue;
+            var maxPledgeAmount = nrePledgeAmount.UpperValue;
 
-                var minGiftAmount = nreAmountGiven.LowerValue;
-                var maxGiftAmount = nreAmountGiven.UpperValue;
+            var minComplete = nrePercentComplete.LowerValue;
+            var maxComplete = nrePercentComplete.UpperValue;
 
-                int includeOption = rblInclude.SelectedValueAsInt() ?? 0;
-                bool includePledges = includeOption != 1;
-                bool includeGifts = includeOption != 0;
+            var minGiftAmount = nreAmountGiven.LowerValue;
+            var maxGiftAmount = nreAmountGiven.UpperValue;
 
-                DataSet ds = FinancialPledgeService.GetPledgeAnalytics( accountId.Value, start, end,
-                    minPledgeAmount, maxPledgeAmount, minComplete, maxComplete, minGiftAmount, maxGiftAmount,
-                    includePledges, includeGifts );
-                System.Data.DataView dv = ds.Tables[0].DefaultView;
+            int includeOption = rblInclude.SelectedValueAsInt() ?? 0;
+            bool includePledges = includeOption != 1;
+            bool includeGifts = includeOption != 0;
 
-                if ( gList.SortProperty != null )
+            DataSet ds = FinancialPledgeService.GetPledgeAnalytics( accountId.Value, start, end,
+                minPledgeAmount, maxPledgeAmount, minComplete, maxComplete, minGiftAmount, maxGiftAmount,
+                includePledges, includeGifts );
+            System.Data.DataView dv = ds.Tables[0].DefaultView;
+
+            if ( gList.SortProperty != null )
+            {
+                try
                 {
-                    try
+                    var sortProperties = new List<string>();
+                    foreach ( string prop in gList.SortProperty.Property.SplitDelimitedValues( false ) )
                     {
-                        var sortProperties = new List<string>();
-                        foreach ( string prop in gList.SortProperty.Property.SplitDelimitedValues( false ) )
-                        {
-                            sortProperties.Add( string.Format( "[{0}] {1}", prop, gList.SortProperty.DirectionString ) );
-                        }
-                        dv.Sort = sortProperties.AsDelimited( ", " );
+                        sortProperties.Add( string.Format( "[{0}] {1}", prop, gList.SortProperty.DirectionString ) );
                     }
-                    catch
-                    {
-                        dv.Sort = "[LastName] ASC, [NickName] ASC";
-                    }
+                    dv.Sort = sortProperties.AsDelimited( ", " );
                 }
-                else
+                catch
                 {
                     dv.Sort = "[LastName] ASC, [NickName] ASC";
                 }
-
-                gList.DataSource = dv;
-                gList.DataBind();
             }
+            else
+            {
+                dv.Sort = "[LastName] ASC, [NickName] ASC";
+            }
+
+            gList.DataSource = dv;
+            gList.DataBind();
+            
         }
 
         /// <summary>
@@ -292,7 +291,5 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion
-
-
-}
+    }
 }

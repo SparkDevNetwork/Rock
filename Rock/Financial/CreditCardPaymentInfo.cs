@@ -36,8 +36,11 @@ namespace Rock.Financial
         /// </summary>
         public string LastNameOnCard { get; set; }
 
+        #region IBillingInfo
+
         /// <summary>
-        /// The billing street line 1
+        /// The billing street line 1.
+        /// NOTE: If the Gateway is configured to prompt for a separate Billing Address (like NMI), <see cref="CreditCardPaymentInfo.BillingStreet1" />, etc, might be different then <see cref="PaymentInfo.Street1"/>, etc
         /// </summary>
         public string BillingStreet1 { get; set; }
 
@@ -65,6 +68,8 @@ namespace Rock.Financial
         /// The billing country
         /// </summary>
         public string BillingCountry { get; set; }
+
+        #endregion IBillingInfo
 
         /// <summary>
         /// The credit card number

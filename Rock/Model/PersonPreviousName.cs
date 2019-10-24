@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -111,7 +109,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = (RockContext)dbContext;
 
@@ -131,19 +129,19 @@ namespace Rock.Model
 
                 switch ( entry.State )
                 {
-                    case System.Data.Entity.EntityState.Added:
+                    case EntityState.Added:
                         {
                             History.EvaluateChange( HistoryChanges, "Previous Name", string.Empty, LastName );
                             break;
                         }
 
-                    case System.Data.Entity.EntityState.Modified:
+                    case EntityState.Modified:
                         {
                             History.EvaluateChange( HistoryChanges, "Previous Name", entry.OriginalValues["LastName"].ToStringSafe(), LastName );
                             break;
                         }
 
-                    case System.Data.Entity.EntityState.Deleted:
+                    case EntityState.Deleted:
                         {
                             History.EvaluateChange( HistoryChanges, "Previous Name", entry.OriginalValues["LastName"].ToStringSafe(), string.Empty );
                             return;

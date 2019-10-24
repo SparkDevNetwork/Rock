@@ -117,9 +117,10 @@ namespace Rock.Model
                 scheduledTransaction.FinancialGateway != null &&
                 scheduledTransaction.FinancialGateway.IsActive )
             {
+                var rockContext = this.Context as RockContext;
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
-                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                    scheduledTransaction.FinancialGateway.LoadAttributes( rockContext );
                 }
 
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
@@ -127,7 +128,7 @@ namespace Rock.Model
                 {
                     var result = gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
 
-                    var lastTransactionDate = scheduledTransaction.Transactions.Max( t => t.TransactionDateTime );
+                    var lastTransactionDate = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ScheduledTransactionId.HasValue && a.ScheduledTransactionId == scheduledTransaction.Id ).Max( t => t.TransactionDateTime );
                     scheduledTransaction.NextPaymentDate = gateway.GetNextPaymentDate( scheduledTransaction, lastTransactionDate );
 
                     return result;
@@ -160,18 +161,6 @@ namespace Rock.Model
                 {
                     if ( gateway.ReactivateScheduledPayment( scheduledTransaction, out errorMessages ) )
                     {
-                        var noteTypeService = new NoteTypeService( (RockContext)this.Context );
-                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
-                        if ( noteType != null )
-                        {
-                            var noteService = new NoteService( (RockContext)this.Context );
-                            var note = new Note();
-                            note.NoteTypeId = noteType.Id;
-                            note.EntityId = scheduledTransaction.Id;
-                            note.Caption = "Reactivated Transaction";
-                            noteService.Add( note );
-                        }
-
                         return true;
                     }
                     else
@@ -207,18 +196,6 @@ namespace Rock.Model
                 {
                     if ( gateway.CancelScheduledPayment( scheduledTransaction, out errorMessages ) )
                     {
-                        var noteTypeService = new NoteTypeService( (RockContext)this.Context );
-                        var noteType = noteTypeService.Get( Rock.SystemGuid.NoteType.SCHEDULED_TRANSACTION_NOTE.AsGuid() );
-                        if ( noteType != null )
-                        {
-                            var noteService = new NoteService( (RockContext)this.Context );
-                            var note = new Note();
-                            note.NoteTypeId = noteType.Id;
-                            note.EntityId = scheduledTransaction.Id;
-                            note.Caption = "Cancelled Transaction";
-                            noteService.Add( note );
-                        }
-
                         return true;
                     }
                     else
@@ -271,9 +248,6 @@ namespace Rock.Model
             int totalStatusChanges = 0;
 
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
-            var initialControlAmounts = new Dictionary<Guid, decimal>();
-
-            var gatewayComponent = gateway.GetGatewayComponent();
 
             var newTransactions = new List<FinancialTransaction>();
             var failedPayments = new List<FinancialTransaction>();
@@ -308,21 +282,30 @@ namespace Rock.Model
 
                     var financialTransactionService = new FinancialTransactionService( rockContext );
 
-                    // Find existing payments with same transaction code
                     FinancialTransaction originalTxn = null;
-                    var txns = financialTransactionService
-                        .Queryable( "TransactionDetails" )
-                        .Where( t =>
-                            t.FinancialGatewayId.HasValue &&
-                            t.FinancialGatewayId.Value == gateway.Id &&
-                            t.TransactionCode == payment.TransactionCode )
-                        .ToList();
-                    if ( txns.Any() )
+                    List<FinancialTransaction> txns = null;
+
+                    // Find existing payments with same transaction code as long as it is not blank.
+                    if ( payment.TransactionCode.IsNotNullOrWhiteSpace() )
                     {
-                        originalTxn = txns.OrderBy( t => t.Id ).First();
+                        txns = financialTransactionService
+                          .Queryable( "TransactionDetails" )
+                          .Where( t =>
+                              t.FinancialGatewayId.HasValue &&
+                              t.FinancialGatewayId.Value == gateway.Id &&
+                              t.TransactionCode == payment.TransactionCode )
+                          .ToList();
+
+                        originalTxn = txns.Any() ? txns.OrderBy( t => t.Id ).First() : null;
                     }
 
-                    var scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
+                    FinancialScheduledTransaction scheduledTransaction = null;
+
+                    // We don't want to match a blank schedule ID, so if we don't have one then scheduledTransaction will stay NULL
+                    if ( payment.GatewayScheduleId.IsNotNullOrWhiteSpace() )
+                    {
+                        scheduledTransaction = new FinancialScheduledTransactionService( rockContext ).GetByScheduleId( payment.GatewayScheduleId, gateway.Id );
+                    }
 
                     // Calculate whether a transaction needs to be added
                     var txnAmount = CalculateTransactionAmount( payment, txns );
@@ -434,6 +417,8 @@ namespace Rock.Model
 
                                 var transactionDetail = new FinancialTransactionDetail();
                                 transactionDetail.AccountId = detail.AccountId;
+                                transactionDetail.EntityTypeId = detail.EntityTypeId;
+                                transactionDetail.EntityId = detail.EntityId;
 
                                 if ( detail.Amount <= remainingAmount )
                                 {
@@ -486,40 +471,36 @@ namespace Rock.Model
                             }
 
                             // Get the batch
-                            var batch = new FinancialBatchService( rockContext ).Get(
+                            var batchService = new FinancialBatchService( rockContext );
+                            var batch = batchService.Get(
                                 batchNamePrefix,
+                                string.Empty,
                                 currencyTypeValue,
                                 creditCardTypevalue,
                                 transaction.TransactionDateTime.Value,
-                                gateway.GetBatchTimeOffset() );
+                                gateway.GetBatchTimeOffset(),
+                                gateway.BatchDayOfWeek );
 
-                            var batchChanges = new List<string>();
-                            if ( batch.Id != 0 )
+                            if ( batch.Id == 0 )
                             {
-                                initialControlAmounts.AddOrIgnore( batch.Guid, batch.ControlAmount );
-
-                                transaction.BatchId = batch.Id;
-                                financialTransactionService.Add( transaction );
-                            }
-                            else
-                            {
-                                batch.Transactions.Add( transaction );
+                                // get a batch Id
+                                rockContext.SaveChanges();
                             }
 
-                            batch.ControlAmount += transaction.TotalAmount;
-
-                            batch.Transactions.Add( transaction );
+                            transaction.BatchId = batch.Id;
+                            financialTransactionService.Add( transaction );
+                            batchService.IncrementControlAmount( batch.Id, transaction.TotalAmount, null );
 
                             if ( receiptEmail.HasValue && txnAmount > 0.0M )
                             {
                                 newTransactions.Add( transaction );
                             }
 
-                            if ( 
-                                payment.IsFailure && 
-                                ( 
-                                    ( txnAmount == 0.0M && scheduledTransaction != null && originalTxn == null ) || 
-                                    ( txnAmount < 0.0M && originalTxn != null ) 
+                            if (
+                                payment.IsFailure &&
+                                (
+                                    ( txnAmount == 0.0M && scheduledTransaction != null && originalTxn == null ) ||
+                                    ( txnAmount < 0.0M && originalTxn != null )
                                 ) )
                             {
                                 failedPayments.Add( transaction );
@@ -553,20 +534,24 @@ namespace Rock.Model
                         totalAlreadyDownloaded++;
                     }
 
-                    foreach ( var txn in txns
-                        .Where( t =>
-                            t.Status != payment.Status ||
-                            t.StatusMessage != payment.StatusMessage ||
-                            t.IsSettled != payment.IsSettled ||
-                            t.SettledGroupId != payment.SettledGroupId ||
-                            t.SettledDate != payment.SettledDate ) )
+                    if ( txns != null )
                     {
-                        txn.IsSettled = payment.IsSettled;
-                        txn.SettledGroupId = payment.SettledGroupId;
-                        txn.SettledDate = payment.SettledDate;
-                        txn.Status = payment.Status;
-                        txn.StatusMessage = payment.StatusMessage;
-                        totalStatusChanges++;
+
+                        foreach ( var txn in txns
+                            .Where( t =>
+                                t.Status != payment.Status ||
+                                t.StatusMessage != payment.StatusMessage ||
+                                t.IsSettled != payment.IsSettled ||
+                                t.SettledGroupId != payment.SettledGroupId ||
+                                t.SettledDate != payment.SettledDate ) )
+                        {
+                            txn.IsSettled = payment.IsSettled;
+                            txn.SettledGroupId = payment.SettledGroupId;
+                            txn.SettledDate = payment.SettledDate;
+                            txn.Status = payment.Status;
+                            txn.StatusMessage = payment.StatusMessage;
+                            totalStatusChanges++;
+                        }
                     }
 
                     rockContext.SaveChanges();

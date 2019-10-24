@@ -18,14 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DotLiquid;
-using Rock.Data;
-using Rock.Model;
-using CSScriptLibrary;
 using System.Text.RegularExpressions;
-using Microsoft.CSharp;
+
+using CSScriptLibrary;
+
+using DotLiquid;
 
 namespace Rock.Lava.Blocks
 {
@@ -143,11 +140,7 @@ namespace Rock.Lava.Blocks
                 else
                 {
                     // treat this like a class
-
-                    // remove any reference to 'using System;' as this will cause an issue
-                    var cleanScript = Regex.Replace( userScript, @"\s*using\s*System;", "" );
-
-                    dynamic csScript = CSScript.Evaluator.LoadCode<ILavaScript>( cleanScript );
+                    dynamic csScript = CSScript.Evaluator.LoadCode<ILavaScript>( userScript );
                     string scriptResult = csScript.Execute();
                     result.Write( scriptResult );
                 }

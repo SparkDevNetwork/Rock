@@ -14,15 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
 
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Jobs;
-using Rock.Communication;
 using Rock.Web.Cache;
 
 namespace Rock.Transactions
@@ -140,7 +136,7 @@ namespace Rock.Transactions
                                                     ApprovalPageUrl );
 
                             var emailMessage = new RockEmailMessage();
-                            emailMessage.AddRecipient( approver.Person.Email );
+                            emailMessage.AddRecipient( new RockEmailMessageRecipient( approver.Person, null ) );
                             emailMessage.FromEmail = fromEmail;
                             emailMessage.FromName = fromName;
                             emailMessage.Subject = subject;

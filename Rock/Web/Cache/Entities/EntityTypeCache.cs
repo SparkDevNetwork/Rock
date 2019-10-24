@@ -18,7 +18,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -95,6 +97,32 @@ namespace Rock.Web.Cache
         internal int? SingleValueFieldTypeId { get; private set; }
 
         /// <summary>
+        /// The properties
+        /// </summary>
+        [IgnoreDataMember]
+        private Dictionary<string, PropertyInfo> _properties = null;
+
+        /// <summary>
+        /// Gets a dictionary of the names of all the properties for this type of entity, along with <see cref="PropertyInfo"/> about the property
+        /// </summary>
+        /// <value>
+        /// The properties.
+        /// </value>
+        [IgnoreDataMember]
+        public Dictionary<string, PropertyInfo> Properties
+        {
+            get
+            {
+                if ( _properties == null )
+                {
+                    _properties = this.GetEntityType().GetProperties().ToDictionary( k => k.Name, v => v );
+                }
+
+                return _properties;
+            }
+        }
+
+        /// <summary>
         /// Gets the type of the single value field.
         /// </summary>
         /// <value>
@@ -149,6 +177,15 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public bool IsIndexingEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attributes support pre post HTML]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttributesSupportPrePostHtml { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is indexing supported.
@@ -390,6 +427,7 @@ namespace Rock.Web.Cache
             SingleValueFieldTypeId = entityType.SingleValueFieldTypeId;
             MultiValueFieldTypeId = entityType.MultiValueFieldTypeId;
             IsIndexingEnabled = entityType.IsIndexingEnabled;
+            AttributesSupportPrePostHtml = entityType.AttributesSupportPrePostHtml;
             IsIndexingSupported = entityType.IsIndexingSupported;
             IndexResultTemplate = entityType.IndexResultTemplate;
             IndexDocumentUrl = entityType.IndexDocumentUrl;

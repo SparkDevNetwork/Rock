@@ -70,9 +70,6 @@
                     </asp:Panel>
                 </div>
             </div>
-
-            
-
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -84,14 +81,14 @@
                     <Rock:EntityTypePicker ID="ddlAttrEntityType" runat="server" Label="Entity Type" IncludeGlobalOption="true" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlAttrEntityType_SelectedIndexChanged" EnhanceForLongLists="true" />
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
+                            <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" AutoPostBack="true" OnTextChanged="tbAttrQualifier_TextChanged"/>
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
+                            <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" AutoPostBack="true" OnTextChanged="tbAttrQualifier_TextChanged"/>
                         </div>
                     </div>
                 </asp:panel>
-                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" IsShowInGridVisible="true" />
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" ShowActions="false" ValidationGroup="Attribute" IsShowInGridVisible="true" ShowActionTitle="false" />
             </Content>
         </Rock:ModalDialog>
 

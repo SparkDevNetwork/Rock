@@ -354,6 +354,10 @@ namespace RockWeb.Blocks.Finance
                                 hlStatus.Text = "Pending";
                                 hlStatus.LabelType = LabelType.Default;
                                 return;
+                            default:
+                                hlStatus.Text = benevolenceRequest.RequestStatusValue.Value;
+                                hlStatus.LabelType = LabelType.Info;
+                                return;
                         }
                     }
                 }
@@ -663,6 +667,9 @@ namespace RockWeb.Blocks.Finance
 
             gList.DataSource = list;
             gList.DataBind();
+
+            // Hide the campus column if the campus filter is not visible.
+            gList.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpCampus.Visible;
 
             // Builds the Totals section
             var definedTypeCache = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );

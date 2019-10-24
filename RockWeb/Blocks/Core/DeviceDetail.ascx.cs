@@ -101,15 +101,6 @@ namespace RockWeb.Blocks.Core
             {
                 ShowDetail( PageParameter( "DeviceId" ).AsInteger() );
             }
-            else
-            {
-                var device = new Device();
-                device.Id = hfDeviceId.ValueAsInt();
-                device.DeviceTypeValueId = hfTypeId.ValueAsInt();
-                device.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( device, phAttributes, false, BlockValidationGroup );
-            }
 
             if ( hfAddLocationId.Value.AsIntegerOrNull().HasValue )
             {
@@ -193,7 +184,7 @@ namespace RockWeb.Blocks.Core
                 device.Location.GeoFence = geopFence.SelectedValue;
 
                 device.LoadAttributes( rockContext );
-                Rock.Attribute.Helper.GetEditValues( phAttributes, device );
+                avcAttributes.GetEditValues( device );
 
                 if ( !device.IsValid || !Page.IsValid )
                 {
@@ -494,8 +485,7 @@ namespace RockWeb.Blocks.Core
 
             device.DeviceTypeValueId = typeId;
             device.LoadAttributes();
-            phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( device, phAttributes, true, BlockValidationGroup );
+            avcAttributes.AddEditControls( device );
         }
 
         /// <summary>

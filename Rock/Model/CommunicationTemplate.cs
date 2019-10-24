@@ -25,8 +25,8 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
-using Rock.Data;
 using Rock.Communication;
+using Rock.Data;
 using Rock.Security;
 
 namespace Rock.Model
@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
-    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails
+    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails, ICampusFilterable
     {
 
         #region Entity Properties
@@ -152,7 +152,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the name of the communication.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
+        [MaxLength( 1000 )]
         public string Subject { get; set; }
 
         /// <summary>
@@ -578,6 +578,8 @@ namespace Rock.Model
             {
                 return false;
             }
+
+            templateHtml = templateHtml.ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( null ) );
 
             HtmlAgilityPack.HtmlDocument templateDoc = new HtmlAgilityPack.HtmlDocument();
             templateDoc.LoadHtml( templateHtml );

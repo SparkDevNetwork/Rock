@@ -14,19 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
+
 using DotLiquid;
-using DotLiquid.Exceptions;
-using DotLiquid.Util;
-using Rock.Data;
-using Rock.Web.Cache;
+
 using Rock.Model;
-using System;
+using Rock.Web.Cache;
 
 namespace Rock.Lava.Shortcodes
 {
@@ -174,6 +172,34 @@ namespace Rock.Lava.Shortcodes
                     parms.AddOrReplace( itemParts[0].Trim().ToLower(), itemParts[1].Trim().Substring( 1, itemParts[1].Length - 2 ) );
                 }
             }
+
+            // OK, now let's look for any passed variables ala: name:variable
+            var variableTokens = Regex.Matches( resolvedMarkup, @"\w*:\w+" )
+                .Cast<Match>()
+                .Select( m => m.Value )
+                .ToList();
+
+            foreach ( var item in variableTokens )
+            {
+                var itemParts = item.Trim().Split( new char[] { ':' }, 2 );
+                if ( itemParts.Length > 1 )
+                {
+                    var scopeKey = itemParts[1].Trim();
+
+                    // context.Scopes is a weird beast can't find a cleaner way to get the object than to iterate over it
+                    foreach ( var scopeItem in context.Scopes )
+                    {
+                        var scopeObject = scopeItem.Where( x => x.Key == scopeKey ).FirstOrDefault();
+
+                        if ( scopeObject.Value != null )
+                        {
+                            parms.AddOrReplace( itemParts[0].Trim().ToLower(), scopeObject.Value );
+                            break;
+                        }
+                    }
+                }
+            }
+
             return parms;
         }
     }

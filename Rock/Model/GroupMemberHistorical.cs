@@ -117,7 +117,7 @@ namespace Rock.Model
         public int? ArchivedByPersonAliasId { get; set; }
 
         /// <summary>
-        /// Gets or sets the InActiveDateTime value of the group member at this point in history (the time when the group member status was changed to GroupMemberStatus.InActive)
+        /// Gets or sets the InActiveDateTime value of the group member at this point in history (the time when the group member status was changed to GroupMemberStatus.Inactive)
         /// </summary>
         /// <value>
         /// The in active date time.

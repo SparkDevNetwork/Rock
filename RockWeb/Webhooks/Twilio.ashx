@@ -28,6 +28,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+/// <summary>
+/// This the Twilio Webwook that updates the communication recipient record to indicate the message status, and runs any Workflow configured with the SMS Phone Number that the message was from.
+/// </summary>
 public class TwilioAsync : IHttpAsyncHandler
 {
     public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
@@ -150,19 +153,21 @@ class TwilioResponseAsync : IAsyncResult
             messageSid = request.Form["MessageSid"];
 
             // get communication from the message side
-            RockContext rockContext = new RockContext();
-            CommunicationRecipientService recipientService = new CommunicationRecipientService(rockContext);
+            using ( RockContext rockContext = new RockContext() )
+            {
+                CommunicationRecipientService recipientService = new CommunicationRecipientService( rockContext );
 
-            var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
-            if ( communicationRecipient != null )
-            {
-                communicationRecipient.Status = CommunicationRecipientStatus.Failed;
-                communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
-                rockContext.SaveChanges();
-            }
-            else
-            {
-                WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                var communicationRecipient = recipientService.Queryable().Where( r => r.UniqueMessageId == messageSid ).FirstOrDefault();
+                if ( communicationRecipient != null )
+                {
+                    communicationRecipient.Status = CommunicationRecipientStatus.Failed;
+                    communicationRecipient.StatusNote = "Message failure notified from Twilio on " + RockDateTime.Now.ToString();
+                    rockContext.SaveChanges();
+                }
+                else
+                {
+                    WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                }
             }
         }
     }

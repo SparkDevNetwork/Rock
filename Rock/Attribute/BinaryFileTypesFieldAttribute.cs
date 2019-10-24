@@ -22,7 +22,7 @@ namespace Rock.Attribute
     /// Field Attribute to select 0 or more Binary File Types stored as a comma-delimited list of BinaryFileType.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class BinaryFileTypesFieldAttribute : FieldAttribute
+    public class BinaryFileTypesFieldAttribute : SelectFieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileTypesFieldAttribute"/> class.

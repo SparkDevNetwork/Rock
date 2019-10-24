@@ -75,8 +75,14 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         </div>
     </div>
 {% endif %}", "", 3 )]
+    [LinkedPage( "Export Workflows Page", "Page used to export workflows.", false, "", "", 4 )]
     public partial class WorkflowTypeDetail : RockBlock
     {
+        protected static class AuthorizationMisc
+        {
+            public const string VIEW_LIST = "ViewList";
+        }
+
         #region Properties
 
         private List<Attribute> AttributesState { get; set; }
@@ -167,6 +173,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             LoadDropDowns();
 
+            btnExport.Visible = GetAttributeValue( "ExportWorkflowsPage" ).IsNotNullOrWhiteSpace();
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the workflows of this type!');", WorkflowType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.WorkflowType ) ).Id;
         }
@@ -519,6 +526,18 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             var qryParams = new Dictionary<string, string>();
             qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
             NavigateToLinkedPage( "ManageWorkflowsPage", qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnExport control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnExport_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "WorkflowTypeId", hfWorkflowTypeId.Value );
+            NavigateToLinkedPage( "ExportWorkflowsPage", qryParams );
         }
 
         /// <summary>
@@ -1275,8 +1294,12 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
+
+            bool hasAdministrate = workflowType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+            bool isBlockEditor = IsUserAuthorized( Authorization.EDIT );
+
             // User must have 'Edit' rights to block, or 'Administrate' rights to workflow type
-            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            if ( !( isBlockEditor || workflowType.IsAuthorized( Authorization.EDIT, CurrentPerson ) || hasAdministrate ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Heading = "Information";
@@ -1285,14 +1308,33 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             if ( workflowType.IsSystem )
             {
-                readOnly = true;
+                readOnly = true; 
                 nbEditModeMessage.Heading = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( WorkflowType.FriendlyTypeName );
+            }
+
+            // ViewList authorization is also used by WorkflowNavigation and WorkflowList
+            if ( !workflowType.IsAuthorized( AuthorizationMisc.VIEW_LIST, CurrentPerson ) )
+            {
+                lbManage.Enabled = false;
+            }
+
+            if ( !hasAdministrate )
+            {
+                btnSecurity.Visible = false;
+            }
+
+            // Only block editors can see the copy button. Otherwise Rock.Security.Authorization.AllowPerson()
+            // would be needed upon save (adding) if someone else created a 'copy' of a workflow.
+            if ( !isBlockEditor )
+            {
+                btnCopy.Visible = false;
             }
 
             if ( readOnly )
             {
                 btnEdit.Visible = false;
+                btnDelete.Visible = false;
                 btnSecurity.Visible = false;
                 ShowReadonlyDetails( workflowType );
             }

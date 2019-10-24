@@ -15,9 +15,9 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -126,6 +126,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsIndexingEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support a Pre-HTML and Post-HTML option.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [attributes support pre post HTML]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AttributesSupportPrePostHtml { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this entity supports indexing.
@@ -266,6 +275,12 @@ namespace Rock.Model
         /// </value>
         public string LinkUrlLavaTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether attributes of this entity type support displaying on bulk entry forms.
+        /// </summary>
+        [DataMember]
+        public bool AttributesSupportShowOnBulk { get; set; }
+
         #endregion
 
         #region virtual Properties
@@ -364,7 +379,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             EntityTypeCache.UpdateCachedEntity( this.Id, entityState );
         }

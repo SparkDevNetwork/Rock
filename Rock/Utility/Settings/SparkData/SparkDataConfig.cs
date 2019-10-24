@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Newtonsoft.Json;
+
 using Rock.Extension;
 
 namespace Rock.Utility.Settings.SparkData
@@ -38,7 +39,8 @@ namespace Rock.Utility.Settings.SparkData
         /// The spark server
         /// </summary>
         [JsonIgnore]
-        public static readonly string SPARK_SERVER = "http://www.rockrms.com"; //"http://localhost:57822";
+        public static readonly string SPARK_SERVER = "http://www.rockrms.com";
+        //public static readonly string SPARK_SERVER = "http://localhost:57822";
 
         /// <summary>
         /// The minimum addresses required to run NCOA

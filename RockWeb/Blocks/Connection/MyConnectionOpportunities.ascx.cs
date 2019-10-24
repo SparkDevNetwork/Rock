@@ -131,6 +131,7 @@ namespace RockWeb.Blocks.Connection
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
 
             gRequests.DataKeyNames = new string[] { "Id" };
+            gRequests.EntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
             gRequests.Actions.AddClick += gRequests_Add;
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
@@ -171,9 +172,6 @@ namespace RockWeb.Blocks.Connection
                 tglMyOpportunities.Checked = GetUserPreference( TOGGLE_SETTING ).AsBoolean( true );
                 tglShowActive.Checked = GetUserPreference( TOGGLE_ACTIVE_SETTING ).AsBoolean( true );
                 SelectedOpportunityId = GetUserPreference( SELECTED_OPPORTUNITY_SETTING ).AsIntegerOrNull();
-
-                // Reset the state filter on every initial request to be Active and Past Due future follow up
-                rFilter.SaveUserPreference( "State", "State", "0;-2" );
 
                 // NOTE: Don't include Inactive Campuses for the "Campus Filter for Page"
                 cpCampusFilterForPage.Campuses = CampusCache.All( false );
@@ -307,7 +305,6 @@ namespace RockWeb.Blocks.Connection
             {
                 var connectionOpportunity = new ConnectionOpportunityService( rockContext ).Queryable().AsNoTracking().FirstOrDefault( a => a.Id == opportunitySummary.Id );
                 mergeFields.Add( "ConnectionOpportunity", connectionOpportunity );
-                mergeFields.Add( "ConnectionRequests", connectionOpportunity.ConnectionRequests );
 
                 result = template.ResolveMergeFields( mergeFields );
             }
@@ -423,6 +420,10 @@ namespace RockWeb.Blocks.Connection
                 else if ( e.Key == MakeKeyUniqueToOpportunity( "LastActivity" ) )
                 {
                     e.Value = ResolveValues( e.Value, cblLastActivity );
+                }
+                else if ( e.Key == "LastActivityDateRange" )
+                {
+                    e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
                 }
                 else
                 {
@@ -1044,6 +1045,7 @@ namespace RockWeb.Blocks.Connection
                         GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
                         Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
+                        LastActivityDateTime = r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.CreatedDateTime ).FirstOrDefault(),
                         LastActivityNote = lastActivityNoteBoundField != null && lastActivityNoteBoundField.Visible ? r.ConnectionRequestActivities.OrderByDescending(
                             a => a.CreatedDateTime ).Select( a => a.Note ).FirstOrDefault() : "",
                         Status = r.ConnectionStatus.Name,
@@ -1057,13 +1059,17 @@ namespace RockWeb.Blocks.Connection
                     {
                         if ( sortProperty.Direction == SortDirection.Descending )
                         {
-                            connectionRequests = connectionRequests.OrderByDescending( a => a.LastActivity ).ToList();
+                            connectionRequests = connectionRequests.OrderByDescending( a => a.LastActivityDateTime ).ToList();
                         }
                         else
                         {
-                            connectionRequests = connectionRequests.OrderBy( a => a.LastActivity ).ToList();
+                            connectionRequests = connectionRequests.OrderBy( a => a.LastActivityDateTime ).ToList();
                         }
                     }
+
+                    // Hide the campus column if the campus filter is not visible.
+                    gRequests.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus" ).Visible = cpCampusFilterForPage.Visible;
+
                     gRequests.DataSource = connectionRequests;
                     gRequests.DataBind();
 

@@ -17,8 +17,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Description;
+
 using Rock.Attribute;
-using Rock.Data;
 
 using Swashbuckle.Swagger;
 
@@ -79,6 +79,7 @@ namespace Rock.Rest.Swagger
                     {
                         // Add loadAttributes helper
                         operation.parameters.Parameter( "loadAttributes", "query", "Specify 'simple' or 'expanded' to load attributes", "string", false, null, new string[] { "simple", "expanded" } );
+                        operation.parameters.Parameter( "attributeKeys", "query", "Specify a comma-delimited list of attribute keys to limit to specific attributes, ", "string", false );
                     }
                 }
             }

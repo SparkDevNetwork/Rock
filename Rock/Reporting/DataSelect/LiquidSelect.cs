@@ -170,7 +170,8 @@ namespace Rock.Reporting.DataSelect
         {
             CodeEditor codeEditor = new CodeEditor();
             codeEditor.HelpBlock.Text = @"
-Use Lava syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;~/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code><br />  
+Use Lava syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;~/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code>
+For some fields, use the dot notation to get the property you want. <code>{{ Phone.Number }}</code> or <code> {{ Phone.IsMessagingEnabled }}</code><br /> 
 Note: The fieldname will be the Column Label without spaces or special characters.";
 
             codeEditor.EditorMode = CodeEditorMode.Lava;

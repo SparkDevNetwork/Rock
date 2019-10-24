@@ -20,18 +20,39 @@
     <Rock:NotificationBox ID="nbMain" runat="server" Visible="false"></Rock:NotificationBox>
     <Rock:NotificationBox ID="nbWaitingList" runat="server" Visible="false" NotificationBoxType="Warning" />
 
-    <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
-        
+    <asp:Panel ID="pnlStart" runat="server" Visible="false" CssClass="registrationentry-intro">
         <asp:Literal ID="lInstructions" runat="server" />
-        <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
-        <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
 
+        <asp:Panel ID="pnlHowMany" runat="server" Visible="false" CssClass="registrationentry-intro">
+            <h1>How many <asp:Literal ID="lRegistrantTerm" runat="server" /> will you be registering?</h1>
+            <Rock:NumberUpDown ID="numHowMany"  runat="server" CssClass="input-lg" OnNumberUpdated="numHowMany_NumberUpdated"  />
+        </asp:Panel>
+
+            <div class="actions">
+                <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
+            </div>
+    </asp:Panel>
+    <%-- Prompt for any Registration Attributes that should be prompted for before entering registrations--%>
+    <asp:Panel ID="pnlRegistrationAttributesStart" runat="server" Visible="false" CssClass="registrationentry-registration-attributes">
+
+        <h1><asp:Literal ID="lRegistrationAttributesStartTitle" runat="server" /></h1>
+
+        <asp:Panel ID="pnlRegistrationAttributesStartProgressBar" runat="server">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
+                    <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <Rock:AttributeValuesContainer ID="avcRegistrationAttributesStart" runat="server" />
         <div class="actions">
-            <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
+            <asp:LinkButton ID="btnRegistrationAttributesStartPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnRegistrationAttributesStartPrev_Click" />
+            <Rock:BootstrapButton ID="btnRegistrationAttributesStartNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="btnRegistrationAttributesStartNext_Click" />
         </div>
-
     </asp:Panel>
 
+    <%-- Prompt for information on each Registration --%>
     <asp:Panel ID="pnlRegistrant" runat="server" Visible="false" CssClass="registrationentry-registrant">
 
         
@@ -57,7 +78,7 @@
         
             <asp:Panel ID="pnlFamilyMembers" runat="server" Visible="false" CssClass="row" >
                 <div class="col-md-6">
-                    <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
+                    <Rock:RockDropDownList ID="ddlFamilyMembers" runat="server" Label="Family Member to Register" AutoPostBack="true" OnSelectedIndexChanged="ddlFamilyMembers_SelectedIndexChanged" />
                 </div>
             </asp:Panel>
 
@@ -89,6 +110,27 @@
 
     </asp:Panel>
 
+    <%-- Prompt for any Registration Attributes that should be prompted for after entering registrations--%>
+    <asp:Panel ID="pnlRegistrationAttributesEnd" runat="server" Visible="false" CssClass="registrationentry-registration-attributes">
+
+        <h1><asp:Literal ID="lRegistrationAttributesEndTitle" runat="server" /></h1>
+
+        <asp:Panel ID="pnlRegistrationAttributesEndProgressBar" runat="server">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="<%=this.PercentComplete%>" aria-valuemin="0" aria-valuemax="100" style="width: <%=this.PercentComplete%>%;">
+                    <span class="sr-only"><%=this.PercentComplete%>% Complete</span>
+                </div>
+            </div>
+        </asp:Panel>
+
+        <Rock:AttributeValuesContainer ID="avcRegistrationAttributesEnd" runat="server" />
+        <div class="actions">
+            <asp:LinkButton ID="btnRegistrationAttributesEndPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnRegistrationAttributesEndPrev_Click" />
+            <Rock:BootstrapButton ID="btnRegistrationAttributesEndNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="btnRegistrationAttributesEndNext_Click" />
+        </div>
+    </asp:Panel>
+
+    <%-- Summary and Payment --%>
     <asp:Panel ID="pnlSummaryAndPayment" runat="server" Visible="false" CssClass="registrationentry-summary">
         
         <h1><asp:Literal ID="lSummaryAndPaymentTitle" runat="server" /></h1>
@@ -101,9 +143,9 @@
             </div>
         </asp:Panel>
         
-        <asp:Panel ID="pnlRegistrarInfo" runat="server" CssClass="well">
+        <asp:Panel ID="pnlRegistrarInfoPrompt" runat="server" CssClass="well">
             
-            <h4>This <asp:Literal id="lRegistrationTerm" runat="server" /> Was Completed By</h4>
+            <h4>This <asp:Literal id="lRegistrationTermPrompt" runat="server" /> Was Completed By</h4>
             <div class="row">
                 <div class="col-md-6">
                     <Rock:RockTextBox ID="tbYourFirstName" runat="server" Label="First Name" CssClass="js-your-first-name" Required="true" />
@@ -125,6 +167,26 @@
                 </div>
             </div>
 
+        </asp:Panel>
+
+        <asp:Panel ID="pnlRegistrarInfoUseLoggedInPerson" runat="server" CssClass="well" Visible="false">
+            <h4>This <asp:Literal id="lRegistrationTermLoggedInPerson" runat="server" /> Was Completed By</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:RockLiteral ID="lUseLoggedInPersonFirstName" runat="server" Label="First Name"/>
+                </div>
+                <div class="col-md-6">
+                    <Rock:RockLiteral ID="lUseLoggedInPersonLastName" runat="server" Label="Last Name" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <Rock:RockLiteral ID="lUseLoggedInPersonEmail" runat="server" Label="Email" />
+                    <Rock:EmailBox ID="tbUseLoggedInPersonEmail" runat="server" Label="Email" Required="true" />
+                </div>
+                <div class="col-md-6">
+                </div>
+            </div>
         </asp:Panel>
         
         <asp:Panel ID="pnlRegistrantsReview" CssClass="margin-b-md" runat="server" Visible="false">
@@ -158,7 +220,7 @@
                 <div id="divDiscountCode" runat="server" class="form-group pull-right">
                     <label class="control-label"><asp:Literal ID="lDiscountCodeLabel" runat="server" /></label>
                     <div class="input-group">
-                        <asp:TextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></asp:TextBox>
+                        <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="form-control input-width-md input-sm"></Rock:RockTextBox>
                         <asp:LinkButton ID="lbDiscountApply" runat="server" CssClass="btn btn-default btn-sm margin-l-sm" Text="Apply" OnClick="lbDiscountApply_Click" CausesValidation="false"></asp:LinkButton>
                     </div>
                 </div>

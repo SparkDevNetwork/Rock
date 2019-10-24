@@ -16,13 +16,11 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Net.Mail;
 using System.Linq;
 
 using Rock.Extension;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -142,6 +140,30 @@ namespace Rock.Communication
                 value = value.Replace( @" src='/", @" src='" + appRoot );
                 value = value.Replace( @" href=""/", @" href=""" + appRoot );
                 value = value.Replace( @" href='/", @" href='" + appRoot );
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Resolves the text and adds it to the CommunicationRecipient.SentMessage object.
+        /// Don't forget to call RockContext.SaveChanges() to persist to the DB.
+        /// </summary>
+        /// <param name="content">The content.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="enabledLavaCommands">The enabled lava commands.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <param name="communicationRecipient">The communication recipient.</param>
+        /// <param name="appRoot">The application root.</param>
+        /// <param name="themeRoot">The theme root.</param>
+        /// <returns></returns>
+        public virtual string ResolveText( string content, Person person, CommunicationRecipient communicationRecipient, string enabledLavaCommands, Dictionary<string, object> mergeFields, string appRoot = "", string themeRoot = "" )
+        {
+            string value = ResolveText( content, person, enabledLavaCommands, mergeFields, appRoot, themeRoot );
+
+            if ( communicationRecipient != null )
+            {
+                communicationRecipient.SentMessage = value;
             }
 
             return value;

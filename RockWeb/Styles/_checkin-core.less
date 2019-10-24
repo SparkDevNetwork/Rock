@@ -1,6 +1,7 @@
 @import "_rock-variables";
 
 @import "rock-components/picker-date.less";
+
 /*
   Used to style the check-in screens
 
@@ -28,7 +29,16 @@
 
 @fa-theme-weight: 900;
 @fa-theme-weight-name: 'solid';
-.fa-font-face( @fa-theme-weight-name );
+.fa-font-face(@fa-theme-weight-name);
+
+@btn-change-color: @btn-primary-color;
+@btn-change-bg: lighten(@btn-primary-bg, 13%);
+@btn-change-border: @btn-primary-border;
+
+select.form-control {
+  // Fix for iOS not trimming border-radius
+  border-radius: 4px;
+}
 
 h1,
 h2,
@@ -55,7 +65,60 @@ h1 {
   font-size: 24px;
   font-weight: @font-weight-semibold;
   white-space: normal;
+
+  .row {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -ms-flex-align: center;
+    align-items: center;
+    margin-right: 0;
+    margin-left: 0;
+  }
 }
+
+.btn-checkin-change {
+  .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
+}
+
+.btn-checkin-change {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: center;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-left: 0;
+}
+
+.row-checkin-item {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+
+  .btn-checkin-select {
+    margin-bottom: 0;
+  }
+}
+
+.checkin-change {
+  .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+.checkin-person-has-change {
+  .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
 
 // unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
 .table-responsive {
@@ -102,7 +165,7 @@ a.help {
 }
 
 .btn-dimmed {
-  opacity: .33;  // todo does this look good JME
+  opacity: .33; // todo does this look good JME
 }
 
 // set page background
@@ -162,7 +225,7 @@ body {
   .checkin-actions {
     text-align: right;
 
-    .btn {
+    .btn-primary {
       font-size: 36px;
     }
   }
@@ -209,9 +272,9 @@ body {
   }
 
   .btn-primary {
-      padding: 14px 26px;
-      font-size: 28px;
-    }
+    padding: 14px 26px;
+    font-size: 28px;
+  }
 }
 
 // time select checkbox
@@ -245,8 +308,13 @@ body {
 .tenkey {
   width: 265px;
 
-  a {
-    &:focus, &:active {
+  .btn {
+    width: 80px;
+    height: 80px;
+    margin: 2px;
+
+    &:focus,
+    &:active {
       background-color: @btn-default-bg;
     }
 
@@ -260,12 +328,6 @@ body {
       font-size: 20px;
       font-weight: @font-weight-light;
     }
-
-    &.btn {
-      width: 80px;
-      height: 80px;
-      margin: 2px;
-    }
   }
 }
 
@@ -274,8 +336,8 @@ body {
   z-index: @zindex-popover;
 
   .modal-content {
-    background-color: @modal-body-bg;
     color: @modal-body-text-color;
+    background-color: @modal-body-bg;
   }
 
   .modal-footer {
@@ -301,8 +363,9 @@ body {
   background-size: cover;
 
   &.photo-round-md {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
+    margin-left: 10px;
     border-radius: 50%;
   }
 }
@@ -319,6 +382,10 @@ img[src*="no-photo"] {
 .checkin-search-body {
   width: 360px;
   margin: 0 auto;
+
+  &.search-phone {
+    width: 260px;
+  }
 }
 
 .search-phone-form-group {
@@ -365,9 +432,10 @@ input.namesearch {
 }
 
 // checkin summary page
+.checkin-messages,
 .checkin-summary {
-  list-style-type: none;
   padding: 0;
+  list-style-type: none;
 
   li {
     margin-bottom: 18px;
@@ -407,7 +475,16 @@ input.namesearch {
 // family select - select person
 
 .family-personselect {
-  padding-top: 20px;
+  font-size: 26px;
+}
+
+.family-auto-select {
+  font-size: 16px;
+  text-align: left;
+}
+
+.auto-select-caption {
+  opacity: .75;
 }
 
 // Family Registration
@@ -415,8 +492,6 @@ input.namesearch {
 .btn-action {
   .button-variant(@btn-action-color; @btn-action-bg; @btn-action-border);
 }
-
-
 
 .value-list-rows .controls-row {
   margin-bottom: 6px;
@@ -438,7 +513,7 @@ input.namesearch {
 
 .toggle-container {
   margin-top: @line-height-computed + 6px;
-  margin-bottom:  @form-group-margin-bottom;
+  margin-bottom: @form-group-margin-bottom;
 
   &.form-group {
     margin-top: 0;
@@ -447,29 +522,29 @@ input.namesearch {
   .btn-group {
     display: -ms-flexbox;
     display: flex;
-    border-radius: 50px;
     height: @input-height-base;
+    border-radius: 50px;
 
     > .btn {
       width: 100%;
-      border-radius: 50px;
       margin-bottom: 0;
+      border-radius: 50px;
 
       &:active {
         -webkit-box-shadow: none;
         box-shadow: none;
 
         &:focus {
+          color: #fff;
           background-color: fade(#76c24e, 75%);
-          color: #ffffff;
         }
       }
     }
 
     > .btn-default {
       color: #a09fa0;
+      background-color: #fff;
       border-color: #dad8d6;
-      background-color: #ffffff;
     }
 
     > .active,
@@ -492,7 +567,6 @@ input.namesearch {
   border-bottom: 1px solid @table-border-color;
 }
 
-
 // highlight required fields
 .form-group.required {
   .control-label::after {
@@ -507,13 +581,14 @@ input.namesearch {
 }
 
 //
+
 // 6. Scroll Container
 // --------------------------------------
 
 .checkin-scroll-panel {
   position: absolute;
   top: 45px;
-  bottom: 48px;
+  bottom: 24px;
   z-index: 1;
   width: 100%;
   overflow: hidden;
@@ -536,7 +611,7 @@ input.namesearch {
   -o-transform: translateZ(0);
   transform: translateZ(0);
 
-  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   -webkit-touch-callout: none;
   -moz-text-size-adjust: none;
   -o-text-size-adjust: none;
@@ -571,6 +646,7 @@ input.namesearch {
 }
 
 //
+
 // 7. Kiosk Manager
 // --------------------------------------
 
@@ -641,7 +717,6 @@ input.namesearch {
   }
 
   .kioskmanager-count-locations > li {
-    float: left;
     margin-right: 12px;
   }
 

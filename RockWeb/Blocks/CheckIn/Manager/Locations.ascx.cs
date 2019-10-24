@@ -1082,6 +1082,12 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             foreach ( var parentGroupType in groupType.ParentGroupTypes )
             {
+                // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
+                if ( groupType.Id == parentGroupType.Id )
+                {
+                    continue;
+                }
+
                 var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid );
                 if ( testGroupType != null )
                 {

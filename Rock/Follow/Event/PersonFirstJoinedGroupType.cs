@@ -21,10 +21,9 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock;
-using Rock.Data;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Follow.Event
 {

@@ -93,10 +93,9 @@ namespace RockWeb.Blocks.Core
             {
                 var groupId = groupIdString.AsInteger();
 
-                if ( currentGroup == null || currentGroup.Id != groupId )
-                {
-                    currentGroup = SetGroupContext( groupId, false );
-                }
+                // if there is a query parameter, ensure that the Group Context cookie is set (and has an updated expiration)
+                // note, the Group Context might already match due to the query parameter, but has a different cookie context, so we still need to ensure the cookie context is updated
+                currentGroup = SetGroupContext( groupId, false );
             }
 
             var parts = ( GetAttributeValue( "GroupFilter" ) ?? string.Empty ).Split( '|' );
@@ -123,7 +122,7 @@ namespace RockWeb.Blocks.Core
                 var rootGroup = groupService.Get( rootGroupGuid.Value );
                 if ( rootGroup != null )
                 {
-                    qryGroups = groupService.GetAllDescendents( rootGroup.Id ).AsQueryable();
+                    qryGroups = groupService.GetAllDescendentGroups( rootGroup.Id, false ).AsQueryable();
                 }
             }
             else if ( groupTypeGuid.HasValue )

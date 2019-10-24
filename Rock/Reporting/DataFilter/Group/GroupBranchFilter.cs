@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -249,7 +250,7 @@ function()
             }
 
             // Include descendants of the Parent Group.
-            foreach ( int childGroupId in groupService.GetAllDescendents( parentGroup.Id ).Select( x => x.Id ) )
+            foreach ( int childGroupId in groupService.GetAllDescendentGroupIds( parentGroup.Id, false ) )
             {
                 groupKeys.Add( childGroupId );
             }

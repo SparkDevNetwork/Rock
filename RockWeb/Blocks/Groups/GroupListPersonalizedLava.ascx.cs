@@ -79,14 +79,9 @@ namespace RockWeb.Blocks.Groups
 
             if ( this.GetAttributeValue( "DisplayInactiveGroups" ).AsBoolean() )
             {
-                var hideInactiveGroups = this.GetUserPreference( "HideInactiveGroups" ).AsBooleanOrNull();
-                if ( !hideInactiveGroups.HasValue )
-                {
-                    hideInactiveGroups = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
-                }
-
-                _hideInactive = hideInactiveGroups ?? true;
+                _hideInactive = this.GetAttributeValue( "InitialActiveSetting" ) == "1";
             }
+
         }
 
         /// <summary>
@@ -176,7 +171,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( var groupMember in qry.ToList() )
             {
-                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                if ( groupMember.Group.IsAuthorized( Authorization.VIEW, CurrentPerson ) && groupMember.GroupRole.CanView )
                 {
                     groups.Add( new GroupInvolvementSummary
                     {

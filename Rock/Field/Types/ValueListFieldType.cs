@@ -17,13 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using System.Web;
 
 namespace Rock.Field.Types
 {
@@ -175,7 +175,7 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var values = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray();
+            var values = value?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
             values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
 
             if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )

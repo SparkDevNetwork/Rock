@@ -17,9 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
+
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
@@ -114,21 +114,41 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets an <see cref="IQueryable{T}"/> list of all models ensuring that any EntityFramework.Plus Filter or service specific filter is not applied
+        /// with eager loading of the comma-delimited properties specified in includes
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<T> AsNoFilter( string includes )
+        {
+            return QueryableIncludes( _objectSet.AsNoFilter(), includes );
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
-        /// with eager loading of properties specified in includes
+        /// with eager loading of the comma-delimited properties specified in includes
         /// </summary>
         /// <returns></returns>
         public virtual IQueryable<T> Queryable( string includes )
         {
-            DbQuery<T> value = _objectSet;
+            return QueryableIncludes( _objectSet as IQueryable<T>, includes );
+        }
+
+        /// <summary>
+        /// Applies a comma-delimited list of includes to the Queryable
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="includes">The includes.</param>
+        /// <returns></returns>
+        private static IQueryable<T> QueryableIncludes( IQueryable<T> query, string includes )
+        {
             if ( !String.IsNullOrEmpty( includes ) )
             {
                 foreach ( var include in includes.SplitDelimitedValues() )
                 {
-                    value = value.Include( include );
+                    query = query.Include( include );
                 }
             }
-            return value;
+            return query;
         }
 
         #endregion
@@ -153,6 +173,30 @@ namespace Rock.Data
         public virtual T Get( Guid guid )
         {
             return AsNoFilter().FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the model with the Guid value, with any related objects to include in the query results (Eager-Loading)
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public virtual T GetInclude<TProperty>( Guid guid, Expression<Func<T, TProperty>> path )
+        {
+            return AsNoFilter().Include( path ).FirstOrDefault( t => t.Guid == guid );
+        }
+
+        /// <summary>
+        /// Gets the model with the id value, with any related objects to include in the query results (Eager-Loading)
+        /// </summary>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <param name="id">id</param>
+        /// <param name="path">The path.</param>
+        /// <returns></returns>
+        public virtual T GetInclude<TProperty>( int id, Expression<Func<T, TProperty>> path )
+        {
+            return AsNoFilter().Include( path ).FirstOrDefault( t => t.Id == id );
         }
 
         /// <summary>
@@ -213,6 +257,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets a list of items that match the specified expression with EF tracking disabled.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetNoTracking( ParameterExpression parameterExpression, Expression whereExpression )
+        {
+            return Get( parameterExpression, whereExpression, null, null ).AsNoTracking();
+        }
+
+        /// <summary>
         /// Gets a list of items that match the specified expression.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
@@ -222,6 +277,19 @@ namespace Rock.Data
         public IQueryable<T> Get( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
             return Get( parameterExpression, whereExpression, sortProperty, null );
+        }
+
+        /// <summary>
+        /// Gets the specified parameter expression with no tracking.
+        /// </summary>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="whereExpression">The where expression.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <param name="fetchTop">The fetch top.</param>
+        /// <returns></returns>
+        public IQueryable<T> GetNoTracking( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty, int? fetchTop = null )
+        {
+            return this.Queryable().AsNoTracking().Where( parameterExpression, whereExpression, sortProperty, fetchTop );
         }
 
         /// <summary>
@@ -538,21 +606,14 @@ namespace Rock.Data
         {
             var rockContext = this.Context as RockContext;
 
-            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
-            if ( entityType != null )
+            var entityTypeId = EntityTypeCache.Get( typeof( T ), false, rockContext )?.Id;
+            if ( !entityTypeId.HasValue )
             {
-                var ids = new Rock.Model.FollowingService( rockContext )
-                    .Queryable()
-                    .Where( f =>
-                        f.EntityTypeId == entityType.Id &&
-                        f.PersonAlias != null &&
-                        f.PersonAlias.PersonId == personId )
-                    .Select( f => f.PersonAlias.PersonId );
-
-                return Queryable().Where( t => ids.Contains( t.Id ) );
+                return null;
             }
 
-            return null;
+            var query = new Rock.Model.FollowingService( rockContext ).GetFollowedItems( entityTypeId.Value, personId ).Cast<T>();
+            return query;
         }
 
         #endregion

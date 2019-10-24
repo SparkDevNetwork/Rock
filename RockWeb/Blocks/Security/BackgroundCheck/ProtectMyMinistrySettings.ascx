@@ -108,7 +108,7 @@
                             <Rock:BoolField DataField="SendAddressCounty" HeaderText="Use Home Address for County Criminal" />
                             <Rock:RockBoundField DataField="DefaultState" HeaderText="Statewide Criminal Default State"/>
                             <Rock:BoolField DataField="SendAddressState" HeaderText="Use Home State for Statewide Criminal" />
-                            <Rock:DefinedValueField DataField="MVRJurisdication" HeaderText="MVR Jurisdication Code" />
+                            <Rock:DefinedValueField DataField="MVRJurisdiction" HeaderText="MVR Jurisdiction Code" />
                             <Rock:BoolField DataField="SendAddressStateMVR" HeaderText="Use Home State for MVR Search" />
                             <Rock:DeleteField OnClick="gDefinedValues_Delete" />
                         </Columns>
@@ -116,12 +116,12 @@
                 </div>
 
             </div>
-                                        
+
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="dlgPackage" runat="server" Title="Background Check Type" ValidationGroup="Package" 
+        <Rock:ModalDialog ID="dlgPackage" runat="server" Title="Background Check Type" ValidationGroup="Package"
             OnSaveClick="dlgPackage_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
 
@@ -170,10 +170,10 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:DefinedValuePicker ID="dvpMVRJurisdication" runat="server" Label="MVR Jurisdication Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
+                        <Rock:DefinedValuePicker ID="dvpMVRJurisdiction" runat="server" Label="MVR Jurisdiction Code" ValidationGroup="Package" Help="Select an MVR Jurisdiction code to request a Motor Vehicle Record search." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdication code." />
+                        <Rock:RockCheckBox ID="cbSendStateMVR" runat="server" Label="Use Home Address State" Text="Yes" ValidationGroup="Package" Help="If the person's home address includes a state, use that instead of state from jurisdiction code." />
                     </div>
                 </div>
 

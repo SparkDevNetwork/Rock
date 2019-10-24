@@ -35,7 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public bool AllowIndexing { get; set; }
+        public string AdditionalSettings { get; set; }
+
+        /// <summary />
+        public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
         public string BodyCssClass { get; set; }
@@ -44,7 +47,7 @@ namespace Rock.Client
         public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary />
-        public bool BreadCrumbDisplayName { get; set; }
+        public bool BreadCrumbDisplayName { get; set; } = true;
 
         /// <summary />
         public string BrowserTitle { get; set; }
@@ -56,7 +59,7 @@ namespace Rock.Client
         public Rock.Client.Enums.DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary />
-        public bool EnableViewState { get; set; }
+        public bool EnableViewState { get; set; } = true;
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -68,10 +71,13 @@ namespace Rock.Client
         public string HeaderContent { get; set; }
 
         /// <summary />
+        public int? IconBinaryFileId { get; set; }
+
+        /// <summary />
         public string IconCssClass { get; set; }
 
         /// <summary />
-        public bool IncludeAdminFooter { get; set; }
+        public bool IncludeAdminFooter { get; set; } = true;
 
         /// <summary />
         public string InternalName { get; set; }
@@ -86,7 +92,7 @@ namespace Rock.Client
         public int LayoutId { get; set; }
 
         /// <summary />
-        public bool MenuDisplayChildPages { get; set; }
+        public bool MenuDisplayChildPages { get; set; } = true;
 
         /// <summary />
         public bool MenuDisplayDescription { get; set; }
@@ -106,16 +112,16 @@ namespace Rock.Client
         public int OutputCacheDuration { get; set; }
 
         /// <summary />
-        public bool PageDisplayBreadCrumb { get; set; }
+        public bool PageDisplayBreadCrumb { get; set; } = true;
 
         /// <summary />
-        public bool PageDisplayDescription { get; set; }
+        public bool PageDisplayDescription { get; set; } = true;
 
         /// <summary />
-        public bool PageDisplayIcon { get; set; }
+        public bool PageDisplayIcon { get; set; } = true;
 
         /// <summary />
-        public bool PageDisplayTitle { get; set; }
+        public bool PageDisplayTitle { get; set; } = true;
 
         /// <summary />
         public string PageTitle { get; set; }
@@ -159,6 +165,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Page source )
         {
             this.Id = source.Id;
+            this.AdditionalSettings = source.AdditionalSettings;
             this.AllowIndexing = source.AllowIndexing;
             this.BodyCssClass = source.BodyCssClass;
             this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
@@ -170,6 +177,7 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.HeaderContent = source.HeaderContent;
+            this.IconBinaryFileId = source.IconBinaryFileId;
             this.IconCssClass = source.IconCssClass;
             this.IncludeAdminFooter = source.IncludeAdminFooter;
             this.InternalName = source.InternalName;

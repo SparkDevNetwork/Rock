@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -190,77 +191,105 @@ namespace Rock.Model
             if ( ( this.GroupRoleId != null ) && ( groupRoleId != null ) && ( this.GroupRoleId != groupRoleId ) )
             {
                 // if this GroupRequirement is for a specific role, the groupRole we are checking for is something different
-                var result = personQry.ToList().Select( a =>
-                    new PersonGroupRequirementStatus
-                    {
-                        PersonId = a.Id,
-                        GroupRequirement = this,
-                        MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
-                    } );
+                var result = personQry.Select( p => p.Id ).ToList().Select( a =>
+                     new PersonGroupRequirementStatus
+                     {
+                         PersonId = Id,
+                         GroupRequirement = this,
+                         MeetsGroupRequirement = MeetsGroupRequirement.NotApplicable
+                     } );
 
                 return result;
             }
 
             if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Dataview )
             {
+                var errorMessages = new List<string>();
+                var personService = new PersonService( rockContext );
+                var paramExpression = personService.ParameterExpression;
+                List<int> warningDataViewPersonIdList = null;
+                if ( this.GroupRequirementType.WarningDataViewId.HasValue )
+                {
+                    var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression, out errorMessages );
+                    warningDataViewPersonIdList = personService.Get( paramExpression, warningDataViewWhereExpression ).Where( a => personQry.Any( p => p.Id == a.Id ) ).Select( a => a.Id ).ToList();
+                }
+
                 if ( this.GroupRequirementType.DataViewId.HasValue )
                 {
-                    var errorMessages = new List<string>();
-                    var personService = new PersonService( rockContext );
-                    var paramExpression = personService.ParameterExpression;
                     var dataViewWhereExpression = this.GroupRequirementType.DataView.GetExpression( personService, paramExpression, out errorMessages );
                     var dataViewQry = personService.Get( paramExpression, dataViewWhereExpression );
-
-                    IQueryable<Person> warningDataViewQry = null;
-                    if ( this.GroupRequirementType.WarningDataViewId.HasValue )
-                    {
-                        var warningDataViewWhereExpression = this.GroupRequirementType.WarningDataView.GetExpression( personService, paramExpression, out errorMessages );
-                        warningDataViewQry = personService.Get( paramExpression, warningDataViewWhereExpression );
-                    }
-
                     if ( dataViewQry != null )
                     {
-                        var personWithRequirements = from p in personQry
-                                                     join d in dataViewQry on p equals d into oj
-                                                     from d in oj.DefaultIfEmpty()
-                                                     select new { PersonId = p.Id, Included = d != null, WarningIncluded = false };
+                        var personWithRequirementsQuery = from p in personQry
+                                                          join d in dataViewQry on p.Id equals d.Id into oj
+                                                          from d in oj.DefaultIfEmpty()
+                                                          select new { PersonId = p.Id, Included = d != null };
 
-                        // if a Warning Database was specified, set the WarningIncluded flag to true if they are included in the Warning Dataview
-                        if ( warningDataViewQry != null )
+                        var personWithRequirementsList = personWithRequirementsQuery.Select( p => new { PersonId = p.PersonId, Included = p.Included } ).ToList();
+
+                        var result = personWithRequirementsList.Select( a =>
                         {
-                            personWithRequirements = personWithRequirements.Select( a => new
-                            {
-                                a.PersonId,
-                                a.Included,
-                                WarningIncluded = warningDataViewQry.Any( w => w.Id == a.PersonId )
-                            } );
-                        }
-
-                        var result = personWithRequirements.ToList().Select( a =>
-                            new PersonGroupRequirementStatus
+                            var personGroupRequirementStatus = new PersonGroupRequirementStatus
                             {
                                 PersonId = a.PersonId,
-                                GroupRequirement = this,
-                                MeetsGroupRequirement = a.Included
-                                    ? ( a.WarningIncluded ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets )
-                                    : MeetsGroupRequirement.NotMet
-                            } );
+                                GroupRequirement = this
+                            };
+
+                            var hasWarning = warningDataViewPersonIdList?.Contains( a.PersonId ) == true;
+
+                            if ( a.Included )
+                            {
+                                if ( hasWarning )
+                                {
+                                    personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
+                                }
+                                else
+                                {
+                                    personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
+                                }
+                            }
+                            else
+                            {
+                                personGroupRequirementStatus.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
+                            }
+
+                            return personGroupRequirementStatus;
+                        }
+                        );
 
                         return result;
                     }
                 }
                 else
                 {
-                    throw new Exception( "No dataview assigned to Group Requirement Type: " + this.GroupRequirementType.Name );
+                    var personWithIdRequirements = personQry.Select( p => p.Id );
+
+                    var result = personWithIdRequirements.ToList().Select( a =>
+                            new PersonGroupRequirementStatus
+                            {
+                                PersonId = a,
+                                GroupRequirement = this,
+                                MeetsGroupRequirement = warningDataViewPersonIdList.Contains( a ) == true ? MeetsGroupRequirement.MeetsWithWarning : MeetsGroupRequirement.Meets
+                            } );
+
+                    return result;
+
                 }
             }
             else if ( this.GroupRequirementType.RequirementCheckType == RequirementCheckType.Sql )
             {
                 // if requirement set on GroupType, this.Group is null
                 var targetGroup = this.Group ?? new GroupService( rockContext ).Get( groupId );
+                var personQryIdList = personQry.Select( a => a.Id ).ToList();
+                Person personMergeField = null;
+                if ( personQryIdList.Count == 1 )
+                {
+                    var personId = personQryIdList[0];
+                    personMergeField = new PersonService( rockContext ).GetNoTracking( personId );
+                }
 
-                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
-                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup ) );
+                string formattedSql = this.GroupRequirementType.SqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
+                string warningFormattedSql = this.GroupRequirementType.WarningSqlExpression.ResolveMergeFields( this.GroupRequirementType.GetMergeObjects( targetGroup, personMergeField ) );
                 try
                 {
                     var tableResult = DbService.GetDataTable( formattedSql, System.Data.CommandType.Text, null );
@@ -279,7 +308,7 @@ namespace Rock.Model
                             }
                         }
 
-                        var result = personQry.Select( a => a.Id ).ToList().Select( a => new PersonGroupRequirementStatus
+                        var result = personQryIdList.Select( a => new PersonGroupRequirementStatus
                         {
                             PersonId = a,
                             GroupRequirement = this,
@@ -303,7 +332,8 @@ namespace Rock.Model
                     {
                         PersonId = a,
                         GroupRequirement = this,
-                        MeetsGroupRequirement = MeetsGroupRequirement.Error
+                        MeetsGroupRequirement = MeetsGroupRequirement.Error,
+                        CalculationException = ex
                     } );
 
                     return result;
@@ -413,18 +443,30 @@ namespace Rock.Model
             var currentDateTime = RockDateTime.Now;
             GroupMemberRequirementService groupMemberRequirementService = new GroupMemberRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
-            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupId
-                && (
-                    ( groupRequirement.GroupId.HasValue && groupRequirement.GroupId == a.GroupId )
-                    ||
-                    ( groupRequirement.GroupTypeId.HasValue && groupRequirement.GroupTypeId == a.Group.GroupTypeId )
-                   ) );
+            var groupMemberQry = groupMemberService.Queryable( true ).Where( a => a.PersonId == personId && a.GroupId == groupId );
+
+            if ( groupRequirement.GroupId.HasValue )
+            {
+                groupMemberQry = groupMemberQry.Where( g => g.GroupId == groupRequirement.GroupId );
+            }
+            else if ( groupRequirement.GroupTypeId.HasValue )
+            {
+                groupMemberQry = groupMemberQry.Where( g => g.Group.GroupTypeId == groupRequirement.GroupTypeId );
+            }
+            else
+            {
+                // shouldn't happen, but grouprequirement doesn't have a groupId or a GroupTypeId
+                return;
+            }
+
+
 
             if ( this.GroupRoleId != null )
             {
                 groupMemberQry = groupMemberQry.Where( a => a.GroupRoleId == this.GroupRoleId );
             }
 
+            // just in case the same person is in the same group multiple times, get a list of the groupMember records for this person
             foreach ( var groupMemberId in groupMemberQry.Select( a => a.Id ) )
             {
                 var groupMemberRequirement = groupMemberRequirementService.Queryable().Where( a => a.GroupMemberId == groupMemberId && a.GroupRequirementId == groupRequirement.Id ).FirstOrDefault();
@@ -498,7 +540,7 @@ namespace Rock.Model
         NotApplicable,
 
         /// <summary>
-        /// The Requirement calculation resulted in an exception
+        /// The Requirement calculation resulted in an exception <see cref="GroupRequirementStatus.CalculationException"/>
         /// </summary>
         Error
     }
@@ -557,6 +599,14 @@ namespace Rock.Model
         /// The last requirement check date time.
         /// </value>
         public DateTime? LastRequirementCheckDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the calculation exception.
+        /// </summary>
+        /// <value>
+        /// The calculation exception.
+        /// </value>
+        public Exception CalculationException { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Renders calendar items using Lava." )]
 
-    [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1", order: 0 )]
+    [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "8A444668-19AF-4417-9C74-09F842572974", order: 0 )]
     [CampusesField( "Campuses", "List of which campuses to show occurrences for. This setting will be ignored if 'Use Campus Context' is enabled.", required: false, order: 1, includeInactive:true )]
     [BooleanField( "Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 2 )]
     [LinkedPage( "Details Page", "Detail page for events", order: 3 )]

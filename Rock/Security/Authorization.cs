@@ -18,14 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Web;
 using System.Web.Security;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
-using System.Runtime.Serialization;
 
 namespace Rock.Security
 {
@@ -34,6 +35,27 @@ namespace Rock.Security
     /// </summary>
     public static class Authorization
     {
+
+        /// <summary>
+        /// Available settings for SameSiteCookie
+        /// </summary>
+        public enum SameSiteCookieSetting
+        {
+            /// <summary>
+            /// Do not specify a setting
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// Lax
+            /// </summary>
+            Lax,
+
+            /// <summary>
+            /// Strict
+            /// </summary>
+            Strict
+        }
 
         #region Constants
 
@@ -53,7 +75,7 @@ namespace Rock.Security
         public const string EDIT = "Edit";
 
         /// <summary>
-        /// Authorization to delete object (only used in few places where delete needs to be securred differently that EDIT, i.e. Financial Batch )
+        /// Authorization to delete object (only used in few places where delete needs to be secured differently that EDIT, i.e. Financial Batch )
         /// </summary>
         public const string DELETE = "Delete";
 
@@ -81,6 +103,16 @@ namespace Rock.Security
         /// Authorization to manage the group members
         /// </summary>
         public const string MANAGE_MEMBERS = "ManageMembers";
+
+        /// <summary>
+        /// Authorization to perform scheduling
+        /// </summary>
+        public const string SCHEDULE = "Schedule";
+
+        /// <summary>
+        /// Authorization action for using (tagging with) the Tag.
+        /// </summary>
+        public const string TAG = "Tag";
 
         #endregion
 
@@ -762,13 +794,18 @@ namespace Rock.Security
         /// <returns></returns>
         private static HttpCookie GetAuthCookie( string domain, string value )
         {
+            // Get the SameSite setting from the Global Attributes. If not set then default to Lax. Official IETF values are "Lax" and "Strict" so if None was selected don't put the setting in the cookie.
+            SameSiteCookieSetting sameSiteCookieSetting = GlobalAttributesCache.Get().GetValue( "core_SameSiteCookieSetting" ).ConvertToEnumOrNull<SameSiteCookieSetting>() ?? SameSiteCookieSetting.Lax;
+            string sameSiteCookieValue = sameSiteCookieSetting == SameSiteCookieSetting.None ? string.Empty : ";SameSite=" + sameSiteCookieSetting;
+
             var httpCookie = new HttpCookie( FormsAuthentication.FormsCookieName, value )
             {
                 Domain = domain.IsNotNullOrWhiteSpace() ? domain : FormsAuthentication.CookieDomain,
                 HttpOnly = true,
-                Path = FormsAuthentication.FormsCookiePath,
+                Path = FormsAuthentication.FormsCookiePath + sameSiteCookieValue,
                 Secure = FormsAuthentication.RequireSSL
             };
+
             return httpCookie;
         }
 
@@ -784,7 +821,8 @@ namespace Rock.Security
             var domains = dt?.DefinedValues.Select( v => v.Value ).ToList() ?? new List<string>();
 
             // Get the first domain in the list that the current request's host name ends with
-            var domain = domains.FirstOrDefault( d => HttpContext.Current.Request.Url.Host.ToLower().EndsWith( d.ToLower() ) );
+            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+            var domain = domains.FirstOrDefault( d => host.ToLower().EndsWith( d.ToLower() ) );
             if ( !domain.IsNotNullOrWhiteSpace() ) return null;
 
             // Make sure domain name is prefixed with a '.'

@@ -412,7 +412,7 @@ namespace RockWeb.Blocks.Core
             category.Description = tbDescription.Text;
             category.ParentCategoryId = catpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
-            category.HighlightColor = tbHighlightColor.Text;
+            category.HighlightColor = cpHighlight.Value;
 
             category.LoadAttributes( rockContext );
             Rock.Attribute.Helper.GetEditValues( phAttributes, category );
@@ -637,13 +637,19 @@ namespace RockWeb.Blocks.Core
                     ParentCategoryId = _parentCategoryId,
                 };
             }
+            else
+            {
+                entityTypePicker.SelectedEntityTypeId = category.EntityTypeId;
+                tbEntityQualifierField.Text = category.EntityTypeQualifierColumn;
+                tbEntityQualifierValue.Text = category.EntityTypeQualifierValue;
+            }
 
 
             tbName.Text = category.Name;
             tbDescription.Text = category.Description;
             catpParentCategory.SetValue( category.ParentCategoryId );
             tbIconCssClass.Text = category.IconCssClass;
-            tbHighlightColor.Text = category.HighlightColor;
+            cpHighlight.Value = category.HighlightColor;
 
             category.LoadAttributes();
             phAttributes.Controls.Clear();

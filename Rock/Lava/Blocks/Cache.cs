@@ -236,7 +236,7 @@ namespace Rock.Lava.Blocks
         }
 
         /// <summary>
-        /// Cace
+        /// Cache Tag POCO
         /// </summary>
 		[Serializable]
         [DataContract]
@@ -277,6 +277,15 @@ namespace Rock.Lava.Blocks
             if ( context.Environments?.Count > 0 )
             {
                 foreach ( var item in context.Environments[0] )
+                {
+                    lavaMergeFields.Add( item.Key, item.Value );
+                }
+            }
+
+            // Add variables in the scope (defined in the lava itself via assign)
+            if ( context.Scopes?.Count > 0 )
+            {
+                foreach ( var item in context.Scopes[0] )
                 {
                     lavaMergeFields.Add( item.Key, item.Value );
                 }

@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 namespace Rock.SystemKey
 {
     /// <summary>
@@ -96,6 +97,16 @@ namespace Rock.SystemKey
         /// The grouptype attribute key for checkin registration Default Person Connection Status (DefinedValue.Guid)
         /// </summary>
         public const string CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS = "core_checkin_registration_DefaultPersonConnectionStatus";
+
+        /// <summary>
+        /// Set the phone number as SMS enabled by default
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DEFAULTSMSENABLED = "core_checkin_registration_DefaultSmsEnabled";
+
+        /// <summary>
+        /// Show or hide the control to set SMS Enabled
+        /// </summary>
+        public const string CHECKIN_REGISTRATION_DISPLAYSMSBUTTON = "core_checkin_registration_DisplaySmsButton";
 
         #endregion Registration Specific
 

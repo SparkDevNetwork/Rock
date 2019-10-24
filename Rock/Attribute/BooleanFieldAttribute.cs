@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+using Rock.Field.Types;
 
 namespace Rock.Attribute
 {
@@ -54,10 +52,86 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public BooleanFieldAttribute( string name, string trueText, string falseText, string description = "", bool defaultValue = false, string category = "", int order = 0, string key = null )
-            : base( name, description, false, defaultValue.ToTrueFalse(), category, order, key, typeof( Rock.Field.Types.BooleanFieldType ).FullName )
+            : base( name, description, false, defaultValue.ToTrueFalse(), category, order, key, typeof( BooleanFieldType ).FullName )
         {
-            FieldConfigurationValues.Add( "truetext", new Field.ConfigurationValue( trueText ) );
-            FieldConfigurationValues.Add( "falsetext", new Field.ConfigurationValue( falseText ) );
+            TrueText = trueText;
+            FalseText = falseText;
+        }
+
+        /// <summary>
+        /// Gets or sets the default value of the attribute.  This is the value that will be used if a specific value has not yet been created
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public bool DefaultBooleanValue
+        {
+            get
+            {
+                return base.DefaultValue.AsBoolean();
+            }
+
+            set
+            {
+                base.DefaultValue = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the true text.
+        /// </summary>
+        /// <value>
+        /// The true text.
+        /// </value>
+        public string TrueText
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( BooleanFieldType.ConfigurationKey.TrueText );
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( BooleanFieldType.ConfigurationKey.TrueText, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the false text.
+        /// </summary>
+        /// <value>
+        /// The false text.
+        /// </value>
+        public string FalseText
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( BooleanFieldType.ConfigurationKey.FalseText );
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( BooleanFieldType.ConfigurationKey.FalseText, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the control (DropDown, CheckBox, Toggle, or Switch) to use to edit the value
+        /// </summary>
+        /// <value>
+        /// The type of the control.
+        /// </value>
+        public BooleanFieldType.BooleanControlType ControlType
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( BooleanFieldType.ConfigurationKey.BooleanControlType ).ConvertToEnumOrNull<BooleanFieldType.BooleanControlType>() ?? BooleanFieldType.BooleanControlType.DropDown;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( BooleanFieldType.ConfigurationKey.BooleanControlType, new Field.ConfigurationValue( value.ConvertToString( false ) ) );
+            }
         }
     }
 }

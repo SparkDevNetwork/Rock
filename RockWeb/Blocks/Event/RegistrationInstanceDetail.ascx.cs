@@ -1,4 +1,4 @@
-﻿// <copyright>
+﻿﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,7 +65,15 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private List<int> _waitListOrder = null;
         private bool _isExporting = false;
-        
+
+        /// <summary>
+        /// Gets or sets the available registration attributes where IsGridColumn = true
+        /// </summary>
+        /// <value>
+        /// The available attributes.
+        /// </value>
+        public List<AttributeCache> AvailableRegistrationAttributesForGrid { get; set; }
+
         #endregion
 
         #region Properties
@@ -110,6 +118,14 @@ namespace RockWeb.Blocks.Event
         /// </value>
         protected string ActiveTab { get; set; }
 
+        /// <summary>
+        /// Gets or sets the registration template identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template identifier.
+        /// </value>
+        protected int? RegistrationTemplateId { get; set; }
+
         #endregion
 
         #region Base Control Methods
@@ -122,12 +138,15 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
+            AvailableRegistrationAttributesForGrid = ViewState["AvailableRegistrationAttributesForGrid"] as List<AttributeCache>;
+
             ActiveTab = ( ViewState["ActiveTab"] as string ) ?? string.Empty;
             RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
+            RegistrationTemplateId = ViewState["RegistrationTemplateId"] as int? ?? 0;
 
             // don't set the values if this is a postback from a grid 'ClearFilter'
             bool setValues = this.Request.Params["__EVENTTARGET"] == null || !this.Request.Params["__EVENTTARGET"].EndsWith( "_lbClearFilter" );
-
+            SetUserPreferencePrefix( RegistrationTemplateId.Value );
             AddDynamicControls( setValues );
         }
 
@@ -326,6 +345,8 @@ namespace RockWeb.Blocks.Event
         {
             ViewState["RegistrantFields"] = RegistrantFields;
             ViewState["ActiveTab"] = ActiveTab;
+			ViewState["RegistrationTemplateId"] = RegistrationTemplateId;
+            ViewState["AvailableRegistrationAttributesForGrid"] = AvailableRegistrationAttributesForGrid;
 
             return base.SaveViewState();
         }
@@ -368,6 +389,12 @@ namespace RockWeb.Blocks.Event
         #region Events
 
         #region Main Form Events
+
+        private void AddDynamicControls( bool setValues )
+        {
+            RegistrationsTabAddDynamicControls( setValues );
+            RegistrantsTabAddDynamicControls( setValues );
+        }
 
         /// <summary>
         /// Handles the Click event of the btnEdit control.
@@ -497,16 +524,20 @@ namespace RockWeb.Blocks.Event
                 {
                     instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
                     ShowReadonlyDetails( instance );
-                }
 
-                // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) || instance.RegistrationTemplate.Cost > 0 ) )
-                {
-                    btnSendPaymentReminder.Visible = true;
-                }
-                else
-                {
-                    btnSendPaymentReminder.Visible = false;
+
+                    // show send payment reminder link
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                        ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
+                            instance.RegistrationTemplate.Cost > 0 ||
+                            instance.RegistrationTemplate.Fees.Count > 0 ) )
+                    {
+                        btnSendPaymentReminder.Visible = true;
+                    }
+                    else
+                    {
+                        btnSendPaymentReminder.Visible = false;
+                    }
                 }
             }
         }
@@ -602,6 +633,13 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fRegistrations_ClearFilterClick( object sender, EventArgs e )
         {
+            fRegistrations.SaveUserPreference( "Registrations Date Range", "Registration Date Range", string.Empty );
+            fRegistrations.SaveUserPreference( "Payment Status", string.Empty );
+            fRegistrations.SaveUserPreference( "RegisteredBy First Name", string.Empty );
+            fRegistrations.SaveUserPreference( "RegisteredBy Last Name", string.Empty );
+            fRegistrations.SaveUserPreference( "Registrant First Name", string.Empty );
+            fRegistrations.SaveUserPreference( "Registrant Last Name", string.Empty );
+
             fRegistrants.DeleteUserPreferences();
             BindRegistrationsFilter();
         }
@@ -696,53 +734,45 @@ namespace RockWeb.Blocks.Event
                 bool hasPayments = payments.Any();
                 decimal totalPaid = hasPayments ? payments.Select( p => p.Amount ).DefaultIfEmpty().Sum() : 0.0m;
 
-                var hfHasPayments = e.Row.FindControl( "hfHasPayments" ) as HiddenFieldWithClass;
-                if ( hfHasPayments != null )
-                {
-                    hfHasPayments.Value = hasPayments.ToString();
-                }
-
                 // Set the Cost
                 decimal discountedCost = registration.DiscountedCost;
-                var lCost = e.Row.FindControl( "lCost" ) as Label;
-                if ( lCost != null )
+                var lRegistrationCost = e.Row.FindControl( "lRegistrationCost" ) as Literal;
+                if ( lRegistrationCost != null )
                 {
-                    lCost.Visible = _instanceHasCost || discountedCost > 0.0M;
-                    lCost.Text = discountedCost.FormatAsCurrency();
+                    lRegistrationCost.Visible = _instanceHasCost || discountedCost > 0.0M;
+                    lRegistrationCost.Text = string.Format( "<span class='label label-info'>{0}</span>", discountedCost.FormatAsCurrency() );
                 }
 
                 var discountCode = registration.DiscountCode;
-                var lDiscount = e.Row.FindControl( "lDiscount" ) as Label;
+                var lDiscount = e.Row.FindControl( "lDiscount" ) as Literal;
                 if ( lDiscount != null )
                 {
                     lDiscount.Visible = _instanceHasCost && !string.IsNullOrEmpty( discountCode );
-                    lDiscount.Text = discountCode;
+                    lDiscount.Text = string.Format( "<span class='label label-default'>{0}</span>", discountCode );
                 }
 
-                var lBalance = e.Row.FindControl( "lBalance" ) as Label;
+                var lBalance = e.Row.FindControl( "lBalance" ) as Literal;
                 if ( lBalance != null )
                 {
                     decimal balanceDue = registration.DiscountedCost - totalPaid;
                     lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
-                    lBalance.Text = balanceDue.FormatAsCurrency();
+                    string balanceCssClass;
                     if ( balanceDue > 0.0m )
                     {
-                        lBalance.AddCssClass( "label-danger" );
-                        lBalance.RemoveCssClass( "label-warning" );
-                        lBalance.RemoveCssClass( "label-success" );
+                        balanceCssClass = "label-danger";
                     }
                     else if ( balanceDue < 0.0m )
                     {
-                        lBalance.RemoveCssClass( "label-danger" );
-                        lBalance.AddCssClass( "label-warning" );
-                        lBalance.RemoveCssClass( "label-success" );
+                        balanceCssClass = "label-warning";
                     }
                     else
                     {
-                        lBalance.RemoveCssClass( "label-danger" );
-                        lBalance.RemoveCssClass( "label-warning" );
-                        lBalance.AddCssClass( "label-success" );
+                        balanceCssClass = "label-success";
                     }
+
+                    lBalance.Text = string.Format(
+    @"<span class='label {0}'>{1}</span>
+    <input type='hidden' class='js-has-payments' value='{2}' />", balanceCssClass, balanceDue.FormatAsCurrency(), hasPayments.ToTrueFalse() );
                 }
             }
         }
@@ -752,7 +782,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void gRegistrations_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -873,7 +902,20 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbMiddleNameFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMiddleNameFilter" ) as RockTextBox;
+                                if ( tbMiddleNameFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( "MiddleName", tbMiddleNameFilter.Text );
+                                }
+                                break;
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
+                                if ( drAnniversaryDateFilter != null )
+                                {
+                                    fRegistrants.SaveUserPreference( "AnniversaryDate Range", drAnniversaryDateFilter.DelimitedValues );
+                                }
+                                break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
@@ -933,9 +975,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fRegistrants.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -998,7 +1038,21 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbMiddleNameFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMiddleNameFilter" ) as RockTextBox;
+                                if ( tbMiddleNameFilter != null )
+                                {
+                                    tbMiddleNameFilter.Text = string.Empty;
+                                }
+                                break;
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
+                                if ( drAnniversaryDateFilter != null )
+                                {
+                                    drAnniversaryDateFilter.LowerValue = null;
+                                    drAnniversaryDateFilter.UpperValue = null;
+                                }
+                                break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
@@ -1075,9 +1129,7 @@ namespace RockWeb.Blocks.Event
                         e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                         return;
                     }
-                    catch
-                    {
-                    }
+                    catch { }
                 }
             }
 
@@ -1255,7 +1307,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if (_homeAddresses.Any() )
+                if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     // break up addresses if exporting
@@ -1331,7 +1383,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         private void gRegistrants_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -1747,7 +1798,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected void gLinkages_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "LinkagePage", "LinkageId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -1840,10 +1890,7 @@ namespace RockWeb.Blocks.Event
                         item.EntityId = (int)key;
                         entitySet.Items.Add( item );
                     }
-                    catch
-                    {
-                        // ignore
-                    }
+                    catch { }
                 }
 
                 if ( entitySet.Items.Any() )
@@ -1866,7 +1913,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         private void gWaitList_AddClick( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "RegistrationPage", "RegistrationId", 0, "RegistrationInstanceId", hfRegistrationInstanceId.ValueAsInt() );
@@ -1917,7 +1963,20 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbMiddleNameFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMiddleNameFilter" ) as RockTextBox;
+                                if ( tbMiddleNameFilter != null )
+                                {
+                                    fWaitList.SaveUserPreference( "WL-MiddleName", "MiddleName", tbMiddleNameFilter.Text );
+                                }
+                                break;
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drpAnniversaryDateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistAnniversaryDateFilter" ) as DateRangePicker;
+                                if ( drpAnniversaryDateFilter != null )
+                                {
+                                    fWaitList.SaveUserPreference( "WL-AnniversaryDate Range", "AnniversaryDate Range", drpAnniversaryDateFilter.DelimitedValues );
+                                }
+                                break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phWaitListFormFieldFilters.FindControl( "gpWaitlistGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
@@ -1977,9 +2036,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fWaitList.SaveUserPreference( "WL-" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -2042,7 +2099,21 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbMiddleNameFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMiddleNameFilter" ) as RockTextBox;
+                                if ( tbMiddleNameFilter != null )
+                                {
+                                    tbMiddleNameFilter.Text = string.Empty;
+                                }
+                                break;
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drpAnniversaryDateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistAnniversaryDateFilter" ) as DateRangePicker;
+                                if ( drpAnniversaryDateFilter != null )
+                                {
+                                    drpAnniversaryDateFilter.UpperValue = null;
+                                    drpAnniversaryDateFilter.LowerValue = null;
+                                }
+                                break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phWaitListFormFieldFilters.FindControl( "gpWaitlistGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
@@ -2123,9 +2194,7 @@ namespace RockWeb.Blocks.Event
                             e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                             return;
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                     }
                 }
 
@@ -2273,12 +2342,11 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var lAddress = e.Row.FindControl( "lWaitlistAddress" ) as Literal;
-                if ( lAddress != null && _homeAddresses.Count() > 0 )
+                if ( lAddress != null && _homeAddresses.Count() > 0 && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
                     var location = _homeAddresses[registrant.PersonId.Value];
                     lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                 }
-
 
                 var mobileField = e.Row.FindControl( "lWaitlistMobile" ) as Literal;
                 if ( mobileField != null )
@@ -2505,7 +2573,7 @@ namespace RockWeb.Blocks.Event
 
         public void ShowDetail( int itemId )
         {
-            throw new NotImplementedException();
+            ShowDetail();
         }
 
         /// <summary>
@@ -2551,6 +2619,19 @@ namespace RockWeb.Blocks.Event
                         .Get( registrationInstance.RegistrationTemplateId );
                 }
 
+                AvailableRegistrationAttributesForGrid = new List<AttributeCache>();
+
+                int entityTypeId = new Registration().TypeId;
+                foreach ( var attributeCache in new AttributeService( new RockContext() ).GetByEntityTypeQualifier( entityTypeId, "RegistrationTemplateId", registrationInstance.RegistrationTemplateId.ToString(), false )
+                    .Where( a => a.IsGridColumn )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToAttributeCacheList() )
+                {
+                    AvailableRegistrationAttributesForGrid.Add( attributeCache );
+                }
+
+
                 hlType.Visible = registrationInstance.RegistrationTemplate != null;
                 hlType.Text = registrationInstance.RegistrationTemplate != null ? registrationInstance.RegistrationTemplate.Name : string.Empty;
 
@@ -2559,6 +2640,7 @@ namespace RockWeb.Blocks.Event
                 pnlDetails.Visible = true;
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
                 hfRegistrationTemplateId.Value = registrationInstance.RegistrationTemplateId.ToString();
+                RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
                 SetHasPayments( registrationInstance.Id, rockContext );
 
                 FollowingsHelper.SetFollowing( registrationInstance, pnlFollowing, this.CurrentPerson );
@@ -2607,7 +2689,10 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) && ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) || registrationInstance.RegistrationTemplate.Cost > 0 ) )
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                    ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) ||
+                    registrationInstance.RegistrationTemplate.Cost > 0 ||
+                    registrationInstance.RegistrationTemplate.Fees.Count > 0 ) )
                 {
                     btnSendPaymentReminder.Visible = true;
                 }
@@ -2617,6 +2702,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 LoadRegistrantFormFields( registrationInstance );
+                SetUserPreferencePrefix( hfRegistrationTemplateId.ValueAsInt() );
                 BindRegistrationsFilter();
                 BindRegistrantsFilter( registrationInstance );
                 BindWaitListFilter( registrationInstance );
@@ -2629,6 +2715,19 @@ namespace RockWeb.Blocks.Event
                 // do the ShowTab now since it may depend on DynamicControls and Filter Bindings
                 ShowTab();
             }
+        }
+
+        /// <summary>
+        /// Sets the user preference prefix.
+        /// </summary>
+        private void SetUserPreferencePrefix(int registrationTemplateId )
+        {
+            fRegistrations.UserPreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
+            fRegistrants.UserPreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
+            fPayments.UserPreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
+            fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
+            fGroupPlacements.UserPreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
+            fWaitList.UserPreferenceKeyPrefix = string.Format( "{0}-", registrationTemplateId );
         }
 
         /// <summary>
@@ -2698,6 +2797,8 @@ namespace RockWeb.Blocks.Event
                 lCost.Text = registrationInstance.Cost.FormatAsCurrency();
                 lMinimumInitialPayment.Visible = registrationInstance.MinimumInitialPayment.HasValue;
                 lMinimumInitialPayment.Text = registrationInstance.MinimumInitialPayment.HasValue ? registrationInstance.MinimumInitialPayment.Value.FormatAsCurrency() : string.Empty;
+                lDefaultPaymentAmount.Visible = registrationInstance.DefaultPayment.HasValue;
+                lDefaultPaymentAmount.Text = registrationInstance.DefaultPayment.HasValue ? registrationInstance.DefaultPayment.Value.FormatAsCurrency() : string.Empty;
             }
             else
             {
@@ -2708,8 +2809,10 @@ namespace RockWeb.Blocks.Event
             lAccount.Visible = registrationInstance.Account != null;
             lAccount.Text = registrationInstance.Account != null ? registrationInstance.Account.Name : string.Empty;
 
-            lMaxAttendees.Visible = registrationInstance.MaxAttendees > 0;
-            lMaxAttendees.Text = registrationInstance.MaxAttendees.ToString( "N0" );
+            lMaxAttendees.Visible = registrationInstance.MaxAttendees >= 0;
+            lMaxAttendees.Text = registrationInstance.MaxAttendees >= 0 ?
+                    registrationInstance.MaxAttendees.Value.ToString( "N0" ) :
+                    string.Empty;
             lWorkflowType.Text = registrationInstance.RegistrationWorkflowType != null ?
                 registrationInstance.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = !string.IsNullOrWhiteSpace( lWorkflowType.Text );
@@ -2874,12 +2977,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrationsFilter()
         {
-            fRegistrations.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
-
             sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( "Registrations Date Range" );
             ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( "Payment Status" ) );
-            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( "Registered By First Name" );
-            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( "Registered By Last Name" );
+            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( "RegisteredBy First Name" );
+            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( "RegisteredBy Last Name" );
             tbRegistrationRegistrantFirstName.Text = fRegistrations.GetUserPreference( "Registrant First Name" );
             tbRegistrationRegistrantLastName.Text = fRegistrations.GetUserPreference( "Registrant Last Name" );
         }
@@ -3062,6 +3163,23 @@ namespace RockWeb.Blocks.Event
                                 gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( r => r.BalanceDue ).AsQueryable() );
                             }
                         }
+                        else if ( sortProperty.Property == "RegisteredBy" )
+                        {
+                            // Sort by the Person name if we have it, otherwise the provided first and last name.
+                            Func<Registration, string> sortBy = ( r ) =>
+                            {
+                                return r.PersonAlias != null && r.PersonAlias.Person != null ? r.PersonAlias.Person.FullNameReversed : string.Format( "{0}, {1}", r.LastName, r.FirstName );
+                            };
+
+                            if ( sortProperty.Direction == SortDirection.Ascending )
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderBy( sortBy ).AsQueryable() );
+                            }
+                            else
+                            {
+                                gRegistrations.SetLinqDataSource( qry.ToList().OrderByDescending( sortBy ).AsQueryable() );
+                            }
+                        }
                         else
                         {
                             gRegistrations.SetLinqDataSource( qry.Sort( sortProperty ) );
@@ -3103,7 +3221,67 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Add all of the columns to the Registrations grid after the Registrants column.
+        /// The Column.Insert method does not play well with buttons.
+        /// </summary>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        private void RegistrationsTabAddDynamicControls( bool setValues )
+        {
+            var registrantsField = gRegistrations.ColumnsOfType<RockTemplateField>().FirstOrDefault( a => a.HeaderText == "Registrants" );
+            int registrantsFieldIndex = gRegistrations.Columns.IndexOf( registrantsField );
+
+            // Remove all columns to the right of Registrants
+            for ( int i = registrantsFieldIndex + 2; i < gRegistrations.Columns.Count; i++ )
+            {
+                gRegistrations.Columns.RemoveAt( i );
+            }
+
+            // Add Attribute columns if necessary
+            if ( AvailableRegistrationAttributesForGrid != null )
+            {
+                foreach ( var attributeCache in AvailableRegistrationAttributesForGrid )
+                {
+                    bool columnExists = gRegistrations.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attributeCache.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attributeCache.Key;
+                        boundField.AttributeId = attributeCache.Id;
+                        boundField.HeaderText = attributeCache.Name;
+                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        gRegistrations.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            // Add the rest of the columns
+            var dtWhen = new DateTimeField { DataField = "CreatedDateTime", HeaderText = "When", SortExpression = "CreatedDateTime" };
+            dtWhen.HeaderStyle.HorizontalAlign = HorizontalAlign.Left;
+            dtWhen.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+            gRegistrations.Columns.Add( dtWhen );
+
+            var lDiscount = new RockLiteralField { ID = "lDiscount", HeaderText = "Discount Code", SortExpression = "DiscountCode", Visible = false };
+            lDiscount.HeaderStyle.HorizontalAlign = HorizontalAlign.Left;
+            lDiscount.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+            gRegistrations.Columns.Add( lDiscount );
+
+            var lRegistrationCost = new RockLiteralField { ID = "lRegistrationCost", HeaderText = "Total Cost", SortExpression = "TotalCost" };
+            lRegistrationCost.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+            lRegistrationCost.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            gRegistrations.Columns.Add( lRegistrationCost );
+
+            var lBalance = new RockLiteralField { ID = "lBalance", HeaderText = "Balance Due", SortExpression = "BalanceDue" };
+            lBalance.HeaderStyle.HorizontalAlign = HorizontalAlign.Right;
+            lBalance.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+            gRegistrations.Columns.Add( lBalance );
+
+            DeleteField deleteField = new DeleteField();
+            deleteField.Click += gRegistrations_Delete;
+            gRegistrations.Columns.Add( deleteField );
+        }
+
+        #endregion Registrations Tab
 
         #region Registrants Tab
 
@@ -3112,7 +3290,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrantsFilter( RegistrationInstance instance )
         {
-            fRegistrants.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             sdrpRegistrantsRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Registrants Date Range" );
             tbRegistrantsRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
             tbRegistrantsRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
@@ -3296,7 +3473,34 @@ namespace RockWeb.Blocks.Event
                                     }
 
                                     break;
+                                case RegistrationPersonFieldType.MiddleName:
+                                    var tbMiddleNameFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMiddleNameFilter" ) as RockTextBox;
+                                    if ( tbMiddleNameFilter != null && !string.IsNullOrWhiteSpace( tbMiddleNameFilter.Text ) )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.MiddleName != null &&
+                                            r.PersonAlias.Person.MiddleName.Contains( tbMiddleNameFilter.Text ) );
+                                    }
+                                    break;
+                                case RegistrationPersonFieldType.AnniversaryDate:
+                                    var drpAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
+                                    if ( drpAnniversaryDateFilter != null )
+                                    {
+                                        if ( drpAnniversaryDateFilter.LowerValue.HasValue )
+                                        {
+                                            qry = qry.Where( r =>
+                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                                r.PersonAlias.Person.AnniversaryDate.Value >= drpAnniversaryDateFilter.LowerValue.Value );
+                                        }
 
+                                        if ( drpAnniversaryDateFilter.UpperValue.HasValue )
+                                        {
+                                            qry = qry.Where( r =>
+                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                                r.PersonAlias.Person.AnniversaryDate.Value <= drpAnniversaryDateFilter.UpperValue.Value );
+                                        }
+                                    }
+                                    break;
                                 case RegistrationPersonFieldType.Grade:
                                     var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
                                     if ( gpGradeFilter != null )
@@ -3383,7 +3587,7 @@ namespace RockWeb.Blocks.Event
                         registrantAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                                f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             .Select( f => f.Attribute )
                             .ToList();
                         registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
@@ -3734,7 +3938,7 @@ namespace RockWeb.Blocks.Event
         /// Adds the filter controls and grid columns for all of the registration template's form fields
         /// that were configured to 'Show on Grid'
         /// </summary>
-        private void AddDynamicControls( bool setValues )
+        private void RegistrantsTabAddDynamicControls( bool setValues )
         {
             phRegistrantsRegistrantFormFieldFilters.Controls.Clear();
             phGroupPlacementsFormFieldFilters.Controls.Clear();
@@ -3917,7 +4121,108 @@ namespace RockWeb.Blocks.Event
                                 gWaitList.Columns.Add( birthdateField3 );
 
                                 break;
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbRegistrantsMiddleNameFilter = new RockTextBox();
+                                tbRegistrantsMiddleNameFilter.ID = "tbRegistrantsMiddleNameFilter";
+                                tbRegistrantsMiddleNameFilter.Label = "MiddleName";
 
+                                if ( setValues )
+                                {
+                                    tbRegistrantsMiddleNameFilter.Text = fRegistrants.GetUserPreference( "MiddleName" );
+                                }
+
+                                phRegistrantsRegistrantFormFieldFilters.Controls.Add( tbRegistrantsMiddleNameFilter );
+
+                                var tbGroupPlacementsMiddleNameFilter = new RockTextBox();
+                                tbGroupPlacementsMiddleNameFilter.ID = "tbGroupPlacementsMiddleNameFilter";
+                                tbGroupPlacementsMiddleNameFilter.Label = "MiddleName";
+
+                                if ( setValues )
+                                {
+                                    tbGroupPlacementsMiddleNameFilter.Text = fGroupPlacements.GetUserPreference( "MiddleName" );
+                                }
+
+                                phGroupPlacementsFormFieldFilters.Controls.Add( tbGroupPlacementsMiddleNameFilter );
+
+                                var tbWaitlistMiddleNameFilter = new RockTextBox();
+                                tbWaitlistMiddleNameFilter.ID = "tbWaitlistMiddleNameFilter";
+                                tbWaitlistMiddleNameFilter.Label = "Email";
+                                tbWaitlistMiddleNameFilter.Text = fRegistrants.GetUserPreference( "WL-MiddleName" );
+                                phWaitListFormFieldFilters.Controls.Add( tbWaitlistMiddleNameFilter );
+
+                                dataFieldExpression = "PersonAlias.Person.MiddleName";
+                                var middleNameField = new RockBoundField();
+                                middleNameField.DataField = dataFieldExpression;
+                                middleNameField.HeaderText = "MiddleName";
+                                middleNameField.SortExpression = dataFieldExpression;
+                                gRegistrants.Columns.Add( middleNameField );
+
+                                var middleNameField2 = new RockBoundField();
+                                middleNameField2.DataField = dataFieldExpression;
+                                middleNameField2.HeaderText = "MiddleName";
+                                middleNameField2.SortExpression = dataFieldExpression;
+                                gGroupPlacements.Columns.Add( middleNameField2 );
+
+                                var middleNameField3 = new RockBoundField();
+                                middleNameField3.DataField = dataFieldExpression;
+                                middleNameField3.HeaderText = "MiddleName";
+                                middleNameField3.SortExpression = dataFieldExpression;
+                                gWaitList.Columns.Add( middleNameField3 );
+
+                                break;
+
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drpRegistrantsAnniversaryDateFilter = new DateRangePicker();
+                                drpRegistrantsAnniversaryDateFilter.ID = "drpRegistrantsAnniversaryDateFilter";
+                                drpRegistrantsAnniversaryDateFilter.Label = "AnniversaryDate Range";
+
+                                if ( setValues )
+                                {
+                                    drpRegistrantsAnniversaryDateFilter.DelimitedValues = fRegistrants.GetUserPreference( "AnniversaryDate Range" );
+                                }
+
+                                phRegistrantsRegistrantFormFieldFilters.Controls.Add( drpRegistrantsAnniversaryDateFilter );
+
+                                var drpGroupPlacementsAnniversaryDateFilter = new DateRangePicker();
+                                drpGroupPlacementsAnniversaryDateFilter.ID = "drpGroupPlacementsAnniversaryDateFilter";
+                                drpGroupPlacementsAnniversaryDateFilter.Label = "AnniversaryDate Range";
+
+                                if ( setValues )
+                                {
+                                    drpGroupPlacementsAnniversaryDateFilter.DelimitedValues = fGroupPlacements.GetUserPreference( "GroupPlacements-AnniversaryDate Range" );
+                                }
+
+                                phGroupPlacementsFormFieldFilters.Controls.Add( drpGroupPlacementsAnniversaryDateFilter );
+
+                                var drpWaitlistAnniversaryDateFilter = new DateRangePicker();
+                                drpWaitlistAnniversaryDateFilter.ID = "drpWaitlistAnniversaryDateFilter";
+                                drpWaitlistAnniversaryDateFilter.Label = "AnniversaryDate Range";
+                                drpWaitlistAnniversaryDateFilter.DelimitedValues = fRegistrants.GetUserPreference( "WL-AnniversaryDate Range" );
+                                phWaitListFormFieldFilters.Controls.Add( drpWaitlistAnniversaryDateFilter );
+
+                                dataFieldExpression = "PersonAlias.Person.AnniversaryDate";
+                                var anniversaryDateField = new DateField();
+                                anniversaryDateField.DataField = dataFieldExpression;
+                                anniversaryDateField.HeaderText = "Anniversary Date";
+                                anniversaryDateField.IncludeAge = true;
+                                anniversaryDateField.SortExpression = dataFieldExpression;
+                                gRegistrants.Columns.Add( anniversaryDateField );
+
+                                var anniversaryDateField2 = new DateField();
+                                anniversaryDateField2.DataField = dataFieldExpression;
+                                anniversaryDateField2.HeaderText = "Anniversary Date";
+                                anniversaryDateField2.IncludeAge = true;
+                                anniversaryDateField2.SortExpression = dataFieldExpression;
+                                gGroupPlacements.Columns.Add( anniversaryDateField2 );
+
+                                var anniversaryDateField3 = new DateField();
+                                anniversaryDateField3.DataField = dataFieldExpression;
+                                anniversaryDateField3.HeaderText = "Anniversary Date";
+                                anniversaryDateField3.IncludeAge = true;
+                                anniversaryDateField3.SortExpression = dataFieldExpression;
+                                gWaitList.Columns.Add( anniversaryDateField3 );
+
+                                break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpRegistrantsGradeFilter = new GradePicker();
                                 gpRegistrantsGradeFilter.ID = "gpRegistrantsGradeFilter";
@@ -4391,7 +4696,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindPaymentsFilter()
         {
-            fPayments.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             sdrpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( "Payments Date Range" );
         }
 
@@ -4521,7 +4825,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // Fee Name
-            if (ddlFeeName.SelectedIndex > 0 )
+            if ( ddlFeeName.SelectedIndex > 0 )
             {
                 data = data.Where( r => r.FeeName == ddlFeeName.SelectedItem.Text );
             }
@@ -4529,7 +4833,7 @@ namespace RockWeb.Blocks.Event
             // Fee Options
             if ( cblFeeOptions.SelectedValues.Count > 0 )
             {
-                data = data.Where( r => cblFeeOptions.SelectedValues.Contains( r.Option ) );
+                data = data.Where( r => cblFeeOptions.SelectedValues.Any( v => v.Equals( r.FeeItem.Guid.ToString(), StringComparison.OrdinalIgnoreCase) ) );
             }
 
             SortProperty sortProperty = gFees.SortProperty;
@@ -4590,15 +4894,14 @@ namespace RockWeb.Blocks.Event
         {
             cblFeeOptions.Items.Clear();
 
-            string feeId = ddlFeeName.SelectedValue;
-            if ( feeId.IsNotNullOrWhiteSpace() )
+            int? feeId = ddlFeeName.SelectedValue.AsIntegerOrNull();
+            if ( feeId.HasValue )
             {
-                var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
-                var fees = registrationTemplateFeeService.GetParsedFeeOptionsWithoutCost( feeId.AsInteger() );
+                var feeItems = new RegistrationTemplateFeeItemService( new RockContext() ).Queryable().Where( a => a.RegistrationTemplateFeeId == feeId );
 
-                foreach ( var fee in fees )
+                foreach ( var feeItem in feeItems )
                 {
-                    cblFeeOptions.Items.Add( new ListItem( fee, fee ) );
+                    cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Guid.ToString() ) );
                 }
 
                 string feeOptionValues = fFees.GetUserPreference( "FeeOptions" );
@@ -4722,7 +5025,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="instance">The instance.</param>
         private void BindWaitListFilter( RegistrationInstance instance )
         {
-            fWaitList.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             drpWaitListDateRange.DelimitedValues = fWaitList.GetUserPreference( "WL-Date Range" );
             tbWaitListFirstName.Text = fWaitList.GetUserPreference( "WL-First Name" );
             tbWaitListLastName.Text = fWaitList.GetUserPreference( "WL-Last Name" );
@@ -4870,7 +5172,37 @@ namespace RockWeb.Blocks.Event
                                     }
 
                                     break;
+                                case RegistrationPersonFieldType.MiddleName:
+                                    var tbWaitlistMiddleNameFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMiddleNameFilter" ) as RockTextBox;
+                                    if ( tbWaitlistMiddleNameFilter != null && !string.IsNullOrWhiteSpace( tbWaitlistMiddleNameFilter.Text ) )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.MiddleName != null &&
+                                            r.PersonAlias.Person.MiddleName.Contains( tbWaitlistMiddleNameFilter.Text ) );
+                                    }
 
+                                    break;
+
+                                case RegistrationPersonFieldType.AnniversaryDate:
+                                    var drpWaitlistAnniversaryDateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistAnniversaryDateFilter" ) as DateRangePicker;
+                                    if ( drpWaitlistAnniversaryDateFilter != null )
+                                    {
+                                        if ( drpWaitlistAnniversaryDateFilter.LowerValue.HasValue )
+                                        {
+                                            qry = qry.Where( r =>
+                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                                r.PersonAlias.Person.AnniversaryDate.Value >= drpWaitlistAnniversaryDateFilter.LowerValue.Value );
+                                        }
+
+                                        if ( drpWaitlistAnniversaryDateFilter.UpperValue.HasValue )
+                                        {
+                                            qry = qry.Where( r =>
+                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                                r.PersonAlias.Person.AnniversaryDate.Value <= drpWaitlistAnniversaryDateFilter.UpperValue.Value );
+                                        }
+                                    }
+
+                                    break;
                                 case RegistrationPersonFieldType.Grade:
                                     var gpGradeFilter = phWaitListFormFieldFilters.FindControl( "gpWaitlistGradeFilter" ) as GradePicker;
                                     if ( gpGradeFilter != null )
@@ -4959,7 +5291,7 @@ namespace RockWeb.Blocks.Event
                         registrantAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                                f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             .Select( f => f.Attribute )
                             .ToList();
                         registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
@@ -5199,7 +5531,6 @@ namespace RockWeb.Blocks.Event
             /// </summary>
         private void BindLinkagesFilter()
         {
-            fLinkages.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();
             string campusValue = fLinkages.GetUserPreference( "Campus" );
@@ -5285,9 +5616,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( parentGroupId.HasValue )
                     {
-                        var validGroupIds = new GroupService( rockContext ).GetAllDescendents( parentGroupId.Value )
-                            .Select( g => g.Id )
-                            .ToList();
+                        var validGroupIds = new GroupService( rockContext ).GetAllDescendentGroupIds( parentGroupId.Value, false );
 
                         var existingPeopleInGroups = new GroupMemberService( rockContext )
                             .Queryable().AsNoTracking()
@@ -5337,6 +5666,7 @@ namespace RockWeb.Blocks.Event
                     {
                         _homeAddresses = Person.GetHomeLocations( personIds );
                     }
+
                     SetPhoneDictionary( rockContext, personIds );
 
                     bool preloadCampusValues = false;
@@ -5409,7 +5739,37 @@ namespace RockWeb.Blocks.Event
                                     }
 
                                     break;
+                                case RegistrationPersonFieldType.MiddleName:
+                                    var tbGroupPlacementsMiddleNameFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMiddleNameFilter" ) as RockTextBox;
+                                    if ( tbGroupPlacementsMiddleNameFilter != null && !string.IsNullOrWhiteSpace( tbGroupPlacementsMiddleNameFilter.Text ) )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.MiddleName != null &&
+                                            r.PersonAlias.Person.MiddleName.Contains( tbGroupPlacementsMiddleNameFilter.Text ) );
+                                    }
 
+                                    break;
+
+                                case RegistrationPersonFieldType.AnniversaryDate:
+                                    var drpGroupPlacementsAnniversaryDateFilter = phGroupPlacementsFormFieldFilters.FindControl( "drpGroupPlacementsAnniversaryDateFilter" ) as DateRangePicker;
+                                    if ( drpGroupPlacementsAnniversaryDateFilter != null )
+                                    {
+                                        if ( drpGroupPlacementsAnniversaryDateFilter.LowerValue.HasValue )
+                                        {
+                                            qry = qry.Where( r =>
+                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                                r.PersonAlias.Person.AnniversaryDate.Value >= drpGroupPlacementsAnniversaryDateFilter.LowerValue.Value );
+                                        }
+
+                                        if ( drpGroupPlacementsAnniversaryDateFilter.UpperValue.HasValue )
+                                        {
+                                            qry = qry.Where( r =>
+                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                                r.PersonAlias.Person.AnniversaryDate.Value <= drpGroupPlacementsAnniversaryDateFilter.UpperValue.Value );
+                                        }
+                                    }
+
+                                    break;
                                 case RegistrationPersonFieldType.Grade:
                                     var gpGradeFilter = phGroupPlacementsFormFieldFilters.FindControl( "gpGroupPlacementsGradeFilter" ) as GradePicker;
                                     if ( gpGradeFilter != null )
@@ -5498,7 +5858,7 @@ namespace RockWeb.Blocks.Event
                         registrantAttributes = RegistrantFields
                             .Where( f =>
                                 f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.RegistrationAttribute )
+                                f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                             .Select( f => f.Attribute )
                             .ToList();
                         registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
@@ -5774,7 +6134,23 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbGroupPlacementsMiddleNameFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMiddleNameFilter" ) as RockTextBox;
+                                if ( tbGroupPlacementsMiddleNameFilter != null )
+                                {
+                                    fGroupPlacements.SaveUserPreference( "GroupPlacements-MiddleName", "MiddleName", tbGroupPlacementsMiddleNameFilter.Text );
+                                }
 
+                                break;
+
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drpGroupPlacementsAnniversaryDateFilter = phGroupPlacementsFormFieldFilters.FindControl( "drpGroupPlacementsAnniversaryDateFilter" ) as DateRangePicker;
+                                if ( drpGroupPlacementsAnniversaryDateFilter != null )
+                                {
+                                    fGroupPlacements.SaveUserPreference( "GroupPlacements-AnniversaryDate Range", "AnniversaryDate Range", drpGroupPlacementsAnniversaryDateFilter.DelimitedValues );
+                                }
+
+                                break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phGroupPlacementsFormFieldFilters.FindControl( "gpGroupPlacementsGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
@@ -5834,9 +6210,7 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fGroupPlacements.SaveUserPreference( "GroupPlacements-" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch
-                            {
-                            }
+                            catch { }
                         }
                     }
                 }
@@ -5899,7 +6273,24 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbGroupPlacementsMiddleNameFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMiddleNameFilter" ) as RockTextBox;
+                                if ( tbGroupPlacementsMiddleNameFilter != null )
+                                {
+                                    tbGroupPlacementsMiddleNameFilter.Text = string.Empty;
+                                }
 
+                                break;
+
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drpGroupPlacementsAnniversaryDateFilter = phGroupPlacementsFormFieldFilters.FindControl( "drpGroupPlacementsAnniversaryDateFilter" ) as DateRangePicker;
+                                if ( drpGroupPlacementsAnniversaryDateFilter != null )
+                                {
+                                    drpGroupPlacementsAnniversaryDateFilter.LowerValue = null;
+                                    drpGroupPlacementsAnniversaryDateFilter.UpperValue = null;
+                                }
+
+                                break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phGroupPlacementsFormFieldFilters.FindControl( "gpGroupPlacementsGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
@@ -5980,9 +6371,7 @@ namespace RockWeb.Blocks.Event
                             e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                             return;
                         }
-                        catch
-                        {
-                        }
+                        catch { }
                     }
                 }
 
@@ -6066,7 +6455,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="instance">The instance.</param>
         private void BindGroupPlacementsFilter( RegistrationInstance instance )
         {
-            fGroupPlacements.UserPreferenceKeyPrefix = string.Format( "{0}-", hfRegistrationTemplateId.Value );
             sdrpGroupPlacementsDateRange.DelimitedValues = fGroupPlacements.GetUserPreference( "GroupPlacements-Date Range" );
             tbGroupPlacementsFirstName.Text = fGroupPlacements.GetUserPreference( "GroupPlacements-First Name" );
             tbGroupPlacementsLastName.Text = fGroupPlacements.GetUserPreference( "GroupPlacements-Last Name" );
@@ -6115,4 +6503,5 @@ namespace RockWeb.Blocks.Event
 
         #endregion
     }
+
 }

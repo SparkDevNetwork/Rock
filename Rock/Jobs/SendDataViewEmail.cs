@@ -16,22 +16,18 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.IO;
+using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text;
+using System.Web;
 
 using Quartz;
 
-using Rock;
 using Rock.Attribute;
-using Rock.Model;
-using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Web;
 using Rock.Communication;
-using System.Data.Entity;
-using System.Text;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -98,7 +94,7 @@ namespace Rock.Jobs
                     }
                 }
 
-                var recipients = new List<RecipientData>();
+                var recipients = new List<RockEmailMessageRecipient>();
                 if( resultSet.Any() )
                 {
                     foreach( Person person in resultSet )
@@ -109,7 +105,7 @@ namespace Rock.Jobs
                         }
                         var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
                     }
                 }
 

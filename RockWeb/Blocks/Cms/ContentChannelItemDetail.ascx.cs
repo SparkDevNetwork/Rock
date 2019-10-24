@@ -275,6 +275,7 @@ namespace RockWeb.Blocks.Cms
                 contentItem.Title = tbTitle.Text;
                 contentItem.Content = htmlContent.Text;
                 contentItem.Priority = nbPriority.Text.AsInteger();
+                contentItem.ItemGlobalKey = contentItem.Id != 0 ? lblItemGlobalKey.Text : CreateItemGlobalKey();
 
                 // If this is a new item and the channel is manually sorted then we need to set the order to the next number
                 if ( contentItem.Id == 0 && new ContentChannelService( rockContext ).IsManuallySorted( contentItem.ContentChannelId ) )
@@ -437,6 +438,17 @@ namespace RockWeb.Blocks.Cms
             {
                 lChannelUrl.Text = GetSlugPrefix( slug.ContentChannelItem.ContentChannel );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRefreshItemGlobalKey control.
+        /// Update the hidden field, value is not saved to the DB until the save button is clicked.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbRefreshItemGlobalKey_Click( object sender, EventArgs e )
+        {
+            lblItemGlobalKey.Text = CreateItemGlobalKey();
         }
 
         #region Child/Parent List Events
@@ -646,11 +658,22 @@ namespace RockWeb.Blocks.Cms
             {
                 int childItemId = hfRemoveChildItem.ValueAsInt();
 
-                var service = new ContentChannelItemService( rockContext );
-                var childItem = service.Get( childItemId );
+                var itemService = new ContentChannelItemService( rockContext );
+
+                var childItem = itemService.Get( childItemId );
+
                 if ( childItem != null )
                 {
-                    service.Delete( childItem );
+                    // Delete child item.
+                    itemService.Delete( childItem );
+
+                    // Delete child/parent association records for this child item.
+                    var associationService = new ContentChannelItemAssociationService( rockContext );
+
+                    var associations = associationService.Queryable().Where( x => x.ChildContentChannelItemId == childItem.Id ).ToList();
+
+                    associationService.DeleteRange( associations );
+
                     rockContext.SaveChanges();
                 }
             }
@@ -666,6 +689,14 @@ namespace RockWeb.Blocks.Cms
 
         #region Internal Methods
 
+        private string CreateItemGlobalKey()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
+                return contentChannelItemSlugService.GetUniqueContentSlug( tbTitle.Text, null );
+            }
+        }
         /// <summary>
         /// Gets the slug prefix.
         /// </summary>
@@ -917,6 +948,8 @@ namespace RockWeb.Blocks.Cms
                     dpExpire.SelectedDate = contentItem.ExpireDateTime.HasValue ? contentItem.ExpireDateTime.Value.Date : (DateTime?)null;
                 }
 
+                lblItemGlobalKey.Text = contentItem.ItemGlobalKey;
+
                 nbPriority.Text = contentItem.Priority.ToString();
                 nbPriority.Visible = !contentItem.ContentChannelType.DisablePriority;
 
@@ -1038,7 +1071,7 @@ namespace RockWeb.Blocks.Cms
                 qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
                 qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.Value.ToString() );
                 qryParams.Add( "ContentChannelId", hfChannelId.Value );
-                NavigateToParentPage();
+                NavigateToParentPage( qryParams );
             }
             else
             {
@@ -1265,5 +1298,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion
+
+
     }
 }

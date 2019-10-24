@@ -69,7 +69,8 @@ public class BundleConfig
             "~/Scripts/Rock/dialogs.js",
             "~/Scripts/Rock/settings.js",
             "~/Scripts/Rock/utility.js",
-            "~/Scripts/Rock/Controls/*.js" ) );
+            "~/Scripts/Rock/Controls/*.js",
+            "~/Scripts/Rock/reportingInclude.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockValidation" ).Include(
             "~/Scripts/Rock/Validate/*.js" ) );

@@ -40,16 +40,61 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a group that person belongs to." )]
 
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status",
-        "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 0 )]
-    [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 1 )]
-    [BooleanField( "Require Birthdate", "Determines if a birthdate should be required.", false, "", 2 )]
-    [BooleanField( "Hide Title", "Should Title field be hidden when entering new people?.", false, "", 3 )]
-    [BooleanField( "Hide Suffix", "Should Suffix field be hidden when entering new people?.", false, "", 4 )]
-    [BooleanField( "Hide Grade", "Should Grade field be hidden when entering new people?.", false, "", 5 )]
-    [BooleanField( "Show Age", "Should Age of Family Members be displayed?.", false, "", 6 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE, "New Person Phone", "The Phone Type to prompt for when adding a new person to family (if any).", false, false, "", "", 7)]
-    [BooleanField("New Person Email", "Should an Email field be displayed when adding a new person to the family?", false, "", 8 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        name: "Default Connection Status",
+        description: "The connection status that should be set by default",
+        required: false,
+        allowMultiple: false,
+        defaultValue: Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
+        order: 0,
+        key: "DefaultConnectionStatus" )]
+    [BooleanField( "Require Campus",
+        description: "Determines if a campus is required.",
+        defaultValue: true,
+        order: 1,
+        key: "RequireCampus" )]
+    [BooleanField( "Require Birthdate",
+        description: "Determines if a birthdate should be required.",
+        defaultValue: false,
+        order: 2,
+        key: "RequireBirthdate" )]
+    [BooleanField( "Hide Title",
+        description: "Should Title field be hidden when entering new people?.",
+        defaultValue: false,
+        order: 3,
+        key: "HideTitle" )]
+    [BooleanField( "Hide Suffix",
+        description: "Should Suffix field be hidden when entering new people?.",
+        defaultValue: false,
+        order: 4,
+        key: "HideSuffix" )]
+    [BooleanField( "Hide Grade",
+        description: "Should Grade field be hidden when entering new people?.",
+        defaultValue: false,
+        order: 5,
+        key: "HideGrade" )]
+    [BooleanField( "Show Age",
+        description: "Should Age of Family Members be displayed?.",
+        defaultValue: false,
+        order: 6,
+        key: "ShowAge" )]
+    [BooleanField( "Show County",
+        description: "Should County be displayed when editing an address?",
+        defaultValue: false,
+        order: 7,
+        key: "ShowCounty" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
+        name: "New Person Phone",
+        description: "The Phone Type to prompt for when adding a new person to family (if any).",
+        required: false,
+        allowMultiple: false,
+        order: 8,
+        key: "NewPersonPhone" )]
+    [BooleanField( "New Person Email",
+        description: "Should an Email field be displayed when adding a new person to the family?",
+        defaultValue: false,
+        order: 9,
+        key: "NewPersonEmail" )]
     public partial class EditGroup : PersonBlock
     {
         private GroupTypeCache _groupType = null;
@@ -58,6 +103,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private bool _canEdit = false;
         private bool _showAge = false;
         private bool _showEmail = false;
+        private bool _showCounty = false;
         private DefinedValueCache _showPhoneType = null;
 
         protected string basePersonUrl { get; set; }
@@ -105,6 +151,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 return state;
+            }
+        }
+
+        private string DefaultCountry
+        {
+            get
+            {
+                var globalAttributesCache = GlobalAttributesCache.Get();
+                return globalAttributesCache.OrganizationCountry;
             }
         }
 
@@ -170,7 +225,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
-            cpCampus.Visible = campusi.Any();
 
             if ( _isFamilyGroupType )
             {
@@ -231,6 +285,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             _showEmail = GetAttributeValue( "NewPersonEmail" ).AsBoolean();
             _showPhoneType = DefinedValueCache.Get( GetAttributeValue( "NewPersonPhone" ).AsGuid() );
+            _showCounty = GetAttributeValue( "ShowCounty" ).AsBoolean();
+            this.BlockUpdated += Block_BlockUpdated;
         }
 
         /// <summary>
@@ -365,12 +421,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( l => l.GroupLocationTypeValue != null )
                         .OrderBy( l => l.GroupLocationTypeValue.Order ) )
                     {
-                        GroupAddresses.Add( new GroupAddressInfo( groupLocation ) );
+                        GroupAddresses.Add( new GroupAddressInfo( groupLocation, _showCounty ) );
                     }
                     foreach ( var groupLocation in _group.GroupLocations
                         .Where( l => l.GroupLocationTypeValue == null ) )
                     {
-                        GroupAddresses.Add( new GroupAddressInfo( groupLocation ) );
+                        GroupAddresses.Add( new GroupAddressInfo( groupLocation, _showCounty ) );
                     }
 
                     BindLocations();
@@ -454,6 +510,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 ScriptManager.RegisterStartupScript( modalAddPerson, modalAddPerson.GetType(), "modaldialog-validation", script, true );
             }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // Currently we need to go through the whole page cycle to get all of the data.
+            NavigateToCurrentPageReference();
         }
 
         #region Events
@@ -706,8 +773,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            if ( isValid )
-        {
+            if ( !isValid )
+            {
+                if ( validationMessages.Any() )
+                {
+                    nbAddPerson.Text = "<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></lu>";
+                    nbAddPerson.Visible = true;
+                }
+
+                return;
+            }
+
             if ( hfActiveTab.Value == "Existing" )
             {
                 if ( ppPerson.PersonId.HasValue )
@@ -775,15 +851,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
 
                 DateTime? birthdate = dpNewPersonBirthDate.SelectedDate;
-                //if ( birthdate.HasValue )
-                //{
-                //    // If setting a future birthdate, subtract a century until birthdate is not greater than today.
-                //    var today = RockDateTime.Today;
-                //    while ( birthdate.Value.CompareTo( today ) > 0 )
-                //    {
-                //        birthdate = birthdate.Value.AddYears( -100 );
-                //    }
-                //}
 
                 groupMember.BirthDate = birthdate;
                 groupMember.GradeOffset = ddlGradePicker.SelectedValueAsInt();
@@ -813,15 +880,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             modalAddPerson.Hide();
 
             BindMembers();
-        }
-            else
-            {
-                if ( validationMessages.Any() )
-                {
-                    nbAddPerson.Text = "<ul><li>" + validationMessages.AsDelimited( "</li><li>" ) + "</li></lu>";
-                    nbAddPerson.Visible = true;
-                }
-            }
+
         }
 
         #endregion
@@ -864,8 +923,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LocationTypeName = homeLocType.Value,
                     LocationIsDirty = true,
                     State = DefaultState,
+                    Country = DefaultCountry,
                     IsMailing = true,
-                    IsLocation = setLocation
+                    IsLocation = setLocation,
+                    ShowCounty = _showCounty
                 } );
 
                 gLocations.EditIndex = GroupAddresses.Count - 1;
@@ -903,12 +964,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             acAddress.UseStateAbbreviation = true;
                             acAddress.UseCountryAbbreviation = false;
+                            acAddress.ShowCounty = _showCounty;
                             acAddress.Country = groupAddress.Country;
                             acAddress.Street1 = groupAddress.Street1;
                             acAddress.Street2 = groupAddress.Street2;
                             acAddress.City = groupAddress.City;
                             acAddress.State = groupAddress.State;
                             acAddress.PostalCode = groupAddress.PostalCode;
+                            acAddress.County = groupAddress.County;
                         }
                     }
                 }
@@ -933,7 +996,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocations_Add( object sender, EventArgs e )
         {
-            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, IsMailing = true } );
+            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, Country = DefaultCountry, IsMailing = true, ShowCounty = _showCounty } );
             gLocations.EditIndex = GroupAddresses.Count - 1;
 
             BindLocations();
@@ -969,6 +1032,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupAddress.State = acAddress.State;
                 groupAddress.PostalCode = acAddress.PostalCode;
                 groupAddress.Country = acAddress.Country;
+                groupAddress.County = acAddress.County;
                 groupAddress.IsMailing = cbMailing.Checked;
 
                 // If setting this location to be a map location, unselect all the other locations
@@ -1315,7 +1379,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                        if ( groupAddressInfo.LocationIsDirty )
 	                        {
 	                            updatedAddress = new LocationService( rockContext ).Get( groupAddressInfo.Street1, groupAddressInfo.Street2, groupAddressInfo.City, groupAddressInfo.State, groupAddressInfo.PostalCode, groupAddressInfo.Country );
-	                        }
+                                if( _showCounty )
+                                {
+                                    updatedAddress.County = groupAddressInfo.County;
+                                }
+                            }
 	
 	                        GroupLocation groupLocation = null;
 	                        if ( groupAddressInfo.Id > 0 )
@@ -1450,6 +1518,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         #endregion
 
         #region Private Methods
+
+        private void InitializeValues()
+        {
+
+        }
 
         /// <summary>
         /// Sets the active tab.
@@ -1793,11 +1866,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         public string Country { get; set; }
 
+        public string County { get; set; }
+
         public bool IsMailing { get; set; }
 
         public bool IsLocation { get; set; }
 
-        public GroupAddressInfo( GroupLocation groupLocation )
+        public bool ShowCounty { get; set; }
+
+        public GroupAddressInfo( GroupLocation groupLocation, bool showCounty )
         {
             LocationIsDirty = false;
             if ( groupLocation != null )
@@ -1819,10 +1896,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     State = groupLocation.Location.State;
                     PostalCode = groupLocation.Location.PostalCode;
                     Country = groupLocation.Location.Country;
+                    County = groupLocation.Location.County;
                 }
 
                 IsMailing = groupLocation.IsMailingLocation;
                 IsLocation = groupLocation.IsMappedLocation;
+                ShowCounty = showCounty;
             }
         }
 
@@ -1838,29 +1917,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             get
             {
-                string result = string.Format(
-                    "{0} {1} {2}, {3} {4}",
-                    this.Street1,
-                    this.Street2,
-                    this.City,
-                    this.State,
-                    this.PostalCode ).ReplaceWhileExists( "  ", " " );
-
-                var countryValue = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
-                if ( countryValue != null )
+                string result = string.Empty;
+                if ( ShowCounty )
                 {
-                    string format = countryValue.GetAttributeValue( "AddressFormat" );
-                    if ( !string.IsNullOrWhiteSpace( format ) )
-                    {
-                        var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "Street1", Street1 );
-                        mergeFields.Add( "Street2", Street2 );
-                        mergeFields.Add( "City", City );
-                        mergeFields.Add( "State", State );
-                        mergeFields.Add( "PostalCode", PostalCode );
-                        mergeFields.Add( "Country", countryValue.Description );
+                    result = string.Format(
+                        "{0}{1}{2}{3}, {4} {5}",
+                        this.Street1 + Environment.NewLine,
+                        this.Street2 + Environment.NewLine,
+                        this.City,
+                        this.County.IsNotNullOrWhiteSpace() ? ", " + this.County : "",
+                        this.State,
+                        this.PostalCode
+                        ).ReplaceWhileExists( "  ", " " );
 
-                        result = format.ResolveMergeFields( mergeFields );
+                    // If the block is configured to display county, do not reformat the address using the country's address format as it does not account for county
+                }
+                else
+                {
+                    var countryValue = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES ) ).GetDefinedValueFromValue( this.Country );
+                    if ( countryValue != null )
+                    {
+                        string format = countryValue.GetAttributeValue( "AddressFormat" );
+                        if ( !string.IsNullOrWhiteSpace( format ) )
+                        {
+                            var mergeFields = new Dictionary<string, object>();
+                            mergeFields.Add( "Street1", Street1 );
+                            mergeFields.Add( "Street2", Street2 );
+                            mergeFields.Add( "City", City );
+                            mergeFields.Add( "State", State );
+                            mergeFields.Add( "PostalCode", PostalCode );
+                            mergeFields.Add( "Country", countryValue.Description );
+
+                            result = format.ResolveMergeFields( mergeFields );
+                        }
                     }
                 }
 

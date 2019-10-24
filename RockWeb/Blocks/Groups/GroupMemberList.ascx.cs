@@ -115,7 +115,10 @@ namespace RockWeb.Blocks.Groups
         {
             base.LoadViewState( savedState );
 
-            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+            if ( ViewState["AvailableAttributeIds"] != null )
+            {
+                AvailableAttributes = ( ViewState["AvailableAttributeIds"] as int[] ).Select( a => AttributeCache.Get( a ) ).ToList();
+            }
 
             AddDynamicControls();
         }
@@ -251,8 +254,7 @@ namespace RockWeb.Blocks.Groups
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["AvailableAttributes"] = AvailableAttributes;
-
+            ViewState["AvailableAttributeIds"] = AvailableAttributes == null ? null : AvailableAttributes.Select( a => a.Id ).ToArray();
             return base.SaveViewState();
         }
 
@@ -413,7 +415,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                if ( _showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
+                if ( ! _showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
                 {
                     sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
                 }
@@ -503,11 +505,19 @@ namespace RockWeb.Blocks.Groups
         protected void gGroupMembers_GetRecipientMergeFields( object sender, GetRecipientMergeFieldsEventArgs e )
         {
             GroupMember groupMember = e.DataItem as GroupMember;
-            if ( groupMember != null )
+
+            if ( groupMember == null )
             {
-                e.MergeValues.Add( "GroupRole", groupMember.GroupRole );
-                e.MergeValues.Add( "GroupMemberStatus", ( ( GroupMemberStatus ) groupMember.GroupMemberStatus ).ConvertToString() );
+                return;
             }
+
+            var entityTypeMergeField = MergeFieldPicker.EntityTypeInfo.GetMergeFieldId<Rock.Model.GroupMember>(
+                new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] {
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupTypeId", _groupTypeCache.Id.ToString() ),
+                    new MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier( "GroupId", groupMember.GroupId.ToString() ),
+                } );
+
+            e.MergeValues.Add( entityTypeMergeField, groupMember.Id );
         }
 
         /// <summary>
@@ -832,7 +842,7 @@ namespace RockWeb.Blocks.Groups
                     .Where( a => a.IsGridColumn )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )
-                    .ThenBy( a => a.Name ).ToCacheAttributeList() )
+                    .ThenBy( a => a.Name ).ToAttributeCacheList() )
                 {
                     if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {
@@ -1356,22 +1366,11 @@ namespace RockWeb.Blocks.Groups
 
             _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
-            SortProperty sortProperty = gGroupMembers.SortProperty;
-
             _hasGroupRequirements = new GroupRequirementService( rockContext ).Queryable().Where( a => ( a.GroupId.HasValue && a.GroupId == _group.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == _group.GroupTypeId ) ).Any();
 
             // If there are group requirements that that member doesn't meet, show an icon in the grid
             bool includeWarnings = false;
             _groupMemberIdsThatLackGroupRequirements = new HashSet<int>( new GroupService( rockContext ).GroupMembersNotMeetingRequirements( _group, includeWarnings ).Select( a => a.Key.Id ).ToList().Distinct() );
-
-            if ( sortProperty != null )
-            {
-                qry = qry.Sort( sortProperty );
-            }
-            else
-            {
-                qry = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName );
-            }
 
             gGroupMembers.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
@@ -1418,6 +1417,16 @@ namespace RockWeb.Blocks.Groups
                         _personIdHomeLocationLookup = locationsQry.GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.OrderBy( a => a.GroupOrder ).Select( x => x.HomeLocation ).FirstOrDefault() );
                     }
                 }
+            }
+
+            SortProperty sortProperty = gGroupMembers.SortProperty;
+            if ( sortProperty != null )
+            {
+                qry = qry.Sort( sortProperty );
+            }
+            else
+            {
+                qry = qry.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName );
             }
 
             var groupMemberIdQuery = qry.Select( m => m.Id );

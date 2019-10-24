@@ -14,9 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.SystemGuid;
-using Rock.Plugin;
-
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>

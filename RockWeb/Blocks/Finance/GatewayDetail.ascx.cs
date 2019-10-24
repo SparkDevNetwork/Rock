@@ -36,6 +36,13 @@ namespace RockWeb.Blocks.Finance
     [Description( "Displays the details of the given financial gateway." )]
     public partial class GatewayDetail : RockBlock, IDetailBlock
     {
+        #region Constants
+
+        private static string BatchDaily = "Daily";
+        private static string BatchWeekly = "Weekly";
+
+        #endregion
+
         #region Control Methods
 
         public int GatewayId
@@ -65,9 +72,12 @@ namespace RockWeb.Blocks.Finance
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
+            
             if ( !Page.IsPostBack )
             {
+                ddlBatchSchedule.DataSource = new[] { BatchDaily, BatchWeekly };
+                ddlBatchSchedule.DataBind();
+
                 ShowDetail( PageParameter( "gatewayId" ).AsInteger() );
             }
         }
@@ -106,6 +116,9 @@ namespace RockWeb.Blocks.Finance
                 gateway.EntityTypeId = cpGatewayType.SelectedEntityTypeId;
                 gateway.SetBatchTimeOffset( tpBatchTimeOffset.SelectedTime );
 
+                var isWeekly = ddlBatchSchedule.SelectedValue == BatchWeekly;
+                gateway.BatchDayOfWeek = isWeekly ? dowBatchStartDay.SelectedDayOfWeek : null;
+
                 rockContext.SaveChanges();
 
                 gateway.LoadAttributes( rockContext );
@@ -135,6 +148,16 @@ namespace RockWeb.Blocks.Finance
         {
             var gateway = new FinancialGateway { Id = GatewayId, EntityTypeId = cpGatewayType.SelectedEntityTypeId };
             BuildDynamicControls( gateway, true );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlBatchSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlBatchSchedule_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ToggleWeeklyBatchControls();
         }
 
         #endregion
@@ -210,8 +233,23 @@ namespace RockWeb.Blocks.Finance
             tbDescription.Text = gateway.Description;
             cpGatewayType.SetValue( gateway.EntityType != null ? gateway.EntityType.Guid.ToString().ToUpper() : string.Empty );
             tpBatchTimeOffset.SelectedTime = gateway.GetBatchTimeOffset();
+            dowBatchStartDay.SelectedDayOfWeek = gateway.BatchDayOfWeek;
+            ddlBatchSchedule.SelectedValue = gateway.BatchDayOfWeek.HasValue ? BatchWeekly : BatchDaily;
+
+            ToggleWeeklyBatchControls();
 
             BuildDynamicControls( gateway, true );
+        }
+
+        /// <summary>
+        /// Shows or hides the appropriate controls based on if the user selected daily
+        /// or weekly for the batch length.
+        /// </summary>
+        private void ToggleWeeklyBatchControls()
+        {
+            var isWeekly = ddlBatchSchedule.SelectedValue == BatchWeekly;
+            dowBatchStartDay.Visible = isWeekly;
+            dowBatchStartDay.Required = isWeekly;
         }
 
         /// <summary>
@@ -233,7 +271,16 @@ namespace RockWeb.Blocks.Finance
                 descriptionList.Add( "Gateway Type", gateway.EntityType.Name );
             }
 
+            var dayOfWeek = gateway.BatchDayOfWeek;
+            var isWeekly = dayOfWeek.HasValue;
+
+            if ( isWeekly )
+            {
+                descriptionList.Add( "Batched Weekly", dayOfWeek.Value.ToString() );
+            }
+
             var timeSpan = gateway.GetBatchTimeOffset();
+
             if ( timeSpan.Ticks > 0 )
             {
                 descriptionList.Add( "Batch Time Offset", timeSpan.ToString() );

@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -33,7 +31,12 @@ namespace Rock.SystemGuid
         #endregion DataView Categories
 
         #region Defined Type Categories
-        
+
+        /// <summary>
+        /// Campus Category
+        /// </summary>
+        public const string DEFINEDTYPE_CAMPUS = "4503C83E-4171-4EAE-99C1-A3647E065181";
+
         /// <summary>
         /// CMS Category
         /// </summary>
@@ -132,19 +135,29 @@ namespace Rock.SystemGuid
         #region Person Attributes
 
         /// <summary>
-        /// The person attributes Social guid
+        /// The category for person attributes Social guid
         /// </summary>
         public const string PERSON_ATTRIBUTES_SOCIAL = "DD8F467D-B83C-444F-B04C-C681167046A1";
-        
+
         /// <summary>
-        /// The person attribute for ERA
+        /// The category for person attribute for ERA
         /// </summary>
         public const string PERSON_ATTRIBUTES_ERA = "266A1EA8-425C-7BB0-4191-C2E234D60086";
 
         /// <summary>
-        /// The person attribute for Finance Internal
+        /// The category for person attribute for Finance Internal
         /// </summary>
         public const string PERSON_ATTRIBUTES_FINANCE_INTERNAL = "3030B3E2-91EE-4833-BACE-47F775FA98A0";
+
+        /// <summary>
+        /// The category for person attributes for DISC
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_DISC = "0B187C81-2106-4875-82B6-FBF1277AE23B";
+
+        /// <summary>
+        /// The category for person attributes for Personality Assessment Data
+        /// </summary>
+        public const string PERSON_ATTRIBUTES_PERSONALITY_ASSESSMENT_DATA = "B08A3096-FCFA-4DA0-B95D-1F3F11CC9969";
 
         #endregion
 
@@ -181,8 +194,21 @@ namespace Rock.SystemGuid
         /// The Personal Merge Template Category guid
         /// </summary>
         public const string PERSONAL_MERGE_TEMPLATE = "A9F2F544-660B-4176-ACAD-88898416A66E";
-        
+
         #endregion
 
+        #region Registration Attributes
+
+        /// <summary>
+        /// The registration attribute category that indicates Registration Attributes that should be prompted for at the start of the registration process.
+        /// </summary>
+        public const string REGISTRATION_ATTRIBUTE_START_OF_REGISTRATION = "27808664-97E7-432B-A1E7-D02F6DE5977A";
+
+        /// <summary>
+        /// The registration attribute category that indicates Registration Attributes that should be prompted for at the end of the registration process.
+        /// </summary>
+        public const string REGISTRATION_ATTRIBUTE_END_OF_REGISTRATION = "4648196E-CEB8-4D76-8F27-273EBBC35A08";
+
+        #endregion
     }
 }

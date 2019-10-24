@@ -18,14 +18,13 @@ using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 
     /// </summary>
-    public class MonthYearPicker : CompositeControl, IRockControl
+    public class MonthYearPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
         #region IRockControl implementation
 
@@ -395,7 +394,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            bool needsAutoPostBack = SelectedMonthYearChanged != null;
+            bool needsAutoPostBack = SelectedMonthYearChanged != null || ValueChanged != null;
             _monthDropDownList.AutoPostBack = needsAutoPostBack;
             _yearDropDownList.AutoPostBack = needsAutoPostBack;
 
@@ -420,16 +419,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void monthYearDropDownList_SelectedIndexChanged( object sender, EventArgs e )
         {
-            if ( SelectedMonthYearChanged != null )
-            {
-                SelectedMonthYearChanged( this, e );
-            }
+            SelectedMonthYearChanged?.Invoke( this, e );
+            ValueChanged?.Invoke( this, e );
         }
 
         /// <summary>
         /// Occurs when [selected month year changed].
         /// </summary>
         public event EventHandler SelectedMonthYearChanged;
+
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
 
         #endregion
 

@@ -33,13 +33,18 @@ namespace Rock.Web.Cache
     {
         private const string _AllRegion = "AllItems";
 
+        /// <summary>
+        /// All string
+        /// </summary>
+        protected static readonly string AllString = "All";
+
         // This static field will be different for each generic type. See (https://www.jetbrains.com/help/resharper/2018.1/StaticMemberInGenericType.html)
         // This is intentional behavior in this case.
         private static readonly object _obj = new object();
 
         private static readonly string KeyPrefix = $"{typeof( T ).Name}";
-        private static string AllKey => $"{typeof( T ).Name}:All";
-
+        private static string AllKey => $"{typeof( T ).Name}:{AllString}";
+        
         #region Protected Methods
 
         /// <summary>
@@ -98,8 +103,6 @@ namespace Rock.Web.Cache
             string qualifiedKey = QualifiedKey( key );
 
             var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey );
-
-            RockCache.UpdateCacheHitMiss( key, value != null );
 
             if ( value != null )
             {
@@ -283,7 +286,17 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            RockCacheManager<T>.Instance.Cache.Clear();
+            // Calling the clear on the instance when using redis will clear all of the cache, which is bad.
+            // So let's call remove instead if using redis.
+            if ( RockCache.IsCacheSerialized )
+            {
+                FlushItem( AllString );
+            }
+            else
+            {
+                RockCacheManager<T>.Instance.Cache.Clear();
+            }
+            
             RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
         }
 

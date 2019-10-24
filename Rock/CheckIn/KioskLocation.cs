@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Model;
 
 namespace Rock.CheckIn
@@ -75,6 +76,20 @@ namespace Rock.CheckIn
             get
             {
                 return KioskSchedules != null && KioskSchedules.Any( s => s.IsCheckInActive );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the check-out window is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if check out is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckOutActive
+        {
+            get
+            {
+                return KioskSchedules != null && KioskSchedules.Any( s => s.IsCheckInActive || s.IsCheckOutActive );
             }
         }
 

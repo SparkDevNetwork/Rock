@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -342,7 +342,7 @@ namespace Rock.Jobs
                                     mergeFields.Add( "Suggestions", personSuggestionNotices.OrderBy( s => s.SuggestionType.Order ).ToList() );
 
                                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
-                                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                    emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                     var errors = new List<string>();
                                     emailMessage.Send(out errors);
                                     exceptionMsgs.AddRange( errors );

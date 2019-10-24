@@ -19,18 +19,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
-using Rock.Data;
 using Rock.Communication;
+using Rock.Data;
 using Rock.Web.Cache;
-using System.Data.Entity;
-using System.Linq.Expressions;
-using Rock.Web;
 
 namespace Rock.Model
 {
@@ -219,7 +218,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the enabled lava commands.
+        /// Gets or sets a comma-delimited list of enabled LavaCommands
         /// </summary>
         /// <value>
         /// The enabled lava commands.
@@ -236,7 +235,7 @@ namespace Rock.Model
         /// A <see cref="System.String"/> that represents the name of the communication.
         /// </value>
         [DataMember]
-        [MaxLength( 100 )]
+        [MaxLength( 1000 )]
         public string Subject { get; set; }
 
         /// <summary>
@@ -359,6 +358,16 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 100 )]
         public string PushSound { get; set; }
+
+        /// <summary>
+        /// Option to prevent communications from being sent to people with the same email/SMS addresses.
+        /// This will mean two people who share an address will not receive a personalized communication, only one of them will.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [exclude duplicate recipient address]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ExcludeDuplicateRecipientAddress { get; set; }
 
         #endregion
 
@@ -701,7 +710,7 @@ namespace Rock.Model
         /// <param name="segmentCriteria">The segment criteria.</param>
         /// <param name="segmentDataViewIds">The segment data view ids.</param>
         /// <returns></returns>
-        public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, int? listGroupId, SegmentCriteria segmentCriteria, List<int> segmentDataViewIds)
+        public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, int? listGroupId, SegmentCriteria segmentCriteria, List<int> segmentDataViewIds )
         {
             IQueryable<GroupMember> groupMemberQuery = null;
             if ( listGroupId.HasValue )
@@ -751,6 +760,51 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// if <see cref="ExcludeDuplicateRecipientAddress" /> is set to true, removes <see cref="CommunicationRecipient"></see>s that have the same SMS/Email address as another recipient
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        public void RemoveRecipientsWithDuplicateAddress( RockContext rockContext )
+        {
+            if ( !ExcludeDuplicateRecipientAddress )
+            {
+                return;
+            }
+
+            var communicationRecipientService = new CommunicationRecipientService( rockContext );
+
+            var recipientsQry = GetRecipientsQry( rockContext );
+
+            int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+            if ( smsMediumEntityTypeId.HasValue )
+            {
+                IQueryable<CommunicationRecipient> duplicateSMSRecipientsQuery = recipientsQry.Where( a => a.MediumEntityTypeId == smsMediumEntityTypeId.Value )
+                    .Where( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).Any() )
+                    .GroupBy( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).FirstOrDefault().Number )
+                    .Where( a => a.Count() > 1 )
+                    .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
+                    .SelectMany( a => a );
+
+                var duplicateSMSRecipients = duplicateSMSRecipientsQuery.ToList();
+                communicationRecipientService.DeleteRange( duplicateSMSRecipients );
+            }
+
+            int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            if ( emailMediumEntityTypeId.HasValue )
+            {
+                IQueryable<CommunicationRecipient> duplicateEmailRecipientsQry = recipientsQry.Where( a => a.MediumEntityTypeId == emailMediumEntityTypeId.Value )
+                    .GroupBy( a => a.PersonAlias.Person.Email )
+                    .Where( a => a.Count() > 1 )
+                    .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
+                    .SelectMany( a => a );
+
+                var duplicateEmailRecipients = duplicateEmailRecipientsQry.ToList();
+                communicationRecipientService.DeleteRange( duplicateEmailRecipients );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Refresh the recipients list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -766,7 +820,7 @@ namespace Rock.Model
             var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
             var preferredCommunicationTypeAttribute = AttributeCache.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
             var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
-            var segmentDataViewIds =  new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
+            var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
 
             var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
 
@@ -907,22 +961,20 @@ namespace Rock.Model
                 return;
             }
 
-            
-            DateTime? endDateTime = null;
-            bool isCommunicationInsideDND = CheckCommunicationForDND( RockDateTime.Now, out endDateTime );
-
-            if ( isCommunicationInsideDND )
-            {
-                MarkCommunicationAfterDND( communication, endDateTime.Value );
-                return;
-            }
-
-
-            if ( communication.ListGroupId.HasValue && !communication.SendDateTime.HasValue )
+            // only alter the Recipient list if it the communication hasn't sent a message to any recipients yet
+            if ( communication.SendDateTime.HasValue == false )
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    communication.RefreshCommunicationRecipientList( rockContext );
+                    if ( communication.ListGroupId.HasValue )
+                    {
+                        communication.RefreshCommunicationRecipientList( rockContext );
+                    }
+
+                    if ( communication.ExcludeDuplicateRecipientAddress )
+                    {
+                        communication.RemoveRecipientsWithDuplicateAddress( rockContext );
+                    }
                 }
             }
 
@@ -942,63 +994,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Check the specified communication if falling inside DND window.
-        /// </summary>
-        /// <param name="communicationDateTime">The communication date and time.</param>
-        /// <param name="endDateTime">The end date time.</param>
-        /// <returns></returns>
-        public static bool CheckCommunicationForDND( DateTime communicationDateTime, out DateTime? endDateTime )
-        {
-            endDateTime = null;
-            bool isCommunicationForDND = false;
-            var isDNDActive = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_ACTIVE ).AsBoolean();
-            var startTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_START ).AsTimeSpan();
-            var endTime = SystemSettings.GetValue( SystemKey.SystemSetting.DO_NOT_DISTURB_END ).AsTimeSpan();
-
-            if ( isDNDActive && startTime.HasValue && endTime.HasValue )
-            {
-                endDateTime = communicationDateTime.Date.Add( endTime.Value );
-                if ( startTime <= endTime )
-                {
-                    if ( communicationDateTime.TimeOfDay >= startTime && communicationDateTime.TimeOfDay <= endTime )
-                    {
-                        isCommunicationForDND = true;
-                    }
-                }
-                else
-                {
-                    if ( communicationDateTime.TimeOfDay >= startTime || communicationDateTime.TimeOfDay <= endTime )
-                    {
-                        if ( communicationDateTime.TimeOfDay < TimeSpan.Parse( "00:00" ) && communicationDateTime.TimeOfDay >= startTime )
-                        {
-                            endDateTime = endDateTime.Value.AddDays( 1 );
-                        }
-                        isCommunicationForDND = true;
-
-                    }
-                }
-            }
-
-            return isCommunicationForDND;
-        }
-
-        /// <summary>
-        /// Update Communication FutureSendDateTime after DND Window
-        /// </summary>
-        /// <param name="communication">The communication.</param>
-        /// <param name="endDateTime">The end date and time.</param>
-        /// <returns></returns>
-        private static void MarkCommunicationAfterDND( Communication communication, DateTime endDateTime )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
-                dbCommunication.FutureSendDateTime = endDateTime.AddMinutes( 5 );
-                rockContext.SaveChanges();
-            }
-        }
-
-        /// <summary>
         /// Gets the next pending.
         /// </summary>
         /// <param name="communicationId">The communication identifier.</param>
@@ -1011,9 +1006,9 @@ namespace Rock.Model
 
             var delayTime = RockDateTime.Now.AddMinutes( -10 );
 
-            lock ( _obj )
+             lock ( _obj )
             {
-                recipient = new CommunicationRecipientService( rockContext ).Queryable( "Communication,PersonAlias.Person" )
+                recipient = new CommunicationRecipientService( rockContext ).Queryable().Include( r => r.Communication ).Include( r => r.PersonAlias.Person )
                     .Where( r =>
                         r.CommunicationId == communicationId &&
                         ( r.Status == CommunicationRecipientStatus.Pending ||

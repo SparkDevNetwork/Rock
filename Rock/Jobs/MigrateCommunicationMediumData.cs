@@ -18,7 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;

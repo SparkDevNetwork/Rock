@@ -14,9 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
+using System.Collections.Generic;
 using System.Configuration;
-using System.Text;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -29,11 +28,11 @@ namespace Rock.Apps.CheckScannerUtility
         /// The password, stored for the session, but not in the config file
         /// </summary>
         private static string sessionPassword = null;
-        
+
         /// <summary>
         /// The default instance
         /// </summary>
-        private static RockConfig defaultInstance = (RockConfig)ApplicationSettingsBase.Synchronized( new RockConfig() );
+        private static RockConfig defaultInstance = ( RockConfig ) ApplicationSettingsBase.Synchronized( new RockConfig() );
 
         /// <summary>
         /// Gets the default.
@@ -122,7 +121,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return (RangerImageColorTypes)this["ImageColorType"];
+                return ( RangerImageColorTypes ) this["ImageColorType"];
             }
 
             set
@@ -143,7 +142,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return (short)this["MICRImageComPort"];
+                return ( short ) this["MICRImageComPort"];
             }
 
             set
@@ -158,7 +157,8 @@ namespace Rock.Apps.CheckScannerUtility
         public enum InterfaceType
         {
             RangerApi = 0,
-            MICRImageRS232 = 1
+            MICRImageRS232 = 1,
+            MagTekImageSafe = 2
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return (InterfaceType)this["ScannerInterfaceType"];
+                return ( InterfaceType ) this["ScannerInterfaceType"];
             }
 
             set
@@ -279,7 +279,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the scanner should have "DoubleDocDetection" enabled
+        /// Gets or sets a value indicating whether the scanner should have "DoubleDocDetection" enabled (If deviced supports it)
         /// </summary>
         /// <value>
         /// <c>true</c> if [enable double document detection]; otherwise, <c>false</c>.
@@ -359,6 +359,126 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 this["Plurality"] = value;
             }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the ShouldCaptureAmountOnScan.
+        /// </summary>
+        /// <value>
+        /// The ShouldCaptureAmountOnScan.
+        /// </value>
+        [DefaultSettingValueAttribute( "false" )]
+        [UserScopedSetting]
+        public bool CaptureAmountOnScan
+        {
+            get
+            {
+                return this["CaptureAmountOnScan"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["CaptureAmountOnScan"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the RequireControlAmount.
+        /// </summary>
+        /// <value>
+        /// The RequireControlAmount.
+        /// </value>
+        [DefaultSettingValueAttribute( "false" )]
+        [UserScopedSetting]
+        public bool RequireControlAmount
+        {
+            get
+            {
+                return this["RequireControlAmount"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["RequireControlAmount"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the RequireControlAmount.
+        /// </summary>
+        /// <value>
+        /// The RequireControlAmount.
+        /// </value>
+        [DefaultSettingValueAttribute( "false" )]
+        [UserScopedSetting]
+        public bool RequireControlItemCount
+        {
+            get
+            {
+                return this["RequireControlItemCount"] as bool? ?? true;
+            }
+
+            set
+            {
+                this["RequireControlItemCount"] = value;
+            }
+        }
+
+        [UserScopedSetting]
+        public int [] SelectedAccountForAmountsIds
+        {
+            get
+            {
+                return this["SelectedAccountForAmountsIds"] as int[] ?? new int[0];
+            }
+
+            set
+            {
+                this["SelectedAccountForAmountsIds"] = value;
+            }
+
+        }
+
+        [UserScopedSetting]
+        public double WindowCurrentHeight
+        {
+            get
+            {
+                return this["WindowCurrentHeight"] == null? 800:( double) this["WindowCurrentHeight"];
+            }
+
+            set
+            {
+                this["WindowCurrentHeight"] = value;
+            }
+        }
+
+        [UserScopedSetting]
+        public double WindowCurrentWidth
+        {
+            get
+            {
+                return this["WindowCurrentWidth"] == null? 960 : ( double ) this["WindowCurrentWidth"];
+            }
+
+            set
+            {
+                this["WindowCurrentWidth"] = value;
+            }
+        }
+
+        /// <summary>
+        /// If CampusId Filter it set, it will limit the selectable accounts, batch list, and batch campus selection
+        /// </summary>
+        /// <value>
+        /// The campus identifier filter.
+        /// </value>
+        [UserScopedSetting]
+        public int? CampusIdFilter
+        {
+            get => this["CampusIdFilter"] as int?;
+            set => this["CampusIdFilter"] = value;
         }
 
         /// <summary>

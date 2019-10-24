@@ -72,13 +72,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
-                bool hideInActive = GetAttributeValue( "HideInactive" ).AsBoolean();
+                bool hideInactive = GetAttributeValue( "HideInactive" ).AsBoolean();
                 var rockContext = new RockContext();
                 var connectionTypeService = new ConnectionTypeService( rockContext );
                 var connectionTypesQry = connectionTypeService
                     .Queryable();
 
-                if ( hideInActive )
+                if ( hideInactive )
                 {
                     connectionTypesQry = connectionTypesQry
                         .Where( t => t.ConnectionOpportunities.Any( o => o.IsActive == true ) )

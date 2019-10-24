@@ -17,19 +17,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
-using System.IO;
 
 using Quartz;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Model;
-using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Web;
 using Rock.Communication;
-using System.Text;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {
@@ -67,7 +64,7 @@ namespace Rock.Jobs
                 List<int> groupIds = new List<int>();
                 GetGroupIds( groupIds, sendToDescendants, group );
 
-                var recipients = new List<RecipientData>();
+                var recipients = new List<RockEmailMessageRecipient>();
 
                 var groupMemberList = new GroupMemberService( rockContext ).Queryable().Where( gm =>
                     groupIds.Contains( gm.GroupId ) &&
@@ -86,7 +83,7 @@ namespace Rock.Jobs
                     mergeFields.Add( "GroupMember", groupMember );
                     mergeFields.Add( "Group", groupMember.Group );
 
-                    recipients.Add( new RecipientData( groupMember.Person.Email, mergeFields ) );
+                    recipients.Add( new RockEmailMessageRecipient( groupMember.Person, mergeFields ) );
                 }
 
                 var errors = new List<string>();

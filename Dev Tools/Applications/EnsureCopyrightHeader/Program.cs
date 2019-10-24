@@ -43,6 +43,7 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.TransNational.Pi\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockJobSchedulerService\\" );
@@ -61,6 +62,9 @@ namespace EnsureCopyrightHeader
             int result = 0;
 
             List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
+
+            // exclude files that come from the localhistory VS extension
+            sourceFilenames = sourceFilenames.Where( a => !a.Contains( ".localhistory" ) ).ToList();
 
             // this was was our standard copyright badge up until 1/17/2014. Look for it in case it sneaks back in
             const string oldCopyrightBadge1 = @"// <copyright>

@@ -9,6 +9,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbObsolete" runat="server" NotificationBoxType="Warning" Heading="(v1.10) Deprecated: " Text="This block will be removed in a future version of Rock. Analytics information is now available in the Communication Detail block." Dismissable="true" />
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfCommunicationListGroupId" runat="server" />
         <div class="panel panel-block panel-analytics">

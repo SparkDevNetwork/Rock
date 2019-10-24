@@ -57,15 +57,16 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            var dvp = new DefinedValuePicker();
-            controls.Add( dvp );
-            dvp.AutoPostBack = true;
-            dvp.SelectedIndexChanged += OnQualifierUpdated;
+            var dvpGroupTypePurpose = new DefinedValuePicker();
+            dvpGroupTypePurpose.DisplayDescriptions = true;
+            controls.Add( dvpGroupTypePurpose );
+            dvpGroupTypePurpose.AutoPostBack = true;
+            dvpGroupTypePurpose.SelectedIndexChanged += OnQualifierUpdated;
 
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE.AsGuid() );
-            dvp.BindToDefinedType( definedType, true );
-            dvp.Label = "Purpose";
-            dvp.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
+            dvpGroupTypePurpose.DefinedTypeId = definedType?.Id;
+            dvpGroupTypePurpose.Label = "Purpose";
+            dvpGroupTypePurpose.Help = "An optional setting to limit the selection of group types to those that have the selected purpose.";
 
             return controls;
         }

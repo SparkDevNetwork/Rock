@@ -22,6 +22,7 @@ using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -681,7 +682,7 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    _aFileName.HRef = string.Format( "{0}GetFile.ashx?isBinaryFile=F&rootFolder={1}&fileName={2}", ResolveUrl( "~" ), Rock.Security.Encryption.EncryptString( this.RootFolder ), BinaryFileId );
+                    _aFileName.HRef = ResolveUrl( this.UploadedContentFilePath );
                     _aFileName.InnerText = this.UploadedContentFilePath;
                 }
 

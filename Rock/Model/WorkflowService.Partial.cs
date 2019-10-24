@@ -14,10 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Compilation;
 
 using Rock.Data;
 using Rock.Web.Cache;
@@ -79,6 +77,17 @@ namespace Rock.Model
                         if ( workflow.Id == 0 )
                         {
                             Add( workflow );
+                        }
+
+                        // Set EntityId and EntityTypeId if they are not already set and the included entity object is appropriate.
+                        if ( ( workflow.EntityId == null ) && ( workflow.EntityTypeId == null ) && ( entity != null ) )
+                        {
+                            var typedEntity = entity as IEntity;
+                            if ( typedEntity != null )
+                            {
+                                workflow.EntityId = typedEntity.Id;
+                                workflow.EntityTypeId = typedEntity.TypeId;
+                            }
                         }
 
                         rockContext.SaveChanges();

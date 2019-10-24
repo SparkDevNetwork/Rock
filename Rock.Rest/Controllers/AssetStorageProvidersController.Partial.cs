@@ -46,7 +46,7 @@ namespace Rock.Rest.Controllers
                 {
                     var component = assetStorageProvider.GetAssetStorageComponent();
                     var treeViewItem = new TreeViewItem();
-                    treeViewItem.Id = assetStorageProvider.Id.ToString();
+                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{component.GetAttributeValue( assetStorageProvider,"RootFolder" )},{true}");
                     treeViewItem.IconCssClass = component.IconCssClass;
                     treeViewItem.Name = assetStorageProvider.Name;
                     treeViewItem.HasChildren = true;
@@ -77,10 +77,10 @@ namespace Rock.Rest.Controllers
                         treeViewItem.Name = folderAsset.Name;
 
                         // NOTE: This is not very performant. We should see if we can get a bool response from providers instead of getting the entire folder list for each subfolder.
-                        treeViewItem.HasChildren = component.ListFoldersInFolder( assetStorageProvider, folderAsset ).Any();
+                        //treeViewItem.HasChildren = component.ListFoldersInFolder( assetStorageProvider, folderAsset ).Any();
 
                         // This is fast but will show the triangle for each folder. If no data the triangle disappears after clicking it.
-                        //treeViewItem.HasChildren = true;
+                        treeViewItem.HasChildren = true;
 
                         treeViewItemList.Add( treeViewItem );
                     }

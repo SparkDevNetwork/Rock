@@ -19,14 +19,18 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Routing;
+
 using Newtonsoft.Json;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -347,6 +351,24 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string BodyCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the icon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The icon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? IconBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -359,6 +381,15 @@ namespace Rock.Model
         /// </value>
         [LavaInclude]
         public virtual Page ParentPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon binary file.
+        /// </summary>
+        /// <value>
+        /// The icon binary file.
+        /// </value>
+        [LavaInclude]
+        public virtual BinaryFile IconBinaryFile { get; set; }
 
         /// <summary>
         /// Gets the supported actions.
@@ -494,9 +525,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
-            if (state == System.Data.Entity.EntityState.Deleted)
+            if (state == EntityState.Deleted)
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
@@ -547,9 +578,9 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            if ( state == EntityState.Modified || state == EntityState.Deleted )
             {
                 _originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
             }
@@ -571,7 +602,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
             if ( oldPageCache != null )
@@ -583,12 +614,12 @@ namespace Rock.Model
 
             if ( this.ParentPageId.HasValue )
             {
-                PageCache.UpdateCachedEntity( this.ParentPageId.Value, System.Data.Entity.EntityState.Detached );
+                PageCache.UpdateCachedEntity( this.ParentPageId.Value, EntityState.Detached );
             }
 
             if ( _originalParentPageId.HasValue && _originalParentPageId != this.ParentPageId )
             {
-                PageCache.UpdateCachedEntity( _originalParentPageId.Value, System.Data.Entity.EntityState.Detached );
+                PageCache.UpdateCachedEntity( _originalParentPageId.Value, EntityState.Detached );
             }
         }
 
@@ -610,6 +641,7 @@ namespace Rock.Model
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IconBinaryFile ).WithMany().HasForeignKey( p => p.IconBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 

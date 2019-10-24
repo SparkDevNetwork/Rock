@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -109,6 +110,7 @@ namespace Rock.Model
         /// The status message as HTML.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         public string StatusMessageAsHtml
         {
             get
@@ -124,6 +126,7 @@ namespace Rock.Model
         /// The job duration in seconds.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         public int? DurationSeconds
         {
             get

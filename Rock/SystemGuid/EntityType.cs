@@ -14,11 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -37,7 +32,17 @@ namespace Rock.SystemGuid
         public const string AUTHENTICATION_DATABASE = "4E9B798F-BB68-4C0E-9707-0928D15AB020";
 
         /// <summary>
-        /// The benevolenc e_ request
+        /// The pin authentication provider
+        /// </summary>
+        public const string AUTHENTICATION_PIN = "1FB5A259-F45C-4857-AF3D-3B9E32DB0EEE";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Badge entity
+        /// </summary>
+        public const string BADGE = "99300129-6F4C-45B2-B486-71123F046289";
+
+        /// <summary>
+        /// The benevolence request
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "CF0CE5C1-9286-4310-9B50-10D040F8EBD2";
 
@@ -45,6 +50,11 @@ namespace Rock.SystemGuid
         /// The Block entity type
         /// </summary>
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
+
+        /// <summary>
+        /// The campus
+        /// </summary>
+        public const string CAMPUS = "00096BED-9587-415E-8AD4-4E076AE8FBF0";
 
         /// <summary>
         /// The checkr provider
@@ -148,6 +158,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_BATCH = "BDD09C8E-2C52-4D08-9062-BE7D52D190C2";
 
         /// <summary>
+        /// The guid for the Rock.Model.FinancialScheduledTransaction entity.
+        /// </summary>
+        public const string FINANCIAL_SCHEDULED_TRANSACTION = "76824E8A-CCC4-4085-84D9-8AF8C0807E20";
+
+        /// <summary>
         /// The guid for the Rock.Model.FinancialTransaction entity.
         /// </summary>
         public const string FINANCIAL_TRANSACTION = "2C1CB26B-AB22-42D0-8164-AEDEE0DAE667";
@@ -183,6 +198,46 @@ namespace Rock.SystemGuid
         public const string MERGE_TEMPLATE = "CD1DB988-6891-4B0F-8D1B-B0A311A3BC3E";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Content
+        /// </summary>
+        public const string MOBILE_CONTENT_BLOCK_TYPE = "B9ADB0A5-62B0-4D74-BDFF-1AA959788602";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.ContentChannelItemList
+        /// </summary>
+        public const string MOBILE_CONTENT_CHANNEL_ITEM_LIST_BLOCK_TYPE = "6DBF59D6-EB40-43C8-8859-F38254EC3F6D";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.ContentChannelItemView
+        /// </summary>
+        public const string MOBILE_CONTENT_CHANNEL_ITEM_VIEW_BLOCK_TYPE = "44A8B647-E0A7-42E7-9A75-276310F7E7BB";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.LavaItemList
+        /// </summary>
+        public const string MOBILE_LAVA_ITEM_LIST_BLOCK_TYPE = "60AD6D70-8A2A-4CC1-97D5-199300AF77EE";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Login
+        /// </summary>
+        public const string MOBILE_LOGIN_BLOCK_TYPE = "6CE2D3D7-18D8-49FF-8C39-0CA98EB5DEB4";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.ProfileDetails
+        /// </summary>
+        public const string MOBILE_PROFILE_DETAILS_BLOCK_TYPE = "A1ED4948-0778-4E13-B434-E97795DDB68B";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Register
+        /// </summary>
+        public const string MOBILE_REGISTER_BLOCK_TYPE = "4459357F-E422-45D1-855D-C4681101F848";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.WorkflowEntry
+        /// </summary>
+        public const string MOBILE_WORKFLOW_ENTRY_BLOCK_TYPE = "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E";
+
+        /// <summary>
         /// The guid for the Rock.Model.Note entity
         /// </summary>
         public const string NOTE = "53DC1E78-14A5-44DE-903F-6A2CB02164E7";
@@ -211,6 +266,11 @@ namespace Rock.SystemGuid
         /// The protect my ministry provider
         /// </summary>
         public const string PROTECT_MY_MINISTRY_PROVIDER = "C16856F4-3C6B-4AFB-A0B8-88A303508206";
+
+        /// <summary>
+        /// The guid for the Rock.Model.Registration entity
+        /// </summary>
+        public const string REGISTRATION = "D2F294C6-E161-4A56-85C7-CD74D535F61A";
 
         /// <summary>
         /// The guid for the Rock.Model.RegistrationTemplate entity
@@ -256,5 +316,20 @@ namespace Rock.SystemGuid
         /// The guid for the Test Financial Gateway entity type
         /// </summary>
         public const string FINANCIAL_GATEWAY_TEST_GATEWAY = "C22B0247-7C9F-411B-A1F5-0051FCBAC199";
+
+        /// <summary>
+        /// The guid for the Step entity type
+        /// </summary>
+        public const string STEP = "8EADB0DC-17F4-4541-A46E-53F89E21A622";
+
+        /// <summary>
+        /// The guid for the Step program entity
+        /// </summary>
+        public const string STEP_PROGRAM = "E89F9528-A74E-41B7-8B65-B56B4CE7A122";
+
+        /// <summary>
+        /// The MyWell financial gateway
+        /// </summary>
+        public const string MYWELL_FINANCIAL_GATEWAY = "E81ED723-E807-4BDE-ADF1-AB9686241637";
     }
 }

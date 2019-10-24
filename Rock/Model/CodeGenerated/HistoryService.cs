@@ -97,7 +97,9 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IsSensitive = source.IsSensitive;
             target.IsSystem = source.IsSystem;
+            target.NewRawValue = source.NewRawValue;
             target.NewValue = source.NewValue;
+            target.OldRawValue = source.OldRawValue;
             target.OldValue = source.OldValue;
             target.RelatedData = source.RelatedData;
             target.RelatedEntityId = source.RelatedEntityId;

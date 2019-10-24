@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Cms
     {
         #region Attribute Constants
 
-        const string HTML_FORM_DEFAULT_VALUE = @"{% if CurentUser %}
+        const string HTML_FORM_DEFAULT_VALUE = @"{% if CurrentPerson %}
     {{ CurrentPerson.NickName }}, could you please complete the form below.
 {% else %}
     Please complete the form below.
@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Cms
                 message.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
 
                 // create merge objects
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 
                 // create merge object for fields
                 Regex rgxRockControls = new Regex( @"^ctl\d*\$.*" );
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Cms
                 // send email
                 foreach ( string recipient in GetAttributeValue( "RecipientEmail" ).Split( ',' ).ToList() )
                 {
-                    message.AddRecipient( new RecipientData( recipient, mergeFields ) );
+                    message.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( recipient, mergeFields ) );
                 }
 
                 message.CCEmails = GetAttributeValue( "CCEmail" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) ).Split( ',' ).ToList();

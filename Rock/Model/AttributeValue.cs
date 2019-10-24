@@ -20,10 +20,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -59,9 +62,9 @@ namespace Rock.Model
             Guid? guid = value.AsGuidOrNull();
             if ( guid.HasValue )
             {
-                using ( var rockContext = new RockContext())
+                using ( var rockContext = new RockContext() )
                 {
-                    attributeValue.ValueAsPersonId = new PersonAliasService( rockContext).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId).FirstOrDefault();
+                    attributeValue.ValueAsPersonId = new PersonAliasService( rockContext ).Queryable().Where( a => a.Guid.Equals( guid.Value ) ).Select( a => a.PersonId ).FirstOrDefault();
                 }
             }
 
@@ -128,23 +131,45 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the Value as a double (Computed Column)
+        /// Gets the Value as a decimal (Computed on Save).
         /// </summary>
         /// <value>
         /// </value>
-        /* Computed Column Spec:
-        CASE 
-        WHEN len([value]) < (100)
-            AND isnumeric([value]) = (1)
-            AND NOT [value] LIKE '%[^0-9.]%'
-            AND NOT [value] LIKE '%[.]%'
-            THEN CONVERT([numeric](38, 10), [value])
-        END         
-         */
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public decimal? ValueAsNumeric { get; set; }
+        public decimal? ValueAsNumeric
+        {
+            get
+            {
+                // since this will get called on every save, don't spend time attempting to convert a large string to a decimal
+                // SQL Server type is decimal(18,2) so 18 digits max with 2 being the fractional. Including the possibility of 4 commas
+                // and a decimal point to get a max string length of 24 that can be turned into the SQL number type.
+                if ( this.Value.IsNull() || this.Value.Length > 24 )
+                {
+                    _valueAsNumeric = null;
+                    return _valueAsNumeric;
+                }
+
+                _valueAsNumeric = this.Value.AsDecimalOrNull();
+
+                // If this is true then we are probably dealing with a comma delimited list and not a number.
+                // In either case it won't save to the DB and needs to be handled.  Don't do the
+                // rounding trick since nonnumeric attribute values should be null here.
+                if ( _valueAsNumeric != null && _valueAsNumeric > ( decimal ) 9999999999999999.99 )
+                {
+                    _valueAsNumeric = null;
+                }
+
+                return _valueAsNumeric;
+            }
+
+            set
+            {
+                _valueAsNumeric = value;
+            }
+        }
+
+        private decimal? _valueAsNumeric;
 
         /// <summary>
         /// Gets the Value as a DateTime (maintained by SQL Trigger on AttributeValue)
@@ -155,7 +180,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public DateTime? ValueAsDateTime { get; private set; }
+        public DateTime? ValueAsDateTime { get; internal set; }
 
         /// <summary>
         /// Gets the value as boolean (computed column)
@@ -166,7 +191,7 @@ namespace Rock.Model
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [LavaIgnore]
-        public bool? ValueAsBoolean { get; private set; }
+        public bool? ValueAsBoolean { get; internal set; }
 
         /// <summary>
         /// Gets a person alias guid value as a PersonId (ComputedColumn).
@@ -326,7 +351,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the history changes to be saved in PostSaveChanges
+        /// Gets or sets the history changes to be saved in <see cref="PostSaveChanges(Data.DbContext)"/>
         /// </summary>
         /// <value>
         /// The history changes.
@@ -335,7 +360,7 @@ namespace Rock.Model
         private History.HistoryChangeList HistoryChanges { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether a new AttributeValueHistory with CurrentRowIndicator needs to be saved in PostSaveChanges
+        /// Gets or sets a value indicating whether a new AttributeValueHistory with CurrentRowIndicator needs to be saved in <see cref="PostSaveChanges(Data.DbContext)"/>
         /// </summary>
         /// <value>
         ///   <c>true</c> if [post save attribute value history]; otherwise, <c>false</c>.
@@ -370,7 +395,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var attributeCache = AttributeCache.Get( this.AttributeId );
             if ( attributeCache != null )
@@ -442,6 +467,15 @@ namespace Rock.Model
                 rockContext.SaveChanges();
             }
 
+            // If this a Person Attribute, Update the ModifiedDateTime on the Person that this AttributeValue is associated with
+            if ( this.EntityId.HasValue && AttributeCache.Get( this.AttributeId )?.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id )
+            {
+                var currentDateTime = RockDateTime.Now;
+                int personId = this.EntityId.Value;
+                var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId );
+                rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
+            }
+
             base.PostSaveChanges( dbContext );
         }
 
@@ -465,7 +499,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        protected void PreSaveBinaryFile( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        protected void PreSaveBinaryFile( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             Guid? newBinaryFileGuid = null;
             Guid? oldBinaryFileGuid = null;
@@ -507,7 +541,7 @@ namespace Rock.Model
         /// <param name="entry">The entry.</param>
         /// <param name="attributeCache">The attribute cache.</param>
         /// <param name="saveToHistoryTable">if set to <c>true</c> [save to history table].</param>
-        protected void SaveToHistoryTable( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry, AttributeCache attributeCache, bool saveToHistoryTable )
+        protected void SaveToHistoryTable( Rock.Data.DbContext dbContext, DbEntityEntry entry, AttributeCache attributeCache, bool saveToHistoryTable )
         {
             string oldValue = string.Empty;
             string newValue = string.Empty;
@@ -545,7 +579,7 @@ namespace Rock.Model
             if ( saveToHistoryTable )
             {
                 HistoryChanges = new History.HistoryChangeList();
-                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue );
+                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
             }
 
             if ( !attributeCache.EnableHistory )
@@ -606,7 +640,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             AttributeCache cacheAttribute = AttributeCache.Get( this.AttributeId, dbContext as RockContext );
 
@@ -623,7 +657,7 @@ namespace Rock.Model
                 {
                     entityType.FlushCachedItem( this.EntityId.Value );
                 }
-                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>())
+                else if ( cacheAttribute.EntityTypeId == EntityTypeCache.GetId<Rock.Model.Device>() )
                 {
                     Rock.CheckIn.KioskDevice.FlushItem( this.EntityId.Value );
                 }

@@ -14,15 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using Newtonsoft.Json;
-using Rock.Web.Cache;
-using Rock.Data;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
+
+using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -61,7 +64,7 @@ namespace Rock.Model
         public bool IsCommon { get; set; }
 
         /// <summary>
-        /// Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. This property is required.
+        /// Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the relative path to the supporting UserControl for the BlockType.
@@ -69,10 +72,16 @@ namespace Rock.Model
         /// <example>
         /// ~/Blocks/Security/Login.ascx
         /// </example>
-        [Required]
         [MaxLength( 260 )]
-        [DataMember( IsRequired = true )]
         public string Path { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity type identifier for the pre-compiled class that provides the logic for this block type.
+        /// </summary>
+        /// <value>
+        /// The entity type identifier for the pre-compiled class that provides the logic for this block type.
+        /// </value>
+        public int? EntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the BlockType.
@@ -131,6 +140,49 @@ namespace Rock.Model
 
         private ICollection<Block> _blocks;
 
+        /// <summary>
+        /// Gets or sets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public virtual EntityType EntityType { get; set; }
+
+        /// <summary>
+        /// Returns true if this block type is valid.
+        /// </summary>
+        /// <value>
+        /// A <see cref="T:System.Boolean" /> that is <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsValid
+        {
+            get
+            {
+                if ( !base.IsValid )
+                {
+                    return false;
+                }
+
+                //
+                // If we have both, not valid.
+                //
+                if ( !string.IsNullOrWhiteSpace( Path ) && EntityTypeId.HasValue )
+                {
+                    return false;
+                }
+
+                //
+                // If we have neither, not valid.
+                //
+                if ( string.IsNullOrWhiteSpace( Path ) && !EntityTypeId.HasValue )
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -164,7 +216,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             BlockTypeCache.UpdateCachedEntity( this.Id, entityState );
         }
@@ -184,6 +236,7 @@ namespace Rock.Model
         /// </summary>
         public BlockTypeConfiguration()
         {
+            this.HasOptional( b => b.EntityType ).WithMany().HasForeignKey( b => b.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

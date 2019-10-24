@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
@@ -184,6 +185,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The message to display if there are no options in the list." )
+        ]
+        public string EmptyListMessage
+        {
+            get { return ViewState["EmptyListMessage"] as string ?? string.Empty; }
+            set { ViewState["EmptyListMessage"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -253,7 +272,8 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the number of columns to display in the <see cref="T:System.Web.UI.WebControls.CheckBoxList" /> control.
-        /// If RepeatDirection is Horizontal, this will default to 4 columns
+        /// If RepeatDirection is Horizontal, this will default to 4 columns. There is no upper limit in the code so use
+        /// wisely.
         /// </summary>
         public override int RepeatColumns
         {
@@ -277,7 +297,7 @@ namespace Rock.Web.UI.Controls
         }
 
         private int? _repeatColumns;
-        
+
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -346,7 +366,7 @@ namespace Rock.Web.UI.Controls
             {
                 bool hasChanged = false;
 
-                // Hack to get the selected items on postback.  
+                // Hack to get the selected items on postback.
                 for ( int i = 0; i < this.Items.Count; i++ )
                 {
                     bool newCheckState = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
@@ -390,27 +410,41 @@ namespace Rock.Web.UI.Controls
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockcheckboxlist-horizontal" );
+
+                if ( this.RepeatColumns > 0 )
+                {
+                    cssClassBuilder.Append( string.Format(" in-columns in-columns-{0}", RepeatColumns ) );
+                }
+
             }
             else
             {
                 cssClassBuilder.Append( " rockcheckboxlist-vertical" );
             }
 
-            if ( this.RepeatColumns > 0 )
-            {
-                cssClassBuilder.Append( " in-columns" );
-            }
 
             writer.AddAttribute( "class", cssClassBuilder.ToString() );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( Items.Count == 0 )
             {
-                writer.Write( None.TextHtml );
+                writer.Write( this.EmptyListMessage );
             }
 
             base.RenderControl( writer );
 
+            if ( this.Required )
+            {
+                this.CustomValidator.Enabled = true;
+                if ( string.IsNullOrWhiteSpace( this.CustomValidator.ErrorMessage ) )
+                {
+                    this.CustomValidator.ErrorMessage = this.Label + " is required.";
+                }
+            }
+            else
+            {
+                this.CustomValidator.Enabled = false;
+            }
             CustomValidator.RenderControl( writer );
 
             writer.RenderEndTag();
@@ -421,11 +455,11 @@ namespace Rock.Web.UI.Controls
    function StrikeOffCheckbox( checkboxControl ){{
                 if ( checkboxControl.prop( 'checked' ) )
                 {{
-                    checkboxControl.parent('label').addClass( 'strikethrough' );
+                    checkboxControl.parent('label').addClass( 'line-through' );
                 }}
                 else
                 {{
-                    checkboxControl.parent('label').removeClass( 'strikethrough' );
+                    checkboxControl.parent('label').removeClass( 'line-through' );
                 }}
 
             }}
@@ -483,6 +517,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the names of the selected items.
+        /// </summary>
+        /// <value>
+        /// The names of the selected items.
+        /// </value>
+        public List<string> SelectedNames
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Text ).ToList();
+            }
+        }
     }
 }
 

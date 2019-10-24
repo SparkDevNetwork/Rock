@@ -21,11 +21,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Net.Mail;
 
+using FCM.Net;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using FCM.Net;
 
 namespace Rock.Communication.Transport
 {
@@ -65,7 +65,7 @@ namespace Rock.Communication.Transport
                     mergeFields.AddOrReplace( mergeField.Key, mergeField.Value );
                 }
 
-                var recipients = rockMessage.GetRecipientData();
+                var recipients = rockMessage.GetRecipients();
 
                 if ( pushMessage.SendSeperatelyToEachRecipient )
                 {

@@ -92,13 +92,12 @@ namespace RockWeb.Blocks.Core
 
             int? personIdParam = Request.QueryString["personId"].AsIntegerOrNull();
 
-            // if a personId is in the page params, use that instead of the person context
+            // if a personId is in the page parameters, use that instead of the person context
             if ( personIdParam.HasValue )
             {
-                if ( currentPerson == null || currentPerson.Id != personIdParam.Value )
-                {
-                    SetPersonContext( personIdParam.Value, false );
-                }
+                // if there is a query parameter, ensure that the Person Context cookie is set (and has an updated expiration)
+                // note, the Person Context might already match due to the query parameter, but has a different cookie context, so we still need to ensure the cookie context is updated
+                SetPersonContext( personIdParam.Value, false );
             }
 
             RockContext rockContext = new RockContext();

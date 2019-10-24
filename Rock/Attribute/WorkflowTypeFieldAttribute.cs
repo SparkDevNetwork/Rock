@@ -15,9 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
@@ -39,11 +36,39 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public WorkflowTypeFieldAttribute( string name = "Workflow", string description = "", bool allowMultiple = false, bool required = false, string defaultWorkflowTypeGuid = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultWorkflowTypeGuid, category, order, key, 
-            allowMultiple ? 
-                typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName : 
+            : base( name, description, required, defaultWorkflowTypeGuid, category, order, key,
+            allowMultiple ?
+                typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName :
                 typeof( Rock.Field.Types.WorkflowTypeFieldType ).FullName )
         {
         }
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow the selection of more than one Workflow Type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multiple]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return this.FieldTypeClass == typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName;
+            }
+
+            set
+            {
+                if ( value )
+                {
+                    this.FieldTypeClass = typeof( Rock.Field.Types.WorkflowTypesFieldType ).FullName;
+                }
+                else
+                {
+                    this.FieldTypeClass = typeof( Rock.Field.Types.WorkflowTypeFieldType ).FullName;
+                }
+            }
+        }
+
     }
 }

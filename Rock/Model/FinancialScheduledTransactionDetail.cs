@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -165,21 +167,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var rockContext = ( RockContext ) dbContext;
             HistoryChangeList = new History.HistoryChangeList();
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
                         HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, acct ).SetNewValue( Amount.FormatAsCurrency() );
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
 
@@ -194,7 +196,7 @@ namespace Rock.Model
 
                         break;
                     }
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         string acct = History.GetValue<FinancialAccount>( this.Account, this.AccountId, rockContext );
                         HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, acct ).SetOldValue( Amount.FormatAsCurrency() );
@@ -209,7 +211,7 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately after the item is saved
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( DbContext dbContext )
+        public override void PostSaveChanges( Data.DbContext dbContext )
         {
             if ( HistoryChangeList.Any() )
             {

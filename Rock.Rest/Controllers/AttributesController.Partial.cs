@@ -14,14 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Net;
 using System.Linq;
+using System.Net.Http;
 using System.Web.Http;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using System.Net.Http;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -71,6 +69,9 @@ namespace Rock.Rest.Controllers
                 {
                     value.Categories.Add( cat );
                 }
+
+                // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+                value.ModifiedDateTime = RockDateTime.Now;
             }
 
             var result = base.Post( value );

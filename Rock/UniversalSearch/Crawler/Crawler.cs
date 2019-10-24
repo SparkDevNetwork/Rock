@@ -20,9 +20,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Web;
 
 using HtmlAgilityPack;
+
 using RestSharp;
 
 using Rock.Model;
@@ -422,9 +422,7 @@ namespace Rock.UniversalSearch.Crawler
                     return GetWebText( requestURL );
                 }
             }
-            catch
-            {
-            }
+            catch { }
 
             return string.Empty;
         }

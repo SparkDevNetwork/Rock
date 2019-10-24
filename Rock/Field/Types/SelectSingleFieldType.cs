@@ -19,10 +19,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -39,6 +40,7 @@ namespace Rock.Field.Types
 
         private const string VALUES_KEY = "values";
         private const string FIELDTYPE_KEY = "fieldtype";
+        private const string REPEAT_COLUMNS = "repeatColumns";
 
         /// <summary>
         /// Returns a list of the configuration keys
@@ -49,6 +51,7 @@ namespace Rock.Field.Types
             List<string> configKeys = new List<string>();
             configKeys.Add( VALUES_KEY );
             configKeys.Add( FIELDTYPE_KEY );
+            configKeys.Add( REPEAT_COLUMNS );
             return configKeys;
         }
 
@@ -60,24 +63,32 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            var tb = new RockTextBox();
-            controls.Add( tb );
-            tb.TextMode = TextBoxMode.MultiLine;
-            tb.Rows = 3;
-            tb.AutoPostBack = true;
-            tb.TextChanged += OnQualifierUpdated;
-            tb.Label = "Values";
-            tb.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            var tbValues = new RockTextBox();
+            tbValues.TextMode = TextBoxMode.MultiLine;
+            tbValues.Rows = 3;
+            tbValues.AutoPostBack = true;
+            tbValues.TextChanged += OnQualifierUpdated;
+            tbValues.Label = "Values";
+            tbValues.Help = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            controls.Add( tbValues );
 
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
-            ddl.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
-            ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
-            ddl.AutoPostBack = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.Label = "Control Type";
-            ddl.Help = "The type of control to use for selecting a single value from the list.";
+            var ddlFieldType = new RockDropDownList();
+            ddlFieldType.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
+            ddlFieldType.Items.Add( new ListItem( "Drop Down List (Enhanced for Long Lists)", "ddl_enhanced" ) );
+            ddlFieldType.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
+            ddlFieldType.AutoPostBack = true;
+            ddlFieldType.SelectedIndexChanged += OnQualifierUpdated;
+            ddlFieldType.Label = "Control Type";
+            ddlFieldType.Help = "The type of control to use for selecting a single value from the list.";
+            controls.Add( ddlFieldType );
+
+            var tbRepeatColumns = new NumberBox();
+            tbRepeatColumns.Label = "Columns";
+            tbRepeatColumns.Help = "Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space.";
+            tbRepeatColumns.MinimumValue = "0";
+            tbRepeatColumns.AutoPostBack = true;
+            tbRepeatColumns.TextChanged += OnQualifierUpdated;
+            controls.Add( tbRepeatColumns );
 
             return controls;
         }
@@ -90,22 +101,27 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values",
-                "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.", "" ) );
-            configurationValues.Add( FIELDTYPE_KEY, new ConfigurationValue( "Control Type", 
-                "The type of control to use for selecting a single value from the list.", "ddl" ) );
 
-            if ( controls != null )
+            string description = "The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column <span class='tip tip-lava'></span>.";
+            configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values", description, string.Empty ) );
+
+            description = "The type of control to use for selecting a single value from the list.";
+            configurationValues.Add( FIELDTYPE_KEY, new ConfigurationValue( "Control Type", description, "ddl" ) );
+
+            description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
+
+            if ( controls != null && controls.Count > 2 )
             {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox )
-                {
-                    configurationValues[VALUES_KEY].Value = ( (TextBox)controls[0] ).Text;
-                }
+                var tbValues = controls[0] as RockTextBox;
+                var ddlFieldType = controls[1] as RockDropDownList;
+                var tbRepeatColumns = controls[2] as NumberBox;
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList )
-                {
-                    configurationValues[FIELDTYPE_KEY].Value = ( (DropDownList)controls[1] ).SelectedValue;
-                }
+                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
+
+                configurationValues[VALUES_KEY].Value = tbValues.Text;
+                configurationValues[FIELDTYPE_KEY].Value = ddlFieldType.SelectedValue;
+                configurationValues[REPEAT_COLUMNS].Value = tbRepeatColumns.Visible ? tbRepeatColumns.Text : string.Empty;
             }
 
             return configurationValues;
@@ -118,17 +134,18 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && configurationValues != null)
-            {
-                if ( controls.Count > 0 && controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( VALUES_KEY ) )
-                {
-                    ( (TextBox)controls[0] ).Text = configurationValues[VALUES_KEY].Value;
-                }
+            base.SetConfigurationValues( controls, configurationValues );
 
-                if ( controls.Count > 1 && controls[1] != null && controls[1] is DropDownList && configurationValues.ContainsKey( FIELDTYPE_KEY ) )
-                {
-                    ( (DropDownList)controls[1] ).SelectedValue = configurationValues[FIELDTYPE_KEY].Value;
-                }
+            if ( controls != null && controls.Count > 2 && configurationValues != null )
+            {
+                var tbValues = controls[0] as RockTextBox;
+                var ddlFieldType = controls[1] as RockDropDownList;
+                var tbRepeatColumns = controls[2] as NumberBox;
+
+                tbValues.Text = configurationValues.ContainsKey( VALUES_KEY ) ? configurationValues[VALUES_KEY].Value : string.Empty;
+                ddlFieldType.SelectedValue = configurationValues.ContainsKey( FIELDTYPE_KEY ) ? configurationValues[FIELDTYPE_KEY].Value : ddlFieldType.SelectedValue;
+                tbRepeatColumns.Text = configurationValues.ContainsKey( REPEAT_COLUMNS ) ? configurationValues[REPEAT_COLUMNS].Value : string.Empty;
+                tbRepeatColumns.Visible = ddlFieldType.SelectedValue == "rb" ? true : false;
             }
         }
 
@@ -193,18 +210,23 @@ namespace Rock.Field.Types
                 string fieldType = configurationValues.ContainsKey( FIELDTYPE_KEY ) ? configurationValues[FIELDTYPE_KEY].Value : "ddl";
                 if ( fieldType == "rb" )
                 {
-                    editControl = new RockRadioButtonList { ID = id }; 
-                    ( (RadioButtonList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
+                    editControl = new RockRadioButtonList { ID = id };
+                    ( ( RadioButtonList ) editControl ).RepeatDirection = RepeatDirection.Horizontal;
+
+                    if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+                    {
+                        ( ( RadioButtonList ) editControl ).RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
+                    }
                 }
                 else
                 {
                     editControl = new RockDropDownList { ID = id };
-                    ( (RockDropDownList)editControl ).EnhanceForLongLists = fieldType == "ddl_enhanced";
-                    ( (RockDropDownList)editControl ).DisplayEnhancedAsAbsolute = true;
+                    ( ( RockDropDownList ) editControl ).EnhanceForLongLists = fieldType == "ddl_enhanced";
+                    ( ( RockDropDownList ) editControl ).DisplayEnhancedAsAbsolute = true;
                     editControl.Items.Add( new ListItem() );
                 }
 
-                foreach( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
+                foreach ( var keyVal in Helper.GetConfiguredValues( configurationValues ) )
                 {
                     editControl.Items.Add( new ListItem( keyVal.Value, keyVal.Key ) );
                 }
@@ -229,7 +251,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is ListControl )
             {
-                return ( (ListControl)control ).SelectedValue;
+                return ( ( ListControl ) control ).SelectedValue;
             }
 
             return null;
@@ -247,7 +269,7 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is ListControl )
                 {
-                    ( (ListControl)control ).SetValue( value );
+                    ( ( ListControl ) control ).SetValue( value );
                 }
             }
         }
@@ -255,7 +277,7 @@ namespace Rock.Field.Types
         #endregion
 
         #region Filter Control
-         
+
         /// <summary>
         /// Gets the filter compare control.
         /// </summary>
@@ -274,7 +296,7 @@ namespace Rock.Field.Types
 
             // hide the compare control when in SimpleFilter mode
             lbl.Visible = filterMode != FilterMode.SimpleFilter;
-            
+
             return lbl;
         }
 
@@ -350,7 +372,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is CheckBoxList )
             {
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     if ( li.Selected )
@@ -384,7 +406,7 @@ namespace Rock.Field.Types
             {
                 var values = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
 
-                CheckBoxList cbl = (CheckBoxList)control;
+                CheckBoxList cbl = ( CheckBoxList ) control;
                 foreach ( ListItem li in cbl.Items )
                 {
                     li.Selected = values.Contains( li.Value );
@@ -440,7 +462,7 @@ namespace Rock.Field.Types
         /// </remarks>
         public override Expression PropertyFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
         {
-            List<string> selectedValues = filterValues[0].Split( new char[] {','}, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             if ( selectedValues.Any() )
             {
                 MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
@@ -448,14 +470,14 @@ namespace Rock.Field.Types
                 object constantValue;
                 if ( propertyType.IsEnum )
                 {
-                   constantValue = Enum.Parse( propertyType, selectedValues[0] );
+                    constantValue = Enum.Parse( propertyType, selectedValues[0] );
                 }
                 else
                 {
                     constantValue = selectedValues[0] as string;
                 }
 
-                 ConstantExpression constantExpression = Expression.Constant( constantValue );
+                ConstantExpression constantExpression = Expression.Constant( constantValue );
                 Expression comparison = Expression.Equal( propertyExpression, constantExpression );
 
                 foreach ( string selectedValue in selectedValues.Skip( 1 ) )
@@ -479,16 +501,57 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override Expression AttributeFilterExpression( Dictionary<string, ConfigurationValue> configurationValues, List<string> filterValues, ParameterExpression parameterExpression )
         {
+            List<string> selectedValues = null;
+            ComparisonType comparisonType = ComparisonType.Contains;
+
             if ( filterValues.Count == 1 )
             {
-                List<string> selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                if ( selectedValues.Any() )
-                {
-                    MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
-                    ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof(List<string>) );
-                    return Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof(string) } ), propertyExpression );
-                }
+                // if there is only one filter value, it is a Contains comparison for the selectedValues
+                // This is the normal thing that DataViews would do with a SelectSingleFieldType
+                selectedValues = filterValues[0].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             }
+            else if ( filterValues.Count >= 2 )
+            {
+                // if there are 2 (or more) filter values, the first is the comparison type and the 2nd is the selected value(s)
+                // Note: Rock Lava Entity commands could do this, DataViews don't currently support more than just 'Contains'
+                comparisonType = filterValues[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains );
+
+                if ( comparisonType == ComparisonType.EqualTo )
+                {
+                    // If EqualTo was specified, treat it as Contains
+                    comparisonType = ComparisonType.Contains;
+                }
+
+                if ( comparisonType == ComparisonType.NotEqualTo )
+                {
+                    // If NotEqualTo was specified, treat it as DoesNotContain
+                    comparisonType = ComparisonType.DoesNotContain;
+                }
+
+                selectedValues = filterValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+            }
+
+            // if IsBlank (or IsNotBlank)
+            if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
+            {
+                // Just checking if IsBlank or IsNotBlank, so let ComparisonExpression do its thing
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, this.AttributeValueFieldName );
+                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, AttributeConstantExpression( string.Empty ) );
+            }
+
+            if ( selectedValues?.Any() == true )
+            {
+                MemberExpression propertyExpression = Expression.Property( parameterExpression, "Value" );
+                ConstantExpression constantExpression = Expression.Constant( selectedValues, typeof( List<string> ) );
+                Expression expression = Expression.Call( constantExpression, typeof( List<string> ).GetMethod( "Contains", new Type[] { typeof( string ) } ), propertyExpression );
+                if ( comparisonType == ComparisonType.DoesNotContain )
+                {
+                    expression = Expression.Not( expression );
+                }
+
+                return expression;
+            }
+
 
             return new NoAttributeFilterExpression();
         }

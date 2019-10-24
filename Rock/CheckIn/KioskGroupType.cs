@@ -25,13 +25,13 @@ using Rock.Web.Cache;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// 
+    /// Wrapper for a GroupType (Checkin Area) for the current Kiosk
     /// </summary>
     [DataContract]
     public class KioskGroupType
     {
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the group type (Checkin Area)
         /// </summary>
         /// <value>
         /// The type of the group.
@@ -59,6 +59,20 @@ namespace Rock.CheckIn
             get
             {
                 return KioskGroups != null && KioskGroups.Any( s => s.IsCheckInActive );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether check-out is active.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCheckOutActive
+        {
+            get
+            {
+                return KioskGroups != null && KioskGroups.Any( s => s.IsCheckOutActive );
             }
         }
 

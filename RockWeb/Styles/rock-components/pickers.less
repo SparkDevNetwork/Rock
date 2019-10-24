@@ -2,12 +2,29 @@
 // Pickers - used to pick complex data types
 // --------------------------------------------------
 
+@picker-menu-padding: 8px;
+
 .picker {
   .clearfix();
 
   @media @sm {
     position: relative;
     width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    max-width: 100%;
+  }
+
+  .toggle-additional-search-fields {
+    display: block;
+    float: right;
+    font-size: 14px;
+
+    &.active {
+      background-color: darken(@btn-default-bg, 10%);
+    }
+
+    i {
+      margin: 0 3px;
+    }
   }
 
   .picker-mode-options {
@@ -17,31 +34,43 @@
   .picker-label {
     float: left;
     width: 225px;
+    max-width: ~"calc(100% - 25px)";
     padding: @padding-base-vertical @padding-base-horizontal;
     font-size: @font-size-base;
     color: @input-color;
-    background-color: transparent;
+    background-color: @input-bg;
     border: 1px solid @input-border;
     border-radius: @border-radius-base;
+    &:hover {
+      text-decoration: none;
+    }
 
     i {
       float: left;
-      margin-top: 2px;
       margin-right: 6px;
+      line-height: @line-height-computed;
+      vertical-align: bottom;
     }
 
     span {
       float: left;
-      width: 140px;
-      margin-right: 6px;
+      width: ~"calc(100% - 42px)";
       overflow: hidden;
-      line-height: 18px;
+      line-height: @line-height-computed;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .fa.fa-caret-down {
       margin-top: 3px;
+    }
+  }
+
+  .input-group-sm {
+    > .form-control,
+    > .input-group-addon {
+      height: (@input-height-xs + 4px);
+      padding: (@padding-xs-vertical + 2px) @padding-xs-horizontal;
     }
   }
 
@@ -53,26 +82,41 @@
   }
 
   .scroll-container-picker {
-    width: 390px;
+    width: 100%;
 
     .viewport {
-      width: 360px;
+      width: ~"calc(100% - 15px)";
       height: 380px;
+      //max-height: ~"calc(100vh - 200px)";
     }
 
     .scrollbar {
-      margin-top: 10px;
+      width: 5px;
+      height: 380px;
+      //max-height: ~"calc(100vh - 210px)";
     }
   }
 
+  dl {
+    margin-bottom: 4px;
+  }
+
+  hr {
+    margin-top: 8px;
+    margin-right: -@picker-menu-padding;
+    margin-bottom: 4px;
+    margin-left: -@picker-menu-padding;
+  }
+
   h4 {
+    margin: 0 0 10px;
     font-size: 14px;
     font-weight: @font-weight-semibold;
   }
 
   .picker-menu {
     width: 400px;
-    padding: 10px;
+    padding: @picker-menu-padding;
 
     h4:first-child {
       margin-top: 0;
@@ -92,8 +136,8 @@
   }
 
   .picker-actions {
-    padding: 10px;
-    margin: 10px -10px -10px -10px;
+    padding: @picker-menu-padding;
+    margin: @picker-menu-padding -@picker-menu-padding -@picker-menu-padding -@picker-menu-padding;
     background-color: @picker-action-bg;
     border-top: 1px solid darken(@picker-action-bg, 10%);
     border-radius: 0 0 @border-radius-base @border-radius-base;
@@ -102,26 +146,54 @@
   .picker-select-item {
     margin-left: 3px;
 
+    .radio {
+      margin-right: 0;
+    }
+
+    label {
+      display: block;
+    }
+
     .label-text {
       display: block;
     }
   }
 
+  .personpicker-search-panel {
+    .input-group {
+      margin-bottom: 4px;
+    }
+
+    .input-group-addon {
+      min-width: 85px;
+      text-align: left;
+    }
+  }
+
   // details used for pickers like person picker to show the details of the selected item
   .picker-select-item-details {
-    margin-left: 29px;
+    @media (min-width: @screen-sm-min) {
+      margin-left: 29px;
+    }
 
     .person-image {
       float: left;
       width: 70px;
       height: 70px;
-      margin-right: 7.5px;
+      margin-right: 8px;
+      background-position: 50%;
+      background-size: cover;
       border: 1px solid @photo-border;
+    }
+
+    .label.pull-right {
+      position: absolute;
+      right: 0;
     }
 
     .contents {
       float: left;
-      margin-left: 10px;
+      width: ~"calc(100% - 78px)";
 
       h5 {
         margin-bottom: 2px;
@@ -167,31 +239,31 @@
     width: 370px;
     max-width: 100%;
   }
-}
 
-.picker.picker-lg {
-  @media @sm {
-    position: relative;
-    width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
-  }
+  &.picker-lg {
+    @media @sm {
+      position: relative;
+      width: 350px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    }
 
-  .picker-label {
-    width: 325px;
+    .picker-label {
+      width: 325px;
 
-    span {
-      width: 240px;
+      span {
+        width: 240px;
+      }
     }
   }
 }
 
-#dialog .scroll-container-picker {
-  width: 360px;
+// #dialog .scroll-container-picker {
+//   width: 360px;
 
-  .viewport {
-    width: 340px;
-    height: 190px;
-  }
-}
+//   .viewport {
+//     width: 340px;
+//     height: 190px;
+//   }
+// }
 
 // date time picker
 .date-time-picker {
@@ -201,3 +273,21 @@
     margin-bottom: 4px;
   }
 }
+
+// Campus Account Amount Picker
+.campus-account-amount-picker {
+  margin-bottom: @form-group-margin-bottom;
+
+  .amount-input {
+    margin-bottom: @form-group-margin-bottom;
+  }
+
+  .campus-dropdown {
+    margin-bottom: @form-group-margin-bottom;
+  }
+
+  .account-dropdown {
+    margin-bottom: @form-group-margin-bottom;
+  }
+}
+

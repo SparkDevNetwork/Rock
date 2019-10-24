@@ -82,9 +82,27 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Badge>( Context ).Queryable().Any( a => a.BadgeComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Badge.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<Badge>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Badge.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<BinaryFileType>( Context ).Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BinaryFileType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BlockType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BlockType.FriendlyTypeName );
                 return false;
             }  
  
@@ -97,6 +115,18 @@ namespace Rock.Model
             if ( new Service<CommunicationRecipient>( Context ).Queryable().Any( a => a.MediumEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationRecipient.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<CommunicationResponse>( Context ).Queryable().Any( a => a.RelatedMediumEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<CommunicationResponse>( Context ).Queryable().Any( a => a.RelatedTransportEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
                 return false;
             }  
  
@@ -115,6 +145,12 @@ namespace Rock.Model
             if ( new Service<DataViewFilter>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<DocumentType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DocumentType.FriendlyTypeName );
                 return false;
             }  
  
@@ -157,6 +193,18 @@ namespace Rock.Model
             if ( new Service<FollowingSuggestionType>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FollowingSuggestionType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupDemographicType>( Context ).Queryable().Any( a => a.ComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, GroupDemographicType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupDemographicValue>( Context ).Queryable().Any( a => a.RelatedEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, GroupDemographicValue.FriendlyTypeName );
                 return false;
             }  
  
@@ -208,9 +256,9 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<PersonBadge>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            if ( new Service<PersistedDataset>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, PersonBadge.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, PersistedDataset.FriendlyTypeName );
                 return false;
             }  
  
@@ -287,6 +335,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AssemblyName = source.AssemblyName;
+            target.AttributesSupportPrePostHtml = source.AttributesSupportPrePostHtml;
+            target.AttributesSupportShowOnBulk = source.AttributesSupportShowOnBulk;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FriendlyName = source.FriendlyName;

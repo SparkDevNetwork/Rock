@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Field.Types;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -39,9 +40,9 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
 
-    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, category: "CustomSetting" )]
+    [LavaCommandsField( "Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false )]
 
-    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel, or leave blank to leave unrestricted.", required: false, defaultValue: "", category: "CustomSetting" )]
+    [ContentChannelField( "Content Channel", description: "Limits content channel items to a specific channel.", required: true, defaultValue: "", category: "CustomSetting" )]
     [EnumsField( "Status", description: "Include items with the following status.", enumSourceType: typeof( ContentChannelItemStatus ), required: false, defaultValue: "2", category: "CustomSetting" )]
     [TextField( "Content Channel Query Parameter", description: CONTENT_CHANNEL_QUERY_PARAMETER_DESCRIPTION, required: false, category: "CustomSetting" )]
 
@@ -53,6 +54,7 @@ namespace RockWeb.Blocks.Cms
     [IntegerField( "Item Cache Duration", description: "Number of seconds to cache the content item specified by the parameter.", required: false, defaultValue: 3600, category: "CustomSetting", order: 0, key: "ItemCacheDuration" )]
     [CustomCheckboxListField( "Cache Tags", description: "Cached tags are used to link cached content so that it can be expired as a group", listSource: "", required: false, key: "CacheTags", category: "CustomSetting" )]
 
+    [BooleanField( "Merge Content", "Should the content data and attribute values be merged using the Lava template engine.", false, "CustomSetting" )]
     [BooleanField( "Set Page Title", description: "Determines if the block should set the page title with the channel name or content item.", category: "CustomSetting" )]
     [LinkedPage( "Detail Page", description: "Page used to view a content item.", order: 1, category: "CustomSetting", key: "DetailPage" )]
 
@@ -227,7 +229,8 @@ Guid - ContentChannelItem Guid
                 }
             }
 
-            nbDetailPage.Text = this.GetAttributeValue( "DetailPage" );
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
             tbContentChannelQueryParameter.Text = this.GetAttributeValue( "ContentChannelQueryParameter" );
             ceLavaTemplate.Text = this.GetAttributeValue( "LavaTemplate" );
             nbOutputCacheDuration.Text = this.GetAttributeValue( "OutputCacheDuration" );
@@ -237,12 +240,13 @@ Guid - ContentChannelItem Guid
             cblCacheTags.DataSource = definedValueService.GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.CACHE_TAGS.AsGuid() ).Select( v => v.Value ).ToList();
             cblCacheTags.DataBind();
             string[] selectedCacheTags = this.GetAttributeValue( "CacheTags" ).SplitDelimitedValues();
-            foreach( ListItem cacheTag in cblCacheTags.Items )
+            foreach ( ListItem cacheTag in cblCacheTags.Items )
             {
                 cacheTag.Selected = selectedCacheTags.Contains( cacheTag.Value );
             }
 
             cbSetPageTitle.Checked = this.GetAttributeValue( "SetPageTitle" ).AsBoolean();
+            cbMergeContent.Checked = GetAttributeValue( "MergeContent" ).AsBoolean();
 
             if ( this.GetAttributeValue( "LogInteractions" ).AsBoolean() )
             {
@@ -299,12 +303,14 @@ Guid - ContentChannelItem Guid
         {
             this.SetAttributeValue( "ContentChannel", ddlContentChannel.SelectedValue );
             this.SetAttributeValue( "Status", cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
-            this.SetAttributeValue( "DetailPage", nbDetailPage.Text );
+            var ppFieldType = new PageReferenceFieldType();
+            this.SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
             this.SetAttributeValue( "ContentChannelQueryParameter", tbContentChannelQueryParameter.Text );
             this.SetAttributeValue( "LavaTemplate", ceLavaTemplate.Text );
             this.SetAttributeValue( "OutputCacheDuration", nbOutputCacheDuration.Text );
             this.SetAttributeValue( "ItemCacheDuration", nbItemCacheDuration.Text );
             this.SetAttributeValue( "CacheTags", cblCacheTags.SelectedValues.AsDelimited( "," ) );
+            this.SetAttributeValue( "MergeContent", cbMergeContent.Checked.ToString() );
             this.SetAttributeValue( "SetPageTitle", cbSetPageTitle.Checked.ToString() );
             this.SetAttributeValue( "LogInteractions", cbLogInteractions.Checked.ToString() );
             this.SetAttributeValue( "WriteInteractionOnlyIfIndividualLoggedIn", cbWriteInteractionOnlyIfIndividualLoggedIn.Checked.ToString() );
@@ -419,6 +425,7 @@ Guid - ContentChannelItem Guid
                 pageTitle = GetCacheItem( pageTitleCacheKey ) as string;
             }
 
+            bool isMergeContentEnabled = GetAttributeValue( "MergeContent" ).AsBoolean();
             bool setPageTitle = GetAttributeValue( "SetPageTitle" ).AsBoolean();
 
             if ( outputContents == null )
@@ -465,10 +472,36 @@ Guid - ContentChannelItem Guid
                     }
                 }
 
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+                var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+
+                // Merge content and attribute fields if block is configured to do so.
+                if ( isMergeContentEnabled )
+                {
+                    var itemMergeFields = new Dictionary<string, object>( commonMergeFields );
+
+                    var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    
+                    itemMergeFields.AddOrReplace( "Item", contentChannelItem );
+                    contentChannelItem.Content = contentChannelItem.Content.ResolveMergeFields( itemMergeFields, enabledCommands );
+                    contentChannelItem.LoadAttributes();
+                    foreach ( var attributeValue in contentChannelItem.AttributeValues )
+                    {
+                        attributeValue.Value.Value = attributeValue.Value.Value.ResolveMergeFields( itemMergeFields, enabledCommands );
+                    }
+                }
+
+                var mergeFields = new Dictionary<string, object>( commonMergeFields );
+
                 mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                 mergeFields.Add( "Item", contentChannelItem );
-                mergeFields.Add( "DetailPage", GetAttributeValue( "DetailPage" ) );
+                int detailPage = 0;
+                var page = PageCache.Get( GetAttributeValue( "DetailPage" ) );
+                if ( page != null )
+                {
+                    detailPage = page.Id;
+                }
+
+                mergeFields.Add( "DetailPage", detailPage );
 
                 string metaDescriptionValue = GetMetaValueFromAttribute( this.GetAttributeValue( "MetaDescriptionAttribute" ), contentChannelItem );
 
@@ -485,8 +518,11 @@ Guid - ContentChannelItem Guid
                 AddHtmlMeta( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterTitleAttribute" ), contentChannelItem ) );
                 AddHtmlMeta( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterDescriptionAttribute" ), contentChannelItem ) );
                 AddHtmlMeta( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterImageAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "twitter:card", this.GetAttributeValue( "TwitterCard" ) );
-
+                var twitterCard = this.GetAttributeValue( "TwitterCard" );
+                if ( twitterCard.IsNotNullOrWhiteSpace() && twitterCard != "none" )
+                {
+                    AddHtmlMeta( "twitter:card", twitterCard );
+                }
                 string lavaTemplate = this.GetAttributeValue( "LavaTemplate" );
                 string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
                 outputContents = lavaTemplate.ResolveMergeFields( mergeFields, enabledLavaCommands );
@@ -519,6 +555,12 @@ Guid - ContentChannelItem Guid
                 RockPage.PageTitle = pageTitle;
                 RockPage.BrowserTitle = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
                 RockPage.Header.Title = string.Format( "{0} | {1}", pageTitle, RockPage.Site.Name );
+
+                var pageBreadCrumb = RockPage.PageReference.BreadCrumbs.FirstOrDefault();
+                if ( pageBreadCrumb != null )
+                {
+                    pageBreadCrumb.Name = RockPage.PageTitle;
+                }
             }
 
             LaunchWorkflow();
@@ -533,7 +575,8 @@ Guid - ContentChannelItem Guid
         private ContentChannelItem GetContentChannelItem( string contentChannelItemKey )
         {
             int? itemCacheDuration = GetAttributeValue( "ItemCacheDuration" ).AsIntegerOrNull();
-            
+            Guid? contentChannelGuid = GetAttributeValue( "ContentChannel" ).AsGuidOrNull();
+
             ContentChannelItem contentChannelItem = null;
 
             if ( string.IsNullOrEmpty( contentChannelItemKey ) )
@@ -542,7 +585,7 @@ Guid - ContentChannelItem Guid
                 return null;
             }
 
-            string itemCacheKey = ITEM_CACHE_KEY_PREFIX + contentChannelItemKey;
+            string itemCacheKey = ITEM_CACHE_KEY_PREFIX + contentChannelGuid + "_" + contentChannelItemKey;
 
             if ( itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
             {
@@ -568,7 +611,16 @@ Guid - ContentChannelItem Guid
             }
             else
             {
-                contentChannelItem = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelItemSlugs.Any( s => s.Slug == contentChannelItemKey ) ).FirstOrDefault();
+                var contentChannelQuery = new ContentChannelItemService( rockContext ).Queryable();
+                if ( contentChannelGuid.HasValue )
+                {
+
+                    contentChannelQuery = contentChannelQuery.Where( c => c.ContentChannel.Guid == contentChannelGuid );
+                }
+
+                contentChannelItem = contentChannelQuery
+                    .Where( a => a.ContentChannelItemSlugs.Any( s => s.Slug == contentChannelItemKey ) )
+                    .FirstOrDefault();
             }
 
             if ( contentChannelItem != null && itemCacheDuration.HasValue && itemCacheDuration.Value > 0 )
@@ -599,22 +651,27 @@ Guid - ContentChannelItem Guid
             }
             else
             {
-                if ( Request.QueryString.HasKeys() )
+                var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
+
+                // First, look for the item key via the route/slug so that something like this
+                // continues to work when an external system (such as Facebook) tacks a parameter
+                // onto the URL like this:
+                // https://community.rockrms.com/connect/a-dedicated-new-home-for-the-rock-community?fbclid=IwAR2VRUjhh...-9biFY
+
+                // if this is the standard "page/{PageId}" route, don't grab the Item from the route since it would just be the pageId
+                if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
+                {
+                    // if no specific Parameter was specified, get whatever the last Parameter in the Route is
+                    var key = this.Page.RouteData.Values.Keys.LastOrDefault();
+                    if ( key.IsNotNullOrWhiteSpace() )
+                    {
+                        contentChannelItemKey = this.Page.RouteData.Values[key].ToString();
+                    }
+                }
+                else if ( Request.QueryString.HasKeys() )
                 {
                     contentChannelItemKey = this.PageParameter( Request.QueryString.Keys[0] );
                 }
-                else
-                {
-                    var currentRoute = ( ( System.Web.Routing.Route ) Page.RouteData.Route );
-
-                    // if this is the standard "page/{PageId" route, don't grab the Item from the route since it would just be the pageId
-                    if ( currentRoute == null || currentRoute.Url != "page/{PageId}" )
-                    {
-                        // if no specific Parameter was specified, and there was no QueryString, get whatever the last Parameter in the Route is
-                        contentChannelItemKey = this.PageParameters().Select( a => a.Value.ToString() ).LastOrDefault();
-                    }
-                }
-
             }
 
             return contentChannelItemKey;
@@ -822,7 +879,7 @@ Guid - ContentChannelItem Guid
                                             ) )
                                         .OrderByDescending( a => a.EntityTypeQualifierColumn )
                                         .ThenBy( a => a.Order )
-                                        .ToCacheAttributeList();
+                                        .ToAttributeCacheList();
             }
 
             RockDropDownList[] attributeDropDowns = new RockDropDownList[]
@@ -892,7 +949,7 @@ Guid - ContentChannelItem Guid
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbLogInteractions_CheckedChanged( object sender, EventArgs e )
         {
-            if (cbLogInteractions.Checked)
+            if ( cbLogInteractions.Checked )
             {
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Visible = true;
                 cbWriteInteractionOnlyIfIndividualLoggedIn.Checked = true;

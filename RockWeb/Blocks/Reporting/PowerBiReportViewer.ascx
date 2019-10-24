@@ -16,6 +16,9 @@
                             <Rock:RockDropDownList ID="ddlSettingPowerBiAccount" runat="server" Label="Power BI Account" AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiAccount_SelectedIndexChanged" />
                             <Rock:RockDropDownList ID="ddlSettingPowerBiGroup" runat="server" Label="Power BI Workspace"  AutoPostBack="true" OnSelectedIndexChanged="ddlSettingPowerBiGroup_SelectedIndexChanged"/>
                             <Rock:RockDropDownList ID="ddlSettingPowerBiReportUrl" runat="server" Label="Report" />
+                            <Rock:RockCheckBox ID="cbSettingPowerBIFullsizeBtn" runat="server" Label="Show Fullsize Button" />
+                            <Rock:RockCheckBox ID="cbSettingPowerBIRightPane" runat="server" Label="Show Right Pane" />
+                            <Rock:RockCheckBox ID="cbSettingPowerBINavPane" runat="server" Label="Show Navigation Pane" />
 
                         </ContentTemplate>
                     </asp:UpdatePanel>
@@ -26,10 +29,10 @@
         <asp:Panel ID="pnlView" runat="server">
             <asp:HiddenField ID="hfAccessToken" runat="server" />
             <asp:HiddenField ID="hfReportEmbedUrl" runat="server" />
-            <div class="js-report-conatiner">
+            <div class="js-report-container">
                 <div class="report-wrapper js-report-wrapper">
                     <div style="position: relative; width: 100%; height: 100%;">
-                        <a href="#" class="btn btn-action report-fullsize" title="View Fullsize" style="position: absolute; top: 0; left: 0; border-radius: 0;"><i class="fa fa-arrows-alt"></i></a>
+                        <a id="fullsizer" href="#" class="btn btn-action report-fullsize" title="View Fullsize" style="position: absolute; top: 0; left: 0; border-radius: 0;" runat="server"><i class="fa fa-arrows-alt"></i></a>
                         <iframe id="report-iframe" src="" frameborder="1" style="border: 0;" seamless></iframe>
                     </div>
                 </div>
@@ -57,7 +60,8 @@
                             var reportIframe = reportWrapper.find('#report-iframe');
 
                             if (reportWrapper.hasClass("open")) {
-                                reportWrapper.prependTo(".js-report-conatiner");
+                                $('#body').css("overflow","visible");
+                                reportWrapper.prependTo(".js-report-container");
                                 reportWrapper.css("position", "static");
                                 reportWrapper.css("width", "100%");
                                 reportWrapper.css("height", "100%");
@@ -67,13 +71,14 @@
                                 reportWrapper.removeClass("open");
 
 
-                                var height = $(window).height() - 200; //$('#report-iframe').offsetParent().height();;
+                                var height = $(window).height() - 200; //$('#report-iframe').offsetParent().height();
                                 var width = $('#report-iframe').offsetParent().width();
                                 reportIframe.css("width", width);
                                 reportIframe.css("height", height);
                             } else {
+                                $('#body').css("overflow","hidden");
                                 reportWrapper.prependTo("#page-wrapper");
-                                reportWrapper.css("position", "absolute");
+                                reportWrapper.css("position", "fixed");
                                 reportWrapper.css("width", "100%");
                                 reportWrapper.css("height", "100%");
                                 reportWrapper.css("z-index", "9999");
@@ -87,7 +92,7 @@
                         });
                     });
 
-                // post the auth token to the iFrame. 
+                // post the auth token to the iFrame.
                 function postActionLoadReport() {
 
                     // get the access token.
@@ -108,7 +113,7 @@
                     iframe.contentWindow.postMessage(message, "*");;
                 }
 
-                //And if the outer div has no set specific height set.. 
+                //And if the outer div has no set specific height set..
                 $(window).resize(function () {
                     if (!$('.js-report-wrapper').hasClass("open")) {
                         var height = $(window).height() - 200; //$('#report-iframe').offsetParent().height();;

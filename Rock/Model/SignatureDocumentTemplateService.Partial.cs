@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Security;
@@ -249,7 +250,7 @@ namespace Rock.Model
                         mergeFields.Add( "InviteLink", inviteLink );
 
                         var emailMessage = new RockEmailMessage( systemEmail );
-                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                         emailMessage.Send();
                     }
                 }

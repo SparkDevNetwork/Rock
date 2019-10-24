@@ -16,16 +16,17 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Web;
+
 using Quartz;
+
 using Rock;
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Communication;
 
 namespace Rock.Jobs
 {
@@ -158,7 +159,7 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    var recipients = new List<RecipientData>();
+                    var recipients = new List<RockEmailMessageRecipient>();
                     foreach ( var leader in groupLeaders )
                     {
                         // create merge object
@@ -167,7 +168,7 @@ namespace Rock.Jobs
                         mergeFields.Add( "Group", group );
                         mergeFields.Add( "ParentGroup", group.ParentGroup );
                         mergeFields.Add( "Person", leader.Person );
-                        recipients.Add( new RecipientData( leader.Person.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeFields ) );
                     }
 
 
@@ -188,7 +189,7 @@ namespace Rock.Jobs
                     notificationsSent += recipients.Count();
                     // mark pending members as notified as we go in case the job fails
                     var notifiedPersonIds = pendingIndividuals.Select( p => p.Id );
-                    foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && notifiedPersonIds.Contains( m.PersonId ) ) )
+                    foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && m.GroupId == group.Id && notifiedPersonIds.Contains( m.PersonId ) ) )
                     {
                         pendingGroupMember.IsNotified = true;
                     }

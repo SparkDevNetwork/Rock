@@ -13,10 +13,28 @@
 // 1. Bootstrap Overrides / Additions
 // -------------------------
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
+
+
+.input-xs {
+  .input-size(@input-height-xs; @padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
+}
+
+// Prevent Toggle Arrows from Displaying on number inputs
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+// Prevent Text Areas from oversizing beyond 100%
+textarea {
+  resize: vertical;
 }
 
 legend {
@@ -25,21 +43,12 @@ legend {
   border-width: 0;
 }
 
-.checkbox-inline:first-child,
-.radio-inline:first-child {
-  // when inline checkbox lists wrap the first one on the first line sticks out more than subseqent lines. Confirmed that this is the same behavior on the BS site.
-  padding-left: 30px;
-}
-
 a.aspNetDisabled {
   opacity: .5;
 }
 
 .form-group.rock-literal,
 .rock-control-wrapper {
-  /*label {
-        margin-bottom: 0;
-    }*/ // commented out to match default bootstrap behavior (Lanio group member filter) JME 1/18/2016
 
   p.form-control-static {
     padding-top: 0;
@@ -74,6 +83,18 @@ a.aspNetDisabled {
   }
 }
 
+.form-inline-all {
+  .form-control {
+    display: inline-block;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .form-control-static {
+    display: inline-block;
+  }
+}
+
 .form-group.captcha {
   iframe {
     border: 0;
@@ -91,8 +112,6 @@ a.aspNetDisabled {
 // styling to get rock controls to layout horizontal
 .form-horizontal {
   .form-group {
-    margin-right: 0; // fighting with bootstrap, this may be a bad idea... 4/3/14 JME
-
     .form-control-group,
     .form-control {
       float: left;
@@ -110,8 +129,10 @@ a.aspNetDisabled {
         .make-sm-column(2);
 
         @media (min-width: @screen-sm-min) {
-          padding-top: 7px;
-          margin-bottom: 0;
+          padding-top: @padding-base-vertical + 1px;
+          padding-bottom: @padding-base-vertical + 1px;
+          margin-bottom: 0; // Override the `<label>/<legend>` default
+          line-height: @line-height-base;
           text-align: right;
         }
       }
@@ -154,11 +175,39 @@ a.aspNetDisabled {
       }
     }
   }
+
+  &.label-auto {
+    .form-group {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+      margin-right: -15px;
+      margin-left: -15px;
+      -ms-flex-pack: end!important;
+      justify-content: flex-end!important;
+
+      label {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+        min-width: 180px;
+      }
+      .control-wrapper {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+      }
+    }
+  }
 }
 
 
 .controls {
-  .checkbox:first-child {
+  .checkbox:first-child,
+  .radio:first-child {
     margin-top: 0;
   }
 }
@@ -166,7 +215,7 @@ a.aspNetDisabled {
 
 // highlight required fields
 .form-group.required {
-  .control-label::after {
+  > .control-label::after {
     margin-left: 4px;
     font-family: @fa-font-face;
     font-size: 6px;
@@ -313,16 +362,16 @@ dl:not(.dl-horizontal) {
   color: @brand-danger;
 }
 
-// 5. Custom Controls
+// 6. Custom Controls
 // -------------------------
 .btn-controlaligned {
   margin-top: 24px;
 }
 
-
-// 6. Custom Controls
-// -------------------------
-
+/* SK Add margin in ListItems */
+.list-items-rows .controls-row {
+  margin-bottom: 6px;
+}
 
 // 7. Static Controls
 // -------------------------

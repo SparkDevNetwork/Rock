@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Communication;
 using Rock.Data;
@@ -657,10 +658,7 @@ namespace Rock.Utility
                             }
                         }
                     }
-                    catch
-                    {
-
-                    }
+                    catch { }
                 }
             }
 
@@ -718,10 +716,7 @@ namespace Rock.Utility
                             return isCloseToCampus;
                         }
                     }
-                    catch
-                    {
-
-                    }
+                    catch { }
                 }
             }
 
@@ -1078,7 +1073,7 @@ namespace Rock.Utility
                 return;
             }
 
-            var recipients = new List<RecipientData>();
+            var recipients = new List<RockEmailMessageRecipient>();
             using ( RockContext rockContext = new RockContext() )
             {
                 Group group = new GroupService( rockContext ).GetNoTracking( sparkDataConfig.GlobalNotificationApplicationGroupId.Value );
@@ -1094,7 +1089,7 @@ namespace Rock.Utility
                         mergeFields.Add( "SparkDataService", "National Change of Address (NCOA)" );
                         mergeFields.Add( "SparkDataConfig", sparkDataConfig );
                         mergeFields.Add( "Status", status );
-                        recipients.Add( new RecipientData( groupMember.Person.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( groupMember.Person, mergeFields ) );
                     }
                 }
 

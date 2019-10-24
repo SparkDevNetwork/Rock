@@ -25,13 +25,20 @@ StyleCop.Cache
 RockWeb/Cache/*
 RockWeb/Content/ASM_Thumbnails
 RockWeb/App_Data/PackageStaging
+RockWeb/App_Data/MobileAppBundles
 /scaffolding.config
 *.sln.GhostDoc.xml
 .vs/
 .localhistory/
+TestResults/
 
 Packages/*
 
 # javascript deps
 node_modules
+.cache
 *.map
+/packages/
+/Installers/CheckScannerInstall/UpgradeLog.htm
+/Installers/CheckScannerInstall/UpgradeLog2.htm
+/Installers/CheckScannerInstall_2017/CheckScannerInstall

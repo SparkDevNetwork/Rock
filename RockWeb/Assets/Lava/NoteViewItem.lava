@@ -5,7 +5,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
 {%- assign viewableChildNotesCount = note.ViewableDescendentsCount -%}
 {%- if note.IsAlert -%}
     {%- assign wrapperClass = 'is-alert' -%}
-{%- elsif note.IsPrivateNote -%}
+{%- elseif note.IsPrivateNote -%}
     {%- assign wrapperClass = 'is-personal' -%}
 {%- else -%}
     {%- assign wrapperClass = '' -%}
@@ -128,7 +128,11 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                                 <li><button type="button" class="dropdown-item btn-link js-replynote">Reply</button></li>
                             {%- endif -%}
                             {%- if canEdit -%}
-                            <li><button type="button" class="dropdown-item btn-link js-editnote">Edit</button></li>
+                            {%- assign isPrivateVisible = 0  -%}
+                            {%- if CurrentPerson.Id == note.CreatedByPersonId -%}
+                            {%- assign isPrivateVisible = 1 -%}
+                            {%- endif -%}
+                            <li><button type="button" class="dropdown-item btn-link js-editnote" data-isprivatevisible="{{ isPrivateVisible }}">Edit</button></li>
                             {% endif %}
                             {%- if allowsWatching and note.ApprovalStatus != "Denied" -%}
                                 <li>
@@ -151,11 +155,11 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 {%- if note.NoteType.RequiresApprovals and note.ApprovalStatus == 'Approved' -%}
                     {%- assign approver = note.ApprovedByPersonAliasId | PersonByAliasId -%}
                 <a href="#{{ note.NoteAnchorId }}" class="timestamp"{% if note.ApprovedByPersonAliasId %} data-toggle="tooltip" data-placement="top" title="Approved By {{ approver.FullName }} on {{ note.ApprovedDateTime }}"{% endif %}>
-                    <relative-time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</relative-time>
+                    <time datetime="{{ note.EditedDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}" title="{{ note.EditedDateTime | Date:'MMMM d, yyyy, h:mm tt' }}">{{ noteDateTimeText }}</time>
                 </a>
                 {%- else -%}
                     <a href="#{{ note.NoteAnchorId }}" class="timestamp" data-toggle="tooltip" title="{{ noteDateTime | Date:'MMMM d, yyyy - h:mm tt' }}">
-                        <relative-time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}">{{ noteDateTimeText }}</relative-time>
+                        <time datetime="{{ noteDateTime | Date:'yyyy-MM-ddTHH:mm:sszzz' }}">{{ noteDateTimeText }}</time>
                     </a>
                 {%- endif -%}
 

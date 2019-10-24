@@ -21,6 +21,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+
 using DbContext = Rock.Data.DbContext;
 
 namespace Rock.Web.Cache
@@ -112,7 +113,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="guidString">The unique identifier string.</param>
         /// <returns></returns>
-        public static T Get( string guidString )
+        public static T Get( string guidString ) 
         {
             var guid = guidString.AsGuidOrNull();
             return guid.HasValue ? Get( guid.Value ) : default( T );
@@ -185,6 +186,44 @@ namespace Rock.Web.Cache
             return value;
         }
 
+        /// <summary>
+        /// Get the specified entity, or throw an Exception if it does not exist.
+        /// </summary>
+        /// <param name="entityDescription"></param>
+        /// <param name="id"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static T GetOrThrow( string entityDescription, int id, RockContext rockContext = null )
+        {
+            try
+            {
+                return Get( id, rockContext );
+            }
+            catch
+            {
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Id=\"{ id }\"]." );
+            }
+        }
+
+        /// <summary>
+        /// Get the specified entity, or throw an Exception if it does not exist.
+        /// </summary>
+        /// <param name="entityDescription"></param>
+        /// <param name="guid"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static T GetOrThrow( string entityDescription, Guid guid, RockContext rockContext = null )
+        {
+            try
+            {
+                return Get( guid, rockContext );
+            }
+            catch
+            {
+                throw new Exception( $"System configuration error. Entity not found [Type=\"{typeof( T ).Name}\",Name=\"{ entityDescription }\", Guid=\"{ guid }\"]." );
+            }
+        }
+
         #region Obsolete Methods
 
         /// <summary>
@@ -243,7 +282,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
-        public static void UpdateCachedEntity( int entityId, System.Data.Entity.EntityState entityState )
+        public static void UpdateCachedEntity( int entityId, EntityState entityState )
         {
             // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
             // Reading it from the database here could also cause a deadlock depending on the database isolation level.

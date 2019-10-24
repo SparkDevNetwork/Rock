@@ -61,7 +61,7 @@
                                 <div id="divEditPanel" runat="server" class="pull-right">
                                     
                                     <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs" OnClick="btnDelete_Click"><i class="fa fa-times"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnDelete" runat="server" CssClass="btn btn-danger btn-xs" OnClick="btnDelete_Click" OnClientClick="return Rock.dialogs.confirmDelete(event, 'Lava Shortcode');"><i class="fa fa-times"></i></asp:LinkButton>
                                 </div>
                           </div>
                         </div>

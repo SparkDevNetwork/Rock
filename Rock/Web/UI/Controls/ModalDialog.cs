@@ -404,7 +404,7 @@ namespace Rock.Web.UI.Controls
             _cancelLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _cancelLink );
             _cancelLink.ID = "cancelLink";
-            _cancelLink.Attributes.Add( "class", "btn btn-default js-modaldialog-cancel-link" );
+            _cancelLink.Attributes.Add( "class", "btn btn-link js-modaldialog-cancel-link" );
             _cancelLink.Attributes.Add( "data-dismiss", "modal" );
             _cancelLink.InnerText = "Cancel";
 

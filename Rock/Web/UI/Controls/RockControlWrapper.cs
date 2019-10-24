@@ -269,7 +269,8 @@ namespace Rock.Web.UI.Controls
             {
                 foreach ( Control child in this.Controls )
                 {
-                    if ( !( child is HelpBlock ) && !(child is WarningBlock) )
+                    // render all controls that were added, except for this.HelpBlock and this.WarningBlock that get rendered by RockControlHelper
+                    if ( !( child == this.HelpBlock ) && !(child == this.WarningBlock) )
                     {
                         child.RenderControl( writer );
                     }

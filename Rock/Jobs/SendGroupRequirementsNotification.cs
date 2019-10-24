@@ -19,14 +19,14 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -129,8 +129,17 @@ namespace Rock.Jobs
                             groupMember.GroupMemberRole = groupMemberIssue.Key.GroupRole.Name;
 
                             List<MissingRequirement> missingRequirements = new List<MissingRequirement>();
+
+                            // Now find exactly which ISSUE corresponds to the group member based on their role
                             foreach ( var issue in groupMemberIssue.Value )
                             {
+                                // If the issue is tied to a role, does it match the person's role?
+                                // If it does not, skip it.
+                                if ( issue.Key.GroupRequirement.GroupRoleId != null && issue.Key.GroupRequirement.GroupRoleId != groupMemberIssue.Key.GroupRoleId )
+                                {
+                                    continue;
+                                }
+
                                 MissingRequirement missingRequirement = new MissingRequirement();
                                 missingRequirement.Id = issue.Key.GroupRequirement.GroupRequirementType.Id;
                                 missingRequirement.Name = issue.Key.GroupRequirement.GroupRequirementType.Name;
@@ -221,7 +230,7 @@ namespace Rock.Jobs
                     mergeFields.Add( "GroupsMissingRequirements", missingRequirements );
 
                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
-                    emailMessage.AddRecipient( new RecipientData( recipient.Email, mergeFields ) );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( recipient, mergeFields ) );
                     var emailErrors = new List<string>();
                     emailMessage.Send( out emailErrors );
                     errors.AddRange( emailErrors );
@@ -242,7 +251,7 @@ namespace Rock.Jobs
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "GroupsMissingRequirements", _groupsMissingRequriements );
-                        emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                        emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                         recipients++;
                     }
                     var emailErrors = new List<string>();

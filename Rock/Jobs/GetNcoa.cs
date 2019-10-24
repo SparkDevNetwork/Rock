@@ -15,11 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Web;
+
 using Quartz;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -136,9 +136,7 @@ namespace Rock.Jobs
                         var ncoa = new Ncoa();
                         ncoa.SendNotification( sparkDataConfig, "failed" );
                     }
-                    catch
-                    {
-                    }
+                    catch { }
 
 
                     if ( sparkDataConfig.SparkDataApiKey.IsNotNullOrWhiteSpace() && sparkDataConfig.NcoaSettings.FileName.IsNotNullOrWhiteSpace() )

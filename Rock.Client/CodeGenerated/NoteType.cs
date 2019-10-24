@@ -59,7 +59,7 @@ namespace Rock.Client
         public string BorderColor { get; set; }
 
         /// <summary />
-        [RockObsolete( "1.8" )]
+        // Made Obsolete in Rock "1.8"
         [Obsolete( "No Longer Supported", false )]
         public string CssClass { get; set; }
 

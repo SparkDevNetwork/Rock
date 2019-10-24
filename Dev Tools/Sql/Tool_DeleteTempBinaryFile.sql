@@ -1,24 +1,21 @@
-begin
-    declare @fileId int
-    declare crBinaryFile cursor for
-    select [Id] from [BinaryFile] where [IsTemporary] = 1;
 
-    open crBinaryFile
-    fetch next from crBinaryFile into @fileId
+DECLARE @fileId INT
+DECLARE crBinaryFile CURSOR FOR
+SELECT [Id] FROM [BinaryFile] WHERE [IsTemporary] = 1;
 
-    while @@FETCH_STATUS = 0
-    begin
-    begin try
-        delete from BinaryFile where [Id] = @fileId
-    end try
-    begin catch
-        print 'unable to delete ' 
-    end catch
-    fetch next from crBinaryFile into @fileId
-    end
+OPEN crBinaryFile
+FETCH NEXT FROM crBinaryFile INTO @fileId
 
-    close crBinaryFile
-    deallocate crBinaryFile
-end
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	BEGIN TRY
+		DELETE FROM BinaryFile WHERE [Id] = @fileId
+	END TRY
+	BEGIN CATCH
+		PRINT 'Unable to delete ' + ERROR_MESSAGE()
+	END CATCH
+	FETCH NEXT FROM crBinaryFile INTO @fileId
+END
 
-select * from BinaryFile
+CLOSE crBinaryFile
+DEALLOCATE crBinaryFile

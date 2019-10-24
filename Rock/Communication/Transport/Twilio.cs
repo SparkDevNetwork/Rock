@@ -85,22 +85,64 @@ namespace Rock.Communication.Transport
 
                 List<Uri> attachmentMediaUrls = GetAttachmentMediaUrls( rockMessage.Attachments.AsQueryable() );
 
-                foreach ( var recipientData in rockMessage.GetRecipientData() )
+                foreach ( var recipient in rockMessage.GetRecipients() )
                 {
                     try
                     {
                         foreach ( var mergeField in mergeFields )
                         {
-                            recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                            recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                         }
 
-                        string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                        CommunicationRecipient communicationRecipient = null;
 
-                        MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
-
-                        if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                        using ( var rockContext = new RockContext() )
                         {
-                            errorMessages.Add( response.ErrorMessage );
+                            CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
+                            int? recipientId = recipient.CommunicationRecipientId;
+                            if ( recipientId != null )
+                            {
+                                communicationRecipient = communicationRecipientService.Get( recipientId.Value );
+                            }
+
+                            string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipient.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                            Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
+
+                            // Create the communication record and send using that if we have a person since a communication record requires a valid person. Otherwise just send without creating a communication record.
+                            if ( rockMessage.CreateCommunicationRecord && recipientPerson != null )
+                            {
+                                var communicationService = new CommunicationService( rockContext );
+
+                                Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
+
+                                // Since we just created a new communication record, we need to move any attachments from the rockMessage
+                                // to the communication's attachments since the Send method below will be handling the delivery.
+                                if ( attachmentMediaUrls.Any() )
+                                {
+                                    foreach ( var attachment in rockMessage.Attachments.AsQueryable() )
+                                    {
+                                        communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachment.Id }, CommunicationType.SMS );
+                                    }
+                                }
+
+                                rockContext.SaveChanges();
+                                Send( communication, mediumEntityTypeId, mediumAttributes );
+                                continue;
+                            }
+                            else
+                            {
+                                MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipient.To );
+
+                                if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
+                                {
+                                    errorMessages.Add( response.ErrorMessage );
+                                }
+
+                                if ( communicationRecipient != null )
+                                {
+                                    rockContext.SaveChanges();
+                                }
+                            }
                         }
                     }
                     catch ( Exception ex )
@@ -108,7 +150,7 @@ namespace Rock.Communication.Transport
                         errorMessages.Add( ex.Message );
                         ExceptionLogService.LogException( ex );
                     }
-
+                    
                     if ( throttlingWaitTimeMS.HasValue )
                     {
                         System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
@@ -212,7 +254,7 @@ namespace Rock.Communication.Transport
                                             // Create merge field dictionary
                                             var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
-                                            string message = ResolveText( communication.SMSMessage, currentPerson, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
+                                            string message = ResolveText( communication.SMSMessage, currentPerson, recipient, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
 
                                             string twilioNumber = phoneNumber.Number;
                                             if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
@@ -383,7 +425,7 @@ namespace Rock.Communication.Transport
                     createMessageOptions.MediaUrl = attachmentMediaUrls;
                 }
 
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !callbackUrl.Contains(".ngrok.io") )
                 {
                     createMessageOptions.StatusCallback = null;
                 }

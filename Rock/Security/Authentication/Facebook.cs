@@ -20,13 +20,15 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Dynamic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Security;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+
 using RestSharp;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -90,8 +92,9 @@ namespace Rock.Security.ExternalAuthentication
         {
             string returnUrl = request.QueryString["returnurl"];
             string redirectUri = GetRedirectUrl( request );
+            string scopeUserFriends = ( GetAttributeValue( "SyncFriends" ).AsBoolean( false ) ) ? ",user_friends" : string.Empty;
 
-            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email,user_friends",
+            return new Uri( string.Format( "https://www.facebook.com/dialog/oauth?client_id={0}&redirect_uri={1}&state={2}&scope=public_profile,email" + scopeUserFriends,
                 GetAttributeValue( "AppID" ),
                 HttpUtility.UrlEncode( redirectUri ),
                 HttpUtility.UrlEncode( returnUrl ?? FormsAuthentication.DefaultUrl ) ) );
@@ -134,7 +137,7 @@ namespace Rock.Security.ExternalAuthentication
                     restRequest.AddParameter( "access_token", accessToken );
                     restRequest.RequestFormat = DataFormat.Json;
                     restRequest.AddHeader( "Accept", "application/json" );
-                    restClient = new RestClient( "https://graph.facebook.com/v2.5/me?fields=email,last_name,first_name,link" );
+                    restClient = new RestClient( "https://graph.facebook.com/v3.3/me?fields=email,last_name,first_name,link" );
                     restResponse = restClient.Execute( restRequest );
 
                     if ( restResponse.StatusCode == HttpStatusCode.OK )
@@ -438,7 +441,7 @@ namespace Rock.Security.ExternalAuthentication
                             // If person does not have a photo, try to get their Facebook photo
                             if ( !person.PhotoId.HasValue )
                             {
-                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.5/{0}/picture?redirect=false&type=square&height=400&width=400", facebookId ) );
+                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v3.3/{0}/picture?redirect=false&type=square&height=400&width=400", facebookId ) );
                                 var restRequest = new RestRequest( Method.GET );
                                 restRequest.RequestFormat = DataFormat.Json;
                                 restRequest.AddHeader( "Accept", "application/json" );
@@ -492,7 +495,7 @@ namespace Rock.Security.ExternalAuthentication
                                 restRequest.RequestFormat = DataFormat.Json;
                                 restRequest.AddHeader( "Accept", "application/json" );
 
-                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v2.5/{0}/friends", facebookId ) );
+                                var restClient = new RestClient( string.Format( "https://graph.facebook.com/v3.3/{0}/friends", facebookId ) );
                                 var restResponse = restClient.Execute( restRequest );
 
                                 if ( restResponse.StatusCode == HttpStatusCode.OK )

@@ -109,6 +109,26 @@
   border: 1px solid darken(@theme-7, 10%);
 }
 
+.color-primary {
+  color: @brand-primary;
+}
+
+.color-success {
+  color: @brand-success;
+}
+
+.color-warning {
+  color: @brand-warning;
+}
+
+.color-info {
+  color: @brand-info;
+}
+
+.color-danger {
+  color: @brand-danger;
+}
+
 // background colors
 .bg-color {
   background-color: @body-bg;
@@ -120,7 +140,7 @@
 }
 
 .text-normal {
-  font-weight: normal;
+  font-weight: 400;
 }
 
 .text-light {
@@ -135,7 +155,7 @@
   font-weight: @font-weight-bold;
 }
 
-.text-light {
+.text-shadow-light {
   text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
 }
 
@@ -155,9 +175,28 @@
   cursor: pointer;
 }
 
+.leading-tight {
+   line-height: .9;
+}
+
+.leading-snug {
+  line-height: 1;
+}
+
+.leading-normal {
+  line-height: 1.5;
+}
+
+.leading-relaxed {
+  line-height: 1.75;
+}
+
+.leading-loose {
+  line-height: 2;
+}
+
 // 2. Spacing (note: default @grid-gutter-width is 30px in BS3)
 // -------------------------
-
 // all (top, bottom, right, left)
 .padding-all-none {
   padding: 0 !important;
@@ -418,16 +457,16 @@
 .row-eq-height {
   display: -webkit-flex;
   display: -ms-flexbox;
-  display:         flex;
-  overflow: hidden;
+  display: flex;
+  height: 100%;
 }
 
 @media @md {
   .row-eq-height-md {
     display: -webkit-flex;
     display: -ms-flexbox;
-    display:         flex;
-    overflow: hidden;
+    display: flex;
+    height: 100%;
   }
 }
 
@@ -501,14 +540,63 @@
   width: 33.33333%;
 }
 
-.text-center {
-  text-align: center;
+.unselectable {
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.text-left {
-  text-align: left;
+.text-left           { text-align: left !important; }
+.text-right          { text-align: right !important;  }
+.text-center         { text-align: center !important; }
+
+// BS4 Alignment Utilities
+.align-baseline    { vertical-align: baseline !important; } // Browser default
+.align-top         { vertical-align: top !important; }
+.align-middle      { vertical-align: middle !important; }
+.align-bottom      { vertical-align: bottom !important; }
+.align-text-bottom { vertical-align: text-bottom !important; }
+.align-text-top    { vertical-align: text-top !important; }
+
+
+// Opacity 
+.o-00, .o-0 {
+  opacity: 0;
 }
 
-.text-right {
-  text-align: right;
+.o-10 {
+  opacity: .1;
+}
+
+.o-20 {
+  opacity: .2;
+}
+
+.o-30 {
+  opacity: .3;
+}
+
+.o-40 {
+  opacity: .4;
+}
+
+.o-50 {
+  opacity: .5;
+}
+
+.o-60 {
+  opacity: .6;
+}
+
+.o-70 {
+  opacity: .7;
+}
+
+.o-80 {
+  opacity: .8;
+}
+
+.o-90 {
+  opacity: .9;
 }

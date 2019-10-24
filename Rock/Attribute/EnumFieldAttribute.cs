@@ -16,10 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-using Rock;
 
 namespace Rock.Attribute
 {
@@ -27,8 +23,21 @@ namespace Rock.Attribute
     /// Field Attribute for selecting radio button options from an enum.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class EnumFieldAttribute : FieldAttribute
+    public class EnumFieldAttribute : SelectFieldAttribute
     {
+        private const string VALUES = "values";
+        private const string FIELDTYPE = "fieldtype";
+        private const string ENUM_SOURCE_TYPE_KEY = "enumSourceTypeKey";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnumFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public EnumFieldAttribute( string name )
+            : base( name )
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="EnumFieldAttribute" /> class.
         /// </summary>
@@ -43,15 +52,38 @@ namespace Rock.Attribute
         public EnumFieldAttribute( string name, string description, Type enumSourceType, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectSingleFieldType ).FullName )
         {
-            var list = new List<string>();
-            foreach ( var value in Enum.GetValues( enumSourceType ) )
+            this.EnumSourceType = enumSourceType;
+            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the enum source.
+        /// FieldConfigurationValues["values"] is populated the a comma seperated string of the enum values
+        /// </summary>
+        /// <value>
+        /// The type of the enum source.
+        /// </value>
+        public Type EnumSourceType
+        {
+            get
             {
-                list.Add( string.Format( "{0}^{1}", (int)value, value.ToString().SplitCase() ) );
+                string entityTypeName = FieldConfigurationValues.GetValueOrNull( ENUM_SOURCE_TYPE_KEY ) ?? string.Empty;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
             }
-            
-            var listSource = string.Join( ",", list );
-            FieldConfigurationValues.Add( "values", new Field.ConfigurationValue( listSource ) );
-            FieldConfigurationValues.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENUM_SOURCE_TYPE_KEY, new Field.ConfigurationValue( value.FullName ) );
+
+                var list = new List<string>();
+                foreach ( var enumValue in Enum.GetValues( value ) )
+                {
+                    list.Add( string.Format( "{0}^{1}", ( int ) enumValue, enumValue.ToString().SplitCase() ) );
+                }
+
+                var listSource = string.Join( ",", list );
+                FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+            }
         }
     }
 }

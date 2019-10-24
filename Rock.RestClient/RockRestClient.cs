@@ -27,9 +27,10 @@ namespace Rock.Net
 {
     /// <summary>
     /// The RestClient that the WPF CheckScanner and StatementGenerator use. 
-    /// NOTE: If you are developing a new app, you might want to use RestSharp instead of this class
+    /// NOTE: If you are developing a new app, use RestSharp instead of this class
     /// </summary>
     [System.ComponentModel.DesignerCategory( "Code" )]
+    [Obsolete( " Use RestSharp.RestClient instead. You might also want to use the RestSharp.NewtonSoft.Json nuget package too." )]
     public class RockRestClient : WebClient
     {
         /// <summary>

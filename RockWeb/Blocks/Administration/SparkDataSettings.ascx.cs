@@ -40,8 +40,6 @@ namespace RockWeb.Blocks.Administration
     {
         #region private variables
 
-        private RockContext _rockContext = new RockContext();
-
         private SparkDataConfig _sparkDataConfig = new SparkDataConfig();
 
         #endregion
@@ -387,7 +385,7 @@ namespace RockWeb.Blocks.Administration
             var enabledLabel = string.Empty;
             if ( enabled )
             {
-                enabledLabel = "<span class='label label-success'>Enabled</span> <span class='label label-warning'>$</span>";
+                enabledLabel = "<span class='label label-success'>Enabled</span> <span class='label label-success'>$</span>";
             }
             else
             {

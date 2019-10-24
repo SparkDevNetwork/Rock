@@ -20,18 +20,13 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 using Amazon;
 using Amazon.S3;
-using Amazon.S3.IO;
 using Amazon.S3.Model;
 
-using Rock.Model;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Web.Cache;
-using System.Threading.Tasks;
+using Rock.Model;
 
 namespace Rock.Storage.AssetStorage
 {
@@ -43,16 +38,71 @@ namespace Rock.Storage.AssetStorage
     [Export( typeof( AssetStorageComponent ) )]
     [ExportMetadata( "ComponentName", "AmazonS3" )]
 
-    [TextField( name: "AWS Region", description: "The AWS S3 Region in which the bucket is located. e.g. us-east-1", required: true, defaultValue: "", category: "", order: 0, key: "AWSRegion" )]
-    [TextField( name: "Bucket", description: "The name of the AWS S3 bucket where the files are stored.", required: true, defaultValue: "", category: "", order: 1, key: "Bucket" )]
-    [TextField( name: "Root Folder", description: "Optional root folder. Must be the full path to the root folder starting from the first after the bucket name.", required: false, defaultValue: "", category: "", order: 2, key: "RootFolder" )]
-    [IntegerField( name: "Expiration", description: "The time in minutes that the created public URL is available before being expired.", required: false, defaultValue: 525600, category: "", order: 3, key: "Expiration" )]
-    [TextField( name: "AWS Profile Name", description: "Should be an AWS IAM user.", required: true, defaultValue: "", category: "", order: 4, key: "AWSProfileName" )]
-    [TextField( name: "AWS Access Key", description: "The access key for the user.", required: true, defaultValue: "", category: "", order: 5, key: "AWSAccessKey" )]
-    [TextField( name: "AWS Secret Key", description: "The seceret key for the user. Amazon only gives this when the user is created. If lost then a new user will need to be created.", required: true, defaultValue: "", category: "", order: 6, key: "AWSSecretKey" )]
-    
+    [TextField( "AWS Region",
+        Description = "The AWS S3 Region in which the bucket is located. e.g. us-east-1",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKeys.AWSRegion )]
+
+    [TextField( "Bucket",
+        Description = "The name of the AWS S3 bucket where the files are stored.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKeys.Bucket )]
+
+    [TextField( "Root Folder",
+        Description = "Optional root folder. Must be the full path to the root folder starting from the first after the bucket name.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKeys.RootFolder )]
+
+    [IntegerField( "Expiration",
+        Description = "The time in minutes that the created public URL is available before being expired.",
+        IsRequired = false,
+        DefaultIntegerValue = 525600,
+        Order = 3,
+        Key = AttributeKeys.Expiration )]
+
+    [TextField( "AWS Profile Name",
+        Description = "Should be an AWS IAM user.",
+        IsRequired = true,
+        Order = 4,
+        Key = AttributeKeys.AWSProfileName )]
+
+    [TextField( "AWS Access Key",
+        Description = "The access key for the user.",
+        IsRequired = true,
+        Order = 5,
+        Key = AttributeKeys.AWSAccessKey )]
+
+    [TextField( "AWS Secret Key",
+        Description = "The seceret key for the user. Amazon only gives this when the user is created. If lost then a new user will need to be created.",
+        IsRequired = true,
+        Order = 6,
+        Key = AttributeKeys.AWSSecretKey )]
+
+    [BooleanField( "Generate Signed URLs",
+        Description = "Signed URLs allow you to provide access to private buckets and to expire the generated links. Unsigned URLs rely on the ACLs of the bucket and do not expire.",
+        TrueText = "Yes",
+        FalseText = "No",
+        IsRequired = true,
+        DefaultBooleanValue = false,
+        Order = 7,
+        Key = AttributeKeys.GenerateSingedURLs )]
+
     public class AmazonS3Component : AssetStorageComponent
     {
+        private static class AttributeKeys
+        {
+            public const string AWSRegion = "AWSRegion";
+            public const string Bucket = "Bucket";
+            public const string RootFolder = "RootFolder";
+            public const string Expiration = "Expiration";
+            public const string AWSProfileName = "AWSProfileName";
+            public const string AWSAccessKey = "AWSAccessKey";
+            public const string AWSSecretKey = "AWSSecretKey";
+            public const string GenerateSingedURLs = "GenerateSingedURLs";
+        }
 
         #region Properties
 
@@ -109,7 +159,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override List<Asset> ListObjects( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
 
             try
@@ -117,8 +167,8 @@ namespace Rock.Storage.AssetStorage
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
 
                 ListObjectsV2Request request = new ListObjectsV2Request();
-                request.BucketName = GetAttributeValue( assetStorageProvider, "Bucket" );
-                request.Prefix = asset.Key == "/" ? GetAttributeValue( assetStorageProvider, "RootFolder" ) : asset.Key;
+                request.BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
+                request.Prefix = asset.Key == "/" ? GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) : asset.Key;
 
                 var assets = new List<Asset>();
 
@@ -141,7 +191,7 @@ namespace Rock.Storage.AssetStorage
                     request.ContinuationToken = response.NextContinuationToken;
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -172,7 +222,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override List<Asset> ListFilesInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
             HasRequirementsFolder( asset );
             
@@ -181,7 +231,7 @@ namespace Rock.Storage.AssetStorage
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
 
                 ListObjectsV2Request request = new ListObjectsV2Request();
-                request.BucketName = GetAttributeValue( assetStorageProvider, "Bucket" );
+                request.BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
                 request.Prefix = asset.Key == "/" ? string.Empty : asset.Key;
                 request.Delimiter = "/";
 
@@ -208,7 +258,7 @@ namespace Rock.Storage.AssetStorage
 
                 } while ( response.IsTruncated );
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -239,8 +289,8 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override List<Asset> ListFoldersInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-            string bucketName = GetAttributeValue( assetStorageProvider, "Bucket" );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
+            string bucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
 
             asset.Key = FixKey( asset, rootFolder );
             HasRequirementsFolder( asset );
@@ -255,35 +305,19 @@ namespace Rock.Storage.AssetStorage
                 request.Delimiter = "/";
 
                 var assets = new List<Asset>();
-                var subFolders = new HashSet<string>();
 
-                ListObjectsV2Response response;
-
-                // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
-                do
+                // All "folders" will be in the CommonPrefixes property. There is no need to loop through truncated responses like there is for files.
+                ListObjectsV2Response response = client.ListObjectsV2( request );
+                foreach ( string subFolder in response.CommonPrefixes )
                 {
-                    response = client.ListObjectsV2( request );
-
-                    foreach ( string subFolder in response.CommonPrefixes )
+                    if ( subFolder.IsNotNullOrWhiteSpace() )
                     {
-                        if ( subFolder.IsNotNullOrWhiteSpace() )
-                        {
-                            subFolders.Add( subFolder );
-                        }
+                        var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
+                        assets.Add( subFolderAsset );
                     }
-
-                    request.ContinuationToken = response.NextContinuationToken;
-
-                } while ( response.IsTruncated );
-
-                // Add the subfolders to the asset collection
-                foreach ( string subFolder in subFolders )
-                {
-                    var subFolderAsset = CreateAssetFromCommonPrefix( subFolder, client.Config.RegionEndpoint.SystemName, bucketName );
-                    assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -312,7 +346,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset, bool createThumbnail )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
             HasRequirementsFile( asset );
 
@@ -320,7 +354,7 @@ namespace Rock.Storage.AssetStorage
             {
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
 
-                GetObjectResponse response = client.GetObject( GetAttributeValue( assetStorageProvider, "Bucket" ), asset.Key );
+                GetObjectResponse response = client.GetObject( GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ), asset.Key );
                 return CreateAssetFromGetObjectResponse( assetStorageProvider, response, client.Config.RegionEndpoint.SystemName, createThumbnail );
                 
             }
@@ -340,7 +374,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool UploadObject( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
 
             try
@@ -348,7 +382,7 @@ namespace Rock.Storage.AssetStorage
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
 
                 PutObjectRequest request = new PutObjectRequest();
-                request.BucketName = GetAttributeValue( assetStorageProvider, "Bucket" );
+                request.BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
                 request.Key = asset.Key;
                 request.InputStream = asset.AssetStream;
 
@@ -376,7 +410,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool CreateFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
 
             try
@@ -384,7 +418,7 @@ namespace Rock.Storage.AssetStorage
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
 
                 PutObjectRequest request = new PutObjectRequest();
-                request.BucketName = GetAttributeValue( assetStorageProvider, "Bucket" );
+                request.BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
                 request.Key = asset.Key;
 
                 PutObjectResponse response = client.PutObject( request );
@@ -411,7 +445,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool DeleteAsset( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
             AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
 
@@ -421,7 +455,7 @@ namespace Rock.Storage.AssetStorage
                 {
                     DeleteObjectRequest request = new DeleteObjectRequest()
                     {
-                        BucketName = GetAttributeValue( assetStorageProvider, "Bucket" ),
+                        BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ),
                         Key = asset.Key
                     };
 
@@ -460,9 +494,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = asset.Key.IsNullOrWhiteSpace() ? rootFolder + asset.Name : asset.Key;
-            string bucket = GetAttributeValue( assetStorageProvider, "Bucket" );
+            string bucket = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
             try
             {
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
@@ -500,8 +534,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override string CreateDownloadLink( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
+            string url = string.Empty;
 
             try
             {
@@ -509,12 +544,22 @@ namespace Rock.Storage.AssetStorage
 
                 GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
                 {
-                    BucketName = GetAttributeValue( assetStorageProvider, "Bucket" ),
+                    BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ),
                     Key = asset.Key,
-                    Expires = DateTime.Now.AddMinutes( GetAttributeValue( assetStorageProvider, "Expiration" ).AsDouble() )
+                    Expires = DateTime.Now.AddMinutes( GetAttributeValue( assetStorageProvider, AttributeKeys.Expiration ).AsDouble() )
                 };
 
-                return client.GetPreSignedURL( request );
+                url = client.GetPreSignedURL( request );
+
+                if ( GetAttributeValue( assetStorageProvider, AttributeKeys.GenerateSingedURLs ).AsBooleanOrNull() ?? false )
+                {
+                    return url;
+                }
+                else
+                {
+                    return url.Left( url.IndexOf( '?' ) );
+                }
+
             }
             catch( Exception ex )
             {
@@ -534,8 +579,8 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override List<Asset> ListObjectsInFolder( AssetStorageProvider assetStorageProvider, Asset asset )
         {
-            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-            string bucketName = GetAttributeValue( assetStorageProvider, "Bucket" );
+            string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
+            string bucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
             asset.Key = FixKey( asset, rootFolder );
             HasRequirementsFolder( asset );
             
@@ -589,7 +634,7 @@ namespace Rock.Storage.AssetStorage
                     assets.Add( subFolderAsset );
                 }
 
-                return assets;
+                return assets.OrderBy( a => a.Key, StringComparer.OrdinalIgnoreCase ).ToList();
             }
             catch ( Exception ex )
             {
@@ -623,6 +668,9 @@ namespace Rock.Storage.AssetStorage
 
             string virtualThumbPath = Path.Combine( thumbDir, name );
             string physicalThumbPath = FileSystemCompontHttpContext.Server.MapPath( virtualThumbPath );
+
+            // Encode the name thumb path since it can contain special characters
+            virtualThumbPath = virtualThumbPath.EncodeHtml();
 
             if (File.Exists( physicalThumbPath ) )
             {
@@ -685,7 +733,7 @@ namespace Rock.Storage.AssetStorage
                     int range = keys.Count() - keyIndex < 1000 ? keys.Count() - keyIndex : 1000;
                     var deleteObjectsRequest = new DeleteObjectsRequest
                     {
-                        BucketName = GetAttributeValue( assetStorageProvider, "Bucket" ),
+                        BucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ),
                         Objects = keys.GetRange( keyIndex, range )
                     };
 
@@ -722,7 +770,6 @@ namespace Rock.Storage.AssetStorage
                 Key = s3Object.Key,
                 Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = assetType,
-                //IconPath = GetFileTypeIcon( s3Object.Key ),
                 IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail(assetStorageProvider, s3Object.Key, s3Object.LastModified ),
                 FileSize = s3Object.Size,
                 LastModifiedDateTime = s3Object.LastModified,
@@ -865,9 +912,9 @@ namespace Rock.Storage.AssetStorage
         private AmazonS3Client GetAmazonS3Client( AssetStorageProvider assetStorageProvider )
         {
 
-            string awsAccessKey = GetAttributeValue( assetStorageProvider, "AWSAccessKey" );
-            string awsSecretKey = GetAttributeValue( assetStorageProvider, "AWSSecretKey" );
-            string awsRegion = GetAttributeValue( assetStorageProvider, "AWSRegion" );
+            string awsAccessKey = GetAttributeValue( assetStorageProvider, AttributeKeys.AWSAccessKey );
+            string awsSecretKey = GetAttributeValue( assetStorageProvider, AttributeKeys.AWSSecretKey );
+            string awsRegion = GetAttributeValue( assetStorageProvider, AttributeKeys.AWSRegion );
             RegionEndpoint regionEndPoint = Amazon.RegionEndpoint.GetBySystemName( awsRegion );
 
             return new AmazonS3Client( awsAccessKey, awsSecretKey, regionEndPoint );

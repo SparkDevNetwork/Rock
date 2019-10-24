@@ -25,7 +25,6 @@ using System.Xml.Linq;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web;
 
 namespace Rock.Web.Cache
 {
@@ -293,6 +292,24 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string BodyCssClass { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the icon binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The icon binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? IconBinaryFileId { get; private set; }
+
+        /// <summary>
+        /// Gets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; private set; }
 
         /// <summary>
         /// Gets the parent page.
@@ -582,6 +599,8 @@ namespace Rock.Web.Cache
             IncludeAdminFooter = page.IncludeAdminFooter;
             AllowIndexing = page.AllowIndexing;
             BodyCssClass = page.BodyCssClass;
+            IconBinaryFileId = page.IconBinaryFileId;
+            AdditionalSettings = page.AdditionalSettings;
 
             PageContexts = new Dictionary<string, string>();
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );
@@ -779,12 +798,12 @@ namespace Rock.Web.Cache
             {
                 {"Id", Id},
                 {"Title", string.IsNullOrWhiteSpace(PageTitle) ? InternalName : PageTitle},
-                {"Current", isCurrentPage.ToString().ToLower()},
-                {"IsParentOfCurrent", isParentOfCurrent.ToString().ToLower()},
+                {"Current", isCurrentPage},
+                {"IsParentOfCurrent", isParentOfCurrent},
                 {"Url", new PageReference(Id, 0, parameters, queryString).BuildUrl()},
-                {"DisplayDescription", MenuDisplayDescription.ToString().ToLower()},
+                {"DisplayDescription", MenuDisplayDescription},
                 {"DisplayIcon", MenuDisplayIcon.ToString().ToLower()},
-                {"DisplayChildPages", MenuDisplayChildPages.ToString().ToLower()},
+                {"DisplayChildPages", MenuDisplayChildPages},
                 {"IconCssClass", IconCssClass ?? string.Empty},
                 {"Description", Description ?? string.Empty},
                 {"IconUrl", iconUrl}

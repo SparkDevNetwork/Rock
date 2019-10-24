@@ -36,6 +36,7 @@
                             <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
+                               <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
                         </div>
                     </div>
 
@@ -107,6 +108,7 @@
                                 <Rock:RockCheckBox ID="cbAllowIndexing" runat="server" Label="Allow Indexing" Help="This setting will enable or disable the pages of the site from being indexed." />
                                 <Rock:RockCheckBox ID="cbEnableIndexing" runat="server" Label="Is Indexed" Help="Enables the Rock indexer for this site." AutoPostBack="true" OnCheckedChanged="cbEnableIndexing_CheckedChanged" />
                                 <Rock:RockTextBox ID="tbIndexStartingLocation" runat="server" Label="Index Starting Location" Help="The URL for the Rock indexer to use to start crawling the site." />
+                                <Rock:RockCheckBox ID="cbEnableExclusiveRoutes" runat="server" Label="Enable Exclusive Routes" Help="Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site." />
                             </div>
                         </div>
                         <div class="row">

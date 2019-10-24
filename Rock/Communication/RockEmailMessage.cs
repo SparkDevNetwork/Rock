@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -155,12 +156,23 @@ namespace Rock.Communication
             {
                 this.FromEmail = systemEmail.From;
                 this.FromName = systemEmail.FromName;
-                this.SetRecipients( systemEmail.To );
+                var recipients = systemEmail.To.SplitDelimitedValues().ToList().Select( a => RockEmailMessageRecipient.CreateAnonymous( a, null ) ).ToList();
+                this.SetRecipients( recipients );
                 this.CCEmails = systemEmail.Cc.SplitDelimitedValues().ToList();
                 this.BCCEmails = systemEmail.Bcc.SplitDelimitedValues().ToList();
                 this.Subject = systemEmail.Subject;
                 this.Message = systemEmail.Body;
             }
+        }
+
+        /// <summary>
+        /// Sets the recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        public void SetRecipients( List<RockEmailMessageRecipient> recipients )
+        {
+            this.Recipients = new List<RockMessageRecipient>();
+            this.Recipients.AddRange( recipients );
         }
     }
 }

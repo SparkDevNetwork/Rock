@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
 
 namespace Rock.Web.Cache
@@ -68,23 +69,6 @@ namespace Rock.Web.Cache
             {
                 cacheManager?.Clear();
             }
-        }
-
-        /// <summary>
-        /// Updates the cache hit miss.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="hit">if set to <c>true</c> [hit].</param>
-        internal static void UpdateCacheHitMiss( string key, bool hit )
-        {
-            var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext == null || !httpContext.Items.Contains( "Cache_Hits" ) )
-            {
-                return;
-            }
-
-            var cacheHits = httpContext.Items["Cache_Hits"] as Dictionary<string, bool>;
-            cacheHits?.AddOrIgnore( key, hit );
         }
 
         #endregion
@@ -199,8 +183,6 @@ namespace Rock.Web.Cache
             var value = region.IsNotNullOrWhiteSpace() ?
                 RockCacheManager<object>.Instance.Cache.Get( key, region ) :
                 RockCacheManager<object>.Instance.Cache.Get( key );
-
-            UpdateCacheHitMiss( key, value != null );
 
             if ( value != null )
             {
@@ -325,7 +307,7 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
+                    if ( !value.Contains(key) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
@@ -432,9 +414,9 @@ namespace Rock.Web.Cache
                 return "Nothing to clear";
             }
 
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return ClearCachedItemsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return ClearCachedItemsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return ClearCachedItemsForSystemType( cacheTypeName );
@@ -585,9 +567,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static CacheItemStatistics GetStatisticsForType( string cacheTypeName )
         {
-            if ( cacheTypeName.StartsWith( "Cache" ) )
+            if ( cacheTypeName.Contains( "Cache" ) )
             {
-                return GetStatisticsForType( Type.GetType( $"{cacheTypeName},Rock" ) );
+                return GetStatisticsForType( Type.GetType( $"Rock.Web.Cache.{cacheTypeName},Rock" ) );
             }
 
             return GetStatForSystemType( cacheTypeName );

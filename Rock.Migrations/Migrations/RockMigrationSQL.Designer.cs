@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -1285,26 +1285,25 @@ namespace Rock.Migrations.Migrations {
         
         /// <summary>
         ///   Looks up a localized string similar to 
-        ///INSERT INTO BinaryFile(
-        ///	  [IsTemporary]
-        ///	, [IsSystem]
-        ///	, [BinaryFileTypeId]
-        ///	, [FileName]
-        ///	, [MimeType]
-        ///	, [Description]
-        ///	, [StorageEntityTypeId]
-        ///	, [Guid]
-        ///	, [StorageEntitySettings]
-        ///	, [Path]
-        ///	, [FileSize]
-        ///)
-        ///VALUES (
-        ///	  0 --[IsTemporary]
-        ///	, 0 --[IsSystem]
-        ///	, (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C50-234B-474C-940C-C571F385E65F&apos;) --[BinaryFileTypeId]
-        ///	, &apos;Install Icon Font on Printer&apos; --[FileName]
-        ///	, &apos;text/plain&apos; --[MimeType]
-        ///	, &apos;This label installs the Rock icon font, [rest of string was truncated]&quot;;.
+        ///IF ( SELECT COUNT([Id]) FROM BinaryFile WHERE [Guid] = &apos;106A393A-6D98-4348-8658-E0F4573477B8&apos; ) = 0
+        ///BEGIN
+        ///    INSERT INTO BinaryFile(
+        ///	      [IsTemporary]
+        ///	    , [IsSystem]
+        ///	    , [BinaryFileTypeId]
+        ///	    , [FileName]
+        ///	    , [MimeType]
+        ///	    , [Description]
+        ///	    , [StorageEntityTypeId]
+        ///	    , [Guid]
+        ///	    , [StorageEntitySettings]
+        ///	    , [Path]
+        ///	    , [FileSize]
+        ///    )
+        ///    VALUES (
+        ///	      0 --[IsTemporary]
+        ///	    , 0 --[IsSystem]
+        ///	    , (SELECT [Id] FROM [BinaryFileType] WHERE [Guid] = &apos;DE0E5C [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _201810161814574_Rollup_1016_AddCheck_inLabelToInstallIconFont {
             get {
@@ -1349,6 +1348,208 @@ namespace Rock.Migrations.Migrations {
         public static string _201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
             get {
                 return ResourceManager.GetString("_201810301818354_Rollup_1030_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down {
+            get {
+                return ResourceManager.GetString("_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up {
+            get {
+                return ResourceManager.GetString("_201811271852316_Rollup_1127_spFinance_PledgeAnalyticsQuery_Up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
+        ///SET [Markup] = &apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{% assign id = uniqueid %}
+        ///{% assign curvedlines = curvedlines | AsBoolean %}
+        ///
+        ///{% assign dataitemCount = dataitems | Size -%}
+        ///{% if dataitemCount &gt; 0 -%}
+        ///    {% assign fillColors = dataitems | Map:&apos;&apos;fillcolor&apos;&apos; | Join:&apos;&apos;&quot;, &quot;&apos;&apos; | Prepend:&apos;&apos;[&quot;&apos;&apos; | Append:&apos;&apos;&quot;]&apos;&apos; %}
+        ///    {% assign borderColors = [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201812111901295_Rollup_1211_FixChartShortcode {
+            get {
+                return ResourceManager.GetString("_201812111901295_Rollup_1211_FixChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF NOT EXISTS (
+        ///		SELECT [Id]
+        ///		FROM [ServiceJob]
+        ///		WHERE [Class] = &apos;Rock.Jobs.PostV90DataMigrations&apos;
+        ///			AND [Guid] = &apos;3F279016-C7D1-490F-835D-8FFE6D943A32&apos;
+        ///		)
+        ///BEGIN
+        ///	INSERT INTO [ServiceJob] (
+        ///		[IsSystem]
+        ///		,[IsActive]
+        ///		,[Name]
+        ///		,[Description]
+        ///		,[Class]
+        ///		,[CronExpression]
+        ///		,[NotificationStatus]
+        ///		,[Guid]
+        ///		)
+        ///	VALUES (
+        ///		0
+        ///		,1
+        ///		,&apos;Runs data updates that need to occur after updating to v9.0&apos;
+        ///		,&apos;This job will take care of any data migrations that need to occur after updating to v [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob {
+            get {
+                return ResourceManager.GetString("_201904231856504_Rollup_0423_CreatePost90DataMigrationServiceJob", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @WeeklySundayScheduleGuid UNIQUEIDENTIFIER = &apos;04A17BB3-B3E8-4E4B-B575-22CB7E81D5F4&apos;,
+        ///	@EveryOtherWeekSundayScheduleGuid UNIQUEIDENTIFIER = &apos;07F1D164-F8D7-4FA4-B98B-B7480CC40457&apos;,
+        ///	@FirstAndThirdSundayScheduleGuid UNIQUEIDENTIFIER = &apos;8342535C-A48B-4AE6-8522-33C33BFBBFFC&apos;,
+        ///	@SecondAndFourthSundayScheduleGuid UNIQUEIDENTIFIER = &apos;34448AF0-ECA2-40E5-89C9-66C1739A8828&apos;,
+        ///	@WeeklySundayScheduleId INT,
+        ///	@EveryOtherWeekSundayScheduleId INT,
+        ///	@FirstAndThirdSundayScheduleId INT,
+        ///	@SecondAndFourthSundaySc [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201905081957016_GroupScheduling_PopulateScheduleTemplates {
+            get {
+                return ResourceManager.GetString("_201905081957016_GroupScheduling_PopulateScheduleTemplates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode] 
+        ///SET [Markup] = &apos;{% javascript url:&apos;&apos;~/Scripts/moment.min.js&apos;&apos; id:&apos;&apos;moment&apos;&apos;%}{% endjavascript %}
+        ///{% javascript url:&apos;&apos;~/Scripts/Chartjs/Chart.min.js&apos;&apos; id:&apos;&apos;chartjs&apos;&apos;%}{% endjavascript %}
+        ///
+        ///{% assign id = uniqueid %}
+        ///{% assign curvedlines = curvedlines | AsBoolean %}
+        ///
+        ///{% assign dataitemCount = dataitems | Size -%}
+        ///{% if dataitemCount &gt; 0 -%}
+        ///    {% assign fillColors = dataitems | Map:&apos;&apos;fillcolor&apos;&apos; | Join:&apos;&apos;&quot;, &quot;&apos;&apos; | Prepend:&apos;&apos;[&quot;&apos;&apos; | Append:&apos;&apos;&quot;]&apos;&apos; %}
+        ///    {% assign borderColors = [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201905082317243_Rollup_0508_FixLavaChartShortcode {
+            get {
+                return ResourceManager.GetString("_201905082317243_Rollup_0508_FixLavaChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortCode]
+        ///	SET [Documentation] = 
+        ///  &apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
+        ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
+        ///    series. Let’s look [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201907082136571_Rollup0708_SegmentedChartUpdate {
+            get {
+                return ResourceManager.GetString("_201907082136571_Rollup0708_SegmentedChartUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DECLARE @BadgeGuid UNIQUEIDENTIFIER = &apos;132F9C2A-0AF4-4AD9-87EF-7730B284E10E&apos;;
+        ///DECLARE @Lava NVARCHAR(MAX) = 
+        ///N&apos;{% assign groupHasRequirements = Entity.GroupType.GroupRequirements | Size | AsBoolean %}
+        ///{% assign typeHasRequirements = Entity.GroupRequirements | Size | AsBoolean %}
+        ///
+        ///{% if groupHasRequirements or typeHasRequirements -%}
+        ///    &lt;div class=&quot;badge&quot; data-toggle=&quot;tooltip&quot; data-original-title=&quot;Group has requirements.&quot; style=&quot;color:var(--brand-success);&quot;&gt;
+        ///        &lt;i class=&quot;badge-icon fa fa-tasks&quot;&gt; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201908202115162_Rollup_0820_GroupRequirementsBadge {
+            get {
+                return ResourceManager.GetString("_201908202115162_Rollup_0820_GroupRequirementsBadge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910241702033_ufnCrm_GetFamilyTitle {
+            get {
+                return ResourceManager.GetString("_201910241702033_ufnCrm_GetFamilyTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns either the FullName of the specified Person or a list of names of family members
+        ///        In the case of a group (family), it will return the names of the adults of the family. If there are no adults in the family, the names of the non-adults will be listed
+        ///        Example1 (specific person): Bob Smith 
+        ///        Example2 (family with kids): Bill and Sally Jones
+        ///        Example3 (different lastnames): Jim Jackson and Betty Sanders
+        ///        Example4 (just kids [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910241702033_ufnCrm_GetFamilyTitleIncludeInactive {
+            get {
+                return ResourceManager.GetString("_201910241702033_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
     }

@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:Toggle runat=server></{0}:Toggle>" )]
-    public class Toggle : CompositeControl, IRockControl
+    public class Toggle : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
         #region IRockControl implementation
 
@@ -213,12 +213,12 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         /// <summary>
-        /// The "On" button 
+        /// The "On" button
         /// </summary>
         private HtmlAnchor _btnOn;
 
         /// <summary>
-        /// The "Off" button 
+        /// The "Off" button
         /// </summary>
         private HtmlAnchor _btnOff;
 
@@ -276,6 +276,34 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["ActiveButtonCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the button group CSS class.
+        /// </summary>
+        /// <value>
+        /// The button group CSS class.
+        /// </value>
+        /// <example>
+        /// btn-group-justified, or leave blank (default)
+        /// </example>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "" ),
+        Description( "The CssClass to apply to both the on and off buttons." )
+        ]
+        public string ButtonGroupCssClass
+        {
+            get
+            {
+                return ViewState["ButtonGroupCssClass"] as string ?? "";
+            }
+
+            set
+            {
+                ViewState["ButtonGroupCssClass"] = value;
             }
         }
 
@@ -409,7 +437,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( CheckedChanged != null )
+            if ( CheckedChanged != null || ValueChanged != null )
             {
                 EnsureChildControls();
                 _btnOn.ServerClick += btnOnOff_ServerClick;
@@ -438,7 +466,7 @@ namespace Rock.Web.UI.Controls
             _hfChecked = new HiddenFieldWithClass();
             _hfChecked.CssClass = "js-toggle-checked";
             _hfChecked.ID = this.ID + "_hfChecked";
-            
+
             _btnOn = new HtmlAnchor();
             _btnOn.ID = this.ID + "_btnOn";
 
@@ -462,6 +490,8 @@ namespace Rock.Web.UI.Controls
                 this.Checked = sender == _btnOn;
                 CheckedChanged( this, new EventArgs() );
             }
+
+            ValueChanged?.Invoke( this, e );
         }
 
         /// <summary>
@@ -474,14 +504,14 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "toggle-container " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "btn-group btn-toggle" );
+            writer.AddAttribute( "class", $"btn-group btn-toggle {this.ButtonGroupCssClass}" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;
             _btnOn.InnerHtml = this.OnText;
             _btnOff.Attributes["class"] = "btn btn-default js-toggle-off " + this.ButtonSizeCssClass;
             _btnOff.InnerHtml = this.OffText;
-            
+
             if ( this.Checked )
             {
                 _btnOn.AddCssClass( this.ActiveButtonCssClass + " " + this.OnCssClass + " active" );
@@ -495,7 +525,7 @@ namespace Rock.Web.UI.Controls
 
             _btnOff.RenderControl( writer );
             _btnOn.RenderControl( writer );
-            
+
             writer.RenderEndTag();
 
             _hfChecked.RenderControl( writer );
@@ -540,5 +570,10 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [checked changed].
         /// </summary>
         public event EventHandler CheckedChanged;
+
+        /// <summary>
+        /// Occurs when the selected value has changed
+        /// </summary>
+        public event EventHandler ValueChanged;
     }
 }

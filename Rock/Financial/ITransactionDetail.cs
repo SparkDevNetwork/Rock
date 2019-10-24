@@ -44,5 +44,21 @@ namespace Rock.Financial
         /// The summary.
         /// </value>
         string Summary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity.
+        /// </summary>
+        /// <value>
+        /// The entity.
+        /// </value>
+        int? EntityTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity id.
+        /// </summary>
+        /// <value>
+        /// The entity id.
+        /// </value>
+        int? EntityId { get; set; }
     }
 }

@@ -18,18 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using System.Web;
+
 using Quartz;
 
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
-using System.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -128,7 +127,7 @@ namespace Rock.Jobs
                         // as per ISO7813 https://en.wikipedia.org/wiki/ISO/IEC_7813
                         var expirationDate = string.Format( "{0:D2}/{1:D2}", expirationMonthDecrypted, expirationYearDecrypted );
 
-                        var recipients = new List<RecipientData>();
+                        var recipients = new List<RockEmailMessageRecipient>();
                         var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
                         var person = transaction.AuthorizedPersonAlias.Person;
 
@@ -140,7 +139,7 @@ namespace Rock.Jobs
                         mergeFields.Add( "Person", person );
                         mergeFields.Add( "Card", acctNum );
                         mergeFields.Add( "Expiring", expirationDate );
-                        recipients.Add( new RecipientData( person.Email, mergeFields ) );
+                        recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
 
                         var emailMessage = new RockEmailMessage( systemEmail.Guid );
                         emailMessage.SetRecipients( recipients );

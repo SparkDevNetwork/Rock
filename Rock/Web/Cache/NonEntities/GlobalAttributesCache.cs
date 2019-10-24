@@ -26,7 +26,6 @@ using System.Web;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
 
 namespace Rock.Web.Cache
 {
@@ -363,7 +362,7 @@ namespace Rock.Web.Cache
         public static GlobalAttributesCache Get()
         {
             // NOTE this can be changed plain GetOrAddExisting once the above obsolete 
-            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( "All", Load );
+            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( AllString, Load );
         }
 
         private static GlobalAttributesCache Load()
@@ -662,7 +661,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The lava support level.
         /// </value>
-        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.Legacy;
+        public Lava.LavaSupportLevel LavaSupportLevel => GetValue( "core.LavaSupportLevel" ).ConvertToEnumOrNull<Lava.LavaSupportLevel>() ?? Lava.LavaSupportLevel.NoLegacy;
 
         /// <summary>
         /// Gets a value indicating whether Envelope Number feature is enabled

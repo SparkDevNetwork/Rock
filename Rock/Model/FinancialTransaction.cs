@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -96,8 +98,14 @@ namespace Rock.Model
         public DateTime? TransactionDateTime { get; set; }
 
         /// <summary>
-        /// For Credit Card transactions, this is the response code that the gateway returns 
-        /// For Scanned Checks, this is the check number
+        /// Gets or sets date and time that the transaction should be processed after. This is the local server time.
+        /// </summary>
+        [DataMember]
+        public DateTime? FutureProcessingDateTime { get; set; }
+
+        /// <summary>
+        /// For Credit Card transactions, this is the response code that the gateway returns. 
+        /// For Scanned Checks, this is the check number.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the transaction code of the transaction.
@@ -272,15 +280,37 @@ namespace Rock.Model
         public string StatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
-        public DateTime? SundayDate { get; set; }
+        [Index( "IX_SundayDate" )]
+        public DateTime? SundayDate
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
+                // Also, on an Insert/Update this will be the value saved to the database
+                return TransactionDateTime?.SundayDate();
+            }
+
+            set
+            {
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the non cash asset type value identifier.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value identifier.
+        /// </value>
+        [DataMember]
+        public int? NonCashAssetTypeValueId { get; set; }
 
         #endregion Entity Properties
 
@@ -426,6 +456,31 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the total fee amount.
+        /// </summary>
+        /// <value>
+        /// The total amount.
+        /// </value>
+        [LavaInclude]
+        [BoundFieldType( typeof( Rock.Web.UI.Controls.CurrencyField ) )]
+        public virtual decimal? TotalFeeAmount
+        {
+            get
+            {
+                var hasFeeInfo = false;
+                var totalFee = 0m;
+
+                foreach ( var detail in TransactionDetails )
+                {
+                    hasFeeInfo |= detail.FeeAmount.HasValue;
+                    totalFee += detail.FeeAmount ?? 0m;
+                }
+
+                return hasFeeInfo ? totalFee : ( decimal? ) null;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the history changes.
         /// </summary>
         /// <value>
@@ -478,6 +533,15 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the non cash asset type value.
+        /// </summary>
+        /// <value>
+        /// The non cash asset type value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue NonCashAssetTypeValue { get; set; }
+
         #endregion Virtual Properties
 
         #region Public Methods
@@ -508,16 +572,16 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.Infrastructure.DbEntityEntry entry )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var rockContext = (RockContext)dbContext;
+            var rockContext = ( RockContext ) dbContext;
 
             HistoryChangeList = new History.HistoryChangeList();
-            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList> ();
+            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList>();
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Transaction" );
 
@@ -526,14 +590,14 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
                         History.EvaluateChange( HistoryChangeList, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
                         History.EvaluateChange( HistoryChangeList, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", (DateTime?)null, TransactionDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", ( DateTime? ) null, TransactionDateTime );
                         History.EvaluateChange( HistoryChangeList, "Transaction Code", string.Empty, TransactionCode );
                         History.EvaluateChange( HistoryChangeList, "Summary", string.Empty, Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", (int?)null, TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", (int?)null, SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", (int?)null, ScheduledTransactionId );
+                        History.EvaluateChange( HistoryChangeList, "Type", ( int? ) null, TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Source", ( int? ) null, SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", ( int? ) null, ScheduledTransactionId );
                         History.EvaluateChange( HistoryChangeList, "Processed By", string.Empty, History.GetValue<PersonAlias>( ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", (DateTime?)null, ProcessedDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", ( DateTime? ) null, ProcessedDateTime );
                         History.EvaluateChange( HistoryChangeList, "Status", string.Empty, Status );
                         History.EvaluateChange( HistoryChangeList, "Status Message", string.Empty, StatusMessage );
 
@@ -548,7 +612,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         string origPerson = History.GetValue<PersonAlias>( null, entry.OriginalValues["AuthorizedPersonAliasId"].ToStringSafe().AsIntegerOrNull(), rockContext );
                         string person = History.GetValue<PersonAlias>( AuthorizedPersonAlias, AuthorizedPersonAliasId, rockContext );
@@ -607,7 +671,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         HistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Transaction" );
 
@@ -639,18 +703,18 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately after the item is saved
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( DbContext dbContext )
+        public override void PostSaveChanges( Data.DbContext dbContext )
         {
             if ( HistoryChangeList.Any() )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
             }
 
             foreach ( var keyVal in BatchHistoryChangeList )
             {
                 if ( keyVal.Value.Any() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 
@@ -681,6 +745,7 @@ namespace Rock.Model
             this.HasOptional( t => t.RefundDetails ).WithRequired( r => r.FinancialTransaction ).WillCascadeOnDelete( true );
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.NonCashAssetTypeValue ).WithMany().HasForeignKey( t => t.NonCashAssetTypeValueId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -793,7 +858,7 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 var service = new FinancialTransactionService( rockContext );
-                var refundTransaction = service.ProcessRefund( transaction, null, null, string.Empty, true, string.Empty, out errorMessage );
+                var refundTransaction = service.ProcessRefund( transaction, amount, reasonValueId, summary, process, batchNameSuffix, out errorMessage );
 
                 if ( refundTransaction != null )
                 {
@@ -801,6 +866,58 @@ namespace Rock.Model
                 }
 
                 return refundTransaction;
+            }
+        }
+
+        /// <summary>
+        /// Distributes a total fee amount among the details of a transaction according to each detail's
+        /// percent of the total transaction amount.
+        /// For example, consider a $10 transaction has two details, one for $1 and another for $9.
+        /// If this method were called with a $1 fee, that fee would be distributed as 10 cents and
+        /// 90 cents respectively.
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="totalFee">The total fee for the transaction</param>
+        public static void SetApportionedFeesOnDetails( this FinancialTransaction transaction, decimal? totalFee )
+        {
+            if ( transaction.TransactionDetails == null || !transaction.TransactionDetails.Any() )
+            {
+                return;
+            }
+
+            if ( !totalFee.HasValue )
+            {
+                foreach ( var detail in transaction.TransactionDetails )
+                {
+                    detail.FeeAmount = null;
+                }
+
+                return;
+            }
+
+            var totalAmount = transaction.TotalAmount;
+            var totalFeeRemaining = totalFee.Value;
+            var numberOfDetailsRemaining = transaction.TransactionDetails.Count;
+
+            foreach ( var detail in transaction.TransactionDetails )
+            {
+                numberOfDetailsRemaining--;
+                var isLastDetail = numberOfDetailsRemaining == 0;
+
+                if ( isLastDetail )
+                {
+                    // Ensure that the full fee value is retained and some part of it
+                    // is not lost because of rounding
+                    detail.FeeAmount = totalFeeRemaining;
+                }
+                else
+                {
+                    var percentOfTotal = detail.Amount / totalAmount;
+                    var apportionedFee = Math.Round( percentOfTotal * totalFee.Value, 2 );
+
+                    detail.FeeAmount = apportionedFee;
+                    totalFeeRemaining -= apportionedFee;
+                }
             }
         }
     }

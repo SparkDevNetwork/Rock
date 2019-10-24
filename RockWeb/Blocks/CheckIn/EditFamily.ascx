@@ -134,7 +134,7 @@
 
                             <%-- Family Attributes --%>
 
-                            <Rock:DynamicPlaceholder ID="phFamilyAttributes" runat="server" />
+                            <Rock:AttributeValuesContainer ID="avcFamilyAttributes" runat="server" />
 
                             <%-- Edit Family Buttons --%>
                             <div class="actions">
@@ -198,6 +198,12 @@
                                     <Rock:PhoneNumberBox ID="pnMobilePhone" runat="server" Label="Mobile Phone" ValidationGroup="vgEditPerson" />
                                 </div>
                                 <div class="col-md-6">
+                                    <Rock:ButtonGroup ID="bgSMS" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-primary active" UnselectedItemClass="btn btn-default" Label="&nbsp;" ValidationGroup="vgEditPerson" RequiredErrorMessage="SMS Enabled is required.">
+                                        <asp:ListItem Text="SMS Enabled" Value="True" />
+                                        <asp:ListItem Text="No SMS" Value="False" />
+                                    </Rock:ButtonGroup>
+                                </div>
+                                <div class="col-md-6">
                                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="vgEditPerson" />
                                 </div>
                                 <div class="col-md-6">
@@ -208,12 +214,12 @@
 
                             <%-- Person Attributes editing an Adult --%>
                             <Rock:HtmlGenericContainer ID="pnlAdultFields" runat="server">
-                                <Rock:DynamicPlaceholder ID="phAdultAttributes" runat="server" />
+                                <Rock:AttributeValuesContainer ID="avcAdultAttributes" runat="server" />
                             </Rock:HtmlGenericContainer>
 
                             <%-- Person Attributes when editing a Child --%>
                             <Rock:HtmlGenericContainer ID="pnlChildFields" runat="server">
-                                <Rock:DynamicPlaceholder ID="phChildAttributes" runat="server" />
+                                <Rock:AttributeValuesContainer ID="avcChildAttributes" runat="server" />
                             </Rock:HtmlGenericContainer>
 
                             <%-- Person Actions --%>

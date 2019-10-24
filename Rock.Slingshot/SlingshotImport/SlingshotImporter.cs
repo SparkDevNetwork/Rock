@@ -253,6 +253,11 @@ namespace Rock.Slingshot
 
         public List<SlingshotCore.Model.PersonNote> SlingshotPersonNoteList { get; private set; }
 
+        /* Businesses */
+        public List<SlingshotCore.Model.Business> SlingshotBusinessList { get; private set; }
+
+        public List<SlingshotCore.Model.BusinessAttribute> SlingshotBusinessAttributes { get; private set; }
+
         /* */
         private string SlingshotFileName { get; set; }
 
@@ -369,12 +374,14 @@ namespace Rock.Slingshot
 
             AddGroupTypes();
             AddGroupAttributes();
+            AddBusinessAttributes();
 
             // load lookups again in case we added some new ones
             this.ReportProgress( 0, "Reloading Rock Lookups..." );
             LoadLookups();
 
             SubmitPersonImport();
+            SubmitBusinessImport();
 
             // Attendance Related
             SubmitLocationImport();
@@ -655,8 +662,8 @@ namespace Rock.Slingshot
             {
                 try
                 {
-                    HttpWebRequest imageRequest = (HttpWebRequest)HttpWebRequest.Create( photoUri );
-                    HttpWebResponse imageResponse = (HttpWebResponse)imageRequest.GetResponse();
+                    HttpWebRequest imageRequest = ( HttpWebRequest ) HttpWebRequest.Create( photoUri );
+                    HttpWebResponse imageResponse = ( HttpWebResponse ) imageRequest.GetResponse();
                     var imageStream = imageResponse.GetResponseStream();
                     using ( MemoryStream ms = new MemoryStream() )
                     {
@@ -877,7 +884,7 @@ namespace Rock.Slingshot
                     financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
                 }
 
-                financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? (int?)null : slingshotFinancialAccount.ParentAccountId;
+                financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? null : slingshotFinancialAccount.ParentAccountId;
 
                 financialAccountImportList.Add( financialAccountImport );
             }
@@ -928,7 +935,7 @@ namespace Rock.Slingshot
                         break;
                 }
 
-                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : (int?)null;
+                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
 
                 financialBatchImportList.Add( financialBatchImport );
             }
@@ -1015,6 +1022,10 @@ namespace Rock.Slingshot
 
                     case SlingshotCore.Model.TransactionType.EventRegistration:
                         financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid()].Id;
+                        break;
+
+                    case SlingshotCore.Model.TransactionType.Receipt:
+                        financialTransactionImport.TransactionTypeValueId = this.TransactionTypeValues[Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_RECEIPT.AsGuid()].Id;
                         break;
                 }
 
@@ -1224,7 +1235,7 @@ namespace Rock.Slingshot
                     groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
                 }
 
-                groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? (int?)null : slingshotGroup.ParentGroupId;
+                groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
                 groupImport.GroupMemberImports = new List<Rock.Slingshot.Model.GroupMemberImport>();
 
                 foreach ( var groupMember in slingshotGroup.GroupMembers )
@@ -1260,9 +1271,7 @@ namespace Rock.Slingshot
                                 break;
 
                             case SlingshotCore.Model.AddressType.Other:
-                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
-                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
-                                    this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid()].Id;
                                 break;
                         }
 
@@ -1312,6 +1321,193 @@ namespace Rock.Slingshot
 
         #endregion Attendance Related
 
+        #region Business Related
+
+        /// <summary>
+        /// Submits the business import.
+        /// </summary>
+        private void SubmitBusinessImport()
+        {
+            this.ReportProgress( 0, "Preparing BusinessImport..." );
+            List<Rock.Slingshot.Model.PersonImport> businessImportList = GetBusinessImportList();
+
+            this.ReportProgress( 0, "Bulk Importing Business..." );
+
+            var result = BulkImporter.BulkBusinessImport( businessImportList, this.ForeignSystemKey );
+
+            Results.Add( "Business Import", result );
+        }
+
+        /// <summary>
+        /// Gets the business import list.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="Exception">personImport.PersonForeignId must be greater than 0
+        /// or
+        /// personImport.FamilyForeignId must be greater than 0 or null
+        /// or</exception>
+        private List<Rock.Slingshot.Model.PersonImport> GetBusinessImportList()
+        {
+            List<Rock.Slingshot.Model.PersonImport> businessImportList = new List<Rock.Slingshot.Model.PersonImport>();
+
+            var familyRolesLookup = GroupTypeCache.GetFamilyGroupType().Roles.ToDictionary( k => k.Guid );
+
+            foreach ( var slingshotBusiness in this.SlingshotBusinessList )
+            {
+                var businessImport = new Rock.Slingshot.Model.PersonImport();
+                businessImport.RecordTypeValueId = this.PersonRecordTypeValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid()].Id;
+                businessImport.PersonForeignId = slingshotBusiness.Id;
+                businessImport.FamilyForeignId = slingshotBusiness.Id;
+
+                if ( businessImport.PersonForeignId <= 0 )
+                {
+                    throw new Exception( "personImport.PersonForeignId must be greater than 0" );
+                }
+
+                if ( businessImport.FamilyForeignId <= 0 )
+                {
+                    throw new Exception( "personImport.FamilyForeignId must be greater than 0 or null" );
+                }
+
+                businessImport.FamilyName = slingshotBusiness.Name;
+
+                businessImport.GroupRoleId = familyRolesLookup[Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()].Id;
+
+                if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 )
+                {
+                    businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId]?.Id;
+                }
+
+                switch ( slingshotBusiness.RecordStatus )
+                {
+                    case SlingshotCore.Model.RecordStatus.Active:
+                        businessImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid()]?.Id;
+                        break;
+
+                    case SlingshotCore.Model.RecordStatus.Inactive:
+                        businessImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid()]?.Id;
+                        break;
+
+                    case SlingshotCore.Model.RecordStatus.Pending:
+                        businessImport.RecordStatusValueId = this.PersonRecordStatusValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid()]?.Id;
+                        break;
+                }
+
+                businessImport.InactiveReasonNote = slingshotBusiness.InactiveReason;
+                businessImport.IsDeceased = false;
+                businessImport.RecordStatusReasonValueId = this.RecordStatusReasonValues.Values.FirstOrDefault( v => v.Value.Equals( slingshotBusiness.InactiveReason ) )?.Id;
+
+                businessImport.LastName = slingshotBusiness.Name;
+
+                businessImport.Gender = ( int ) Rock.Model.Gender.Unknown;
+
+                businessImport.Email = slingshotBusiness.Email;
+
+                // slingshot doesn't include an IsEmailActive, so default it to True
+                businessImport.IsEmailActive = true;
+
+                switch ( slingshotBusiness.EmailPreference )
+                {
+                    case SlingshotCore.Model.EmailPreference.EmailAllowed:
+                        businessImport.EmailPreference = ( int ) Rock.Model.EmailPreference.EmailAllowed;
+                        break;
+
+                    case SlingshotCore.Model.EmailPreference.DoNotEmail:
+                        businessImport.EmailPreference = ( int ) Rock.Model.EmailPreference.DoNotEmail;
+                        break;
+
+                    case SlingshotCore.Model.EmailPreference.NoMassEmails:
+                        businessImport.EmailPreference = ( int ) Rock.Model.EmailPreference.NoMassEmails;
+                        break;
+                }
+
+                businessImport.CreatedDateTime = slingshotBusiness.CreatedDateTime;
+                businessImport.ModifiedDateTime = slingshotBusiness.ModifiedDateTime;
+
+                businessImport.Note = slingshotBusiness.Note;
+                businessImport.GivingIndividually = false;
+
+                // Phone Numbers
+                businessImport.PhoneNumbers = new List<Rock.Slingshot.Model.PhoneNumberImport>();
+                foreach ( var slingshotBusinessPhone in slingshotBusiness.PhoneNumbers )
+                {
+                    var phoneNumberImport = new Rock.Slingshot.Model.PhoneNumberImport();
+                    phoneNumberImport.NumberTypeValueId = this.PhoneNumberTypeValues[slingshotBusinessPhone.PhoneType].Id;
+                    phoneNumberImport.Number = slingshotBusinessPhone.PhoneNumber;
+                    phoneNumberImport.IsMessagingEnabled = slingshotBusinessPhone.IsMessagingEnabled ?? false;
+                    phoneNumberImport.IsUnlisted = slingshotBusinessPhone.IsUnlisted ?? false;
+                    businessImport.PhoneNumbers.Add( phoneNumberImport );
+                }
+
+                // Addresses
+                businessImport.Addresses = new List<Rock.Slingshot.Model.PersonAddressImport>();
+                foreach ( var slingshotPersonAddress in slingshotBusiness.Addresses )
+                {
+                    if ( !string.IsNullOrEmpty( slingshotPersonAddress.Street1 ) )
+                    {
+                        int? groupLocationTypeValueId = null;
+                        switch ( slingshotPersonAddress.AddressType )
+                        {
+                            case SlingshotCore.Model.AddressType.Home:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Previous:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Work:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid()].Id;
+                                break;
+
+                            case SlingshotCore.Model.AddressType.Other:
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid()].Id;
+                                break;
+                        }
+
+                        if ( groupLocationTypeValueId.HasValue )
+                        {
+                            var addressImport = new Rock.Slingshot.Model.PersonAddressImport()
+                            {
+                                GroupLocationTypeValueId = groupLocationTypeValueId.Value,
+                                IsMailingLocation = slingshotPersonAddress.IsMailing,
+                                IsMappedLocation = slingshotPersonAddress.AddressType == SlingshotCore.Model.AddressType.Home,
+                                Street1 = slingshotPersonAddress.Street1.Left( 100 ),
+                                Street2 = slingshotPersonAddress.Street2.Left( 100 ),
+                                City = slingshotPersonAddress.City.Left( 50 ),
+                                State = slingshotPersonAddress.State.Left( 50 ),
+                                Country = slingshotPersonAddress.Country.Left( 50 ),
+                                PostalCode = slingshotPersonAddress.PostalCode.Left( 50 ),
+                                Latitude = slingshotPersonAddress.Latitude.AsDoubleOrNull(),
+                                Longitude = slingshotPersonAddress.Longitude.AsDoubleOrNull()
+                            };
+
+                            businessImport.Addresses.Add( addressImport );
+                        }
+                        else
+                        {
+                            throw new Exception( $"Unexpected Address Type: {slingshotPersonAddress.AddressType}" );
+                        }
+                    }
+                }
+
+                // Attribute Values
+                businessImport.AttributeValues = new List<Rock.Slingshot.Model.AttributeValueImport>();
+                foreach ( var slingshotBusinessAttributeValue in slingshotBusiness.Attributes )
+                {
+                    int attributeId = this.PersonAttributeKeyLookup[slingshotBusinessAttributeValue.AttributeKey].Id;
+                    var attributeValueImport = new Rock.Slingshot.Model.AttributeValueImport { AttributeId = attributeId, Value = slingshotBusinessAttributeValue.AttributeValue };
+                    businessImport.AttributeValues.Add( attributeValueImport );
+                }
+
+                businessImportList.Add( businessImport );
+            }
+
+            return businessImportList;
+        }
+
+        #endregion
+
         #region Person Related
 
         /// <summary>
@@ -1329,6 +1525,8 @@ namespace Rock.Slingshot
 
             Results.Add( "Person Import", result );
         }
+
+
 
         /// <summary>
         /// Bulks the importer on progress.
@@ -1419,12 +1617,30 @@ namespace Rock.Slingshot
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.Salutation ) )
                 {
-                    personImport.TitleValueId = this.PersonTitleValues[slingshotPerson.Salutation]?.Id;
+
+                    var titleValue = this.PersonTitleValues
+                        .Where( x => x.Key.Equals( slingshotPerson.Salutation, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault()
+                        .Value;
+
+                    if ( titleValue != null )
+                    {
+                        personImport.TitleValueId = titleValue.Id;
+                    }
                 }
 
                 if ( !string.IsNullOrEmpty( slingshotPerson.Suffix ) )
                 {
-                    personImport.SuffixValueId = this.PersonSuffixValues[slingshotPerson.Suffix]?.Id;
+
+                    var suffixValue = this.PersonSuffixValues
+                        .Where( x => x.Key.Equals( slingshotPerson.Suffix, StringComparison.OrdinalIgnoreCase ) )
+                        .FirstOrDefault()
+                        .Value;
+
+                    if ( suffixValue != null )
+                    {
+                        personImport.SuffixValueId = suffixValue.Id;
+                    }
                 }
 
                 personImport.IsDeceased = slingshotPerson.IsDeceased;
@@ -1438,21 +1654,21 @@ namespace Rock.Slingshot
                 {
                     personImport.BirthMonth = slingshotPerson.Birthdate.Value.Month;
                     personImport.BirthDay = slingshotPerson.Birthdate.Value.Day;
-                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? (int?)null : slingshotPerson.Birthdate.Value.Year;
+                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? ( int? ) null : slingshotPerson.Birthdate.Value.Year;
                 }
 
                 switch ( slingshotPerson.Gender )
                 {
                     case SlingshotCore.Model.Gender.Male:
-                        personImport.Gender = (int)Rock.Model.Gender.Male;
+                        personImport.Gender = ( int ) Rock.Model.Gender.Male;
                         break;
 
                     case SlingshotCore.Model.Gender.Female:
-                        personImport.Gender = (int)Rock.Model.Gender.Female;
+                        personImport.Gender = ( int ) Rock.Model.Gender.Female;
                         break;
 
                     case SlingshotCore.Model.Gender.Unknown:
-                        personImport.Gender = (int)Rock.Model.Gender.Unknown;
+                        personImport.Gender = ( int ) Rock.Model.Gender.Unknown;
                         break;
                 }
 
@@ -1502,15 +1718,15 @@ namespace Rock.Slingshot
                 switch ( slingshotPerson.EmailPreference )
                 {
                     case SlingshotCore.Model.EmailPreference.EmailAllowed:
-                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.EmailAllowed;
+                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.EmailAllowed;
                         break;
 
                     case SlingshotCore.Model.EmailPreference.DoNotEmail:
-                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.DoNotEmail;
+                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.DoNotEmail;
                         break;
 
                     case SlingshotCore.Model.EmailPreference.NoMassEmails:
-                        personImport.EmailPreference = (int)Rock.Model.EmailPreference.NoMassEmails;
+                        personImport.EmailPreference = ( int ) Rock.Model.EmailPreference.NoMassEmails;
                         break;
                 }
 
@@ -1519,6 +1735,15 @@ namespace Rock.Slingshot
 
                 personImport.Note = slingshotPerson.Note;
                 personImport.GivingIndividually = slingshotPerson.GiveIndividually;
+
+                // Person Search Keys
+                personImport.PersonSearchKeys = new List<Rock.Slingshot.Model.PersonSearchKeyImport>();
+                foreach ( var slingshotPersonSearchKey in slingshotPerson.PersonSearchKeys )
+                {
+                    var personSearchKeyImport = new Rock.Slingshot.Model.PersonSearchKeyImport();
+                    personSearchKeyImport.SearchValue = slingshotPersonSearchKey.SearchValue;
+                    personImport.PersonSearchKeys.Add( personSearchKeyImport );
+                }
 
                 // Phone Numbers
                 personImport.PhoneNumbers = new List<Rock.Slingshot.Model.PhoneNumberImport>();
@@ -1554,9 +1779,7 @@ namespace Rock.Slingshot
                                 break;
 
                             case SlingshotCore.Model.AddressType.Other:
-                                var locationTypeOther = this.GroupLocationTypeValues.Values.FirstOrDefault( t => t.Value.Equals( "Other" ) );
-                                groupLocationTypeValueId = locationTypeOther != null ? this.GroupLocationTypeValues[locationTypeOther.Guid].Id :
-                                    this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid()].Id;
+                                groupLocationTypeValueId = this.GroupLocationTypeValues[Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid()].Id;
                                 break;
                         }
 
@@ -1761,6 +1984,53 @@ namespace Rock.Slingshot
         }
 
         /// <summary>
+        /// Adds the person attributes.
+        /// </summary>
+        private void AddBusinessAttributes()
+        {
+            int entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>().Value;
+
+            var rockContext = new RockContext();
+            var attributeService = new AttributeService( rockContext );
+
+            var entityTypeIdAttribute = EntityTypeCache.GetId<Rock.Model.Attribute>().Value;
+
+            var attributeCategoryList = new CategoryService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdAttribute ).ToList();
+
+            // Add any Business Attributes to Rock that aren't in Rock yet
+            // NOTE: For now, just match by Attribute.Key. Don't try to do a customizable match
+            foreach ( var slingshotBusinessAttribute in this.SlingshotBusinessAttributes )
+            {
+
+                if ( !this.PersonAttributeKeyLookup.Keys.Any( a => a.Equals( slingshotBusinessAttribute.Key, StringComparison.OrdinalIgnoreCase ) ) )
+                {
+                    var rockBusinessAttribute = new Rock.Model.Attribute();
+                    rockBusinessAttribute.Key = slingshotBusinessAttribute.Key;
+                    rockBusinessAttribute.Name = slingshotBusinessAttribute.Name;
+                    rockBusinessAttribute.Guid = Guid.NewGuid();
+                    rockBusinessAttribute.EntityTypeId = entityTypeIdPerson;
+                    rockBusinessAttribute.FieldTypeId = this.FieldTypeLookup[slingshotBusinessAttribute.FieldType].Id;
+                    rockBusinessAttribute.EntityTypeQualifierColumn = "RecordTypeValueId";
+                    rockBusinessAttribute.EntityTypeQualifierValue = this.PersonRecordTypeValues[Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid()].Id.ToString();
+
+                    if ( !string.IsNullOrWhiteSpace( slingshotBusinessAttribute.Category ) )
+                    {
+                        var attributeCategory = attributeCategoryList.FirstOrDefault( a => a.Name.Equals( slingshotBusinessAttribute.Category, StringComparison.OrdinalIgnoreCase ) );
+                        if ( attributeCategory != null )
+                        {
+                            rockBusinessAttribute.Categories = new List<Rock.Model.Category>();
+                            rockBusinessAttribute.Categories.Add( attributeCategory );
+                        }
+                    }
+
+                    attributeService.Add( rockBusinessAttribute );
+                }
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Adds the family attributes.
         /// </summary>
         private void AddFamilyAttributes()
@@ -1866,7 +2136,7 @@ namespace Rock.Slingshot
         /// </summary>
         private void AddPersonTitles()
         {
-            AddDefinedValues( this.SlingshotPersonList.Select( a => a.Salutation ).Where( a => !string.IsNullOrWhiteSpace( a ) ).Distinct().ToList(), this.PersonTitleValues );
+            AddDefinedValues( this.SlingshotPersonList.Select( a => a.Salutation.ToLower() ).Where( a => !string.IsNullOrWhiteSpace( a ) ).Distinct().ToList(), this.PersonTitleValues );
         }
 
         /// <summary>
@@ -1874,7 +2144,7 @@ namespace Rock.Slingshot
         /// </summary>
         private void AddPersonSuffixes()
         {
-            AddDefinedValues( this.SlingshotPersonList.Select( a => a.Suffix ).Where( a => !string.IsNullOrWhiteSpace( a ) ).Distinct().ToList(), this.PersonSuffixValues );
+            AddDefinedValues( this.SlingshotPersonList.Select( a => a.Suffix.ToLower() ).Where( a => !string.IsNullOrWhiteSpace( a ) ).Distinct().ToList(), this.PersonSuffixValues );
         }
 
         /// <summary>
@@ -1883,6 +2153,7 @@ namespace Rock.Slingshot
         private void AddPhoneTypes()
         {
             AddDefinedValues( this.SlingshotPersonList.SelectMany( a => a.PhoneNumbers ).Select( a => a.PhoneType ).Distinct().ToList(), this.PhoneNumberTypeValues );
+            AddDefinedValues( this.SlingshotBusinessList.SelectMany( a => a.PhoneNumbers ).Select( a => a.PhoneType ).Distinct().ToList(), this.PhoneNumberTypeValues );
         }
 
         /// <summary>
@@ -1982,6 +2253,19 @@ namespace Rock.Slingshot
 
             /* Family Notes */
             this.SlingshotFamilyNoteList = LoadSlingshotListFromFile<SlingshotCore.Model.FamilyNote>();
+
+            /* Businesses */
+            LoadBusinessSlingshotLists();
+
+            /* Business Contacts */
+            var businessContactList = LoadSlingshotListFromFile<SlingshotCore.Model.BusinessContact>().GroupBy( a => a.BusinessId ).ToDictionary( k => k.Key, v => v.ToList() );
+            var businessLookup = this.SlingshotBusinessList.ToDictionary( k => k.Id, v => v );
+            foreach ( var busisnessContact in businessContactList )
+            {
+                businessLookup[busisnessContact.Key].Contacts = busisnessContact.Value;
+            }
+
+
         }
 
         /// <summary>
@@ -2075,15 +2359,38 @@ namespace Rock.Slingshot
             Dictionary<int, List<SlingshotCore.Model.PersonAddress>> slingshotPersonAddressListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAddress>( false ).GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
             Dictionary<int, List<SlingshotCore.Model.PersonAttributeValue>> slingshotPersonAttributeValueListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAttributeValue>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
             Dictionary<int, List<SlingshotCore.Model.PersonPhone>> slingshotPersonPhoneListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonPhone>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
+            Dictionary<int, List<SlingshotCore.Model.PersonSearchKey>> slingshotPersonSearchKeyListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.PersonSearchKey>().GroupBy( a => a.PersonId ).ToDictionary( k => k.Key, v => v.ToList() );
 
             foreach ( var slingshotPerson in this.SlingshotPersonList )
             {
                 slingshotPerson.Addresses = slingshotPersonAddressListLookup.ContainsKey( slingshotPerson.Id ) ? slingshotPersonAddressListLookup[slingshotPerson.Id] : new List<SlingshotCore.Model.PersonAddress>();
                 slingshotPerson.Attributes = slingshotPersonAttributeValueListLookup.ContainsKey( slingshotPerson.Id ) ? slingshotPersonAttributeValueListLookup[slingshotPerson.Id].ToList() : new List<SlingshotCore.Model.PersonAttributeValue>();
                 slingshotPerson.PhoneNumbers = slingshotPersonPhoneListLookup.ContainsKey( slingshotPerson.Id ) ? slingshotPersonPhoneListLookup[slingshotPerson.Id].ToList() : new List<SlingshotCore.Model.PersonPhone>();
+                slingshotPerson.PersonSearchKeys = slingshotPersonSearchKeyListLookup.GetValueOrNull( slingshotPerson.Id )?.ToList() ?? new List<SlingshotCore.Model.PersonSearchKey>();
             }
 
             this.SlingshotPersonAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.PersonAttribute>().ToList();
+        }
+
+        /// <summary>
+        /// Loads the person slingshot lists.
+        /// </summary>
+        private void LoadBusinessSlingshotLists()
+        {
+            this.SlingshotBusinessList = LoadSlingshotListFromFile<SlingshotCore.Model.Business>( false );
+
+            Dictionary<int, List<SlingshotCore.Model.BusinessAddress>> slingshotBusinessAddressListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.BusinessAddress>( false ).GroupBy( a => a.BusinessId ).ToDictionary( k => k.Key, v => v.ToList() );
+            Dictionary<int, List<SlingshotCore.Model.BusinessAttributeValue>> slingshotBusinessAttributeValueListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.BusinessAttributeValue>().GroupBy( a => a.BusinessId ).ToDictionary( k => k.Key, v => v.ToList() );
+            Dictionary<int, List<SlingshotCore.Model.BusinessPhone>> slingshotBusinessPhoneListLookup = LoadSlingshotListFromFile<SlingshotCore.Model.BusinessPhone>().GroupBy( a => a.BusinessId ).ToDictionary( k => k.Key, v => v.ToList() );
+
+            foreach ( var slingshotBusiness in this.SlingshotBusinessList )
+            {
+                slingshotBusiness.Addresses = slingshotBusinessAddressListLookup.ContainsKey( slingshotBusiness.Id ) ? slingshotBusinessAddressListLookup[slingshotBusiness.Id] : new List<SlingshotCore.Model.BusinessAddress>();
+                slingshotBusiness.Attributes = slingshotBusinessAttributeValueListLookup.ContainsKey( slingshotBusiness.Id ) ? slingshotBusinessAttributeValueListLookup[slingshotBusiness.Id].ToList() : new List<SlingshotCore.Model.BusinessAttributeValue>();
+                slingshotBusiness.PhoneNumbers = slingshotBusinessPhoneListLookup.ContainsKey( slingshotBusiness.Id ) ? slingshotBusinessPhoneListLookup[slingshotBusiness.Id].ToList() : new List<SlingshotCore.Model.BusinessPhone>();
+            }
+
+            this.SlingshotBusinessAttributes = LoadSlingshotListFromFile<SlingshotCore.Model.BusinessAttribute>().ToList();
         }
 
         /// <summary>
@@ -2113,6 +2420,8 @@ namespace Rock.Slingshot
             List<Rock.Model.DefinedValue> definedValuesToAdd = new List<Rock.Model.DefinedValue>();
             int definedTypeIdCurrencyType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() ).Id;
             int definedTypeIdTransactionSourceType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() ).Id;
+            int definedTypeIdTransactionType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid() ).Id;
+            int definedTypeIdGroupLocationType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).Id;
 
             // The following DefinedValues are not IsSystem, but are potentionally needed to do an import, so make sure they exist on the server
             if ( !this.CurrencyTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH.AsGuid() ) )
@@ -2181,10 +2490,43 @@ namespace Rock.Slingshot
                 } );
             }
 
-            var rockContext = new RockContext();
-            var definedValueService = new DefinedValueService( rockContext );
-            definedValueService.AddRange( definedValuesToAdd );
-            rockContext.SaveChanges();
+
+            // Add the Transaction Type of 'Receipt' if there are in import records that use it
+            if ( this.SlingshotFinancialTransactionList.Any( a => a.TransactionType == SlingshotCore.Model.TransactionType.Receipt ) )
+            {
+                if ( !this.TransactionTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_RECEIPT.AsGuid() ) )
+                {
+                    definedValuesToAdd.Add( new Rock.Model.DefinedValue
+                    {
+                        DefinedTypeId = definedTypeIdTransactionType,
+                        Guid = Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_RECEIPT.AsGuid(),
+                        Value = "Receipt",
+                        Description = "A Receipt Transaction"
+                    } );
+                }
+            }
+
+            if ( !this.GroupLocationTypeValues.ContainsKey( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid() ) )
+            {
+                definedValuesToAdd.Add( new Rock.Model.DefinedValue
+                {
+                    DefinedTypeId = definedTypeIdGroupLocationType,
+                    Guid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_OTHER.AsGuid(),
+                    Value = "Other",
+                    Description = "Some other type of Address"
+                } );
+            }
+
+            if ( definedValuesToAdd.Any() )
+            {
+                var rockContext = new RockContext();
+                var definedValueService = new DefinedValueService( rockContext );
+                definedValueService.AddRange( definedValuesToAdd );
+                rockContext.SaveChanges();
+
+                // if any DefinedValues were added, reload lookups
+                LoadLookups();
+            }
         }
 
         /// <summary>

@@ -37,12 +37,48 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view the other members of a group person belongs to (e.g. Family groups)." )]
 
-    [GroupTypeField("Group Type", "The group type to display groups for (default is Family)", false, Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "", 0)]
-    [BooleanField("Auto Create Group", "If person doesn't belong to a group of this type, should one be created for them (default is Yes).", true, "", 1)]
-    [LinkedPage("Group Edit Page", "Page used to edit the members of the selected group.", true, "", "", 2)]
-    [LinkedPage( "Location Detail Page", "Page used to edit the settings for a particular location.", false, "", "", 3 )]
-    [CodeEditorField( "Group Header Lava", "Lava to put at the top of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, order: 4)]
-    [CodeEditorField( "Group Footer Lava", "Lava to put at the bottom of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, order: 5 )]
+    [GroupTypeField( "Group Type",
+        description: "The group type to display groups for (default is Family)",
+        required: false,
+        defaultGroupTypeGuid: Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        order: 0,
+        key: "GroupType" )]
+    [BooleanField( "Auto Create Group",
+        description: "If person doesn't belong to a group of this type, should one be created for them (default is Yes).",
+        defaultValue: true,
+        order: 1,
+        key: "AutoCreateGroup" )]
+    [LinkedPage( "Group Edit Page",
+        description: "Page used to edit the members of the selected group.",
+        required: true,
+        order: 2,
+        key: "GroupEditPage" )]
+    [LinkedPage( "Location Detail Page",
+        description: "Page used to edit the settings for a particular location.",
+        required: false,
+        order: 3,
+        key: "LocationDetailPage" )]
+    [BooleanField( "Show County",
+        description: "Should County be displayed when editing an address?.",
+        defaultValue: false,
+        order: 4,
+        key: "ShowCounty" )]
+    [CodeEditorField( "Group Header Lava",
+        description: "Lava to put at the top of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.",
+        mode: CodeEditorMode.Lava,
+        theme: CodeEditorTheme.Rock,
+        height: 200,
+        required: false,
+        order: 5,
+        key: "GroupHeaderLava" )]
+    [CodeEditorField( "Group Footer Lava",
+        description: "Lava to put at the bottom of the block. Merge fields include Page, CurrentPerson, Group (the family) and GroupMembers.",
+        mode: CodeEditorMode.Lava,
+        theme: CodeEditorTheme.Rock,
+        height: 200,
+        required: false,
+        order: 6,
+        key: "GroupFooterLava" )]
     public partial class GroupMembers : Rock.Web.UI.PersonBlock
     {
         #region Fields
@@ -50,6 +86,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private GroupTypeCache _groupType = null;
         private bool _IsFamilyGroupType = false;
         private bool _allowEdit = false;
+        private bool _showCounty = false;
 
         // private global rockContext that is specifically for rptrGroups binding and rptrGroups_ItemDataBound
         private RockContext _bindGroupsRockContext = null;
@@ -77,6 +114,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rptrGroups.ItemDataBound += rptrGroups_ItemDataBound;
 
             _allowEdit = IsUserAuthorized( Rock.Security.Authorization.EDIT );
+            _showCounty = GetAttributeValue( "ShowCounty" ).AsBoolean();
 
             RegisterScripts();
         }
@@ -142,9 +180,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .ToList();
 
                     var groupMember = groupMemberGroups.FirstOrDefault( a => a.GroupId == groupId );
-                    if ( groupMember != null)
+                    if ( groupMember != null )
                     {
-                        memberService.ReorderGroupMemberGroup( groupMemberGroups, groupMemberGroups.IndexOf(groupMember), newIndex );
+                        memberService.ReorderGroupMemberGroup( groupMemberGroups, groupMemberGroups.IndexOf( groupMember ), newIndex );
                         _bindGroupsRockContext.SaveChanges();
                     }
 
@@ -257,7 +295,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     PlaceHolder phGroupAttributes = e.Item.FindControl( "phGroupAttributes" ) as PlaceHolder;
                     PlaceHolder phMoreGroupAttributes = e.Item.FindControl( "phMoreGroupAttributes" ) as PlaceHolder;
 
-                    if ( pnlGroupAttributes  != null && hlShowMoreAttributes != null && phGroupAttributes != null && phMoreGroupAttributes != null )
+                    if ( pnlGroupAttributes != null && hlShowMoreAttributes != null && phGroupAttributes != null && phMoreGroupAttributes != null )
                     {
                         hlShowMoreAttributes.Visible = false;
                         phGroupAttributes.Controls.Clear();
@@ -269,7 +307,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .OrderBy( a => a.Order )
                             .ToList();
 
-                        foreach( var attribute in attributes )
+                        foreach ( var attribute in attributes )
                         {
                             if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                             {
@@ -413,7 +451,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 }
                             case "settings":
                                 {
-                                    NavigateToLinkedPage( "LocationDetailPage", 
+                                    NavigateToLinkedPage( "LocationDetailPage",
                                         new Dictionary<string, string> { { "LocationId", location.Id.ToString() }, { "PersonId", Person.Id.ToString() } } );
                                     break;
                                 }
@@ -434,69 +472,72 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindGroups()
         {
-            if ( Person != null && Person.Id > 0 )
+            if ( Person == null || Person.Id == 0 || Person.IsNameless() )
             {
-                // If this is a Family GroupType and they belong to multiple families, 
-                // first make sure that the GroupMember.GroupOrder is set for this Person's Families.
-                // This will ensure that other spots that rely on the GroupOrder provide consistent results.
-                if ( this._IsFamilyGroupType )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var memberService = new GroupMemberService( rockContext );
-                        var groupMemberGroups = memberService.Queryable( true )
-                            .Where( m =>
-                                m.PersonId == Person.Id &&
-                                m.Group.GroupTypeId == _groupType.Id )
-                            .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
-                            .ToList();
+                return;
+            }
 
-                        if ( groupMemberGroups.Count > 1 && memberService.SetGroupMemberGroupOrder( groupMemberGroups ) )
-                        {
-                            rockContext.SaveChanges();
-                        }
-                    }
-                }
 
-                // Gind the Groups repeater which will show the Groups with a list of GroupMembers
-                using ( _bindGroupsRockContext = new RockContext() )
+            // If this is a Family GroupType and they belong to multiple families, 
+            // first make sure that the GroupMember.GroupOrder is set for this Person's Families.
+            // This will ensure that other spots that rely on the GroupOrder provide consistent results.
+            if ( this._IsFamilyGroupType )
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    var memberService = new GroupMemberService( _bindGroupsRockContext );
-                    var groups = memberService.Queryable( true )
+                    var memberService = new GroupMemberService( rockContext );
+                    var groupMemberGroups = memberService.Queryable( true )
                         .Where( m =>
                             m.PersonId == Person.Id &&
                             m.Group.GroupTypeId == _groupType.Id )
                         .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
-                        .Select( m => m.Group )
-                        .AsNoTracking()
                         .ToList();
 
-                    if ( !groups.Any() && GetAttributeValue("AutoCreateGroup").AsBoolean(true) )
+                    if ( groupMemberGroups.Count > 1 && memberService.SetGroupMemberGroupOrder( groupMemberGroups ) )
                     {
-                        // ensure that the person is in a group
-
-                        var groupService = new GroupService( _bindGroupsRockContext );
-                        var group = new Group();
-                        group.Name = Person.LastName;
-                        group.GroupTypeId = _groupType.Id;
-                        groupService.Add( group );
-                        _bindGroupsRockContext.SaveChanges();
-
-                        var groupMember = new GroupMember();
-                        groupMember.PersonId = Person.Id;
-                        groupMember.GroupRoleId = _groupType.DefaultGroupRoleId.Value;
-                        groupMember.GroupId = group.Id;
-                        group.Members.Add( groupMember );
-                        _bindGroupsRockContext.SaveChanges();
-
-                        groups.Add( groupService.Get( group.Id ) );
+                        rockContext.SaveChanges();
                     }
-                    
-                    rptrGroups.DataSource = groups;
-
-                    _showReorderIcon = groups.Count > 1;
-                    rptrGroups.DataBind();
                 }
+            }
+
+            // Gind the Groups repeater which will show the Groups with a list of GroupMembers
+            using ( _bindGroupsRockContext = new RockContext() )
+            {
+                var memberService = new GroupMemberService( _bindGroupsRockContext );
+                var groups = memberService.Queryable( true )
+                    .Where( m =>
+                        m.PersonId == Person.Id &&
+                        m.Group.GroupTypeId == _groupType.Id )
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue ).ThenBy( m => m.Id )
+                    .Select( m => m.Group )
+                    .AsNoTracking()
+                    .ToList();
+
+                if ( !groups.Any() && GetAttributeValue( "AutoCreateGroup" ).AsBoolean( true ) )
+                {
+                    // ensure that the person is in a group
+
+                    var groupService = new GroupService( _bindGroupsRockContext );
+                    var group = new Group();
+                    group.Name = Person.LastName;
+                    group.GroupTypeId = _groupType.Id;
+                    groupService.Add( group );
+                    _bindGroupsRockContext.SaveChanges();
+
+                    var groupMember = new GroupMember();
+                    groupMember.PersonId = Person.Id;
+                    groupMember.GroupRoleId = _groupType.DefaultGroupRoleId.Value;
+                    groupMember.GroupId = group.Id;
+                    group.Members.Add( groupMember );
+                    _bindGroupsRockContext.SaveChanges();
+
+                    groups.Add( groupService.Get( group.Id ) );
+                }
+
+                rptrGroups.DataSource = groups;
+
+                _showReorderIcon = groups.Count > 1;
+                rptrGroups.DataBind();
             }
         }
 
@@ -512,6 +553,36 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
+        /// Formats the address.
+        /// </summary>
+        /// <param name="locationObject">The location object.</param>
+        /// <returns></returns>
+        protected string FormatAddress( object locationObject )
+        {
+            var location = locationObject as Location;
+            if ( location == null )
+            {
+                return string.Empty;
+            }
+
+            if ( !_showCounty )
+            {
+                return location.FormattedHtmlAddress;
+            }
+
+            return string.Format(
+                "{0}<br/>{1}<br/>{2}{3}, {4} {5}",
+                location.Street1,
+                location.Street2,
+                location.City,
+                location.County.IsNotNullOrWhiteSpace() ? ", " + location.County : "",
+                location.State,
+                location.PostalCode )
+                .ReplaceWhileExists( "  ", " " )
+                .ReplaceWhileExists( "<br/><br/>", "<br/>" );
+        }
+
+        /// <summary>
         /// Formats the person link...keeping the subpage route on the person link.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -519,7 +590,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected string FormatPersonLink( string personId )
         {
             // Look for a subpage route (anything after the "/Person/{id}" part of the URL)
-            var subpageRoute = Request.Url.AbsolutePath.Replace( ResolveRockUrl( string.Format("~/Person/{0}", Person.Id ) ), "" );
+            var subpageRoute = Request.Url.AbsolutePath.Replace( ResolveRockUrl( string.Format( "~/Person/{0}", Person.Id ) ), "" );
 
             // If the path is different, then append it onto the link
             if ( subpageRoute != Request.Url.AbsolutePath )
@@ -569,7 +640,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( gm != null )
             {
                 return _IsFamilyGroupType ?
-                    ( gm.Person.FormatAge(true) ) :
+                    ( gm.Person.FormatAge( true ) ) :
                     gm.GroupRole.Name;
             }
             return string.Empty;

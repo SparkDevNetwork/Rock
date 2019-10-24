@@ -15,9 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
@@ -26,7 +23,7 @@ namespace Rock.Attribute
     /// Stored as comma-delimited list of ContentChannelType.Guids
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class ContentChannelTypesFieldAttribute : FieldAttribute
+    public class ContentChannelTypesFieldAttribute : SelectFieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentChannelTypesFieldAttribute"/> class.

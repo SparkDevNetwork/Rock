@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.MelissaData.AddressCheck;
-using Rock.Web.UI;
 
 namespace Rock.Address
 {

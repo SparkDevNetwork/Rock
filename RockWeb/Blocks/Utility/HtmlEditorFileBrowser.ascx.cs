@@ -62,6 +62,17 @@ namespace RockWeb.Blocks.Utility
             }
         }
 
+        private List<string> HiddenFolders
+        {
+            get
+            {
+                return new List<string>()
+                {
+                    "Content\\ASM_Thumbnails"
+                };
+            }
+        }
+
         private List<string> UploadRestrictedFolders
         {
             get
@@ -151,7 +162,7 @@ namespace RockWeb.Blocks.Utility
 
             if ( !this.IsPostBack )
             {
-
+                pnlFileBrowser.CssClass = "is-postback";
                 pnlModalHeader.Visible = PageParameter( "ModalMode" ).AsBoolean();
                 pnlModalFooterActions.Visible = PageParameter( "ModalMode" ).AsBoolean();
                 lTitle.Text = PageParameter( "Title" );
@@ -210,7 +221,7 @@ namespace RockWeb.Blocks.Utility
                 }
             }
 
-            if ( Directory.Exists( physicalRootFolder ) )
+            if ( Directory.Exists( physicalRootFolder ) && !HiddenFolders.Any( a => physicalRootFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase )  > 0) )
             {
                 var sb = new StringBuilder();
                 sb.AppendLine( "<ul id=\"treeview\">" );
@@ -342,7 +353,10 @@ namespace RockWeb.Blocks.Utility
 
                     foreach ( var subDirectoryPath in subDirectoryList )
                     {
-                        sb.Append( DirectoryNode( subDirectoryPath, physicalRootFolder ) );
+                        if ( !HiddenFolders.Any( a => subDirectoryPath.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+                        {
+                            sb.Append( DirectoryNode( subDirectoryPath, physicalRootFolder ) );
+                        }
                     }
 
                     sb.AppendLine( "</ul>" );
@@ -387,7 +401,7 @@ namespace RockWeb.Blocks.Utility
 
                 hfIsRestrictedFolder.Value = isRestricted.ToString();
                 hfIsUploadRestrictedFolder.Value = isUploadRestricted.ToString();
-                
+
                 string imageFileTypeWhiteList = PageParameter( "imageFileTypeWhiteList" );
                 if ( string.IsNullOrWhiteSpace( imageFileTypeWhiteList ) )
                 {
@@ -431,7 +445,7 @@ namespace RockWeb.Blocks.Utility
                         string url = editFilePage + "?RelativeFilePath=" + HttpUtility.UrlEncode( imagePath );
 
                         editHtml = string.Format( @"
-                        <a data-href='{0}' title='edit' class='btn btn-xs btn-square btn-default js-edit-file action'>
+                        <a data-href='{0}' title='Edit' class='btn btn-xs btn-square btn-default js-edit-file action'>
                         <i class='fa fa-pencil'></i>
                         </a>
                        ", url );
@@ -441,10 +455,10 @@ namespace RockWeb.Blocks.Utility
 <li class='js-rocklist-item rocklist-item' data-id='{0}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
-            <a title='delete' class='btn btn-xs btn-square btn-danger js-delete-file action'>
+            <a title='Delete' class='btn btn-xs btn-square btn-danger js-delete-file action'>
                 <i class='fa fa-times'></i>
             </a>
-            <a href='{3}' target='_blank' title='download' class='btn btn-xs btn-square btn-default js-download-file action'>
+            <a href='{3}' target='_blank' title='Download' class='btn btn-xs btn-square btn-default js-download-file action'>
                 <i class='fa fa-download'></i>
             </a>
             {4}
@@ -498,7 +512,7 @@ namespace RockWeb.Blocks.Utility
             }
             catch ( Exception ex )
             {
-                this.ShowErrorMessage( ex, "An error occurred when attempting to delete file " + relativeFilePath );
+                this.ShowErrorMessage( ex, "An error occurred when attempting to  file " + relativeFilePath );
             }
         }
 

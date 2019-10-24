@@ -17,6 +17,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -59,7 +60,22 @@ namespace Rock.Model
         /// <value>
         /// The attribute matrix template identifier.
         /// </value>
-        public virtual int AttributeMatrixTemplateId => AttributeMatrix.AttributeMatrixTemplateId;
+        public virtual int AttributeMatrixTemplateId
+        {
+            get
+            {
+                // Need to check for a null in case the AttributeMatrix obj didn't get lazy loaded as is the case with the REST API.
+                if ( this.AttributeMatrix == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        return new AttributeMatrixService( rockContext ).GetNoTracking( this.AttributeMatrixId ).AttributeMatrixTemplateId;
+                    }
+                }
+
+                return this.AttributeMatrix.AttributeMatrixTemplateId;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the attribute matrix.

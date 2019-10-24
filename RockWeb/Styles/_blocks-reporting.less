@@ -62,11 +62,30 @@
   }
 }
 
+/* text between input elements in dataview filters - DT */
+span.data-view-filter-label {
+  display: inline-block;
+  min-height: (@line-height-computed + @font-size-base) - 2;
+  padding-top: (@padding-base-vertical + 1);
+  padding-bottom: (@padding-base-vertical + 1);
+  margin: 0 12px 0 0;
+}
+
+.data-view-detail .field-criteria > .col-md-10 > div {
+  padding-top: (@padding-base-vertical + 1);
+}
+
 // 2. Dynamic Report
 // -------------------------
 
 .filterfield {
   margin-bottom: 12px;
+
+  // Override table-cell alignment for dynamic reports and data views
+  .field-criteria > div {
+    display: block;
+    float: left;
+  }
 }
 
 .filterfield-label {
@@ -95,5 +114,19 @@
       position: relative;
       margin: 0;
     }
+  }
+}
+
+// 4. Form Field Filter
+// -------------------------
+
+.filter-rule {
+  margin-bottom: @padding-base-vertical;
+}
+
+.filter-rule-fieldfilter {
+  .field-criteria > div {
+    display: block;
+    float: left;
   }
 }

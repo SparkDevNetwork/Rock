@@ -64,6 +64,82 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Registers any entity-based block types that are not currently registered in Rock.
+        /// </summary>
+        /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
+        private static void RegisterEntityBlockTypes( bool refreshAll = false )
+        {
+            var rockBlockTypes = Reflection.FindTypes( typeof( Blocks.IRockBlockType ) );
+
+            List<Type> registeredTypes;
+            using ( var rockContext = new RockContext() )
+            {
+                registeredTypes = new BlockTypeService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( b => b.EntityTypeId.HasValue )
+                    .ToList()
+                    .Select( b => Type.GetType( b.EntityType.AssemblyName, false ) )
+                    .Where( b => b != null )
+                    .ToList();
+            }
+
+            // Get the Block Entity Type
+            int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
+
+            // for each BlockType
+            foreach ( var type in rockBlockTypes.Values )
+            {
+                if ( refreshAll || !registeredTypes.Any( t => t == type ) )
+                {
+                    // Attempt to load the control
+                    try
+                    {
+                        using ( var rockContext = new RockContext() )
+                        {
+                            var entityTypeId = EntityTypeCache.Get( type, true, rockContext ).Id;
+                            var blockTypeService = new BlockTypeService( rockContext );
+                            var blockType = blockTypeService.Queryable()
+                                .FirstOrDefault( b => b.EntityTypeId == entityTypeId );
+
+                            if ( blockType == null )
+                            {
+                                // Create new BlockType record and save it
+                                blockType = new BlockType();
+                                blockType.EntityTypeId = entityTypeId;
+                                blockTypeService.Add( blockType );
+                            }
+
+                            // Update Name, Category, and Description based on block's attribute definitions
+                            blockType.Name = Reflection.GetDisplayName( type ) ?? string.Empty;
+                            if ( string.IsNullOrWhiteSpace( blockType.Name ) )
+                            {
+                                blockType.Name = type.FullName;
+                            }
+
+                            if ( blockType.Name.Length > 100 )
+                            {
+                                blockType.Name = blockType.Name.Truncate( 100 );
+                            }
+
+                            blockType.Category = Rock.Reflection.GetCategory( type ) ?? string.Empty;
+                            blockType.Description = Rock.Reflection.GetDescription( type ) ?? string.Empty;
+
+                            rockContext.SaveChanges();
+
+                            // Update the attributes used by the block
+                            Rock.Attribute.Helper.UpdateAttributes( type, blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        System.Diagnostics.Debug.WriteLine( $"RegisterEntityBlockTypes failed for {type.FullName} with exception: {ex.Message}" );
+                        ExceptionLogService.LogException( new Exception( string.Format( "Problem processing block with path '{0}'.", type.FullName ), ex ), null );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Registers any block types that are not currently registered in Rock.
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
@@ -73,6 +149,8 @@ namespace Rock.Model
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
+
+            RegisterEntityBlockTypes( refreshAll );
 
             // Find all the blocks in the Blocks folder...
             FindAllBlocksInPath( physWebAppPath, list, "Blocks" );
@@ -86,6 +164,7 @@ namespace Rock.Model
             {
                 registeredPaths = new BlockTypeService( rockContext )
                     .Queryable().AsNoTracking()
+                    .Where( b => !string.IsNullOrEmpty( b.Path ) )
                     .Select( b => b.Path )
                     .ToList();
             }
@@ -101,9 +180,8 @@ namespace Rock.Model
                     // Attempt to load the control
                     try
                     {
-                        System.Web.UI.Control control = page.LoadControl( path );
-                        var rockBlock = control as Web.UI.RockBlock;
-                        if ( rockBlock != null )
+                        var blockCompiledType = System.Web.Compilation.BuildManager.GetCompiledType( path );
+                        if ( blockCompiledType != null && typeof( Web.UI.RockBlock ).IsAssignableFrom( blockCompiledType ) )
                         {
                             using ( var rockContext = new RockContext() )
                             {
@@ -118,7 +196,7 @@ namespace Rock.Model
                                     blockTypeService.Add( blockType );
                                 }
 
-                                Type controlType = rockBlock.GetType();
+                                Type controlType = blockCompiledType;
 
                                 // Update Name, Category, and Description based on block's attribute definitions
                                 blockType.Name = Reflection.GetDisplayName( controlType ) ?? string.Empty;
@@ -152,6 +230,7 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
+                        System.Diagnostics.Debug.WriteLine( $"RegisterBlockTypes failed for {path} with exception: {ex.Message}" );
                         ExceptionLogService.LogException( new Exception( string.Format("Problem processing block with path '{0}'.", path ), ex ), null );
                     }
                 }
@@ -203,6 +282,25 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Deletes the specified item.  Will try to determine current person
+        /// alias from HttpContext.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( BlockType item )
+        {
+            // block has a cascading delete on BlockType, but lets delete it manually so that the BlockCache gets updated correctly
+            var blockService = new BlockService( this.Context as RockContext );
+            var blocks = blockService.Queryable().Where( a => a.BlockTypeId == item.Id ).ToList();
+            foreach ( var block in blocks )
+            {
+                blockService.Delete( block );
+            }
+
+            return base.Delete( item );
         }
     }
 }

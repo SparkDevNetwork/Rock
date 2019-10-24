@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Caching;
-using Rock.Data;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -108,7 +106,7 @@ namespace Rock.Model
                 content = content.Where( c => c.BlockId == blockId );
             }
 
-            return content.OrderByDescending( c => c.Version ).FirstOrDefault();
+            return content.OrderByDescending( c => c.Version ).ThenByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
         }
 
         /// <summary>

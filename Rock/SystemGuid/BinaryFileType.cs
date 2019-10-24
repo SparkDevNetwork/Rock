@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -72,6 +70,11 @@ namespace Rock.SystemGuid
         /// The Merge Template file type guid
         /// </summary>
         public const string MERGE_TEMPLATE = "BD63EC0C-2DF8-4C55-97E3-616870C67C59";
+
+        /// <summary>
+        /// The mobile application bundle file type guid
+        /// </summary>
+        public const string MOBILE_APP_BUNDLE = "ED456BF6-78F4-4954-9043-CA6849DA2D7E";
 
         /// <summary>
         /// The Signed Document Default File Type

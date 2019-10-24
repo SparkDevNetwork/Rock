@@ -85,7 +85,7 @@ namespace Rock.Model
             string qry = @"WITH cte AS (
                 SELECT parent.*
 		            , 0 AS [Level]
-		            , CAST( parent.Id AS VARCHAR( MAX ) ) AS [Path]
+		            , RIGHT(REPLICATE('0', 5) + CAST(ROW_NUMBER() OVER (ORDER BY parent.[Order],parent.[Name]) AS varchar(max)), 5 ) AS [Path]
                 FROM [FinancialAccount] parent
                 WHERE parent.[ParentAccountId] IS NULL
 
@@ -93,7 +93,7 @@ namespace Rock.Model
 
                 SELECT child.*
 		            , [Level] + 1
-		            , CAST( [Path] + '.' + CAST( child.Id AS VARCHAR( 100 ) ) AS VARCHAR( MAX ) )
+		            , [Path] + '.' +  RIGHT(REPLICATE('0', 5) + CAST(ROW_NUMBER() OVER (ORDER BY child.[Order],child.[Name]) AS varchar(max)), 5)  AS [Path]
                 FROM [FinancialAccount] child
                 INNER JOIN cte ON cte.[Id] = child.[ParentAccountId]
             )

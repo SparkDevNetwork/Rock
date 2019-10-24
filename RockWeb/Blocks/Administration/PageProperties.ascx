@@ -102,7 +102,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbBodyCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass" Label="Body CSS Class"
-                                            Help="The CSS class to add to the body tag (if theme supports it)." />
+                                            Help="The CSS class to add to the body tag (if theme and layout supports it)." />
                                         <fieldset>
                                             <Rock:NotificationBox ID="nbPageRouteWarning" runat="server" />
                                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
@@ -234,6 +234,7 @@
 
                 <Rock:ModalDialog ID="mdCopyPage" runat="server" ValidationGroup="vgCopyPage" Title="Copy Page" OnSaveClick="mdCopyPage_SaveClick" SaveButtonText="Copy" Visible="false">
                     <Content>
+                        <Rock:NotificationBox ID="mdCopyWarning" runat="server" NotificationBoxType="Warning" Text="Verify all the block setting's values because they are not duplicates but point to the exact same item. You may want to create copies of certain things like images, so block copies are not referencing the same items."  />
                         <Rock:RockCheckBox ID="cbCopyPageIncludeChildPages" runat="server" Text="Include Child Pages" Checked="true" />
                     </Content>
                 </Rock:ModalDialog>

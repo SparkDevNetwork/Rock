@@ -19,11 +19,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -170,9 +171,22 @@ namespace Rock.Rest.Controllers
                 if ( itemsQry != null )
                 {
                     // do a ToList to load from database prior to ordering by name, just in case Name is a virtual property
-                    var itemsList = itemsQry.ToList();
+                    List<ICategorized> itemsList = itemsQry.ToList();
 
-                    foreach ( var categorizedItem in itemsList.OrderBy( i => i.Name ) )
+                    List<ICategorized> sortedItemsList;
+
+                    bool isSchedule = cachedEntityType.Id == EntityTypeCache.GetId<Rock.Model.Schedule>();
+
+                    if ( isSchedule && itemsList.OfType<Rock.Model.Schedule>() != null)
+                    {
+                        sortedItemsList = itemsList.OfType<Rock.Model.Schedule>().ToList().OrderByNextScheduledDateTime().OfType<ICategorized>().ToList();
+                    }
+                    else
+                    {
+                        sortedItemsList = itemsList.OrderBy( i => i.Name ).ToList();
+                    }
+
+                    foreach ( var categorizedItem in sortedItemsList )
                     {
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
                         {

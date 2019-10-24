@@ -51,6 +51,16 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Transaction Source Required", "Determine if Transaction Source should be required.", false, "", 6 )]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
+        #region Constants
+
+        /// <summary>
+        /// This value is set as the accountId for "fake" financial transaction details
+        /// added to the end of grid sources representing a total/footer row
+        /// </summary>
+        private const int TotalRowAccountId = int.MinValue;
+
+        #endregion
+
         #region Properties
 
         private Control _focusControl = null;
@@ -70,7 +80,7 @@ namespace RockWeb.Blocks.Finance
                         .Select( a => new { a.Id, a.Name } )
                         .ToList()
                         .ForEach( a => _accountNames.Add( a.Id, a.Name ) );
-                    _accountNames.Add( int.MinValue, "&nbsp;&nbsp;&nbsp;&nbsp;<strong>Total</strong>" );
+                    _accountNames.Add( TotalRowAccountId, "<strong>Total</strong>" );
                 }
                 return _accountNames;
             }
@@ -398,11 +408,20 @@ namespace RockWeb.Blocks.Finance
                 //txn.FinancialGatewayId = gpPaymentGateway.SelectedValueAsInt();
                 txn.TransactionCode = tbTransactionCode.Text;
                 txn.FinancialPaymentDetail.CurrencyTypeValueId = dvpCurrencyType.SelectedValueAsInt();
+                if ( IsNonCashTransaction( txn.FinancialPaymentDetail.CurrencyTypeValueId ) )
+                {
+                    txn.NonCashAssetTypeValueId = dvpNonCashAssetType.SelectedValue.AsIntegerOrNull();
+                }
+                else
+                {
+                    txn.NonCashAssetTypeValueId = null;
+                }
+
                 txn.FinancialPaymentDetail.CreditCardTypeValueId = dvpCreditCardType.SelectedValueAsInt();
 
                 txn.Summary = tbSummary.Text;
                 decimal totalAmount = tbSingleAccountAmount.Text == string.Empty ? TransactionDetailsState.Select( d => d.Amount ).ToList().Sum() : tbSingleAccountAmount.Text.AsDecimal();
-              
+
                 if ( cbIsRefund.Checked && totalAmount > 0 )
                 {
                     nbErrorMessage.Title = "Incorrect Refund Amount";
@@ -470,6 +489,7 @@ namespace RockWeb.Blocks.Finance
 
                         txnDetail.AccountId = editorTxnDetail.AccountId;
                         txnDetail.Amount = UseSimpleAccountMode ? tbSingleAccountAmount.Text.AsDecimal() : editorTxnDetail.Amount;
+                        txnDetail.FeeAmount = UseSimpleAccountMode ? tbSingleAccountFeeAmount.Text.AsDecimalOrNull() : editorTxnDetail.FeeAmount;
                         txnDetail.Summary = editorTxnDetail.Summary;
 
                         if ( editorTxnDetail.AttributeValues != null )
@@ -540,6 +560,7 @@ namespace RockWeb.Blocks.Finance
                 Session["NewTxnDefault_BatchId"] = txn.BatchId;
                 Session["NewTxnDefault_TransactionDateTime"] = txn.TransactionDateTime;
                 Session["NewTxnDefault_TransactionType"] = txn.TransactionTypeValueId;
+                Session["NewTxnDefault_NonCashAssetType"] = txn.NonCashAssetTypeValueId;
                 Session["NewTxnDefault_SourceType"] = txn.SourceTypeValueId;
                 Session["NewTxnDefault_CurrencyType"] = txn.FinancialPaymentDetail.CurrencyTypeValueId;
                 Session["NewTxnDefault_CreditCardType"] = txn.FinancialPaymentDetail.CreditCardTypeValueId;
@@ -687,6 +708,7 @@ namespace RockWeb.Blocks.Finance
         protected void ddlCurrencyType_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetCreditCardVisibility();
+            SetNonCashAssetTypeVisibility();
             _focusControl = dvpCurrencyType;
         }
 
@@ -702,7 +724,7 @@ namespace RockWeb.Blocks.Finance
                 var account = ( FinancialTransactionDetail ) e.Row.DataItem;
 
                 // If this is the total row
-                if ( account.AccountId == int.MinValue )
+                if ( account.AccountId == TotalRowAccountId )
                 {
                     // disable the row select on each column
                     foreach ( TableCell cell in e.Row.Cells )
@@ -712,12 +734,14 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
-                if ( account.EntityTypeId.HasValue || account.AccountId == int.MinValue )
+                if ( account.EntityTypeId.HasValue || account.AccountId == TotalRowAccountId )
                 {
                     // Hide the edit button if this is the total row
-                    if ( account.AccountId == int.MinValue )
+                    if ( account.AccountId == TotalRowAccountId )
                     {
-                        var editBtn = e.Row.Cells[3].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                        var editCell = GetEditCell( e.Row.Cells );
+                        var editBtn = editCell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+
                         if ( editBtn != null )
                         {
                             editBtn.Visible = false;
@@ -725,7 +749,9 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     // Hide the delete button
-                    var deleteBtn = e.Row.Cells[4].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                    var deleteCell = GetDeleteCell( e.Row.Cells );
+                    var deleteBtn = deleteCell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+
                     if ( deleteBtn != null )
                     {
                         deleteBtn.Visible = false;
@@ -810,6 +836,7 @@ namespace RockWeb.Blocks.Finance
                 }
                 txnDetail.AccountId = apAccount.SelectedValue.AsInteger();
                 txnDetail.Amount = tbAccountAmount.Text.AsDecimal();
+                txnDetail.FeeAmount = tbAccountFeeAmount.Text.AsDecimalOrNull();
                 txnDetail.Summary = tbAccountSummary.Text;
 
                 txnDetail.LoadAttributes();
@@ -968,16 +995,16 @@ namespace RockWeb.Blocks.Finance
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                    AttributeField boundField = new AttributeField();
-                    boundField.DataField = attribute.Key;
-                    boundField.AttributeId = attribute.Id;
-                    boundField.HeaderText = attribute.Name;
+                AttributeField boundField = new AttributeField();
+                boundField.DataField = attribute.Key;
+                boundField.AttributeId = attribute.Id;
+                boundField.HeaderText = attribute.Name;
 
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
-                    if ( attributeCache != null )
-                    {
-                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                    }
+                var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
+                if ( attributeCache != null )
+                {
+                    boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                }
 
                 gAccountsView.Columns.Add( boundField );
                 gAccountsEdit.Columns.Add( boundField );
@@ -1051,7 +1078,7 @@ namespace RockWeb.Blocks.Finance
         {
             rockContext = rockContext ?? new RockContext();
             var txn = new FinancialTransactionService( rockContext )
-                .Queryable( "AuthorizedPersonAlias.Person,TransactionTypeValue,SourceTypeValue,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
+                .Queryable( "AuthorizedPersonAlias.Person,TransactionTypeValue,NonCashAssetTypeValue,SourceTypeValue,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,TransactionDetails,ScheduledTransaction,ProcessedByPersonAlias.Person" )
                 .Where( t => t.Id == transactionId )
                 .FirstOrDefault();
             return txn;
@@ -1116,6 +1143,10 @@ namespace RockWeb.Blocks.Finance
                     txn.TransactionTypeValueId = Session["NewTxnDefault_TransactionType"] as int? ?? 0;
                     txn.SourceTypeValueId = Session["NewTxnDefault_SourceType"] as int?;
                     txn.FinancialPaymentDetail.CurrencyTypeValueId = Session["NewTxnDefault_CurrencyType"] as int?;
+                    if ( IsNonCashTransaction( txn.FinancialPaymentDetail.CurrencyTypeValueId ) )
+                    {
+                        txn.NonCashAssetTypeValueId = Session["NewTxnDefault_NonCashAssetType"] as int?;
+                    }
                     txn.FinancialPaymentDetail.CreditCardTypeValueId = Session["NewTxnDefault_CreditCardType"] as int?;
                     if ( this.GetAttributeValue( "CarryOverAccount" ).AsBoolean() )
                     {
@@ -1187,6 +1218,22 @@ namespace RockWeb.Blocks.Finance
             lbSave.Visible = !readOnly;
         }
 
+        private bool IsNonCashTransaction( int? CurrencyTypeId )
+        {
+            if ( CurrencyTypeId == null )
+            {
+                return false;
+            }
+
+            var nonCashCurrencyType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_NONCASH );
+            if ( nonCashCurrencyType == null )
+            {
+                return false;
+            }
+
+            return ( CurrencyTypeId == nonCashCurrencyType.Id );
+        }
+
         /// <summary>
         /// Shows the read only details.
         /// </summary>
@@ -1216,6 +1263,11 @@ namespace RockWeb.Blocks.Finance
                     detailsLeft.Add( "Batch", !string.IsNullOrWhiteSpace( url ) ?
                         string.Format( "<a href='{0}'>{1}</a>", url, txn.Batch.Name ) :
                         txn.Batch.Name );
+                }
+
+                if ( txn.NonCashAssetTypeValue != null )
+                {
+                    detailsLeft.Add( "Non-Cash Asset Type", txn.NonCashAssetTypeValue != null ? txn.NonCashAssetTypeValue.Value : string.Empty );
                 }
 
                 detailsLeft.Add( "Source", txn.SourceTypeValue != null ? txn.SourceTypeValue.Value : string.Empty );
@@ -1376,7 +1428,7 @@ namespace RockWeb.Blocks.Finance
                         }
                         if ( campusNames.Any() )
                         {
-                            campusDescription.Add( "Campus".PluralizeIf(campusNames.Count > 1), campusNames.AsDelimited( "<br/>" ) );
+                            campusDescription.Add( "Campus".PluralizeIf( campusNames.Count > 1 ), campusNames.AsDelimited( "<br/>" ) );
                         }
                         lCampus.Text = campusDescription.Html;
                     }
@@ -1391,7 +1443,7 @@ namespace RockWeb.Blocks.Finance
                                             .ToList();
                     if ( locationTypeValueIdList.Any() )
                     {
-                        groupLocations = groupLocations.Where( a =>a.GroupLocationTypeValueId.HasValue && locationTypeValueIdList.Contains( a.GroupLocationTypeValueId.Value ) );
+                        groupLocations = groupLocations.Where( a => a.GroupLocationTypeValueId.HasValue && locationTypeValueIdList.Contains( a.GroupLocationTypeValueId.Value ) );
                     }
 
                     if ( groupLocations.Any() )
@@ -1402,11 +1454,16 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var accounts = txn.TransactionDetails.ToList();
+                var totalFeeAmount = txn.TotalFeeAmount;
+                var hasFeeInfo = totalFeeAmount.HasValue;
+
                 accounts.Add( new FinancialTransactionDetail
                 {
-                    AccountId = int.MinValue,
-                    Amount = txn.TransactionDetails.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M
+                    AccountId = TotalRowAccountId,
+                    FeeAmount = totalFeeAmount,
+                    Amount = txn.TotalAmount
                 } );
+
                 gAccountsView.DataSource = accounts;
                 gAccountsView.DataBind();
 
@@ -1568,6 +1625,13 @@ namespace RockWeb.Blocks.Finance
                 gpPaymentGateway.SetValue( txn.FinancialGatewayId );
                 tbTransactionCode.Text = txn.TransactionCode;
                 dvpCurrencyType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CurrencyTypeValueId : ( int? ) null );
+
+                if ( ( txn.FinancialPaymentDetail != null ) && ( IsNonCashTransaction( txn.FinancialPaymentDetail.CurrencyTypeValueId ) ) )
+                {
+                    dvpNonCashAssetType.SetValue( txn.NonCashAssetTypeValueId );
+                }
+                SetNonCashAssetTypeVisibility();
+
                 dvpCreditCardType.SetValue( txn.FinancialPaymentDetail != null ? txn.FinancialPaymentDetail.CreditCardTypeValueId : ( int? ) null );
                 SetCreditCardVisibility();
 
@@ -1669,6 +1733,7 @@ namespace RockWeb.Blocks.Finance
         private void BindDropdowns( RockContext rockContext )
         {
             dvpTransactionType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE.AsGuid(), rockContext ).Id;
+            dvpNonCashAssetType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_NONCASH_ASSET_TYPE.AsGuid(), rockContext ).Id;
             dvpSourceType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid(), rockContext ).Id;
             dvpCurrencyType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid(), rockContext ).Id;
             dvpCreditCardType.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid(), rockContext ).Id;
@@ -1687,6 +1752,15 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Sets the credit card visibility.
+        /// </summary>
+        private void SetNonCashAssetTypeVisibility()
+        {
+            int? currencyType = dvpCurrencyType.SelectedValueAsInt();
+            dvpNonCashAssetType.Visible = IsNonCashTransaction( currencyType );
+        }
+
+        /// <summary>
         /// Binds the transaction details.
         /// </summary>
         private void BindAccounts()
@@ -1696,14 +1770,32 @@ namespace RockWeb.Blocks.Finance
                 var txnDetail = TransactionDetailsState.First();
                 tbSingleAccountAmount.Label = AccountName( txnDetail.AccountId );
                 tbSingleAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
+                tbSingleAccountFeeAmount.Text = GetFeeAsText( txnDetail.FeeAmount );
             }
             else
             {
                 var accounts = TransactionDetailsState.ToList();
+
+                var totalAmount = 0m;
+                var totalFeeAmount = 0m;
+                var hasFeeInfo = false;
+
+                foreach ( var detail in accounts )
+                {
+                    totalAmount += detail.Amount;
+
+                    if ( detail.FeeAmount.HasValue )
+                    {
+                        hasFeeInfo = true;
+                        totalFeeAmount += detail.FeeAmount.Value;
+                    }
+                }
+
                 accounts.Add( new FinancialTransactionDetail
                 {
-                    AccountId = int.MinValue,
-                    Amount = TransactionDetailsState.Sum( d => ( decimal? ) d.Amount ) ?? 0.0M
+                    AccountId = TotalRowAccountId,
+                    FeeAmount = hasFeeInfo ? totalFeeAmount : ( decimal? ) null,
+                    Amount = totalAmount
                 } );
 
                 gAccountsEdit.DataSource = accounts;
@@ -1733,6 +1825,7 @@ namespace RockWeb.Blocks.Finance
             {
                 apAccount.SetValue( txnDetail.AccountId );
                 tbAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
+                tbAccountFeeAmount.Text = GetFeeAsText( txnDetail.FeeAmount );
                 tbAccountSummary.Text = txnDetail.Summary;
 
                 if ( txnDetail.Attributes == null )
@@ -1744,6 +1837,7 @@ namespace RockWeb.Blocks.Finance
             {
                 apAccount.SetValue( null );
                 tbAccountAmount.Text = string.Empty;
+                tbAccountFeeAmount.Text = string.Empty;
                 tbAccountSummary.Text = string.Empty;
 
                 txnDetail = new FinancialTransactionDetail();
@@ -1930,9 +2024,63 @@ namespace RockWeb.Blocks.Finance
             return "None";
         }
 
+        /// <summary>
+        /// Finds the first occuring cell within the collection that contains a EditField
+        /// or null if no occurrences are found
+        /// </summary>
+        /// <param name="cells"></param>
+        /// <returns></returns>
+        private static DataControlFieldCell GetEditCell( TableCellCollection cells )
+        {
+            return GetFirstCellContainingFieldType<EditField>( cells );
+        }
+
+        /// <summary>
+        /// Finds the first occuring cell within the collection that contains a DeleteField
+        /// or null if no occurrences are found
+        /// </summary>
+        /// <param name="cells"></param>
+        /// <returns></returns>
+        private static DataControlFieldCell GetDeleteCell( TableCellCollection cells )
+        {
+            return GetFirstCellContainingFieldType<DeleteField>( cells );
+        }
+
+        /// <summary>
+        /// Within the collection, returns the first occurrence of a cell containing a field of type T
+        /// or null if no occurrences are found.
+        /// </summary>
+        /// <typeparam name="T">The IRockGridField type to search for</typeparam>
+        /// <param name="cells">The collection of cells</param>
+        /// <returns></returns>
+        private static DataControlFieldCell GetFirstCellContainingFieldType<T>( TableCellCollection cells ) where T : IRockGridField
+        {
+            foreach ( var cell in cells.OfType<DataControlFieldCell>() )
+            {
+                if ( cell != null && cell.ContainingField is T )
+                {
+                    return cell;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Take a fee and return empty string if null or the formated currency amount
+        /// </summary>
+        /// <param name="fee"></param>
+        /// <returns></returns>
+        private static string GetFeeAsText( decimal? fee )
+        {
+            if ( fee.HasValue )
+            {
+                return fee.Value.ToString( "N2" );
+            }
+
+            return string.Empty;
+        }
+
         #endregion
-
-
-
     }
 }

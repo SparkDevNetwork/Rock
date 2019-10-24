@@ -15,12 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -110,12 +108,17 @@ namespace Rock.Model
 
             using ( SqlDataReader reader = cmd.EndExecuteReader( asyncResult ) )
             {
+                if ( !reader.Read() )
+                {
+                    requiresViewSecurity = false;
+                    return null;
+                }
+
                 BinaryFile binaryFile = new BinaryFile();
 
                 // Columns must be read in Sequential Order (see stored procedure spCore_BinaryFileGet)
-                reader.Read();
                 binaryFile.Id = reader["Id"] as int? ?? 0;
-                binaryFile.IsTemporary = ( (bool)reader["IsTemporary"] );
+                binaryFile.IsTemporary = (bool)reader["IsTemporary"];
                 binaryFile.IsSystem = (bool)reader["IsSystem"];
                 binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
 
@@ -133,6 +136,7 @@ namespace Rock.Model
                 {
                     binaryFile.Guid = (Guid)guid;
                 }
+
                 binaryFile.StorageEntitySettings = reader["StorageEntitySettings"] as string;
                 binaryFile.Path = reader["Path"] as string;
                 binaryFile.FileSize = reader["FileSize"] as long?;

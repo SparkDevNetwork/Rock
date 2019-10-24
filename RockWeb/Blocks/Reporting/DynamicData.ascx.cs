@@ -466,6 +466,15 @@ namespace RockWeb.Blocks.Reporting
 
                         // Formatted output needs all the rows, so get the data regardless of the setData parameter
                         var dataSet = GetData( out errorMessage);
+
+                        if ( dataSet == null || dataSet.Tables == null )
+                        {
+
+                            nbError.Text = errorMessage;
+                            nbError.Visible = true;
+                            return;
+                        }
+
                         foreach ( DataTable dataTable in dataSet.Tables )
                         {
                             var dropRows = new List<DataRowDrop>();

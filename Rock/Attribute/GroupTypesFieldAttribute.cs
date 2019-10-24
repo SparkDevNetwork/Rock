@@ -15,9 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
@@ -26,7 +23,7 @@ namespace Rock.Attribute
     /// Stored as a list of Guids
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class GroupTypesFieldAttribute : FieldAttribute
+    public class GroupTypesFieldAttribute : SelectFieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypesFieldAttribute" /> class.

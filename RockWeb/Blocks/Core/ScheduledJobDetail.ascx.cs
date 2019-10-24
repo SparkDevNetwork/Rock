@@ -53,15 +53,6 @@ namespace RockWeb.Blocks.Administration
             {
                 ShowDetail( PageParameter( "serviceJobId" ).AsInteger() );
             }
-
-            if ( pnlDetails.Visible )
-            {
-                var job = new ServiceJob { Id = int.Parse( hfId.Value ), Class = ddlJobTypes.SelectedValue ?? "Rock.Jobs.JobPulse" };
-
-                job.LoadAttributes();
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
-            }
         }
 
         #endregion
@@ -139,8 +130,7 @@ namespace RockWeb.Blocks.Administration
             {
                 rockContext.SaveChanges();
 
-                job.LoadAttributes( rockContext );
-                Rock.Attribute.Helper.GetEditValues( phAttributes, job );
+                avcAttributes.GetEditValues( job );
                 job.SaveAttributeValues( rockContext );
 
             } );
@@ -182,8 +172,7 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
+            avcAttributes.AddEditControls( job );
         }
 
         /// <summary>
@@ -259,8 +248,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             job.LoadAttributes();
-            phAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( job, phAttributes, true, BlockValidationGroup );
+            avcAttributes.AddEditControls( job );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -281,9 +269,9 @@ namespace RockWeb.Blocks.Administration
             {
                 lActionTitle.Text = ActionTitle.View( ServiceJob.FriendlyTypeName ).FormatAsHtmlTitle();
                 btnCancel.Text = "Close";
-                Rock.Attribute.Helper.AddDisplayControls( job, phAttributesReadOnly );
-                phAttributesReadOnly.Visible = true;
-                phAttributes.Visible = false;
+                avcAttributesReadOnly.AddDisplayControls( job );
+                avcAttributesReadOnly.Visible = true;
+                avcAttributes.Visible = false;
                 tbCronExpression.Text = job.CronExpression;
             }
             
