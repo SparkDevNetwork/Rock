@@ -11,7 +11,8 @@
           "/stories/*",
           "/sermons/*",
           "/sermons/*/*",
-          "/news/*"
+          "/news/*",
+          "/staffcontent/*"
         ]
       },
       {
@@ -23,7 +24,8 @@
           "/stories/*",
           "/sermons/*",
           "/sermons/*/*",
-          "/news/*"
+          "/news/*",
+          "/staffcontent/*"
         ]
       }
     ]
