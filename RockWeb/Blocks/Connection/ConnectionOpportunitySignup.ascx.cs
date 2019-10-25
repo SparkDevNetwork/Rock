@@ -351,18 +351,10 @@ namespace RockWeb.Blocks.Connection
                     return;
                 }
 
-                if ( !opportunity.IsActive )
+                if ( !opportunity.IsActive || !opportunity.ConnectionType.IsActive )
                 {
                     pnlSignup.Visible = false;
-                    ShowError( "Inactive Opportunity Type", "The opportunity is not currently active." );
-                    return;
-                }
-                
-                var opportunityConnectionTypeId = opportunity.ConnectionTypeId;
-                var connectionType = new ConnectionTypeService( rockContext ).Get( opportunityConnectionTypeId );
-                if ( !connectionType.IsActive ){
-                    pnlSignup.Visible = false;
-                    ShowError("Sorry this opportunity isn't active at this time","The requested type is inactive");
+                    ShowError( "Inactive Opportunity Type", "The opportunity or connection type is not currently active." );
                     return;
                 }
 
