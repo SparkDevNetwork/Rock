@@ -3632,12 +3632,13 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.RegistrationInstructions :
                 RegistrationInstanceState.RegistrationInstructions;
 
-            if ( !string.IsNullOrEmpty( instructions ) )
+            // Sanitize for empty check catches things like empty paragraph tags.
+            if ( !string.IsNullOrEmpty( instructions.SanitizeHtml() ) )
             {
                 lInstructions.Text = string.Format( "<div class='text-left'>{0}</div>", instructions );
             }
 
-            return instructions.IsNotNullOrWhiteSpace();
+            return instructions.SanitizeHtml().IsNotNullOrWhiteSpace();
         }
 
         /// <summary>
