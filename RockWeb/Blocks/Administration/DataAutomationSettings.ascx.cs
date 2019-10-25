@@ -33,11 +33,11 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// Data Automation Settings
+    /// Data Automation Settings - Block used to set values specific to data automation (updating person status, family campus, etc.).
     /// </summary>
     [DisplayName( "Data Automation Settings" )]
     [Category( "Administration" )]
-    [Description( "Block used to set values specific to data automation (NCOA, Updating Person Status, Family Campus, Etc)." )]
+    [Description( "Block used to set values specific to data automation (updating person status, family campus, etc.)." )]
     public partial class DataAutomationSettings : RockBlock
     {
         #region private variables
