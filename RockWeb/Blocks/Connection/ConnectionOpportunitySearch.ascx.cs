@@ -51,7 +51,8 @@ namespace RockWeb.Blocks.Connection
     [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1, order:8 )]
     [BooleanField( "Show Search", "Determines if the search fields should be displayed. Sometimes listing all the options is enough.", true, order: 9 )]
     [TextField( "Campus Label", "", true, "Campuses",  order:10 )]
-
+    [BooleanField( "Inactive Connection Type Warning", "If the Connection Type that this search belongs to should we show the warning text?", true, order: 11 )]
+    
     public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
         #region Properties
@@ -166,7 +167,16 @@ namespace RockWeb.Blocks.Connection
                 var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
 
                 var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true );
-
+                
+                if ( !connectionType.IsActive ){
+                    var warningText = GetAttributeValue("InactiveConnectionTypeWarning").AsBoolean();
+                    if ( warningText == true )
+                    {
+                        lOutput.Text = "This Connection Type is Inactive, Nothing to Show";
+                    }
+                    return;
+                }
+                
                 if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
                 {
                     if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
