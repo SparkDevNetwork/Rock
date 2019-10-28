@@ -266,6 +266,22 @@ namespace Rock.Model
             base.PreSaveChanges( dbContext, entry );
         }
 
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( DbContext dbContext )
+        {
+            if (ConnectionStatus.AutoInactivateState && ConnectionState != ConnectionState.Inactive)
+            {
+                ConnectionState = ConnectionState.Inactive;
+                var rockContext = (RockContext)dbContext;
+                rockContext.SaveChanges();
+            }
+
+            base.PostSaveChanges( dbContext );
+        }
+
         #endregion
     }
 

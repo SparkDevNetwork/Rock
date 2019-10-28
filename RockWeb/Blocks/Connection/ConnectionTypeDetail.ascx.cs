@@ -905,6 +905,7 @@ namespace RockWeb.Blocks.Connection
             connectionStatus.IsActive = cbConnectionStatusIsActive.Checked;
             connectionStatus.IsDefault = cbIsDefault.Checked;
             connectionStatus.IsCritical = cbIsCritical.Checked;
+            connectionStatus.AutoInactivateState = cbAutoInactivateState.Checked;
             if ( !connectionStatus.IsValid )
             {
                 return;
@@ -965,6 +966,7 @@ namespace RockWeb.Blocks.Connection
                 cbConnectionStatusIsActive.Checked = connectionStatus.IsActive;
                 cbIsDefault.Checked = connectionStatus.IsDefault;
                 cbIsCritical.Checked = connectionStatus.IsCritical;
+                cbAutoInactivateState.Checked = connectionStatus.AutoInactivateState;
             }
             else
             {
@@ -975,6 +977,7 @@ namespace RockWeb.Blocks.Connection
                     cbConnectionStatusIsActive.Checked = true;
                     cbIsDefault.Checked = false;
                     cbIsCritical.Checked = false;
+                    cbAutoInactivateState.Checked = false;
                 }
             }
             hfConnectionTypeAddConnectionStatusGuid.Value = connectionStatusGuid.ToString();
@@ -987,7 +990,7 @@ namespace RockWeb.Blocks.Connection
         private void BindConnectionStatusesGrid()
         {
             SetConnectionStatusListOrder( StatusesState );
-            gStatuses.DataSource = StatusesState.OrderBy( a => a.Name ).ToList();
+            gStatuses.DataSource = StatusesState.OrderBy( a => a.AutoInactivateState ).ThenBy( a => a.Name ).ToList();
             gStatuses.DataBind();
         }
 
@@ -1001,7 +1004,7 @@ namespace RockWeb.Blocks.Connection
             {
                 if ( connectionStatusList.Any() )
                 {
-                    connectionStatusList.OrderBy( a => a.Name ).ToList();
+                    connectionStatusList.OrderBy( a => a.AutoInactivateState ).ThenBy( a => a.Name ).ToList();
                 }
             }
         }
