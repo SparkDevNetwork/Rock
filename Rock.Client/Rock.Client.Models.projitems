@@ -92,6 +92,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Device.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Document.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\DocumentType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntityCampusFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntitySetItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\EntityType.cs" />

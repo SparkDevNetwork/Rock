@@ -775,7 +775,7 @@ namespace Rock.MyWell
         public new string ApiMessage { get; set; }
 
         /// <summary>
-        /// Gets the Friendly message (see <see cref="FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
         /// </summary>
         /// <value>
         /// The friendly message.
@@ -860,7 +860,7 @@ namespace Rock.MyWell
         public string ApiMessage { get; set; }
 
         /// <summary>
-        /// Gets the Friendly message (see <see cref="FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
         /// </summary>
         /// <value>
         /// The friendly message.

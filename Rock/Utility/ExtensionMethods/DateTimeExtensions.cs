@@ -48,7 +48,8 @@ namespace Rock
         {
             var now = RockDateTime.Today;
             int age = now.Year - start.Year;
-            if ( start > now.AddYears( -age ) ) age--;
+            if ( start > now.AddYears( -age ) )
+                age--;
 
             return age;
         }
@@ -326,7 +327,7 @@ namespace Rock
         /// <returns></returns>
         public static long ToJavascriptMilliseconds( this DateTime dateTime )
         {
-            return (long)( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
+            return ( long ) ( dateTime.ToUniversalTime() - new DateTime( 1970, 1, 1 ) ).TotalMilliseconds;
         }
 
         /// <summary>
@@ -379,7 +380,7 @@ namespace Rock
         /// </summary>
         /// <param name="dt">The dt.</param>
         /// <returns></returns>
-        public static DateTime SundayDate( this DateTime dt)
+        public static DateTime SundayDate( this DateTime dt )
         {
             return RockDateTime.GetSundayDate( dt );
         }
@@ -391,6 +392,7 @@ namespace Rock
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
         [Obsolete( "Use GetSundayDate without the firstDayOfWeek parameter" )]
+        [RockObsolete( "1.10" )]
         public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
         {
             return RockDateTime.GetSundayDate( dt );
@@ -452,7 +454,7 @@ namespace Rock
         /// </summary>
         /// <param name="dateTime">The date time.</param>
         /// <returns></returns>
-        public static string ToRfc822DateTime(this DateTime dateTime )
+        public static string ToRfc822DateTime( this DateTime dateTime )
         {
             int offset = TimeZone.CurrentTimeZone.GetUtcOffset( DateTime.Now ).Hours;
             string timeZone = "+" + offset.ToString().PadLeft( 2, '0' );
