@@ -72,7 +72,10 @@ namespace Rock.Field.Types
                     badges = BadgeCache.All();
                 }
 
-                return badges.ToDictionary( k => k.Guid.ToString(), v => v.Name );
+                var orderedBadges = badges.OrderBy( x => x.Order )
+                    .ToDictionary( k => k.Guid.ToString(), v => v.Name );
+
+                return orderedBadges;
             }
         }
     }
