@@ -1,12 +1,39 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Model;
 
-namespace Rock.Tests.Integration.RockTests.Core
+namespace Rock.Tests.Integration.Core
 {
     [TestClass]
     public class SundayDateTest
     {
+        [TestMethod]
+        public void TestPerformance()
+        {
+            // warm up
+            var warmup = RockDateTime.FirstDayOfWeek;
+            int testCount = 1000000;
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            for ( int i = 0; i < testCount; i++ )
+            {
+                var firstDayOfWeek = RockDateTime.FirstDayOfWeek;
+            }
+
+            stopwatch.Stop();
+            Debug.WriteLine( $"{stopwatch.Elapsed.TotalMilliseconds}ms, {stopwatch.Elapsed.TotalMilliseconds / testCount}ms/count  RockDateTime.FirstDayOfWeek" );
+
+            stopwatch.Restart();
+            for ( int i = 0; i < testCount; i++ )
+            {
+                var firstDayOfWeek = RockDateTime.DefaultFirstDayOfWeek;
+            }
+
+            stopwatch.Stop();
+            Debug.WriteLine( $"{stopwatch.Elapsed.TotalMilliseconds}ms RockDateTime.DefaultFirstDayOfWeek" );
+        }
+
+
         [TestMethod]
         public void TestFirstDateOfWeekMonday()
         {
@@ -14,12 +41,12 @@ namespace Rock.Tests.Integration.RockTests.Core
             var sundayDate20190901 = new DateTime( 2019, 9, 1 );
             var sundayDate20190908 = new DateTime( 2019, 9, 8 );
             var sundayDate20190915 = new DateTime( 2019, 9, 15 );
-            var sundayDate20190922 = new DateTime( 2019, 9, 22);
+            var sundayDate20190922 = new DateTime( 2019, 9, 22 );
 
 
             Assert.IsTrue( new DateTime( 2019, 8, 23 ).SundayDate() == sundayDate20190825, "Incorrect Sunday Date" );
             Assert.IsTrue( new DateTime( 2019, 8, 24 ).SundayDate() == sundayDate20190825, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 8, 25 ).SundayDate() == sundayDate20190825,  "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 8, 25 ).SundayDate() == sundayDate20190825, "Incorrect Sunday Date" );
 
             Assert.IsTrue( new DateTime( 2019, 8, 26 ).SundayDate() == sundayDate20190901, "Incorrect Sunday Date" );
             Assert.IsTrue( new DateTime( 2019, 8, 27 ).SundayDate() == sundayDate20190901, "Incorrect Sunday Date" );
@@ -47,21 +74,23 @@ namespace Rock.Tests.Integration.RockTests.Core
             var sundayDate20191020 = new DateTime( 2019, 10, 20 );
             var sundayDate20191027 = new DateTime( 2019, 10, 27 );
 
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK, DayOfWeek.Tuesday.ConvertToInt().ToString() );
+            RockDateTime.UpdateSundayDateData();
 
-            Assert.IsTrue( new DateTime( 2019, 10, 1 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191006, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 5 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191006, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 6 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191006, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 7 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191006, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 1 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 5 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 6 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 7 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
 
-            Assert.IsTrue( new DateTime( 2019, 10, 8 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191013, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 14 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191013, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 13 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191013, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 8 ).SundayDate() == sundayDate20191013, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 14 ).SundayDate() == sundayDate20191013, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 13 ).SundayDate() == sundayDate20191013, "Incorrect Sunday Date" );
 
-            Assert.IsTrue( new DateTime( 2019, 10, 21 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191020, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 21 ).SundayDate() == sundayDate20191020, "Incorrect Sunday Date" );
 
-            Assert.IsTrue( new DateTime( 2019, 10, 22 ).SundayDate( DayOfWeek.Tuesday ) != sundayDate20191020, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 22 ).SundayDate() != sundayDate20191020, "Incorrect Sunday Date" );
 
-            Assert.IsTrue( new DateTime( 2019, 10, 22 ).SundayDate( DayOfWeek.Tuesday ) == sundayDate20191027, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 22 ).SundayDate() == sundayDate20191027, "Incorrect Sunday Date" );
 
         }
 
@@ -73,21 +102,24 @@ namespace Rock.Tests.Integration.RockTests.Core
             var sundayDate20191020 = new DateTime( 2019, 10, 20 );
             var sundayDate20191027 = new DateTime( 2019, 10, 27 );
 
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK, DayOfWeek.Sunday.ConvertToInt().ToString() );
+            RockDateTime.UpdateSundayDateData();
 
-            Assert.IsTrue( new DateTime( 2019, 10, 6 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191006, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 8 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191006, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 9 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191006, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 12 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191006, "Incorrect Sunday Date" );
 
-            Assert.IsTrue( new DateTime( 2019, 10, 13 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191013, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 14 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191013, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 19 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191013, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 6 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 8 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 9 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 12 ).SundayDate() == sundayDate20191006, "Incorrect Sunday Date" );
 
-            Assert.IsTrue( new DateTime( 2019, 10, 20 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191020, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 25 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191020, "Incorrect Sunday Date" );
-            Assert.IsTrue( new DateTime( 2019, 10, 28 ).SundayDate( DayOfWeek.Sunday ) == sundayDate20191027, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 13 ).SundayDate() == sundayDate20191013, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 14 ).SundayDate() == sundayDate20191013, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 19 ).SundayDate() == sundayDate20191013, "Incorrect Sunday Date" );
 
-            
+            Assert.IsTrue( new DateTime( 2019, 10, 20 ).SundayDate() == sundayDate20191020, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 25 ).SundayDate() == sundayDate20191020, "Incorrect Sunday Date" );
+            Assert.IsTrue( new DateTime( 2019, 10, 28 ).SundayDate() == sundayDate20191027, "Incorrect Sunday Date" );
+
+
 
         }
     }

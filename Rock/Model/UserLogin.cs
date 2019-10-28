@@ -65,7 +65,7 @@ namespace Rock.Model
         public string UserName { get; set; }
         
         /// <summary>
-        /// Gets or sets the Password.  Stored as a SHA1 hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes
+        /// Gets or sets the Password.  Stored as a BCrypt hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the password. 

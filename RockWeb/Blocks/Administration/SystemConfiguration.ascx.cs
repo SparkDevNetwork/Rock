@@ -32,6 +32,8 @@ using Rock.Attribute;
 using System.Configuration;
 using Microsoft.Web.XmlTransform;
 using Rock.SystemKey;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -82,13 +84,27 @@ namespace RockWeb.Blocks.Administration
 
             if ( !Page.IsPostBack )
             {
-                BindGeneralConfiguration();
-                BindTimeZones();
-                BindOtherAppSettings();
-                BindMaxFileSize();
+                ShowDetails();
+
+
+
             }
 
-            lTitle.Text = ("Edit System Configuration").FormatAsHtmlTitle();
+            lTitle.Text = ( "Edit System Configuration" ).FormatAsHtmlTitle();
+        }
+
+        /// <summary>
+        /// Shows the details.
+        /// </summary>
+        private void ShowDetails()
+        {
+            BindGeneralConfiguration();
+            BindTimeZones();
+
+            BindOtherAppSettings();
+            BindMaxFileSize();
+
+            BindExperimentalSettings();
         }
 
         #endregion
@@ -123,7 +139,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT, cbEnableMultipleTimeZone.Checked.ToString() );
 
             nbGeneralMessage.NotificationBoxType = NotificationBoxType.Success;
-            nbGeneralMessage.Title = "Success";
+            nbGeneralMessage.Title = string.Empty;
             nbGeneralMessage.Text = "Setting saved successfully.";
         }
 
@@ -145,12 +161,12 @@ namespace RockWeb.Blocks.Administration
             rockWebConfig.AppSettings.Settings["OrgTimeZone"].Value = ddTimeZone.SelectedValue;
             rockWebConfig.AppSettings.Settings["RunJobsInIISContext"].Value = cbRunJobsInIISContext.Checked.ToString();
 
-            var section = (System.Web.Configuration.SystemWebSectionGroup)rockWebConfig.GetSectionGroup("system.web");
+            var section = ( System.Web.Configuration.SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
 
             rockWebConfig.Save();
 
-            if ( ! SaveMaxAllowedContentLength() )
+            if ( !SaveMaxAllowedContentLength() )
             {
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbMessage.Title = "Error";
@@ -185,7 +201,7 @@ namespace RockWeb.Blocks.Administration
             {
                 ddTimeZone.Items.Add( new ListItem( timeZone.DisplayName, timeZone.Id ) );
             }
-            
+
             ddTimeZone.SelectedValue = RockDateTime.OrgTimeZoneInfo.Id;
         }
 
@@ -255,6 +271,50 @@ namespace RockWeb.Blocks.Administration
 
             return isSuccess;
         }
+
+        /// <summary>
+        /// Binds the experimental settings.
+        /// </summary>
+        protected void BindExperimentalSettings()
+        {
+            nbStartDayOfWeekSaveMessage.NotificationBoxType = NotificationBoxType.Warning;
+            nbStartDayOfWeekSaveMessage.Title = string.Empty;
+            nbStartDayOfWeekSaveMessage.Text = "This is an experimental setting. Saving this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'.";
+            dowpStartingDayOfWeek.SelectedDayOfWeek = RockDateTime.FirstDayOfWeek;
+        }
+
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveStartDayOfWeek control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveStartDayOfWeek_Click( object sender, EventArgs e )
+        {
+            if ( dowpStartingDayOfWeek.SelectedDayOfWeek != RockDateTime.FirstDayOfWeek )
+            {
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK, dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToInt().ToString() );
+                Task.Run( () =>
+                {
+                    try
+                    {
+                        Stopwatch stopwatch = Stopwatch.StartNew();
+                        RockDateTime.UpdateSundayDateData();
+                        stopwatch.Stop();
+                        Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds + "ms, UpdateSundayDateData done " );
+                    }
+                    catch ( Exception ex )
+                    {
+                        Debug.WriteLine( ex.Message );
+                        ExceptionLogService.LogException( new Exception( "An error occurred applying the Start Of Week setting", ex ) );
+                    }
+                } );
+
+                nbStartDayOfWeekSaveMessage.NotificationBoxType = NotificationBoxType.Success;
+                nbStartDayOfWeekSaveMessage.Title = string.Empty;
+                nbStartDayOfWeekSaveMessage.Text = string.Format("Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString());
+            }
+        }
     }
 }
