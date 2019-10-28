@@ -14,22 +14,27 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Constants
 {
     /// <summary>
     /// This class holds Rock's well known System Setting keys.
     /// </summary>
+    [Obsolete( "Use Rock.SystemKey.SystemSetting instead" )]
     public static class SystemSettingKeys
     {
         /// <summary>
         /// This system setting's guid represents a unique identifier for each installation of Rock.
         /// The value it stores is the current version of Rock for that installation.
         /// </summary>
-        public static readonly string ROCK_INSTANCE_ID = "RockInstanceId";
+        [Obsolete( "Use Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID instead" )]
+        public static readonly string ROCK_INSTANCE_ID = Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID;
 
         /// <summary>
         /// Holds the System Setting key for the sample data load date/time.
         /// </summary>
-        public static readonly string SAMPLEDATA_DATE = "com.rockrms.sampledata.datetime";
+        [Obsolete( "Use Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE instead" )]
+        public static readonly string SAMPLEDATA_DATE = Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE;
     }
 }

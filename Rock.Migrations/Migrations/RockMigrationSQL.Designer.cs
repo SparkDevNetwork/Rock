@@ -1552,5 +1552,191 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201910241702033_ufnCrm_GetFamilyTitleIncludeInactive", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns attendee person ids and the dates they attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* SundayDate
+        ///		* MonthDate
+        ///		* Year Date
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;datetime&apos;&gt;Ending date range filter&lt;/ [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeDates {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeDate" +
+                        "s", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeFirs" +
+                        "tDates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;dateti [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeLast" +
+                        "Attendance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the people that attended based on selected filter criteria
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Id 
+        ///		* NickName
+        ///		* LastName
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;datetime&apos;&gt;Ending date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;GroupIds&apos; datatype=&apos;varc [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_Attendees {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_Attendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * PersonId 
+        ///        * SundayDate - Last time attended
+        ///    &lt;/returns&gt;
+        ///    &lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///    &lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///    &lt;p [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_NonAttendees" +
+                        "", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the number of weekends a member of a family has attended a weekend service
+        ///		in the last X weeks.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* Number of weeks
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;&quot;PersonId&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The person id to use&lt;/param&gt;
+        ///	&lt;param name=&quot;&quot;WeekDuration&quot;&quot; datatype=&quot;&quot;int&quot;&quot;&gt;The number of weeks to use as the duration (default 16)&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///	&lt;/remarks&gt;
+        ///	&lt;code&gt;
+        ///		EXEC [dbo].[spCheckin_WeeksAttendedInDuration] 2 -- Ted Decker
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_spCheckin_WeeksAttendedInDuration {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_spCheckin_WeeksAttendedInDuration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the Sunday date of a given date.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		The Sunday of the date given with Sunday being the SundayDate that is associated with the specified date, depending on the FirstDayOfWeek that is configured in Rock
+        ///	&lt;/returns&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnUtility_GetSundayDate](getdate())
+        ///	&lt;/code&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ////* This is code generated */
+        ///ALTER FUNCTION [dbo].[ufnUtility_GetSundayDate] (@InputDate DATETIME)
+        ///RETURNS DATE
+        ///AS
+        ///BEGIN
+        ///	DECLARE @I [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_ufnUtility_GetSundayDate {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_ufnUtility_GetSundayDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This function returns the First and Last Sunday Date between the @StartDate and @EndDate.
+        ///        Note: If the @StartDate and @EndDate are within the same SundayWeek, there are no SundayDates between them, so this will return an [EndSundayDate] that is a week before the [StartSundayDate]
+        ///	&lt;/summary&gt;
+        ///	&lt;code&gt;
+        ///		SELECT [dbo].[ufnUtility_GetSundayDateRange](&apos;2019-09-17 00:00:00&apos;, &apos;2019-10-09 00:00:00&apos;)
+        ///        -- should return &apos;2019-09-22 00:00:00&apos;, &apos;2019-10-06 00:00:00&apos; (assuming [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201910281713564_CustomSundayDate_ufnUtility_GetSundayDateRange {
+            get {
+                return ResourceManager.GetString("_201910281713564_CustomSundayDate_ufnUtility_GetSundayDateRange", resourceCulture);
+            }
+        }
     }
 }
