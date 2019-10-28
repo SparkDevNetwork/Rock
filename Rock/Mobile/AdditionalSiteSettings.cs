@@ -194,6 +194,6 @@ namespace Rock.Mobile
         /// <value>
         /// The campus filter data view identifier.
         /// </value>
-        public int? CampusFilterDataViewId { get; set; } = 0;
+        public int? CampusFilterDataViewId { get; set; }
     }
 }
