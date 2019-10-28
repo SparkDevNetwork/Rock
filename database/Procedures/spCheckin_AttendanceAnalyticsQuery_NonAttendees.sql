@@ -93,7 +93,7 @@ BEGIN
     BEGIN
 
         -- Just return the person 
-        SELECT    
+ SELECT    
             P.[Id],
             P.[NickName],
             P.[LastName],
@@ -214,7 +214,7 @@ BEGIN
             P.[Id] AS [PersonId],
             A.[CampusId],
             A.[GroupId],
-            A.[GroupName],
+  A.[GroupName],
             A.[ScheduleId],
             A.[StartDateTime],
             A.[LocationId]

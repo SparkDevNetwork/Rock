@@ -212,8 +212,3 @@ BEGIN
     END
 
 END
-go
-
-EXEC [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees] '24,25,26,27,28,29,30,31,32,56,57,58,59,111,112,113,114,115,116,117,118', '2019-09-17 00:00:00', '2019-10-23 00:00:00', null, 0, 0, 0, null
-
-
