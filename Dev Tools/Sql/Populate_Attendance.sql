@@ -45,7 +45,8 @@ declare
 	    [DidAttend] [bit] NOT NULL,
 	    [Guid] [uniqueidentifier] NOT NULL,
 	    [CampusId] [int] NULL,
-		[OccurrenceId] [int]
+		[OccurrenceId] [int],
+        [SundayDate] [date]
     );
 
 begin
@@ -138,6 +139,7 @@ begin
                     ,[DeviceId] 
                     ,[AttendanceCodeId]
                     ,[StartDateTime]
+                    ,[SundayDate]
                     ,[DidAttend]
                     ,[CampusId]
 					,[OccurrenceId]
@@ -148,6 +150,7 @@ begin
                     ,@DeviceId
                     ,@AttendanceCodeId
                     ,@StartDateTime
+                    ,dbo.ufnUtility_GetSundayDate(@StartDateTime)
                     ,@DidAttend
                     ,@CampusId
 					,@AttendanceOccurrenceId

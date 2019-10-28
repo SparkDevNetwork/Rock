@@ -1482,8 +1482,7 @@ namespace Rock.Model
                 return true;
             }
 
-            // Weekly - this will need to be adjusted when the SundayDate method is replaced the with configurable start/end of week
-            return RockDateTime.Today.DayOfWeek == DayOfWeek.Monday;
+            return RockDateTime.Today.DayOfWeek == RockDateTime.FirstDayOfWeek;
         }
 
         /// <summary>

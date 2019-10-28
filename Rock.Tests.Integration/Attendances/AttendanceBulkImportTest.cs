@@ -7,6 +7,7 @@ using Rock.BulkImport;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Controllers;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.Utility;
 
 namespace Rock.Tests.Integration.Attendances
@@ -129,11 +130,7 @@ namespace Rock.Tests.Integration.Attendances
                 return attendancesImport;
             }
 
-            var personIdPersonAliasIdList = GetPersonIdToAliasIdMap().Select( a => new
-            {
-                PersonId = a.Key,
-                PersonAliasId = a.Value
-            } ).ToArray();
+            var personIdPersonAliasIdList = TestDataHelper.GetPersonIdWithAliasIdList();
 
             // make sure the example data has real personIds and personAliasIds
             attendancesImport.Attendances.ForEach( a =>
@@ -145,32 +142,7 @@ namespace Rock.Tests.Integration.Attendances
 
             return attendancesImport;
         }
-
-        private Dictionary<int, int> _PersonIdToAliasIdMap = null;
-
-        /// <summary>
-        /// Get a lookup table to convert a Person.Guid to a PersonAlias.Id
-        /// </summary>
-        /// <param name="dataContext"></param>
-        /// <returns></returns>
-        private Dictionary<int, int> GetPersonIdToAliasIdMap()
-        {
-            if ( _PersonIdToAliasIdMap == null )
-            {
-                var aliasService = new PersonAliasService( new RockContext() );
-
-                var personList = aliasService.Queryable()
-                    .Where( x => !x.Person.IsSystem )
-                    .GroupBy( x => x.PersonId )
-                     .ToDictionary( k => k.Key, v => v.First().Id );
-
-                var person = new Rock.Model.Person();
-
-                _PersonIdToAliasIdMap = personList;
-            }
-
-            return _PersonIdToAliasIdMap;
-        }
+        
 
         [TestMethod]
         public void Import_WithBothNullPersonIdAndNullPersonAliasId()

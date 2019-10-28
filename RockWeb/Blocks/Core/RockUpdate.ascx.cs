@@ -481,7 +481,7 @@ namespace RockWeb.Blocks.Core
                 lSuccessVersion.Text = GetRockVersion( update.Version );
 
                 // Record the current version to the database
-                Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ROCK_INSTANCE_ID, version );
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, version );
 
                 // register any new REST controllers
                 try
@@ -831,7 +831,7 @@ namespace RockWeb.Blocks.Core
                 var rockContext = new RockContext();
                 int numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
-                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime().HasValue )
+                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE ).AsDateTime().HasValue )
                 {
                     string organizationName = string.Empty;
                     ImpactLocation organizationLocation = null;

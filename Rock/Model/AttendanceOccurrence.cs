@@ -176,7 +176,7 @@ namespace Rock.Model
         public string DeclineReasonValueIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurence is associated.
+        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurrence is associated.
         /// </summary>
         [DataMember]
         public int? StepTypeId { get; set; }

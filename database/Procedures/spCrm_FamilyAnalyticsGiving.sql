@@ -120,7 +120,7 @@
 			    AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	      )
 	    INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime])
-	    SELECT * FROM 
+	    SELECT * FROM  
 		    (SELECT 
 			    [PersonId]
 			    , @FirstGaveAttributeId AS [AttributeId]
