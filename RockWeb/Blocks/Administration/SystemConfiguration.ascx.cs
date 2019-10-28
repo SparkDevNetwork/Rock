@@ -33,7 +33,6 @@ using System.Configuration;
 using Microsoft.Web.XmlTransform;
 using Rock.SystemKey;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -299,14 +298,10 @@ namespace RockWeb.Blocks.Administration
                 {
                     try
                     {
-                        Stopwatch stopwatch = Stopwatch.StartNew();
                         RockDateTime.UpdateSundayDateData();
-                        stopwatch.Stop();
-                        Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds + "ms, UpdateSundayDateData done " );
                     }
                     catch ( Exception ex )
                     {
-                        Debug.WriteLine( ex.Message );
                         ExceptionLogService.LogException( new Exception( "An error occurred applying the Start Of Week setting", ex ) );
                     }
                 } );

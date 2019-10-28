@@ -309,8 +309,7 @@ namespace Rock.Model
         /// <value>
         /// The merge fields.
         /// </value>
-        [IgnoreDataMember]
-        [NotMapped]
+        [DataMember]
         public virtual Dictionary<string, string> LavaFields { get; set; } = new Dictionary<string, string>();
 
         /// <summary>
@@ -320,7 +319,7 @@ namespace Rock.Model
         /// <value>
         /// The attachments.
         /// </value>
-        [IgnoreDataMember]
+        [DataMember]
         public virtual ICollection<CommunicationTemplateAttachment> Attachments
         {
             get { return _attachments ?? ( _attachments = new Collection<CommunicationTemplateAttachment>() ); }
@@ -343,7 +342,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is personal; otherwise, <c>false</c>.
         /// </value>
-        [IgnoreDataMember]
+        [DataMember]
         public virtual bool IsPersonal => SenderPersonAliasId.HasValue;
 
         /// <summary>
@@ -371,7 +370,6 @@ namespace Rock.Model
         /// The <see cref="Rock.Communication.MediumComponent"/> for the communication medium that is being used.
         /// </value>
         [NotMapped]
-        [IgnoreDataMember]
         public virtual List<MediumComponent> Mediums
         {
             get
