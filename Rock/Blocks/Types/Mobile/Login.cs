@@ -34,13 +34,13 @@ namespace Rock.Blocks.Types.Mobile
 
     [LinkedPage( "Registration Page",
         Description = "The page that will be used to register the user.",
-        IsRequired = true,
+        IsRequired = false,
         Key = AttributeKeys.RegistrationPage,
         Order = 0 )]
 
     [UrlLinkField( "Forgot Password Url",
         Description = "The URL to link the user to when they have forgotton their password.",
-        IsRequired = true,
+        IsRequired = false,
         Key = AttributeKeys.ForgotPasswordUrl,
         Order = 1 )]
 
@@ -92,7 +92,7 @@ namespace Rock.Blocks.Types.Mobile
         {
             return new
             {
-                RegistrationPageGuid = GetAttributeValue( AttributeKeys.RegistrationPage ),
+                RegistrationPageGuid = GetAttributeValue( AttributeKeys.RegistrationPage ).AsGuidOrNull(),
                 ForgotPasswordUrl = GetAttributeValue( AttributeKeys.ForgotPasswordUrl )
             };
         }
