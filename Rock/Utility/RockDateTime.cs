@@ -341,5 +341,18 @@ WHERE SundayDate IS NULL
 
             return sundayDate.Date;
         }
+
+        /// <summary>
+        /// Gets the Date of which Sunday is associated with the specified Date/Time, based on what the First Day Of Week is defined as.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="firstDayOfWeek">The first day of week. This value is no longer used, the First Day Of Week is a system setting.</param>
+        /// <returns></returns>
+        [Obsolete("First Day of Week is set in the configuration block so this override is no longer needed. Use GetSundayDate( DateTime inputDate ) instead.")]
+        [RockObsolete("1.10.1")]
+        public static DateTime GetSundayDate( DateTime dateTime, DayOfWeek firstDayOfWeek )
+        {
+            return GetSundayDate( dateTime );
+        }
     }
 }
