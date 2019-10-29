@@ -1,7 +1,5 @@
 ﻿<div class="panel panel-block store-categories">
-    <div class="panel-heading">
-        <h1 class="panel-title"><i class="fa fa-list"></i> Store Categories</h1>
-    </div>
+   
     <div class="panel-body" style="margin-bottom: -6px;">
         <ul class="nav nav-pills">
           {% for category in Categories %}
