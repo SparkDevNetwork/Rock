@@ -749,7 +749,8 @@ namespace Rock.MyWell
         public int AmountCents { get; set; }
 
         /// <summary>
-        /// Gets or sets the next bill date in UTC time
+        /// Gets or sets the next bill date in UTC time.
+        /// Note that this field is just called "next_bill_date", but it is really in UTC time.
         /// </summary>
         /// <value>
         /// The next bill date.
