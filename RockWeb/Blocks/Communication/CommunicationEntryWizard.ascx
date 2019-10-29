@@ -1317,8 +1317,9 @@
                     $editorHtml.find('.js-emaileditor-addon').remove();
 
                     var emailHtmlContent = $editorHtml[0].outerHTML;
+                    var doctype = '<!DOCTYPE html>' + '\n';
 
-                    $('#<%=hfEmailEditorHtml.ClientID%>').val(emailHtmlContent);
+                    $('#<%=hfEmailEditorHtml.ClientID%>').val(doctype + emailHtmlContent);
                 });
 
                 // make sure scroll position is set to top after navigating (so that stuff doesn't roll out of view if navigating from a tall to a short height )

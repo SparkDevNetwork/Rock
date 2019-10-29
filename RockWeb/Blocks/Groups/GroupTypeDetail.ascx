@@ -36,7 +36,11 @@
                             <asp:Literal ID="lblMainDetails" runat="server" />
                         </div>
                     </div>
-
+                    <div>
+                        <div class="col-md-12">
+                            <Rock:AttributeValuesContainer ID="avcDisplayAttributes" runat="server" />
+                        </div>
+                    </div>
                 </div>
 
                 <div id="pnlEditDetails" runat="server">
@@ -345,6 +349,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
+                        <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" />
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpGroupTypeGroupRequirements" runat="server" Title="Group Requirements">
