@@ -1392,7 +1392,7 @@ $('#{0}').tooltip();
                     var locationId = ddlSignupLocations.SelectedValue.AsIntegerOrNull();
                     var groupId = hfGroupId.Value.AsInteger();
                     var attendanceId = hfAttendanceId.Value.AsIntegerOrNull();
-                    AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrCreateAttendanceOccurrence( occurrenceDate, scheduleId, locationId, groupId );
+                    AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
                     var attendanceService = new AttendanceService( rockContext );
 
                     if ( attendanceId.HasValue )

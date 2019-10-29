@@ -534,7 +534,7 @@ namespace Rock.Model
             List<int> campusIds, bool? includeNullCampusIds, List<int> scheduleIds, bool? IncludeParentsWithChild, bool? IncludeChildrenWithParents )
         {
             var parameters = GetAttendanceAnalyticsParameters( null, groupIds, start, end, campusIds, includeNullCampusIds, scheduleIds, IncludeParentsWithChild, IncludeChildrenWithParents );
-            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 );
+            return DbService.GetDataSet( "spCheckin_AttendanceAnalyticsQuery_Attendees", System.Data.CommandType.StoredProcedure, parameters, 300 ); 
         }
 
         /// <summary>
@@ -1228,7 +1228,7 @@ namespace Rock.Model
             {
                 foreach ( var locationId in locationIdOrderedList )
                 {
-                    var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrCreateAttendanceOccurrence( scheduleOccurrenceDate.OccurrenceDate.Value, scheduleOccurrenceDate.ScheduleId, locationId, groupId );
+                    var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( scheduleOccurrenceDate.OccurrenceDate.Value, groupId, locationId, scheduleOccurrenceDate.ScheduleId );
                     attendanceOccurrenceIdList.Add( attendanceOccurrence.Id );
                 }
             }

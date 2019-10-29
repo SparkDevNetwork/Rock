@@ -291,7 +291,18 @@ namespace RockWeb.Blocks.Streaks
             }
 
             rockContext.SaveChanges();
-            ShowBlockSuccess( nbMessage, "Saved successfully!" );
+
+            if ( IsTargetingOccurrenceMap() )
+            {
+                var occurrenceTerm = IsStreakTypeDaily() ? "today" : "this week";
+                ShowBlockSuccess( nbMessage, string.Format(
+                    "Saved successfully. Please note that streak counts will not reflect these changes until the end of {0}.",
+                    occurrenceTerm ) );
+            }
+            else
+            {
+                ShowBlockSuccess( nbMessage, "Saved successfully." );
+            }
         }
 
         /// <summary>
@@ -614,15 +625,15 @@ namespace RockWeb.Blocks.Streaks
             if ( IsTargetingEngagementMap() )
             {
                 var isEngagementExclusionMap = GetAttributeValue( AttributeKey.IsEngagementExclusion ).AsBoolean();
-                return isEngagementExclusionMap ? "Engagement Exclusion Map Editor" : "Engagement Map Editor";
+                return isEngagementExclusionMap ? "Engagement Exclusion Map" : "Engagement Map";
             }
 
             if ( IsTargetingExclusionMap() )
             {
-                return "Exclusion Map Editor";
+                return "Exclusion Map";
             }
 
-            return "Occurrence Map Editor";
+            return "Occurrence Map";
         }
 
         /// <summary>
@@ -757,6 +768,6 @@ namespace RockWeb.Blocks.Streaks
         }
         private StreakTypeExclusionService _streakTypeExclusionService = null;
 
-        #endregion Data Interface Methods        
+        #endregion Data Interface Methods
     }
 }

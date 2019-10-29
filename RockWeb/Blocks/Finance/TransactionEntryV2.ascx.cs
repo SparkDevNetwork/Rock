@@ -1895,7 +1895,7 @@ mission. We are so grateful for your commitment.</p>
                 return null;
             }
 
-            var targetPerson = new PersonService( rockContext ).GetNoTracking( targetPersonId.Value );
+            var targetPerson = new PersonService( rockContext ).Get( targetPersonId.Value );
             return targetPerson;
         }
 
@@ -2401,6 +2401,9 @@ mission. We are so grateful for your commitment.</p>
             {
                 transactionPersonId = targetPerson.Id;
             }
+
+            // just in case anything about the person/business was updated (email or phone), save changes
+            rockContext.SaveChanges();
 
             nbProcessTransactionError.Visible = false;
 

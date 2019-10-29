@@ -179,5 +179,21 @@ namespace Rock.Mobile
         /// The downhill settings.
         /// </value>
         public DownhillSettings DownhillSettings { get; set; } = new DownhillSettings();
+
+        /// <summary>
+        /// Gets or sets the navigation bar action xaml.
+        /// </summary>
+        /// <value>
+        /// The navigation bar action xaml.
+        /// </value>
+        public string NavigationBarActionXaml { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the campus filter data view identifier.
+        /// </summary>
+        /// <value>
+        /// The campus filter data view identifier.
+        /// </value>
+        public int? CampusFilterDataViewId { get; set; }
     }
 }
