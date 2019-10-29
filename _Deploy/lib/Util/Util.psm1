@@ -226,8 +226,18 @@ Function Connect-RemoteFile {
     $LocalPath = Join-Path $LocalRootPath $ItemName;
     $RemotePath = Join-Path $RemoteRootPath $ItemName;
 
+
+    # Link the local path to the remote path
+    Write-Host "Linking new file:"
+    Write-Host "    LocalRootPath: '$LocalRootPath'"
+    Write-Host "    ItemName: '$ItemName'"
+    Write-Host "    RemoteRootPath: '$RemoteRootPath'"
+    Write-Host "    RemotePath: '$RemotePath'"
+
     # Make sure the remote root exists
-    New-Item -ItemType Directory $RemoteRootPath -Force | Out-Null;
+    if( -not (Test-Path $RemoteRootPath)) {
+        New-Item -ItemType Directory $RemoteRootPath -Force | Out-Null;
+    }
 
     # Make sure the remote path exists
     if( -not (Test-Path $RemotePath)) {
@@ -264,11 +274,6 @@ Function Connect-RemoteFile {
 
     }
 
-    # Link the local path to the remote path
-    Write-Host "Linking new file:"
-    Write-Host "    Path: '$LocalRootPath'"
-    Write-Host "    Name: '$ItemName'"
-    Write-Host "    Target: '$RemotePath'"
     If (Test-Path $LocalRootPath) {
         Write-Host "Local Path Root Exists"
     }
