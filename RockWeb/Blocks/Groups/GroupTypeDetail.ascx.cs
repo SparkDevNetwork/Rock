@@ -592,6 +592,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            avcEditAttributes.GetEditValues( groupType );
+
             if ( !groupType.IsValid )
             {
                 cvGroupType.IsValid = groupType.IsValid;
@@ -609,6 +611,8 @@ namespace RockWeb.Blocks.Groups
                     groupRequirementsToInsert.ForEach( a => a.GroupTypeId = groupType.Id );
                     groupRequirementService.AddRange( groupRequirementsToInsert );
                 }
+
+                groupType.SaveAttributeValues( rockContext );
 
                 /* Save Attributes */
                 string qualifierValue = groupType.Id.ToString();
@@ -798,6 +802,11 @@ namespace RockWeb.Blocks.Groups
             tbDescription.ReadOnly = groupType.IsSystem;
             tbDescription.Text = groupType.Description;
 
+            groupType.LoadAttributes();
+            avcEditAttributes.ShowCategoryLabel = false;
+            avcEditAttributes.ExcludedAttributes = groupType.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+            avcEditAttributes.AddEditControls( groupType );
+
             tbGroupTerm.ReadOnly = groupType.IsSystem;
             tbGroupTerm.Text = groupType.GroupTerm;
 
@@ -981,6 +990,13 @@ namespace RockWeb.Blocks.Groups
             DescriptionList descriptionList = new DescriptionList();
             descriptionList.Add( string.Empty, string.Empty );
             lblMainDetails.Text = descriptionList.Html;
+
+            groupType.LoadAttributes();
+            avcDisplayAttributes.ExcludedAttributes = groupType.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+
+            // Don't show the Categories, since they will probably be 'Start of Registration' or 'End of Registration';
+            avcDisplayAttributes.ShowCategoryLabel = false;
+            avcDisplayAttributes.AddDisplayControls( groupType );
         }
 
         /// <summary>
