@@ -1286,12 +1286,17 @@ namespace RockWeb.Blocks.Finance
 
                 if ( txn.ScheduledTransaction != null )
                 {
+                    var text = txn.ScheduledTransaction.GatewayScheduleId.IsNullOrWhiteSpace() ?
+                        txn.ScheduledTransactionId.ToString() :
+                        txn.ScheduledTransaction.GatewayScheduleId;
+
                     var qryParam = new Dictionary<string, string>();
                     qryParam.Add( "ScheduledTransactionId", txn.ScheduledTransaction.Id.ToString() );
                     string url = LinkedPageUrl( "ScheduledTransactionDetailPage", qryParam );
+
                     detailsLeft.Add( "Scheduled Transaction Id", !string.IsNullOrWhiteSpace( url ) ?
-                        string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :
-                        txn.ScheduledTransaction.GatewayScheduleId );
+                        string.Format( "<a href='{0}'>{1}</a>", url, text ) :
+                        text );
                 }
 
                 if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValue != null )
