@@ -262,6 +262,19 @@ Function Connect-RemoteFile {
     }
 
     # Link the local path to the remote path
+    Write-Host "Linking new file:"
+    Write-Host "    Path: '$LocalRootPath'"
+    Write-Host "    Name: '$ItemName'"
+    Write-Host "    Target: '$RemotePath'"
+    If (Test-Path $LocalRootPath) {
+        Write-Host "Local Path Root Exists"
+    }
+    If (Test-Path $LocalPath) {
+        Write-Warning "Local Path Still Exists (it shouldn't)"
+    }
+    If (Test-Path $RemotePath) {
+        Write-Host "Remote Path Exists"
+    }
     New-Item -ItemType SymbolicLink -Path $LocalRootPath -Name $ItemName -Target $RemotePath | Out-Null;
 
 }

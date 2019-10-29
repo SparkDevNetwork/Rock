@@ -50,7 +50,7 @@
 {% endcapture %}
 
 <div id="group-details" class="bg-light{% if MapGeoPoint != null %} grid-responsive-fullwidth{% endif %}">
-    <div class="padding-lg">
+    <div class="padding-lg {% if MapGeoPoint == null %} container{% endif %}">
         <div class="card">
             <div class="card-body padding-lg">
 
@@ -98,8 +98,7 @@
 		{% assign Latitude = MapGeoPoint | Split:',' | First | DividedBy:1,3 %}
 		{% assign Longitude = MapGeoPoint | Split:',' | Last | DividedBy:1,3 %}
 
-		<div class="grouplocationmap-image"
-			 style="background-image: url('https://maps.googleapis.com/maps/api/staticmap?size=960x960&zoom=13&maptype=roadmap&markers={{ Latitude }},{{ Longitude }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}');background-size:cover;background-position:center;min-height:600px;">
+		<div style="background-image: url('https://maps.googleapis.com/maps/api/staticmap?size=960x960&zoom=13&maptype=roadmap&markers={{ Latitude }},{{ Longitude }}&scale=2&key={{ 'Global' | Attribute:'GoogleAPIKey' }}');background-size:cover;background-position:center;min-height:600px;">
 		</div>
 
     {% endif %}
