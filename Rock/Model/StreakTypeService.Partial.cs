@@ -353,14 +353,14 @@ namespace Rock.Model
             rockContext.SaveChanges();
 
             // Get all of the attendees for the streak type
-            var personAliasIds = occurrenceQuery
-                .SelectMany( ao => ao.Attendees.Where( a => a.DidAttend == true && a.PersonAliasId.HasValue ) )
-                .Select( a => a.PersonAliasId.Value )
+            var personIds = occurrenceQuery
+                .SelectMany( ao => ao.Attendees.Where( a => a.DidAttend == true && a.PersonAlias != null ) )
+                .Select( a => a.PersonAlias.PersonId )
                 .Distinct();
 
-            foreach ( var personAliasId in personAliasIds )
+            foreach ( var personId in personIds )
             {
-                RebuildStreakFromAttendance( streakTypeId, personAliasId, out errorMessage );
+                RebuildStreakFromAttendance( streakTypeId, personId, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -374,9 +374,9 @@ namespace Rock.Model
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
         /// <param name="streakTypeId">The streak type identifier.</param>
-        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="personId">The person identifier.</param>
         /// <param name="errorMessage">The error message.</param>
-        public static void RebuildStreakFromAttendance( int streakTypeId, int personAliasId, out string errorMessage )
+        public static void RebuildStreakFromAttendance( int streakTypeId, int personId, out string errorMessage )
         {
             errorMessage = string.Empty;
             var rockContext = new RockContext();
@@ -384,8 +384,27 @@ namespace Rock.Model
             var streakTypeService = new StreakTypeService( rockContext );
             var streakService = new StreakService( rockContext );
             var attendanceService = new AttendanceService( rockContext );
+            var personService = new PersonService( rockContext );
+
+            var person = personService.Queryable( "Aliases" ).AsNoTracking().FirstOrDefault( p => p.Id == personId );
 
             // Validate the parameters
+            if ( person == null )
+            {
+                // This probably happened because the person is deceased
+                streakService.DeleteRange(
+                    streakService.Queryable().Where( se =>
+                        se.StreakTypeId == streakTypeId &&
+                        se.PersonAlias.PersonId == personId ) );
+                return;
+            }
+
+            if ( !person.PrimaryAliasId.HasValue )
+            {
+                errorMessage = $"The person with id {personId} did not have a primary alias id";
+                return;
+            }
+
             var streakType = streakTypeService.Get( streakTypeId );
 
             if ( streakType == null )
@@ -405,7 +424,7 @@ namespace Rock.Model
             var startDate = isDaily ? streakType.StartDate.Date : streakType.StartDate.SundayDate();
 
             var attendanceQuery = attendanceService.Queryable().AsNoTracking().Where( a =>
-                a.PersonAliasId == personAliasId &&
+                a.PersonAlias.PersonId == personId &&
                 a.DidAttend == true &&
                 a.Occurrence.DidNotOccur != true && (
                     ( isDaily && a.Occurrence.OccurrenceDate >= startDate ) ||
@@ -431,10 +450,18 @@ namespace Rock.Model
                 ( isDaily ? RockDateTime.Today : RockDateTime.Today.SundayDate() ) :
                 datesAttended.First();
 
-            // Get the enrollment
-            var streak = streakService.Queryable().FirstOrDefault( se =>
+            // Get the enrollments
+            var streaks = streakService.Queryable().Where( se =>
                 se.StreakTypeId == streakTypeId
-                && se.PersonAliasId == personAliasId );
+                && se.PersonAlias.PersonId == personId ).ToList();
+
+            var streak = streaks.FirstOrDefault( s => s.PersonAliasId == person.PrimaryAliasId );
+            var streaksToDelete = streaks.Where( s => s.Id != streak?.Id );
+
+            if ( streaksToDelete.Any() )
+            {
+                streakService.DeleteRange( streaksToDelete );
+            }
 
             // Create the enrollment if needed
             if ( streak == null )
@@ -442,11 +469,15 @@ namespace Rock.Model
                 streak = new Streak
                 {
                     StreakTypeId = streakTypeId,
-                    PersonAliasId = personAliasId,
+                    PersonAliasId = person.PrimaryAliasId.Value,
                     EnrollmentDate = enrollmentDate
                 };
 
                 streakService.Add( streak );
+            }
+            else
+            {
+                streak.EnrollmentDate = enrollmentDate;
             }
 
             // Create a new map matching the length of the occurrence map
@@ -475,7 +506,7 @@ namespace Rock.Model
         /// <param name="streakTypeCache"></param>
         /// <param name="personId"></param>
         /// <param name="startDate">Defaults to the streak type start date</param>
-        /// <param name="endDate">Defaults to now</param>
+        /// <param name="endDate">Defaults to the last elapsed frequency unit (yesterday or last week)</param>
         /// <param name="createObjectArray">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="includeBitMaps">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="maxStreaksToReturn">Specify the maximum number of streak objects "ComputedStreaks" to include in the response</param>
@@ -515,7 +546,12 @@ namespace Rock.Model
 
             if ( !endDate.HasValue )
             {
-                endDate = maxDate;
+                endDate = GetMaxDateForDenormalizedStreakData( streakTypeCache );
+
+                if ( endDate < startDate )
+                {
+                    endDate = startDate;
+                }
             }
 
             // Adjust the start and stop dates based on the selected frequency
@@ -544,7 +580,7 @@ namespace Rock.Model
                 return null;
             }
 
-            if ( startDate >= endDate )
+            if ( startDate > endDate )
             {
                 errorMessage = "EndDate must be after the StartDate";
                 return null;
@@ -565,7 +601,7 @@ namespace Rock.Model
             var aggregateEngagementMap = GetAggregateMap( engagementMaps );
 
             // Make sure there are no engagements where occurrences do not exist
-            AndBitOperation( aggregateEngagementMap, streakTypeCache.OccurrenceMap );
+            AndBitOperation( aggregateEngagementMap, streakTypeCache.OccurrenceMap ?? new byte[aggregateEngagementMap.Length] );
 
             // Calculate the exclusion map
             var aggregateExclusionMap = GetAggregateExclusionMap( streaks, streakTypeCache, locationId );
@@ -615,7 +651,12 @@ namespace Rock.Model
                         // If this is now the longest streak, update the longest counters
                         if ( longestStreak == null || currentStreak.Count > longestStreak.Count )
                         {
-                            longestStreak = currentStreak;
+                            longestStreak = new StreakData.ComputedStreak
+                            {
+                                StartDate = currentStreak.StartDate,
+                                EndDate = currentDate,
+                                Count = currentStreak.Count
+                            };
                         }
                     }
                     else if ( hasExclusion )
@@ -676,6 +717,12 @@ namespace Rock.Model
             // Calculate the count of engagements at occurrences this year
             var today = RockDateTime.Today;
             var beginningOfYear = new DateTime( today.Year, 1, 1 );
+
+            if ( beginningOfYear < streakTypeCache.StartDate )
+            {
+                beginningOfYear = streakTypeCache.StartDate;
+            }
+
             var engagementsThisYear = CountSetBits( aggregateEngagementMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, beginningOfYear, today, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -685,6 +732,12 @@ namespace Rock.Model
 
             // Calculate the count of engagements at occurrences this month
             var beginningOfMonth = new DateTime( today.Year, today.Month, 1 );
+
+            if ( beginningOfMonth < streakTypeCache.StartDate )
+            {
+                beginningOfMonth = streakTypeCache.StartDate;
+            }
+
             var engagementsThisMonth = CountSetBits( aggregateEngagementMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, beginningOfMonth, today, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -734,7 +787,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="streakId"></param>
         /// <param name="startDate">Defaults to the streak type start date</param>
-        /// <param name="endDate">Defaults to now</param>
+        /// <param name="endDate">Defaults to the last elapsed frequency unit (yesterday or last week)</param>
         /// <param name="createObjectArray">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="includeBitMaps">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="errorMessage"></param>
@@ -742,7 +795,6 @@ namespace Rock.Model
         public StreakData GetStreakData( int streakId, out string errorMessage,
         DateTime? startDate = null, DateTime? endDate = null, bool createObjectArray = false, bool includeBitMaps = false )
         {
-            errorMessage = string.Empty;
             var rockContext = Context as RockContext;
             var personAliasService = new PersonAliasService( rockContext );
             var streakService = new StreakService( rockContext );
@@ -1126,10 +1178,15 @@ namespace Rock.Model
             }
 
             var isDaily = streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var maxDate = isDaily ? RockDateTime.Today : RockDateTime.Now.SundayDate();
+            var maxDate = GetMaxDateForDenormalizedStreakData( streakOccurrenceFrequency );
             var minDate = isDaily ? mapStartDate : mapStartDate.SundayDate();
             var occurrenceEngagements = new OccurrenceEngagement[unitCount];
             var occurrencesFound = 0;
+
+            if ( maxDate < minDate )
+            {
+                maxDate = minDate;
+            }
 
             bool iterationAction( int currentUnit, DateTime currentDate, bool hasOccurrence, bool hasEngagement, bool hasExclusion )
             {
@@ -1158,7 +1215,7 @@ namespace Rock.Model
         /// <param name="streakTypeId"></param>
         public static void UpdateEnrollmentStreakPropertiesAsync( int streakTypeId )
         {
-            Task.Run( () =>
+            Task.Run( () => 
             {
                 var rockContext = new RockContext();
                 var streakService = new StreakService( rockContext );
@@ -1171,6 +1228,28 @@ namespace Rock.Model
                     StreakService.RefreshStreakDenormalizedPropertiesAsync( streakId );
                 }
             } );
+        }
+
+        /// <summary>
+        /// Updates the enrollment streak properties.
+        /// </summary>
+        /// <param name="streakTypeId">The streak type identifier.</param>
+        /// <returns>The number of streaks updated</returns>
+        public static int UpdateEnrollmentStreakProperties( int streakTypeId )
+        {
+            var rockContext = new RockContext();
+            var streakService = new StreakService( rockContext );
+            var streakIds = streakService.Queryable().AsNoTracking()
+                .Where( se => se.StreakTypeId == streakTypeId )
+                .Select( se => se.Id )
+                .ToList();
+
+            foreach ( var streakId in streakIds )
+            {
+                StreakService.RefreshStreakDenormalizedProperties( streakId );
+            }
+
+            return streakIds.Count;
         }
 
         /// <summary>
@@ -1380,6 +1459,72 @@ namespace Rock.Model
 
             // Convert from days to the frequency units
             return isDaily ? numberOfDays : ( numberOfDays / DaysPerWeek );
+        }
+
+        /// <summary>
+        /// Determines whether today is the day after the occurrence frequency period ended. For weekly, this would be Monday. For daily,
+        /// true is always returned.
+        /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <returns>
+        ///   <c>true</c> if [is day after occurrence frequency] [the specified streak type cache]; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public static bool IsDayAfterOccurrenceFrequency( StreakTypeCache streakTypeCache )
+        {
+            if ( streakTypeCache == null )
+            {
+                return false;
+            }
+
+            if ( streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                return true;
+            }
+
+            return RockDateTime.Today.DayOfWeek == RockDateTime.FirstDayOfWeek;
+        }
+
+        /// <summary>
+        /// Gets the maximum date for denormalized streak data. This is the end of the last fully elapsed frequency unit (day or week).
+        /// </summary>
+        /// <param name="streakOccurrenceFrequency"></param>
+        /// <returns></returns>
+        public static DateTime GetMaxDateForDenormalizedStreakData( StreakOccurrenceFrequency streakOccurrenceFrequency )
+        {
+            if ( streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                return RockDateTime.Today.AddDays( -1 );
+            }
+
+            // Weekly - this will need to be adjusted when the SundayDate method is replaced the with configurable start/end of week
+            return RockDateTime.Now.SundayDate().AddDays( -7 );
+        }
+
+        /// <summary>
+        /// Gets the maximum date for denormalized streak data. This is the end of the last fully elapsed frequency unit (day or week).
+        /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <returns></returns>
+        public static DateTime GetMaxDateForDenormalizedStreakData( StreakTypeCache streakTypeCache )
+        {
+            if ( streakTypeCache == null )
+            {
+                throw new ArgumentNullException( "streakTypeCache" );
+            }
+            
+            return GetMaxDateForDenormalizedStreakData( streakTypeCache.OccurrenceFrequency );
+        }
+
+        /// <summary>
+        /// Gets the maximum date for denormalized streak data. This is the end of the last fully elapsed frequency unit (day or week).
+        /// </summary>
+        /// <param name="streakTypeId">The streak type identifier.</param>
+        /// <returns></returns>
+        public static DateTime GetMaxDateForDenormalizedStreakData( int streakTypeId )
+        {
+            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
+            return GetMaxDateForDenormalizedStreakData( streakTypeCache );
         }
 
         #endregion Date Helpers
@@ -1765,7 +1910,7 @@ namespace Rock.Model
                 return;
             }
 
-            if ( minDate >= maxDate )
+            if ( minDate > maxDate )
             {
                 errorMessage = "The max date must be after the min date";
                 return;

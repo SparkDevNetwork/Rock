@@ -270,7 +270,8 @@ namespace Rock.Mobile
                 CssStyles = cssStyles,
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
-                PhoneFormats = phoneFormats
+                PhoneFormats = phoneFormats,
+                TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom
             };
 
             //
@@ -332,13 +333,6 @@ namespace Rock.Mobile
                         .Select( a => a.Value )
                         .Where( a => a.Categories.Any( c => c.Name == "custommobile" ) );
 
-                    // Auto add XAML warning notication box to No Network Content if it's plain text
-                    var noNetworkContent = additionalBlockSettings.NoNetworkContent?.Trim();
-                    if ( noNetworkContent.IsNotNullOrWhiteSpace() && !noNetworkContent.StartsWith( "<" ) )
-                    {
-                        noNetworkContent = $@"<Rock:NotificationBox NotificationType=""Warning"" Text=""{WebUtility.HtmlEncode( noNetworkContent )}"" />";
-                    }
-
                     var mobileBlock = new MobileBlock
                     {
                         PageGuid = block.Page.Guid,
@@ -355,7 +349,7 @@ namespace Rock.Mobile
                         ShowOnTablet = additionalBlockSettings.ShowOnTablet,
                         ShowOnPhone = additionalBlockSettings.ShowOnPhone,
                         RequiresNetwork = additionalBlockSettings.RequiresNetwork,
-                        NoNetworkContent = noNetworkContent,
+                        NoNetworkContent = additionalBlockSettings.NoNetworkContent,
                         AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( block ) )
                     };
 

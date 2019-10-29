@@ -18,7 +18,7 @@
 	<remarks>	
 	</remarks>
 	<code>
-		EXEC [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees] '15,16,17,18,19,20,21,22', '2015-01-01 00:00:00', '2015-12-31 23:59:59', null, 0, 0, 0
+        EXEC [dbo].[spCheckin_AttendanceAnalyticsQuery_Attendees] '24,25,26,27,28,29,30,31,32,56,57,58,59,111,112,113,114,115,116,117,118', '2019-09-17 00:00:00', '2019-10-23 00:00:00', null, 0, 0, 0, null
 	</code>
 </doc>
 */
@@ -38,10 +38,13 @@ AS
 
 BEGIN
 
-    -- Manipulate dates to only be those dates who's SundayDate value would fall between the selected date range ( so that sunday date does not need to be used in where clause )
-	SET @StartDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000101', 112 ), @StartDate ) % 7 ), CONVERT( date, @StartDate ) ), '1900-01-01' )
-	SET @EndDate = COALESCE( DATEADD( day, ( 0 - DATEDIFF( day, CONVERT( datetime, '19000107', 112 ), @EndDate ) % 7 ), @EndDate ), '2100-01-01' )
-    IF @EndDate < @StartDate SET @EndDate = DATEADD( day, 6 + DATEDIFF( day, @EndDate, @StartDate ), @EndDate )
+    --  get the SundayDates within the StartDate and EndDate so we can query against AttendanceOccurrence.SundayDate
+	DECLARE @startDateSundayDate DATE
+	DECLARE @endDateSundayDate DATE
+
+	SELECT @startDateSundayDate = x.StartSundayDate
+		,@endDateSundayDate = x.EndSundayDate
+	FROM dbo.ufnUtility_GetSundayDateRange(@StartDate, @EndDate) x
 
 	DECLARE @CampusTbl TABLE ( [Id] int )
 	INSERT INTO @CampusTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CampusIds,'') )
@@ -76,7 +79,7 @@ BEGIN
  				FROM [Attendance] A
 				INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 				INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
-				WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
+				WHERE o.[SundayDate] BETWEEN @startDateSundayDate AND @endDateSundayDate
 				AND [DidAttend] = 1
 			) A
             INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
@@ -127,7 +130,7 @@ BEGIN
  					FROM [Attendance] A
 					INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 					INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
-					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
+					WHERE o.[SundayDate] BETWEEN @startDateSundayDate AND @endDateSundayDate
 					AND [DidAttend] = 1
 				) A
 				INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
@@ -181,7 +184,7 @@ BEGIN
  					FROM [Attendance] A
 					INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 					INNER JOIN @GroupTbl G ON G.[Id] = O.[GroupId]
-					WHERE [StartDateTime] BETWEEN @StartDate AND @EndDate
+					WHERE o.[SundayDate] BETWEEN @startDateSundayDate AND @endDateSundayDate
 					AND [DidAttend] = 1
 				) A
 				INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]

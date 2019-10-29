@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Html Merge</title>
@@ -16,10 +17,10 @@
             </address>
         </div>
         <div class="col-md-6">
-            <img src="{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ row.PhotoUrl }}" height="200" />
+            <img src="{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ row.PhotoUrl }}" height="200" alt="" />
         </div>
     </div>
-	
+
 	<br />
 
     {% endfor %}

@@ -81,6 +81,26 @@
     <Compile Include="Migrations\201910151751013_MyWellRename.Designer.cs">
       <DependentUpon>201910151751013_MyWellRename.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201910171633288_EntityCampusFilter.cs" />
+    <Compile Include="Migrations\201910171633288_EntityCampusFilter.Designer.cs">
+      <DependentUpon>201910171633288_EntityCampusFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910221414252_AchievementTypeWorkflowTypes.cs" />
+    <Compile Include="Migrations\201910221414252_AchievementTypeWorkflowTypes.Designer.cs">
+      <DependentUpon>201910221414252_AchievementTypeWorkflowTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910241702033_FixGetFamilyTitleSpaces.cs" />
+    <Compile Include="Migrations\201910241702033_FixGetFamilyTitleSpaces.Designer.cs">
+      <DependentUpon>201910241702033_FixGetFamilyTitleSpaces.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910281713564_CustomSundayDate.cs" />
+    <Compile Include="Migrations\201910281713564_CustomSundayDate.Designer.cs">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201910292016464_Rollup_1029.cs" />
+    <Compile Include="Migrations\201910292016464_Rollup_1029.Designer.cs">
+      <DependentUpon>201910292016464_Rollup_1029.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -886,6 +906,21 @@
     <EmbeddedResource Include="Migrations\201910151751013_MyWellRename.resx">
       <DependentUpon>201910151751013_MyWellRename.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910171633288_EntityCampusFilter.resx">
+      <DependentUpon>201910171633288_EntityCampusFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910221414252_AchievementTypeWorkflowTypes.resx">
+      <DependentUpon>201910221414252_AchievementTypeWorkflowTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910241702033_FixGetFamilyTitleSpaces.resx">
+      <DependentUpon>201910241702033_FixGetFamilyTitleSpaces.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910281713564_CustomSundayDate.resx">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201910292016464_Rollup_1029.resx">
+      <DependentUpon>201910292016464_Rollup_1029.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
     </EmbeddedResource>
@@ -1490,6 +1525,36 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\201910241702033_ufnCrm_GetFamilyTitle.sql">
+      <DependentUpon>201910241702033_FixGetFamilyTitleSpaces.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910241702033_ufnCrm_GetFamilyTitleIncludeInactive.sql">
+      <DependentUpon>201910241702033_FixGetFamilyTitleSpaces.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeDates.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_spCheckin_WeeksAttendedInDuration.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_ufnUtility_GetSundayDate.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201910281713564_CustomSundayDate_ufnUtility_GetSundayDateRange.sql">
+      <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.0\201908202115162_Rollup_0820_GroupRequirementsBadge.sql">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>

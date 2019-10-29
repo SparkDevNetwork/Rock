@@ -180,20 +180,6 @@ namespace Rock.Model
         private ICollection<StreakTypeAchievementType> _streakTypeAchievementTypes;
 
         #endregion Virtual Properties
-
-        #region Update Hook
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            StreakTypeService.UpdateEnrollmentStreakPropertiesAsync( Id );
-            base.PostSaveChanges( dbContext );
-        }
-
-        #endregion Update Hook
     }
 
     #region Enumerations
