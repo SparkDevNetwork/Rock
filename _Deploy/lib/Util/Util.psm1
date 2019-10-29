@@ -224,7 +224,7 @@ Function Connect-RemoteFile {
     )
 
     $LocalPath = Join-Path $LocalRootPath $ItemName;
-    $RemotePath = Join-Path $LocalRootPath $ItemName;
+    $RemotePath = Join-Path $RemoteRootPath $ItemName;
 
     # Make sure the remote path exists
     if( -not (Test-Path $RemotePath)) {
