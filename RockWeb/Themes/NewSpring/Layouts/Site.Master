@@ -34,33 +34,30 @@
 
 <html class="no-js" lang="en">
     <head runat="server">
-
         <meta charset="utf-8">
-
         <title></title>
-
-        
-
-        <!-- Libraries -->
-        <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>" ></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>" ></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>" ></script>
-        <script src="<%# ResolveRockUrl("~~/Scripts/search.js", true) %>" ></script>
-
         <!-- Set the viewport width to device width for mobile -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
 
-        <asp:ContentPlaceHolder ID="css" runat="server" />
 
-        <!-- Included CSS Files -->
-        <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
-        <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
-        <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
+        <asp:ContentPlaceHolder ID="cphLibraries" runat="server">
+            <!-- Libraries -->
+            <script src='<%= System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>'></script>
+            <script src='<%= ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>' ></script>
+            <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
+            <script src='<%= ResolveRockUrl("~~/Scripts/layout.js", true) %>' ></script>
+            <script src='<%= ResolveRockUrl("~~/Scripts/append-query.js", true) %>' ></script>
+            <script src='<%= ResolveRockUrl("~~/Scripts/swiper.js", true) %>' ></script>
+            <script src='<%= ResolveRockUrl("~~/Scripts/navigation.js", true) %>' ></script>
+            <script src='<%= ResolveRockUrl("~~/Scripts/search.js", true) %>' ></script>
+            <script src='<%= ResolveRockUrl("~/Scripts/modernizr.js" ) %>' ></script>
 
-        <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+            <!-- Included CSS Files -->
+            <link rel="stylesheet" href='<%= ResolveRockUrl("~~/Styles/bootstrap.css", true) %>'/>
+            <link rel="stylesheet" href='<%= ResolveRockUrl("~~/Styles/theme.css", true) %>'/>
+            <link rel="stylesheet" href='<%= ResolveRockUrl("~/Styles/developer.css", true) %>'/>
+
+        </asp:ContentPlaceHolder>
 
         <script>
             document.addEventListener("DOMContentLoaded", function(){
@@ -88,12 +85,10 @@
                     offset: offset,
                     easing: 'easeInOutCubic'
                 });
-
-                
             });
         </script>
 
-        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+        <asp:ContentPlaceHolder ID="css" runat="server" />
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     </head>
      
