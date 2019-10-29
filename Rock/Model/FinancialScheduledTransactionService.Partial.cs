@@ -226,7 +226,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Processes the payments.
+        /// Processes the payments and returns a summary in HTML format
         /// </summary>
         /// <param name="gateway">The gateway.</param>
         /// <param name="batchNamePrefix">The batch name prefix.</param>
