@@ -78,6 +78,8 @@ namespace RockWeb.Blocks.Finance
                 if ( financialGateway != null )
                 {
                     var today = RockDateTime.Today;
+
+                    // This is DayOfWeek.Monday vs RockDateTime.FirstDayOfWeek because it including stuff that happened on the weekend (Saturday and Sunday) when it the first Non-Weekend Day (Monday)
                     var days = today.DayOfWeek == DayOfWeek.Monday ? new TimeSpan( 3, 0, 0, 0 ) : new TimeSpan( 1, 0, 0, 0 );
                     var endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 

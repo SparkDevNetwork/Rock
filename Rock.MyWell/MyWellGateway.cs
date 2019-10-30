@@ -679,6 +679,7 @@ namespace Rock.MyWell
                 billingCycleInterval = 1;
                 billingFrequency = BillingFrequency.monthly;
                 billingDays = $"{startDayOfMonth}";
+                billingDuration = 1;
             }
 
             billingPlanParameters.BillingFrequency = billingFrequency;
@@ -1120,6 +1121,11 @@ namespace Rock.MyWell
                 try
                 {
                     customerInfo = this.GetCustomer( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), customerId );
+
+                    if ( referencedPaymentInfo.IncludesAddressData() )
+                    {
+                        var updateCustomerAddressResponse = this.UpdateCustomerAddress( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), referencedPaymentInfo );
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -1304,7 +1310,7 @@ namespace Rock.MyWell
                 var subscriptionInfo = subscriptionResult.Data;
                 if ( subscriptionInfo != null )
                 {
-                    scheduledTransaction.NextPaymentDate = subscriptionInfo.NextBillDateUTC.Value.ToLocalTime().Date;
+                    scheduledTransaction.NextPaymentDate = subscriptionInfo.NextBillDateUTC?.Date;
                 }
 
                 scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;

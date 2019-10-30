@@ -749,7 +749,8 @@ namespace Rock.MyWell
         public int AmountCents { get; set; }
 
         /// <summary>
-        /// Gets or sets the next bill date in UTC time
+        /// Gets or sets the next bill date in UTC time.
+        /// Note that this field is just called "next_bill_date", but it is really in UTC time.
         /// </summary>
         /// <value>
         /// The next bill date.
@@ -775,7 +776,7 @@ namespace Rock.MyWell
         public new string ApiMessage { get; set; }
 
         /// <summary>
-        /// Gets the Friendly message (see <see cref="FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
         /// </summary>
         /// <value>
         /// The friendly message.
@@ -860,7 +861,7 @@ namespace Rock.MyWell
         public string ApiMessage { get; set; }
 
         /// <summary>
-        /// Gets the Friendly message (see <see cref="FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap"/>) associated with <see cref="ApiMessage"/>
         /// </summary>
         /// <value>
         /// The friendly message.

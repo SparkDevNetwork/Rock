@@ -678,6 +678,14 @@ namespace Rock.Data
         public DbSet<Device> Devices { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity campus filters.
+        /// </summary>
+        /// <value>
+        /// The entity campus filters.
+        /// </value>
+        public DbSet<EntityCampusFilter> EntityCampusFilters { get; set; }
+
+        /// <summary>
         /// Gets or sets the entity sets.
         /// </summary>
         /// <value>

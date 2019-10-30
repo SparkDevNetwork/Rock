@@ -121,6 +121,7 @@
     <Compile Include="CodeGenerated\Device.cs" />
     <Compile Include="CodeGenerated\Document.cs" />
     <Compile Include="CodeGenerated\DocumentType.cs" />
+    <Compile Include="CodeGenerated\EntityCampusFilter.cs" />
     <Compile Include="CodeGenerated\EntitySet.cs" />
     <Compile Include="CodeGenerated\EntitySetItem.cs" />
     <Compile Include="CodeGenerated\EntityType.cs" />

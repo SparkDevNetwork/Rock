@@ -322,4 +322,34 @@
   <data name="_201908202115162_Rollup_0820_GroupRequirementsBadge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 10.0\version 1.10.0\201908202115162_rollup_0820_grouprequirementsbadge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201910241702033_ufnCrm_GetFamilyTitle" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910241702033_ufncrm_getfamilytitle.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910241702033_ufnCrm_GetFamilyTitleIncludeInactive" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910241702033_ufncrm_getfamilytitleincludeinactive.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_spcheckin_attendanceanalyticsquery_attendeedates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeFirstDates" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_spcheckin_attendanceanalyticsquery_attendeefirstdates.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_spcheckin_attendanceanalyticsquery_attendeelastattendance.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_Attendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_spcheckin_attendanceanalyticsquery_attendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_spCheckin_AttendanceAnalyticsQuery_NonAttendees" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_spcheckin_attendanceanalyticsquery_nonattendees.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_spCheckin_WeeksAttendedInDuration" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_spcheckin_weeksattendedinduration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_ufnUtility_GetSundayDate" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_ufnutility_getsundaydate.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201910281713564_CustomSundayDate_ufnUtility_GetSundayDateRange" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201910281713564_customsundaydate_ufnutility_getsundaydaterange.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

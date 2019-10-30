@@ -19,16 +19,16 @@
     <div class="panel-body">
 		<div class="row">
 			<div class="col-md-2">
-				<b>Date</b>
+				<strong>Date</strong>
 			</div>
 			<div class="col-md-2">
-				<b>Time</b>
+				<strong>Time</strong>
 			</div>
 			<div class="col-md-2">
-				 <b>Location</b>
+				 <strong>Location</strong>
 			</div>
 			<div class="col-md-4">
-			  <b>Summary</b>
+			  <strong>Summary</strong>
 			</div>
 		</div>
 		{% for eventItemOccurrence in eventItem %}
