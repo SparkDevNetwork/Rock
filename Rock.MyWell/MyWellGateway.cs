@@ -581,7 +581,7 @@ namespace Rock.MyWell
         private TransactionVoidRefundResponse PostVoid( string gatewayUrl, string apiKey, string transactionId )
         {
             var restClient = new RestClient( gatewayUrl );
-            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/void", Method.GET );
+            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/void", Method.POST );
             restRequest.AddHeader( "Authorization", apiKey );
 
             var response = restClient.Execute( restRequest );
@@ -600,7 +600,7 @@ namespace Rock.MyWell
         private TransactionVoidRefundResponse PostRefund( string gatewayUrl, string apiKey, string transactionId, decimal amount )
         {
             var restClient = new RestClient( gatewayUrl );
-            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/refund", Method.GET );
+            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/refund", Method.POST );
             restRequest.AddHeader( "Authorization", apiKey );
 
             var refundRequest = new TransactionRefundRequest { Amount = amount };
@@ -1052,7 +1052,7 @@ namespace Rock.MyWell
             if ( response.IsSuccessStatus() )
             {
                 var transaction = new FinancialTransaction();
-                transaction.TransactionCode = "#TODO#";
+                transaction.TransactionCode = transactionId;
                 errorMessage = string.Empty;
                 return transaction;
             }
@@ -1360,7 +1360,13 @@ namespace Rock.MyWell
 
             var paymentList = new List<Payment>();
 
-            var rockContext = new RockContext();
+            if ( searchResult.Data == null )
+            {
+                // if no payments were fount for the date range, searchResult.Data will be null
+                // so just return an empty paymentList
+                return paymentList;
+            }
+
 
             foreach ( var transaction in searchResult.Data )
             {
@@ -1373,6 +1379,20 @@ namespace Rock.MyWell
                     Amount = transaction.Amount,
                     TransactionDateTime = transaction.CreatedDateTime.Value,
                     GatewayScheduleId = gatewayScheduleId,
+
+                    Status = transaction.Status,
+                    IsFailure = transaction.IsFailure(),
+                    IsSettled = transaction.IsSettled(),
+                    SettledGroupId = transaction.SettlementBatchId,
+                    SettledDate = transaction.SettledDateTime,
+                    StatusMessage = transaction.Response,
+
+                    //// NOTE on unpopulated fields:
+                    //// CurrencyTypeValue and CreditCardTypeValue are determined by the FinanancialPaymentDetail of the ScheduledTransaction
+                    //// ScheduleActive doesn't apply because MyWell subscriptions are either active or deleted (don't exist).
+                    ////   - GetScheduledPaymentStatus will take care of setting ScheduledTranaction.IsActive to false
+                    //// SettledGroupId isn't included in the response from MyWell (this is an open issue)
+                    //// NameOnCardEncrypted, ExpirationMonthEncrypted, ExpirationYearEncrypted are set when the FinancialScheduledTransaction record is created
                 };
 
                 if ( transaction.PaymentType == "ach" )

@@ -2888,6 +2888,8 @@ mission. We are so grateful for your commitment.</p>
         {
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
+            nbProcessTransactionError.Visible = false;
+
             if ( this.IsScheduledTransaction() )
             {
                 var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
@@ -3004,9 +3006,5 @@ mission. We are so grateful for your commitment.</p>
         }
 
         #endregion navigation
-    }
-
-    public interface IPageParameterClass
-    {
     }
 }
