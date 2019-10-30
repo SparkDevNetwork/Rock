@@ -4153,11 +4153,10 @@ namespace Rock.Lava
 
             if ( page != null )
             {
-                
                 HtmlMeta metaTag = new HtmlMeta();
                 metaTag.Attributes.Add( attributeName, attributeValue );
                 metaTag.Content = input;
-                page.AddMetaTag( metaTag );
+                page.Header.Controls.Add( metaTag );
             }
 
             return null;

@@ -78,6 +78,10 @@ namespace RockWeb.Blocks.Event
 
         private int _calendarId = 0;
         private string _calendarName = string.Empty;
+
+        /// <summary>
+        /// NOTE: this is Sunday vs RockDateTime.FirstDayOfWeek since it is used to show the selected week/month in the Calendar control
+        /// </summary>
         private DayOfWeek _firstDayOfWeek = DayOfWeek.Sunday;
 
         protected bool CampusPanelOpen { get; set; }

@@ -76,13 +76,19 @@ namespace Rock.Model
                 return false;
             }  
  
-            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementEndWorkflowTypeId == item.Id ) )
+            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementFailureWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
                 return false;
             }  
  
             if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementStartWorkflowTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<StreakTypeAchievementType>( Context ).Queryable().Any( a => a.AchievementSuccessWorkflowTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, StreakTypeAchievementType.FriendlyTypeName );
                 return false;

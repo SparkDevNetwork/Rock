@@ -64,6 +64,38 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Gets recent streak engagement data. Returns an array of bits representing "unitCount" units (days or weeks)
+        /// with the last bit representing today.
+        /// </summary>
+        /// <param name="streakTypeId">The streak type identifier.</param>
+        /// <param name="personId">The person identifier. Defaults to the current person.</param>
+        /// <param name="unitCount">The unit count.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/StreakTypes/RecentEngagement/{streakTypeId}" )]
+        public OccurrenceEngagement[] GetRecentEngagement( int streakTypeId, [FromUri]int? personId = null, [FromUri] int? unitCount = 24 )
+        {
+            // If not specified, use the current person id
+            var rockContext = Service.Context as RockContext;
+
+            if ( !personId.HasValue )
+            {
+                personId = GetPerson( rockContext )?.Id;
+
+                if ( !personId.HasValue )
+                {
+                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The personId for the current user did not resolve" );
+                    throw new HttpResponseException( errorResponse );
+                }
+            }
+
+            return GetRecentEngagement( streakTypeId, personId.Value, unitCount ?? 24 );
+        }
+
+        /// <summary>
         /// Enroll the currently logged-in user into the streak type.
         /// </summary>
         /// <param name="streakTypeId"></param>
@@ -207,7 +239,7 @@ namespace Rock.Rest.Controllers
         /// <param name="streakTypeIdList">The comma separated list of streak type identifiers</param>
         /// <param name="personId">Defaults to the current person</param>
         /// <param name="startDate">Defaults to the streak type start date</param>
-        /// <param name="endDate">Defaults to now</param>
+        /// <param name="endDate">Defaults to the last elapsed frequency unit (yesterday or last week)</param>
         /// <param name="createObjectArray">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="includeBitMaps">Defaults to false. This may be a costly operation if enabled.</param>
         /// <param name="maxStreaksToReturn">Specify the maximum number of streak objects "ComputedStreaks" to include in the response</param>

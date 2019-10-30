@@ -477,9 +477,14 @@ mission. We are so grateful for your commitment.</p>
 
             ddlFrequency.Items.Clear();
             var supportedFrequencies = this.FinancialGatewayComponent.SupportedPaymentSchedules;
-            foreach ( var supportedFrequency in supportedFrequencies.Where( a => a.Id != oneTimeFrequencyId ) )
+            
+            foreach ( var supportedFrequency in supportedFrequencies )
             {
-                ddlFrequency.Items.Add( new ListItem( supportedFrequency.Value, supportedFrequency.Id.ToString() ) );
+                // If this isn't a one-time scheduled transaction, don't allow changing scheduled transaction to a one-time, 
+                if ( scheduledTransaction.TransactionFrequencyValueId == oneTimeFrequencyId || supportedFrequency.Id != oneTimeFrequencyId )
+                {
+                    ddlFrequency.Items.Add( new ListItem( supportedFrequency.Value, supportedFrequency.Id.ToString() ) );
+                }
             }
 
             ddlFrequency.SetValue( scheduledTransaction.TransactionFrequencyValueId );

@@ -45,7 +45,8 @@ declare
 	    [DidAttend] [bit] NOT NULL,
 	    [Guid] [uniqueidentifier] NOT NULL,
 	    [CampusId] [int] NULL,
-		[OccurrenceId] [int]
+		[OccurrenceId] [int],
+        [SundayDate] [date]
     );
 
 begin
@@ -122,7 +123,7 @@ begin
 
 		set @AttendanceOccurrenceId = (select top 1 id from AttendanceOccurrence where GroupId = @GroupId and ScheduleId = @ScheduleId and LocationId = @LocationId and OccurrenceDate = @OccurrenceDate);
 		if (@AttendanceOccurrenceId is null) begin
-			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, [Guid]) values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, newid());
+			insert into AttendanceOccurrence(LocationId, ScheduleId, GroupId, OccurrenceDate, SundayDate, [Guid]) values (@LocationId, @ScheduleId, @GroupId, @OccurrenceDate, dbo.ufnUtility_GetSundayDate(@OccurrenceDate), newid());
 			set @AttendanceOccurrenceId = @@IDENTITY;
 		end
 
@@ -138,6 +139,7 @@ begin
                     ,[DeviceId] 
                     ,[AttendanceCodeId]
                     ,[StartDateTime]
+                    ,[SundayDate]
                     ,[DidAttend]
                     ,[CampusId]
 					,[OccurrenceId]
@@ -148,6 +150,7 @@ begin
                     ,@DeviceId
                     ,@AttendanceCodeId
                     ,@StartDateTime
+                    ,dbo.ufnUtility_GetSundayDate(@StartDateTime)
                     ,@DidAttend
                     ,@CampusId
 					,@AttendanceOccurrenceId

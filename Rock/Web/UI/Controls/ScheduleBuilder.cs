@@ -29,7 +29,7 @@ using DDay.iCal.Serialization.iCalendar;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ScheduleBuilder : CompositeControl, IRockControl
     {
@@ -265,7 +265,6 @@ namespace Rock.Web.UI.Controls
 
                 if ( rockPage != null )
                 {
-                    rockPage.AddScriptLink( "~/Scripts/moment.min.js" );
                     rockPage.AddScriptLink( "~/Scripts/moment-with-locales.min.js" );
                 }
 
@@ -488,7 +487,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class ScheduleBuilderPopupContents : CompositeControl
     {
@@ -949,7 +948,7 @@ END:VCALENDAR
         /// Gets or sets the content of the i calendar.
         /// </summary>
         /// <value>
-        /// The content of the i calendar. 
+        /// The content of the i calendar.
         /// </value>
         public string iCalendarContent
         {
@@ -962,7 +961,7 @@ END:VCALENDAR
             {
                 EnsureChildControls();
 
-                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+                //// iCal is stored as a list of Calendar's each with a list of Events, etc.
                 //// We just need one Calendar and one Event
 
                 // set all rad to false to prevent multiple from being true

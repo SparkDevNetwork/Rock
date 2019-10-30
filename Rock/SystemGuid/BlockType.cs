@@ -57,6 +57,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_ENTRY_WIZARD = "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0";
 
         /// <summary>
+        /// The connection opportunity signup Block Type GUID
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY_SIGNUP = "C7FCE3B7-704B-43C0-AF96-5A70EB7F70D9";
+
+        /// <summary>
         /// Content Channel View Block Type Guid
         /// </summary>
         public const string CONTENT_CHANNEL_VIEW = "143A2345-3E26-4ED0-A2FE-42AAF11B4C0F";

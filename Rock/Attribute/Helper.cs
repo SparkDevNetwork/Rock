@@ -494,7 +494,7 @@ namespace Rock.Attribute
                         var parameterExpression = attributeValueService.ParameterExpression;
                         MemberExpression propertyExpression = Expression.Property( parameterExpression, "AttributeId" );
                         Expression expression = null;
-                        foreach ( var attributeId in attributeIds )
+                        foreach ( var attributeId in attributeIds.Take(1000) )
                         {
                             Expression attributeIdValue = Expression.Constant( attributeId );
                             if ( expression != null )
