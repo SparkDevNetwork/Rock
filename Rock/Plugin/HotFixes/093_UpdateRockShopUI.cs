@@ -17,7 +17,7 @@
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
-    /// Plugin Migration. The migration number jumps to 83 because 75-82 were moved to EF migrations and deleted.
+    /// Plugin Migration.
     /// </summary>
     [MigrationNumber( 93, "1.10.1" )]
     public class UpdateRockShopUI : Migration
@@ -39,7 +39,7 @@ namespace Rock.Plugin.HotFixes
         }
 
         /// <summary>
-        /// GJ:
+        /// GJ: Added two additional blocks to the Rock Shop page.
         /// </summary>
         private void UpdateRockShopFrontpageUI()
         {
