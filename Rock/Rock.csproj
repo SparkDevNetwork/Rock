@@ -525,6 +525,8 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionsFilter.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionCountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\InteractionDateSelect.cs" />
+    <Compile Include="Reporting\ReportOutputBuilder.cs" />
+    <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="SystemGuid\AssessmentType.cs" />
     <Compile Include="SystemGuid\ContentChannelType.cs" />
     <Compile Include="SystemGuid\Layout.cs" />
