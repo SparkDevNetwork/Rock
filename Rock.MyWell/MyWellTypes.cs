@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Rock.Utility;
 
 //// <summary>
 //// from JSON structures on https://sandbox.gotnpgateway.com/docs/api/
@@ -735,7 +736,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -846,7 +847,7 @@ namespace Rock.MyWell
         /// <returns>
         ///   <c>true</c> if [is success status]; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsSuccessStatus()
+        public virtual bool IsSuccessStatus()
         {
             return this.Status == "success";
         }
@@ -930,7 +931,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1067,6 +1068,38 @@ namespace Rock.MyWell
     public class CreateTransactionResponse : BaseResponseData
     {
         /// <summary>
+        /// Determines whether [is success status].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is success status]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsSuccessStatus()
+        {
+            return base.IsSuccessStatus() && ( Data?.IsResponseCodeSuccess() == true );
+        }
+
+        /// <summary>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap" />) associated with <see cref="ApiMessage" /> or transaction status
+        /// </summary>
+        /// <value>
+        /// The friendly message.
+        /// </value>
+        public override string Message
+        {
+            get
+            {
+                if ( Data?.IsResponseCodeSuccess() != true )
+                {
+                    return FriendlyMessageHelper.GetFriendlyMessage( Data?.Status );
+                }
+                else
+                {
+                    return base.Message;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the data.
         /// </summary>
         /// <value>
@@ -1108,7 +1141,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1339,7 +1372,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1374,15 +1407,23 @@ namespace Rock.MyWell
     #region Transaction Status
 
     /// <summary>
-    /// 
+    /// https://sandbox.gotnpgateway.com/docs/api/#get-transaction-status
     /// </summary>
-    /// <seealso cref="Rock.MyWell.BaseResponseData" />
     public class TransactionStatusResponse : BaseResponseData
     {
         /// <summary>
-        /// The data
-        /// </summary>
+        /// The information about the transaction
+        /// </summary>  
+        /// <value>
+        /// The data.
+        /// </value>
+        /// <remarks>
+        /// We are using SingleOrArrayJsonConverter because the JSON response will have this as a single item
+        /// or as array of items, depending on <see cref="TotalCount"></see>
+        /// Also, the documentation says this will be an array, but sometimes it really isn't
+        /// </remarks>
         [JsonProperty( "data" )]
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<TransactionStatusResponseData> ) )]
         public TransactionStatusResponseData[] Data { get; set; }
 
         /// <summary>
@@ -1487,7 +1528,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1695,7 +1736,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -2107,7 +2148,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -2332,6 +2373,33 @@ namespace Rock.MyWell
         }
 
         /// <summary>
+        /// Determines whether this instance is failure.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is failure; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsFailure()
+        {
+            /* from https://sandbox.gotnpgateway.com/docs/api/#response-codes
+                Response Codes are grouped as follows:
+                    100 thru 199 are Approvals and Partial Approvals.
+                    200 thru 299 are Declined via the processor.
+                    300 thru 399 are Gateway Declines.
+                    400 thru 499 are processor rejection errors.
+            */
+
+            if ( this.ResponseCode >= 100 && this.ResponseCode < 200 )
+            {
+                // Response codes 100-199 are considered successful, everything else is a fail
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the response.
         /// </summary>
         /// <value>
@@ -2396,6 +2464,17 @@ namespace Rock.MyWell
         public DateTime? CapturedDateTime { get; set; }
 
         /// <summary>
+        /// Determines whether this instance is settled.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is settled; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSettled()
+        {
+            return this?.Status.Equals( "settled", StringComparison.OrdinalIgnoreCase ) == true;
+        }
+
+        /// <summary>
         /// Searches by settled_at between the provided start_date and end_date. Dates in UTC "YYYY-MM-DDTHH:II:SSZ"
         /// </summary>
         /// <value>
@@ -2403,6 +2482,15 @@ namespace Rock.MyWell
         /// </value>
         [JsonProperty( "settled_at" )]
         public DateTime? SettledDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settlement batch identifier.
+        /// </summary>
+        /// <value>
+        /// The settlement batch identifier.
+        /// </value>
+        [JsonProperty( "settlement_batch_id" )]
+        public string SettlementBatchId { get; set; }
 
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -2432,7 +2520,6 @@ namespace Rock.MyWell
         internal static string GetFriendlyMessage( string apiMessage )
         {
             System.Diagnostics.Debug.WriteLine( apiMessage );
-
 
             if ( apiMessage.IsNullOrWhiteSpace() )
             {
@@ -2473,7 +2560,8 @@ namespace Rock.MyWell
             { "Invalid card expiration - to far in the future", "Invalid Expiration Date" },
             { "Invalid card expiration - expired", "Card is expired" },
             { "Invalid routing_number", "Invalid Routing Number" },
-            { "Invalid account_number", "Invalid Account Number" }
+            { "Invalid account_number", "Invalid Account Number" },
+            { "decline", "Declined" }
         };
     }
 
