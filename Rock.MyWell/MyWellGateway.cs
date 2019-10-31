@@ -638,6 +638,14 @@ namespace Rock.MyWell
             if ( startDayOfMonth > 28 )
             {
                 startDayOfMonth = 31;
+
+                // since we have to use magic 31 to indicate the last day of the month, adjust the NextBillDate to be the last day of the specified month
+                // (so it doesn't post on original startDate and again on the last day of the month)
+                var nextBillYear = billingPlanParameters.NextBillDateUTC.Value.Year;
+                var nextBillMonth = billingPlanParameters.NextBillDateUTC.Value.Month;
+                DateTime endOfMonth = new DateTime( nextBillYear, nextBillMonth, DateTime.DaysInMonth( nextBillYear, nextBillMonth ) );
+
+                billingPlanParameters.NextBillDateUTC = endOfMonth;
             }
 
             if ( twiceMonthlySecondDayOfMonth > 28 )
@@ -1371,14 +1379,18 @@ namespace Rock.MyWell
                 {
                     TransactionCode = transaction.Id,
                     Amount = transaction.Amount,
-                    TransactionDateTime = transaction.CreatedDateTime.Value,
+
+                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
+                    TransactionDateTime = transaction.CreatedDateTimeUTC.Value.ToLocalTime(),
                     GatewayScheduleId = gatewayScheduleId,
 
                     Status = transaction.Status,
                     IsFailure = transaction.IsFailure(),
                     IsSettled = transaction.IsSettled(),
                     SettledGroupId = transaction.SettlementBatchId,
-                    SettledDate = transaction.SettledDateTime,
+
+                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
+                    SettledDate = transaction.SettledDateTimeUTC?.ToLocalTime(),
                     StatusMessage = transaction.Response,
 
                     //// NOTE on unpopulated fields:

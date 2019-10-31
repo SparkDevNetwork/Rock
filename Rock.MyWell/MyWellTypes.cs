@@ -133,7 +133,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the update date time.
@@ -142,7 +142,7 @@ namespace Rock.MyWell
         /// The update date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdateDateTime { get; set; }
+        public DateTime? UpdateDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -360,7 +360,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -369,7 +369,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -662,7 +662,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -671,7 +671,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -1330,7 +1330,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1339,7 +1339,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -1584,7 +1584,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1593,7 +1593,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -1802,7 +1802,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1811,7 +1811,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -2032,12 +2032,12 @@ namespace Rock.MyWell
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryDateTimeRange"/> class.
         /// </summary>
-        /// <param name="startDateTime">The start date time.</param>
-        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="startDateTime">The start date time (in local time).</param>
+        /// <param name="endDateTime">The end date time (in local time).</param>
         public QueryDateTimeRange( DateTime? startDateTime, DateTime? endDateTime )
         {
-            UTCStartDateTime = startDateTime?.ToUniversalTime();
-            UTCEndDateTime = endDateTime?.ToUniversalTime();
+            StartDateTimeUTC = startDateTime?.ToUniversalTime();
+            EndDateTimeUTC = endDateTime?.ToUniversalTime();
         }
 
         /// <summary>
@@ -2048,7 +2048,7 @@ namespace Rock.MyWell
         /// </value>
         [JsonConverter( typeof( MyWellGatewayUTCIsoDateTimeConverter ) )]
         [JsonProperty( "start_date" )]
-        public DateTime? UTCStartDateTime { get; set; }
+        public DateTime? StartDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the end date (in UTC time).
@@ -2058,7 +2058,7 @@ namespace Rock.MyWell
         /// </value>
         [JsonConverter( typeof( MyWellGatewayUTCIsoDateTimeConverter ) )]
         [JsonProperty( "end_date" )]
-        public DateTime? UTCEndDateTime { get; set; }
+        public DateTime? EndDateTimeUTC { get; set; }
     }
 
     #endregion
@@ -2443,7 +2443,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -2452,7 +2452,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Searches by captured_at between the provided start_date and end_date. Dates in UTC "YYYY-MM-DDTHH:II:SSZ"
@@ -2461,7 +2461,7 @@ namespace Rock.MyWell
         /// The captured date time.
         /// </value>
         [JsonProperty( "captured_at" )]
-        public DateTime? CapturedDateTime { get; set; }
+        public DateTime? CapturedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Determines whether this instance is settled.
@@ -2481,7 +2481,7 @@ namespace Rock.MyWell
         /// The settled date time.
         /// </value>
         [JsonProperty( "settled_at" )]
-        public DateTime? SettledDateTime { get; set; }
+        public DateTime? SettledDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the settlement batch identifier.
@@ -2565,6 +2565,7 @@ namespace Rock.MyWell
 
     /// <summary>
     /// see DateFormat spec https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription
+    /// this is mostly just needed for JSON Payloads that are POST'd to the gateway
     /// </summary>
     /// <seealso cref="Rock.MyWell.MyWellGatewayUTCIsoDateTimeConverter" />
     internal class MyWellGatewayUTCIsoDateConverter : MyWellGatewayUTCIsoDateTimeConverter
@@ -2580,6 +2581,7 @@ namespace Rock.MyWell
 
     /// <summary>
     /// see DateFormats specs from https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+    /// this is mostly just needed for JSON Payloads that are POST'd to the gateway
     /// </summary>
     /// <seealso cref="Newtonsoft.Json.Converters.IsoDateTimeConverter" />
     internal class MyWellGatewayUTCIsoDateTimeConverter : Newtonsoft.Json.Converters.IsoDateTimeConverter
