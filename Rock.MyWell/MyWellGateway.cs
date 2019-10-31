@@ -1037,17 +1037,11 @@ namespace Rock.MyWell
 
             var transactionStatus = this.GetTransactionStatus( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId );
             var transactionStatusTransaction = transactionStatus.Data.FirstOrDefault( a => a.Id == transactionId );
-            TransactionVoidRefundResponse response;
-            if ( transactionStatusTransaction.IsPendingSettlement() )
-            {
-                // https://sandbox.gotnpgateway.com/docs/api/#void
-                response = this.PostVoid( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId );
-            }
-            else
-            {
-                // https://sandbox.gotnpgateway.com/docs/api/#refund
-                response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, origTransaction.TotalAmount );
-            }
+
+            // https://sandbox.gotnpgateway.com/docs/api/#refund
+            // NOTE: If the transaction isn't settled yet, this will return an error. But that's OK
+            TransactionVoidRefundResponse response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, origTransaction.TotalAmount );
+
 
             if ( response.IsSuccessStatus() )
             {
@@ -1390,7 +1384,7 @@ namespace Rock.MyWell
                     //// NOTE on unpopulated fields:
                     //// CurrencyTypeValue and CreditCardTypeValue are determined by the FinanancialPaymentDetail of the ScheduledTransaction
                     //// ScheduleActive doesn't apply because MyWell subscriptions are either active or deleted (don't exist).
-                    ////   - GetScheduledPaymentStatus will take care of setting ScheduledTranaction.IsActive to false
+                    ////   - GetScheduledPaymentStatus will take care of setting ScheduledTransaction.IsActive to false
                     //// SettledGroupId isn't included in the response from MyWell (this is an open issue)
                     //// NameOnCardEncrypted, ExpirationMonthEncrypted, ExpirationYearEncrypted are set when the FinancialScheduledTransaction record is created
                 };

@@ -2519,8 +2519,6 @@ namespace Rock.MyWell
         /// <returns></returns>
         internal static string GetFriendlyMessage( string apiMessage )
         {
-            System.Diagnostics.Debug.WriteLine( apiMessage );
-
             if ( apiMessage.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
