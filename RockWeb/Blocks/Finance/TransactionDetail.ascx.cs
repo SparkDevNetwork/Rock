@@ -719,43 +719,45 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         void gAccountsEdit_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
+            if ( e.Row.RowType != DataControlRowType.DataRow )
             {
-                var account = ( FinancialTransactionDetail ) e.Row.DataItem;
+                return;
+            }
 
-                // If this is the total row
+            var account = ( FinancialTransactionDetail ) e.Row.DataItem;
+
+            // If this is the total row
+            if ( account.AccountId == TotalRowAccountId )
+            {
+                // disable the row select on each column
+                foreach ( TableCell cell in e.Row.Cells )
+                {
+                    cell.RemoveCssClass( "grid-select-cell" );
+                }
+            }
+
+            // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
+            if ( account.EntityTypeId.HasValue || account.AccountId == TotalRowAccountId )
+            {
+                // Hide the edit button if this is the total row
                 if ( account.AccountId == TotalRowAccountId )
                 {
-                    // disable the row select on each column
-                    foreach ( TableCell cell in e.Row.Cells )
+                    var editCell = GetEditCell( e.Row.Cells );
+                    var editBtn = editCell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+
+                    if ( editBtn != null )
                     {
-                        cell.RemoveCssClass( "grid-select-cell" );
+                        editBtn.Visible = false;
                     }
                 }
 
-                // If account is associated with an entity (i.e. registration), or this is the total row do not allow it to be deleted
-                if ( account.EntityTypeId.HasValue || account.AccountId == TotalRowAccountId )
+                // Hide the delete button
+                var deleteCell = GetDeleteCell( e.Row.Cells );
+                var deleteBtn = deleteCell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+
+                if ( deleteBtn != null )
                 {
-                    // Hide the edit button if this is the total row
-                    if ( account.AccountId == TotalRowAccountId )
-                    {
-                        var editCell = GetEditCell( e.Row.Cells );
-                        var editBtn = editCell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
-
-                        if ( editBtn != null )
-                        {
-                            editBtn.Visible = false;
-                        }
-                    }
-
-                    // Hide the delete button
-                    var deleteCell = GetDeleteCell( e.Row.Cells );
-                    var deleteBtn = deleteCell.ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
-
-                    if ( deleteBtn != null )
-                    {
-                        deleteBtn.Visible = false;
-                    }
+                    deleteBtn.Visible = false;
                 }
             }
         }
@@ -1469,6 +1471,9 @@ namespace RockWeb.Blocks.Finance
                     Amount = txn.TotalAmount
                 } );
 
+                var feeColumn = GetFeeColumn( gAccountsView );
+                feeColumn.Visible = hasFeeInfo;
+
                 gAccountsView.DataSource = accounts;
                 gAccountsView.DataBind();
 
@@ -1770,12 +1775,15 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindAccounts()
         {
+            var feeColumn = GetFeeColumn( gAccountsEdit );
+
             if ( UseSimpleAccountMode && TransactionDetailsState.Count() == 1 )
             {
                 var txnDetail = TransactionDetailsState.First();
                 tbSingleAccountAmount.Label = AccountName( txnDetail.AccountId );
                 tbSingleAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
-                tbSingleAccountFeeAmount.Text = GetFeeAsText( txnDetail.FeeAmount );
+                ApplyFeeValueToField( tbSingleAccountFeeAmount, txnDetail );
+                feeColumn.Visible = txnDetail.FeeAmount.HasValue;
             }
             else
             {
@@ -1805,6 +1813,7 @@ namespace RockWeb.Blocks.Finance
 
                 gAccountsEdit.DataSource = accounts;
                 gAccountsEdit.DataBind();
+                feeColumn.Visible = hasFeeInfo;
             }
         }
 
@@ -1830,7 +1839,7 @@ namespace RockWeb.Blocks.Finance
             {
                 apAccount.SetValue( txnDetail.AccountId );
                 tbAccountAmount.Text = txnDetail.Amount.ToString( "N2" );
-                tbAccountFeeAmount.Text = GetFeeAsText( txnDetail.FeeAmount );
+                ApplyFeeValueToField( tbAccountFeeAmount, txnDetail );
                 tbAccountSummary.Text = txnDetail.Summary;
 
                 if ( txnDetail.Attributes == null )
@@ -2084,6 +2093,27 @@ namespace RockWeb.Blocks.Finance
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Applies the fee value to field.
+        /// </summary>
+        /// <param name="tbSingleAccountFeeAmount">The tb single account fee amount.</param>
+        /// <param name="transactionDetail">The transaction detail.</param>
+        private static void ApplyFeeValueToField( CurrencyBox tbSingleAccountFeeAmount, FinancialTransactionDetail transactionDetail )
+        {
+            tbSingleAccountFeeAmount.Text = GetFeeAsText( transactionDetail.FeeAmount );
+            tbSingleAccountFeeAmount.Visible = transactionDetail.FeeAmount.HasValue;
+        }
+
+        /// <summary>
+        /// Gets the fee column.
+        /// </summary>
+        /// <param name="grid">The grid.</param>
+        /// <returns></returns>
+        private static CurrencyField GetFeeColumn( Grid grid )
+        {
+            return grid.ColumnsOfType<CurrencyField>().First( c => c.DataField == "FeeAmount" );
         }
 
         #endregion
