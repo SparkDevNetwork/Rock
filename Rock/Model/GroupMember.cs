@@ -889,20 +889,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the current values of the group requirements statuses for this GroupMember from the last time they were calculated ordered by GroupRequirementType.Name
-        /// </summary>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use GetGroupRequirementsStatuses(rockContext) instead", true )]
-        public IEnumerable<GroupRequirementStatus> GetGroupRequirementsStatuses()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return GetGroupRequirementsStatuses( rockContext );
-            }
-        }
-
-        /// <summary>
         /// Gets the group requirements statuses.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -1146,7 +1132,7 @@ namespace Rock.Model
         /// The changes.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use PersonHistoryChangeList or GroupMemberHistoryChangeList instead, depending on what you are doing. " )]
+        [Obsolete( "Use PersonHistoryChangeList or GroupMemberHistoryChangeList instead, depending on what you are doing. ", true )]
         public List<string> Changes { get; set; }
 
         /// <summary>

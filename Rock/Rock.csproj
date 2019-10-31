@@ -814,8 +814,6 @@
     <Compile Include="Data\AnalyticHistoryFieldAttribute.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\AnalyticsAttribute.cs" />
-    <Compile Include="Data\IAnalyticHistorical.cs" />
-    <Compile Include="Data\IAnalytic.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IFeed.cs" />
@@ -1024,8 +1022,6 @@
     <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
-    <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
-    <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
     <Compile Include="Jobs\DataAutomation.cs" />
@@ -2165,7 +2161,6 @@
     <Compile Include="Web\UI\Controls\CurrencyBox.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataTextBox.cs" />
-    <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
     <Compile Include="Web\UI\Controls\DynamicControlsHtmlGenericControl.cs" />
@@ -2199,7 +2194,6 @@
     <Compile Include="Web\UI\Controls\Grid\IPriorityColumn.cs" />
     <Compile Include="Web\UI\Controls\Grid\IRockGridField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\MergePersonField.cs" />

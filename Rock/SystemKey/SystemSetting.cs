@@ -113,7 +113,7 @@ namespace Rock.SystemKey
         /// The redis connection string
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.")]
+        [Obsolete("Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.", true )]
         public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
 
         /// <summary>

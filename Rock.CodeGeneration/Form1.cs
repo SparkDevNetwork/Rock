@@ -249,7 +249,15 @@ namespace Rock.CodeGeneration
                             }
                             else
                             {
-                                obsoleteList.Add( $"{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                                string messagePrefix = null;
+                                if ( rockObsolete.Version == "1.8" || rockObsolete.Version.StartsWith( "1.8.") || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                {
+                                    if ( !memberObsoleteAttribute.IsError || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                    {
+                                        messagePrefix = "###WARNING###:";
+                                    }
+                                }
+                                obsoleteList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
                             }
                         }
                     }

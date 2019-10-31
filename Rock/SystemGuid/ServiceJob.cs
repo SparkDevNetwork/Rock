@@ -82,16 +82,6 @@ namespace Rock.SystemGuid
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
 
         /// <summary>
-        /// The Job to Migrate pre-v7.0 PageViews and Communication Recipient Activity to Interactions
-        /// </summary>
-        public static string MIGRATE_INTERACTIONS_DATA = "189AE3F1-92E9-4394-ACC5-0F244967F32E";
-
-        /// <summary>
-        /// The job to migrate pre-v7.0 Communication Medium data from JSON to regular fields
-        /// </summary>
-        public static string MIGRATE_COMMUNICATION_MEDIUM_DATA = "E7C54AAB-451E-4E89-8083-CF398D37416E";
-
-        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
