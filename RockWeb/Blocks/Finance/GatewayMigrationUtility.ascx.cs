@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Finance
             ddlNMIGateway.Items.Clear();
             foreach ( var nmiGateway in nmiGateways )
             {
-                ddlMyWellGateway.Items.Add( new ListItem( nmiGateway.Name, nmiGateway.Id.ToString() ) );
+                ddlNMIGateway.Items.Add( new ListItem( nmiGateway.Name, nmiGateway.Id.ToString() ) );
             }
         }
 
@@ -187,6 +187,53 @@ namespace RockWeb.Blocks.Finance
             public string MyWellCustomerId { get; set; }
         }
 
+        private abstract class MigrationResult
+        {
+            
+            public string MyWellCustomerId { get; set; }
+
+            public int? PersonId { get; set; }
+            public string PersonFullName { get; set; }
+
+            public DateTime MigrationDateTime { get; set; }
+
+            public bool DidMigrateSuccessfully { get; set; }
+            public string ResultMessage { get; set; }
+
+            public abstract string GetSummaryDetails();
+        }
+
+        private class SavedAccountMigrationResult : MigrationResult
+        {
+            public string NMICustomerId { get; set; }
+            public int FinancialPersonSavedAccountId { get; set; }
+
+            public override string GetSummaryDetails()
+            {
+                return string.Format( "FinancialPersonSavedAccount.Id: {0} NMI CustomerId: '{1}', My Well CustomerId: '{2}', Result: {3} ",
+                FinancialPersonSavedAccountId,
+                NMICustomerId,
+                MyWellCustomerId,
+                this.ResultMessage );
+            }
+        }
+
+        private class ScheduledTransactionMigrationResult : MigrationResult
+        {
+            public int ScheduledTransactionId { get; set; }
+            public string NMISubscriptionId { get; internal set; }
+
+            public override string GetSummaryDetails()
+            {
+                return string.Format( "ScheduledTransactionId.Id: {0}, NMI SubscriptionId: '{1}', My Well CustomerId: '{2}', Result: {3} ",
+                ScheduledTransactionId,
+                NMISubscriptionId,
+                MyWellCustomerId,
+                this.ResultMessage );
+            }
+        }
+
+
         /// <summary>
         /// Handles the Click event of the btnMigrateSavedAccounts control.
         /// </summary>
@@ -224,35 +271,78 @@ namespace RockWeb.Blocks.Finance
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
             var nmiPersonSavedAccountList = financialPersonSavedAccountService.Queryable().Where( a => a.FinancialGatewayId == nmiFinancialGatewayID ).ToList();
 
-            var personSavedAccountResultsBuilder = new StringBuilder();
-
             var nmiPersonSavedAccountListCount = nmiPersonSavedAccountList.Count();
+
+            List<MigrationResult> migrateSavedAccountResultList = new List<MigrationResult>();
 
             foreach ( var nmiPersonSavedAccount in nmiPersonSavedAccountList )
             {
-                var nmiCustomerId = nmiPersonSavedAccount.GatewayPersonIdentifier ?? nmiPersonSavedAccount.ReferenceNumber;
-                var myWellCustomerId = nmiToMyWellCustomerIdLookup.GetValueOrNull( nmiCustomerId );
+                SavedAccountMigrationResult migrateSavedAccountResult = new SavedAccountMigrationResult();
 
-                nmiPersonSavedAccount.GatewayPersonIdentifier = myWellCustomerId;
-                nmiPersonSavedAccount.FinancialGatewayId = myWellFinancialGatewayId;
+                migrateSavedAccountResult.FinancialPersonSavedAccountId = nmiPersonSavedAccount.Id;
+                if ( nmiPersonSavedAccount.PersonAlias != null )
+                {
+                    migrateSavedAccountResult.PersonId = nmiPersonSavedAccount.PersonAlias.PersonId;
+                    migrateSavedAccountResult.PersonFullName = nmiPersonSavedAccount.PersonAlias.Person.FullName;
+                }
+                else
+                {
+                    migrateSavedAccountResult.PersonId = null;
+                    migrateSavedAccountResult.PersonFullName = "(No person record associated with saved account)";
+                }
 
-                // NOTE: NMI Customer IDs created after the Vault import file was created won't have a myWellCustomerId
+                // NMI Saves NMI CustomerId to ReferenceNumber and leaves GatewayPersonIdentifier blank, but just in case that changes, look if GatewayPersonIdentifier has a value first
+                if ( nmiPersonSavedAccount.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+                {
+                    migrateSavedAccountResult.NMICustomerId = nmiPersonSavedAccount.GatewayPersonIdentifier;
+                }
+                else
+                {
+                    migrateSavedAccountResult.NMICustomerId = nmiPersonSavedAccount.ReferenceNumber;
+                }
 
-                personSavedAccountResultsBuilder.AppendFormat(
-                    "FinancialPersonSavedAccount.Id: {0} NMI CustomerId: '{1}', NMI GatewayPersonIdentifier: '{2}', NMI ReferenceNumber: '{3}', My Well CustomerId: '{4}'" + Environment.NewLine,
-                    nmiPersonSavedAccount.Id,
-                    nmiCustomerId,
-                    nmiPersonSavedAccount.GatewayPersonIdentifier,
-                    nmiPersonSavedAccount.ReferenceNumber,
-                    myWellCustomerId
-                    );
+                migrateSavedAccountResult.MyWellCustomerId = nmiToMyWellCustomerIdLookup.GetValueOrNull( migrateSavedAccountResult.NMICustomerId );
+                migrateSavedAccountResult.MigrationDateTime = RockDateTime.Now;
+
+                if ( migrateSavedAccountResult.NMICustomerId.IsNullOrWhiteSpace() )
+                {
+                    migrateSavedAccountResult.DidMigrateSuccessfully = false;
+                    migrateSavedAccountResult.ResultMessage = string.Format(
+                        "Saved Account (FinancialPersonSavedAccount.Guid: {0},  GatewayPersonIdentifier: {1}, ReferenceNumber: {2}) doesn't have an NMI Customer ID reference",
+                        nmiPersonSavedAccount.Guid,
+                        nmiPersonSavedAccount.GatewayPersonIdentifier,
+                        nmiPersonSavedAccount.ReferenceNumber );
+                }
+                else if ( migrateSavedAccountResult.MyWellCustomerId.IsNullOrWhiteSpace() )
+                {
+                    // NOTE: NMI Customer IDs created after the Vault import file was created won't have a myWellCustomerId
+                    migrateSavedAccountResult.DidMigrateSuccessfully = false;
+                    migrateSavedAccountResult.ResultMessage = string.Format(
+                        "NMI CustomerId {0} not found in Vault Import file",
+                        migrateSavedAccountResult.NMICustomerId );
+                }
+                else
+                {
+                    nmiPersonSavedAccount.GatewayPersonIdentifier = migrateSavedAccountResult.MyWellCustomerId;
+                    nmiPersonSavedAccount.FinancialGatewayId = myWellFinancialGatewayId;
+                    migrateSavedAccountResult.DidMigrateSuccessfully = true;
+                    migrateSavedAccountResult.ResultMessage = "Success";
+                }
+
+                migrateSavedAccountResultList.Add( migrateSavedAccountResult );
             }
 
             rockContext.SaveChanges();
 
-            string resultSummary = string.Format( "Migrated {0} Saved Accounts", nmiPersonSavedAccountList.Count() );
-
-            personSavedAccountResultsBuilder.AppendLine( resultSummary );
+            string resultSummary;
+            if ( migrateSavedAccountResultList.Where( a => a.DidMigrateSuccessfully == false ).Any() )
+            {
+                resultSummary = string.Format( "Migrated {0} Saved Accounts with {1} accounts that did not migrate.", migrateSavedAccountResultList.Where( a => a.DidMigrateSuccessfully ).Count(), migrateSavedAccountResultList.Where( a => a.DidMigrateSuccessfully == false ).Count() );
+            }
+            else
+            {
+                resultSummary = string.Format( "Migrated {0} Saved Accounts", nmiPersonSavedAccountList.Count(), migrateSavedAccountResultList.Where( a => a.DidMigrateSuccessfully == false ) );
+            }
 
             if ( !nmiPersonSavedAccountList.Any() )
             {
@@ -261,15 +351,27 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                nbMigrateSavedAccounts.Title = "Success";
-                nbMigrateSavedAccounts.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
+                nbMigrateSavedAccounts.Title = "Complete";
+                nbMigrateSavedAccounts.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Info;
                 nbMigrateSavedAccounts.Text = resultSummary;
             }
 
+            var migrationDetails = migrateSavedAccountResultList.Select( a => a.GetSummaryDetails() ).ToList().AsDelimited( Environment.NewLine );
+
             nbMigrateSavedAccounts.Visible = true;
-            nbMigrateSavedAccounts.Details = personSavedAccountResultsBuilder.ToString();
+            nbMigrateSavedAccounts.Details = string.Format( "<pre>{0}</pre>", migrationDetails );
             this.SetBlockUserPreference( "MigrateSavedAccountsResultSummary", nbMigrateSavedAccounts.Text );
-            this.SetBlockUserPreference( "MigrateSavedAccountsResultDetails", personSavedAccountResultsBuilder.ToString() );
+            this.SetBlockUserPreference( "MigrateSavedAccountsResultDetails", migrationDetails );
+
+            try
+            {
+                string logFile = this.Context.Server.MapPath( string.Format( "~/App_Data/Logs/GatewayMigrationUtility_MigrateSavedAccounts_{0}.json", RockDateTime.Now.ToString( "yyyyMMddTHHmmss" ) ) );
+                File.WriteAllText( logFile, migrateSavedAccountResultList.ToJson( Newtonsoft.Json.Formatting.Indented ) );
+            }
+            catch
+            {
+                //
+            }
         }
 
         #endregion Migrate Saved Accounts Related
@@ -354,8 +456,8 @@ namespace RockWeb.Blocks.Finance
             var oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() );
 
             string errorMessage;
-
-            var scheduledTransactionResultsBuilder = new StringBuilder();
+            
+            List<ScheduledTransactionMigrationResult> scheduledTransactionMigrationResults = new List<ScheduledTransactionMigrationResult>();
 
             var scheduledTransactionCount = scheduledTransactions.Count();
             var scheduledTransactionProgress = 0;
@@ -364,26 +466,45 @@ namespace RockWeb.Blocks.Finance
             var importTask = new Task( () =>
             {
                 // wait a little so the browser can render and start listening to events
-                Task.Delay( 1000 ).Wait();
+                Task.Delay( 2000 ).Wait();
                 _hubContext.Clients.All.setButtonVisibilty( this.SignalRNotificationKey, false );
 
                 foreach ( var scheduledTransaction in scheduledTransactions )
                 {
-                    System.Threading.Thread.Sleep( 1000 );
-
                     UpdateProgressMessage( string.Format( "Migrating Scheduled Transactions: {0} of {1}", scheduledTransactionProgress, scheduledTransactionCount ), " " );
 
                     scheduledTransactionProgress++;
-                    var nmiSubscriptionId = scheduledTransaction.GatewayScheduleId;
-                    var nmiCustomerId = scheduledTransaction.ForeignKey;
-                    var myWellCustomerId = subscriptionImportRecordLookup.GetValueOrNull( nmiSubscriptionId );
-                    if ( myWellCustomerId == null )
+
+                    ScheduledTransactionMigrationResult scheduledTransactionMigrationResult = new ScheduledTransactionMigrationResult();
+                    scheduledTransactionMigrationResult.MigrationDateTime = RockDateTime.Now;
+                    scheduledTransactionMigrationResults.Add( scheduledTransactionMigrationResult );
+
+                    scheduledTransactionMigrationResult.NMISubscriptionId = scheduledTransaction.GatewayScheduleId;
+                    if ( scheduledTransactionMigrationResult.NMISubscriptionId.IsNotNullOrWhiteSpace() )
                     {
-                        scheduledTransactionResultsBuilder.AppendFormat(
-        "WARNING: No My Well CustomerId found for Financial Scheduled Transaction with Id: {0} which is associated NMI SubscriptionId: '{1}'" + Environment.NewLine,
-        scheduledTransaction.Id,
-        nmiSubscriptionId
-        );
+                        scheduledTransactionMigrationResult.MyWellCustomerId = subscriptionImportRecordLookup.GetValueOrNull( scheduledTransactionMigrationResult.NMISubscriptionId );
+                    }
+
+                    scheduledTransactionMigrationResult.ScheduledTransactionId = scheduledTransaction.Id;
+                    if ( scheduledTransaction.AuthorizedPersonAlias != null )
+                    {
+                        scheduledTransactionMigrationResult.PersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId;
+                        scheduledTransactionMigrationResult.PersonFullName = scheduledTransaction.AuthorizedPersonAlias.Person.FullName;
+                    }
+                    else
+                    {
+                        scheduledTransactionMigrationResult.PersonId = null;
+                        scheduledTransactionMigrationResult.PersonFullName = "(No person record associated with saved account)";
+                    }
+
+                    if ( scheduledTransactionMigrationResult.MyWellCustomerId == null )
+                    {
+                        scheduledTransactionMigrationResult.ResultMessage = string.Format(
+                            "WARNING: No My Well CustomerId found for Financial Scheduled Transaction with Id: {0} which is associated NMI SubscriptionId: '{1}'",
+                            scheduledTransaction.Id,
+                            scheduledTransactionMigrationResult.NMISubscriptionId
+                        );
+
                         continue;
                     }
 
@@ -397,11 +518,12 @@ namespace RockWeb.Blocks.Finance
                     if ( scheduledTransaction.NextPaymentDate == null )
                     {
                         // Shouldn't happen, but just in case
-                        scheduledTransactionResultsBuilder.AppendFormat(
-        "WARNING: Unknown NextPaymentDate for FinancialScheduledTransaction.Id: {0} NMI SubscriptionId: '{1}'" + Environment.NewLine,
-        scheduledTransaction.Id,
-        nmiSubscriptionId
-        );
+                        scheduledTransactionMigrationResult.ResultMessage = string.Format(
+                            "WARNING: Unknown NextPaymentDate for FinancialScheduledTransaction.Id: {0} NMI SubscriptionId: '{1}'" + Environment.NewLine,
+                            scheduledTransaction.Id,
+                            scheduledTransactionMigrationResult.NMISubscriptionId
+                            );
+
                         continue;
                     }
 
@@ -416,13 +538,13 @@ namespace RockWeb.Blocks.Finance
                         else
                         {
                             // if the NextPaymentDate is still too early AFTER getting the most recent status, then we can't safely figure it out, so report it
-                            scheduledTransactionResultsBuilder.AppendFormat(
-            "WARNING: NextPaymentDate of {0} for FinancialScheduledTransaction.Id: {1} and NMI SubscriptionId: '{2}' must have a NextPaymentDate of at least {3}." + Environment.NewLine,
-            scheduledTransaction.NextPaymentDate,
-            scheduledTransaction.Id,
-            nmiSubscriptionId,
-            earliestMyWellStartDate
-            );
+                            scheduledTransactionMigrationResult.ResultMessage = string.Format(
+        "WARNING: NextPaymentDate of {0} for FinancialScheduledTransaction.Id: {1} and NMI SubscriptionId: '{2}' must have a NextPaymentDate of at least {3}." + Environment.NewLine,
+        scheduledTransaction.NextPaymentDate,
+        scheduledTransaction.Id,
+        scheduledTransactionMigrationResult.NMISubscriptionId,
+        earliestMyWellStartDate
+        );
                         }
                     }
 
@@ -436,8 +558,8 @@ namespace RockWeb.Blocks.Finance
 
                     ReferencePaymentInfo referencePaymentInfo = new ReferencePaymentInfo
                     {
-                        GatewayPersonIdentifier = myWellCustomerId,
-                        Description = string.Format( "Migrated from NMI SubscriptionID:{0}", nmiSubscriptionId )
+                        GatewayPersonIdentifier = scheduledTransactionMigrationResult.MyWellCustomerId,
+                        Description = string.Format( "Migrated from NMI SubscriptionID:{0}", scheduledTransactionMigrationResult.NMISubscriptionId )
                     };
 
                     var myWellGateway = ( myWellGatewayComponent as MyWellGateway );
@@ -445,7 +567,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( myWellGateway != null )
                     {
-                        var customerMyWellSubscriptions = myWellGateway.SearchCustomerSubscriptions( myWellFinancialGateway, myWellCustomerId );
+                        var customerMyWellSubscriptions = myWellGateway.SearchCustomerSubscriptions( myWellFinancialGateway, scheduledTransactionMigrationResult.MyWellCustomerId );
                         alreadyMigratedMyWellSubscriptionId = customerMyWellSubscriptions.Data.Where( a => a.Description.Contains( referencePaymentInfo.Description ) ).Select( a => a.Customer.Id ).FirstOrDefault();
                     }
 
@@ -469,33 +591,35 @@ namespace RockWeb.Blocks.Finance
                                 updateRockContext.SaveChanges();
                             }
 
-                            scheduledTransactionResultsBuilder.AppendFormat(
+                            scheduledTransactionMigrationResult.DidMigrateSuccessfully = true;
+
+                            scheduledTransactionMigrationResult.ResultMessage = string.Format(
                                 "SUCCESS: Scheduled Transaction migration succeeded. (FinancialScheduledTransaction.Id: {0}, NMI SubscriptionId: '{1}', My Well CustomerId: {2}, My Well SubscriptionId: {3})" + Environment.NewLine,
                                 scheduledTransaction.Id,
-                                nmiSubscriptionId,
-                                myWellCustomerId,
+                                scheduledTransactionMigrationResult.NMISubscriptionId,
+                                scheduledTransactionMigrationResult.MyWellCustomerId,
                                 scheduledTransaction.GatewayScheduleId
                                 );
                         }
                         else
                         {
-                            scheduledTransactionResultsBuilder.AppendFormat(
+                            scheduledTransactionMigrationResult.ResultMessage = string.Format(
                                 "ERROR: Scheduled Transaction migration failed. ErrorMessage: {0}, FinancialScheduledTransaction.Id: {1}, NMI SubscriptionId: '{2}', My Well CustomerId: {3}" + Environment.NewLine,
                                 errorMessage,
                                 scheduledTransaction.Id,
-                                nmiSubscriptionId,
-                                myWellCustomerId
+                                scheduledTransactionMigrationResult.NMISubscriptionId,
+                                scheduledTransactionMigrationResult.MyWellCustomerId
                                 );
                         }
                     }
                     else
                     {
-                        scheduledTransactionResultsBuilder.AppendFormat(
+                        scheduledTransactionMigrationResult.ResultMessage = string.Format(
                             "INFO: Scheduled Transaction already migrated to My Well. FinancialScheduledTransaction.Id: {0}, NMI SubscriptionId: '{1}', My Well SubscriptionId: '{2}', My Well CustomerId: {3}" + Environment.NewLine,
                             scheduledTransaction.Id,
-                            nmiSubscriptionId,
+                            scheduledTransactionMigrationResult.NMISubscriptionId,
                             alreadyMigratedMyWellSubscriptionId,
-                            myWellCustomerId
+                            scheduledTransactionMigrationResult.MyWellCustomerId
                             );
                     }
                 }
@@ -505,48 +629,38 @@ namespace RockWeb.Blocks.Finance
 
             importTask.ContinueWith( ( c ) =>
              {
+                 var migrationDetails = scheduledTransactionMigrationResults.Select( a => a.GetSummaryDetails() ).ToList().AsDelimited( Environment.NewLine );
+
                  if ( c.Exception != null )
                  {
                      ExceptionLogService.LogException( c.Exception );
-                     scheduledTransactionResultsBuilder.AppendLine( string.Format( "EXCEPTION: {0}", c.Exception.Flatten().Message ) );
+                     migrationDetails += string.Format( "EXCEPTION: {0}", c.Exception.Flatten().Message );
                      importResult = "EXCEPTION";
-                     UpdateProgressMessage( importResult, scheduledTransactionResultsBuilder.ToString() );
+                     UpdateProgressMessage( importResult, migrationDetails );
                  }
                  else
                  {
                      importResult = "Migrate Scheduled Transactions Completed Successfully";
-                     UpdateProgressMessage( importResult, scheduledTransactionResultsBuilder.ToString() );
+                     UpdateProgressMessage( importResult, migrationDetails );
                  }
 
                  this.SetBlockUserPreference( "MigrateScheduledTransactionsResultSummary", importResult );
-                 this.SetBlockUserPreference( "MigrateScheduledTransactionsResultDetails", scheduledTransactionResultsBuilder.ToString() );
+                 this.SetBlockUserPreference( "MigrateScheduledTransactionsResultDetails", migrationDetails );
+
+                 try
+                 {
+                     string logFile = this.Context.Server.MapPath( string.Format( "~/App_Data/Logs/GatewayMigrationUtility_MigrateScheduledTransactions_{0}.json", RockDateTime.Now.ToString( "yyyyMMddTHHmmss" ) ) );
+                     File.WriteAllText( logFile, scheduledTransactionMigrationResults.ToJson( Newtonsoft.Json.Formatting.Indented ) );
+                 }
+                 catch
+                 {
+                     //
+                 }
              } );
 
             importTask.Start();
 
             nbMigrateScheduledTransactions.Visible = false;
-
-            // wait for 5 seconds to see if this happens fast enough to do without Signal R. Otherwise, let the importTask continue and send progress to Signal R. 
-            var waitResult = importTask.Wait( 5000 );
-            if ( waitResult )
-            {
-                // wait just a little bit to make sure the importResult gets set
-                System.Threading.Thread.Sleep( 1000 );
-
-                nbMigrateScheduledTransactions.Visible = true;
-                nbMigrateScheduledTransactions.Title = "Success";
-                nbMigrateScheduledTransactions.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
-
-                var resultDetails = scheduledTransactionResultsBuilder.ToString();
-                if ( resultDetails.Contains( "ERROR" )  || resultDetails.Contains( "WARNING" ) )
-                {
-                    nbMigrateScheduledTransactions.Title = "Completed with Warnings";
-                    nbMigrateScheduledTransactions.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Info;
-                }
-                
-                nbMigrateScheduledTransactions.Text = importResult;
-                nbMigrateScheduledTransactions.Details = resultDetails.ConvertCrLfToHtmlBr();
-            }
         }
 
         /// <summary>
