@@ -43,6 +43,7 @@
 
         <!-- Libraries -->
         <script src="<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>" ></script>
+        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>" ></script>
         <script src="<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>" ></script>
@@ -93,7 +94,6 @@
             });
         </script>
 
-        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     </head>
      
@@ -165,19 +165,7 @@
                     </ProgressTemplate>
             </asp:UpdateProgress>
 
-            <script>
-                $('a').each(function() {
-                    var a = new RegExp('/' + window.location.host + '/');
-
-                    if(!a.test(this.href) && this.getAttribute('onclick') == null) {
-                        $(this).click(function(event) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            window.open(this.href, '_blank');
-                        });
-                    }
-                });
-            </script>
+            
 
         </form>
 
