@@ -68,6 +68,7 @@
 
                         <Rock:RockDropDownList ID="ddlNMIGateway" Label="NMI Gateway" runat="server" />
                         <Rock:RockDropDownList ID="ddlMyWellGateway" Label="My Well Gateway" runat="server" />
+                        <Rock:PersonPicker ID="ppSelectedPerson" runat="server" Label="Specific Person" Help="Select a person if you only want to migration the saved accounts and scheduled transactions for this person. Leave this blank to migrate all." />
 
                         <hr />
 

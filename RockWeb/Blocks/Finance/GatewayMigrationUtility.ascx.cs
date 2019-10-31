@@ -222,7 +222,14 @@ namespace RockWeb.Blocks.Finance
             var myWellGatewayComponent = myWellFinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
 
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
-            var nmiPersonSavedAccountList = financialPersonSavedAccountService.Queryable().Where( a => a.FinancialGatewayId == nmiFinancialGatewayID ).ToList();
+            var nmiPersonSavedAccountQry = financialPersonSavedAccountService.Queryable().Where( a => a.FinancialGatewayId == nmiFinancialGatewayID );
+
+            if ( ppSelectedPerson.PersonId.HasValue )
+            {
+                nmiPersonSavedAccountQry = nmiPersonSavedAccountQry.Where( a => a.PersonAlias.PersonId == ppSelectedPerson.PersonId );
+            }
+
+            var nmiPersonSavedAccountList = nmiPersonSavedAccountQry.ToList();
 
             var personSavedAccountResultsBuilder = new StringBuilder();
 
@@ -348,7 +355,14 @@ namespace RockWeb.Blocks.Finance
 
             // Get the ScheduledTransaction with NoTracking. If we need to update it, we'll track it with a different rockContext then save it.
             // Limit to active subscriptions that have a NextPaymentDate (onetime or canceled schedules might not have a NextPaymentDate)
-            var scheduledTransactions = financialScheduledTransactionService.Queryable().Where( a => a.FinancialGatewayId == nmiFinancialGatewayId & a.IsActive && a.NextPaymentDate.HasValue ).AsNoTracking().ToList();
+            var scheduledTransactionsQry = financialScheduledTransactionService.Queryable().Where( a => a.FinancialGatewayId == nmiFinancialGatewayId & a.IsActive && a.NextPaymentDate.HasValue );
+
+            if ( ppSelectedPerson.PersonId.HasValue )
+            {
+                scheduledTransactionsQry = scheduledTransactionsQry.Where( a => a.AuthorizedPersonAlias.PersonId == ppSelectedPerson.PersonId );
+            }
+
+            var scheduledTransactions = scheduledTransactionsQry.AsNoTracking().ToList();
 
             var earliestMyWellStartDate = myWellGatewayComponent.GetEarliestScheduledStartDate( myWellFinancialGateway );
             var oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() );
