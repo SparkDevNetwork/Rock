@@ -1351,6 +1351,8 @@ namespace RockWeb.Blocks.Connection
                 lReadOnlyTitle.Text = connectionType.Name.FormatAsHtmlTitle();
             }
 
+            hlInactive.Visible = !connectionType.IsActive;
+
             SetEditMode( true );
 
             // General
@@ -1388,6 +1390,8 @@ namespace RockWeb.Blocks.Connection
             StatusesState = null;
 
             lReadOnlyTitle.Text = connectionType.Name.FormatAsHtmlTitle();
+            hlInactive.Visible = !connectionType.IsActive;
+
             lConnectionTypeDescription.Text = connectionType.Description.ScrubHtmlAndConvertCrLfToBr();
         }
 
