@@ -139,7 +139,7 @@ mission. We are so grateful for your commitment.</p>
     <dt>Confirmation Code</dt>
     <dd>{{ Transaction.TransactionCode }}</dd>
     <dd></dd>
-    
+
     <dt>Name</dt>
     <dd>{{ Person.FullName }}</dd>
     <dd></dd>
@@ -153,18 +153,18 @@ mission. We are so grateful for your commitment.</p>
         <dd>{{ transactionDetail.Amount }}</dd>
     {% endfor %}
     <dd></dd>
-    
+
     <dt>Payment Method</dt>
     <dd>{{ PaymentDetail.CurrencyTypeValue.Description}}</dd>
 
     {% if PaymentDetail.AccountNumberMasked  != '' %}
         <dt>Account Number</dt>
-        <dd>{{ PaymentDetail.AccountNumberMasked  }}</dd>
+        <dd>{{ PaymentDetail.AccountNumberMasked }}</dd>
     {% endif %}
 
     <dt>When<dt>
     <dd>
-    
+
     {% if Transaction.TransactionFrequencyValue %}
         {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
     {% else %}
@@ -477,10 +477,10 @@ mission. We are so grateful for your commitment.</p>
 
             ddlFrequency.Items.Clear();
             var supportedFrequencies = this.FinancialGatewayComponent.SupportedPaymentSchedules;
-            
+
             foreach ( var supportedFrequency in supportedFrequencies )
             {
-                // If this isn't a one-time scheduled transaction, don't allow changing scheduled transaction to a one-time, 
+                // If this isn't a one-time scheduled transaction, don't allow changing scheduled transaction to a one-time,
                 if ( scheduledTransaction.TransactionFrequencyValueId == oneTimeFrequencyId || supportedFrequency.Id != oneTimeFrequencyId )
                 {
                     ddlFrequency.Items.Add( new ListItem( supportedFrequency.Value, supportedFrequency.Id.ToString() ) );

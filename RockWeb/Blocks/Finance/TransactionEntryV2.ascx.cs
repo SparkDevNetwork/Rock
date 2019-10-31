@@ -490,7 +490,7 @@ mission. We are so grateful for your commitment.</p>
 
     {% if PaymentDetail.AccountNumberMasked  != '' %}
         <dt>Account Number</dt>
-        <dd>{{ PaymentDetail.AccountNumberMasked  }}</dd>
+        <dd>{{ PaymentDetail.AccountNumberMasked }}</dd>
     {% endif %}
 
     <dt>When<dt>

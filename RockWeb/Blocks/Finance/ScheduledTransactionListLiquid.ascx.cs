@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Finance
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
-        DefaultValue = @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava'  %}",
+        DefaultValue = @"{% include '~~/Assets/Lava/ScheduledTransactionListLiquid.lava' %}",
         Order = 1 )]
 
     [LinkedPage(
