@@ -30,7 +30,7 @@
 
     Sys.Application.add_load(function () {
 
-        $('a.key-value-add').click(function (e) {
+        $('a.key-value-add').on('click', function (e) {
             e.preventDefault();
             var $keyValueList = $(this).closest('.key-value-list');
             $keyValueList.find('.key-value-rows').append($keyValueList.find('.js-value-html').val());

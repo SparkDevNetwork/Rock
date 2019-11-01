@@ -24,7 +24,7 @@
                     if (options.valueChangedScript) {
                         window.location = "javascript:" + options.valueChangedScript;
                     }
-                    
+
                 }
 
 
@@ -35,7 +35,7 @@
                     return ui;
                 };
 
-                $('a.list-items-add').click(function (e) {
+                $('a.list-items-add').on('click', function (e) {
                     e.preventDefault();
                     var $ValueList = $(this).closest('.list-items');
                     $ValueList.find('.list-items-rows').append($ValueList.find('.js-list-items-html').val());

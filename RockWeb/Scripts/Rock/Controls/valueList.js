@@ -21,7 +21,7 @@
 
   Sys.Application.add_load(function () {
 
-    $('a.value-list-add').click(function (e) {
+    $('a.value-list-add').on('click', function (e) {
       e.preventDefault();
       var $ValueList = $(this).closest('.value-list');
       var newValuePickerHtml = $ValueList.find('.js-value-list-html').val()

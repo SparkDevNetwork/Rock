@@ -1,7 +1,7 @@
 ﻿(function (Sys) {
     'use strict';
     Sys.Application.add_load(function () {
-        $('a.help').click(function (e) {
+        $('a.help').on('click', function (e) {
             e.preventDefault();
             $(this).siblings('div.alert-info').slideToggle(function () {
                 Rock.controls.modal.updateSize(this);
