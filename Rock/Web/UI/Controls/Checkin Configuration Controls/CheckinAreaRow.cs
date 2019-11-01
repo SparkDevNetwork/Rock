@@ -116,38 +116,38 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // checkin-area animation
-//$('section.checkin-area').click(function () {
+//$('section.checkin-area').on('click', function () {
 //    $(this).siblings('div').slideToggle();
 //    $expanded = $(this).children('input.area-expanded');
 //    $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 //});
 
-// fix so that the Remove button will fire its event, but not the parent event 
-$('.checkin-area a.btn-danger').click(function (event) {
+// fix so that the Remove button will fire its event, but not the parent event
+$('.checkin-area a.btn-danger').on('click', function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
     }}
 });
 
-// fix so that the Reorder button will fire its event, but not the parent event 
-$('.checkin-area a.checkin-area-reorder').click(function (event) {
+// fix so that the Reorder button will fire its event, but not the parent event
+$('.checkin-area a.checkin-area-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
     }}
 });
 
-// fix so that the Add Sub-Area button will fire its event, but not the parent event 
-$('.checkin-area a.checkin-area-add-area').click(function (event) {
+// fix so that the Add Sub-Area button will fire its event, but not the parent event
+$('.checkin-area a.checkin-area-add-area').on('click', function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
     }}
 });
 
-// fix so that the Ad Check-in Group button will fire its event, but not the parent event 
-$('.checkin-area a.checkin-area-add-group').click(function (event) {
+// fix so that the Ad Check-in Group button will fire its event, but not the parent event
+$('.checkin-area a.checkin-area-add-group').on('click', function (event) {
     event.stopImmediatePropagation();
     if ( isDirty() ) {{
         return false;
@@ -263,7 +263,7 @@ $('.checkin-area a.checkin-area-add-group').click(function (event) {
                 }
                 writer.RenderEndTag();
             }
-            
+
             // Render child group rows
             var groupRows = this.Controls.OfType<CheckinGroupRow>();
             if ( groupRows.Any() )
