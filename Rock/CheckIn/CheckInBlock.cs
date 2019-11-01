@@ -102,39 +102,53 @@ namespace Rock.CheckIn
         /// The current theme.
         /// </summary>
         [Obsolete( "Use LocalDeviceConfig..." )]
-        protected string CurrentTheme { get; set; }
+        [RockObsolete( "1.10" )]
+        protected string CurrentTheme
+        {
+            get => LocalDeviceConfig.CurrentTheme;
+            set => LocalDeviceConfig.CurrentTheme = value;
+        }
 
         /// <summary>
         /// The current kiosk id
         /// </summary>
         [Obsolete( "Use LocalDeviceConfig..." )]
-        protected int? CurrentKioskId { get; set; }
+        [RockObsolete( "1.10" )]
+        protected int? CurrentKioskId
+        {
+            get => LocalDeviceConfig.CurrentKioskId;
+            set => LocalDeviceConfig.CurrentKioskId = value;
+        }
 
         /// <summary>
         /// The current primary checkin-type id
         /// </summary>
         [Obsolete( "Use LocalDeviceConfig..." )]
+        [RockObsolete( "1.10" )]
         protected int? CurrentCheckinTypeId
         {
             get
             {
-                return _currentCheckinTypeId;
+                return LocalDeviceConfig.CurrentCheckinTypeId;
             }
 
             set
             {
-                _currentCheckinTypeId = value;
+                LocalDeviceConfig.CurrentCheckinTypeId = value;
                 _currentCheckinType = null;
             }
         }
-
-        private int? _currentCheckinTypeId;
 
         /// <summary>
         /// The current group type ids (Checkin Areas)
         /// </summary>
         [Obsolete( "Use LocalDeviceConfig..." )]
-        protected List<int> CurrentGroupTypeIds { get; set; }
+        [RockObsolete( "1.10" )]
+        protected List<int> CurrentGroupTypeIds
+        {
+            get => LocalDeviceConfig.CurrentGroupTypeIds;
+            set => LocalDeviceConfig.CurrentGroupTypeIds = value;
+        }
 
         /// <summary>
         /// Gets the type of the current check in.
@@ -204,6 +218,7 @@ namespace Rock.CheckIn
         /// Holds cookie names shared across certain check-in blocks.
         /// </summary>
         [Obsolete( "Use CheckinConfigurationHelper.CheckInCookieKey instead" )]
+        [RockObsolete( "1.10" )]
         public struct CheckInCookie
         {
             /// <summary>
