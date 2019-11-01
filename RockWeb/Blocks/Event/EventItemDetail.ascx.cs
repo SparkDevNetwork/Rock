@@ -107,13 +107,13 @@ namespace RockWeb.Blocks.Event
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlEventItemList );
 
-            // Get the calendar id of the calendar that user navigated from 
+            // Get the calendar id of the calendar that user navigated from
             _calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
 
             _canEdit = UserCanEdit;
             _canApprove = UserCanAdministrate;
 
-            // Load the other calendars user is authorized to view 
+            // Load the other calendars user is authorized to view
             cblCalendars.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( calendar.Id == ( _calendarId ?? 0 ) )
                     {
-                        _canEdit = _canEdit || 
+                        _canEdit = _canEdit ||
                             calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                         _canApprove = _canApprove ||
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Event
             ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
 
             string deleteScript = @"
-    $('a.js-delete-event').click(function( e ){
+    $('a.js-delete-event').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this event? All of the event occurrences will also be deleted!', function (result) {
             if (result) {
@@ -776,7 +776,7 @@ namespace RockWeb.Blocks.Event
             LoadEventOccurrenceAttributes( eventItem.Id );
 
             ShowItemAttributes();
-            
+
             BindAudienceGrid();
         }
 
@@ -808,7 +808,7 @@ namespace RockWeb.Blocks.Event
 
             lSummary.Visible = !string.IsNullOrWhiteSpace( eventItem.Summary );
             lSummary.Text = eventItem.Summary;
-            
+
             var calendars = eventItem.EventCalendarItems
                 .Select( c => c.EventCalendar.Name ).ToList();
             if ( calendars.Any() )

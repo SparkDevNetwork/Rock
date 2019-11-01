@@ -478,7 +478,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
 
-            // If this is a Family GroupType and they belong to multiple families, 
+            // If this is a Family GroupType and they belong to multiple families,
             // first make sure that the GroupMember.GroupOrder is set for this Person's Families.
             // This will ensure that other spots that rely on the GroupOrder provide consistent results.
             if ( this._IsFamilyGroupType )
@@ -659,7 +659,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private void RegisterScripts()
         {
             string script = @"
-    $('.js-show-more-family-attributes').click(function (e) {
+    $('.js-show-more-family-attributes').on('click', function (e) {
         var $pnl = $(this).closest('.js-persondetails-group');
         var $moreAttributes = $pnl.find('.js-more-group-attributes').first();
         if ( $moreAttributes.is(':visible') ) {

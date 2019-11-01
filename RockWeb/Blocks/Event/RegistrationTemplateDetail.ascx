@@ -577,12 +577,12 @@
                     return ui;
                 };
 
-                $('#cb-showdetails').change(function () {
+                $('#cb-showdetails').on('change', function () {
                     $('#registration-details').slideDown();
                     $('#registration-detailscheckbox').slideUp();
                 });
 
-                $('.js-expandable-summary-wrapper > label.control-label').click(function () {
+                $('.js-expandable-summary-wrapper > label.control-label').on('click', function () {
                     $(this).closest('.js-expandable-summary-wrapper').find('.js-expandable-summary').toggle(500);
                 })
 

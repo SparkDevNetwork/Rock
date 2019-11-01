@@ -126,19 +126,19 @@
         }
     }
 
-    $(".js-btn-show-servervars").click(function () {
+    $(".js-btn-show-servervars").on("click", function () {
         $(this).toggleClass("btn-default btn-action");
         $("#divServerVariables").slideToggle();
         return false;
     });
 
-    $(".js-btn-show-formdata").click(function () {
+    $(".js-btn-show-formdata").on("click", function () {
         $(this).toggleClass("btn-default btn-action");
         $("#divFormData").slideToggle();
         return false;
     });
 
-    $(".js-btn-show-cookies").click(function () {
+    $(".js-btn-show-cookies").on("click", function () {
         $(this).toggleClass("btn-default btn-action");
         $("#divCookies").slideToggle();
         return false;

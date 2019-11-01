@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Crm
             pwNote.Visible = ddlNoteType.Items.Count > 0;
 
             string script = @"
-    $('a.remove-all-individuals').click(function( e ){
+    $('a.remove-all-individuals').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the individuals from this update?', function (result) {
             if (result) {
@@ -185,15 +185,15 @@ namespace RockWeb.Blocks.Crm
     }});
 
     // Handle the click event for any label that contains a 'js-select-span' span
-    $( 'label.control-label' ).has( 'span.js-select-item').click( function() {{
+    $( 'label.control-label' ).has( 'span.js-select-item').on('click', function() {{
 
         var formGroup = $(this).closest('.form-group');
         var selectIcon = formGroup.find('span.js-select-item').children('i');
 
-        // Toggle the selection of the form group        
+        // Toggle the selection of the form group
         formGroup.toggleClass('bulk-item-selected');
         var enabled = formGroup.hasClass('bulk-item-selected');
-            
+
         // Set the selection icon to show selected
         selectIcon.toggleClass('fa-check-circle-o', enabled);
         selectIcon.toggleClass('fa-circle-o', !enabled);
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Crm
             }}
 
         }});
-        
+
         // Update the hidden field with the client id of each selected control, (if client id ends with '_hf' as in the case of multi-select attributes, strip the ending '_hf').
         var newValue = '';
         $('div.bulk-item-selected').each(function( index ) {{
@@ -235,7 +235,7 @@ namespace RockWeb.Blocks.Crm
                 newValue += ctrlId + '|';
             }});
         }});
-        $('#{0}').val(newValue);            
+        $('#{0}').val(newValue);
 
     }});
 ", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID );

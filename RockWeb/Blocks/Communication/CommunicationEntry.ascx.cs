@@ -311,7 +311,7 @@ namespace RockWeb.Blocks.Communication
             base.OnInit( e );
 
             string script = @"
-    $('a.remove-all-recipients').click(function( e ){
+    $('a.remove-all-recipients').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the pending recipients from this communication?', function (result) {
             if (result) {
@@ -1254,7 +1254,7 @@ namespace RockWeb.Blocks.Communication
             var mediumControl = GetMediumControl();
             if ( mediumControl != null )
             {
-                // If using simple mode, the control should be re-initialized from sender since sender fields 
+                // If using simple mode, the control should be re-initialized from sender since sender fields
                 // are not presented for editing and user shouldn't be able to change them
                 if ( !_fullMode && CurrentPerson != null )
                 {
@@ -1308,8 +1308,8 @@ namespace RockWeb.Blocks.Communication
         /// <param name="communication">The communication.</param>
         private void ShowActions( Rock.Model.Communication communication )
         {
-            // Determine if user is allowed to save changes, if not, disable 
-            // submit and save buttons 
+            // Determine if user is allowed to save changes, if not, disable
+            // submit and save buttons
             if ( IsUserAuthorized( "Approve" ) ||
                 ( CurrentPersonAliasId.HasValue && CurrentPersonAliasId == communication.SenderPersonAliasId ) ||
                 IsUserAuthorized( Authorization.EDIT ) )

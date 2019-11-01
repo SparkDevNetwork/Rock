@@ -509,7 +509,7 @@ The logged-in person's information will be used to complete the registrar inform
 ";
 
             string deleteScript = @"
-    $('a.js-delete-template').click(function( e ){
+    $('a.js-delete-template').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this registration template? All of the instances, and the registrations and registrants from each instance will also be deleted!', function (result) {
             if (result) {
@@ -3355,7 +3355,7 @@ The logged-in person's information will be used to complete the registrar inform
                         return;
                     }
                 }
-                     
+
                 if ( singleFeeItem == null )
                 {
                     singleFeeItem = new RegistrationTemplateFeeItem();

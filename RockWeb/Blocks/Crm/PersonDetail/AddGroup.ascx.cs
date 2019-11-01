@@ -247,7 +247,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 var campusi = GetAttributeValue( "ShowInactiveCampuses" ).AsBoolean() ? CampusCache.All() : CampusCache.All( false ).ToList();
                 cpCampus.Campuses = campusi;
-                
+
                 dvpMaritalStatus.Visible = true;
                 dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
                 var adultMaritalStatus = DefinedValueCache.Get( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
@@ -302,7 +302,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( _confirmMaritalStatus )
             {
                 string script = string.Format(
-      @"$('a.js-confirm-marital-status').click(function( e ){{
+      @"$('a.js-confirm-marital-status').on('click', function( e ){{
         var anyAdults = false;
         $(""input[id$='_rblRole_0']"").each(function() {{
             if ( $(this).prop('checked') ) {{
@@ -1655,7 +1655,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <seealso cref="Rock.Utility.RockDynamic" />
         public class GroupAtLocationInfo : RockDynamic

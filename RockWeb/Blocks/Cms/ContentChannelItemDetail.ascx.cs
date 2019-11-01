@@ -38,7 +38,7 @@ using System.Data.Entity;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName("Content Channel Item Detail")]
     [Category("CMS")]
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Cms
             set { _deniedCss = value; }
         }
 
-        private string _jsScript = @"$('#{0} .btn-toggle').click(function (e) {{
+        private string _jsScript = @"$('#{0} .btn-toggle').on('click', function (e) {{
 
                     e.stopImmediatePropagation();
 
@@ -112,14 +112,14 @@ namespace RockWeb.Blocks.Cms
                 }});
 
                 $(document).ready( function() {{
-        
+
                     window.addEventListener('beforeunload', function(e) {{
                         if ( $('#{2}').val() == 'true' ) {{
                             var timeout = setTimeout( function() {{
                                 $('#updateProgress').hide();
                             }}, 1000 );
 
-                            var confirmMessage = 'You have not saved your changes. Are you sure you want to continue?';    
+                            var confirmMessage = 'You have not saved your changes. Are you sure you want to continue?';
                             ( e || window.event).returnValue = confirmMessage;
                             return confirmMessage;
                         }}
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !Page.IsValid || !contentItem.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
