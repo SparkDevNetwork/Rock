@@ -89,6 +89,10 @@ namespace Rock.Jobs
                 .Where( a => a.NoteTypeId == noteTypeIdScheduledTransaction.Value && captionsToConvert.Contains( a.Caption ) && a.EntityId.HasValue )
                 .Where( a => !historyQuery.Any( h => h.EntityId == a.EntityId ) );
 
+            var notesToConvertToSummaryList = noteService.Queryable()
+                .Where( a => a.NoteTypeId == noteTypeIdScheduledTransaction.Value && a.Caption == "Created Transaction" && !string.IsNullOrEmpty( a.Text ) && a.EntityId.HasValue )
+                .AsNoTracking().ToList();
+
             List<History> historyRecordsToInsert = notesToConvertToHistory.AsNoTracking()
                 .ToList()
                 .Select( n =>
@@ -139,6 +143,20 @@ namespace Rock.Jobs
             rockContext.BulkInsert( historyRecordsToInsert );
             var qryNotesToDelete = noteService.Queryable().Where( a => a.NoteTypeId == noteTypeIdScheduledTransaction && captionsToConvert.Contains( a.Caption ) );
             rockContext.BulkDelete( qryNotesToDelete );
+
+            foreach ( var noteToConvertToSummary in notesToConvertToSummaryList )
+            {
+                using ( var updatedSummaryContext = new RockContext() )
+                {
+                    var scheduledTransactionService = new FinancialScheduledTransactionService( updatedSummaryContext );
+                    var scheduledTransaction = scheduledTransactionService.Get( noteToConvertToSummary.EntityId.Value );
+                    if ( scheduledTransaction != null && scheduledTransaction.Summary.IsNullOrWhiteSpace() )
+                    {
+                        scheduledTransaction.Summary = noteToConvertToSummary.Text;
+                        updatedSummaryContext.SaveChanges( disablePrePostProcessing: true );
+                    }
+                }
+            }
         }
 
         /// <summary>

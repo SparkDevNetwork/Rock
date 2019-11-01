@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Cms
         protected override object SaveViewState()
         {
             ViewState["ChannelGuid"] = ChannelGuid;
-            ViewState["DataViewFilter"] = ReportingHelper.GetFilterFromControls(phFilters).ToJson();
+            ViewState["DataViewFilter"] = ReportingHelper.GetFilterFromControls( phFilters ).ToJson();
 
             return base.SaveViewState();
         }
@@ -262,7 +262,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !dataViewFilter.IsValid )
             {
-                // Controls will render the error messages
+                // Controls will render the error messages                    
                 return;
             }
 
@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected override void ShowSettings()
         {
-            // Switch does not automatically initialize again after a partial-postback.  This script
+            // Switch does not automatically initialize again after a partial-postback.  This script 
             // looks for any switch elements that have not been initialized and re-initializes them.
             string script = @"
 $(document).ready(function() {
@@ -417,7 +417,7 @@ $(document).ready(function() {
             var rockContext = new RockContext();
             ddlChannel.DataSource = new ContentChannelService( rockContext ).Queryable()
                 .OrderBy( c => c.Name )
-                .Where(a => a.ContentChannelType.ShowInChannelList == true)
+                .Where( a => a.ContentChannelType.ShowInChannelList == true )
                 .Select( c => new { c.Guid, c.Name } )
                 .ToList();
             ddlChannel.DataBind();
@@ -473,7 +473,7 @@ $(document).ready(function() {
 
         /// <summary>
         /// Shows the content channel item or items. If an output cache duration is set,
-        /// the content will attempt to be fetched from cache unless any of the following
+        /// the content will attempt to be fetched from cache unless any of the following 
         /// settings are enabled or set:
         ///    * MergeContent (bool)
         ///    * SetPageTitle (bool)
@@ -497,13 +497,13 @@ $(document).ready(function() {
             string metaImageAttributeValue = GetAttributeValue( "MetaImageAttribute" );
             int pageNumber = PageParameter( "Page" ).AsIntegerOrNull() ?? 1;
 
-            // Try fetching from cache if it's OK to do so.
+            // Try fetching from cache if it's OK to do so. 
             // For now, we'll only cache if pagination is page 1. When our cache supports caching as a region (set)
             // we can then cache all pages and call ClearRegion if the block settings change.
             if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 && pageNumber == 1 &&
                 !( isSetPageTitleEnabled || isSetPageTitleEnabled || isRssAutodiscoverEnabled
-                || isQueryParameterFilteringEnabled || ! string.IsNullOrWhiteSpace( metaDescriptionAttributeValue )
-                || ! string.IsNullOrWhiteSpace( metaImageAttributeValue ) ) )
+                || isQueryParameterFilteringEnabled || !string.IsNullOrWhiteSpace( metaDescriptionAttributeValue )
+                || !string.IsNullOrWhiteSpace( metaImageAttributeValue ) ) )
             {
                 outputContents = GetCacheItem( OUTPUT_CACHE_KEY ) as string;
             }
@@ -1330,7 +1330,7 @@ $(document).ready(function() {
         #region Helper Classes
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class Pagination : DotLiquid.Drop
         {
@@ -1453,7 +1453,7 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         public class PaginationPage : DotLiquid.Drop
         {
