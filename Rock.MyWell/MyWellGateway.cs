@@ -362,7 +362,7 @@ namespace Rock.MyWell
                 State = paymentInfo.State,
                 PostalCode = paymentInfo.PostalCode,
                 Country = paymentInfo.Country,
-                Email = paymentInfo.Email,
+                Email = string.Empty,
                 Phone = paymentInfo.Phone,
             };
 

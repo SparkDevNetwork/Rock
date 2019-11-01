@@ -629,7 +629,7 @@ namespace Rock.MyWell
         public string Country { get; set; }
 
         /// <summary>
-        /// Gets or sets the email.
+        /// Gets or sets the email. Leave this blank to avoid getting emails for subscription transactions.
         /// </summary>
         /// <value>
         /// The email.
