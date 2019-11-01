@@ -444,6 +444,7 @@
     <Compile Include="Model\StreakTypeAchievementType.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
+    <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
