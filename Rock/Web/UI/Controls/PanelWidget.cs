@@ -188,7 +188,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // activity animation
-$('.rock-panel-widget > header').click(function () {
+$('.rock-panel-widget > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     if ( $(this).find('.js-header-controls').length ) {
@@ -204,7 +204,7 @@ $('.rock-panel-widget > header').click(function () {
 });
 
 // fix so that certain controls will fire its event, but not the parent event
-$('.js-stop-immediate-propagation').click(function (event) {
+$('.js-stop-immediate-propagation').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 

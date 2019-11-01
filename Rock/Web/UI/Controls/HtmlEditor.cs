@@ -298,7 +298,7 @@ namespace Rock.Web.UI.Controls
                 ViewState["ResizeMaxWidth"] = value;
             }
         }
- 
+
         /// <summary>
         /// Gets or sets the custom javascript that will get executed when the editor 'onChange' event occurs
         /// </summary>
@@ -764,7 +764,7 @@ $(document).ready( function() {{
     }});
 
     if ({StartInCodeEditorMode.ToTrueFalse().ToLower()} && RockCodeEditor) {{
-        RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).click();
+        RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).trigger('click');
     }}
 
 }});
