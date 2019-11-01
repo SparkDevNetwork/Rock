@@ -107,7 +107,7 @@
                 }
             });
 
-            $('#' + options.aRemove).click(function () {
+            $('#' + options.aRemove).on('click', function () {
                 $(this).hide();
                 var $el = $('#' + options.imgThumbnail);
                 var noPictureUrl = options.noPictureUrl || Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg';
@@ -117,7 +117,7 @@
                 else {
                     $el.attr('style', 'background-image:url(' + noPictureUrl + ');background-size:cover;background-position:50%');
                 }
-                
+
                 if (options.deleteFunction) {
                   options.deleteFunction();
                 }
