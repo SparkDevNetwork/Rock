@@ -352,4 +352,7 @@
   <data name="_201910281713564_CustomSundayDate_ufnUtility_GetSundayDateRange" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>201910281713564_customsundaydate_ufnutility_getsundaydaterange.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201911010002535_CustomSundayDate_GivingAnalytics_spFinance_GivingAnalyticsQuery_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>201911010002535_customsundaydate_givinganalytics_spfinance_givinganalyticsquery_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

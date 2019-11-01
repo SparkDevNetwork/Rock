@@ -101,6 +101,10 @@
     <Compile Include="Migrations\201910292016464_Rollup_1029.Designer.cs">
       <DependentUpon>201910292016464_Rollup_1029.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201911010002535_CustomSundayDate_GivingAnalytics.cs" />
+    <Compile Include="Migrations\201911010002535_CustomSundayDate_GivingAnalytics.Designer.cs">
+      <DependentUpon>201911010002535_CustomSundayDate_GivingAnalytics.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -921,6 +925,9 @@
     <EmbeddedResource Include="Migrations\201910292016464_Rollup_1029.resx">
       <DependentUpon>201910292016464_Rollup_1029.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201911010002535_CustomSundayDate_GivingAnalytics.resx">
+      <DependentUpon>201911010002535_CustomSundayDate_GivingAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
     </EmbeddedResource>
@@ -1555,6 +1562,9 @@
     </Content>
     <Content Include="Migrations\201910281713564_CustomSundayDate_ufnUtility_GetSundayDateRange.sql">
       <DependentUpon>201910281713564_CustomSundayDate.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201911010002535_CustomSundayDate_GivingAnalytics_spFinance_GivingAnalyticsQuery_TransactionData.sql">
+      <DependentUpon>201911010002535_CustomSundayDate_GivingAnalytics.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.0\201908202115162_Rollup_0820_GroupRequirementsBadge.sql">
       <DependentUpon>201908202115162_Rollup_0820.cs</DependentUpon>

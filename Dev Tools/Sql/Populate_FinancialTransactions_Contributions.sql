@@ -2,7 +2,7 @@ set nocount on
 
 /* Change these settings to your liking*/
 declare
-	@yearsBack int = 10,
+	@yearsBack int = 1,
 	@maxPersonCount INT = 40000, /* limit to first X persons in the database (Handy for testing Statement Generator) */ 
 	@maxTransactionCount int = 500000, 
 	@maxBatchNumber INT = 1000
