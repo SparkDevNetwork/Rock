@@ -1352,7 +1352,7 @@ achieve our mission.  We are so grateful for your commitment.
         }});
 
         // Set the date prompt based on the frequency value entered
-        $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
+        $('#ButtonDropDown_btnFrequency .dropdown-menu a').on('click', function () {{
             var $when = $(this).parents('div.form-group:first').next();
             if ($(this).attr('data-id') == '{3}') {{
                 $when.find('label:first').html('When');
@@ -1408,10 +1408,10 @@ achieve our mission.  We are so grateful for your commitment.
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking
-        $('a[id$=""btnNext""]').click(function() {{
+        $('a[id$=""btnNext""]').on('click', function() {{
 			$(this).addClass('disabled');
 			$(this).unbind('click');
-			$(this).click(function () {{
+			$(this).on('click', function () {{
 				return false;
 			}});
         }});

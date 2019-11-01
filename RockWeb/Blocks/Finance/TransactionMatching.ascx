@@ -284,7 +284,7 @@
             function handleAmountBoxKeyPress(element, keyCode) {
                 // if Enter was pressed when in one of the Amount boxes, click the Next button.
                 if (keyCode == 13) {
-                    $('#<%=btnNext.ClientID%>')[0].click();
+                    $('#<%=btnNext.ClientID%>')[0].trigger('click');
                     return false;
                 }
                 else if (keyCode == 40) {

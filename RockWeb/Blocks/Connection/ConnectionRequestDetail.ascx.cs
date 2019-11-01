@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Connection
             rptSearchResult.ItemCommand += rptSearchResult_ItemCommand;
 
             string confirmConnectScript = @"
-    $('a.js-confirm-connect').click(function( e ){
+    $('a.js-confirm-connect').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('This person does not currently meet all of the requirements of the group. Are you sure you want to add them to the group?', function (result) {
             if (result) {
@@ -1445,9 +1445,9 @@ namespace RockWeb.Blocks.Connection
                 lbEdit.Visible = editAllowed;
                 gConnectionRequestActivities.IsDeleteEnabled = editAllowed;
                 gConnectionRequestActivities.Actions.ShowAdd = editAllowed;
-                
+
                 // Only show transfer if there are other Opportunities
-                if ( connectionOpportunity.ConnectionType.ConnectionOpportunities.Count > 1) 
+                if ( connectionOpportunity.ConnectionType.ConnectionOpportunities.Count > 1)
                 {
                     lbTransfer.Visible = editAllowed;
                 }
@@ -1514,7 +1514,7 @@ namespace RockWeb.Blocks.Connection
             {
                 List<String> contactList = new List<string>();
                 var hasSmsLink = GetAttributeValue( AttributeKey.SmsLinkPage ).IsNotNullOrWhiteSpace();
-                
+
                 foreach ( PhoneNumber phoneNumber in person.PhoneNumbers )
                 {
                     var smsAnchor = string.Empty;
@@ -1803,7 +1803,7 @@ namespace RockWeb.Blocks.Connection
                 // Build list of groups
                 var groups = new List<Group>();
 
-                // First add any groups specifically configured for the opportunity 
+                // First add any groups specifically configured for the opportunity
                 var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
                 if ( opportunityGroupIds.Any() )
                 {
@@ -2280,7 +2280,7 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionRequest != null &&
                     connectionRequest.ConnectionOpportunity != null )
                 {
-                    // Parse the attribute filters 
+                    // Parse the attribute filters
                     SearchAttributes = new List<AttributeCache>();
 
                     int entityTypeId = new ConnectionOpportunity().TypeId;

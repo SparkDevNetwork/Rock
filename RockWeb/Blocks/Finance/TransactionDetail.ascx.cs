@@ -182,7 +182,7 @@ namespace RockWeb.Blocks.Finance
             //}
 
             string script = @"
-    $('.transaction-image-thumbnail').click( function() {
+    $('.transaction-image-thumbnail').on('click', function() {
         var $primaryImg = $('.transaction-image');
         var primarySrc = $primaryImg.attr('src');
         $primaryImg.attr('src', $(this).attr('src'));

@@ -109,7 +109,7 @@
     $(document).ready(function () { FadePanelIn(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(FadePanelIn);
 
-    $('.js-select-all').click(function () {
+    $('.js-select-all').on('click', function () {
         var selectAllChecked = $('.js-select-all').prop('checked');
         $('.js-category-items input').prop('checked', selectAllChecked)
     });
