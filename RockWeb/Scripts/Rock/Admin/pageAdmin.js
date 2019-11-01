@@ -101,7 +101,7 @@
                 $('body').toggleClass('block-highlight');
 
                 // Bind the block configure icon so that edit icons are displayed on hover
-                $(".block-configuration").hover(function (e) {
+                $(".block-configuration").on("hover", function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '1049' });
                 }, function () {
@@ -172,7 +172,7 @@
                 $('.zone-configuration').toggle();
 
                 // Bind the zone configure icon so that edit icons are displayed on hover
-                $(".zone-configuration").hover(function () {
+                $(".zone-configuration").on("hover", function () {
                     var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '1049' });
                 }, function () {
