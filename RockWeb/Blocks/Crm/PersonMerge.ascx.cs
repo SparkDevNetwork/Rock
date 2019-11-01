@@ -81,6 +81,7 @@ namespace RockWeb.Blocks.Crm
         private readonly List<string> headingKeys = new List<string>
         {
             "PhoneNumbers",
+            "Addresses",
             "PersonAttributes",
             "FamilyAttributes",
             FAMILY_VALUES
@@ -210,28 +211,55 @@ namespace RockWeb.Blocks.Crm
         {
             if ( !Page.IsPostBack )
             {
+                List<int> selectedPersonIds = null;
+
+                // Process Query String parameter "Set", specifying a set of people to merge.
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
+
                 if ( setId.HasValue )
                 {
-                    var selectedPersonIds = new EntitySetItemService( new RockContext() )
+                    selectedPersonIds = new EntitySetItemService( new RockContext() )
                         .GetByEntitySetId( setId.Value, true )
                         .Select( i => i.EntityId )
                         .Distinct()
                         .ToList();
+                }
 
+                // Process Query String parameter "PersonId", specifying a delimited list of people to merge.
+                var personIdList = PageParameter( "PersonId" );
+
+                if ( personIdList.IsNotNullOrWhiteSpace() )
+                {
+                    selectedPersonIds = personIdList.SplitDelimitedValues().AsIntegerList();
+                }
+
+                // Load the set of people specified by query string parameters.
+                if ( selectedPersonIds != null )
+                { 
                     if ( selectedPersonIds.Count == 0 )
                     {
                         ScriptManager.RegisterStartupScript( this, this.GetType(), "goBack", "history.go(-1);", true );
                     }
 
-                    // Get the people selected
+                    // Get the selected people.
                     var people = new PersonService( new RockContext() ).Queryable( true ).Include( a => a.CreatedByPersonAlias.Person ).Include( a => a.Users )
                         .Where( p => selectedPersonIds.Contains( p.Id ) )
                         .ToList();
 
-                    // Create the data structure used to build grid
+                    // Create the data structure used to build the grid.
                     MergeData = new MergeData( people, headingKeys, CurrentPerson );
-                    MergeData.EntitySetId = setId.Value;
+
+                    if ( setId != null )
+                    {
+                        MergeData.EntitySetId = setId.Value;
+                    }
+
+                    // If a Person Id list has been specified as a query parameter, select the first person in the list as the merge target.
+                    if ( personIdList.IsNotNullOrWhiteSpace() )
+                    {
+                        MergeData.PrimaryPersonId = selectedPersonIds.FirstOrDefault();
+                    }
+
                     BuildColumns();
                     BindGrid();
                 }
@@ -540,10 +568,12 @@ namespace RockWeb.Blocks.Crm
                             }
                         }
 
-                        // Update the family attributes
+                        // Update the Primary Family.
                         var primaryFamily = primaryPerson.GetFamily( rockContext );
+
                         if ( primaryFamily != null )
                         {
+                            // Update the family attributes.
                             primaryFamily.Name = GetNewStringValue( FAMILY_NAME );
                             primaryFamily.CampusId = GetNewIntValue( CAMPUS );
 
@@ -560,6 +590,9 @@ namespace RockWeb.Blocks.Crm
                                     Rock.Attribute.Helper.SaveAttributeValue( primaryFamily, attribute, newValue, rockContext );
                                 }
                             }
+
+                            // Update Addresses.
+                            MergeAddresses( rockContext, primaryPerson, primaryFamily );
                         }
 
                         // Delete the unselected photos
@@ -728,6 +761,156 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Merge the selected Addresses into the merge target.
+        /// </summary>
+        /// <param name="rockContext"></param>
+        /// <param name="primaryPerson"></param>
+        private void MergeAddresses( RockContext rockContext, Person primaryPerson, Group primaryFamily )
+        {
+            // Update the addresses of the primary family.
+            if ( primaryFamily == null )
+            {
+                return;
+            }
+
+            // Process the Address entry for each Address Type.
+            var addressTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues;
+
+            var locationService = new LocationService( rockContext );
+            var groupLocationService = new GroupLocationService( rockContext );
+
+            foreach ( var addressType in addressTypes )
+            {
+                GroupLocation mergeSourceFamilyLocation = null;
+
+                var key = "address_" + addressType.Id.ToString();
+                var keyPrefix = key + "_";
+
+                // Get all of the property keys that correspond to addresses of this type.
+                var addressKeys = MergeData.Properties.Where( p => p.Key == key || p.Key.StartsWith( keyPrefix, StringComparison.OrdinalIgnoreCase ) ).Select( x => x.Key ).ToList();
+
+                foreach ( var addressKey in addressKeys )
+                {
+                    // Get the current value for the merge target.
+                    var property = MergeData.GetProperty( addressKey );
+
+                    var primaryPersonGroupLocationValue = property.Values.Where( v => v.PersonId == MergeData.PrimaryPersonId ).FirstOrDefault();
+
+                    // If the merge target address is selected, there is no need to process this entry.
+                    if ( primaryPersonGroupLocationValue.Selected )
+                    {
+                        continue;
+                    }
+
+                    // Get the updated value for this merge address.
+                    var newValueId = GetNewIntValue( addressKey );
+
+                    if ( newValueId != null )
+                    {
+                        mergeSourceFamilyLocation = groupLocationService.Get( newValueId.Value );
+                    }
+
+                    GroupLocation currentTargetFamilyLocation = null;
+
+                    if ( primaryPersonGroupLocationValue.Value != null )
+                    {
+                        currentTargetFamilyLocation = primaryFamily.GroupLocations.FirstOrDefault( p => p.Id == primaryPersonGroupLocationValue.Value.AsInteger() );
+                    }
+
+                    // Compare the address components to determine if an update is required.
+                    var isUpdated = true;
+
+                    if ( currentTargetFamilyLocation != null )
+                    {
+                        var targetLocation = currentTargetFamilyLocation.Location;
+
+                        Location sourceLocation = null;
+
+                        if ( mergeSourceFamilyLocation != null )
+                        {
+                            sourceLocation = mergeSourceFamilyLocation.Location;
+
+                            if ( targetLocation.Id == sourceLocation.Id )
+                            {
+                                isUpdated = false;
+                            }
+                            else if ( sourceLocation.Street1.ToStringSafe() == targetLocation.Street1.ToStringSafe()
+                                 && sourceLocation.Street2.ToStringSafe() == targetLocation.Street2.ToStringSafe()
+                                 && sourceLocation.City.ToStringSafe() == targetLocation.City.ToStringSafe()
+                                 && sourceLocation.County.ToStringSafe() == targetLocation.County.ToStringSafe()
+                                 && sourceLocation.State.ToStringSafe() == targetLocation.State.ToStringSafe()
+                                 && sourceLocation.PostalCode.ToStringSafe() == targetLocation.PostalCode.ToStringSafe()
+                                 && sourceLocation.Country.ToStringSafe() == targetLocation.Country.ToStringSafe() )
+                            {
+                                isUpdated = false;
+                            };
+                        }
+                    }
+
+                    if ( isUpdated )
+                    {
+                        if ( mergeSourceFamilyLocation == null )
+                        {
+                            // Remove the existing address.
+                            primaryFamily.GroupLocations.Remove( currentTargetFamilyLocation );
+
+                            groupLocationService.Delete( currentTargetFamilyLocation );
+                        }
+                        else
+                        {
+                            // Update the existing address.
+                            var prevLocType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS.AsGuid() );
+
+                            GroupLocation newTargetFamilyLocation = new GroupLocation();
+
+                            var newGroupLocationId = 0;
+                            var newGroupLocationGuid = Guid.NewGuid();
+
+                            if ( currentTargetFamilyLocation != null )
+                            {
+                                // A Family Address of this Type already exists in the target.
+                                if ( prevLocType != null )
+                                {
+                                    // Change the existing address to a previous address.
+                                    currentTargetFamilyLocation.GroupLocationTypeValue = null;
+                                    currentTargetFamilyLocation.GroupLocationTypeValueId = prevLocType.Id;
+
+                                    newTargetFamilyLocation = new GroupLocation();
+                                }
+                                else
+                                {
+                                    // No Previous Address Type is available, so just update the current address.
+                                    newTargetFamilyLocation = currentTargetFamilyLocation;
+
+                                    newGroupLocationId = currentTargetFamilyLocation.Id;
+                                    newGroupLocationGuid = currentTargetFamilyLocation.Guid;
+                                }
+                            }
+                            else
+                            {
+                                newTargetFamilyLocation = new GroupLocation();
+                            }
+
+                            newTargetFamilyLocation.CopyPropertiesFrom( mergeSourceFamilyLocation );
+
+                            // Set the appropriate identifiers for this record.
+                            newTargetFamilyLocation.Id = newGroupLocationId;
+                            newTargetFamilyLocation.Guid = newGroupLocationGuid;
+
+                            // If this is a new location, associate it with the Family.
+                            if ( newTargetFamilyLocation.Id == 0 )
+                            {
+                                primaryFamily.GroupLocations.Add( newTargetFamilyLocation );
+                            }
+                        }
+                    }
+                }
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Merges the attribute matrix attribute values' Items into one AttributeMatrixValue
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -857,9 +1040,19 @@ namespace RockWeb.Blocks.Crm
             var families = groupMemberService.Queryable()
                 .Where( m => m.PersonId == personId && m.Group.GroupType.Guid == familyGuid )
                 .Select( m => m.Group )
-                .Distinct();
+                .Distinct()
+                .ToList();
 
             StringBuilder sbHeaderData = new StringBuilder();
+
+            if ( families.Count > 1 )
+            {
+                sbHeaderData.Append( "<div class='js-person-header js-person-has-multiple-families'>" );
+            }
+            else
+            {
+                sbHeaderData.Append( "<div class='js-person-header'>" );
+            }
 
             foreach ( var family in families )
             {
@@ -892,6 +1085,8 @@ namespace RockWeb.Blocks.Crm
 
                 sbHeaderData.Append( "</div>" );
             }
+
+            sbHeaderData.Append( "<div>" );
 
             return sbHeaderData.ToString();
         }
@@ -1108,6 +1303,7 @@ namespace RockWeb.Blocks.Crm
                 AddPerson( person );
             }
 
+            // Add Phone Numbers
             var phoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
             foreach ( var person in people )
             {
@@ -1135,6 +1331,62 @@ namespace RockWeb.Blocks.Crm
                     else
                     {
                         AddProperty( key, phoneType.Value, person.Id, string.Empty, string.Empty );
+                    }
+                }
+            }
+
+            // Add Addresses, grouped by Address Type.
+            var addressTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ).DefinedValues;
+
+            foreach ( var addressType in addressTypes )
+            {
+                string key = "address_" + addressType.Id.ToString();
+
+                foreach ( var person in people )
+                {
+                    AddProperty( "Addresses", "Addresses", 0, string.Empty );
+
+                    var family = person.PrimaryFamily;
+
+                    if ( family == null )
+                    {
+                        continue;
+                    }
+
+                    var addresses = family.GroupLocations;
+
+                    var addressesOfType = addresses.Where( p => p.GroupLocationTypeValueId == addressType.Id ).ToList();
+
+                    var addressTypeCount = addressesOfType.Count;
+
+                    if ( addressTypeCount > 0 )
+                    {
+                        foreach ( var address in addressesOfType )
+                        {
+                            string iconHtml = string.Empty;
+
+                            if ( address.IsMailingLocation )
+                            {
+                                iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='fa fa-envelope'></i></span>";
+                            }
+                            if ( address.IsMappedLocation )
+                            {
+                                iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='fa fa-map-marker'></i></span>";
+                            }
+
+                            var addressKey = key;
+
+                            if ( addressTypeCount > 1 )
+                            {
+                                addressKey = addressKey + "_" + address.Id;
+                            }
+
+                            AddProperty( addressKey, addressType.Value, person.Id, address.Id.ToString(), address.Location.GetFullStreetAddress() + iconHtml );
+                        }
+                    }
+                    else
+                    {
+                        AddProperty( key, addressType.Value, person.Id, string.Empty, string.Empty );
                     }
                 }
             }
