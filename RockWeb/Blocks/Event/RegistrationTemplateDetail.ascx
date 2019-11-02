@@ -589,24 +589,26 @@
                 // NOTE: js-optional-form-list is a div created in codebehind around the optional forms
                 var $formList = $('.js-optional-form-list');
 
-                $formList.sortable({
-                    helper: fixHelper,
-                    handle: '.form-reorder',
-                    containment: 'parent',
-                    tolerance: 'pointer',
-                    start: function (event, ui) {
-                        {
-                            var start_pos = ui.item.index();
-                            ui.item.data('start_pos', start_pos);
+                if ($formList.length > 0) {
+                    $formList.sortable({
+                        helper: fixHelper,
+                        handle: '.form-reorder',
+                        containment: 'parent',
+                        tolerance: 'pointer',
+                        start: function (event, ui) {
+                            {
+                                var start_pos = ui.item.index();
+                                ui.item.data('start_pos', start_pos);
+                            }
+                        },
+                        update: function (event, ui) {
+                            {
+                                var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
+                            }
                         }
-                    },
-                    update: function (event, ui) {
-                        {
-                            var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
-                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
-                        }
-                    }
-                });
+                    });
+                }
 
             });
         </script>
