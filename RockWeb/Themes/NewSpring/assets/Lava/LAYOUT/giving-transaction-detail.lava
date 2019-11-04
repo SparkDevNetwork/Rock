@@ -59,6 +59,7 @@
 
                 <p class="sans-serif stronger letter-spacing-condensed"><small>{{ statusIcon }} Transaction {{ status }}</small></p>
                 <p class="text-center">Thank you for your contribution to NewSpring Church. Because you are obedient in giving, we'll be able to connect more people to Jesus and each other.</p>
+                <p><a href="/account/giving" class="btn btn-primary">Back to Giving History</a></p>
             </div>
             <p class="well flush">If you have any questions about this or believe it to be a mistake, please contact us at <a href="mailto:giving@newspring.cc">giving@newspring.cc</a></p>
         </section>
