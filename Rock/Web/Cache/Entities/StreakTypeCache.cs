@@ -154,6 +154,15 @@ namespace Rock.Web.Cache
             _streakTypeExclusionIds = null;
         }
 
+        /// <summary>
+        /// Returns all of the achievements that apply to this streak type.
+        /// </summary>
+        /// <returns></returns>
+        public List<StreakTypeAchievementTypeCache> StreakTypeAchievementTypes
+        {
+            get => StreakTypeAchievementTypeCache.All().Where( stat => stat.StreakTypeId == Id ).ToList();
+        }
+
         #endregion
 
         #region Public Methods

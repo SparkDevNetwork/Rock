@@ -15,20 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Dynamic;
 using System.Web.UI.WebControls;
-
-using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control that can be used to select a step program.
+    /// Control that can be used to select a streak type.
     /// </summary>
-    public class StepProgramPicker : RockDropDownList, IStepProgramPicker
+    public class StreakTypePicker : RockDropDownList, IStreakTypePicker
     {
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -49,7 +47,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="picker">The picker.</param>
         /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
-        public static void LoadDropDownItems( IStepProgramPicker picker, bool includeEmptyOption )
+        public static void LoadDropDownItems( IStreakTypePicker picker, bool includeEmptyOption )
         {
             var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )
@@ -63,17 +61,16 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
 
-            var stepProgramService = new StepProgramService( new RockContext() );
-            var stepPrograms = stepProgramService.Queryable().AsNoTracking()
-                .Where( sp => sp.IsActive )
-                .OrderBy( sp => sp.Order )
-                .ThenBy( sp => sp.Name )
+            var streakTypes = StreakTypeCache.All()
+                .Where( st => st.IsActive )
+                .OrderBy( st => st.Name )
+                .ThenBy( st => st.Id )
                 .ToList();
 
-            foreach ( var stepProgram in stepPrograms )
+            foreach ( var streakType in streakTypes )
             {
-                var li = new ListItem( stepProgram.Name, stepProgram.Id.ToString() );
-                li.Selected = selectedItems.Contains( stepProgram.Id );
+                var li = new ListItem( streakType.Name, streakType.Id.ToString() );
+                li.Selected = selectedItems.Contains( streakType.Id );
                 picker.Items.Add( li );
             }
         }
@@ -82,7 +79,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Interface used by defined value pickers
     /// </summary>
-    public interface IStepProgramPicker
+    public interface IStreakTypePicker
     {
         /// <summary>
         /// Gets the items.

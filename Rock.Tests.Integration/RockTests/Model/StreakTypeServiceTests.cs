@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
@@ -14,10 +15,14 @@ namespace Rock.Tests.Integration.RockTests.Model
     public class StreakTypeServiceTests
     {
         private const string StreakTypeGuidString = "93050DB0-82FC-4EBE-9AB8-8BB8BADFB2F0";
+        private const string EmptyStreakTypeGuidString = "84161DB0-82FC-4EBE-9AB8-8BB8BADFB2A2";
 
         private static RockContext _rockContext { get; set; }
         private static StreakTypeService _streakTypeService { get; set; }
         private static int _streakTypeId { get; set; }
+        private static int _emptyStreakTypeId { get; set; }
+        private static int _streakId { get; set; }
+        private static int _emptyStreakId { get; set; }
         private static int _personAliasId { get; set; }
         private static int _personId { get; set; }
 
@@ -57,10 +62,31 @@ namespace Rock.Tests.Integration.RockTests.Model
                 ExclusionMap = new byte[] { 0b_0100_0010, 0b_0000_0000, 0b_0000_0000, 0b_0000_0000, 0b_0000_0011, 0b_0000_0000, 0b_0000_0000 }
             };
 
+            var emptyStreakType = new StreakType
+            {
+                Guid = new Guid( EmptyStreakTypeGuidString ),
+                OccurrenceFrequency = StreakOccurrenceFrequency.Daily,
+                StartDate = RockDateTime.Today,
+                Name = "Empty Testing StreakType"
+            };
+
             streakType.Streaks.Add( streak );
             _streakTypeService.Add( streakType );
+
+            var emptyStreak = new Streak
+            {
+                PersonAliasId = _personAliasId,
+            };
+
+            emptyStreakType.Streaks.Add( emptyStreak );
+            _streakTypeService.Add( emptyStreakType );
+
             _rockContext.SaveChanges();
+
             _streakTypeId = streakType.Id;
+            _streakId = streak.Id;
+            _emptyStreakTypeId = emptyStreakType.Id;
+            _emptyStreakId = emptyStreak.Id;
         }
 
         /// <summary>
@@ -69,15 +95,18 @@ namespace Rock.Tests.Integration.RockTests.Model
         private static void DeleteStreakTypeData()
         {
             var streakTypeGuid = new Guid( StreakTypeGuidString );
-            var streakType = _streakTypeService.Queryable().FirstOrDefault( st => st.Guid == streakTypeGuid );
+            var emptyStreakTypeGuid = new Guid( EmptyStreakTypeGuidString );
+            var guids = new List<Guid>() { streakTypeGuid, emptyStreakTypeGuid };
+            var streakTypeQuery = _streakTypeService.Queryable().Where( st => guids.Contains( st.Guid ) );
+            _streakTypeService.DeleteRange( streakTypeQuery );
 
-            if ( streakType != null )
-            {
-                _streakTypeService.Delete( streakType );
-            }
+            _rockContext.SaveChanges();
 
             _streakTypeId = default;
-            _rockContext.SaveChanges();
+            _streakId = default;
+
+            _emptyStreakTypeId = default;
+            _emptyStreakId = default;
         }
 
         /// <summary>
@@ -104,6 +133,8 @@ namespace Rock.Tests.Integration.RockTests.Model
         }
 
         #endregion Setup Methods
+
+        #region GetStreakData
 
         /// <summary>
         /// Tests GetStreakData
@@ -152,37 +183,35 @@ namespace Rock.Tests.Integration.RockTests.Model
         }
 
         /// <summary>
-        /// Tests GetRecentEngagementBits
+        /// Tests GetStreakData with empty maps and today as a map start date
         /// </summary>
         [TestMethod]
-        public void GetRecentEngagementBits()
+        public void GetStreakDataWithEmptyMaps()
         {
-            var unitCount = 5;
-            var result = _streakTypeService.GetRecentEngagementBits( _streakTypeId, _personId, unitCount, out var errorMessage );
+            var startDate = RockDateTime.Today;
+            var endDate = RockDateTime.Today;
+            var result = _streakTypeService.GetStreakData( StreakTypeCache.Get( _emptyStreakTypeId ), _personId, out string errorMessage,
+                startDate, endDate, true, true, 100 );
 
             Assert.AreEqual( string.Empty, errorMessage );
             Assert.IsNotNull( result );
-            Assert.AreEqual( unitCount, result.Length );
 
-            Assert.AreEqual( new DateTime( 2019, 2, 24 ), result[0].DateTime );
-            Assert.IsTrue( result[0].HasEngagement );
-            Assert.IsTrue( result[0].HasExclusion );
+            Assert.AreEqual( 0, result.LongestStreakCount );
+            Assert.IsNull( result.LongestStreakStartDate );
+            Assert.IsNull( result.LongestStreakEndDate );
 
-            Assert.AreEqual( new DateTime( 2019, 2, 23 ), result[1].DateTime );
-            Assert.IsFalse( result[1].HasEngagement );
-            Assert.IsFalse( result[1].HasExclusion );
+            Assert.AreEqual( 0, result.CurrentStreakCount );
+            Assert.IsNull( result.CurrentStreakStartDate );
 
-            Assert.AreEqual( new DateTime( 2019, 2, 22 ), result[2].DateTime );
-            Assert.IsFalse( result[2].HasEngagement );
-            Assert.IsFalse( result[2].HasExclusion );
+            Assert.AreEqual( 0, result.ComputedStreaks.Count );
 
-            Assert.AreEqual( new DateTime( 2019, 2, 19 ), result[3].DateTime );
-            Assert.IsTrue( result[3].HasEngagement );
-            Assert.IsTrue( result[3].HasExclusion );
-
-            Assert.AreEqual( new DateTime( 2019, 2, 18 ), result[4].DateTime );
-            Assert.IsFalse( result[4].HasEngagement );
-            Assert.IsFalse( result[4].HasExclusion );
+            Assert.AreEqual( 0, result.EngagementsThisMonth );
+            Assert.AreEqual( 0, result.EngagementsThisYear );
+            Assert.IsNull( result.MostRecentEngagementDate );
+            Assert.IsNull( result.MostRecentOccurrenceDate );
+            Assert.IsFalse( result.EngagedAtMostRecentOccurrence );
         }
+
+        #endregion GetStreakData
     }
 }

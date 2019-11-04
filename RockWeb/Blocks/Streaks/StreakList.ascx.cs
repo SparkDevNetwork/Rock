@@ -116,7 +116,6 @@ namespace RockWeb.Blocks.Streaks
 
         #region Private Variables
 
-        private DefinedValueCache _inactiveStatus = null;
         private bool _canView = false;
 
         // Cache these fields since they could get called many times in GridRowDataBound
@@ -267,11 +266,6 @@ namespace RockWeb.Blocks.Streaks
                     deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
                 }
             }
-
-            if ( _inactiveStatus != null && person.RecordStatusValueId == _inactiveStatus.Id )
-            {
-                e.Row.AddCssClass( "is-inactive-person" );
-            }
         }
 
         /// <summary>
@@ -333,13 +327,6 @@ namespace RockWeb.Blocks.Streaks
 
             if ( enrollment != null )
             {
-                var errorMessage = string.Empty;
-                if ( !streakService.CanDelete( enrollment, out errorMessage ) )
-                {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
                 streakService.Delete( enrollment );
                 rockContext.SaveChanges();
             }
