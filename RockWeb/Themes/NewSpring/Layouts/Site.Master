@@ -176,20 +176,6 @@
                     </ProgressTemplate>
             </asp:UpdateProgress>
 
-            <script>
-                $('a').each(function() {
-                    var a = new RegExp('/' + window.location.host + '/');
-
-                    if(!a.test(this.href) && this.getAttribute('onclick') == null) {
-                        $(this).click(function(event) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            window.open(this.href, '_blank');
-                        });
-                    }
-                });
-            </script>
-
         </form>
 
     </body>
