@@ -81,7 +81,7 @@
             <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom">{{ row.TransactionDateTime | Date:'MMM d, yyyy' }}</p>
             <p class="push-half-bottom"><span class="circular background-cover" style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span> &nbsp;<span class="stronger">{{ row.NickName }} {{ row.LastName }}</span></p>
 
-            <p class="flush text-right"><a href="/account/giving/{{ row.Id }}" class="btn btn-sm btn-primary">View Details</a></p>
+            <p class="flush text-right"><a href="/account/giving/{{ row.Id }}" class="btn btn-sm btn-primary" target="_blank">View Details</a></p>
             
         </div>
         
