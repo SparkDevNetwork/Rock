@@ -212,7 +212,15 @@ namespace Rock.Model
 
             if ( excludedPersonRecordTypeIds.Any() )
             {
-                qry = qry.Where( a => a.RecordTypeValueId.HasValue && !excludedPersonRecordTypeIds.Contains( a.RecordTypeValueId.Value ) );
+                if ( excludedPersonRecordTypeIds.Count == 1 )
+                {
+                    var excludedPersonRecordTypeId = excludedPersonRecordTypeIds[0];
+                    qry = qry.Where( a => a.RecordTypeValueId.HasValue && excludedPersonRecordTypeId != a.RecordTypeValueId.Value );
+                }
+                else
+                {
+                    qry = qry.Where( a => a.RecordTypeValueId.HasValue && !excludedPersonRecordTypeIds.Contains( a.RecordTypeValueId.Value ) );
+                }
             }
 
             if ( personQueryOptions.IncludeDeceased == false )
@@ -2482,6 +2490,7 @@ namespace Rock.Model
         /// <summary>
         /// Special override of Entity.GetByUrlEncodedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// NOTE: You might want to use GetByImpersonationToken instead to prevent a token from being used that was limited to a specific page
+        /// The Person.Aliases will be eager-loaded.
         /// </summary>
         /// <param name="encodedKey">The encoded key.</param>
         /// <returns></returns>
@@ -2492,6 +2501,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
+        /// The Person.Aliases will be eager-loaded.
         /// </summary>
         /// <param name="impersonationToken">The impersonation token.</param>
         /// <param name="incrementUsage">if set to <c>true</c> [increment usage].</param>
@@ -2505,6 +2515,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the Person by impersonation token but does not validate against token properties (e.g. expiration)
         /// Use this method if needing to get the person from a token that may be expired.
+        /// The Person.Aliases will be eager-loaded.
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
         /// <returns></returns>
@@ -2519,7 +2530,7 @@ namespace Rock.Model
                     if ( personToken.PersonAlias != null )
                     {
                         // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
-                        return this.Get( personToken.PersonAlias.PersonId );
+                        return this.GetInclude( personToken.PersonAlias.PersonId, p => p.Aliases );
                     }
                 }
             }
@@ -2605,8 +2616,8 @@ namespace Rock.Model
 
                     if ( personToken.PersonAlias != null )
                     {
-                        // refetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
-                        return this.Get( personToken.PersonAlias.PersonId );
+                        // re-fetch using PersonService using rockContext instead of personTokenRockContext which was used to save the changes to personKey
+                        return this.GetInclude( personToken.PersonAlias.PersonId, p => p.Aliases );
                     }
                 }
             }
@@ -2782,6 +2793,7 @@ namespace Rock.Model
                 return null;
             }
             return GetFamilyMembers( family, person.Id, true )
+                .Where( m => !m.Person.IsDeceased )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .Select( a => a.Person )
@@ -2806,6 +2818,7 @@ namespace Rock.Model
                 return null;
             }
             return GetFamilyMembers( family, person.Id, true )
+                .Where( m => !m.Person.IsDeceased )
                 .OrderBy( m => m.GroupRole.Order )
                 .ThenBy( m => m.Person.Gender )
                 .Select( a => a.Person )

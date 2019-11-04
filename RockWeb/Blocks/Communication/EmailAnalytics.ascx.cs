@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// 
     /// </summary>
+    [RockObsolete("1.10")]
     [DisplayName( "Email Analytics" )]
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]

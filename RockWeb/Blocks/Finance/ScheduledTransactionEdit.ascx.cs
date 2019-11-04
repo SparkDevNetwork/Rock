@@ -251,13 +251,13 @@ achieve our mission.  We are so grateful for your commitment.
                     SetSavedAccounts();
 
                     dtpStartDate.SelectedDate = scheduledTransaction.NextPaymentDate;
+                    tbSummary.Text = scheduledTransaction.Summary;
 
                     hfCurrentPage.Value = "1";
                     RockPage page = Page as RockPage;
                     if ( page != null )
                     {
                         page.PageNavigate += page_PageNavigate;
-                        page.AddScriptLink( "~/Scripts/moment.min.js" );
                         page.AddScriptLink( "~/Scripts/moment-with-locales.min.js" );
                     }
 
@@ -561,8 +561,8 @@ achieve our mission.  We are so grateful for your commitment.
                         var service = new FinancialScheduledTransactionService( rockContext );
                         var scheduledTransaction = service
                             .Queryable( "AuthorizedPersonAlias.Person,ScheduledTransactionDetails,FinancialGateway,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                            .Where( t => 
-                                t.Id == txnId && 
+                            .Where( t =>
+                                t.Id == txnId &&
                                 t.AuthorizedPersonAlias != null &&
                                 t.AuthorizedPersonAlias.Person != null &&
                                 validGivingIds.Contains( t.AuthorizedPersonAlias.Person.GivingId ) )
@@ -1095,6 +1095,8 @@ achieve our mission.  We are so grateful for your commitment.
                         detail.Amount = account.Amount;
                     }
 
+                    scheduledTransaction.Summary = tbSummary.Text;
+
                     rockContext.SaveChanges();
 
                     ScheduleId = scheduledTransaction.GatewayScheduleId;
@@ -1416,12 +1418,12 @@ achieve our mission.  We are so grateful for your commitment.
     }});
 
 ";
-            string script = string.Format( 
-                scriptFormat, 
+            string script = string.Format(
+                scriptFormat,
                 divCCPaymentInfo.ClientID, // {0}
-                divACHPaymentInfo.ClientID, // {1} 
-                hfPaymentTab.ClientID, // {2} 
-                oneTimeFrequencyId, // {3} 
+                divACHPaymentInfo.ClientID, // {1}
+                hfPaymentTab.ClientID, // {2}
+                oneTimeFrequencyId, // {3}
                 GlobalAttributesCache.Value( "CurrencySymbol") // {4}
                 );
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );

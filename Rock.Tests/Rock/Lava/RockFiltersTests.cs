@@ -1358,6 +1358,73 @@ a comment --> sit amet</p>";
 
         #endregion
 
+        #region Tags (if/else)
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElse_ShouldIf()
+        {
+            AssertTemplateResult( " CORRECT ", "{% if true %} CORRECT {% else %} NO {% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElse_ShouldElse()
+        {
+            AssertTemplateResult( " CORRECT ", "{% if false %} NO {% else %} CORRECT {% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 1 %}CORRECT{% elsif 1 == 1%}1{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldElsIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elsif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / elsif / else
+        /// </summary>
+        [Fact]
+        public void Liquid_IfElsIf_ShouldElse()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 2 == 0 %}0{% elsif 2 == 1%}1{% else %}CORRECT{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void LiquidCustom_IfElseIf_ShouldElseIf()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 1%}CORRECT{% else %}2{% endif %}" );
+        }
+
+        /// <summary>
+        /// Tests the Liquid standard if / else
+        /// </summary>
+        [Fact]
+        public void LiquidCustom_IfElseIf_ShouldElse()
+        {
+            AssertTemplateResult( "CORRECT", "{% if 1 == 0 %}0{% elseif 1 == 2%}1{% else %}CORRECT{% endif %}" );
+        }
+
+        #endregion
+
         #region Date Filters
 
         /// <summary>
@@ -1473,42 +1540,120 @@ a comment --> sit amet</p>";
 
         /// <summary>
         /// Tests the next day of the week using the simplest format.
+        /// Uses May 1, 2018 which was a Tuesday.
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdate()
         {
+            // Since we're not including the current day, we advance to next week's Tuesday, 5/8
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday" );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "5/8/2018 3:00 PM" ) );
+
+            // Since Wednesday has not happened, we advance to it -- which is Wed, 5/2
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/2/2018 3:00 PM" ) );
+
+            // Since Monday has passed, we advance to next week's Monday, 5/7
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/7/2018 3:00 PM" ) );
+
+            // From the Lava documentation
+            output = RockFilters.NextDayOfTheWeek( "2/9/2011 3:00 PM", "Friday" );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "2/11/2011 3:00 PM" ) );
         }
 
         /// <summary>
         /// Tests the next day of the week including the current day.
+        /// Uses May 1, 2018 which was a Tuesday.
+        /// 
+        ///        May 2018        
+        /// Su Mo Tu We Th Fr Sa  
+        ///        1  2  3  4  5  
+        ///  6  7  8  9 10 11 12  
+        /// 13 14 15 16 17 18 19  
+        /// 20 21 22 23 24 25 26  
+        /// 27 28 29 30 31
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdateIncludeCurrentDay()
         {
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", true );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 3:00 PM" ) );
+
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday", true );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/2/2018 3:00 PM" ) );
+
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday", true );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/7/2018 3:00 PM" ) );
         }
 
         /// <summary>
         /// Tests the next day of the week in two weeks.
+        /// Uses May 1, 2018 which was a Tuesday.
+        /// 
+        ///        May 2018
+        /// Su Mo Tu We Th Fr Sa
+        ///        1  2  3  4  5
+        ///  6  7  8  9 10 11 12
+        /// 13 14 15 16 17 18 19
+        /// 20 21 22 23 24 25 26
+        /// 27 28 29 30 31
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdateTwoWeeks()
         {
+            // Since we're not including the current day, we advance to next two week's out to Tuesday, 5/15
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, 2 );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "5/15/2018 3:00 PM" ) );
+
+            // Since Wednesday has not happened, we advance two Wednesdays -- which is Wed, 5/9
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday", false, 2 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/9/2018 3:00 PM" ) );
+
+            // Since Monday has passed, we advance to two week's out Monday, 5/14
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday", false, 2 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/14/2018 3:00 PM" ) );
         }
 
         /// <summary>
-        /// Tests the next day of the week in minus one week.
+        /// Tests the next day of the week with minus one week.
+        /// 
+        ///      April 2018
+        /// Su Mo Tu We Th Fr Sa
+        ///  1  2  3  4  5  6  7
+        ///  8  9 10 11 12 13 14
+        /// 15 16 17 18 19 20 21
+        /// 22 23 24 25 26 27 28
+        /// 29 30
+        ///
+        ///        May 2018
+        /// Su Mo Tu We Th Fr Sa
+        ///        1  2  3  4  5
+        ///  6  7  8  9 10 11 12
+        /// 13 14 15 16 17 18 19
+        /// 20 21 22 23 24 25 26
+        /// 27 28 29 30 31
         /// </summary>
         [Fact]
         public void NextDayOfTheWeek_NextWeekdateBackOneWeek()
         {
+            // In this case, since it's Tuesday (and we're not including current day), then
+            // the current day counts as the *previous* week's Tuesday.
             var output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "5/1/2018 3:00 PM" ) );
+
+            // If we include the current day (so it counts as *this* week), then one week ago would be
+            // last Tuesday, April 24.
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Tuesday", true, -1 );
             DateTimeAssert.AreEqual( output, DateTime.Parse( "4/24/2018 3:00 PM" ) );
+
+            // Get previous week's Wednesday, 4/25
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Wednesday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "4/25/2018 3:00 PM" ) );
+
+            // Since Monday has just passed, we get this past Monday, 4/30
+            output = RockFilters.NextDayOfTheWeek( "5/1/2018 3:00 PM", "Monday", false, -1 );
+            DateTimeAssert.AreEqual( output, DateTime.Parse( "4/30/2018 3:00 PM" ) );
         }
 
         /// <summary>
@@ -1761,6 +1906,18 @@ a comment --> sit amet</p>";
             webContentFolder = System.IO.Path.Combine( dirPath, "Content" );
         }
 
+        #endregion
+
+        #region Lava Test helper methods
+        private static void AssertTemplateResult( string expected, string template )
+        {
+            AssertTemplateResult( expected, template, null );
+        }
+
+        private static void AssertTemplateResult( string expected, string template, Hash localVariables )
+        {
+            Assert.Equal( expected, Template.Parse( template ).Render( localVariables ) );
+        }
         #endregion
     }
     #region Helper class to deal with comparing inexact dates (that are otherwise equal).

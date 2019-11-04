@@ -132,6 +132,11 @@ namespace Rock.Web.UI.Controls
         protected RockCheckBox _cbIsActive;
 
         /// <summary>
+        /// The IsPublic checkbox
+        /// </summary>
+        protected RockCheckBox _cbIsPublic;
+
+        /// <summary>
         /// The Enable History checkbox
         /// </summary>
         protected RockCheckBox _cbEnableHistory;
@@ -1005,6 +1010,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is public.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is public; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPublic
+        {
+            get
+            {
+                EnsureChildControls();
+                return _cbIsPublic.Checked;
+            }
+            set
+            {
+                EnsureChildControls();
+                _cbIsPublic.Checked = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the field type id.
         /// </summary>
         /// <value>
@@ -1080,7 +1105,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the FieldType and Qualifiers 
+        /// Sets the FieldType and Qualifiers
         /// </summary>
         /// <param name="fieldTypeId">The field type identifier.</param>
         /// <param name="qualifiers">The qualifiers.</param>
@@ -1125,7 +1150,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the ViewState of the field type qualifiers 
+        /// Gets or sets the ViewState of the field type qualifiers
         /// </summary>
         /// <value>
         /// The state of the field type qualifier.
@@ -1271,7 +1296,7 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            // Get the FieldType that was selected in the postback 
+            // Get the FieldType that was selected in the postback
             // This will either come from ddlFieldType of hfFieldTypeId depending if the FieldType is editable
             int? postBackFieldTypeId = this.Page.Request[_ddlFieldType.UniqueID].AsIntegerOrNull() ?? this.Page.Request[_hfReadOnlyFieldTypeId.UniqueID].AsIntegerOrNull();
             int? fieldTypeIdState = ViewState["FieldTypeIdState"] as int?;
@@ -1347,6 +1372,13 @@ namespace Rock.Web.UI.Controls
             _cbIsActive.Help = "Set to Inactive to exclude this attribute from Edit and Display UIs";
             Controls.Add( _cbIsActive );
 
+            _cbIsPublic = new RockCheckBox();
+            _cbIsPublic.ID = "_cbIsPublic";
+            _cbIsPublic.Label = "Public";
+            _cbIsPublic.Text = "Yes";
+            _cbIsPublic.Help = "Set to public if you want this attribute to be displayed in public contexts (like RSVP invitations).";
+            Controls.Add(_cbIsPublic);
+
             _tbDescription = new RockTextBox();
             _tbDescription.Label = "Description";
             _tbDescription.ID = "tbDescription";
@@ -1383,7 +1415,7 @@ namespace Rock.Web.UI.Controls
             _cvKey.CssClass = "validation-error help-inline";
             _cvKey.ErrorMessage = "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
             Controls.Add( _cvKey );
-                       
+
 
             _cbRequired = new RockCheckBox();
             _cbRequired.ID = "cbRequired";
@@ -1436,7 +1468,7 @@ namespace Rock.Web.UI.Controls
             _pwAdvanced = new PanelWidget();
             _pwAdvanced.ID = "pwAdvanced";
             _pwAdvanced.Title = "Advanced Settings";
-            
+
             var pnlAdvancedTopRow = new Panel { CssClass = "row" };
             _pwAdvanced.Controls.Add( pnlAdvancedTopRow );
             var pnlAdvancedTopRowCol1 = new Panel { CssClass = "col-md-6" };
@@ -1518,7 +1550,7 @@ namespace Rock.Web.UI.Controls
             _btnCancel = new LinkButton();
             _btnCancel.ID = "btnCancel";
             _btnCancel.Text = "Cancel";
-            _btnCancel.CssClass = "btn btn-default";
+            _btnCancel.CssClass = "btn btn-link";
             _btnCancel.CausesValidation = false;
             _btnCancel.Click += btnCancel_Click;
             Controls.Add( _btnCancel );
@@ -1667,7 +1699,8 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderEndTag(); // empty column
+            _cbIsPublic.RenderControl( writer );
+            writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
 
@@ -1842,6 +1875,7 @@ namespace Rock.Web.UI.Controls
                 this.IsAnalytic = attribute.IsAnalytic;
                 this.IsAnalyticHistory = attribute.IsAnalyticHistory;
                 this.IsActive = attribute.IsActive;
+                this.IsPublic = attribute.IsPublic;
                 this.EnableHistory = attribute.EnableHistory;
                 this.PreHtml = attribute.PreHtml;
                 this.PostHtml = attribute.PostHtml;
@@ -1851,7 +1885,7 @@ namespace Rock.Web.UI.Controls
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
-                
+
                 var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
                 if ( field != null )
                 {
@@ -1913,6 +1947,7 @@ namespace Rock.Web.UI.Controls
                 attribute.IsAnalytic = this.IsAnalytic;
                 attribute.IsAnalyticHistory = this.IsAnalyticHistory;
                 attribute.IsActive = this.IsActive;
+                attribute.IsPublic = this.IsPublic;
                 attribute.EnableHistory = this.EnableHistory;
                 attribute.PreHtml = this.PreHtml;
                 attribute.PostHtml = this.PostHtml;
@@ -2045,12 +2080,12 @@ namespace Rock.Web.UI.Controls
 
             keyValue = $('#' + nameControlId).val().replace(/[^a-zA-Z0-9_.\-]/g, '');
             var newKeyValue = keyValue;
-        
+
             var i = 1;
             while ($.inArray(newKeyValue, reservedKeyNames) >= 0) {
                 newKeyValue = keyValue + i++;
             }
-            
+
             $keyControl.val(newKeyValue);
             $literalKeyControl.html(newKeyValue);
         }

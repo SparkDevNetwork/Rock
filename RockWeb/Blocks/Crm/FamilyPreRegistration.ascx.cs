@@ -1522,7 +1522,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             ValidateRequiredField( "AdultGender", "Gender is required for each adult.", ddlGender1.SelectedValueAsEnumOrNull<Gender>() != null, ddlGender2.SelectedValueAsEnumOrNull<Gender>() != null, errorMessages );
             ValidateRequiredField( ADULT_BIRTHDATE_KEY, "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
             ValidateRequiredField( ADULT_EMAIL_KEY, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhiteSpace(), tbEmail2.Text.IsNotNullOrWhiteSpace(), errorMessages );
-            ValidateRequiredField( ADULT_MOBILE_KEY, "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhiteSpace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhiteSpace(), errorMessages );
+            //ValidateRequiredField( ADULT_MOBILE_KEY, "A valid Mobile Phone is required for each adult.", pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
+            bool isPhoneValid = ValidateRequiredField( ADULT_MOBILE_KEY, string.Empty, pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
 
             if ( errorMessages.Any() )
             {
@@ -1530,6 +1531,20 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 nbError.Text = string.Format( "<ul><li>{0}</li></ul>", errorMessages.AsDelimited( "</li><li>" ) );
                 nbError.Visible = true;
 
+                return false;
+            }
+
+            foreach( var childRow in prChildren.ChildRows )
+            {
+                if( childRow.IsValid == false )
+                {
+                    // Don't need to add to the error messages here.
+                    return false;
+                }
+            }
+
+            if (!isPhoneValid)
+            {
                 return false;
             }
 
@@ -1544,7 +1559,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <param name="adult1HasValue">if set to <c>true</c> [adult1 has value].</param>
         /// <param name="adult2HasValue">if set to <c>true</c> [adult2 has value].</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void ValidateRequiredField( string attributeKey, string errorMessage, bool adult1HasValue, bool adult2HasValue, List<String> errorMessages )
+        private bool ValidateRequiredField( string attributeKey, string errorMessage, bool adult1HasValue, bool adult2HasValue, List<String> errorMessages )
         {
             if ( GetAttributeValue( attributeKey ) == "Required" )
             {
@@ -1553,9 +1568,18 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     ( tbFirstName2.Text.IsNotNullOrWhiteSpace() && !adult2HasValue )
                 )
                 {
-                    errorMessages.Add( errorMessage );
+                    if ( errorMessage.IsNotNullOrWhiteSpace() )
+                    {
+                        errorMessages.Add( errorMessage );
+                    }
+
+                    return false;
                 }
+
+                return true;
             }
+
+            return true;
         }
 
         /// <summary>

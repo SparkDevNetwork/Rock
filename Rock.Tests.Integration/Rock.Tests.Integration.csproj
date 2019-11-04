@@ -29,6 +29,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -76,22 +77,32 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants\Constants.cs" />
-    <Compile Include="ExternalSupportClasses\HttpSimulator.cs" />
-    <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
-    <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
-    <Compile Include="RestTests\ControllersTests\AttendanceControllerTests.cs" />
-    <Compile Include="Rock\Communications\CommunicationsModuleTestData.cs" />
-    <Compile Include="Rock\Crm\StepsTests.cs" />
-    <Compile Include="Rock\DatabaseTests.cs" />
-    <Compile Include="Rock\Model\AttendanceCodeTests.cs" />
+    <Compile Include="Utility\HttpSimulator.cs" />
+    <Compile Include="Utility\ReflectionHelper.cs" />
+    <Compile Include="Utility\SimulatedHttpRequest.cs" />
+    <Compile Include="Rest\ControllersTests\AttendanceControllerTests.cs" />
+    <Compile Include="Attendances\AttendanceBulkImportTest.cs" />
+    <Compile Include="Communications\CommunicationsModuleTestHelper.cs" />
+    <Compile Include="Communications\SmsTests.cs" />
+    <Compile Include="Core\CoreModuleTestHelper.cs" />
+    <Compile Include="Core\SundayDateTest.cs" />
+    <Compile Include="Crm\StepsTests.cs" />
+    <Compile Include="DatabaseTests.cs" />
+    <Compile Include="Migrations\MigrationTests.cs" />
+    <Compile Include="Model\StreakTypeServiceTests.cs" />
+    <Compile Include="Model\AttendanceCodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rock\Model\GroupTests.cs" />
-    <Compile Include="Rock\Model\PersonTests.cs" />
-    <Compile Include="Rock\Reporting\DataFilter\DataFilterTestBase.cs" />
-    <Compile Include="Rock\Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
-    <Compile Include="Rock\Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
-    <Compile Include="Rock\Reporting\ReportBuilder\ReportBuilderTests.cs" />
-    <Compile Include="Rock\TestInitializer.cs" />
+    <Compile Include="Model\GroupTests.cs" />
+    <Compile Include="Model\PersonTests.cs" />
+    <Compile Include="Reporting\DataFilter\TextPropertyFilterSettings.cs" />
+    <Compile Include="Reporting\ReportingModuleTestHelper.cs" />
+    <Compile Include="Reporting\DataFilter\DataFilterTestBase.cs" />
+    <Compile Include="Reporting\DataFilter\Group\GroupsModuleTestHelper.cs" />
+    <Compile Include="Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
+    <Compile Include="Reporting\ReportBuilder\ReportBuilderTests.cs" />
+    <Compile Include="TestInitializer.cs" />
     <Compile Include="StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="test.Designer.cs">
@@ -99,7 +110,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>test.runsettings</DependentUpon>
     </Compile>
-    <Compile Include="Rock\Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="TestData\TestDataHelper.cs" />
     <Compile Include="Utility\ArrayExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +155,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -155,5 +168,8 @@
   <Import Project="..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets')" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>IF EXIST "$(SolutionDir)RockWeb\web.ConnectionStrings.config" copy "$(SolutionDir)RockWeb\web.ConnectionStrings.config" "$(ProjectDir)app.ConnectionStrings.config" /y</PreBuildEvent>
   </PropertyGroup>
 </Project>

@@ -165,21 +165,21 @@ namespace Rock.Model
         }
         private ICollection<StreakTypeExclusion> _streakTypeExclusions;
 
-        #endregion Virtual Properties
-
-        #region Update Hook
-
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
+        /// Gets or sets the streak type achievement types.
         /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
+        /// <value>
+        /// The streak type achievement types.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakTypeAchievementType> StreakTypeAchievementTypes
         {
-            StreakTypeService.UpdateEnrollmentStreakPropertiesAsync( Id );
-            base.PostSaveChanges( dbContext );
+            get => _streakTypeAchievementTypes ?? ( _streakTypeAchievementTypes = new Collection<StreakTypeAchievementType>() );
+            set => _streakTypeAchievementTypes = value;
         }
+        private ICollection<StreakTypeAchievementType> _streakTypeAchievementTypes;
 
-        #endregion Update Hook
+        #endregion Virtual Properties
     }
 
     #region Enumerations

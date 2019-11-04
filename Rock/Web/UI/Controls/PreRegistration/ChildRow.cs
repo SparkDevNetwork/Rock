@@ -604,6 +604,73 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Returns true if all of the requires fields have a value and the birthdate is successfully parsed
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsValid
+        {
+            get
+            {
+                EnsureChildControls();
+
+                if( _tbNickName.Required && _tbNickName.Text.IsNullOrWhiteSpace())
+                {
+                    return false;
+                }
+
+                if( _tbLastName.Required && _tbLastName.Text.IsNullOrWhiteSpace())
+                {
+                    return false;
+                }
+
+                if ( _ddlGender.Required && _ddlGender.SelectedIndex == 0 )
+                {
+                    return false;
+                }
+
+                if ( _dpBirthdate.Required && _dpBirthdate.SelectedDate == null)
+                {
+                    return false;
+                }
+
+                if( _dpBirthdate.Text.IsNotNullOrWhiteSpace() && _dpBirthdate.SelectedDate == null )
+                {
+                    return false;
+                }
+
+                if( _ddlGradePicker.Required && _ddlGradePicker.SelectedIndex == 0)
+                {
+                    return false;
+                }
+
+                if(  _ebEmail.Required && !_ebEmail.IsValid )
+                {
+                    return false;
+                }
+
+                if ( _ebEmail.Text.IsNotNullOrWhiteSpace() && !_ebEmail.IsValid )
+                {
+                    return false;
+                }
+
+                if ( !_pnbMobile.IsValid )
+                {
+                    return false;
+                }
+
+                // This one will never have a null or blank value, so no need to validate it.
+                //if( _ddlRelationshipType.Required && _ddlRelationshipType.SelectedIndex == 0 )
+                //{
+                //    return false;
+                //}
+
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="NewGroupMembersRow" /> class.
         /// </summary>
         public PreRegistrationChildRow()
@@ -705,6 +772,7 @@ namespace Rock.Web.UI.Controls
 
             _pnbMobile.CssClass = "form-control";
             _pnbMobile.Label = "Mobile Phone";
+            _pnbMobile.RequiredErrorMessage = "A valid phone number is required for all children.";
 
             _ebEmail.Label = "Email Address";
 

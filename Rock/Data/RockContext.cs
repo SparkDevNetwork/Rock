@@ -678,6 +678,14 @@ namespace Rock.Data
         public DbSet<Device> Devices { get; set; }
 
         /// <summary>
+        /// Gets or sets the entity campus filters.
+        /// </summary>
+        /// <value>
+        /// The entity campus filters.
+        /// </value>
+        public DbSet<EntityCampusFilter> EntityCampusFilters { get; set; }
+
+        /// <summary>
         /// Gets or sets the entity sets.
         /// </summary>
         /// <value>
@@ -940,6 +948,22 @@ namespace Rock.Data
         /// the Groups.
         /// </value>
         public DbSet<Group> Groups { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group demographic types.
+        /// </summary>
+        /// <value>
+        /// The group demographic types.
+        /// </value>
+        public DbSet<GroupDemographicType> GroupDemographicTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group demographic values.
+        /// </summary>
+        /// <value>
+        /// The group demographic values.
+        /// </value>
+        public DbSet<GroupDemographicValue> GroupDemographicValues { get; set; }
 
         /// <summary>
         /// Gets or sets the group historicals.
@@ -1718,12 +1742,28 @@ namespace Rock.Data
         public DbSet<Streak> Streaks { get; set; }
 
         /// <summary>
+        /// Gets or sets the StreakAchievementAttempts.
+        /// </summary>
+        /// <value>
+        /// The StreakAchievementAttempts.
+        /// </value>
+        public DbSet<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }
+
+        /// <summary>
         /// Gets or sets the StreakTypes.
         /// </summary>
         /// <value>
         /// The StreakTypes.
         /// </value>
         public DbSet<StreakType> StreakTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the StreakTypeAchievementTypes.
+        /// </summary>
+        /// <value>
+        /// The StreakTypeAchievementTypes.
+        /// </value>
+        public DbSet<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the StreakTypeExclusions.

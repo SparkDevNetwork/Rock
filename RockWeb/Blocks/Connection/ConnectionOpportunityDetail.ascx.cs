@@ -600,6 +600,7 @@ namespace RockWeb.Blocks.Connection
             {
                 GroupsState.Remove( groupStateObj );
             }
+            nbArchivedPlacementGroupWarning.Visible = GroupsState.Where( g => g.IsArchived ).Any();
             BindGroupGrid();
         }
 
@@ -643,6 +644,7 @@ namespace RockWeb.Blocks.Connection
                     groupStateObj.CampusId = group.CampusId;
                     groupStateObj.CampusName = group.Campus != null ? group.Campus.Name : string.Empty;
                     groupStateObj.Guid = Guid.NewGuid();
+                    groupStateObj.IsArchived = group.IsArchived;
                     GroupsState.Add( groupStateObj );
                 }
             }
@@ -877,6 +879,7 @@ namespace RockWeb.Blocks.Connection
             {
                 ConnectorGroupsState.Remove( groupStateObj );
             }
+            nbArchivedConnectorGroupWarning.Visible = ConnectorGroupsState.Where( g => g.IsArchived ).Any();
             BindConnectorGroupsGrid();
         }
 
@@ -922,6 +925,7 @@ namespace RockWeb.Blocks.Connection
                 connectorGroup.GroupName = group.Name;
                 connectorGroup.GroupTypeName = group.GroupType != null ? group.GroupType.Name : string.Empty;
                 connectorGroup.GroupTypeId = group.GroupTypeId;
+                connectorGroup.IsArchived = group.IsArchived;
             }
 
             BindConnectorGroupsGrid();
@@ -1471,9 +1475,25 @@ namespace RockWeb.Blocks.Connection
                 WorkflowsState.Add( new WorkflowTypeStateObj( connectionWorkflow ) );
             }
 
+            nbArchivedPlacementGroupWarning.Visible = false;
+            nbArchivedConnectorGroupWarning.Visible = false;
+
             GroupsState = new List<GroupStateObj>();
-            foreach( var opportunityGroup in connectionOpportunity.ConnectionOpportunityGroups )
+            foreach ( var opportunityGroup in connectionOpportunity.ConnectionOpportunityGroups )
             {
+                if ( opportunityGroup.Group == null )
+                {
+                    // Look for archived groups.
+                    var archivedGroup = new GroupService( new RockContext() )
+                        .GetArchived()
+                        .Where( a => a.Id == opportunityGroup.GroupId )
+                        .FirstOrDefault();
+                    if ( archivedGroup != null )
+                    {
+                        nbArchivedPlacementGroupWarning.Visible = true;
+                        opportunityGroup.Group = archivedGroup;
+                    }
+                }
                 GroupsState.Add( new GroupStateObj( opportunityGroup ) );
             }
 
@@ -1486,6 +1506,19 @@ namespace RockWeb.Blocks.Connection
             ConnectorGroupsState = new List<GroupStateObj>();
             foreach( var connectorGroup in connectionOpportunity.ConnectionOpportunityConnectorGroups )
             {
+                if (connectorGroup.ConnectorGroup == null )
+                {
+                    // Look for archived groups.
+                    var archivedGroup = new GroupService( new RockContext() )
+                        .GetArchived()
+                        .Where( a => a.Id == connectorGroup.ConnectorGroupId )
+                        .FirstOrDefault();
+                    if ( archivedGroup != null )
+                    {
+                        nbArchivedConnectorGroupWarning.Visible = true;
+                        connectorGroup.ConnectorGroup = archivedGroup;
+                    }
+                }
                 ConnectorGroupsState.Add( new GroupStateObj( connectorGroup ) );
             }
 
@@ -1746,6 +1779,7 @@ namespace RockWeb.Blocks.Connection
             public string GroupTypeName { get; set; }
             public string CampusName { get; set; }
             public int GroupTypeId { get; set; }
+            public bool IsArchived { get; set; }
 
             public GroupStateObj()
             {
@@ -1764,6 +1798,7 @@ namespace RockWeb.Blocks.Connection
                     GroupTypeId = opportunityGroup.Group.GroupTypeId;
                     CampusId = opportunityGroup.Group.CampusId;
                     CampusName = opportunityGroup.Group.Campus != null ? opportunityGroup.Group.Campus.Name : string.Empty;
+                    IsArchived = opportunityGroup.Group.IsArchived;
                 }
             }
 
@@ -1777,6 +1812,7 @@ namespace RockWeb.Blocks.Connection
                     GroupName = connectorGroup.ConnectorGroup.Name;
                     GroupTypeName = connectorGroup.ConnectorGroup.GroupType != null ? connectorGroup.ConnectorGroup.GroupType.Name : string.Empty;
                     GroupTypeId = connectorGroup.ConnectorGroup.GroupTypeId;
+                    IsArchived = connectorGroup.ConnectorGroup.IsArchived;
                 }
                 if ( connectorGroup.Campus != null )
                 {

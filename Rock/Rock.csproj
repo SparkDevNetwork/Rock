@@ -194,8 +194,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.2.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.2.6\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Mobile.Common, Version=0.2.10.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.2.10\lib\net452\Rock.Mobile.Common.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
@@ -282,6 +282,7 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
@@ -405,11 +406,17 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
+    <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
+    <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
+    <Compile Include="Data\ICampusFilterable.cs" />
+    <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
+    <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Mobile\AdditionalBlockSettings.cs" />
     <Compile Include="Jobs\UpdatePersistedDatasets.cs" />
@@ -418,16 +425,27 @@
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\EntityCampusFilterService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupDemographicTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupDemographicValueService.cs" />
     <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
+    <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
+    <Compile Include="Model\EntityCampusFilter.cs" />
+    <Compile Include="Model\GroupDemographicType.cs" />
+    <Compile Include="Model\GroupDemographicValue.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
+    <Compile Include="Model\StreakAchievementAttempts.cs" />
+    <Compile Include="Model\StreakTypeAchievementType.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
-    <Compile Include="Plugin\HotFixes\087_AddNonCashAssetTypes.cs" />
+    <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
+    <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="SystemGuid\Person.cs" />
@@ -436,6 +454,7 @@
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
+    <Compile Include="Utility\SingleOrArrayJsonConverter.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
@@ -451,8 +470,6 @@
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemList.cs" />
     <Compile Include="Blocks\Types\Mobile\Content.cs" />
-    <Compile Include="Blocks\Types\Mobile\DynamicContent.cs" />
-    <Compile Include="Blocks\Types\Mobile\Image.cs" />
     <Compile Include="Blocks\Types\Mobile\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\ProfileDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Register.cs" />
@@ -550,16 +567,16 @@
     <Compile Include="Model\PersonScheduleExclusion.cs" />
     <Compile Include="Model\RegistrationTemplateFeeItem.cs" />
     <Compile Include="Model\SpiritualGiftsService.cs" />
-    <Compile Include="BulkExport\AttributesExport.cs" />
-    <Compile Include="BulkExport\FinancialTransactionExport.cs" />
-    <Compile Include="BulkExport\FinancialTransactionExportOptions.cs" />
-    <Compile Include="BulkExport\FinancialTransactionsExport.cs" />
-    <Compile Include="BulkExport\ModelExport.cs" />
-    <Compile Include="BulkExport\ExportOptions.cs" />
-    <Compile Include="BulkExport\LocationExport.cs" />
-    <Compile Include="BulkExport\ExportResult.cs" />
-    <Compile Include="BulkExport\PeopleExport.cs" />
-    <Compile Include="BulkExport\PersonExport.cs" />
+    <Compile Include="Bulk\BulkExport\AttributesExport.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionExport.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionExportOptions.cs" />
+    <Compile Include="Bulk\BulkExport\FinancialTransactionsExport.cs" />
+    <Compile Include="Bulk\BulkExport\ModelExport.cs" />
+    <Compile Include="Bulk\BulkExport\ExportOptions.cs" />
+    <Compile Include="Bulk\BulkExport\LocationExport.cs" />
+    <Compile Include="Bulk\BulkExport\ExportResult.cs" />
+    <Compile Include="Bulk\BulkExport\PeopleExport.cs" />
+    <Compile Include="Bulk\BulkExport\PersonExport.cs" />
     <Compile Include="CheckIn\CheckInEditFamilyBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -616,6 +633,12 @@
     <Compile Include="Plugin\HotFixes\084_FixSpiritualGiftsAssessmentBadge.cs" />
     <Compile Include="Plugin\HotFixes\083_MigrationRollupsForV9_1_0.cs" />
     <Compile Include="Plugin\HotFixes\074_MigrationRollupsForV8_8_1.cs" />
+    <Compile Include="Plugin\HotFixes\092_DiscProfileAttributeFix.cs" />
+    <Compile Include="Plugin\HotFixes\091_SecureGetImpersonationParameter.cs" />
+    <Compile Include="Plugin\HotFixes\090_FixNonCashCurrencyDefinedValue.cs" />
+    <Compile Include="Plugin\HotFixes\089_MigrationRollupsForV9_3.cs" />
+    <Compile Include="Plugin\HotFixes\088_FixAttributeQualifierMotivatorDefinedType.cs" />
+    <Compile Include="Plugin\HotFixes\087_AddNonCashAssetTypes.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2578,6 +2601,7 @@
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="App.config" />
     <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />
@@ -2659,10 +2683,14 @@ if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll" del "$(SolutionDir
 if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
+if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
 
-
-
+if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
 </PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

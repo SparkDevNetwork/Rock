@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web;
 
 using Rock.Attribute;
@@ -27,6 +28,7 @@ using Rock.Mobile.Common.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Authorization = Rock.Security.Authorization;
 
 namespace Rock.Mobile
 {
@@ -227,6 +229,11 @@ namespace Rock.Mobile
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
+            if ( additionalSettings.IsNull() )
+            {
+                throw new Exception( "Invalid or non-existing AdditionalSettings property on site." );
+            }
+
             //
             // Get all the system phone formats.
             //
@@ -263,7 +270,8 @@ namespace Rock.Mobile
                 CssStyles = cssStyles,
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
-                PhoneFormats = phoneFormats
+                PhoneFormats = phoneFormats,
+                TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom
             };
 
             //

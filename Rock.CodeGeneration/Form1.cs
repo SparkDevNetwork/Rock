@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -143,6 +145,17 @@ namespace Rock.CodeGeneration
                     var entityTypes = cblModels.Items.Cast<Type>().ToList();
                     var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
                     tbResults.Text += missingDbSets.Select( a => a.Name + " is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
+
+                    if ( cbClient.Checked )
+                    {
+                        var codeGenFolder = Path.Combine( rockClientFolder, "CodeGenerated" );
+                        if ( Directory.Exists( codeGenFolder ) )
+                        {
+                            Directory.Delete( codeGenFolder, true );
+                        }
+
+                        Directory.CreateDirectory( Path.Combine( rockClientFolder, "CodeGenerated" ) );
+                    }
 
                     foreach ( object item in cblModels.CheckedItems )
                     {
@@ -1187,14 +1200,10 @@ order by [parentTable], [columnName]
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
+            Debug.WriteLine( $"WriteRockClientFile for {type.FullName}" );
             var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
 
-            // create an instance of the type to detect any autoproperties that have a default value set
-            object typeInstance = null;
-            if ( type.GetConstructor( new Type[0] ) != null )
-            {
-                typeInstance = Activator.CreateInstance( type );
-            }
+
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
@@ -1305,10 +1314,27 @@ order by [parentTable], [columnName]
                     sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
                 }
 
+                // if the property has auto-property ( ex: IsActive {get; set) = true;) lets put the same thing on the code generated rock.client class
+                Type[] autoPropertyTypesToCheck = new Type[] { typeof( string ), typeof( bool ), typeof( int ), typeof( bool? ), typeof( int? ) };
                 object autoPropertyValue = null;
-                if ( typeInstance != null )
+                if ( autoPropertyTypesToCheck.Contains( propertyInfo.PropertyType ) || propertyInfo.PropertyType.IsEnum )
                 {
-                    autoPropertyValue = propertyInfo.GetValue( typeInstance );
+                    // create an instance of the type to detect any auto-properties that have a default value set
+                    object typeInstance = null;
+                    if ( type.GetConstructor( new Type[0] ) != null )
+                    {
+                        typeInstance = Activator.CreateInstance( type );
+                    }
+
+                    if ( typeInstance != null )
+                    {
+
+                        // we can rule out the existence of the autoProperty if the getter doesn't have CompilerGeneratedAttribute
+                        //if ( propertyInfo.GetGetMethod().GetCustomAttribute<CompilerGeneratedAttribute>() != null )
+                        {
+                            autoPropertyValue = propertyInfo.GetValue( typeInstance );
+                        }
+                    }
                 }
 
                 sb.Append( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }}" );

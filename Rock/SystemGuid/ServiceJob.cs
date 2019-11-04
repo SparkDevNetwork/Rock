@@ -62,6 +62,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_100_ATTRIBUTEVALUE_VALUEASNUMERIC = "0A7573C9-D977-4A7E-BDD6-66DD36CBF6F3";
 
         /// <summary>
+        /// The Job to run Post v10.0 Data Migrations for SundayDate
+        /// </summary>
+        public const string DATA_MIGRATIONS_100_SUNDAYDATE = "CC263453-B290-4393-BB91-1C1C87CAE291";
+
+        /// <summary>
         /// The Job to run Post v9 Data Migrations to convert Scheduled Transaction Notes to History
         /// </summary>
         public const string DATA_MIGRATIONS_90_SCHEDULEDTRANSACTIONNOTESTOHISTORY = "6707AA98-7CF8-4258-A75A-0881CD68B0D9";

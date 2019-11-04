@@ -75,14 +75,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified occurrence record, creating it if necessary.
+        /// Gets the specified occurrence record, creating it if necessary. Ensures that an AttendanceOccurrence
+        /// record exists for the specified date, schedule, locationId and group. If it doesn't exist, it is
+        /// created and saved to the database.
+        /// NOTE: When looking for a matching occurrence, if null groupId, locationId or scheduleId is given
+        /// any matching record must also not have a group, location or schedule.
         /// </summary>
         /// <param name="occurrenceDate">The occurrence date.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="includes">Allows including attendance occurrence virtual properties like Attendees.</param>
-        /// <returns></returns>
+        /// <returns>An existing or new attendance occurrence</returns>
         public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId, string includes )
         {
             var occurrence = Get( occurrenceDate, groupId, locationId, scheduleId, includes );
@@ -114,13 +118,17 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified occurrence record, creating it if necessary.
+        /// Gets the specified occurrence record, creating it if necessary. Ensures that an AttendanceOccurrence
+        /// record exists for the specified date, schedule, locationId and group. If it doesn't exist, it is
+        /// created and saved to the database.
+        /// NOTE: When looking for a matching occurrence, if null groupId, locationId or scheduleId is given
+        /// any matching record must also not have a group, location or schedule.
         /// </summary>
         /// <param name="occurrenceDate">The occurrence date.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <param name="locationId">The location identifier.</param>
         /// <param name="scheduleId">The schedule identifier.</param>
-        /// <returns></returns>
+        /// <returns>An existing or new attendance occurrence</returns>
         public AttendanceOccurrence GetOrAdd( DateTime occurrenceDate, int? groupId, int? locationId, int? scheduleId )
         {
             return GetOrAdd( occurrenceDate, groupId, locationId, scheduleId, null );
@@ -295,9 +303,21 @@ namespace Rock.Model
         /// <param name="locationIds">The location ids.</param>
         /// <param name="scheduleIds">The schedule ids.</param>
         /// <returns></returns>
-        public List<AttendanceOccurrence> GetFutureGroupOccurrences( Group group, DateTime? toDateTime, List<int> locationIds, List<int> scheduleIds )
+        public List<AttendanceOccurrence> GetFutureGroupOccurrences( Group group, DateTime? toDateTime, string locationIds = null, string scheduleIds = null )
         {
-            var qry = Queryable().AsNoTracking().Where( a => a.GroupId == group.Id );
+            var locationIdList = new List<int>();
+            if ( !string.IsNullOrWhiteSpace( locationIds ) )
+            {
+                locationIdList = locationIds.Split( ',' ).Select( int.Parse ).ToList();
+            }
+
+            var scheduleIdList = new List<int>();
+            if ( !string.IsNullOrWhiteSpace( scheduleIds ) )
+            {
+                scheduleIdList = scheduleIds.Split( ',' ).Select( int.Parse ).ToList();
+            }
+
+            var qry = Queryable("Group,Schedule").AsNoTracking().Where( a => a.GroupId == group.Id );
 
             // Filter by date range
             var fromDate = DateTime.Now.Date;
@@ -311,15 +331,15 @@ namespace Rock.Model
                 .Where( a => a.OccurrenceDate < ( toDate ) );
 
             // Location Filter
-            if ( locationIds.Any() )
+            if ( locationIdList.Any() )
             {
-                qry = qry.Where( a => locationIds.Contains( a.LocationId ?? 0 ) );
+                qry = qry.Where( a => locationIdList.Contains( a.LocationId ?? 0 ) );
             }
 
             // Schedule Filter
-            if ( scheduleIds.Any() )
+            if ( scheduleIdList.Any() )
             {
-                qry = qry.Where( a => scheduleIds.Contains( a.ScheduleId ?? 0 ) );
+                qry = qry.Where( a => scheduleIdList.Contains( a.ScheduleId ?? 0 ) );
             }
 
             var occurrences = qry.ToList();
@@ -446,6 +466,8 @@ namespace Rock.Model
         /// <param name="locationId">The location identifier.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <returns>AttendanceOccurrence</returns>
+        [Obsolete( "Use GetOrAdd instead" )]
+        [RockObsolete( "1.10" )]
         public AttendanceOccurrence GetOrCreateAttendanceOccurrence( DateTime occurrenceDate, int scheduleId, int? locationId, int groupId )
         {
             // There is a unique constraint on OccurrenceDate, ScheduleId, LocationId and GroupId. So there is at most one record.

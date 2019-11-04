@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Streaks
         /// <summary>
         /// The number of chart bits to show
         /// </summary>
-        private static int ChartBitsToShow = 250;
+        private static int ChartBitsToShow = 350;
 
         #region Keys
 
@@ -245,11 +245,32 @@ namespace RockWeb.Blocks.Streaks
             notificationControl.NotificationBoxType = notificationType;
         }
 
+        /// <summary>
+        /// Show a validation error
+        /// </summary>
+        /// <param name="message"></param>
+        private void ShowValidationError( string message )
+        {
+            nbEditModeMessage.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", message );
+            nbEditModeMessage.NotificationBoxType = NotificationBoxType.Validation;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="notificationControl"></param>
+        /// <param name="message"></param>
         private void ShowBlockError( NotificationBox notificationControl, string message )
         {
             ShowBlockNotification( notificationControl, message, NotificationBoxType.Danger );
         }
 
+        /// <summary>
+        /// Show a block exception
+        /// </summary>
+        /// <param name="notificationControl"></param>
+        /// <param name="ex"></param>
+        /// <param name="writeToLog"></param>
         private void ShowBlockException( NotificationBox notificationControl, Exception ex, bool writeToLog = true )
         {
             ShowBlockNotification( notificationControl, ex.Message, NotificationBoxType.Danger );
@@ -284,7 +305,7 @@ namespace RockWeb.Blocks.Streaks
             }
 
             var errorMessage = string.Empty;
-            StreakTypeService.RebuildStreakFromAttendance( streak.StreakTypeId, streak.PersonAliasId, out errorMessage );
+            StreakTypeService.RebuildStreakFromAttendance( streak.StreakTypeId, streak.PersonAlias.PersonId, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -366,7 +387,7 @@ namespace RockWeb.Blocks.Streaks
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    nbEditModeMessage.Text = errorMessage;
+                    ShowValidationError( errorMessage );
                     return;
                 }
 
@@ -565,25 +586,10 @@ namespace RockWeb.Blocks.Streaks
 
             lEnrollmentDescription.Text = descriptionList.Html;
 
-            var streakData = GetStreakData();
             var streakDetailsList = new DescriptionList();
 
-            if ( streakData != null )
-            {
-                if ( streakData.EnrollmentCount > 1 )
-                {
-                    var enrollments = GetPersonStreaks();
-                    streakDetailsList.Add( "First Enrollment Date", streakData.FirstEnrollmentDate.ToShortDateString() );
-                }
-                else
-                {
-                    h5Left.Visible = false;
-                    h5Right.Visible = false;
-                }
-
-                streakDetailsList.Add( "Current Streak", GetStreakStateString( streakData.CurrentStreakCount, streakData.CurrentStreakStartDate ) );
-                streakDetailsList.Add( "Longest Streak", GetStreakStateString( streakData.LongestStreakCount, streakData.LongestStreakStartDate, streakData.LongestStreakEndDate ) );
-            }
+            streakDetailsList.Add( "Current Streak", GetStreakStateString( enrollment.CurrentStreakCount, enrollment.CurrentStreakStartDate ) );
+            streakDetailsList.Add( "Longest Streak", GetStreakStateString( enrollment.LongestStreakCount, enrollment.LongestStreakStartDate, enrollment.LongestStreakEndDate ) );
 
             lStreakData.Text = streakDetailsList.Html;
 
@@ -648,14 +654,20 @@ namespace RockWeb.Blocks.Streaks
             }
 
             var stringBuilder = new StringBuilder();
-            var bitItemFormat = @"<li title=""{0}""><span style=""height: {1}%""></span></li>";
+            var bitItemFormat = @"<li class=""binary-state-graph-bit {2} {3}"" title=""{0}""><span style=""height: {1}%""></span></li>";
 
             for ( var i = 0; i < occurrenceEngagement.Length; i++ )
             {
                 var occurrence = occurrenceEngagement[i];
-                var bitIsSet = occurrence != null && occurrence.HasEngagement;
+                var hasEngagement = occurrence != null && occurrence.HasEngagement;
+                var hasExclusion = occurrence != null && occurrence.HasExclusion;
                 var title = occurrence != null ? occurrence.DateTime.ToShortDateString() : string.Empty;
-                stringBuilder.AppendFormat( bitItemFormat, title, bitIsSet ? 100 : 5 );
+
+                stringBuilder.AppendFormat( bitItemFormat,
+                    title, // 0
+                    hasEngagement ? 100 : 5, // 1
+                    hasEngagement ? "has-engagement" : string.Empty, // 2
+                    hasExclusion ? "has-exclusion" : string.Empty ); // 3
             }
 
             lStreakChart.Text = stringBuilder.ToString();
@@ -762,7 +774,7 @@ namespace RockWeb.Blocks.Streaks
                 if ( streakId.HasValue && streakId.Value > 0 )
                 {
                     var service = GetStreakService();
-                    _streak = service.Get( streakId.Value );
+                    _streak = service.Queryable( "PersonAlias" ).FirstOrDefault( s => s.Id == streakId.Value );
                 }
             }
 
@@ -807,30 +819,6 @@ namespace RockWeb.Blocks.Streaks
         private RockContext _rockContext = null;
 
         /// <summary>
-        /// Get the streak data for the person
-        /// </summary>
-        /// <returns></returns>
-        private StreakData GetStreakData()
-        {
-            if ( _streakData == null )
-            {
-                var streakType = GetStreakType();
-                var person = GetPerson();
-
-                if ( streakType != null && person != null )
-                {
-                    var service = GetStreakTypeService();
-                    var streakTypeCache = StreakTypeCache.Get( streakType.Id );
-                    var errorMessage = string.Empty;
-                    _streakData = service.GetStreakData( streakTypeCache, person.Id, out errorMessage );
-                }
-            }
-
-            return _streakData;
-        }
-        private StreakData _streakData = null;
-
-        /// <summary>
         /// Get the recent bits data for the chart
         /// </summary>
         /// <returns></returns>
@@ -838,13 +826,14 @@ namespace RockWeb.Blocks.Streaks
         {
             if ( _occurrenceEngagement == null )
             {
-                var streak = GetStreak();
+                var streakTypeService = GetStreakTypeService();
                 var streakType = GetStreakType();
+                var person = GetPerson();
 
-                if ( streak != null && streakType != null )
+                if ( person != null && streakType != null )
                 {
-                    _occurrenceEngagement = StreakTypeService.GetMostRecentEngagementBits( streak.EngagementMap, streakType.OccurrenceMap, streakType.StartDate,
-                        streakType.OccurrenceFrequency, ChartBitsToShow );
+                    var errorMessage = string.Empty;
+                    _occurrenceEngagement = streakTypeService.GetRecentEngagementBits( streakType.Id, person.Id, ChartBitsToShow, out errorMessage );
                 }
             }
 

@@ -425,7 +425,7 @@ namespace Rock.Communication.Transport
                     createMessageOptions.MediaUrl = attachmentMediaUrls;
                 }
 
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !callbackUrl.Contains(".ngrok.io") )
                 {
                     createMessageOptions.StatusCallback = null;
                 }

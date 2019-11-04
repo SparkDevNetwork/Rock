@@ -38,7 +38,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// 
+    /// A block for creating and sending a new communication such as email, SMS, etc. to recipients.
     /// </summary>
     [DisplayName( "Communication Entry Wizard" )]
     [Category( "Communication" )]
@@ -118,6 +118,13 @@ namespace RockWeb.Blocks.Communication
         Description = "Set this to true to show an option to prevent communications from being sent to people with the same email/SMS addresses. Typically, in Rock you’d want to send two emails as each will be personalized to the individual.",
         DefaultBooleanValue = false,
         Order = 11 )]
+
+    [BooleanField( "Default As Bulk",
+        Key = AttributeKey.DefaultAsBulk,
+        Description = "Should new entries be flagged as bulk communication by default?",
+        DefaultBooleanValue = false,
+        Order = 12 )]
+
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Attribute Keys
@@ -138,6 +145,7 @@ namespace RockWeb.Blocks.Communication
             public const string AllowedSMSNumbers = "AllowedSMSNumbers";
             public const string SimpleCommunicationPage = "SimpleCommunicationPage";
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
+            public const string DefaultAsBulk = "DefaultAsBulk";
         }
 
         #endregion Attribute Keys
@@ -331,6 +339,7 @@ namespace RockWeb.Blocks.Communication
                 communication.SenderPersonAlias = this.CurrentPersonAlias;
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
             }
             else
             {
@@ -435,8 +444,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            UpdateRecipientFromListCount();
-            UpdateIndividualRecipientsCountText();
+            UpdateRecipientListCount();
 
             // If there aren't any Communication Groups, hide the option and only show the Individual Recipient selection
             if ( ddlCommunicationGroupList.Items.Count <= 1 )
@@ -531,7 +539,7 @@ namespace RockWeb.Blocks.Communication
             rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "All segment filters", SegmentCriteria.All.ToString() ) { Selected = true } );
             rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", SegmentCriteria.Any.ToString() ) );
 
-            UpdateRecipientFromListCount();
+            UpdateRecipientListCount();
 
             var selectedNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
             var smsFromDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM ) );
@@ -701,11 +709,16 @@ namespace RockWeb.Blocks.Communication
             nbRecipientsAlert.Visible = false;
             if ( tglRecipientSelection.Checked )
             {
-                if ( !GetRecipientFromListSelection().Any() )
+                var recipients = GetRecipientFromListSelection();
+                if ( !recipients.Any() )
                 {
                     nbRecipientsAlert.Text = "The selected list doesn't have any people. <span>At least one recipient is required.</span>";
                     nbRecipientsAlert.Visible = true;
                     return;
+                }
+                else
+                {
+                    hfRSVPPersonIDs.Value = recipients.Select( m => m.PersonId ).ToList().AsDelimited( "," );
                 }
             }
             else
@@ -715,6 +728,10 @@ namespace RockWeb.Blocks.Communication
                     nbRecipientsAlert.Text = "At least one recipient is required.";
                     nbRecipientsAlert.Visible = true;
                     return;
+                }
+                else
+                {
+                    hfRSVPPersonIDs.Value = this.IndividualRecipientPersonIds.AsDelimited( "," );
                 }
             }
 
@@ -732,6 +749,8 @@ namespace RockWeb.Blocks.Communication
             nbRecipientsAlert.Visible = false;
             pnlRecipientSelectionList.Visible = tglRecipientSelection.Checked;
             pnlRecipientSelectionIndividual.Visible = !tglRecipientSelection.Checked;
+
+            UpdateRecipientListCount();
         }
 
         /// <summary>
@@ -753,16 +772,7 @@ namespace RockWeb.Blocks.Communication
                 ppAddPerson.PersonName = "Add Person";
             }
 
-            UpdateIndividualRecipientsCountText();
-        }
-
-        /// <summary>
-        /// Updates the individual recipients count text.
-        /// </summary>
-        private void UpdateIndividualRecipientsCountText()
-        {
-            var individualRecipientCount = this.IndividualRecipientPersonIds.Count();
-            lIndividualRecipientCount.Text = string.Format( "{0} {1} selected", individualRecipientCount, "recipient".PluralizeIf( individualRecipientCount != 1 ) );
+            UpdateRecipientListCount();
         }
 
         /// <summary>
@@ -867,11 +877,64 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void BindIndividualRecipientsGrid()
         {
-            var rockContext = new RockContext();
-            var personService = new PersonService( rockContext );
-            var qryPersons = personService.Queryable( true ).AsNoTracking().Where( a => this.IndividualRecipientPersonIds.Contains( a.Id ) ).Include( a => a.PhoneNumbers ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+            bool isCommunicationGroup = tglRecipientSelection.Checked;
 
+            nbListWarning.Visible = isCommunicationGroup;
+
+            // Set visibility for Select checkbox.
+            var selectIndex = gIndividualRecipients.GetColumnIndexByFieldType( typeof( SelectField ) );
+
+            if ( selectIndex.HasValue )
+            {
+                gIndividualRecipients.Columns[selectIndex.Value].Visible = !isCommunicationGroup;
+            }
+
+            // Set visibility for Delete buttons.
+            btnDeleteSelectedRecipients.Visible = !isCommunicationGroup;
+
+            var deleteIndex = gIndividualRecipients.GetColumnIndexByFieldType( typeof( DeleteField ) );
+
+            if ( deleteIndex.HasValue )
+            {
+                gIndividualRecipients.Columns[deleteIndex.Value].Visible = !isCommunicationGroup;
+            }
+
+            var listGroupId = ddlCommunicationGroupList.SelectedValue.AsIntegerOrNull();
+
+            if ( listGroupId != null )
+            {
+                var listGroupName = ddlCommunicationGroupList.SelectedItem.Text;
+
+                nbListWarning.Text = string.Format( "Below are the current members of the \"{0}\" List with segment filters applied.\nIf this message is sent at a future date, it is possible that the list may change between now and then.", listGroupName );
+            }
+
+            // Get the list of recipients.
+            var rockContext = new RockContext();
+
+            List<int> recipientIdList;
+
+            if ( isCommunicationGroup )
+            {
+                var segmentDataViewIds = cblCommunicationGroupSegments.Items.OfType<ListItem>().Where( a => a.Selected ).Select( a => a.Value ).AsIntegerList();
+
+                var segmentCriteria = rblCommunicationGroupSegmentFilterType.SelectedValueAsEnum<SegmentCriteria>( SegmentCriteria.Any );
+
+                recipientIdList = Rock.Model.Communication.GetCommunicationListMembers( rockContext, listGroupId, segmentCriteria, segmentDataViewIds )
+                    .Select( x => x.PersonId )
+                    .ToList();
+            }
+            else
+            {
+                recipientIdList = this.IndividualRecipientPersonIds;
+            }
+
+            var personService = new PersonService( rockContext );
+
+            var qryPersons = personService.Queryable( true ).AsNoTracking().Where( a => recipientIdList.Contains( a.Id ) ).Include( a => a.PhoneNumbers ).OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+
+            // Bind the list items to the grid.
             gIndividualRecipients.SetLinqDataSource( qryPersons );
+
             gIndividualRecipients.DataBind();
         }
 
@@ -884,7 +947,7 @@ namespace RockWeb.Blocks.Communication
         {
             this.IndividualRecipientPersonIds.Remove( e.RowKeyId );
             BindIndividualRecipientsGrid();
-            UpdateIndividualRecipientsCountText();
+            UpdateRecipientListCount();
 
             // upnlContent has UpdateMode = Conditional and this is a modal, so we have to update manually
             upnlContent.Update();
@@ -897,7 +960,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cblCommunicationGroupSegments_SelectedIndexChanged( object sender, EventArgs e )
         {
-            UpdateRecipientFromListCount();
+            UpdateRecipientListCount();
         }
 
         /// <summary>
@@ -910,7 +973,7 @@ namespace RockWeb.Blocks.Communication
             // reload segments in case the communication list has additional segments
             LoadCommunicationSegmentFilters();
 
-            UpdateRecipientFromListCount();
+            UpdateRecipientListCount();
         }
 
         /// <summary>
@@ -920,27 +983,46 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rblCommunicationGroupSegmentFilterType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            UpdateRecipientFromListCount();
+            UpdateRecipientListCount();
         }
 
         /// <summary>
-        /// Updates the recipient from list count.
+        /// Updates the recipient list count.
         /// </summary>
-        private void UpdateRecipientFromListCount()
+        private void UpdateRecipientListCount()
         {
-            IQueryable<GroupMember> groupMemberQuery = GetRecipientFromListSelection();
+            bool isCommunicationGroup = tglRecipientSelection.Checked;
 
-            if ( groupMemberQuery != null )
+            int listCount = 0;
+
+            if ( isCommunicationGroup )
             {
-                int groupMemberCount = groupMemberQuery.Count();
-                pnlRecipientFromListCount.Visible = true;
+                // Communication List Count
+                IQueryable<GroupMember> groupMemberQuery = GetRecipientFromListSelection();
 
-                lRecipientFromListCount.Text = string.Format( "{0} {1} selected", groupMemberCount, "recipient".PluralizeIf( groupMemberCount != 1 ) );
+                if ( groupMemberQuery != null )
+                {
+                    listCount = groupMemberQuery.Count();
+                    pnlRecipientFromListCount.Visible = true;
+
+                    lRecipientFromListCount.Text = string.Format( "{0} {1} selected", listCount, "recipient".PluralizeIf( listCount != 1 ) );
+                }
+                else
+                {
+                    pnlRecipientFromListCount.Visible = false;
+                }
+
+                pnlRecipientFromListCount.Visible = listCount > 0;                
             }
             else
             {
-                pnlRecipientFromListCount.Visible = false;
+                // Individuals Selection Count.
+                listCount = this.IndividualRecipientPersonIds.Count();
+
+                lIndividualRecipientCount.Text = string.Format( "{0} {1} selected", listCount, "recipient".PluralizeIf( listCount != 1 ) );
             }
+
+            btnViewIndividualRecipients.Enabled = listCount > 0;
         }
 
         /// <summary>
@@ -986,7 +1068,7 @@ namespace RockWeb.Blocks.Communication
 
             BindIndividualRecipientsGrid();
 
-            UpdateIndividualRecipientsCountText();
+            UpdateRecipientListCount();
 
             // upnlContent has UpdateMode = Conditional and this is a modal, so we have to update manually
             upnlContent.Update();
@@ -1367,7 +1449,6 @@ namespace RockWeb.Blocks.Communication
         {
             pnlEmailEditor.Visible = false;
             ShowEmailSummary();
-
         }
 
         /// <summary>
@@ -1507,7 +1588,6 @@ namespace RockWeb.Blocks.Communication
                             {
                                 if ( smsPhoneNumber.Number != tbTestSMSNumber.Text )
                                 {
-
                                     smsPhoneNumber.Number = tbTestSMSNumber.Text;
                                     smsPhoneNumber.NumberFormatted = PhoneNumber.FormattedNumber( smsPhoneNumber.CountryCode, smsPhoneNumber.Number );
                                 }
@@ -2606,5 +2686,10 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         }
 
         #endregion
+
+
+
+
+
     }
 }

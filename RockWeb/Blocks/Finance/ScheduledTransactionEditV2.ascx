@@ -5,25 +5,28 @@
 
         <asp:HiddenField ID="hfScheduledTransactionId" runat="server" />
         <asp:HiddenField ID="hfFinancialGatewayId" runat="server" />
-        <Rock:HiddenFieldWithClass ID="hfPaymentInfoVisable" CssClass="js-add-payment-visible" runat="server" />
+        <Rock:HiddenFieldWithClass ID="hfAddPaymentInfoVisible" CssClass="js-add-payment-visible" runat="server" />
+
+        <%-- Message for any configuration warnings --%>
+        <Rock:NotificationBox ID="nbConfigurationNotification" runat="server" Visible="false" />
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
 
-        <%-- Prompt for Changes to Scheduled Transaction --%>
+        <%-- Prompt for Changes to Scheduled Transaction --%> 
         <asp:Panel ID="pnlPromptForChanges" runat="server">
             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
-            <Rock:RockDropDownList ID="ddlFrequency" runat="server" FormGroupCssClass="margin-t-md" />
+            <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency"  FormGroupCssClass="margin-t-md" />
 
             <div class="margin-t-md">
                 <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Next Gift" />
             </div>
 
             <Rock:RockControlWrapper ID="rcsPaymentMethod" runat="server" Label="Payment Method">
-                <div class="form-control-group">
+                <asp:Panel ID="pnlSelectSavedAccount" runat="server" CssClass="form-control-group js-person-saved-account">
                     <Rock:RockDropDownList ID="ddlPersonSavedAccount" CssClass="input-width-xxl" runat="server" />
                     <a class="js-add-payment btn btn-default">Add</a>
-                </div>
+                </asp:Panel>
             </Rock:RockControlWrapper>
 
             <div class="js-add-payment-new margin-b-md" style="display: none">

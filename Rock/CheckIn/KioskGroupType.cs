@@ -25,13 +25,13 @@ using Rock.Web.Cache;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// 
+    /// Wrapper for a GroupType (Checkin Area) for the current Kiosk
     /// </summary>
     [DataContract]
     public class KioskGroupType
     {
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the group type (Checkin Area)
         /// </summary>
         /// <value>
         /// The type of the group.

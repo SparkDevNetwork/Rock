@@ -154,6 +154,7 @@ namespace Rock
                 return encodedString;
             }
         }
+
         /// <summary>
         /// Joins and array of strings using the provided separator.
         /// </summary>
@@ -163,6 +164,37 @@ namespace Rock
         public static string JoinStrings( this IEnumerable<string> source, string separator )
         {
             return string.Join( separator, source.ToArray() );
+        }
+
+        /// <summary>
+        /// Joins an array of English strings together with commas plus "and" for last element.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns>Concatenated string.</returns>
+        public static string JoinStringsWithCommaAnd( this IEnumerable<String> source )
+        {
+            if ( source == null || source.Count() == 0  )
+            {
+                return string.Empty;
+            }
+
+            var output = string.Empty;
+
+            var list = source.ToList();
+
+            if ( list.Count > 1 )
+            {
+                var delimited = string.Join( ", ", list.Take( list.Count - 1 ) );
+
+                output = string.Concat( delimited, " and ", list.LastOrDefault() );
+            }
+            else
+            {
+                // only one element, just use it
+                output = list[0];
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -216,6 +248,25 @@ namespace Rock
         public static string RemoveAllNonAlphaNumericCharacters( this string str )
         {
             return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
+        /// <summary>
+        /// Removes all non numeric characters.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonNumericCharacters( this string str )
+        {
+            Regex digitsOnly = new Regex( @"[^\d]" );
+
+            if ( !string.IsNullOrEmpty( str ) )
+            {
+                return digitsOnly.Replace( str, string.Empty );
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>

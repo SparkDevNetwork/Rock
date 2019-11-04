@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.CheckIn
                         var pnlChangeButton = e.Item.FindControl( "pnlChangeButton" ) as Panel;
                         if ( pnlPersonButton != null && pnlChangeButton != null )
                         {
-                            pnlPersonButton.CssClass = "col-xs-12 col-sm-9 col-md-10";
+                            pnlPersonButton.CssClass = "checkin-person-btn checkin-person-has-change col-xs-12 col-sm-9 col-md-10";
                             pnlChangeButton.Visible = selectedOptions.Count > 1 || AnyUnselectedOptions( person );
                         }
                     }

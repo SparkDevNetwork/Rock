@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
@@ -54,38 +55,44 @@ namespace Rock.Model
         /// <param name="streakId"></param>
         public static void RefreshStreakDenormalizedPropertiesAsync( int streakId )
         {
-            Task.Run( () =>
+            Task.Run( () => RefreshStreakDenormalizedProperties( streakId ) );
+        }
+
+        /// <summary>
+        /// Start an async task to calculate steak data and then copy it to the enrollment model
+        /// </summary>
+        /// <param name="streakId">The streak identifier.</param>
+        public static void RefreshStreakDenormalizedProperties( int streakId )
+        {
+            var rockContext = new RockContext();
+            var streakService = new StreakService( rockContext );
+            var streakTypeService = new StreakTypeService( rockContext );
+
+            // Get the streak data and validate it
+            var streakData = streakTypeService.GetStreakData( streakId, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                var rockContext = new RockContext();
-                var streakService = new StreakService( rockContext );
-                var streakTypeService = new StreakTypeService( rockContext );
+                ExceptionLogService.LogException( errorMessage );
+                return;
+            }
 
-                // Get the streak data and validate it
-                var streakData = streakTypeService.GetStreakData( streakId, out var errorMessage );
+            if ( streakData == null )
+            {
+                ExceptionLogService.LogException( "Streak Data was null, but no error was specified" );
+                return;
+            }
 
-                if ( !errorMessage.IsNullOrWhiteSpace() )
-                {
-                    ExceptionLogService.LogException( errorMessage );
-                    return;
-                }
+            // Get the streak and apply updated information to it
+            var streak = streakService.Get( streakId );
+            if ( streak == null )
+            {
+                ExceptionLogService.LogException( "The streak was null" );
+                return;
+            }
 
-                if ( streakData == null )
-                {
-                    ExceptionLogService.LogException( "Streak Data was null, but no error was specified" );
-                    return;
-                }
-
-                // Get the streak and apply updated information to it
-                var streak = streakService.Get( streakId );
-                if ( streak == null )
-                {
-                    ExceptionLogService.LogException( "The streak was null" );
-                    return;
-                }
-
-                CopyStreakDataToStreakModel( streakData, streak );
-                rockContext.SaveChanges();
-            } );
+            CopyStreakDataToStreakModel( streakData, streak );
+            rockContext.SaveChanges( true );
         }
 
         /// <summary>

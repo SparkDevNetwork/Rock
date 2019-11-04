@@ -839,13 +839,17 @@ namespace RockWeb.Blocks.Communication
 
         #region Recipients Grid Events
 
+        private bool _GridIsExporting = false;
+
         /// <summary>
         /// Handles the GridRebind event of the Recipient grid controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gRecipients_GridRebind( object sender, EventArgs e )
+        void gRecipients_GridRebind( object sender, GridRebindEventArgs e )
         {
+            _GridIsExporting = e.IsExporting;
+
             BindRecipientsGrid();
         }
 
@@ -864,6 +868,11 @@ namespace RockWeb.Blocks.Communication
             var listItem = e.Row.DataItem as DataRowView;
 
             if ( listItem == null )
+            {
+                return;
+            }
+
+            if ( _GridIsExporting )
             {
                 return;
             }
@@ -893,6 +902,8 @@ namespace RockWeb.Blocks.Communication
             public const string OpenedStatus = "Opened Status";
             public const string ClickedStatus = "Clicked Status";
             public const string DeliveryStatus = "Delivery Status";
+            public const string DeliveryStatusNote = "Delivery Status Note";
+            public const string CommunicationMedium = "Communication Medium";
         }
 
         /// <summary>
@@ -983,9 +994,12 @@ namespace RockWeb.Blocks.Communication
             txbFirstNameFilter.Text = settingsKeyValueMap[FilterSettingName.FirstName];
             txbLastNameFilter.Text = settingsKeyValueMap[FilterSettingName.LastName];
 
+            cblMedium.SetValues( settingsKeyValueMap[FilterSettingName.CommunicationMedium].SplitDelimitedValues( "," ) );
             cblOpenedStatus.SetValues( settingsKeyValueMap[FilterSettingName.OpenedStatus].SplitDelimitedValues( "," ) );
             cblClickedStatus.SetValues( settingsKeyValueMap[FilterSettingName.ClickedStatus].SplitDelimitedValues( "," ) );
             cblDeliveryStatus.SetValues( settingsKeyValueMap[FilterSettingName.DeliveryStatus].SplitDelimitedValues( "," ) );
+
+            txbDeliveryStatusNote.Text = settingsKeyValueMap[FilterSettingName.DeliveryStatusNote];
         }
 
         /// <summary>
@@ -999,9 +1013,12 @@ namespace RockWeb.Blocks.Communication
             settings[FilterSettingName.FirstName] = txbFirstNameFilter.Text;
             settings[FilterSettingName.LastName] = txbLastNameFilter.Text;
 
+            settings[FilterSettingName.CommunicationMedium] = cblMedium.SelectedValues.AsDelimited( "," );
             settings[FilterSettingName.OpenedStatus] = cblOpenedStatus.SelectedValues.AsDelimited( "," );
             settings[FilterSettingName.ClickedStatus] = cblClickedStatus.SelectedValues.AsDelimited( "," );
             settings[FilterSettingName.DeliveryStatus] = cblDeliveryStatus.SelectedValues.AsDelimited( "," );
+
+            settings[FilterSettingName.DeliveryStatusNote] = txbDeliveryStatusNote.Text;
 
             return settings;
         }
@@ -1021,6 +1038,10 @@ namespace RockWeb.Blocks.Communication
             {
                 return string.Format( "Starts With \"{0}\"", txbLastNameFilter.Text );
             }
+            else if ( filterSettingName == FilterSettingName.CommunicationMedium )
+            {
+                return cblMedium.SelectedNames.AsDelimited( ", " );
+            }
             else if ( filterSettingName == FilterSettingName.OpenedStatus )
             {
                 return cblOpenedStatus.SelectedNames.AsDelimited( ", " );
@@ -1032,6 +1053,10 @@ namespace RockWeb.Blocks.Communication
             else if ( filterSettingName == FilterSettingName.DeliveryStatus )
             {
                 return cblDeliveryStatus.SelectedNames.AsDelimited( ", " );
+            }
+            else if ( filterSettingName == FilterSettingName.DeliveryStatusNote )
+            {
+                return string.Format( "Contains \"{0}\"", txbDeliveryStatusNote.Text );
             }
 
             return string.Empty;
@@ -1336,15 +1361,14 @@ namespace RockWeb.Blocks.Communication
             var reportBuilder = new ReportTemplateBuilder( typeof( Rock.Model.Person ) );
 
             // Add default fields.
-            var connectionStatusField = reportBuilder.AddPropertyField( "ConnectionStatusValueId", "ConnectionStatusValue" );
+            if ( !_GridIsExporting )
+            {
+                var isDeceasedField = reportBuilder.AddPropertyField( "IsDeceased" );
 
-            connectionStatusField.ShowInGrid = false;
+                isDeceasedField.ShowInGrid = false;
+            }
 
-            var isDeceasedField = reportBuilder.AddPropertyField( "IsDeceased" );
-
-            isDeceasedField.ShowInGrid = false;
-
-            dynamic settings = new { ShowAsLink = true, DisplayOrder = 0 };
+            dynamic settings = new { ShowAsLink = !_GridIsExporting, DisplayOrder = 0 };
 
             reportBuilder.AddDataSelectField( "Rock.Reporting.DataSelect.Person.PersonLinkSelect", settings, "Name" );
 
@@ -1366,11 +1390,11 @@ namespace RockWeb.Blocks.Communication
                 }
                 else if ( columnInfo.ContentType == PersonDataSourceColumnSourceSpecifier.Calculated )
                 {
-                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name ); //, propertyName );
+                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name );
                 }
                 else if ( columnInfo.ContentType == PersonDataSourceColumnSourceSpecifier.Attribute )
                 {
-                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name ); //, propertyName );
+                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name );
                 }
             }
 
@@ -1467,11 +1491,18 @@ namespace RockWeb.Blocks.Communication
                 // Build the output data for the Report by combining the report template with the filter.
                 var builder = new ReportOutputBuilder( report, dataContext );
 
+                ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.RawValue;
+
+                if ( _GridIsExporting )
+                {
+                    contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.FormattedText;
+                }
+
                 var results = builder.GetReportData( this.CurrentPerson,
                     whereExpression,
                     parameterExpression,
                     dataContext,
-                    ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.RawValue );
+                    contentType );
 
                 dataTable = results.Data;
 
@@ -2183,19 +2214,22 @@ namespace RockWeb.Blocks.Communication
                     this.LineChartTimeFormat = "LLLL";
                 }
 
-                interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId, a.Operation } )
+                // Get a summary of interactions.
+                // If a Click interaction exists without an Open, the Open is implied in the count.
+                interactionsSummary = interactionsList.GroupBy( a => new { a.CommunicationRecipientId } )
                     .Select( a => new
                     {
                         InteractionSummaryDateTime = a.Min( b => b.InteractionDateTime ).Round( roundTimeSpan ),
                         a.Key.CommunicationRecipientId,
-                        a.Key.Operation
+                        Clicked = a.Any( x => x.Operation == "Click"),
+                        Opened = a.Any( x => x.Operation == "Opened" )
                     } )
                     .GroupBy( a => a.InteractionSummaryDateTime )
                     .Select( x => new SummaryInfo
                     {
                         SummaryDateTime = x.Key,
-                        ClickCounts = x.Count( xx => xx.Operation == "Click" ),
-                        OpenCounts = x.Count( xx => xx.Operation == "Opened" )
+                        ClickCounts = x.Count( xx => xx.Clicked ),
+                        OpenCounts = x.Count( xx => xx.Opened || ( !xx.Opened && xx.Clicked ) )
                     } ).OrderBy( a => a.SummaryDateTime ).ToList();
             }
 
@@ -2256,14 +2290,28 @@ namespace RockWeb.Blocks.Communication
             }
 
             /* Actions Pie Chart and Stats */
-            int totalOpens = interactionsList.Where( a => a.Operation == "Opened" ).Count();
-            int totalClicks = interactionsList.Where( a => a.Operation == "Click" ).Count();
+            var openInteractions = interactionsList.Where( a => a.Operation == "Opened" ).ToList();
+            var clickInteractions = interactionsList.Where( a => a.Operation == "Click" ).ToList();
 
-            // Unique Opens is the number of times a Recipient opened at least once
-            int uniqueOpens = interactionsList.Where( a => a.Operation == "Opened" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+            int totalOpens = openInteractions.Count();
+            int totalClicks = clickInteractions.Count();
 
+            var recipientsWithOpens = openInteractions.GroupBy( a => a.CommunicationRecipientId ).Select(x => x.Key).ToList();
+            var recipientsWithClicks = clickInteractions.GroupBy( a => a.CommunicationRecipientId ).Select( x => x.Key ).ToList();
+
+            int recipientsWithClicksNoOpensCount = recipientsWithClicks.Except( recipientsWithOpens ).Count();
+            
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
-            int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
+            int uniqueClicks = recipientsWithClicks.Count();
+
+            // Unique Opens is the number of times a Recipient opened the message at least once.
+            int uniqueOpens = recipientsWithOpens.Count();
+
+            // When calculating Opens, include Recipients that have a Click interaction recorded without a corresponding Open interaction
+            // to capture the scenario where an email is viewed without loading the image links that are required to trigger the Open event.
+            // For Total Opens, only impute a single Open per recipient regardless of the number of Clicks.
+            uniqueOpens += recipientsWithClicksNoOpensCount;
+            totalOpens += recipientsWithClicksNoOpensCount;
 
             decimal percentOpened = 0;
 
@@ -2430,16 +2478,22 @@ namespace RockWeb.Blocks.Communication
         private void AddStandardRecipientColumns()
         {
             // Add the standard columns to the grid, inserted after the Name column.
+            BoundField boundField;
+
             var nameField = gRecipients.GetColumnByHeaderText( "Name" );
 
             var insertAtIndex = gRecipients.GetColumnIndex( nameField ) + 1;
 
-            var statusField = new BoundField();
-            statusField.HeaderText = "Status";
-            statusField.DataField = "DeliveryStatus";
-            statusField.SortExpression = "DeliveryStatus";
+            boundField = new BoundField { HeaderText = "Status", DataField = "DeliveryStatus", SortExpression = "DeliveryStatus" };
+            gRecipients.Columns.Insert( insertAtIndex, boundField );
+            insertAtIndex++;
 
-            gRecipients.Columns.Insert( insertAtIndex, statusField );
+            boundField = new BoundField { HeaderText = "Medium", DataField = "CommunicationMediumName", SortExpression = "CommunicationMediumName" };
+            gRecipients.Columns.Insert( insertAtIndex, boundField );
+            insertAtIndex++;
+
+            boundField = new BoundField { HeaderText = "Note", DataField = "DeliveryStatusNote", SortExpression = "DeliveryStatusNote" };
+            gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
 
             var openedField = new BoolField();
@@ -2470,8 +2524,14 @@ namespace RockWeb.Blocks.Communication
         private void AddStandardRecipientFieldsToDataSource( RockContext dataContext, DataTable dataTable, ReportOutputBuilder builder ) //, int skipCount, int takeCount )
         {
             // Add the standard data to the data source.
-            dataTable.Columns.Add( "IsActive", typeof( bool ) );
-            dataTable.Columns.Add( "DeliveryStatus", typeof( string ) );
+            if ( !_GridIsExporting )
+            {
+                dataTable.Columns.Add( "IsActive", typeof( bool ) );
+            }
+
+            dataTable.Columns.Add( "CommunicationMediumName", typeof( string ) );
+            dataTable.Columns.Add( "DeliveryStatus", typeof( string ) );            
+            dataTable.Columns.Add( "DeliveryStatusNote", typeof( string ) );
             dataTable.Columns.Add( "HasOpened", typeof( bool ) );
             dataTable.Columns.Add( "HasClicked", typeof( bool ) );
 
@@ -2514,7 +2574,9 @@ namespace RockWeb.Blocks.Communication
                         PersonId = x.PersonAlias.PersonId,
                         IsActive = ( x.PersonAlias.Person.RecordStatusValueId != inactiveStatusId ),
                         IsDeceased = x.PersonAlias.Person.IsDeceased,
+                        CommunicationMediumName = x.MediumEntityType.FriendlyName,
                         DeliveryStatus = ( x.Status == CommunicationRecipientStatus.Opened ? "Delivered" : ( x.Status == CommunicationRecipientStatus.Sending ? "Pending" : x.Status.ToString() ) ),
+                        DeliveryStatusNote = x.StatusNote,
                         HasOpened = ( x.Status == CommunicationRecipientStatus.Opened ),
                         HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId )
                     }
@@ -2531,13 +2593,15 @@ namespace RockWeb.Blocks.Communication
         {
             cblDeliveryStatus.BindToEnum( ignoreTypes: new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Sending, CommunicationRecipientStatus.Opened } );
 
-            cblOpenedStatus.Items.Clear();
+            cblMedium.Items.Clear();
+            cblMedium.Items.Add( new ListItem { Text = "Email", Value = Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL } );
+            cblMedium.Items.Add( new ListItem { Text = "SMS", Value = Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS } );
 
+            cblOpenedStatus.Items.Clear();
             cblOpenedStatus.Items.Add( new ListItem { Text = "Opened", Value = "Opened" } );
             cblOpenedStatus.Items.Add( new ListItem { Text = "Not Opened", Value = "NotOpened" } );
 
             cblClickedStatus.Items.Clear();
-
             cblClickedStatus.Items.Add( new ListItem { Text = "Clicked", Value = "Clicked" } );
             cblClickedStatus.Items.Add( new ListItem { Text = "Not Clicked", Value = "NotClicked" } );
         }
@@ -2567,6 +2631,14 @@ namespace RockWeb.Blocks.Communication
                 .GroupBy( k => k.PersonAlias.PersonId )
                 .Select( g => g.FirstOrDefault() );
 
+            // Filter by: Communication Medium
+            var mediumList = filterSettingsKeyValueMap[FilterSettingName.CommunicationMedium].SplitDelimitedValues( "," ).AsGuidList();
+
+            if ( mediumList.Any() )
+            {
+                recipientQuery = recipientQuery.Where( x => mediumList.Contains( x.MediumEntityType.Guid ) );
+            }
+
             // Filter by: Delivery Status
             var deliveryStatusList = filterSettingsKeyValueMap[FilterSettingName.DeliveryStatus].SplitDelimitedValues( "," ).AsIntegerList();
 
@@ -2579,6 +2651,14 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 recipientQuery = recipientQuery.Where( x => deliveryStatusList.Contains( ( int ) x.Status ) );
+            }
+
+            // Filter by: Delivery Status Note
+            var statusNote = filterSettingsKeyValueMap[FilterSettingName.DeliveryStatusNote].ToStringSafe();
+
+            if ( !string.IsNullOrWhiteSpace( statusNote ) )
+            {
+                recipientQuery = recipientQuery.Where( x => x.StatusNote.Contains( statusNote ) );
             }
 
             // Filter by: Has Opened
@@ -2965,6 +3045,8 @@ namespace RockWeb.Blocks.Communication
             public bool HasOpened { get; set; }
             public bool HasClicked { get; set; }
             public string DeliveryStatus { get; set; }
+            public string DeliveryStatusNote { get; set; }
+            public string CommunicationMediumName { get; set; }
         }
 
         /// <summary>

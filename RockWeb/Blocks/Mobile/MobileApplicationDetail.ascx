@@ -73,17 +73,9 @@
                                         </fieldset>
                                     </div>
                                     <div class="col-md-4 hidden-sm hidden-xs">
-                                        <div class="row">
-                                            <div class="col-sm-4">
-                                                <asp:Image ID="imgAppIcon" runat="server" CssClass="mobile-app-icon" />
-                                            </div>
-
-                                            <div class="col-sm-8">
-                                                <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
-                                                    <asp:Image ID="imgAppPreview" runat="server" />
-                                                </asp:Panel>
-                                            </div>
-                                        </div>
+                                        <asp:Panel ID="pnlPreviewImage" runat="server" CssClass="mobile-app-preview">
+                                            <asp:Image ID="imgAppPreview" runat="server" />
+                                        </asp:Panel>
                                     </div>
                                 </div>
 
@@ -158,7 +150,7 @@
                                         <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help="" ></Rock:NumberBox>
                                     </div>
                                     <div class="col-md-4">
-                                        <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Header Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
+                                        <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Navigation Bar Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
                                     </div>
                                 </div>
 
@@ -202,7 +194,7 @@
                             </asp:Panel>
 
                             <asp:Panel ID="pnlPages" runat="server">
-                                <Rock:Grid ID="gPages" runat="server" RowItemText="Page" DisplayType="Light" OnGridRebind="gPages_GridRebind" OnRowSelected="gPages_RowSelected" OnGridReorder="gPages_GridReorder">
+                                <Rock:Grid ID="gPages" runat="server" RowItemText="Page" DisplayType="Light" OnGridRebind="gPages_GridRebind" OnRowSelected="gPages_RowSelected" OnGridReorder="gPages_GridReorder" OnRowDataBound="gPages_RowDataBound">
                                     <Columns>
                                         <Rock:ReorderField />
                                         <Rock:RockBoundField DataField="InternalName" SortExpression="Name" HeaderText="Name" />
@@ -266,7 +258,11 @@
                         </div>
                     </div>
 
-                    <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout Xaml" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
+                    <Rock:DataViewItemPicker ID="dvpCampusFilter" runat="server" Label="Campus Filter" Help="Select a data view of campuses to use for the campus lists within the application. Leave blank if your application does not need to filter content by campus"></Rock:DataViewItemPicker>
+
+                    <Rock:CodeEditor ID="ceEditFlyoutXaml" runat="server" Label="Flyout XAML" Help="The XAML template to use for the menu in the Flyout Shell." EditorMode="Xml" Required="true" />
+
+                    <Rock:CodeEditor ID="ceEditNavBarActionXaml" runat="server" Label="Navigation Bar Action XAML" Help="The XAML template to use for placing content into the top navigation bar." EditorMode="Xml"></Rock:CodeEditor>
 
                     <div class="row">
                         <%--<div class="col-md-4">

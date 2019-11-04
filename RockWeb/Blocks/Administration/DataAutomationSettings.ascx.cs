@@ -33,11 +33,11 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// Data Automation Settings
+    /// Data Automation Settings - Block used to set values specific to data automation (updating person status, family campus, etc.).
     /// </summary>
     [DisplayName( "Data Automation Settings" )]
     [Category( "Administration" )]
-    [Description( "Block used to set values specific to data automation (Updating Person Status, Family Campus, Etc)." )]
+    [Description( "Block used to set values specific to data automation (updating person status, family campus, etc.)." )]
     public partial class DataAutomationSettings : RockBlock
     {
         #region private variables
@@ -356,6 +356,13 @@ namespace RockWeb.Blocks.Administration
                         interactionChannelType.LastInteractionDays = settingInteractionItem.LastInteractionDays;
                     }
                 }
+
+                // Now UNCHECK all channels that were NOT *previously* saved
+                var remainingChannels = reactivateChannelTypes.Where( c => !_reactivateSettings.Interactions.Any( x => x.Guid == c.Guid ) );
+                foreach ( var nonSavedInteractionItem in remainingChannels )
+                {
+                    nonSavedInteractionItem.IsInteractionTypeEnabled = false;
+                }
             }
 
             rInteractions.DataSource = reactivateChannelTypes;
@@ -392,6 +399,13 @@ namespace RockWeb.Blocks.Administration
                         interactionChannelType.IsInteractionTypeEnabled = noneSelected || settingInteractionItem.IsInteractionTypeEnabled;
                         interactionChannelType.LastInteractionDays = settingInteractionItem.LastInteractionDays;
                     }
+                }
+
+                // Now UNCHECK all channels that were NOT *previously* saved
+                var remainingChannels = inactivateChannelTypes.Where( c => ! _inactivateSettings.NoInteractions.Any( x => x.Guid == c.Guid ) );
+                foreach ( var nonSavedInteractionItem in remainingChannels )
+                {
+                    nonSavedInteractionItem.IsInteractionTypeEnabled = false;
                 }
             }
 
@@ -513,18 +527,15 @@ namespace RockWeb.Blocks.Administration
             foreach ( RepeaterItem rItem in rInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
-                if ( isInterationTypeEnabled.Checked )
-                {
                     _reactivateSettings.Interactions = _reactivateSettings.Interactions ?? new List<InteractionItem>();
                     HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
                     NumberBox lastInteractionDays = rItem.FindControl( "nbInteractionDays" ) as NumberBox;
                     var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
                     {
-                        IsInteractionTypeEnabled = true,
+                        IsInteractionTypeEnabled = isInterationTypeEnabled.Checked,
                         LastInteractionDays = lastInteractionDays.Text.AsInteger()
                     };
                     _reactivateSettings.Interactions.Add( item );
-                }
             }
 
             // Inactivate
@@ -554,19 +565,17 @@ namespace RockWeb.Blocks.Administration
             foreach ( RepeaterItem rItem in rNoInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
-                if ( isInterationTypeEnabled.Checked )
-                {
                     _inactivateSettings.NoInteractions = _inactivateSettings.NoInteractions ?? new List<InteractionItem>();
                     HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
                     NumberBox lastInteractionDays = rItem.FindControl( "nbNoInteractionDays" ) as NumberBox;
-                    var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
-                    {
-                        IsInteractionTypeEnabled = true,
-                        LastInteractionDays = lastInteractionDays.Text.AsInteger()
-                    };
+                var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
+                {
+                    IsInteractionTypeEnabled =  isInterationTypeEnabled.Checked,
+                    LastInteractionDays = lastInteractionDays.Text.AsInteger()
+                };
 
                     _inactivateSettings.NoInteractions.Add( item );
-                }
+ 
             }
 
             // Campus Update

@@ -23,7 +23,7 @@ using Rock.Web.Cache;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// Helper class for getting check-in configuration settings from the group type
+    /// Helper class for getting check-in configuration settings from the group type (Checkin Area)
     /// </summary>
     public class CheckinType
     {
@@ -307,20 +307,36 @@ namespace Rock.CheckIn
             }
 
             /// <summary>
-            /// Gets a value indicating whether [display alternate identifier fieldfor adults].
+            /// Gets a value indicating whether [display alternate identifier field for adults].
             /// </summary>
             /// <value>
-            ///   <c>true</c> if [display alternate identifier fieldfor adults]; otherwise, <c>false</c>.
+            ///   <c>true</c> if [display alternate identifier field for adults]; otherwise, <c>false</c>.
             /// </value>
             public bool DisplayAlternateIdFieldforAdults => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS ).AsBoolean();
 
             /// <summary>
-            /// Gets a value indicating whether [display alternate identifier fieldfor children].
+            /// Gets a value indicating whether [display alternate identifier field for children].
             /// </summary>
             /// <value>
-            ///   <c>true</c> if [display alternate identifier fieldfor children]; otherwise, <c>false</c>.
+            ///   <c>true</c> if [display alternate identifier field for children]; otherwise, <c>false</c>.
             /// </value>
             public bool DisplayAlternateIdFieldforChildren => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN ).AsBoolean();
+
+            /// <summary>
+            /// Gets a value indicating whether [display SMS button].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [display SMS button]; otherwise, <c>false</c>.
+            /// </value>
+            public bool DisplaySmsButton => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON ).AsBoolean();
+
+            /// <summary>
+            /// Gets a value indicating whether [default SMS enabled].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [default SMS enabled]; otherwise, <c>false</c>.
+            /// </value>
+            public bool DefaultSmsEnabled => _checkinType.GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED ).AsBoolean();
 
             /// <summary>
             /// Determines if the family should continue on the check-in path after being registered, or if they should be directed to a different kiosk after registration (take them back to search in that case)
@@ -359,7 +375,7 @@ namespace Rock.CheckIn
             /// Gets the required attributes for adults.
             /// </summary>
             /// <value>
-            /// The required attributesfor adults.
+            /// The required attributes for adults.
             /// </value>
             public List<AttributeCache> RequiredAttributesForAdults
             {
@@ -477,7 +493,7 @@ namespace Rock.CheckIn
             }
 
             /// <summary>
-            /// Gets a Dictionary of GroupTypeRoleId and Name for the known relationship group type roles that indicate that the person is in the primary fmily
+            /// Gets a Dictionary of GroupTypeRoleId and Name for the known relationship group type roles that indicate that the person is in the primary family
             /// </summary>
             /// <value>
             /// The known relationships same family.

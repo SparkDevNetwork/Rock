@@ -277,9 +277,9 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Loads the responses for recipient.
         /// </summary>
-        /// <param name="recipientId">The recipient identifier.</param>
+        /// <param name="recipientPersonAliasId">The recipient person alias identifier.</param>
         /// <returns></returns>
-        private string LoadResponsesForRecipient( int recipientId )
+        private string LoadResponsesForRecipient( int recipientPersonAliasId )
         {
             int? smsPhoneDefinedValueId = hfSmsNumber.ValueAsInt();
 
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             var communicationResponseService = new CommunicationResponseService( new RockContext() );
-            List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversation( recipientId, smsPhoneDefinedValueId.Value );
+            List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversation( recipientPersonAliasId, smsPhoneDefinedValueId.Value );
 
             BindConversationRepeater( responses );
 
@@ -482,6 +482,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCreateNewMessage_Click( object sender, EventArgs e )
         {
+            lblMdNewMessageSendingSMSNumber.Text = ddlSmsNumbers.SelectedItem.Text;
             mdNewMessage.Show();
         }
 
@@ -581,14 +582,7 @@ namespace RockWeb.Blocks.Communication
                 recipientPerson = new PersonAliasService( rockContext ).GetPerson( recipientPersonAliasId.Value );
             }
 
-            if ( recipientPerson == null )
-            {
-                //TODO???  
-            }
-            else
-            {
-                litMessagePart.Text = LoadResponsesForRecipient( recipientPersonAliasId.Value );
-            }
+            litMessagePart.Text = LoadResponsesForRecipient( recipientPersonAliasId.Value );
 
             int? smsPhoneDefinedValueId = hfSmsNumber.Value.AsIntegerOrNull();
 
@@ -610,9 +604,7 @@ namespace RockWeb.Blocks.Communication
             e.Row.AddCssClass( "selected" );
             e.Row.RemoveCssClass( "unread" );
 
-            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
-
-            if ( recipientPerson == null || ( recipientPerson.RecordTypeValueId == recordTypeValueIdNameless ) )
+            if ( recipientPerson == null || ( recipientPerson.IsNameless() ) )
             {
                 lbLinkConversation.Visible = true;
             }
@@ -657,7 +649,6 @@ namespace RockWeb.Blocks.Communication
             litDateTime.Text = responseListItem.HumanizedCreatedDateTime;
             litMessagePart.Text = responseListItem.SMSMessage;
 
-
             if ( !responseListItem.IsRead )
             {
                 e.Row.AddCssClass( "unread" );
@@ -692,15 +683,15 @@ namespace RockWeb.Blocks.Communication
                 lblMessageDateTime.Text = communicationRecipientResponse.HumanizedCreatedDateTime.ToString();
                 var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
 
-                if ( communicationRecipientResponse.MessageKey.IsNotNullOrWhiteSpace() )
-                {
-                    divCommunication.RemoveCssClass( "outbound" );
-                    divCommunication.AddCssClass( "inbound" );
-                }
-                else
+                if ( communicationRecipientResponse.IsOutbound )
                 {
                     divCommunication.RemoveCssClass( "inbound" );
                     divCommunication.AddCssClass( "outbound" );
+                }
+                else
+                {
+                    divCommunication.RemoveCssClass( "outbound" );
+                    divCommunication.AddCssClass( "inbound" );
                 }
             }
         }
