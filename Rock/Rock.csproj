@@ -454,6 +454,7 @@
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
+    <Compile Include="Utility\SingleOrArrayJsonConverter.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />

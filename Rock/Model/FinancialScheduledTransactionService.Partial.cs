@@ -624,8 +624,8 @@ namespace Rock.Model
                     ( totalNoMatchingTransaction == 1 ? "payment" : "payments" ) );
             }
 
-            sb.AppendFormat( "<li>{0} {1} successfully added.</li>", totalAdded.ToString( "N0" ),
-                ( totalAdded == 1 ? "payment was" : "payments were" ) );
+            sb.AppendFormat( "<li>{0} {1} added.</li>", totalAdded.ToString( "N0" ),
+                ( totalAdded == 1 ? "new payment was" : "new payments were" ) );
 
             if ( totalReversals > 0 )
             {
