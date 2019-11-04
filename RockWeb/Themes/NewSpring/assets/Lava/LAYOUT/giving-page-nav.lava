@@ -1,0 +1,8 @@
+{% assign pageRoute = 'Global' | Page:'Path' %}
+<div class="bg-white soft-half push-bottom xs-push-half-bottom rounded shadowed">
+    <ul class="nav nav-pills nav-stacked">
+        <li><a href="/give/now">Give Now</a></li>
+        <li class="{% if pageRoute == '/account/giving'%}active{% endif %}"><a href="/account/giving">Giving History</a></li>
+        <li class="{% if pageRoute == '/account/giving/schedules'%}active{% endif %}"><a href="/account/giving/schedules">Giving Schedules</a></li>
+    </ul>
+</div>
