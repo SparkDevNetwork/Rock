@@ -1,0 +1,6 @@
+<div class="bg-white soft-half push-bottom xs-push-half-bottom rounded shadowed">
+    <ul class="nav nav-pills nav-stacked">
+        <li role="presentation" class="active"><a href="#history" id="history-tab" role="tab" data-toggle="tab" aria-controls="history" aria-expanded="false">Giving History</a></li>
+        <li role="presentation"><a href="#schedules" role="tab" id="schedules-tab" data-toggle="tab" aria-controls="schedules" aria-expanded="true">Giving Schedules</a></li>
+    </ul>
+</div>
