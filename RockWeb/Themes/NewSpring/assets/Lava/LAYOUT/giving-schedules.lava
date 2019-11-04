@@ -1,0 +1,35 @@
+<div class="push-bottom xs-push-half-bottom xs-push-half-top">
+    <h2>Giving Schedules</h2>
+    {% for row in rows %}
+        {% assign giver = row.Id3 | PersonById %}
+
+        {% definedvalue id:'{{ row.CurrencyTypeValueId }}' where:'DefinedTypeId == 10' iterator:'values' %}
+            {% for value in values %}
+                {% assign transactionType = value.Value %}
+            {% endfor %}
+        {% enddefinedvalue %}
+        
+        {% definedvalue id:'{{ row.TransactionFrequencyValueId }}' where:'DefinedTypeId == 23' iterator:'values' %}
+            {% for value in values %}
+                {% assign frequency = value.Value %}
+            {% endfor %}
+        {% enddefinedvalue %}
+        
+        <div class="bg-white soft xs-soft-half push-half-bottom rounded shadowed">
+            <h3 class="xs-h4 push-half-bottom">{{ row.PublicName1 }}<span class="pull-right">{{ row.Amount | FormatAsCurrency }}</span></h3>
+            <p class="push-half-bottom">
+                <small class="label label-default sans-serif letter-spacing-condensed circular">{{ frequency }}</small> 
+                <small class="label label-default sans-serif letter-spacing-condensed circular">{{ transactionType }}</small>
+            </p>
+            
+            {% if row.NextPaymentDate and row.NextPaymentDate != '' %}
+                <p class="stronger push-half-bottom"><small>Next Payment: {{ row.NextPaymentDate | Date:'MMM d, yyyy' }}</small></p>
+            {% endif %}
+            
+            <p class="flush">
+                <span class="circular background-cover" style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span> &nbsp;<span class="stronger">{{ row.NickName }} {{ row.LastName }}</span>
+                <span class="pull-right"><a href="/account/giving/schedules/{{ row.Id }}" class="btn btn-sm btn-primary">Edit Schedule</a></span>
+            </p>
+        </div>
+    {% endfor %}
+</div>
