@@ -22,13 +22,14 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Control that can be used to select a step program.
+    /// Control that can be used to select an achievement type.
     /// </summary>
-    public class StepProgramPicker : RockDropDownList, IStepProgramPicker
+    public class StreakTypeAchievementTypePicker : RockDropDownList, IStreakTypeAchievementTypePicker
     {
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -49,7 +50,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="picker">The picker.</param>
         /// <param name="includeEmptyOption">if set to <c>true</c> [include empty option].</param>
-        public static void LoadDropDownItems( IStepProgramPicker picker, bool includeEmptyOption )
+        public static void LoadDropDownItems( IStreakTypeAchievementTypePicker picker, bool includeEmptyOption )
         {
             var selectedItems = picker.Items.Cast<ListItem>()
                 .Where( i => i.Selected )
@@ -62,18 +63,16 @@ namespace Rock.Web.UI.Controls
                 // add Empty option first
                 picker.Items.Add( new ListItem() );
             }
-
-            var stepProgramService = new StepProgramService( new RockContext() );
-            var stepPrograms = stepProgramService.Queryable().AsNoTracking()
-                .Where( sp => sp.IsActive )
-                .OrderBy( sp => sp.Order )
-                .ThenBy( sp => sp.Name )
+            
+            var achievementTypes = StreakTypeAchievementTypeCache.All()
+                .Where( stat => stat.IsActive )
+                .OrderBy( stat => stat.Name )
                 .ToList();
 
-            foreach ( var stepProgram in stepPrograms )
+            foreach ( var achievementType in achievementTypes )
             {
-                var li = new ListItem( stepProgram.Name, stepProgram.Id.ToString() );
-                li.Selected = selectedItems.Contains( stepProgram.Id );
+                var li = new ListItem( achievementType.Name, achievementType.Id.ToString() );
+                li.Selected = selectedItems.Contains( achievementType.Id );
                 picker.Items.Add( li );
             }
         }
@@ -82,7 +81,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Interface used by defined value pickers
     /// </summary>
-    public interface IStepProgramPicker
+    public interface IStreakTypeAchievementTypePicker
     {
         /// <summary>
         /// Gets the items.
