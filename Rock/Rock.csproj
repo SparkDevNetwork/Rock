@@ -1900,6 +1900,9 @@
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Switch.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
     <Compile Include="Web\UI\Controls\AccordionPanel.cs" />
     <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
