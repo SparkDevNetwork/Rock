@@ -28,6 +28,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -61,13 +62,6 @@ namespace RockWeb.Blocks.Crm
         DefaultBooleanValue = true,
         Order = 3,
         Key = AttributeKeys.ShowSecurityButton )]
-
-    [EntityTypeField( "Entity Type Context",
-        Description = "Which entity type to show documents for.",
-        IsRequired = true,
-        Order = 4,
-        Key = AttributeKeys.EntityTypeContext )]
-
     #endregion Block Attributes
     public partial class Documents : RockBlock
     {
@@ -77,7 +71,6 @@ namespace RockWeb.Blocks.Crm
             public const string HeadingIconCssClass = "HeadingIconCssClass";
             public const string DocumentTypes = "DocumentTypes";
             public const string ShowSecurityButton = "ShowSecurityButton";
-            public const string EntityTypeContext = "EntityTypeContext";
         }
 
         protected string icon = string.Empty;
@@ -87,8 +80,7 @@ namespace RockWeb.Blocks.Crm
 
         protected override void OnInit( EventArgs e )
         {
-            // Get the context entity
-            //Rock.Data.IEntity contextEntity = this.ContextEntity();
+            base.OnInit( e );
 
             icon = GetAttributeValue( AttributeKeys.HeadingIconCssClass );
             title = GetAttributeValue( AttributeKeys.HeadingTitle );
@@ -101,17 +93,24 @@ namespace RockWeb.Blocks.Crm
             gFileList.IsDeleteEnabled = true;
 
             gFileList.GridRebind += gFileList_GridRebind;
+            gFileList.Actions.AddClick += gFileList_Add;
         }
 
         protected override void OnLoad( EventArgs e )
         {
+
+            if ( this.ContextEntity() == null )
+            {
+                return;
+            }
+
             if ( !IsPostBack )
             {
-                PopulateDdlDocumentType();
-
-                
+                PopulateDocumentTypeDropDownLists();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Control Overrides
@@ -119,11 +118,18 @@ namespace RockWeb.Blocks.Crm
         #region Control Events
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            // Rebind the grid
+            PopulateDocumentTypeDropDownLists();
             BindGrid();
         }
 
-        
+        private void RegisterDownloadButtonsAsPostBackControls()
+        {
+            foreach ( GridViewRow row in gFileList.Rows)
+            {
+                LinkButton fullPostBackLink = ( LinkButton ) row.FindControl("lbDownload");
+                ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( fullPostBackLink );
+            }
+        }
 
         #endregion Control Events
 
@@ -145,67 +151,231 @@ namespace RockWeb.Blocks.Crm
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityType = EntityTypeCache.Get( GetAttributeValue( AttributeKeys.EntityTypeContext ) );
+                var contextEntity = this.ContextEntity();
+                var entityTypeId = contextEntity.TypeId;
 
                 var documentService = new DocumentService( rockContext );
                 var documents = documentService
                     .Queryable()
                     .AsNoTracking()
-                    .Where( d => d.DocumentType.EntityTypeId == entityType.Id );
+                    .Where( d => d.DocumentType.EntityTypeId == entityTypeId )
+                    .Where( d => d.EntityId == contextEntity.Id );
+
+                if ( ddlDocumentType.SelectedIndex > 0 )
+                {
+                    int filterDocumentTypeId = ddlDocumentType.SelectedValueAsInt().Value;
+                    documents = documents.Where( d => d.DocumentTypeId == filterDocumentTypeId );
+                }
+
+                if ( GetAttributeValue( AttributeKeys.DocumentTypes).IsNotNullOrWhiteSpace() )
+                {
+                    var filteredDocumentTypes = GetAttributeValue( AttributeKeys.DocumentTypes ).Split( ',' ).Select( int.Parse ).ToList();
+                    documents = documents.Where( d => filteredDocumentTypes.Contains( d.Id ) );
+                }
 
                 gFileList.DataSource = documents.ToList();
                 gFileList.DataBind();
             }
+
+            // register download buttons as PostBackControls since they are returning a File download
+            RegisterDownloadButtonsAsPostBackControls();
         }
 
         protected void gFileList_RowSelected( object sender, RowEventArgs e )
         {
+            ClearForm();
+            hfDocumentId.Value = e.RowKeyId.ToString();
+            using ( var rockContext = new RockContext() )
+            {
+                var documentService = new DocumentService( rockContext );
+                var document = documentService.Get( e.RowKeyId );
 
+                ddlAddEditDocumentType.SelectedValue = document.DocumentTypeId.ToString();
+                tbDocumentName.Text = document.Name;
+                tbDescription.Text = document.Description;
+                fuUploader.BinaryFileId = document.BinaryFile.Id;
+            }
+
+            pnlAddEdit.Visible = true;
+            pnlList.Visible = false;
         }
 
-        protected void gFileListDelete_Click( object sender, RowEventArgs e )
+        protected void gFileList_DeleteClick( object sender, RowEventArgs e )
         {
+            using ( var rockContext = new RockContext() )
+            {
+                var documentService = new DocumentService( rockContext );
+                var document = documentService.Get( e.RowKeyId );
+                documentService.Delete( document );
+            }
 
+            BindGrid();
+        }
+
+        protected void gFileList_Add( object sender, EventArgs e )
+        {
+            ClearForm();
+            pnlAddEdit.Visible = true;
+            pnlList.Visible = false;
+        }
+
+        protected void ddlDocumentType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindGrid();
+        }
+
+        protected void gFileListDownload_Click( object sender, EventArgs e )
+        {
+            var gridRow = ( ( sender as LinkButton ).NamingContainer as GridViewRow );
+            int documentId = ( ( HiddenField ) gridRow.FindControl( "hfDocumentId" ) ).ValueAsInt();
+            var rockContext = new RockContext();
+            var documentService = new DocumentService( rockContext );
+            var document = documentService.Get( documentId );
+
+            byte[] bytes = document.BinaryFile.ContentStream.ReadBytesToEnd();
+
+            Response.ContentType = "application/octet-stream";
+            Response.AddHeader( "content-disposition", "attachment; filename=" + document.BinaryFile.FileName );
+            Response.BufferOutput = true;
+            Response.BinaryWrite( bytes );
+            Response.Flush();
+            Response.SuppressContent = true;
+            System.Web.HttpContext.Current.ApplicationInstance.CompleteRequest();
         }
 
         #endregion Grid Events
 
-        protected void ddlDocumentType_SelectedIndexChanged( object sender, EventArgs e )
+        private void PopulateDocumentTypeDropDownLists()
+        {
+            var contextEntity = this.ContextEntity();
+            var entityTypeId = contextEntity.TypeId;
+            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, false );
+
+            if ( GetAttributeValue( AttributeKeys.DocumentTypes).IsNotNullOrWhiteSpace() )
+            {
+                var blockAttributeFilteredDocumentTypes = GetAttributeValue( AttributeKeys.DocumentTypes ).Split( ',' ).Select( int.Parse ).ToList();
+                documentypesForContextEntityType = documentypesForContextEntityType.Where( d => blockAttributeFilteredDocumentTypes.Contains( d.Id ) ).ToList();
+            }
+
+            // Build a list of document types that should not be listed for the entity because of EntityTypeQualifiers
+            var entityTypeQualifierFilteredDocumentTypes = new List<int>();
+            foreach( var documentType in documentypesForContextEntityType )
+            {
+                if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
+                {
+                    if ( contextEntity.GetType().GetProperty(documentType.EntityTypeQualifierColumn) == null )
+                    {
+                        // if this is true then the qualifier does not match the entity for some reason.
+                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
+                        continue;
+                    }
+
+                    string entityPropVal = this.ContextEntity().GetPropertyValue( documentType.EntityTypeQualifierColumn ).ToString();
+                    if(entityPropVal != documentType.EntityTypeQualifierValue)
+                    {
+                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
+                    }
+                }
+            }
+
+            var filteredDocumentTypes = documentypesForContextEntityType
+                .Where( d => !entityTypeQualifierFilteredDocumentTypes.Contains( d.Id ) )
+                .ToList();
+
+            PopulateDdlDocumentType( filteredDocumentTypes );
+            PopulateDdlAddEditDocumentType( filteredDocumentTypes );
+        }
+
+        private void PopulateDdlAddEditDocumentType( List<DocumentTypeCache> documentTypes )
+        {
+            ddlAddEditDocumentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+            foreach( var documentType in documentTypes )
+            {
+                ddlAddEditDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
+        }
+
+        private void PopulateDdlDocumentType( List<DocumentTypeCache> documentTypes )
+        {
+            ddlDocumentType.Items.Add( new ListItem( "All Document Types", string.Empty ) );
+
+            foreach( var documentType in documentTypes )
+            {
+                ddlDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
+        }
+
+        #region Add/Edit Methods
+
+        
+        protected void btnSave_Click( object sender, EventArgs e )
+        {
+            if ( !fuUploader.BinaryFileId.HasValue )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var documentService = new DocumentService( rockContext );
+                var document = new Document();
+
+                if ( hfDocumentId.Value.IsNotNullOrWhiteSpace() )
+                {
+                    document = documentService.Get( hfDocumentId.ValueAsInt() );
+                }
+                else
+                {
+                    documentService.Add( document );
+                }
+
+                document.DocumentTypeId = ddlAddEditDocumentType.SelectedValueAsInt().Value;
+                document.EntityId = this.ContextEntity().Id;
+                document.Name = tbDocumentName.Text;
+                document.Description = tbDescription.Text;
+                document.SetBinaryFile( fuUploader.BinaryFileId.Value, rockContext );
+
+                rockContext.SaveChanges();
+            }
+
+            pnlAddEdit.Visible = false;
+            BindGrid();
+            pnlList.Visible = true;
+            ClearForm();
+        }
+
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            pnlAddEdit.Visible = false;
+            pnlList.Visible = true;
+            ClearForm();
+        }
+
+
+        protected void fuUploader_FileUploaded( object sender, FileUploaderEventArgs e )
         {
 
         }
 
-        private void PopulateDdlDocumentType()
+        protected void fuUploader_FileRemoved( object sender, FileUploaderEventArgs e )
         {
-            List<DocumentTypeCache> docTypes = new List<DocumentTypeCache>();
-
-            //IEntity contextEntity = GetAttributeValue( AttributeKeys.EntityTypeContext)
-            //if ( contextEntity == null )
-            //{
-            //    docTypes = DocumentTypeCache.All().ToList();
-            //}
-            //else
-            //{
-            //    docTypes = DocumentTypeCache.GetByEntity( contextEntity.TypeId, string.Empty, string.Empty );
-            //}
-
-            string contextEntityGuid = GetAttributeValue( AttributeKeys.EntityTypeContext );
-            if ( contextEntityGuid.IsNullOrWhiteSpace() )
-            {
-                docTypes = DocumentTypeCache.All().ToList();
-            }
-            else
-            {
-                docTypes = DocumentTypeCache.GetByEntity( EntityTypeCache.Get( contextEntityGuid ).Id, string.Empty, string.Empty );
-            }
-
-            var temp = docTypes.Select( d => new { d.Id, d.Name } );
-
-            ddlDocumentType.DataSource = docTypes.Select( d => new { d.Id, d.Name } );
-            ddlDocumentType.DataValueField = "Id";
-            ddlDocumentType.DataTextField = "Name";
-            ddlDocumentType.DataBind();
 
         }
+    
+        private void ClearForm()
+        {
+            ddlAddEditDocumentType.SelectedIndex = 0;
+            tbDocumentName.Text = string.Empty;
+            tbDescription.Text = string.Empty;
+            pnlAddEdit.Visible = false;
+            pnlList.Visible = true;
+            hfDocumentId.Value = string.Empty;
+            fuUploader.BinaryFileId = null;
+        }
+
+        #endregion Add/Edit Methods
+
+
     }
 }

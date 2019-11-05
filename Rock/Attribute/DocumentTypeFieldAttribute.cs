@@ -22,7 +22,7 @@ namespace Rock.Attribute
     public class DocumentTypeFieldAttribute : FieldAttribute
     {
         public DocumentTypeFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null, string fieldTypeClass = null, string fieldTypeAssembly = "Rock" )
-            : base( name, description, required, defaultValue, category, order, key, typeof(Rock.Model.DocumentType).FullName, fieldTypeAssembly )
+            : base( name, description, required, defaultValue, category, order, key, typeof(Rock.Field.Types.DocumentTypeFieldType).FullName, fieldTypeAssembly )
         {
         }
     }

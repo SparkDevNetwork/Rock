@@ -90,6 +90,34 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Document to BinaryFile is a 1:1 relationship. EF doesn't really support this but it can be kind of hacked by having a navigation property but not an ID property.
+        /// There is a discussion here: https://stackoverflow.com/a/41847251
+        /// Also attempted was to have the 
+        /// </summary>
+        /// <value>
+        /// The binary file identifier.
+        /// </value>
+        //public int BinaryFileID
+        //{
+        //    get
+        //    {
+        //        return this.BinaryFile.Id;
+        //    }
+        //    set
+        //    {
+        //        using ( var rockContext = new RockContext() )
+        //        {
+        //            var binaryFileService = new BinaryFileService( rockContext );
+        //            var binaryFile = binaryFileService.Get( value );
+        //            if ( binaryFile != null )
+        //            {
+        //                this.BinaryFile = binaryFile;
+        //            }
+        //        }
+        //    }
+        //}
+
         #endregion
 
         #region Virtual Properties
@@ -230,6 +258,16 @@ namespace Rock.Model
             return false;
         }
         #endregion
+
+        public void SetBinaryFile( int binaryFileId, RockContext rockContext )
+        {
+            var binaryFileService = new BinaryFileService( rockContext );
+            var binaryFile = binaryFileService.Get( binaryFileId );
+            if ( binaryFile != null )
+            {
+                this.BinaryFile = binaryFile;
+            }
+        }
     }
 
     #region Entity Configuration
