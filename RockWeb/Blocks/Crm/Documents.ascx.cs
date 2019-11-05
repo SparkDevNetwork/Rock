@@ -207,6 +207,7 @@ namespace RockWeb.Blocks.Crm
                 var documentService = new DocumentService( rockContext );
                 var document = documentService.Get( e.RowKeyId );
                 documentService.Delete( document );
+                rockContext.SaveChanges();
             }
 
             BindGrid();
@@ -350,17 +351,6 @@ namespace RockWeb.Blocks.Crm
             pnlAddEdit.Visible = false;
             pnlList.Visible = true;
             ClearForm();
-        }
-
-
-        protected void fuUploader_FileUploaded( object sender, FileUploaderEventArgs e )
-        {
-
-        }
-
-        protected void fuUploader_FileRemoved( object sender, FileUploaderEventArgs e )
-        {
-
         }
     
         private void ClearForm()
