@@ -252,26 +252,31 @@ namespace RockWeb.Blocks.Crm
             var entityTypeId = contextEntity.TypeId;
             List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, false );
 
+            // Get the document types allowed from the block settings and only have those in the list of document types for the entity
             if ( GetAttributeValue( AttributeKeys.DocumentTypes).IsNotNullOrWhiteSpace() )
             {
                 var blockAttributeFilteredDocumentTypes = GetAttributeValue( AttributeKeys.DocumentTypes ).Split( ',' ).Select( int.Parse ).ToList();
                 documentypesForContextEntityType = documentypesForContextEntityType.Where( d => blockAttributeFilteredDocumentTypes.Contains( d.Id ) ).ToList();
             }
 
-            // Build a list of document types that should not be listed for the entity because of EntityTypeQualifiers
+            // Remove document types from the list that do not match the EntityTypeQualifiers
             var entityTypeQualifierFilteredDocumentTypes = new List<int>();
             foreach( var documentType in documentypesForContextEntityType )
             {
+                // If the document does not have a qualifier column specified then allow it by default
                 if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
                 {
+                    // Check that the EntityTypeQualifierColumn is a property for this entity, if not then remove it by default
                     if ( contextEntity.GetType().GetProperty(documentType.EntityTypeQualifierColumn) == null )
                     {
-                        // if this is true then the qualifier does not match the entity for some reason.
                         entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
                         continue;
                     }
 
+                    // Get the value of the property specified in DocumentType.EntityTypeQualifierColumn from the current ContextEntity
                     string entityPropVal = this.ContextEntity().GetPropertyValue( documentType.EntityTypeQualifierColumn ).ToString();
+
+                    // If the entity property values does not match DocumentType.EntityTypeQualifierValue then it should be removed.
                     if(entityPropVal != documentType.EntityTypeQualifierValue)
                     {
                         entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
@@ -279,6 +284,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
+            // Create the final list of document types that are valid for this entity and instance of this entity.
             var filteredDocumentTypes = documentypesForContextEntityType
                 .Where( d => !entityTypeQualifierFilteredDocumentTypes.Contains( d.Id ) )
                 .ToList();
@@ -363,9 +369,25 @@ namespace RockWeb.Blocks.Crm
             hfDocumentId.Value = string.Empty;
             fuUploader.BinaryFileId = null;
         }
+        protected void ddlAddEditDocumentType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( tbDocumentName.Text.IsNotNullOrWhiteSpace() || ddlAddEditDocumentType.SelectedIndex == 0 )
+            {
+                // If there is already a name or nothing is selected then do do anything.
+                return;
+            }
+
+            // Get the selected DocumentType from cache
+            var documentTypeCache = DocumentTypeCache.Get( ddlAddEditDocumentType.SelectedValueAsInt() ?? 0 );
+            string template = documentTypeCache.DefaultDocumentNameTemplate;
+            if ( template.IsNotNullOrWhiteSpace() )
+            {
+                // If there is a template then apply it
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                tbDocumentName.Text = template.ResolveMergeFields( mergeFields );
+            }
+        }
 
         #endregion Add/Edit Methods
-
-
     }
 }
