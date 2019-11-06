@@ -272,19 +272,19 @@ namespace RockWeb.Blocks.Finance
         {
             string result = string.Empty;
 
-            if ( nickname != null )
+            if ( lastname != null )
             {
-                result = nickname.ToString();
+                result = lastname.ToString();
             }
 
-            if ( lastname != null )
+            if ( nickname != null )
             {
                 if ( !string.IsNullOrWhiteSpace( result ) )
                 {
-                    result += " ";
+                    result += ", ";
                 }
 
-                result += lastname;
+                result += nickname;
             }
 
             return result;
