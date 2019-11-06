@@ -185,10 +185,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbToggleAdvancedSettings_Click( object sender, EventArgs e )
         {
-            var doShow = hfShowAdvancedSettings.Value.ToLower() != "true";
-            hfShowAdvancedSettings.Value = doShow ? "true" : string.Empty;
-
-            InitializeAdvancedSettingsToggle();
+            ShowAdvancedSettings();
         }
 
         #endregion Events
@@ -246,6 +243,14 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         #region Internal Methods
+
+        private void ShowAdvancedSettings()
+        {
+            var doShow = hfShowAdvancedSettings.Value.ToLower() != "true";
+            hfShowAdvancedSettings.Value = doShow ? "true" : string.Empty;
+
+            InitializeAdvancedSettingsToggle();
+        }
 
         /// <summary>
         /// Delete the current record.
@@ -444,6 +449,14 @@ namespace RockWeb.Blocks.Crm
             rcbManuallySelectable.Checked = documentType.UserSelectable;
 
             tbName.Text = documentType.Name;
+
+            // Show the advanced settings if there is something there.
+            if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() ||
+                documentType.EntityTypeQualifierValue.IsNotNullOrWhiteSpace() ||
+                documentType.DefaultDocumentNameTemplate.IsNotNullOrWhiteSpace() )
+            {
+                ShowAdvancedSettings();
+            }
         }
 
         /// <summary>
