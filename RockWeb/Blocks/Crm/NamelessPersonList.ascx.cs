@@ -28,13 +28,13 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace RockWeb.Blocks.Communication
+namespace RockWeb.Blocks.Crm
 {
     /// <summary>
     ///
     /// </summary>
     [DisplayName( "Nameless Person List" )]
-    [Category( "Communication" )]
+    [Category( "CRM" )]
     [Description( "List unmatched phone numbers with an option to link to a person that has the same phone number." )]
     public partial class NamelessPersonList : RockBlock, ICustomGridColumns
     {
@@ -58,8 +58,8 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
             newPersonEditor.ShowEmail = false;
-            gNamelessPersonPhoneNumberList.GridRebind += gList_GridRebind;
-            gNamelessPersonPhoneNumberList.Actions.ShowMergeTemplate = false;
+            gNamelessPersonList.GridRebind += gList_GridRebind;
+            gNamelessPersonList.Actions.ShowMergeTemplate = false;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -114,35 +114,35 @@ namespace RockWeb.Blocks.Communication
         private void BindGrid()
         {
             RockContext rockContext = new RockContext();
-            PhoneNumberService phoneNumberService = new PhoneNumberService( rockContext );
+            PersonService personService = new PersonService( rockContext );
 
             var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
 
-            var qry = phoneNumberService.Queryable()
-                    .Where( p => p.Person.RecordTypeValueId == namelessPersonRecordTypeId )
+            var qry = personService.Queryable( new Rock.Model.PersonService.PersonQueryOptions() { IncludeNameless = true } )
+                    .Where( p => p.RecordTypeValueId == namelessPersonRecordTypeId )
                     .AsNoTracking();
 
             int? namelessPersonId = PageParameter( PageParameterKey.NamelessPersonId ).AsIntegerOrNull();
             if ( namelessPersonId.HasValue )
             {
-                qry = qry.Where( a => a.PersonId == namelessPersonId.Value );
+                qry = qry.Where( a => a.Id == namelessPersonId.Value );
             }
 
             // sort the query based on the column that was selected to be sorted
-            var sortProperty = gNamelessPersonPhoneNumberList.SortProperty;
-            if ( gNamelessPersonPhoneNumberList.AllowSorting && sortProperty != null )
+            var sortProperty = gNamelessPersonList.SortProperty;
+            if ( gNamelessPersonList.AllowSorting && sortProperty != null )
             {
                 qry = qry.Sort( sortProperty );
             }
             else
             {
-                qry = qry.OrderBy( a => a.Number );
+                qry = qry.OrderByDescending( a => a.CreatedDateTime );
             }
 
             // set the datasource as a query. This allows the grid to only fetch the records that need to be shown based on the grid page and page size
-            gNamelessPersonPhoneNumberList.SetLinqDataSource( qry );
+            gNamelessPersonList.SetLinqDataSource( qry );
 
-            gNamelessPersonPhoneNumberList.DataBind();
+            gNamelessPersonList.DataBind();
         }
 
         #endregion
@@ -154,16 +154,18 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void btnLinkToPerson_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            var selectedPhoneNumberId = e.RowKeyId;
-            var selectedPhoneNumber = new PhoneNumberService( new RockContext() ).GetNoTracking( selectedPhoneNumberId );
-            if (selectedPhoneNumber == null)
+            var selectedPersonId = e.RowKeyId;
+            hfNamelessPersonId.Value = selectedPersonId.ToString();
+
+            var person = new PersonService( new RockContext() ).Get( selectedPersonId );
+            var title = "Link Nameless Person";
+            var phoneNumbers = person.PhoneNumbers.Select( a => a.NumberFormatted ).ToList();
+            if ( phoneNumbers.Any() )
             {
-                return;
+                title = string.Format( "Link Phone Numbers {0} To Person ", phoneNumbers.AsDelimited( "," ) );
+
             }
-
-            hfNamelessPersonId.Value = selectedPhoneNumber.PersonId.ToString();
-
-            mdLinkToPerson.Title = string.Format( "Link Phone Number {0} to Person ", PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), selectedPhoneNumber.NumberFormatted, false ) );
+            mdLinkToPerson.Title = title;
 
             ppPerson.SetValue( null );
             newPersonEditor.SetFromPerson( null );
@@ -183,9 +185,7 @@ namespace RockWeb.Blocks.Communication
                 var personAliasService = new PersonAliasService( rockContext );
                 var personService = new PersonService( rockContext );
 
-                // Get the person record from the person associated with the selected phonenumber
                 int namelessPersonId = hfNamelessPersonId.Value.AsInteger();
-                var phoneNumberService = new PhoneNumberService( rockContext );
                 Person namelessPerson = personService.Get( namelessPersonId );
 
                 if ( namelessPerson == null )
@@ -235,17 +235,25 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the DataBound event of the lUnmatchedPhoneNumber control.
+        /// Handles the DataBound event of the lUnmatchedPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void lUnmatchedPhoneNumber_DataBound( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        protected void lUnmatchedPerson_DataBound( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             Literal lPhoneNumberDisplay = sender as Literal;
-            var phoneNumber = e.Row.DataItem as PhoneNumber;
-            if ( phoneNumber != null )
+            var person = e.Row.DataItem as Person;
+            if ( person != null )
             {
-                lPhoneNumberDisplay.Text = string.Format( "{0} (Unknown Person)", phoneNumber.NumberFormatted );
+                var phoneNumbers = person.PhoneNumbers.Select( a => a.NumberFormatted ).ToList();
+                if ( phoneNumbers.Any() )
+                {
+                    lPhoneNumberDisplay.Text = string.Format( "{0} (Unknown Person)", phoneNumbers.AsDelimited( "," ) );
+                }
+                else
+                {
+                    lPhoneNumberDisplay.Text = "Unknown Person";
+                }
             }
         }
     }

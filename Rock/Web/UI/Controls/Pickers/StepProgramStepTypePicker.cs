@@ -313,6 +313,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when [selected index changed].
+        /// </summary>
+        public event EventHandler SelectedIndexChanged;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [automatic post back].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic post back]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AutoPostBack { get; set; }
+
         #endregion
 
         /// <summary>
@@ -336,6 +349,8 @@ namespace Rock.Web.UI.Controls
 
             _sppStepProgramPicker = new StepProgramPicker();
             _sppStepProgramPicker.ID = this.ID + "_sppStepProgramPicker";
+            _sppStepProgramPicker.Help = this.Help;
+            this.Help = string.Empty;
             _sppStepProgramPicker.AutoPostBack = true;
             _sppStepProgramPicker.SelectedIndexChanged += _sppStepProgramPicker_SelectedIndexChanged;
             _sppStepProgramPicker.Label = "Step Program";
@@ -345,6 +360,8 @@ namespace Rock.Web.UI.Controls
             _stpStepTypePicker = new StepTypePicker();
             _stpStepTypePicker.ID = this.ID + "_stpStepTypePicker";
             _stpStepTypePicker.Label = "Step Type";
+            _stpStepTypePicker.AutoPostBack = AutoPostBack;
+            _stpStepTypePicker.SelectedIndexChanged += _stpStepTypePicker_SelectedIndexChanged;
             Controls.Add( _stpStepTypePicker );
         }
 
@@ -356,6 +373,17 @@ namespace Rock.Web.UI.Controls
         protected void _sppStepProgramPicker_SelectedIndexChanged( object sender, EventArgs e )
         {
             _stpStepTypePicker.StepProgramId = _sppStepProgramPicker.SelectedValueAsId();
+            SelectedIndexChanged?.Invoke( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the _sppStepProgramPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _stpStepTypePicker_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SelectedIndexChanged?.Invoke( sender, e );
         }
 
         /// <summary>

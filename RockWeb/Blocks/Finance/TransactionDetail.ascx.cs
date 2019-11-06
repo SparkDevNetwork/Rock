@@ -1727,12 +1727,14 @@ namespace RockWeb.Blocks.Finance
 
             if ( txn.Batch != null )
             {
-                hlBatchId.Visible = true;
-                hlBatchId.Text = string.Format( "Batch #{0}", txn.BatchId );
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "batchId", txn.BatchId.ToString() );
+                lBatchId.Text = string.Format( "<div class='label label-info'><a href='{1}'>Batch #{0}</a></div>", txn.BatchId, LinkedPageUrl( "BatchDetailPage", qryParams ) );
+                lBatchId.Visible = true;
             }
             else
             {
-                hlBatchId.Visible = false;
+                lBatchId.Visible = false;
             }
         }
 
