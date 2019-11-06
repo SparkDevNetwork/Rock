@@ -156,6 +156,7 @@
     <Compile Include="Controllers\CodeGenerated\StepWorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepWorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceJobHistoriesController.cs" />
@@ -168,6 +169,7 @@
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
+    <Compile Include="Controllers\StreakTypeAchievementTypesController.Partial.cs" />
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\MobileController.cs" />
