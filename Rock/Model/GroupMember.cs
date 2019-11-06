@@ -160,6 +160,7 @@ namespace Rock.Model
         /// <value>
         ///   <c>true</c> if this instance is archived; otherwise, <c>false</c>.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public bool IsArchived { get; set; } = false;
 
@@ -169,6 +170,7 @@ namespace Rock.Model
         /// <value>
         /// The archived date time.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public DateTime? ArchivedDateTime { get; set; }
 
@@ -178,6 +180,7 @@ namespace Rock.Model
         /// <value>
         /// The archived by person alias identifier.
         /// </value>
+        [HideFromReporting]
         [DataMember]
         public int? ArchivedByPersonAliasId { get; set; }
 

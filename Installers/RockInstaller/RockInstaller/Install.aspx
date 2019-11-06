@@ -208,7 +208,7 @@
 
 
                             <div class="btn-list clearfix">
-						        <a href="http://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left"><i class="fas fa-desktop"></i> Install Video</a>
+						        <a href="https://www.rockrms.com/Learn/Install" target="_blank" class="btn btn-default pull-left" rel="noopener noreferrer"><i class="fas fa-desktop"></i> Install Video</a>
                                 <a id="btnWelcomeNext" class="btn btn-primary pull-right">Get Started <i class="fas fa-chevron-right"></i></a>
 					        </div>
                         </div>

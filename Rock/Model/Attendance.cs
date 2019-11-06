@@ -624,6 +624,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
+            _isDeleted = entry.State == EntityState.Deleted;
             bool previousDidAttendValue;
 
             bool previouslyDeclined;
@@ -653,6 +654,7 @@ namespace Rock.Model
         }
 
         private bool _declinedScheduledAttendance = false;
+        private bool _isDeleted = false;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -663,6 +665,11 @@ namespace Rock.Model
             if ( _declinedScheduledAttendance )
             {
                 new GroupScheduleCancellationTransaction( this ).Enqueue();
+            }
+
+            if ( !_isDeleted )
+            {
+                StreakTypeService.HandleAttendanceRecord( this );
             }
 
             base.PostSaveChanges( dbContext );
