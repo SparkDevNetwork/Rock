@@ -14,7 +14,7 @@
             $(".stack-trace").hide();
 
             //toggle the componenet with class msg_body
-            $(".exception-type").click(function () {
+            $(".exception-type").on('click', function () {
                 $(this).next(".stack-trace").slideToggle(500);
             });
         });
