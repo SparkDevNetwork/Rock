@@ -25,6 +25,7 @@
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                             <Rock:RockBoundField DataField="FileTypeName" HeaderText="File Type" />
+                            <Rock:RockBoundField DataField="EntityName" HeaderText="Entity type" />
                             <Rock:SecurityField />
                             <Rock:DeleteField OnClick="gDocumentTypes_Delete" />
                         </Columns>
