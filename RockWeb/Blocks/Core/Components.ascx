@@ -35,8 +35,8 @@
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                             <Rock:RockTemplateFieldUnselected>
-                                <HeaderStyle CssClass="span1" />
-                                <ItemStyle HorizontalAlign="Center" />
+                                <HeaderStyle CssClass="grid-columncommand" />
+                                <ItemStyle HorizontalAlign="Center" CssClass="grid-columncommand" />
                                 <ItemTemplate>
                                     <a id="aSecure" runat="server" class="btn btn-sm btn-security"><i class="fa fa-lock"></i></a>
                                 </ItemTemplate>
