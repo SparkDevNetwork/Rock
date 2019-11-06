@@ -116,27 +116,122 @@ namespace RockWeb.Blocks.Crm
         #endregion Control Overrides
 
         #region Control Events
+
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             PopulateDocumentTypeDropDownLists();
             BindGrid();
         }
 
-        private void RegisterDownloadButtonsAsPostBackControls()
-        {
-            foreach ( GridViewRow row in gFileList.Rows)
-            {
-                LinkButton fullPostBackLink = ( LinkButton ) row.FindControl("lbDownload");
-                ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( fullPostBackLink );
-            }
-        }
-
         #endregion Control Events
 
 
         #region Private Methods
-        
 
+        /// <summary>
+        /// Registers the download buttons as post back controls.
+        /// This is because the page has to do a full postback to download the file.
+        /// </summary>
+        private void RegisterDownloadButtonsAsPostBackControls()
+        {
+            foreach ( GridViewRow row in gFileList.Rows)
+            {
+                LinkButton downloadLinkButton = ( LinkButton ) row.FindControl("lbDownload");
+                ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( downloadLinkButton );
+            }
+        }
+        
+        /// <summary>
+        /// Clears the Add/Edit form.
+        /// </summary>
+        private void ClearForm()
+        {
+            ddlAddEditDocumentType.SelectedIndex = 0;
+            tbDocumentName.Text = string.Empty;
+            tbDescription.Text = string.Empty;
+            pnlAddEdit.Visible = false;
+            pnlList.Visible = true;
+            hfDocumentId.Value = string.Empty;
+            fuUploader.BinaryFileId = null;
+        }
+
+        /// <summary>
+        /// Creates a list of valid DocumentTypes for the ContextEntity and populates the document type drop down lists.
+        /// </summary>
+        private void PopulateDocumentTypeDropDownLists()
+        {
+            var contextEntity = this.ContextEntity();
+            var entityTypeId = contextEntity.TypeId;
+            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, false );
+
+            // Get the document types allowed from the block settings and only have those in the list of document types for the entity
+            if ( GetAttributeValue( AttributeKeys.DocumentTypes).IsNotNullOrWhiteSpace() )
+            {
+                var blockAttributeFilteredDocumentTypes = GetAttributeValue( AttributeKeys.DocumentTypes ).Split( ',' ).Select( int.Parse ).ToList();
+                documentypesForContextEntityType = documentypesForContextEntityType.Where( d => blockAttributeFilteredDocumentTypes.Contains( d.Id ) ).ToList();
+            }
+
+            // Remove document types from the list that do not match the EntityTypeQualifiers
+            var entityTypeQualifierFilteredDocumentTypes = new List<int>();
+            foreach( var documentType in documentypesForContextEntityType )
+            {
+                // If the document does not have a qualifier column specified then allow it by default
+                if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
+                {
+                    // Check that the EntityTypeQualifierColumn is a property for this entity, if not then remove it by default
+                    if ( contextEntity.GetType().GetProperty(documentType.EntityTypeQualifierColumn) == null )
+                    {
+                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
+                        continue;
+                    }
+
+                    // Get the value of the property specified in DocumentType.EntityTypeQualifierColumn from the current ContextEntity
+                    string entityPropVal = this.ContextEntity().GetPropertyValue( documentType.EntityTypeQualifierColumn ).ToString();
+
+                    // If the entity property values does not match DocumentType.EntityTypeQualifierValue then it should be removed.
+                    if(entityPropVal != documentType.EntityTypeQualifierValue)
+                    {
+                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
+                    }
+                }
+            }
+
+            // Create the final list of document types that are valid for this entity and instance of this entity.
+            var filteredDocumentTypes = documentypesForContextEntityType
+                .Where( d => !entityTypeQualifierFilteredDocumentTypes.Contains( d.Id ) )
+                .ToList();
+
+            PopulateDdlDocumentType( filteredDocumentTypes );
+            PopulateDdlAddEditDocumentType( filteredDocumentTypes );
+        }
+
+        /// <summary>
+        /// Populates the DocumentType DDL on the add/edit panel
+        /// </summary>
+        /// <param name="documentTypes">The document types.</param>
+        private void PopulateDdlAddEditDocumentType( List<DocumentTypeCache> documentTypes )
+        {
+            ddlAddEditDocumentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+
+            foreach( var documentType in documentTypes )
+            {
+                ddlAddEditDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Populates the DocumentType DDL on the grid filter
+        /// </summary>
+        /// <param name="documentTypes">The document types.</param>
+        private void PopulateDdlDocumentType( List<DocumentTypeCache> documentTypes )
+        {
+            ddlDocumentType.Items.Add( new ListItem( "All Document Types", string.Empty ) );
+
+            foreach( var documentType in documentTypes )
+            {
+                ddlDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
+            }
+        }
 
         #endregion Private Methods
 
@@ -246,76 +341,9 @@ namespace RockWeb.Blocks.Crm
 
         #endregion Grid Events
 
-        private void PopulateDocumentTypeDropDownLists()
-        {
-            var contextEntity = this.ContextEntity();
-            var entityTypeId = contextEntity.TypeId;
-            List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, false );
-
-            // Get the document types allowed from the block settings and only have those in the list of document types for the entity
-            if ( GetAttributeValue( AttributeKeys.DocumentTypes).IsNotNullOrWhiteSpace() )
-            {
-                var blockAttributeFilteredDocumentTypes = GetAttributeValue( AttributeKeys.DocumentTypes ).Split( ',' ).Select( int.Parse ).ToList();
-                documentypesForContextEntityType = documentypesForContextEntityType.Where( d => blockAttributeFilteredDocumentTypes.Contains( d.Id ) ).ToList();
-            }
-
-            // Remove document types from the list that do not match the EntityTypeQualifiers
-            var entityTypeQualifierFilteredDocumentTypes = new List<int>();
-            foreach( var documentType in documentypesForContextEntityType )
-            {
-                // If the document does not have a qualifier column specified then allow it by default
-                if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
-                {
-                    // Check that the EntityTypeQualifierColumn is a property for this entity, if not then remove it by default
-                    if ( contextEntity.GetType().GetProperty(documentType.EntityTypeQualifierColumn) == null )
-                    {
-                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
-                        continue;
-                    }
-
-                    // Get the value of the property specified in DocumentType.EntityTypeQualifierColumn from the current ContextEntity
-                    string entityPropVal = this.ContextEntity().GetPropertyValue( documentType.EntityTypeQualifierColumn ).ToString();
-
-                    // If the entity property values does not match DocumentType.EntityTypeQualifierValue then it should be removed.
-                    if(entityPropVal != documentType.EntityTypeQualifierValue)
-                    {
-                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
-                    }
-                }
-            }
-
-            // Create the final list of document types that are valid for this entity and instance of this entity.
-            var filteredDocumentTypes = documentypesForContextEntityType
-                .Where( d => !entityTypeQualifierFilteredDocumentTypes.Contains( d.Id ) )
-                .ToList();
-
-            PopulateDdlDocumentType( filteredDocumentTypes );
-            PopulateDdlAddEditDocumentType( filteredDocumentTypes );
-        }
-
-        private void PopulateDdlAddEditDocumentType( List<DocumentTypeCache> documentTypes )
-        {
-            ddlAddEditDocumentType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-
-            foreach( var documentType in documentTypes )
-            {
-                ddlAddEditDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
-            }
-        }
-
-        private void PopulateDdlDocumentType( List<DocumentTypeCache> documentTypes )
-        {
-            ddlDocumentType.Items.Add( new ListItem( "All Document Types", string.Empty ) );
-
-            foreach( var documentType in documentTypes )
-            {
-                ddlDocumentType.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
-            }
-        }
 
         #region Add/Edit Methods
 
-        
         protected void btnSave_Click( object sender, EventArgs e )
         {
             if ( !fuUploader.BinaryFileId.HasValue )
@@ -358,17 +386,7 @@ namespace RockWeb.Blocks.Crm
             pnlList.Visible = true;
             ClearForm();
         }
-    
-        private void ClearForm()
-        {
-            ddlAddEditDocumentType.SelectedIndex = 0;
-            tbDocumentName.Text = string.Empty;
-            tbDescription.Text = string.Empty;
-            pnlAddEdit.Visible = false;
-            pnlList.Visible = true;
-            hfDocumentId.Value = string.Empty;
-            fuUploader.BinaryFileId = null;
-        }
+
         protected void ddlAddEditDocumentType_SelectedIndexChanged( object sender, EventArgs e )
         {
             if ( tbDocumentName.Text.IsNotNullOrWhiteSpace() || ddlAddEditDocumentType.SelectedIndex == 0 )
