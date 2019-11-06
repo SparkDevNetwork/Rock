@@ -243,7 +243,7 @@
                     $('#<%=pnlView.ClientID%>').rockFadeIn();
                 }
 
-                $('#<%=btnNext.ClientID%>').click(verifyUnallocated);
+                $('#<%=btnNext.ClientID%>').on('click', verifyUnallocated);
 
                 updateRemainingAccountAllocation();
 
