@@ -169,6 +169,12 @@ a.warning {
 .dropdown-menu {
   .box-shadow(@shadow-overlay);
 
+  // Added to Support Right Aligned Dropdowns
+  .dropdown-right & {
+    right: 0;
+    left: auto;
+  }
+
   .dropdown-item-danger {
     color: @brand-danger;
     &:hover {
