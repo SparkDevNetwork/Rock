@@ -64,7 +64,7 @@ namespace Rock.Extension
         /// <value>
         /// The description.
         /// </value>
-        public string Description
+        public virtual string Description
         {
             get => ( GetType()?.GetCustomAttributes( typeof( DescriptionAttribute ), false )?.FirstOrDefault() as DescriptionAttribute )?.Description;
         }

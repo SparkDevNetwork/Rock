@@ -59,7 +59,7 @@ namespace Rock.Reporting
         /// <value>
         /// The description.
         /// </value>
-        public virtual string Description => string.Empty;
+        public override string Description => string.Empty;
 
         /// <summary>
         /// Gets the default settings for all Attributes associated with this filter.
