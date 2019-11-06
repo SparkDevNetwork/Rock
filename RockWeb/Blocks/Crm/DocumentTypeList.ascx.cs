@@ -269,7 +269,8 @@ namespace RockWeb.Blocks.Crm
                     Id = dt.Id,
                     Name = dt.Name,
                     FileTypeName = dt.BinaryFileType.Name,
-                    IconCssClass = dt.IconCssClass
+                    IconCssClass = dt.IconCssClass,
+                    EntityName = dt.EntityType.FriendlyName
                 } );
 
             gDocumentTypes.SetLinqDataSource( viewModelQuery );
@@ -366,6 +367,14 @@ namespace RockWeb.Blocks.Crm
             /// The icon CSS class.
             /// </value>
             public string IconCssClass { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the entity.
+            /// </summary>
+            /// <value>
+            /// The name of the entity.
+            /// </value>
+            public string EntityName { get; set; }
         }
 
         #endregion View Models
