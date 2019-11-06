@@ -200,7 +200,9 @@ namespace Rock.Web
 
                                             requestContext.HttpContext.Response.Redirect( trimmedUrl, false );
                                             requestContext.HttpContext.ApplicationInstance.CompleteRequest();
-                                            return null;
+
+                                            // Global.asax.cs will throw and log an exception if null is returned, so just return a new page.
+                                            return new System.Web.UI.Page();
                                         }
                                     }
                                 }
@@ -238,8 +240,11 @@ namespace Rock.Web
                                 }
                                 else if ( !string.IsNullOrWhiteSpace( site.ExternalUrl ) )
                                 {
-                                    requestContext.HttpContext.Response.Redirect( site.ExternalUrl );
-                                    return null;
+                                    requestContext.HttpContext.Response.Redirect( site.ExternalUrl, false );
+                                    requestContext.HttpContext.ApplicationInstance.CompleteRequest();
+
+                                    // Global.asax.cs will throw and log an exception if null is returned, so just return a new page.
+                                    return new System.Web.UI.Page();
                                 }
                             }
                         }

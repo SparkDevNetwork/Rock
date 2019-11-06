@@ -85,7 +85,7 @@ namespace Rock.Communication.SmsActions
         /// <value>
         /// The description of this SMS Action.
         /// </value>
-        public abstract string Description { get; }
+        public override string Description { get; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is active. The component is
