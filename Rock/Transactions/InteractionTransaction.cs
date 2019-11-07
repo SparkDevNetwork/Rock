@@ -217,46 +217,47 @@ namespace Rock.Transactions
                 }
             }
 
-            var rockContext = new RockContext();
-
-            // lookup the interaction channel, and create it if it doesn't exist
-            var interactionChannelService = new InteractionChannelService( rockContext );
-            var interactionChannelId = interactionChannelService.Queryable()
-                .Where( a =>
-                    a.ChannelTypeMediumValueId == _channelMediumTypeValue.Id &&
-                    a.ChannelEntityId == _channelEntityId )
-                .Select( a => ( int? ) a.Id )
-                .FirstOrDefault();
-            if ( interactionChannelId == null )
+            using ( var rockContext = new RockContext() )
             {
-                var interactionChannel = new InteractionChannel();
-                interactionChannel.Name = _channelName;
-                interactionChannel.ChannelTypeMediumValueId = _channelMediumTypeValue.Id;
-                interactionChannel.ChannelEntityId = _channelEntityId;
-                interactionChannel.ComponentEntityTypeId = _componentEntityTypeId;
-                interactionChannelService.Add( interactionChannel );
+                // lookup the interaction channel, and create it if it doesn't exist
+                var interactionChannelService = new InteractionChannelService( rockContext );
+                var interactionChannelId = interactionChannelService.Queryable()
+                    .Where( a =>
+                        a.ChannelTypeMediumValueId == _channelMediumTypeValue.Id &&
+                        a.ChannelEntityId == _channelEntityId )
+                    .Select( a => ( int? ) a.Id )
+                    .FirstOrDefault();
+                if ( interactionChannelId == null )
+                {
+                    var interactionChannel = new InteractionChannel();
+                    interactionChannel.Name = _channelName;
+                    interactionChannel.ChannelTypeMediumValueId = _channelMediumTypeValue.Id;
+                    interactionChannel.ChannelEntityId = _channelEntityId;
+                    interactionChannel.ComponentEntityTypeId = _componentEntityTypeId;
+                    interactionChannelService.Add( interactionChannel );
+                    rockContext.SaveChanges();
+                    interactionChannelId = interactionChannel.Id;
+                }
+
+                // check that the contentChannelItem exists as a component
+                var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId.Value, _componentEntityId, _componentName );
                 rockContext.SaveChanges();
-                interactionChannelId = interactionChannel.Id;
-            }
 
-            // check that the contentChannelItem exists as a component
-            var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId.Value, _componentEntityId, _componentName );
-            rockContext.SaveChanges();
+                // Add the interaction
+                if ( interactionComponent != null )
+                {
+                    var interactionService = new InteractionService( rockContext );
+                    var interaction = interactionService.CreateInteraction( interactionComponent.Id, _userAgent, _url, _ipAddress, _browserSessionId );
 
-            // Add the interaction
-            if ( interactionComponent != null )
-            {
-                var interactionService = new InteractionService( rockContext );
-                var interaction = interactionService.CreateInteraction( interactionComponent.Id, _userAgent, _url, _ipAddress, _browserSessionId );
-
-                interaction.EntityId = null;
-                interaction.Operation = "View";
-                interaction.InteractionSummary = InteractionSummary;
-                interaction.InteractionData = _url;
-                interaction.PersonAliasId = CurrentPersonAliasId;
-                interaction.InteractionDateTime = RockDateTime.Now;
-                interactionService.Add( interaction );
-                rockContext.SaveChanges();
+                    interaction.EntityId = null;
+                    interaction.Operation = "View";
+                    interaction.InteractionSummary = InteractionSummary;
+                    interaction.InteractionData = _url;
+                    interaction.PersonAliasId = CurrentPersonAliasId;
+                    interaction.InteractionDateTime = RockDateTime.Now;
+                    interactionService.Add( interaction );
+                    rockContext.SaveChanges();
+                }
             }
         }
     }
