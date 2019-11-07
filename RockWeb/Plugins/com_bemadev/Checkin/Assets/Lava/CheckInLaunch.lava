@@ -10,6 +10,7 @@
 {% assign studentMinistryHSMURL = urlPattern %}
 {% assign studentMinistryEventsURL = urlPattern %}
 {% assign nextStepsURL = urlPattern %}
+{% assign nextStepsUnattendedURL = urlPattern %}
 {% assign campusEventsURL = urlPattern %}
 
 {% assign motsURL = urlPattern %}
@@ -33,6 +34,9 @@
 {% device where:'Name == "{{ campusName }}: Student Min Check-In"' %}
     {% assign studentMinCheckInKioskId = device.Id %}
 {% enddevice %}
+{% device where:'Name == "Unattended Check-In (Generic)"' %}
+    {% assign unattendedCheckInGenericKioskId = device.Id %}
+{% enddevice %}
 
 
 <!-- Set Kiosk Device in URLs -->
@@ -45,6 +49,7 @@
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign nextStepsURL = nextStepsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
+{% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'kioskId', unattendedCheckInGenericKioskId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign motsURL = motsURL | Replace: 'kioskId', attendedCheckInKioskId %}
 
@@ -86,6 +91,7 @@
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInConfigId', studentMinCheckinConfigId %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInConfigId', studentMinEventsCheckinConfigId %}
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
+{% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
 {% assign motsURL = motsURL | Replace: 'checkInConfigId', motsCheckinConfigId %}
 
@@ -114,9 +120,9 @@ WHERE [GroupTypeId] in (
 {% endsql %}
 
 
-<!-- 
+<!--
 ------------------------------------------
-Build up string of check-in areas 
+Build up string of check-in areas
 ------------------------------------------
 -->
 
@@ -216,6 +222,7 @@ Build up string of check-in areas
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Replace: 'checkInAreas', hsmAreas %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Replace: 'checkInAreas', studentMinistryEventsAreas %}
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInAreas', nextStepsAreas %}
+{% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'checkInAreas', nextStepsAreas %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInAreas', campusEventsAreas %}
 {% assign motsURL = motsURL | Replace: 'checkInAreas', motsAreas %}
 
@@ -236,6 +243,7 @@ Build up string of check-in areas
 {% assign studentMinistryHSMURL = studentMinistryHSMURL | Append: studentMinistryTheme %}
 {% assign studentMinistryEventsURL = studentMinistryEventsURL | Append: studentMinistryTheme %}
 {% assign nextStepsURL = nextStepsURL | Append: genericLCBCTheme %}
+{% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Append: genericLCBCTheme %}
 {% assign campusEventsURL = campusEventsURL | Append: genericLCBCTheme %}
 {% assign motsURL = motsURL | Append: genericLCBCTheme %}
 
@@ -326,7 +334,17 @@ Build up string of check-in areas
             <li>
                 <a href="{{ nextStepsURL }}">
                 <i class="fa fa-sign-in"></i>
-                <h3>Next Steps Event Check-In</h3>
+                <h3>Next Steps Event Assisted Check-In</h3>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="panel-body">
+        <ul>
+            <li>
+                <a href="{{ nextStepsUnattendedURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>Next Steps Event Self Check-In</h3>
                 </a>
             </li>
         </ul>
@@ -376,7 +394,7 @@ Build up string of check-in areas
 <div class="panel panel-default">
      <div class="panel-heading">
          <h4 class="panel-title"
-             data-toggle="collapse" 
+             data-toggle="collapse"
              data-target="#collapseOne">
              Debugging Info
          </h4>
@@ -411,7 +429,8 @@ Build up string of check-in areas
             Collide Check-In:               {{ studentMinistryCollideURL }}<br>
             HSM Check-In:                   {{ studentMinistryHSMURL }}<br>
             StudentMin Events Check-In:     {{ studentMinistryEventsURL }}<br>
-            Next Steps Check-In:            {{ nextStepsURL }}<br>
+            Next Steps Assisted Check-In:   {{ nextStepsURL }}<br>
+            Next Steps Self Check-In:       {{ nextStepsUnattendedURL }}<br>
             Campus Events Check-In:         {{ campusEventsURL }}<br>
             MOTS Check-In:                  {{ motsURL }}<br>
         </div>
@@ -443,7 +462,7 @@ Build up string of check-in areas
                 font-size: medium;
             }
         }
-        
+
         @media (max-width: 768px) {
             .environment-warning {
                 display: none;
