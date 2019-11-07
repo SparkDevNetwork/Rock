@@ -10,7 +10,7 @@
                         <asp:DropDownList ID="ddlDocumentType" runat="server" Label="Document Types" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlDocumentType_SelectedIndexChanged" />
                     </div>
                 </div>
-        
+
                 <%-- Grid --%>
                 <Rock:Grid ID="gFileList" runat="server" OnRowSelected="gFileList_RowSelected" DisplayType="Light">
                     <Columns>
@@ -61,7 +61,7 @@
                     <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine"></Rock:RockTextBox>
                 </div>
                 <div class="col-md-6">
-                    <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" RequiredErrorMessage="An Document File is required."></Rock:FileUploader>
+                    <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg"></Rock:FileUploader>
                 </div>
             </div>
             <div class="actions">
