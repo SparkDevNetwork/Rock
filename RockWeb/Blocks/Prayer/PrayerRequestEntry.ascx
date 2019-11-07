@@ -4,7 +4,7 @@
         <asp:Panel runat="server" CssClass="panel panel-block" ID="pnlForm">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cloud-upload"></i> Add Prayer Request</h1>
+                <h1 class="panel-title"><i class="fa fa-praying-hands"></i> Add Prayer Request</h1>
             </div>
             <div class="panel-body">
 
@@ -53,7 +53,7 @@
         <asp:Panel runat="server" ID="pnlReceipt" Visible="False" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-cloud-upload"></i> Add Prayer Request</h1>
+                <h1 class="panel-title"><i class="fa fa-praying-hands"></i> Add Prayer Request</h1>
             </div>
             <div class="panel-body">
 
