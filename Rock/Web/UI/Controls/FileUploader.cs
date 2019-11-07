@@ -564,7 +564,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum UploaderDisplayMode
         {
@@ -634,6 +634,7 @@ namespace Rock.Web.UI.Controls
             _aRemove.HRef = "#";
             _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             _aRemove.Attributes["class"] = "remove-file";
+            _aRemove.Attributes["title"] = "Remove File";
 
             _fileUpload = new FileUpload();
             Controls.Add( _fileUpload );
@@ -663,7 +664,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "fileupload-group" );
+            writer.AddAttribute( "class", "fileupload-group " + this.FormGroupCssClass );
             writer.AddAttribute( "id", this.ClientID );
 
             if ( ToolTip.IsNotNullOrWhiteSpace() )
@@ -900,7 +901,7 @@ Rock.controls.fileUploader.initialize({{
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class FileUploaderEventArgs : EventArgs
     {

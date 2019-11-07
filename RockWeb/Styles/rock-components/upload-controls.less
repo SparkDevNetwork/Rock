@@ -12,6 +12,11 @@
   cursor: pointer;
   border: 1px solid @input-border;
   border-radius: @border-radius-base;
+
+  &:focus-within {
+    border: 1px solid @input-border-focus;
+    box-shadow: @input-focus-box-shadow;
+  }
 }
 
 .imageupload-group {
@@ -94,6 +99,7 @@
     left: 35px;
     z-index: 2;
     opacity: .3;
+    text-align: center;
   }
 }
 
@@ -224,15 +230,16 @@
 
     &::after {
       position: absolute;
+      left: 0;
+      width: 100%;
       top: 50%;
-      left: 50%;
-      margin-top: -20px;
-      margin-left: -12px;
+      transform: perspective(1px) translateY(-50%);
       font-family: @fa-font-face;
       font-size: 28px;
       font-weight: @fa-theme-weight;
       color: darken(@input-group-addon-bg, 15%);
       content: @fa-var-files-o;
+      line-height: 1;
     }
 
     &.file-exists::after {
@@ -288,5 +295,74 @@
     cursor: pointer;
     background-color: @btn-danger-bg;
     border-top-left-radius: @border-radius-base;
+  }
+}
+
+.fileupload-group-lg {
+  display: block;
+  border-style: dashed;
+  border-width: 2px;
+
+  &:focus-within {
+    border: 2px solid @input-border-focus;
+  }
+
+  .fileupload-thumbnail {
+    background-color: @input-group-addon-bg;
+  }
+
+  .fileupload-dropzone {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: end;
+    -ms-flex-pack: center;
+    align-items: flex-end;
+    justify-content: center;
+    height: 100%;
+    padding: 0;
+    padding: 2px;
+    margin: 0;
+    background-color: transparent;
+
+    span {
+      margin-bottom: 11px;
+      font-size: @font-size-base;
+      line-height: 1;
+
+      @media (min-width: @screen-sm) {
+        margin-bottom: 52px;
+        font-size: 22px;
+      }
+    }
+  }
+
+  .fileupload-remove {
+    z-index: 50;
+  }
+
+  .fileupload-thumbnail .file-link {
+    width: 100%;
+    height: 152px;
+    padding: 12px;
+    font-size: @font-size-base;
+
+    @media (min-width: @screen-sm) {
+      height: 288px;
+      padding: 20px;
+    }
+
+    &::after {
+      font-size: 78px;
+      content: @fa-var-file-alt;
+
+      @media (min-width: @screen-sm) {
+        font-size: 112px;
+      }
+    }
   }
 }
