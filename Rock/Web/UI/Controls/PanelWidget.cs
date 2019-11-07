@@ -241,7 +241,7 @@ $('.js-stop-immediate-propagation').on('click', function (event) {
             _lbDelete.CausesValidation = false;
             _lbDelete.CssClass = "btn btn-xs btn-square btn-danger js-stop-immediate-propagation";
             _lbDelete.Click += lbDelete_Click;
-            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa fa-times'></i>" } );
+            _lbDelete.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
         }
 
         /// <summary>
