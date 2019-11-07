@@ -15,10 +15,13 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -59,15 +62,78 @@ namespace Rock.Data
         {
         }
 
+        public static ConcurrentBag<WeakReference> _undisposedList = new ConcurrentBag<WeakReference>();
+        public static ConcurrentDictionary<WeakReference, string> _stackTraces = new ConcurrentDictionary<WeakReference, string>();
+        private WeakReference weakReference;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContext"/> class.
         /// </summary>
         public RockContext()
             : base()
         {
+            var st = new StackTrace( 1, true );
+            //ShowDisposeMessage( 0, 0 );
+            weakReference = new WeakReference( this );
+            _stackTraces.TryAdd( weakReference, st.ToString() );
+            _undisposedList.Add( weakReference );
         }
 
-        #region Models
+        protected override void Dispose( bool disposing )
+        {
+            //ShowDisposeMessage();
+            //_stackTraces.TryRemove( weakReference, out string asdf );
+            base.Dispose( disposing );
+        }
+
+        public static void ShowDisposeMessage( int threshHold = 0, int mod = 0 )
+        {
+            //_undisposedList.Remove( weakReference );
+            var screenshotList = _undisposedList.ToArray();
+            var undisposedList = screenshotList.Where( a => a.IsAlive ).ToList();
+            var undisposedContextCount = undisposedList.Count();
+
+            List<WeakReference> undisposedConnectionList = new List<WeakReference>();
+            foreach ( var undisposed in undisposedList )
+            {
+                if ( undisposed.IsAlive )
+                {
+                    try
+                    {
+                        var testConnectDisposed = ( undisposed.Target as RockContext )?.Database?.Connection;
+                        //if ( testConnectDisposed.State != System.Data.ConnectionState.Closed )
+                        {
+                            undisposedConnectionList.Add( undisposed );
+                        }
+                    }
+                    catch
+                    {
+                        // 
+                    }
+                }
+            }
+
+            //if ( undisposedCount > threshHold && ( mod == 0 || undisposedCount % mod == 0 ) )
+            {
+                Debug.WriteLine( $"total: {screenshotList.Length}, undisposedContextCount:{undisposedContextCount}, undisposedConnectionCount:{undisposedConnectionList.Count}" );
+            }
+
+            var undisposedStackTraces = _stackTraces.ToList().Where( a => undisposedConnectionList.ToList().Contains(a.Key))
+                .Where(a => a.Key.IsAlive )
+                .Select( a => a.Value ).GroupBy( s => s )
+                .OrderByDescending( v => v.Count() ).Take( 10 )
+                .ToDictionary( k => k.Key, v => v.Count() );
+
+            IEnumerable<KeyValuePair<string, int>> topTen = undisposedStackTraces.Where( v => v.Value > 10 ).Take( 1 );
+            if ( topTen.Any() )
+            {
+                
+                var top = topTen.FirstOrDefault();
+                Debug.WriteLine( $"{top.Value} : {top.Key}" );
+            }
+        }
+
+        #region Modelsa
 
         /// <summary>
         /// Gets or sets the analytics dim attendance locations.

@@ -138,6 +138,31 @@ namespace RockWeb
         {
             try
             {
+                GC.RegisterForFullGCNotification( 10, 10 );
+
+                Task.Run( () =>
+                {
+                    int _lastCollectionCount = 0;
+
+                    while ( true )
+                    {
+                        Thread.Sleep( 100 );
+
+                        var status1 = GC.WaitForFullGCApproach( 60000 );
+                        System.Diagnostics.Debug.WriteLine( "GC Approach  " + status1.ConvertToString() );
+                        RockContext.ShowDisposeMessage();
+                        var status = GC.WaitForFullGCComplete( 5000 );
+                        var _newCollectionCount = GC.CollectionCount( 2 );
+                        if ( _newCollectionCount != _lastCollectionCount )
+                        {
+                            RockContext.ShowDisposeMessage();
+                            _lastCollectionCount = _newCollectionCount;
+                            System.Diagnostics.Debug.WriteLine( "GC Notification " + status.ConvertToString() );
+                        }
+                    }
+                } );
+
+
                 // register the App_Code assembly in the Rock.Reflection helper so that Reflection methods can search for types in it
                 var appCodeAssembly = typeof( Global ).Assembly;
                 Rock.Reflection.SetAppCodeAssembly( appCodeAssembly );
