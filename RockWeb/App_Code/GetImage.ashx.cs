@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -51,14 +52,17 @@ namespace RockWeb
 
                 if ( isBinaryFile )
                 {
-                    ProcessBinaryFileRequest( context );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        ProcessBinaryFileRequest( context, rockContext );
+                    }
                 }
                 else
                 {
                     ProcessContentFileRequest( context );
                 }
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 if ( !context.Response.IsClientConnected )
                 {
@@ -66,7 +70,7 @@ namespace RockWeb
                 }
                 else
                 {
-                    throw ex;
+                    throw;
                 }
             }
         }
@@ -185,7 +189,7 @@ namespace RockWeb
         /// Processes the binary file request.
         /// </summary>
         /// <param name="context">The context.</param>
-        private void ProcessBinaryFileRequest( HttpContext context )
+        private void ProcessBinaryFileRequest( HttpContext context, RockContext rockContext )
         {
             int fileId = context.Request.QueryString["id"].AsInteger();
             Guid fileGuid = context.Request.QueryString["guid"].AsGuid();
@@ -195,8 +199,6 @@ namespace RockWeb
                 SendBadRequest( context, "File id key must be a guid or an int." );
                 return;
             }
-
-            var rockContext = new RockContext();
 
             var binaryFileQuery = new BinaryFileService( rockContext ).Queryable();
             if ( fileGuid != Guid.Empty )
@@ -232,7 +234,7 @@ namespace RockWeb
             {
                 var currentUser = new UserLoginService( rockContext ).GetByUserName( UserLogin.GetCurrentUserName() );
                 Person currentPerson = currentUser != null ? currentUser.Person : null;
-                BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).First( a => a.Id == binaryFileMetaData.Id );
+                BinaryFile binaryFileAuth = new BinaryFileService( rockContext ).Queryable( "BinaryFileType" ).AsNoTracking().First( a => a.Id == binaryFileMetaData.Id );
                 if ( !binaryFileAuth.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     SendNotAuthorized( context );
@@ -263,7 +265,7 @@ namespace RockWeb
                 if ( fileContent == null )
                 {
                     // If we didn't get it from the cache, get it from the binaryFileService
-                    BinaryFile binaryFile = GetFromBinaryFileService( context, binaryFileMetaData.Id );
+                    BinaryFile binaryFile = GetFromBinaryFileService( context, binaryFileMetaData.Id, rockContext );
 
                     if ( binaryFile != null )
                     {
@@ -404,18 +406,16 @@ namespace RockWeb
         /// <param name="fileId">The file identifier.</param>
         /// <param name="fileGuid">The file unique identifier.</param>
         /// <returns></returns>
-        private BinaryFile GetFromBinaryFileService( HttpContext context, int fileId )
+        private BinaryFile GetFromBinaryFileService( HttpContext context, int fileId, RockContext rockContext )
         {
             BinaryFile binaryFile = null;
             System.Threading.ManualResetEvent completedEvent = new ManualResetEvent( false );
 
-            var rockContext = new RockContext();
-
             // use the binaryFileService.BeginGet/EndGet which is a little faster than the regular get
             AsyncCallback cb = ( IAsyncResult asyncResult ) =>
             {
-                // restore the context from the asyncResult.AsyncState 
-                HttpContext asyncContext = ( HttpContext ) asyncResult.AsyncState;
+                    // restore the context from the asyncResult.AsyncState 
+                    HttpContext asyncContext = ( HttpContext ) asyncResult.AsyncState;
                 binaryFile = new BinaryFileService( rockContext ).EndGet( asyncResult, context );
                 completedEvent.Set();
             };
@@ -425,6 +425,7 @@ namespace RockWeb
             // wait up to 5 minutes for the response
             completedEvent.WaitOne( 300000 );
             return binaryFile;
+
         }
 
         /// <summary>
