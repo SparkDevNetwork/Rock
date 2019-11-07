@@ -1164,6 +1164,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="engagementMap">The engagement map.</param>
         /// <param name="occurrenceMap">The occurrence map.</param>
+        /// <param name="exclusionMap">The exclusion map.</param>
         /// <param name="mapStartDate">The start date.</param>
         /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
         /// <param name="unitCount">The unit count.</param>
