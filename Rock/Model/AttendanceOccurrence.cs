@@ -181,6 +181,12 @@ namespace Rock.Model
         [DataMember]
         public int? StepTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
         [MaxLength( 250 )]
         [DataMember]
         public string Name { get; set; }
