@@ -34,7 +34,7 @@
 {% device where:'Name == "{{ campusName }}: Student Min Check-In"' %}
     {% assign studentMinCheckInKioskId = device.Id %}
 {% enddevice %}
-{% device where:'Name == "Unattended Check-In (Generic)"' %}
+{% device where:'Name == "{{ campusName }}: Unattended Check-In (Generic)"' %}
     {% assign unattendedCheckInGenericKioskId = device.Id %}
 {% enddevice %}
 
