@@ -337,10 +337,6 @@ Build up string of check-in areas
                 <h3>Next Steps Event Assisted Check-In</h3>
                 </a>
             </li>
-        </ul>
-    </div>
-    <div class="panel-body">
-        <ul>
             <li>
                 <a href="{{ nextStepsUnattendedURL }}">
                 <i class="fa fa-sign-in"></i>
