@@ -139,7 +139,7 @@ FROM
                             rows = 0;
                         }
 
-                        nbSuccess.Title = string.Format( "Command completed successfully in {0:N0}ms!", sw.ElapsedMilliseconds );
+                        nbSuccess.Title = string.Format( "Command completed successfully in {0:N0}ms.", sw.ElapsedMilliseconds );
                         nbSuccess.Text = string.Format( "Row(s) affected: {0}", rows );
                         nbSuccess.Visible = true;
                     }
