@@ -89,10 +89,6 @@
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201910221414252_AchievementTypeWorkflowTypes.Designer.cs">
       <DependentUpon>201910221414252_AchievementTypeWorkflowTypes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\Version 10.0\Version 1.10.0\201911071603518_Rollup_1107.cs" />
-    <Compile Include="Migrations\Version 10.0\Version 1.10.0\201911071603518_Rollup_1107.Designer.cs">
-      <DependentUpon>201911071603518_Rollup_1107.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.Designer.cs">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
@@ -903,9 +899,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201910221414252_AchievementTypeWorkflowTypes.resx">
       <DependentUpon>201910221414252_AchievementTypeWorkflowTypes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201911071603518_Rollup_1107.resx">
-      <DependentUpon>201911071603518_Rollup_1107.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.0\201907112025023_CampusStatus.resx">
       <DependentUpon>201907112025023_CampusStatus.cs</DependentUpon>
