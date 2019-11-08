@@ -820,7 +820,8 @@ $(document).ready(function() {
                 var orderByList = orderBy
                     .ToKeyValuePairList()
                     .Where( itemPair => !string.IsNullOrWhiteSpace( itemPair.Key ) )
-                    .Select( pair => new {
+                    .Select( pair => new
+                    {
                         Column = pair.Key.Trim(),
                         Direction = pair.Value.ToString().ConvertToEnum<SortDirection>( SortDirection.Ascending )
                     } );
@@ -900,7 +901,7 @@ $(document).ready(function() {
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        private IQueryable<ContentChannelItem> FilterItemsByQueryString(ContentChannel contentChannel, IQueryable<ContentChannelItem> items, RockContext rockContext, ContentChannelItemService contentChannelItemService, ParameterExpression parameterExpression )
+        private IQueryable<ContentChannelItem> FilterItemsByQueryString( int contentChannelId, IQueryable<ContentChannelItem> items, RockContext rockContext, ContentChannelItemService contentChannelItemService, ParameterExpression parameterExpression )
         {
             var pageParameters = PageParameters();
             if ( pageParameters.Count > 0 )
@@ -916,21 +917,21 @@ $(document).ready(function() {
                     var attributeGuid = attributeService
                         .Queryable()
                         .Where( a => a.EntityTypeQualifierColumn == "ContentChannelId" )
-                        .Where( a => a.EntityTypeQualifierValue == contentChannel.Id.ToString() )
+                        .Where( a => a.EntityTypeQualifierValue == contentChannelId.ToString() )
                         .Where( a => a.Key == key )
                         .Select( a => a.Guid )
                         .FirstOrDefault();
 
                     string uniqueName = key;
-                    if( attributeGuid != null )
+                    if ( attributeGuid != null )
                     {
-                        uniqueName = string.Format( "Attribute_{0}_{1}", key, attributeGuid.ToString().Replace("-", string.Empty ) );
+                        uniqueName = string.Format( "Attribute_{0}_{1}", key, attributeGuid.ToString().Replace( "-", string.Empty ) );
                     }
 
                     // Keep using uniquename for attributes since common keys (e.g. "category")will return mutliple values
                     selection.Add( uniqueName );
 
-                    var entityField = Rock.Reporting.EntityHelper.FindFromFilterSelection( typeof(ContentChannelItem), uniqueName, false, false );
+                    var entityField = Rock.Reporting.EntityHelper.FindFromFilterSelection( typeof( ContentChannelItem ), uniqueName, false, false );
                     if ( entityField != null )
                     {
                         string value = PageParameter( key );
@@ -956,7 +957,7 @@ $(document).ready(function() {
                                 break;
                         }
 
-                        items = items.Where( parameterExpression, propertyFilter.GetExpression( typeof(ContentChannelItem), contentChannelItemService, parameterExpression, Newtonsoft.Json.JsonConvert.SerializeObject( selection ) ) );
+                        items = items.Where( parameterExpression, propertyFilter.GetExpression( typeof( ContentChannelItem ), contentChannelItemService, parameterExpression, Newtonsoft.Json.JsonConvert.SerializeObject( selection ) ) );
                     }
                 }
 
@@ -991,43 +992,55 @@ $(document).ready(function() {
 
                     ParameterExpression parameterExpression = contentChannelItemService.ParameterExpression;
 
-                    var contentChannel = new ContentChannelService( rockContext ).Get( channelGuid.Value );
-                    if ( contentChannel != null )
+                    var contentChannelInfo = new ContentChannelService( rockContext )
+                        .AsNoFilter()
+                        .AsNoTracking()
+                        .Where( a => a.Guid == channelGuid.Value )
+                        .Select( s => new
+                        {
+                            s.Id,
+                            s.RequiresApproval,
+                            ContentChannelType_DisableStatus = s.ContentChannelType.DisableStatus
+                        }
+                        )
+                        .FirstOrDefault();
+
+                    if ( contentChannelInfo != null )
                     {
-                        var qry = contentChannelItemService
+                        var contentChannelItemQuery = contentChannelItemService
                             .Queryable()
-                            .Include(a => a.ContentChannel)
-                            .Include(a => a.ContentChannelType)
-                            .Include(a => a.ContentChannelItemSlugs)
-                            .Where( i => i.ContentChannelId == contentChannel.Id );
+                            .Include( a => a.ContentChannel )
+                            .Include( a => a.ContentChannelType )
+                            .Include( a => a.ContentChannelItemSlugs )
+                            .Where( i => i.ContentChannelId == contentChannelInfo.Id );
 
                         // Check if we should load a specific item
                         int? itemId = PageParameter( "Item" ).AsIntegerOrNull();
                         if ( isQueryParameterFilteringEnabled && itemId.HasValue )
                         {
-                            qry = qry.Where( i => i.Id == itemId.Value );
+                            contentChannelItemQuery = contentChannelItemQuery.Where( i => i.Id == itemId.Value );
                         }
 
                         // If the channel requires approval, filter by status
-                        if ( contentChannel.RequiresApproval && !contentChannel.ContentChannelType.DisableStatus )
+                        if ( contentChannelInfo.RequiresApproval && !contentChannelInfo.ContentChannelType_DisableStatus )
                         {
-                            qry = FilterItemsByStatus( qry );
+                            contentChannelItemQuery = FilterItemsByStatus( contentChannelItemQuery );
                         }
 
                         // Filter by the configured data filter
-                        qry = FilterItemsByFilter( qry, rockContext, contentChannelItemService, parameterExpression, errorMessages );
+                        contentChannelItemQuery = FilterItemsByFilter( contentChannelItemQuery, rockContext, contentChannelItemService, parameterExpression, errorMessages );
 
 
                         // If we're not ordering by attributes, we can do ordering in the db and save some processing time
                         string orderBy = GetAttributeValue( "Order" );
-                        if(orderBy == null || !orderBy.Contains("Attribute") )
+                        if ( orderBy == null || !orderBy.Contains( "Attribute" ) )
                         {
 
                             // Order Items
-                            qry = OrderItems( qry );
+                            contentChannelItemQuery = OrderItems( contentChannelItemQuery );
 
                             // Execute query
-                            items = qry.ToList();
+                            items = contentChannelItemQuery.ToList();
 
                             // Check Security
                             if ( !ItemCacheDuration.HasValue || ItemCacheDuration.Value <= 0 )
@@ -1036,14 +1049,14 @@ $(document).ready(function() {
                             }
 
                             // Load Attributes
-                            items.LoadAttributes(rockContext);
+                            items.LoadAttributes( rockContext );
 
                         }
                         else
                         {
 
                             // Execute query
-                            items = qry.ToList();
+                            items = contentChannelItemQuery.ToList();
 
                             // Check Security
                             if ( !ItemCacheDuration.HasValue || ItemCacheDuration.Value <= 0 )
@@ -1070,7 +1083,7 @@ $(document).ready(function() {
                         // If items could be filtered by querystring values, check for filters
                         if ( isQueryParameterFilteringEnabled )
                         {
-                            items = FilterItemsByQueryString( contentChannel, items.AsQueryable(), rockContext, contentChannelItemService, parameterExpression ).ToList();
+                            items = FilterItemsByQueryString( contentChannelInfo.Id, items.AsQueryable(), rockContext, contentChannelItemService, parameterExpression ).ToList();
                         }
                     }
                 }
