@@ -20,7 +20,7 @@
                     </div>
 
                     <div class="margin-t-md">
-                        <Rock:NotificationBox ID="nbSuccess" runat="server" Heading="Success" Title="Command completed successfully!" NotificationBoxType="Success" Visible="false" />
+                        <Rock:NotificationBox ID="nbSuccess" runat="server" Heading="Success" Title="Command completed successfully." NotificationBoxType="Success" Visible="false" />
                         <Rock:NotificationBox ID="nbError" runat="server" Heading="Error" Title="SQL Error!" NotificationBoxType="Danger" Visible="false" />
                     </div>
                 </div>
