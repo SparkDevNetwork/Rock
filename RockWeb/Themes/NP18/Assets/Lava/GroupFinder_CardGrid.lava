@@ -1,6 +1,6 @@
 <div class="section bg-light">
     <div class="container">
-        <div class="grid-responsive">
+        <div class="grid-responsive-2">
             {% for Group in Groups %}
                 {% include '~~/Assets/Lava/GroupFinder_Card.lava' clickable:true %}
             {% endfor %}
@@ -8,5 +8,5 @@
     </div>
 </div>
 
-<h3 style="text-align:center">Can't find the right fit?</h3>
-<p style="text-align:center"><a class="btn btn-outline-primary" href="/form/315">Start a group of your own!</a></p>
+<h3 class="text-center">Can't find the right fit?</h3>
+<p class="text-center"><a class="btn btn-outline-primary" href="/form/315">Start a group of your own!</a></p>

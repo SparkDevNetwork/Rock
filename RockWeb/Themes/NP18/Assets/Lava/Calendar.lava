@@ -1,99 +1,83 @@
-
 {% assign Filter = '' | PageParameter:'filter' %}
 {% assign CalendarFilter = '' | PageParameter:'calendar' | AsInteger %}
 {% assign EventFilter = '' | PageParameter:'event' | AsInteger %}
 
 {% if Filter != '' %}
-	<div class="text-center"> <b>Filtered by:</b> {{ Filter }} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
+    <div class="text-center"> <b>Filtered by:</b> {{ Filter }} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
 {% endif %}
 {% if CalendarFilter != null %}
-	<div class="text-center"> <b>Filtered by Calendar:</b> {% eventcalendar id:'{{ CalendarFilter }}' %}{{ eventcalendar.Name }}{% endeventcalendar %} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
+    <div class="text-center"> <b>Filtered by Calendar:</b> {% eventcalendar id:'{{ CalendarFilter }}' %}{{ eventcalendar.Name }}{% endeventcalendar %} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
 {% endif %}
 {% if EventFilter != null %}
-	<div class="text-center"> <b>Filtered by Event:</b> {% eventitem id:'{{ EventFilter }}' %}{{ eventitem.Name }}{% endeventitem %} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
+    <div class="text-center"> <b>Filtered by Event:</b> {% eventitem id:'{{ EventFilter }}' %}{{ eventitem.Name }}{% endeventitem %} <a href="/events#events_list"><i class="fas fa-times"></i></a></div>
 {% endif %}
 
-<div class="row">
-	<div class="col-sm-8 col-sm-offset-2">
-		<div class="events-list">
+<div class="calendar-day-list">
 
-			{% assign current_start_day = null %}
-			{% for eventItemOccurrence in EventItemOccurrences %}
+    {% assign current_start_day = null %}
+    {% for eventItemOccurrence in EventItemOccurrences %}
 
- 				{% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
- 				{% assign eventItemDate = eventItemOccurrence.Date | Date:'yyyyMMdd' %}
- 				{% if eventItemDate >= currentDate %}
+        {% assign currentDate = 'Now' | Date:'yyyyMMdd' %}
+        {% assign eventItemDate = eventItemOccurrence.Date | Date:'yyyyMMdd' %}
+        {% if eventItemDate >= currentDate %}
 
-				    {% if Filter == '' or eventItemOccurrence.Name contains Filter %}
+            {% if Filter == '' or eventItemOccurrence.Name contains Filter %}
 
-				        {% assign calendarIds = eventItemOccurrence.EventItemOccurrence.EventItem.EventCalendarItems | Select:'EventCalendarId' %}
-				        {% if CalendarFilter == null or calendarIds contains CalendarFilter %}
+                {% assign calendarIds = eventItemOccurrence.EventItemOccurrence.EventItem.EventCalendarItems | Select:'EventCalendarId' %}
+                {% if CalendarFilter == null or calendarIds contains CalendarFilter %}
 
-				            {% if EventFilter == null or EventFilter == eventItemOccurrence.EventItemOccurrence.EventItem.Id %}
+                    {% if EventFilter == null or EventFilter == eventItemOccurrence.EventItemOccurrence.EventItem.Id %}
 
-                                {% assign OccurrenceApproved = eventItemOccurrence.EventItemOccurrence | Attribute:'Approved' %}
-                                {% if OccurrenceApproved == 'Approved' %}
+                        {% assign OccurrenceApproved = eventItemOccurrence.EventItemOccurrence | Attribute:'Approved' %}
+                        {% if OccurrenceApproved == 'Approved' %}
 
-            	 					{% if eventItemOccurrence.Date != current_start_day %}
-            							{% if current_start_day != null %}
-            								</div></div></div>
-            							{% endif %}
-            							<div class='day_group_row'>
-            								<div class='row'>
-            									<div class='event_start_date col-sm-3'>
-            										<p class="day">{{ eventItemOccurrence.Date  | Date: 'ddd' }}</p>
-            										<p class="date">{{ eventItemOccurrence.Date  | Date: 'MMM dd' }}</p>
-            							    </div>
-            									<div class='day_event_list col-sm-9'>
-            	    				{% endif %}
+                            {% if eventItemOccurrence.Date != current_start_day %}
+                                {% if current_start_day != null %}
+                                    </div></div>
+                                {% endif %}
+                                    <div class='calendar-day-item row'>
+                                        <div class='col-sm-3'>
+                                            <div class="event-day">{{ eventItemOccurrence.Date | Date: 'ddd' }}</div>
+                                            <div class="event-date">{{ eventItemOccurrence.Date | Date: 'MMM dd' }}</div>
+                                    </div>
+                                        <div class='calendar-event-list col-sm-9'>
+                            {% endif %}
 
-            						<div class='event'>
-            							<div class='row'>
+                                    <div class='row calendar-event-item'>
 
-            								<div class="col-md-2">
-            									<span class='event_info'>
-            										{{ eventItemOccurrence.Time }}
-            						      </span>
-            								</div>
+                                    <div class="col-md-2 event-time">{{ eventItemOccurrence.Time }}</div>
 
-            								<div class="col-md-7">
-            				    		  <span class="event-title">
-            										{% if eventItemOccurrence.DetailPage != null %}
-            											<a href="{{ eventItemOccurrence.DetailPage }}">{{ eventItemOccurrence.Name }}</a>
-            										{% else %}
-            											{% assign EventOccurrenceId = eventItemOccurrence.EventItemOccurrence.Id %}
-            											<a href="{[ FormatLink url:'{{ DetailsPage }}' keys:'EventOccurrenceId' ]}">{{ eventItemOccurrence.Name }}</a>
-            										{% endif %}
-            									</span>
-            								</div>
+                                    <div class="col-md-7 event-title">
+                                        {% if eventItemOccurrence.DetailPage != null %}
+                                            <a href="{{ eventItemOccurrence.DetailPage }}">{{ eventItemOccurrence.Name }}</a>
+                                        {% else %}
+                                            {% assign EventOccurrenceId = eventItemOccurrence.EventItemOccurrence.Id %}
+                                            <a href="{[ FormatLink url:'{{ DetailsPage }}' keys:'EventOccurrenceId' ]}">{{ eventItemOccurrence.Name }}</a>
+                                        {% endif %}
+                                    </div>
+                                        
+                                    {% assign EventItemOccurrence_LocationCampus = EventItemOccurrence | Attribute:'LocationCampus' %}
+                                    <div class="col-md-3 event-location">{{ EventItemOccurrence_LocationCampus | Default:'Offsite' }}</div>
 
-            								<div class="col-md-3">
-            									<span class="event-location">
-            				  						{{ eventItemOccurrence.Location }}
-            									</span>
-            								</div>
+                                </div>
 
-            							</div>
-            						</div>
+                            {% assign current_start_day = eventItemOccurrence.Date %}
 
-            						{% assign current_start_day = eventItemOccurrence.Date %}
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% endif %}
 
-					            {% endif %}
-					        {% endif %}
-					    {% endif %}
-					{% endif %}
+        {% endif %}
+    {% endfor %}
 
-				{% endif %}
-			{% endfor %}
+    {% if current_start_day != null %}
+        </div></div></div>
 
-			{% if current_start_day != null %}
-				</div></div></div>
-			{% else %}
-	 			<div class="panel panel-default margin-t-md">
-    			<div class="margin-all-md"> There aren't any events for this time frame. Please try a different month, or check out what's happening at a different campus.</div>
-  			</div>
-			{% endif %}
+    {% else %}
+        <div class="panel panel-default margin-t-md">
+        <div class="margin-all-md">There aren't any events for this time frame. Please try a different month, or check out what's happening at a different campus.</div>
+    </div>
+    {% endif %}
 
-		</div>
-	</div>
 </div>

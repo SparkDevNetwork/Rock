@@ -1,5 +1,5 @@
 <h2 class="section-title text-center">Featured Events</h2>
-<div class="grid-responsive-3">
+<div class="grid-responsive-odd">
 
     {% assign ShownEventItemIds = ',' %}
     {% assign ShownEventItemCount = 0 %}
@@ -17,16 +17,16 @@
                 {% assign ShownEventItemIds = ShownEventItemIds | Append:event.EventItemOccurrence.EventItemId | Append:',' %}
                 {% assign ShownEventItemCount = ShownEventItemCount | Plus:1 | AsInteger %}
 
-                <a class="clickable-card {{event.Name | ToCssClass }}" href="/events?event={{ event.EventItemOccurrence.EventItem.Id }}&date={{ event.EventItemOccurrence.Schedule.NextStartDateTime | Date:'yyyy-MM-dd'}}#events_list">
+                <a class="card card-clickable {{event.Name | ToCssClass }}" href="/events?event={{ event.EventItemOccurrence.EventItem.Id }}&date={{ event.EventItemOccurrence.Schedule.NextStartDateTime | Date:'yyyy-MM-dd'}}#events_list">
                     <img class="card-img" src="{{event.EventItem.Photo.Path}}"/>
                     <div class="card-body">
-                          <h3>{{event.Name}}</h3>
+                          <h4>{{event.Name}}</h4>
                           {% if event.Summary != "" %}
                               <p>{{ event.Summary }}</p>
                           {% else %}
                               <p>{{ event.Description | StripHtml | TruncateWords:15 }}</p>
                         {% endif %}
-                    </div>
+                      </div>
                 </a>
   
             {% endif %}

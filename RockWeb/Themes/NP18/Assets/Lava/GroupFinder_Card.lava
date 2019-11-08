@@ -42,37 +42,39 @@
 
      
 {% if clickable %}
-    <a href="{{ GroupDetailsLink }}" class="clickable-card group-card">
+    <a href="{{ GroupDetailsLink }}" class="card group-card">
 {% else %}
-    <div class="group-card">
+    <div class="card group-card">
 {% endif %}
 
+    <div class="card-body">
 
-    <h1>{{ Group.Name }}</h1>
-    <h4 class="text-muted">{{ GroupSubtitle }}</h4>
-    <p>{{ Group | Attribute:'GroupGoal' }}</p>
-    <p>
-        <span style="font-size: 1em; color: {{ CapacityColor }};"><i class="fas fa-circle"></i></span>&nbsp;
-        {% if Group.GroupCapacity == null %}
-            {{ Group.Members.size }} {{ "member" | PluralizeForQuantity:Group.Members.size }}
-        {% else %}
-            {{ Group.Members.size }} of {{ Group.GroupCapacity }} {{ "member" | PluralizeForQuantity:Group.GroupCapacity }}
+        <h1>{{ Group.Name }}</h1>
+        <h4 class="text-muted">{{ GroupSubtitle }}</h4>
+        <p>{{ Group | Attribute:'GroupGoal' }}</p>
+        <p>
+            <span style="font-size: 1em; color: {{ CapacityColor }};"><i class="fas fa-circle"></i></span>&nbsp;
+            {% if Group.GroupCapacity == null %}
+                {{ Group.Members.size }} {{ "member" | PluralizeForQuantity:Group.Members.size }}
+            {% else %}
+                {{ Group.Members.size }} of {{ Group.GroupCapacity }} {{ "member" | PluralizeForQuantity:Group.GroupCapacity }}
+            {% endif %}
+        </p>
+        <p style="line-height: 1.5;">
+            <span class="label label-primary">{{ Group.Campus.Name }}</span>
+            {% for Tag in GroupTypes %}
+                <span class="label label-info">{{ Tag }}</span>
+            {% endfor %}
+            {% for Tag in GroupCharacteristics %}
+                <span class="label label-default">{{ Tag }}</span>
+            {% endfor %}
+        </p>
+        {% if showbutton %}
+            <a class="btn btn-primary btn-sm btn-block" href="{{ GroupDetailsLink }}">Learn More</a>
         {% endif %}
-    </p>
-    <p style="line-height: 1.5;">
-        <span class="label label-primary">{{ Group.Campus.Name }}</span>
-        {% for Tag in GroupTypes %}
-            <span class="label label-info">{{ Tag }}</span>
-        {% endfor %}
-        {% for Tag in GroupCharacteristics %}
-            <span class="label label-default">{{ Tag }}</span>
-        {% endfor %}
-    </p>
-    {% if showbutton %}
-        <a class="btn btn-primary btn-sm btn-block" href="{{ GroupDetailsLink }}">Learn More</a>
-    {% endif %}
 
-        
+    </div>
+
 {% if clickable %}
     </a>
 {% else %}

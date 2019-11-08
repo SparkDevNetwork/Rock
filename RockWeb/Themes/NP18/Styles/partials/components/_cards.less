@@ -1,5 +1,6 @@
 
 .card {
+    font-size: 0.9em;
     display: block;
     box-shadow: 0 3px 6px rgba(0,0,0,0.16);
     background-color: #fff;
@@ -52,39 +53,81 @@ a.card,
 }
 
 .card-overlay-group {
-    margin-bottom: 5%;
-    position: relative;
+    margin-bottom: 2em;
+}
 
-    .card-left {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 50%;
-        z-index: 10;
+@media (min-width: @screen-sm-min) {
+    .card-overlay-group {
+        padding: 0.5em;
+
+        > .card > .card-body {
+            padding: 3em;
+        }
+
+        > .card-left {
+            margin: 0 0.5em 0 -0.5em;
+        }
+
+        > .card-right {
+            margin: -2em -0.5em 0 0.5em;
+
+            > .card-body {
+                padding: 5em 3em 3em 3em;
+            }
+        }
     }
+}
 
-    .card-right {
-        width: 55%;
-        padding: 3%;
-        padding-left: 7%;
-        margin: 5% 0 0;
-        float: right;
+@media (min-width: @screen-md-min) {
+    .card-overlay-group {
         position: relative;
-        z-index: 5;
-    }
+        padding: 0;
+        margin-bottom: 4em;
 
-    &::before, &::after {
-        display: table;
-        content: " ";
-    }
+        > .card-left {
+            margin: 0;
+            width: 52%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
 
-    &::after {
-        clear: both;
+        > .card-right {
+            margin: 1em 0 0 0;
+            width: 52%;
+            float: right;
+            z-index: 5;
+
+            > .card-body {
+                padding: 3.5em 3.5em 3.5em 5.5em;
+            }
+        }
+
+        &::before, &::after {
+            display: table;
+            content: " ";
+        }
+
+        &::after {
+            clear: both;
+        }
+    }
+}
+
+@media (min-width: @screen-lg-min) {
+    .card-overlay-group {
+        > .card-right {
+            > .card-body {
+                padding: 4em 4em 4em 7em;
+            }
+        }
     }
 }
 
 .card-small {
     font-size: 0.75em;
+
     .card-body {
         padding: 1.75em;
     }

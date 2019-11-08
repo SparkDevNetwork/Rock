@@ -21,6 +21,29 @@
     padding: @grid-gutter-width * @spacing-xl !important;
 }
 
+.padding-responsive {
+    padding: 1.5em !important;
+}
+
+@media (min-width: @screen-sm-min) {
+    .padding-responsive {
+        padding: @grid-gutter-width * @spacing-sm !important;
+    }
+}
+
+@media (min-width: @screen-md-min) {
+    .padding-responsive {
+        padding: @grid-gutter-width * @spacing-md !important;
+    }
+}
+
+@media (min-width: @screen-lg-min) {
+    .padding-responsive {
+        padding: @grid-gutter-width * @spacing-lg !important;
+    }
+}
+
+
 // Extra Margin Utilities
 
 .margin-none {
@@ -149,6 +172,7 @@
     margin-top: -2em;
     margin-bottom: 2em;
     z-index: 20;
+    position: relative;
 }
 
 .subtitle {

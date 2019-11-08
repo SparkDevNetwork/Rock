@@ -23,7 +23,7 @@
 
 {% endcapture %}
 
-<div class="clickable-card {{ Channel.Name | ToCssClass }}" style="font-size:0.75em;">
+<div class="card card-clickable {{ Channel.Name | ToCssClass }}">
 	<a href="{{ Card_ActionUrl }}"><img class="card-img" src="{{ Card_HeaderImg }}" /></a>
 	<div class="card-body">
 		<h6 class="subtitle margin-none">{{ Channel.Name }}</h6>
