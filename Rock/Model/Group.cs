@@ -580,45 +580,67 @@ namespace Rock.Model
             // Check to see if user is authorized using normal authorization rules
             bool authorized = base.IsAuthorized( action, person );
 
-            // If the user is not authorized for group through normal security roles, and this is a logged
-            // in user trying to view or edit, check to see if they should be allowed based on their role
-            // in the group.
-            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) )
+            if ( authorized || person == null )
             {
-                // Get the cached group type
-                var groupType = GroupTypeCache.Get( this.GroupTypeId );
-                if ( groupType != null )
+                return authorized;
+            }
+
+            var groupType = GroupTypeCache.Get( this.GroupTypeId );
+
+            if ( groupType == null )
+            {
+                return authorized;
+            }
+
+            // if the person isn't authorized through normal security roles, check if the person has a group role that authorizes them
+            // First, check if there are any roles that could authorized them. If not, we can avoid a database lookup.
+            List<int> checkMemberRoleIds = new List<int>();
+            if ( action == Authorization.VIEW )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.MANAGE_MEMBERS )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanManageMembers ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.EDIT )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
+            }
+
+            if ( !checkMemberRoleIds.Any() )
+            {
+                return authorized;
+            }
+
+            // For each occurrence of this person in this group for the roles that might grant them auth,
+            // check to see if their role is valid for the group type and if the role grants them authorization
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( int roleId in new GroupMemberService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.GroupId == this.Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( m => m.GroupRoleId ) )
                 {
-                    // For each occurrence of this person in this group, check to see if their role is valid
-                    // for the group type and if the role grants them authorization
-                    using ( var rockContext = new RockContext() )
+                    var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                    if ( role != null )
                     {
-                        foreach ( int roleId in new GroupMemberService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( m =>
-                                m.PersonId == person.Id &&
-                                m.GroupId == this.Id &&
-                                m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Select( m => m.GroupRoleId ) )
+                        if ( action == Authorization.VIEW && role.CanView )
                         {
-                            var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
-                            if ( role != null )
-                            {
-                                if ( action == Authorization.VIEW && role.CanView )
-                                {
-                                    return true;
-                                }
+                            return true;
+                        }
 
-                                if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
-                                {
-                                    return true;
-                                }
+                        if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
+                        {
+                            return true;
+                        }
 
-                                if ( action == Authorization.EDIT && role.CanEdit )
-                                {
-                                    return true;
-                                }
-                            }
+                        if ( action == Authorization.EDIT && role.CanEdit )
+                        {
+                            return true;
                         }
                     }
                 }
@@ -883,7 +905,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            var dataContext = (RockContext)dbContext;
+            var dataContext = ( RockContext ) dbContext;
 
             if ( HistoryChangeList != null && HistoryChangeList.Any() )
             {
