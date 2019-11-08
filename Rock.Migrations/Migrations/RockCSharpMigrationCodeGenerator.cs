@@ -32,12 +32,13 @@ namespace Rock.Migrations
         #region overridden methods
 
         /// <summary>
-        /// Set this to true if migrations are frozen in this branch.
+        /// Set <see cref="IsFrozen"/> to true if migrations are frozen in this branch, and update <see cref="MigrationTokenOwner"/>
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is frozen; otherwise, <c>false</c>.
         /// </value>
-        public bool IsFrozen => false;
+        public bool IsFrozen => true;
+        private const string MigrationTokenOwner = "hotfix-1.10.2";
 
         /// <summary>
         /// </summary>
@@ -79,7 +80,7 @@ namespace Rock.Migrations
         {
             if ( IsFrozen )
             {
-                throw new System.Exception( "Cannot add migration. Migrations are frozen in this branch." );
+                throw new System.Exception( $"Cannot add migration. Migrations are frozen in this branch. The Migration owner is currently {MigrationTokenOwner}" );
             }
 
             string result = string.Empty;
