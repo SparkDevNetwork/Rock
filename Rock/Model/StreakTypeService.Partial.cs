@@ -1090,8 +1090,7 @@ namespace Rock.Model
         /// When an attendance record is created or modified (example: check-in), the method should be called to synchronize that
         /// attendance to any matching streak types and streaks using this method.
         /// </summary>
-        /// <param name="attendance"></param>
-        /// <param name="errorMessage"></param>
+        /// <param name="attendance">The attendance.</param>
         public static void HandleAttendanceRecord( Attendance attendance )
         {
             var rockContext = new RockContext();
@@ -1205,7 +1204,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// This convenience method calls <see cref="HandleAttendanceRecord"/> in an asynchronous fashion such that the calling
+        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> in an asynchronous fashion such that the calling
         /// process can continue uninhibited. Use this where the streak type and streaks should be synchronized, but the calling
         /// process should continue quickly and without regard to the success of this operation. This method creates it's own data
         /// context and saves the changes when complete.
@@ -1232,7 +1231,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// This convenience method calls <see cref="HandleAttendanceRecord"/> for all attendance records associated the occurrence 
+        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> for all attendance records associated the occurrence 
         /// in an asynchronous fashion such that the calling process can continue uninhibited. Use this where the streak type and streaks 
         /// should be synchronized, but the calling process should continue quickly and without regard to the success of this operation.
         /// This method creates it's own data context and any changes will be saved automatically.

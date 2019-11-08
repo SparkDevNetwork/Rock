@@ -151,7 +151,7 @@ namespace Rock.Model
         /// <summary>
         /// Check for achievements that may have been earned
         /// </summary>
-        /// <param name="streak"></param>
+        /// <param name="streakId">The streak identifier.</param>
         private static void ProcessAchievements( int streakId )
         {
             var rockContext = new RockContext();
