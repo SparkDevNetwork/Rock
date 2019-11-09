@@ -88,12 +88,25 @@ namespace RockWeb.Blocks.Crm
             this.BlockUpdated += Block_BlockUpdated;
 
             gFileList.DataKeyNames = new string[] { "Id" };
-            // TODO: Add security
-            gFileList.Actions.ShowAdd = true;
-            gFileList.IsDeleteEnabled = true;
-
             gFileList.GridRebind += gFileList_GridRebind;
-            gFileList.Actions.AddClick += gFileList_Add;
+
+            // Verify block authorization
+            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+            bool canAdministrateBlock = IsUserAuthorized( Authorization.ADMINISTRATE );
+
+            gFileList.Actions.ShowAdd = canEditBlock;
+            gFileList.IsDeleteEnabled = canEditBlock;
+            
+            if ( canEditBlock )
+            {
+                gFileList.Actions.AddClick += gFileList_Add;
+                gFileList.RowSelected += gFileList_RowSelected;
+            }
+
+            // Configure and show/hide security button
+            var securityColumn = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
+            securityColumn.EntityTypeId = this.ContextEntity().TypeId;
+            securityColumn.Visible = canAdministrateBlock;
         }
 
         protected override void OnLoad( EventArgs e )
@@ -236,6 +249,31 @@ namespace RockWeb.Blocks.Crm
         #endregion Private Methods
 
         #region Grid Events
+
+        protected void gFileList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            var document = ( Document ) e.Row.DataItem;
+            if ( document == null )
+            {
+                return;
+            }
+
+            bool canView = document.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson );
+            bool canEdit = document.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+
+            if (!canView)
+            {
+                // Hide the download button
+                var downloadButton = ( LinkButton ) e.Row.FindControl( "lbDownload" );
+                downloadButton.Visible = false;
+            }
+
+            if ( !canEdit )
+            {
+                // disable edit click for row and delete button
+                e.Row.Enabled = false;
+            }
+        }
 
         protected void gFileList_GridRebind( object sender, EventArgs e )
         {
@@ -407,5 +445,7 @@ namespace RockWeb.Blocks.Crm
         }
 
         #endregion Add/Edit Methods
+
+        
     }
 }
