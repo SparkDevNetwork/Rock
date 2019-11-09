@@ -12,7 +12,7 @@
                 </div>
 
                 <%-- Grid --%>
-                <Rock:Grid ID="gFileList" runat="server" OnRowSelected="gFileList_RowSelected" DisplayType="Light">
+                <Rock:Grid ID="gFileList" runat="server" DisplayType="Light" OnRowDataBound="gFileList_RowDataBound">
                     <Columns>
                         <Rock:RockTemplateField HeaderStyle-Width="1px">
                             <ItemTemplate>
@@ -43,7 +43,7 @@
                             </ItemTemplate>
                         </Rock:RockTemplateField>
 
-                        <Rock:SecurityField />
+                        <Rock:SecurityField ID="securityField" />
                         <Rock:DeleteField OnClick="gFileList_DeleteClick" />
                     </Columns>
                 </Rock:Grid>
