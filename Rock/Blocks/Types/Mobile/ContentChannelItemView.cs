@@ -120,6 +120,10 @@ namespace Rock.Blocks.Types.Mobile
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
+            //
+            // The client shell ignores this value and always requests the current config from
+            // the server, so just put some placeholder data.
+            //
             return new
             {
                 Xaml = string.Empty,
@@ -140,6 +144,7 @@ namespace Rock.Blocks.Types.Mobile
         [BlockAction]
         public object GetCurrentConfig()
         {
+            var additionalSettings = GetAdditionalSettings();
             var content = GetAttributeValue( AttributeKeys.ContentTemplate );
             var mergeFields = RequestContext.GetCommonMergeFields();
 
@@ -150,8 +155,8 @@ namespace Rock.Blocks.Types.Mobile
             return new Dictionary<string, object>
             {
                 { "Content", content },
-                { "ProcessLava", false },
-                { "CacheDuration", 0 },
+                { "ProcessLava", additionalSettings.ProcessLavaOnServer },
+                { "CacheDuration", additionalSettings.CacheDuration },
                 { "DynamicContent", true }
             };
         }
