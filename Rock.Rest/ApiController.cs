@@ -169,6 +169,32 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Gets items associated with a campus uisng the EntityCampusFilter model. The Entity must implement ICampusFilterable.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByCampus" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByCampus( [FromUri]int campusId )
+        {
+            if ( !typeof( T ).GetInterfaces().Contains( typeof( ICampusFilterable ) ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The model does not support campus filtering." );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var rockContext = Service.Context as RockContext;
+            var result = Service
+                .Queryable()
+                .AsNoTracking()
+                .WhereCampus( rockContext, campusId );
+
+            return result;
+        }
+
+        /// <summary>
         /// POST endpoint. Use this to INSERT a new record
         /// </summary>
         /// <param name="value">The value.</param>

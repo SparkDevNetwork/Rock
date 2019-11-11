@@ -1443,9 +1443,18 @@ namespace RockWeb.Blocks.Connection
 
                 lbConnect.Visible = editAllowed;
                 lbEdit.Visible = editAllowed;
-                lbTransfer.Visible = editAllowed;
                 gConnectionRequestActivities.IsDeleteEnabled = editAllowed;
                 gConnectionRequestActivities.Actions.ShowAdd = editAllowed;
+                
+                // Only show transfer if there are other Opportunities
+                if ( connectionOpportunity.ConnectionType.ConnectionOpportunities.Count > 1) 
+                {
+                    lbTransfer.Visible = editAllowed;
+                }
+                else
+                {
+                    lbTransfer.Visible = false;
+                }
 
                 if ( !editAllowed )
                 {
@@ -1542,7 +1551,7 @@ namespace RockWeb.Blocks.Connection
 
                 Dictionary<string, string> queryParms = new Dictionary<string, string>();
                 queryParms.Add( "PersonId", person.Id.ToString() );
-                lbProfilePage.PostBackUrl = LinkedPageUrl( "PersonProfilePage", queryParms );
+                lbProfilePage.NavigateUrl = LinkedPageUrl( "PersonProfilePage", queryParms );
             }
             else
             {

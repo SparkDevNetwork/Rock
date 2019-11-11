@@ -175,8 +175,7 @@ namespace Rock.Blocks.Types.Mobile
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
 
-            // TODO: Change this to Content after next Rock.Mobile update.
-            config.Add( "Xaml", content );
+            config.Add( "Content", content );
             config.Add( "ProcessLava", GetAttributeValue( AttributeKeys.LavaRenderLocation ) != "On Server" );
             config.Add( "CacheDuration", GetAttributeValue( AttributeKeys.CacheDuration ).AsInteger() );
             config.Add( "DynamicContent", GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean() );

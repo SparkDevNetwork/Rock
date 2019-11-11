@@ -88,12 +88,13 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this StreakTypeAchievementType target, StreakTypeAchievementType source )
         {
             target.Id = source.Id;
-            target.AchievementEndWorkflowTypeId = source.AchievementEndWorkflowTypeId;
             target.AchievementEntityTypeId = source.AchievementEntityTypeId;
+            target.AchievementFailureWorkflowTypeId = source.AchievementFailureWorkflowTypeId;
             target.AchievementIconCssClass = source.AchievementIconCssClass;
             target.AchievementStartWorkflowTypeId = source.AchievementStartWorkflowTypeId;
             target.AchievementStepStatusId = source.AchievementStepStatusId;
             target.AchievementStepTypeId = source.AchievementStepTypeId;
+            target.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
             target.AllowOverAchievement = source.AllowOverAchievement;
             target.BadgeLavaTemplate = source.BadgeLavaTemplate;
             target.CategoryId = source.CategoryId;

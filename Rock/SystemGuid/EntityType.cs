@@ -52,6 +52,11 @@ namespace Rock.SystemGuid
         public const string BLOCK = "D89555CA-9AE4-4D62-8AF1-E5E463C1EF65";
 
         /// <summary>
+        /// The campus
+        /// </summary>
+        public const string CAMPUS = "00096BED-9587-415E-8AD4-4E076AE8FBF0";
+
+        /// <summary>
         /// The checkr provider
         /// </summary>
         public const string CHECKR_PROVIDER = "8D9DE88A-C649-47B2-BA5C-92A24F60AE61";

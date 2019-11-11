@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Examples
             string xmlFileUrl = GetAttributeValue( "XMLDocumentURL" );
             if ( xmlFileUrl.StartsWith( "http://storage.rockrms.com/sampledata/" ) )
             {
-                Rock.Web.SystemSettings.SetValue( SystemSettingKeys.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );
             }
         }
 

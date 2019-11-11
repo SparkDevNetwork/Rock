@@ -111,6 +111,7 @@
       <DependentUpon>test.runsettings</DependentUpon>
     </Compile>
     <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="TestData\TestDataHelper.cs" />
     <Compile Include="Utility\ArrayExtensions.cs" />
   </ItemGroup>
   <ItemGroup>

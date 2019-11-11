@@ -52,7 +52,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Checks if bits are set in the byte map that is weekly occurrences
         /// </summary>
-        [Fact]
+        [Fact( Skip = "Requires a db" )]
         public void IsBitSetIsCorrectForWeeklyMap()
         {
             // Week Offset            3210 9876     5432 1098     7654 3210
@@ -175,7 +175,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Setting bits works correctly for weekly maps
         /// </summary>
-        [Fact]
+        [Fact ( Skip = "requires a db" )]
         public void SetBitWorksForWeeklyMap()
         {
             const byte lsb = 0b_0000_0001; // Least significant bit
@@ -307,7 +307,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Resetting bits works correctly for weekly maps
         /// </summary>
-        [Fact]
+        [Fact(Skip = "requires a db") ]
         public void ResetBitWorksForWeeklyMap()
         {
             // Offset             7654 3210
@@ -475,7 +475,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Calculating the difference in weekly dates inclusively works correctly
         /// </summary>
-        [Fact]
+        [Fact ( Skip = "requires a db" )]
         public void GetFrequencyUnitDifferenceInclusiveWeekly()
         {
             var frequency = StreakOccurrenceFrequency.Weekly;
@@ -507,7 +507,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Calculating the difference in daily dates exclusively works correctly
         /// </summary>
-        [Fact]
+        [Fact( Skip = "requires a db" )]
         public void GetFrequencyUnitDifferenceExclusiveWeekly()
         {
             var frequency = StreakOccurrenceFrequency.Weekly;
