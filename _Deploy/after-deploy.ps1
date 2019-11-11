@@ -142,7 +142,7 @@ Start-IISSite "Default Web Site";
 
 Write-Host "Finishing up";
 
-Get-FilesystemLinks $AppOldBackupRootRoot | ForEach-Object { $_.Delete() };
+Get-FilesystemLinks $OldBackupRoot | ForEach-Object { $_.Delete() };
 Remove-Item -Recurse -Force $OldBackupRoot;
 
 Copy-ContentsRecursively -Force $NewBackupRoot $OldBackupRoot;
