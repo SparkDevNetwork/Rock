@@ -139,4 +139,8 @@
         {% endfor %}
     {[ endswiper ]}
 
+{% else %}
+    <div class="alert alert-danger">
+        <p>No parent content channel item id <strong>(cciid)</strong> parameter value was provided.</p>
+    </div>
 {% endif %}
