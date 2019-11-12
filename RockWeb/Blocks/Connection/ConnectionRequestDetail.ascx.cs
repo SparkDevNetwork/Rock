@@ -81,13 +81,13 @@ namespace RockWeb.Blocks.Connection
         "Lava Heading Template",
         Key = AttributeKeys.LavaHeadingTemplate,
         EditorMode = CodeEditorMode.Lava,
-        Description = "The HTML Content to render above the person’s name. <span class='tip tip-lava'></span>",
+        Description = "The HTML Content to render above the person’s name. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         Order = 6 )]
     [CodeEditorField(
         "Lava Badge Bar",
         Key = AttributeKeys.LavaBadgeBar,
         EditorMode = CodeEditorMode.Lava,
-        Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. <span class='tip tip-lava'></span>",
+        Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         Order = 7 )]
     #endregion Block Attributes
     public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
@@ -157,6 +157,8 @@ namespace RockWeb.Blocks.Connection
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            this.BlockUpdated += Block_BlockUpdated;
 
             gConnectionRequestActivities.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestActivities.Actions.ShowAdd = true;
@@ -307,6 +309,16 @@ namespace RockWeb.Blocks.Connection
         #region Events
 
         #region View/Edit Panel Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
+        }
 
         /// <summary>
         /// Handles the Click event of the lbEdit control.
@@ -1729,8 +1741,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 lHeading.Text = GetAttributeValue( AttributeKeys.LavaHeadingTemplate ).ResolveMergeFields( mergeFields );
-                lBadgeBar.Text = GetAttributeValue( AttributeKeys.LavaHeadingTemplate ).ResolveMergeFields( mergeFields );
-
+                lBadgeBar.Text = GetAttributeValue( AttributeKeys.LavaBadgeBar ).ResolveMergeFields( mergeFields );
 
                 avcAttributesReadOnly.AddDisplayControls( connectionRequest, Rock.Security.Authorization.VIEW, this.CurrentPerson );
 
