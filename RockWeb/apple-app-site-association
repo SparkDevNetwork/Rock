@@ -12,7 +12,7 @@
           "/sermons/*",
           "/sermons/*/*",
           "/news/*",
-          "/staffcontent/*"
+          "/staff/news/*"
         ]
       },
       {
@@ -25,7 +25,7 @@
           "/sermons/*",
           "/sermons/*/*",
           "/news/*",
-          "/staffcontent/*"
+          "/staff/news/*"
         ]
       }
     ]
