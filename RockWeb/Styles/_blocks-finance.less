@@ -119,9 +119,6 @@
     display: flex;
     -ms-flex-direction: column;
     flex-direction: column;
-    min-height: 610px;
-    max-height: ~"calc(100vh - 210px)";
-    overflow-y: auto;
 
     .header {
       -ms-flex: 1 1 auto;
@@ -141,6 +138,7 @@
   &.is-fullscreen {
     .transaction-matching-details {
       max-height: ~"calc(100vh - 145px)";
+      overflow-y: auto;
     }
 
     .actions {
