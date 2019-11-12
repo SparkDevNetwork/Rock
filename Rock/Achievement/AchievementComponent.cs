@@ -66,7 +66,7 @@ namespace Rock.Achievement
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BadgeComponent" /> class.
+        /// Initializes a new instance of the <see cref="AchievementComponent" /> class.
         /// </summary>
         public AchievementComponent() : base( false )
         {
@@ -234,6 +234,7 @@ namespace Rock.Achievement
         /// <summary>
         /// Processes the specified streak type achievement type cache.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="streakTypeAchievementTypeCache">The streak type achievement type cache.</param>
         /// <param name="streak">The streak.</param>
         public virtual void Process( RockContext rockContext, StreakTypeAchievementTypeCache streakTypeAchievementTypeCache, Streak streak )
@@ -336,10 +337,9 @@ namespace Rock.Achievement
         /// Update the open attempt record if there are changes. Be sure to close the attempt if it is no longer possible to make
         /// progress on this open attempt.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
+        /// <param name="openAttempt">The open attempt.</param>
         /// <param name="streakTypeAchievementTypeCache">The streak type achievement type cache.</param>
         /// <param name="streak">The streak.</param>
-        /// <returns></returns>
         protected abstract void UpdateOpenAttempt( StreakAchievementAttempt openAttempt, StreakTypeAchievementTypeCache streakTypeAchievementTypeCache, Streak streak );
 
         /// <summary>
