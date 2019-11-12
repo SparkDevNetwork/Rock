@@ -235,3 +235,63 @@
     </div>
 
 {[ endscripturize ]}
+
+<!-- Structured Data -->
+{% capture tagsData %}{[ tagData guid:'{{ Item.Guid }}' ]}{% endcapture %}
+{% assign tagsData = tagsData | Trim %}
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "publisher": {
+    "@type": "Organization",
+    "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://newspring.cc/GetImage.ashx?id=661329"
+    }
+  },
+  "author": "{% if communicatorNames and communicatorNames != empty and communicatorNames != '' %}{{ communicatorNames | Trim }}{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}",
+  {% if tagsData and tagsData != empty %}
+    "keywords": "{{ tagsData }}",
+  {% endif %}
+  "headline": "{{ Item.Title | Escape }}",
+  {% if summary and summary != empty %}
+    "description": "{{ summary | StripHtml | Escape }}",
+  {% endif %}
+  "articleBody": "{{ Item.Content | StripHtml | Escape }}",
+  {% if subtitle and subtitle != empty %}
+    "alternativeHeadline": "{{ subtitle }}",
+  {% endif %}
+
+  "datePublished": "{{ Item.StartDateTime }}",
+  "dateModified": "{{ Item.ModifiedDateTime }}",
+    {% if Item.ExpireDateTime %}
+    "expires": "{{ Item.ExpireDateTime }}",
+    {% endif %}
+
+  {% if imageUrl and imageUrl != empty %}
+    "image": "{{ imageUrl }}",
+  {% endif %}
+  "mainEntityOfPage": "{{ 'Global' | Page:'Url' }}",
+  "name": "{{ Item.Title | Escape }}"
+}
+</script>
+
+
+<!-- Set Meta Tags -->
+{% assign metaTitle = Item | Attribute:'MetaTitle' %}
+{% assign metaDescription = Item | Attribute:'MetaDescription' %}
+{% assign summary = Item | Attribute:'Summary' | StripHtml | StripNewlines %}
+{% assign content = Item.Content | StripHtml | StripNewlines | Truncate:240,'...' %}
+{% capture video %}{{ Item | Attribute:"Video","RawValue" }}{% endcapture %}
+{% capture article_author %}{[ communicatorNames guid:'{{ Item | Attribute:'Communicators','RawValue' }}' ]}{% endcapture %}
+
+{%- comment -%}If meta title is present, use it, otherwise use this item's title{%- endcomment -%}
+{% capture title %}{% if metaTitle and metaTitle != empty %}{{ metaTitle }}{% else %}{{ Item.Title }}{% endif %}{% endcapture %}
+
+{%- comment -%}If meta description is present, use it, otherwise if this item has a summary, use it, otherwise, use this item's content{%- endcomment -%}
+{% capture description %}{% if metaDescription and metaDescription != empty %}{{ metaDescription }}{% elseif summary and summary != empty %}{{ summary }}{% else %}{{ content }}{% endif %}{% endcapture %}
+
+
+{[ metaTags url:'{{ "Global" | Page:"Url" }}' title:'{{ title | Replace:"'","’" | Replace:"New Spring","NewSpring" }}' description:'{{ description | Replace:"'","’" }}' image:'{{ imageUrl }}' article_published_time:'{{ Item.StartDateTime | Date:'yyyy-MM-dd' }}' video:'{% if video and video != "" %}https://fast.wistia.net/embed/iframe/{{ video }}?videoFoam=true{% endif %}' article_author:'{{ article_author | Trim }}' ]}
