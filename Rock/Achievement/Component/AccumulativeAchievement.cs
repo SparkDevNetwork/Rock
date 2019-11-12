@@ -330,6 +330,8 @@ namespace Rock.Achievement.Component
         /// </summary>
         /// <param name="accumulation">The accumulation.</param>
         /// <param name="targetCount">The target count.</param>
+        /// <param name="isClosed">if set to <c>true</c> [is closed].</param>
+        /// <returns></returns>
         private static StreakAchievementAttempt GetAttempt( ComputedStreak accumulation, int targetCount, bool isClosed )
         {
             var progress = CalculateProgress( accumulation.Count, targetCount );

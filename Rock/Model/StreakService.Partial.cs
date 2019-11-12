@@ -92,8 +92,7 @@ namespace Rock.Model
         /// <summary>
         /// Start an async task to calculate steak data and then copy it to the enrollment model
         /// </summary>
-        /// <param name="streakId"></param>
-        /// <param name="maxDate"></param>
+        /// <param name="streakId">The streak identifier.</param>
         public static void RefreshStreakDenormalizedProperties( int streakId )
         {
             var rockContext = new RockContext();
@@ -152,7 +151,7 @@ namespace Rock.Model
         /// <summary>
         /// Check for achievements that may have been earned
         /// </summary>
-        /// <param name="streak"></param>
+        /// <param name="streakId">The streak identifier.</param>
         private static void ProcessAchievements( int streakId )
         {
             var rockContext = new RockContext();
