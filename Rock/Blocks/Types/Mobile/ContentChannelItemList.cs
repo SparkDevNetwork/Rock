@@ -134,13 +134,6 @@ namespace Rock.Blocks.Types.Mobile
         DefaultValue = defaultDataTemplate,
         Category = "custommobile")]
 
-    [IntegerField( "Cache Duration",
-        Description = "The number of seconds the data should be cached on the client before it is requested from the server again. A value of 0 means always reload.",
-        IsRequired = false,
-        DefaultIntegerValue = 86400,
-        Category = "custommobile",
-        Order = 1 )]
-
     #endregion
 
     public class ContentChannelItemList : RockMobileBlockType
@@ -189,11 +182,6 @@ namespace Rock.Blocks.Types.Mobile
             /// The order key
             /// </summary>
             public const string Order = "Order";
-
-            /// <summary>
-            /// The cache duration key
-            /// </summary>
-            public const string CacheDuration = "CacheDuration";
 
             /// <summary>
             /// The detail page key
