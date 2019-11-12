@@ -814,7 +814,7 @@ namespace RockWeb.Blocks.Crm
                     int processedCount = 0;
                     var workers = new List<Task>();
                     DateTime lastNotified = RockDateTime.Now;
-
+                    decimal lastCompletionPercentage = 0;
                     //
                     // Validate task count.
                     //
@@ -832,7 +832,7 @@ namespace RockWeb.Blocks.Crm
                     // Wait for the browser to finish loading.
                     //
                     Task.Delay( 1000 ).Wait();
-                    HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( "0", "0" );
+                    HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( "0", totalCount.ToString( "n0" ) );
 
                     if ( individuals.Any() )
                     {
@@ -851,18 +851,23 @@ namespace RockWeb.Blocks.Crm
                         while ( workers.Any( t => !t.IsCompleted ) )
                         {
                             var timeDiff = RockDateTime.Now - lastNotified;
-                            if ( timeDiff.TotalSeconds >= 2.5 )
-                            {
-                                lock ( individuals )
-                                {
-                                    processedCount = totalCount - individuals.Count;
-                                }
 
+                            lock ( individuals )
+                            {
+                                processedCount = totalCount - individuals.Count;
+                            }
+
+                            var currentCompletionPercentage = decimal.Divide( processedCount, totalCount ) * 100;
+
+                            // Send a progress notification if significant elapsed time or work completed.
+                            if ( timeDiff.TotalSeconds >= 2.5 || currentCompletionPercentage - lastCompletionPercentage > 10 )
+                            {
                                 HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress(
                                     processedCount.ToString( "n0" ),
                                     totalCount.ToString( "n0" ) );
 
                                 lastNotified = RockDateTime.Now;
+                                lastCompletionPercentage = currentCompletionPercentage;
                             }
 
                             Task.Delay( 250 ).Wait();
@@ -872,6 +877,8 @@ namespace RockWeb.Blocks.Crm
                     //
                     // Give any jQuery transitions a moment to settle.
                     //
+                    HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( totalCount.ToString( "n0" ), totalCount.ToString( "n0" ) );
+
                     Task.Delay( 600 ).Wait();
 
                     if ( workers.Any( w => w.IsFaulted ) )

@@ -49,7 +49,9 @@ namespace Rock
             var now = RockDateTime.Today;
             int age = now.Year - start.Year;
             if ( start > now.AddYears( -age ) )
+            {
                 age--;
+            }
 
             return age;
         }
@@ -392,7 +394,7 @@ namespace Rock
         /// <param name="startOfWeek">The start of week.</param>
         /// <returns></returns>
         [Obsolete( "Use GetSundayDate without the firstDayOfWeek parameter" )]
-        [RockObsolete( "1.10" )]
+        [RockObsolete("1.10")]
         public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
         {
             return RockDateTime.GetSundayDate( dt );

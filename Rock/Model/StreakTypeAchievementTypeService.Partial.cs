@@ -158,6 +158,8 @@ namespace Rock.Model
         /// Gets or sets the attributes.
         /// </summary>
         /// <value>
+        /// The attributes.
+        /// </value>
         public Dictionary<string, string> Attributes { get; set; }
     }
 }

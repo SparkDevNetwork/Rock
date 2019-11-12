@@ -129,15 +129,22 @@
     }
 
     .body {
-      overflow-x: hidden;
-      overflow-y: auto;
       -ms-flex: 1 1 auto;
       flex: 1 1 auto;
-      min-height: 303px;
     }
 
     .picker .picker-menu {
       margin-top: -149px;
+    }
+  }
+
+  &.is-fullscreen {
+    .transaction-matching-details {
+      max-height: ~"calc(100vh - 145px)";
+    }
+
+    .actions {
+      margin-top: 15px;
     }
   }
 }

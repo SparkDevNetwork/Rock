@@ -225,10 +225,12 @@ namespace Rock.Web
 
             using ( var rockContext = new RockContext() )
             {
-                var systemSettingAttributes = new AttributeService( rockContext )
-                    .GetSystemSettings().ToAttributeCacheList();
-
+                var systemSettingAttributes = new AttributeService( rockContext ).GetSystemSettings().ToAttributeCacheList();
                 var keyValueLookup = systemSettingAttributes.ToDictionary( k => k.Key, v => v.DefaultValue );
+
+                // RockInstanceId is not the default value but the Guid. So we'll do that one seperately.
+                keyValueLookup.AddOrReplace( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, systemSettingAttributes.Where( s => s.Key == Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID ).Select( s => s.Guid ).FirstOrDefault().ToString() );
+
                 systemSettings.SystemSettingsValues = new ConcurrentDictionary<string, string>( keyValueLookup, StringComparer.OrdinalIgnoreCase );
             }
 
