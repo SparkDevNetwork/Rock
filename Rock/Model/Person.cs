@@ -3329,9 +3329,9 @@ namespace Rock.Model
                         // Get all available mailing locations, prioritizing mapped locations then home locations
                         var mailingLocations = groups.SelectMany( x => x.GroupLocations )
                             .Where( l => l.IsMailingLocation )
-                            .Where( l => l.GroupLocationTypeValueId == homeAddressDv.Id || l.GroupLocationTypeValueId == workAddressDv.Id )
                             .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
-                            .ThenBy( l => l.GroupLocationTypeValueId == homeAddressDv.Id ? 0 : 1 );
+                            .ThenBy( l => l.GroupLocationTypeValueId == homeAddressDv.Id ? 0 : 1 )
+                            .ThenBy( l => l.GroupLocationTypeValueId == workAddressDv.Id ? 0 : 1 );
 
                         return mailingLocations.Select( l => l.Location ).FirstOrDefault();
                     }

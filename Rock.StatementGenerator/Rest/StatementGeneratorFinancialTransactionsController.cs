@@ -236,13 +236,17 @@ namespace Rock.StatementGenerator.Rest
             if ( groupLocationTypeIds.Count == 2 )
             {
                 groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
-                    .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue )
-                    .Where( a => a.GroupLocationTypeValueId == groupLocationTypeIdHome.Value || a.GroupLocationTypeValueId == groupLocationTypeIdWork.Value );
+                    .Where( l => l.IsMailingLocation )
+                    .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
+                    .ThenBy( l => l.GroupLocationTypeValueId == groupLocationTypeIdHome ? 0 : 1 )
+                    .ThenBy( l => l.GroupLocationTypeValueId == groupLocationTypeIdWork ? 0 : 1 );
             }
             else
             {
                 groupLocationsQry = new GroupLocationService( rockContext ).Queryable()
-                    .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue && groupLocationTypeIds.Contains( a.GroupLocationTypeValueId.Value ) );
+                    .Where( a => a.IsMailingLocation && a.GroupLocationTypeValueId.HasValue )
+                    .OrderBy( l => l.IsMappedLocation ? 0 : 1 )
+                    .ThenBy( a => groupLocationTypeIds.Contains( a.GroupLocationTypeValueId.Value ) ? 0 : 1 );
             }
             return groupLocationsQry;
         }
