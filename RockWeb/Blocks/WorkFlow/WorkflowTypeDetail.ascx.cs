@@ -2069,7 +2069,9 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
         private void SaveAttributeToAttributeState()
         {
+#pragma warning disable 0618 // Type or member is obsolete
             var attribute = SaveChangesToStateCollection( edtAttributes, AttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
@@ -2134,7 +2136,9 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             {
                 var attributesState = ActivityAttributesState[activityTypeGuid];
 
+#pragma warning disable 0618 // Type or member is obsolete
                 var attribute = SaveChangesToStateCollection( edtActivityAttributes, attributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
                 // Controls will show warnings
                 if ( !attribute.IsValid )

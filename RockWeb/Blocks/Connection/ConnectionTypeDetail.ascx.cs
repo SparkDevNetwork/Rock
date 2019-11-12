@@ -636,7 +636,9 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgConnectionTypeAttribute_SaveClick( object sender, EventArgs e )
         {
+#pragma warning disable 0618 // Type or member is obsolete
             var attribute = SaveChangesToStateCollection( edtAttributes, AttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )

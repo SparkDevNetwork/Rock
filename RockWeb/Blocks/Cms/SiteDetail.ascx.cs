@@ -244,7 +244,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgPageAttribute_SaveClick( object sender, EventArgs e )
         {
+#pragma warning disable 0618 // Type or member is obsolete
             var attribute = SaveChangesToStateCollection( edtPageAttributes, PageAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
