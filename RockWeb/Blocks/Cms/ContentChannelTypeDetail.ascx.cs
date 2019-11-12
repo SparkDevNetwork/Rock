@@ -396,7 +396,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgChannelAttributes_SaveClick( object sender, EventArgs e )
         {
+#pragma warning disable 0618 // Type or member is obsolete
             var attribute = SaveChangesToStateCollection( edtChannelAttributes, ChannelAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
@@ -540,7 +542,9 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgItemAttributes_SaveClick( object sender, EventArgs e )
         {
+#pragma warning disable 0618 // Type or member is obsolete
             var attribute = SaveChangesToStateCollection( edtItemAttributes, ItemAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )

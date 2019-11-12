@@ -3081,7 +3081,9 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrationAttribute_SaveClick( object sender, EventArgs e )
         {
+#pragma warning disable 0618 // Type or member is obsolete
             var attribute = SaveChangesToStateCollection( edtRegistrationAttributes, RegistrationAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
