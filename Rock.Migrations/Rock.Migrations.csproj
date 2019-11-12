@@ -61,6 +61,14 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\201911122101551_PergeMerge.cs" />
+    <Compile Include="Migrations\201911122101551_PergeMerge.Designer.cs">
+      <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201911122229455_Rollup_1112.cs" />
+    <Compile Include="Migrations\201911122229455_Rollup_1112.Designer.cs">
+      <DependentUpon>201911122229455_Rollup_1112.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -899,6 +907,12 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\201911122101551_PergeMerge.resx">
+      <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201911122229455_Rollup_1112.resx">
+      <DependentUpon>201911122229455_Rollup_1112.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
     </EmbeddedResource>
@@ -1539,6 +1553,9 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
+      <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.1\201910241702033_ufnCrm_GetFamilyTitle.sql">
       <DependentUpon>201910241702033_FixGetFamilyTitleSpaces.cs</DependentUpon>
