@@ -467,6 +467,21 @@ mission. We are so grateful for your commitment.</p>
                 return;
             }
 
+            if ( this.FinancialGateway == null )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Configuration", "Unable to determine the financial gateway for this scheduled transaction." );
+                pnlPromptForChanges.Visible = false;
+                return;
+            }
+
+            if ( this.FinancialGatewayComponent == null || !( this.FinancialGatewayComponent is IHostedGatewayComponent ) )
+            {
+                ShowConfigurationMessage( NotificationBoxType.Danger, "Configuration", "This page is not configured to allow edits for the payment gateway associated with the selected transaction." );
+                pnlPromptForChanges.Visible = false;
+                return;
+            }
+
+
             caapPromptForAccountAmounts.AccountAmounts = accountAmounts;
 
             var targetPerson = scheduledTransaction.AuthorizedPersonAlias.Person;
@@ -609,7 +624,7 @@ mission. We are so grateful for your commitment.</p>
                 ddlPersonSavedAccount.Items.Add( new ListItem( displayName, personSavedAccount.Id.ToString() ) );
             }
 
-            if ( personSavedAccountList.Any())
+            if ( personSavedAccountList.Any() )
             {
                 pnlSelectSavedAccount.Visible = true;
                 hfAddPaymentInfoVisible.Value = "0";
