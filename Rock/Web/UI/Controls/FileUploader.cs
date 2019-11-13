@@ -472,6 +472,24 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        public string UploadButtonText
+        {
+            get
+            {
+                string text = ( string ) ViewState["UploadButtonText"];
+                if ( text.IsNullOrWhiteSpace())
+                {
+                    text = this.DisplayMode == UploaderDisplayMode.Button ? "Upload File" : "Upload";
+                }
+
+                return text;
+            }
+            set
+            {
+                ViewState["UploadButtonText"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [show delete button].
         /// Defaults to true
@@ -746,14 +764,15 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                if ( this.DisplayMode == UploaderDisplayMode.Button )
-                {
-                    writer.Write( "Upload File" );
-                }
-                else
-                {
-                    writer.Write( "Upload" );
-                }
+                //if ( this.DisplayMode == UploaderDisplayMode.Button )
+                //{
+                //    writer.Write( "Upload File" );
+                //}
+                //else
+                //{
+                //    writer.Write( "Upload" );
+                //}
+                writer.Write( this.UploadButtonText );
 
                 writer.RenderEndTag();
                 _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
