@@ -172,11 +172,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 return RequiredFieldValidator.ValidationGroup;
             }
             set
             {
+                EnsureChildControls();
                 RequiredFieldValidator.ValidationGroup = value;
+                this.RegularExpressionValidator.ValidationGroup = value;
             }
         }
 
@@ -190,7 +193,23 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                if ( !Required && string.IsNullOrEmpty( hfSSN.Value ) )
+                {
+                    // Value is not required and not provided.  No need to do anything else.
+                    return true;
+                }
+
+                // Ensure that child controls have been built.
+                EnsureChildControls();
+
+                if ( Required )
+                {
+                    return this.RequiredFieldValidator.IsValid && this.RegularExpressionValidator.IsValid;
+                }
+                else
+                {
+                    return this.RegularExpressionValidator.IsValid;
+                }
             }
         }
 
@@ -224,6 +243,14 @@ namespace Rock.Web.UI.Controls
         private TextBox ssnArea;
         private TextBox ssnGroup;
         private TextBox ssnSerial;
+
+        /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        protected RegularExpressionValidator RegularExpressionValidator { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -263,8 +290,10 @@ namespace Rock.Web.UI.Controls
         var ssnArea = $ctrlGroup.find('.ssn-area:first').val();
         var ssnGroup = $ctrlGroup.find('.ssn-group:first').val();
         var ssnSerial = $ctrlGroup.find('.ssn-serial:first').val();
+        var ssnFull = ssnArea + '-' + ssnGroup + '-' + ssnSerial;
+
         var $ssn = $ctrlGroup.find('.js-ssn:first')
-        $ssn.val( ( ssnArea.length == 3 ? ssnArea + '-' : '' ) + ( ssnGroup.length == 2 ? ssnGroup + '-' : '' ) + ssnSerial );
+        $ssn.val( ssnFull == '--' ? '' : ssnFull );
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ssn-box", script, true );
@@ -341,6 +370,7 @@ namespace Rock.Web.UI.Controls
         public SSNBox()
             : base()
         {
+            this.RegularExpressionValidator = new RegularExpressionValidator();
             RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
@@ -359,6 +389,16 @@ namespace Rock.Web.UI.Controls
             hfSSN = new HiddenFieldWithClass();
             hfSSN.ID = string.Format( "hfSSN_{0}", this.ID );
             hfSSN.CssClass = "js-ssn";
+
+            this.RegularExpressionValidator.ID = ID + "_rev";
+            this.RegularExpressionValidator.CssClass = "validation-error help-inline";
+            this.RegularExpressionValidator.ValidationExpression = @"\d{3}-\d{2}-\d{4}";
+            this.RegularExpressionValidator.ControlToValidate = hfSSN.ID;
+            this.RegularExpressionValidator.ErrorMessage = ( this.Label != string.Empty ? this.Label : "SSN" ) + " is invalid.";
+            this.RegularExpressionValidator.Enabled = true;
+            this.RegularExpressionValidator.Display = ValidatorDisplay.Dynamic;
+            this.RegularExpressionValidator.ValidationGroup = ValidationGroup;
+            Controls.Add( this.RegularExpressionValidator );
 
             this.RequiredFieldValidator.InitialValue = string.Empty;
             this.RequiredFieldValidator.ControlToValidate = hfSSN.ID;
@@ -420,6 +460,8 @@ namespace Rock.Web.UI.Controls
             ssnSerial.RenderControl( writer );
 
             writer.RenderEndTag();
+
+            this.RegularExpressionValidator.RenderControl( writer );
         }
 
     }
