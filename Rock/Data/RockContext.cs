@@ -1558,6 +1558,14 @@ namespace Rock.Data
         public DbSet<RegistrationTemplateFormField> RegistrationTemplateFormFields { get; set; }
 
         /// <summary>
+        /// Gets or sets the related entities.
+        /// </summary>
+        /// <value>
+        /// The related entities.
+        /// </value>
+        public DbSet<RelatedEntity> RelatedEntities { get; set; }
+
+        /// <summary>
         /// Gets or sets the reports.
         /// </summary>
         /// <value>

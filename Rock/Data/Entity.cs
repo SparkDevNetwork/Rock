@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Data
@@ -524,6 +525,59 @@ namespace Rock.Data
                 }
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+        }
+
+        /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.Entity"/> entities that have a matching purpose key.
+        /// </summary>
+        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.RelatedEntity"/> entities that matches the purpose key.
+        /// </returns>
+        public IEnumerable<RelatedEntity> GetRelatedEntities( string purposeKey = "" )
+        {
+            var rockContext = new RockContext();
+            return new RelatedEntityService( rockContext ).GetByPurposeKey( purposeKey ).ToList();
+        }
+
+        /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.entit"/> source entities that have a matching purpose key.
+        /// </summary>
+        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.RelatedEntity"/> source entities that matches the purpose key.
+        /// </returns>
+        public IEnumerable<RelatedEntity> GetRelatedToSourceEntity( string purposeKey = "" )
+        {
+            var rockContext = new RockContext();
+            var query = new RelatedEntityService( rockContext ).GetByPurposeKey( purposeKey );
+            var entityTypeId = this.TypeId;
+
+            return query
+            .Where( p =>
+                p.SourceEntityTypeId == entityTypeId &&
+                p.SourceEntityId == this.Id )
+            .ToList();
+        }
+
+        /// <summary>
+        /// Gets an enumerable collection of <see cref="Rock.Model.RelatedEntity"/> target entities that have a matching purpose key.
+        /// </summary>
+        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.RelatedEntity"/> targettarget entities that matches the purpose key.
+        /// </returns>
+        public IEnumerable<RelatedEntity> GetRelatedToTargetEntity( string purposeKey = "" )
+        {
+            var rockContext = new RockContext();
+            var query = new RelatedEntityService( rockContext ).GetByPurposeKey( purposeKey );
+            var entityTypeId = this.TypeId;
+
+            return query
+            .Where( p =>
+                p.TargetEntityTypeId == entityTypeId &&
+                p.TargetEntityId == this.Id )
+            .ToList();
         }
 
         #endregion
