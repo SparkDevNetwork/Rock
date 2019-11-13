@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -56,13 +56,11 @@ namespace Rock.Migrations
                 .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
                 .ForeignKey("dbo.EntityType", t => t.SourceEntityTypeId)
                 .ForeignKey("dbo.EntityType", t => t.TargetEntityTypeId)
-                .Index(t => t.SourceEntityTypeId)
-                .Index(t => t.TargetEntityTypeId)
+                .Index(t => new { t.SourceEntityTypeId, t.SourceEntityId, t.TargetEntityTypeId, t.TargetEntityId, t.PurposeKey }, unique: true, name: "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey")
                 .Index(t => t.CreatedByPersonAliasId)
                 .Index(t => t.ModifiedByPersonAliasId)
                 .Index(t => t.Guid, unique: true);
-
-            CreateIndex( "dbo.RelatedEntity", new[] { "SourceEntityTypeId", "SourceEntityId", "TargetEntityTypeId", "TargetEntityId", "PurposeKey" }, true, name: "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey" );
+            
         }
         
         /// <summary>
@@ -70,7 +68,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropIndex( "dbo.RelatedEntity", "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey" );
             DropForeignKey("dbo.RelatedEntity", "TargetEntityTypeId", "dbo.EntityType");
             DropForeignKey("dbo.RelatedEntity", "SourceEntityTypeId", "dbo.EntityType");
             DropForeignKey("dbo.RelatedEntity", "ModifiedByPersonAliasId", "dbo.PersonAlias");
@@ -78,9 +75,7 @@ namespace Rock.Migrations
             DropIndex("dbo.RelatedEntity", new[] { "Guid" });
             DropIndex("dbo.RelatedEntity", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.RelatedEntity", new[] { "CreatedByPersonAliasId" });
-            DropIndex("dbo.RelatedEntity", "IDX_SearchTypeValueIdSearchValue");
-            DropIndex("dbo.RelatedEntity", new[] { "TargetEntityTypeId" });
-            DropIndex("dbo.RelatedEntity", new[] { "SourceEntityTypeId" });
+            DropIndex("dbo.RelatedEntity", "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey");
             DropTable("dbo.RelatedEntity");
         }
     }
