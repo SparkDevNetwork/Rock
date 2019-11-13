@@ -3372,7 +3372,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupMemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                // get the non-editable stuff from the GroupTypeAttributesState and put it back into the object...
+                // get the non-editable stuff from the state and put it back into the object...
                 var attributeState = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
                 if ( attributeState != null )
                 {
@@ -3403,7 +3403,8 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindGroupMemberAttributesInheritedGrid()
         {
-            if ( CurrentGroupTypeCache != null )
+            // Don't make the Group Member Attributes PanelWidget visible if it's already hidden (due to permissions)
+            if ( CurrentGroupTypeCache != null && wpGroupMemberAttributes.Visible )
             {
                 wpGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || GroupMemberAttributesState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;
                 rcwGroupMemberAttributes.Visible = GroupMemberAttributesInheritedState.Any() || GroupMemberAttributesState.Any() || CurrentGroupTypeCache.AllowSpecificGroupMemberAttributes;

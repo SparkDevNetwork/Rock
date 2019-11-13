@@ -57,7 +57,7 @@
                         </div>
 
                         <div class="col-md-2 text-right">
-                            <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
+                            <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:HyperLink>
                         </div>
                     </div>
 

@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Reporting
     {% endif %}
     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}
         <div class='col-md-6'>
-            <dl><dt>Name</dt><dd>{{ InteractionChannel.ChannelTypeMediumValue.Value }}<dd/></dl>
+            <dl><dt>Medium</dt><dd>{{ InteractionChannel.ChannelTypeMediumValue.Value }}<dd/></dl>
         </div>
     {% endif %}
     {% if InteractionChannel.EngagementStrength != null and InteractionChannel.EngagementStrength != '' %}

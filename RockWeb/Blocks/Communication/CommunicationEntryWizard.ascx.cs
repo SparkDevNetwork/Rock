@@ -118,6 +118,13 @@ namespace RockWeb.Blocks.Communication
         Description = "Set this to true to show an option to prevent communications from being sent to people with the same email/SMS addresses. Typically, in Rock you’d want to send two emails as each will be personalized to the individual.",
         DefaultBooleanValue = false,
         Order = 11 )]
+
+    [BooleanField( "Default As Bulk",
+        Key = AttributeKey.DefaultAsBulk,
+        Description = "Should new entries be flagged as bulk communication by default?",
+        DefaultBooleanValue = false,
+        Order = 12 )]
+
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Attribute Keys
@@ -138,6 +145,7 @@ namespace RockWeb.Blocks.Communication
             public const string AllowedSMSNumbers = "AllowedSMSNumbers";
             public const string SimpleCommunicationPage = "SimpleCommunicationPage";
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
+            public const string DefaultAsBulk = "DefaultAsBulk";
         }
 
         #endregion Attribute Keys
@@ -331,6 +339,7 @@ namespace RockWeb.Blocks.Communication
                 communication.SenderPersonAlias = this.CurrentPersonAlias;
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
+                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
             }
             else
             {

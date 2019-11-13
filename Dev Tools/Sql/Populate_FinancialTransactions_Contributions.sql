@@ -139,6 +139,7 @@ while @transactionCounter < @maxTransactionCount
                    ([AuthorizedPersonAliasId]
                    ,[BatchId]
                    ,[TransactionDateTime]
+                   ,[SundayDate]
                    ,[TransactionCode]
                    ,[Summary]
                    ,[TransactionTypeValueId]
@@ -152,6 +153,7 @@ while @transactionCounter < @maxTransactionCount
                    (@authorizedPersonAliasId
                    ,@batchId
                    ,@transactionDateTime
+                   ,dbo.ufnUtility_GetSundayDate(@transactionDateTime)
                    ,null
                    ,@transactionNote
                    ,@transactionTypeValueId

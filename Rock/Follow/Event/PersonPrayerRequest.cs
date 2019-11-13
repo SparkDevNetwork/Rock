@@ -62,6 +62,8 @@ namespace Rock.Follow.Event
             {
                 int daysBack = GetAttributeValue( followingEvent, "MaxDaysBack" ).AsInteger();
                 var processDate = RockDateTime.Today;
+
+                // This is DayOfWeek.Monday vs RockDateTime.FirstDayOfWeek because it including stuff that happened on the weekend (Saturday and Sunday) when it the first Non-Weekend Day (Monday)
                 if ( !followingEvent.SendOnWeekends && processDate.DayOfWeek == DayOfWeek.Monday ) 
                 {
                     daysBack += 2;
