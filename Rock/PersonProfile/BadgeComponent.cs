@@ -87,7 +87,9 @@ namespace Rock.PersonProfile
             get { return _parentPersonBlock; }
             set { _parentPersonBlock = value; }
         }
-        private PersonBlock _parentPersonBlock;
+
+        [ThreadStatic]
+        private static PersonBlock _parentPersonBlock;
 
         /// <summary>
         /// Gets or sets the person.
@@ -97,10 +99,12 @@ namespace Rock.PersonProfile
         /// </value>
         public virtual Person Person
         {
-            get { return _person; }
-            set { _person = value; }
+            get => _person;
+            set =>  _person = value;
         }
-        private Person _person;
+
+        [ThreadStatic]
+        private static Person _person;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BadgeComponent" /> class.
@@ -142,7 +146,7 @@ namespace Rock.PersonProfile
         {
             return badge.GetAttributeValue( key );
         }
-        
+
         /// <summary>
         /// Renders the specified writer.
         /// </summary>
