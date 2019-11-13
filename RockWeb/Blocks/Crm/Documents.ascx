@@ -61,7 +61,7 @@
                     <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine"></Rock:RockTextBox>
                 </div>
                 <div class="col-md-6">
-                    <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg"></Rock:FileUploader>
+                    <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg" UploadButtonText="Drop Files Here or Click to Select File"></Rock:FileUploader>
                 </div>
             </div>
             <div class="actions">
