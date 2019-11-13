@@ -26,7 +26,7 @@
                     <h3 class="h2 push-half-bottom">{{ leader.FullName }}</h2>
                     <h4 class="h5 text-gray-light push-half-bottom">{{ leader | Attribute:'StaffTitle' }}</h4>
                     <p>{{ leader | Attribute:'StaffBio' }}</p>
-                    <p><a href="#" class="btn btn-primary">Contact {{ leader.NickName }}</a></p>
+                    <p><a href="mailto:{{ leader | Attribute:'StaffEmail' }}" class="btn btn-primary">Contact {{ leader.NickName }}</a></p>
                 </div>
             </div>
         </div>
