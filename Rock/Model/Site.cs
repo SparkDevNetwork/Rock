@@ -509,7 +509,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme" )]
+        [Obsolete( "Moved to Theme", true )]
         public IconCssWeight IconCssWeight { get; set; }
 
         #endregion
@@ -954,7 +954,7 @@ namespace Rock.Model
     /// Font Awesome Icon CSS Weight
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Moved to Theme" )]
+    [Obsolete( "Moved to Theme", true )]
     public enum IconCssWeight
     {
 

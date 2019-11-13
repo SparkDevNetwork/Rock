@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        
+
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server" >
 
         <asp:HiddenField ID="hfShortLinkId" runat="server" />
@@ -20,7 +20,7 @@
 
                 <div class="row">
                     <div class="col-sm-6">
-                        <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Required="true" 
+                        <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" Required="true"
                             RequiredErrorMessage="Site is Required" Help="The site to use for the short link." />
                         <asp:HiddenField ID="hfSiteUrl" runat="server" />
                     </div>
@@ -67,9 +67,9 @@
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link btn-sm" CausesValidation="false" OnClick="btnDelete_Click"/>
                         <button id="btnCopy" runat="server"
                             data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy to Clipboard"
-                            class="btn btn-default js-copy-clipboard pull-right" 
+                            class="btn btn-sm btn-square btn-default js-copy-clipboard pull-right"
                             onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
-                            <i class='fa fa-clone'></i>
+                            <i class='fa fa-clipboard'></i>
                         </button>
                     </div>
 

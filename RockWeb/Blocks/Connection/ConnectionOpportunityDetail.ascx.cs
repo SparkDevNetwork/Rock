@@ -148,10 +148,10 @@ namespace RockWeb.Blocks.Connection
             _connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
 
             string script = string.Format( @"
-    $('a.js-toggle-on').click(function( e ){{
+    $('a.js-toggle-on').on('click', function( e ){{
         $('#{0}').show();
     }});
-    $('a.js-toggle-off').click(function( e ){{
+    $('a.js-toggle-off').on('click', function( e ){{
         $('#{0}').hide();
     }});
 ", divUseGroupsOfTypeNote.ClientID );

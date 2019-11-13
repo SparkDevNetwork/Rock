@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.CheckIn
             }}
         }}
 
-        $('a.btn-checkin-select').click( function() {{
+        $('a.btn-checkin-select').on('click', function() {{
             //$(this).toggleClass('btn-dimmed');
             $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
         }});
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                NavigateToHomePage(); 
+                NavigateToHomePage();
             }
             else
             {

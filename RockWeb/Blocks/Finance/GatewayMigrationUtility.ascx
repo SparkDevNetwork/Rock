@@ -8,19 +8,24 @@
         proxy.client.showProgress = function (name, message, results) {
             if (name == '<%=this.SignalRNotificationKey %>') {
 
-                $('.js-migrate-log').show();
-                $('.js-migrate-log').html('<p>'+ message + '</p>' + results);
+                var $notificationBox = $('.js-migrate-scheduled-notification');
+
+                $notificationBox.show();
+
+                $('.js-notification-text', $notificationBox).html(message);
+                $('.js-notification-details', $notificationBox).html('<pre>'+ results + '</pre>');
             }
         }
 
-        proxy.client.setButtonVisibilty = function (name, visible) {
+        proxy.client.setMigrateScheduledTransactionsButtonVisibility = function (name, visible) {
             if (name == '<%=this.SignalRNotificationKey %>') {
-
                 if (visible) {
-                    $('.js-import-button').show();
+                    $('.js-migrate-scheduled-transactions-button').show();
+                    $('.js-migrate-scheduled-download-button').show();
                 }
                 else {
-                    $('.js-import-button').hide();
+                    $('.js-migrate-scheduled-transactions-button').hide();
+                    $('.js-migrate-scheduled-download-button').hide();
                 }
             }
         }
@@ -32,6 +37,10 @@
 </script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
+    <Triggers>
+        <asp:PostBackTrigger ControlID="btnDownloadSavedAccountsResultsJSON" />
+        <asp:PostBackTrigger ControlID="btnDownloadScheduledTransactionsResultsJSON" />
+    </Triggers>
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
@@ -66,8 +75,19 @@
 
                         <hr />
 
-                        <Rock:RockDropDownList ID="ddlNMIGateway" Label="NMI Gateway" runat="server" />
+                        <Rock:RockDropDownList ID="ddlNMIGateway" Label="NMI Gateway" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlNMIGateway_SelectedIndexChanged" />
                         <Rock:RockDropDownList ID="ddlMyWellGateway" Label="My Well Gateway" runat="server" />
+
+                        <Rock:RockControlWrapper ID="rcbNMIPersonFiles" runat="server" Label="Profiles" Help="Select the Profiles to migrate, or leave all un-select to migrate all">
+                            <Rock:Grid ID="gNMIPersonProfiles" runat="server" OnRowDataBound="gNMIPersonProfiles_RowDataBound" DataKeyNames="Id" AllowSorting="true" Label="People with NMI Profiles">
+                                <Columns>
+                                    <Rock:SelectField />
+                                    <Rock:RockLiteralField ID="lPerson" SortExpression="Person.LastName,Person.FirstName" HeaderText="Person" />
+                                    <Rock:RockLiteralField ID="lPersonSavedAccounts" HeaderText="Saved Accounts" />
+                                    <Rock:RockLiteralField ID="lPersonScheduledTransactions" HeaderText="Scheduled Transactions" />
+                                </Columns>
+                            </Rock:Grid>
+                        </Rock:RockControlWrapper>
 
                         <hr />
 
@@ -83,7 +103,13 @@
                         <div class="actions margin-b-md">
                             <asp:LinkButton ID="btnMigrateSavedAccounts" runat="server" CssClass="btn btn-primary" OnClick="btnMigrateSavedAccounts_Click" Enabled="false">Migrate Saved Accounts</asp:LinkButton>
                         </div>
-                        <Rock:NotificationBox ID="nbMigrateSavedAccounts" runat="server" NotificationBoxType="Success" Dismissable="true" />
+
+                        <asp:Panel ID="pnlMigrateSavedAccountsResults" runat="server">
+                            <Rock:NotificationBox ID="nbMigrateSavedAccountsResults" runat="server" NotificationBoxType="Success" Dismissable="true" />
+                            <asp:HiddenField ID="hfMigrateSavedAccountsResultFileURL" runat="server" />
+                            <asp:LinkButton ID="btnDownloadSavedAccountsResultsJSON" runat="server" CssClass="btn btn-link" Text="Download Log" OnClick="btnDownloadSavedAccountsResultsJSON_Click" />
+                        </asp:Panel>
+
 
                         <hr />
 
@@ -96,10 +122,13 @@
                         </p>
                         <Rock:FileUploader ID="fuScheduleImportFile" runat="server" Label="Select Schedule Import File" IsBinaryFile="true" UploadAsTemporary="true" DisplayMode="DropZone" OnFileUploaded="fuScheduleImportFile_FileUploaded" />
                         <div class="actions margin-b-md">
-                            <asp:LinkButton ID="btnMigrateScheduledTransactions" runat="server" CssClass="btn btn-primary js-import-button" OnClick="btnMigrateScheduledTransactions_Click" Enabled="false">Migrate Scheduled Transactions</asp:LinkButton>
+                            <asp:LinkButton ID="btnMigrateScheduledTransactions" runat="server" CssClass="btn btn-primary js-migrate-scheduled-transactions-button" OnClick="btnMigrateScheduledTransactions_Click" Enabled="false">Migrate Scheduled Transactions</asp:LinkButton>
                         </div>
-                        <Rock:NotificationBox ID="nbMigrateScheduledTransactions" runat="server" CssClass="js-migrate-scheduled-notification" NotificationBoxType="Info" Visible="true" Dismissable="true" />
-                        <pre class="js-migrate-log" style="display:none"></pre>
+                        <asp:Panel ID="pnlMigrateScheduledTransactionsResults" runat="server">
+                            <Rock:NotificationBox ID="nbMigrateScheduledTransactionsResult" runat="server" CssClass="js-migrate-scheduled-notification" NotificationBoxType="Info" Visible="true" Dismissable="true" />
+                            <asp:HiddenField ID="hfMigrateScheduledTransactionsResultFileURL" runat="server" />
+                            <asp:LinkButton ID="btnDownloadScheduledTransactionsResultsJSON" runat="server" CssClass="btn btn-link js-migrate-scheduled-download-button" Text="Download Log" OnClick="btnDownloadScheduledTransactionsResultsJSON_Click" />
+                        </asp:Panel>
                     </div>
                 </div>
             </div>

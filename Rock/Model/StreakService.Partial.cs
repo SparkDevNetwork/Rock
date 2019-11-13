@@ -17,8 +17,10 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Threading.Tasks;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -50,12 +52,41 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Start an async task to calculate steak data and then copy it to the enrollment model
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( Streak item )
+        {
+            // Since Entity Framework cannot cascade delete achievement attempts because of a possible circular reference,
+            // we need to delete them here
+            var attemptService = new StreakAchievementAttemptService( Context as RockContext );
+            var attempts = attemptService.Queryable().Where( a => a.StreakId == item.Id );
+            attemptService.DeleteRange( attempts );
+
+            // Now we can delete the streak as normal
+            return base.Delete( item );
+        }
+
+        /// <summary>
+        /// Start an async task to do things that should run after a streak has been updated
         /// </summary>
         /// <param name="streakId"></param>
-        public static void RefreshStreakDenormalizedPropertiesAsync( int streakId )
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the HandlePostSaveChanges method instead.", false )]
+        public static void HandlePostSaveChangesAsync( int streakId )
         {
-            Task.Run( () => RefreshStreakDenormalizedProperties( streakId ) );
+            Task.Run( () => HandlePostSaveChanges( streakId ) );
+        }
+
+        /// <summary>
+        /// Complete tasks that should be done after a streak or related data has been changed
+        /// </summary>
+        /// <param name="streakId"></param>
+        public static void HandlePostSaveChanges( int streakId )
+        {
+            RefreshStreakDenormalizedProperties( streakId );
+            ProcessAchievements( streakId );
         }
 
         /// <summary>
@@ -87,7 +118,7 @@ namespace Rock.Model
             var streak = streakService.Get( streakId );
             if ( streak == null )
             {
-                ExceptionLogService.LogException( "The streak was null" );
+                ExceptionLogService.LogException( $"The streak with id {streakId} was not found (it may have been deleted)" );
                 return;
             }
 
@@ -100,7 +131,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source"></param>
         /// <param name="target"></param>
-        public static void CopyStreakDataToStreakModel( StreakData source, Streak target )
+        private static void CopyStreakDataToStreakModel( StreakData source, Streak target )
         {
             if ( source == null || target == null )
             {
@@ -115,6 +146,33 @@ namespace Rock.Model
 
             target.CurrentStreakCount = source.CurrentStreakCount;
             target.CurrentStreakStartDate = source.CurrentStreakStartDate;
+        }
+
+        /// <summary>
+        /// Check for achievements that may have been earned
+        /// </summary>
+        /// <param name="streakId">The streak identifier.</param>
+        private static void ProcessAchievements( int streakId )
+        {
+            var rockContext = new RockContext();
+            var streakService = new StreakService( rockContext );
+            var streak = streakService.Get( streakId );
+
+            if ( streak == null )
+            {
+                ExceptionLogService.LogException( $"The streak with id {streakId} was not found (it may have been deleted)" );
+                return;
+            }
+
+            var streakTypeCache = StreakTypeCache.Get( streak.StreakTypeId );
+
+            foreach ( var streakTypeAchievementTypeCache in streakTypeCache.StreakTypeAchievementTypes )
+            {
+                var component = streakTypeAchievementTypeCache.AchievementComponent;
+                component.Process( rockContext, streakTypeAchievementTypeCache, streak );
+            }
+
+            rockContext.SaveChanges();
         }
     }
 }

@@ -52,6 +52,13 @@ namespace RockWeb.Blocks.Streaks
         IsRequired = false,
         Order = 2 )]
 
+    [LinkedPage(
+        "Achievements Page",
+        Description = "Page used for viewing a list of streak type achievement types.",
+        Key = AttributeKey.AchievementsPage,
+        IsRequired = false,
+        Order = 3 )]
+
     public partial class StreakTypeDetail : RockBlock, IDetailBlock
     {
         #region Keys
@@ -70,6 +77,11 @@ namespace RockWeb.Blocks.Streaks
             /// Key for the Exclusions Page
             /// </summary>
             public const string ExclusionsPage = "ExclusionsPage";
+
+            /// <summary>
+            /// The achievements page
+            /// </summary>
+            public const string AchievementsPage = "AchievementsPage";
         }
 
         /// <summary>
@@ -179,6 +191,16 @@ namespace RockWeb.Blocks.Streaks
         protected void btnExclusions_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( AttributeKey.ExclusionsPage );
+        }
+
+        /// <summary>
+        /// Button to go to the achievements page
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnAchievements_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.AchievementsPage );
         }
 
         /// <summary>
@@ -593,6 +615,10 @@ namespace RockWeb.Blocks.Streaks
 
                 descriptionList.Add( "Attendance Structure", structureString );
             }
+            else
+            {
+                descriptionList.Add( "Attendance Structure", "Any Rock Attendance" );
+            }
 
             lStreakTypeDescription.Text = descriptionList.Html;
 
@@ -602,6 +628,7 @@ namespace RockWeb.Blocks.Streaks
                 btnSecurity.EntityId = streakType.Id;
             }
 
+            SetLinkVisibility( btnAchievements, AttributeKey.AchievementsPage );
             SetLinkVisibility( btnExclusions, AttributeKey.ExclusionsPage );
             SetLinkVisibility( btnMapEditor, AttributeKey.MapEditorPage );
         }
@@ -612,7 +639,7 @@ namespace RockWeb.Blocks.Streaks
         private void BindDropDownLists()
         {
             BindDropDownListToEnum( typeof( StreakOccurrenceFrequency ), ddlFrequencyOccurrence, false );
-            BindDropDownListToEnum( typeof( StreakStructureType ), ddlStructureType, true );
+            BindDropDownListToEnum( typeof( StreakStructureType ), ddlStructureType, true, "Any Rock Attendance" );
         }
 
         /// <summary>
@@ -620,11 +647,11 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         /// <param name="enumType"></param>
         /// <param name="ddl"></param>
-        private void BindDropDownListToEnum( Type enumType, DataDropDownList ddl, bool includeBlank )
+        private void BindDropDownListToEnum( Type enumType, DataDropDownList ddl, bool includeBlank, string blankText = "" )
         {
             if ( includeBlank )
             {
-                ddl.Items.Add( new ListItem() );
+                ddl.Items.Add( new ListItem( blankText, string.Empty ) );
             }
 
             var itemValues = Enum.GetValues( enumType );
