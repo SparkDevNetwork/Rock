@@ -28,7 +28,7 @@
             
             <p class="flush">
                 <span class="circular background-cover" style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span> &nbsp;<span class="stronger">{{ row.NickName }} {{ row.LastName }}</span>
-                <span class="pull-right"><a href="/account/giving/schedules/{{ row.Id }}" class="btn btn-sm btn-primary">Edit Schedule</a></span>
+                <span class="pull-right"><a class="btn btn-sm btn-danger" onclick="{{ row.Id | Postback:'DeleteScheduledTransaction' | Replace:'[ClientId]','ctl00_main_ctl32_ctl01_ctl08_upnlContent' }}">Delete Schedule</a> <a href="/account/giving/schedules/{{ row.Id }}" class="btn btn-sm btn-primary">Edit Schedule</a></span>
             </p>
         </div>
     {% endfor %}
