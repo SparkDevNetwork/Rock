@@ -376,7 +376,10 @@ namespace Rock.Web.UI.Controls
                 totalAmount = this.SelectedAmount;
             }
 
-            return totalAmount.HasValue && totalAmount.Value != 0.00M;
+            // don't allow 0.00 and limit to $21,474,836.47, just in case browser validation doesn't limit it
+            const int maxAmountCents = int.MaxValue;
+            decimal maxAmountDollars = maxAmountCents / 100;
+            return totalAmount.HasValue && totalAmount.Value != 0.00M && totalAmount < maxAmountDollars;
         }
 
         /// <summary>
@@ -832,6 +835,12 @@ namespace Rock.Web.UI.Controls
             _nbAmountAccountSingle.Attributes["type"] = "number";
             _nbAmountAccountSingle.CssClass = "amount-input form-control";
             _nbAmountAccountSingle.Attributes["min"] = "0";
+            _nbAmountAccountSingle.Attributes["max"] = int.MaxValue.ToString();
+
+            // set max length to prevent input from accepting more than $99,999,999.99 (99 million dollars), this will help prevent an Int32 overflow if amount is stored in cents
+            // However, browsers don't seem to enforce this, and we really want to limit to int.MaxValue so we'll also check in validation
+            _nbAmountAccountSingle.Attributes["maxlength"] = "14";
+
             _nbAmountAccountSingle.Attributes["step"] = "0.01";
             _pnlAccountAmountEntrySingle.Controls.Add( _nbAmountAccountSingle );
 
@@ -915,14 +924,19 @@ namespace Rock.Web.UI.Controls
                         ID = RepeaterControlIds.ID_hfAccountAmountMultiAccountId
                     } );
 
-                itemTemplateControl.Controls.Add(
-                    new CurrencyBox
-                    {
-                        ID = RepeaterControlIds.ID_nbAccountAmountMulti,
-                        CssClass = "amount-input account-amount-multi",
-                        NumberType = ValidationDataType.Currency,
-                        MinimumValue = "0"
-                    } );
+                var currencyBox = new CurrencyBox
+                {
+                    ID = RepeaterControlIds.ID_nbAccountAmountMulti,
+                    CssClass = "amount-input account-amount-multi",
+                    NumberType = ValidationDataType.Currency,
+                    MaximumValue = int.MaxValue.ToString(),
+                    MinimumValue = "0"
+                };
+
+                // set max length to prevent input from accepting more than $99,999,999.99 (99 million dollars), this will help prevent an Int32 overflow if amount is stored in cents
+                // However, browsers don't seem to enforce this, and we really want to limit to int.MaxValue so we'll also check in validation
+                currencyBox.Attributes["maxlength"] = "14";
+                itemTemplateControl.Controls.Add( currencyBox  );
 
                 container.Controls.Add( itemTemplateControl );
             }

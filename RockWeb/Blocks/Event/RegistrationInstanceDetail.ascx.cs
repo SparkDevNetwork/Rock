@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Event
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             string deleteScript = @"
-    $('a.js-delete-instance').click(function( e ){
+    $('a.js-delete-instance').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!', function (result) {
             if (result) {
@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Event
         });
     });
 
-    $('table.js-grid-registration a.grid-delete-button').click(function( e ){
+    $('table.js-grid-registration a.grid-delete-button').on('click', function( e ){
         e.preventDefault();
         var $hfHasPayments = $(this).closest('tr').find('input.js-has-payments').first();
         Rock.dialogs.confirm('Are you sure you want to delete this registration? All of the registrants will also be deleted!', function (result) {
@@ -663,7 +663,7 @@ namespace RockWeb.Blocks.Event
                 case "Registrant First Name":
                 case "Registrant Last Name":
                     break;
-                    
+
                 default:
                    e.Value = string.Empty;
                     break;
@@ -925,7 +925,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.Gender:
                                 var ddlGenderFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
@@ -943,7 +943,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -1061,7 +1061,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.Gender:
                                 var ddlGenderFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
@@ -1079,7 +1079,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -1138,7 +1138,7 @@ namespace RockWeb.Blocks.Event
                 case "Registrants Date Range":
                     e.Value = SlidingDateRangePicker.FormatDelimitedValues( e.Value );
                     break;
-                    
+
                 case "Birthdate Range":
                     // The value might either be from a SlidingDateRangePicker or a DateRangePicker, so try both
                     var storedValue = e.Value;
@@ -1149,11 +1149,11 @@ namespace RockWeb.Blocks.Event
                     }
 
                     break;
-                    
+
                 case "Grade":
                     e.Value = Person.GradeFormattedFromGradeOffset( e.Value.AsIntegerOrNull() );
                     break;
-                    
+
                 case "First Name":
                 case "Last Name":
                 case "Email":
@@ -1161,12 +1161,12 @@ namespace RockWeb.Blocks.Event
                 case "Home Phone":
                 case "Cell Phone":
                     break;
-                    
+
                 case "Gender":
                     var gender = e.Value.ConvertToEnumOrNull<Gender>();
                     e.Value = gender.HasValue ? gender.ConvertToString() : string.Empty;
                     break;
-                    
+
                 case "Campus":
                     int? campusId = e.Value.AsIntegerOrNull();
                     if ( campusId.HasValue )
@@ -1180,7 +1180,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     break;
-                    
+
                 case "Marital Status":
                     int? dvId = e.Value.AsIntegerOrNull();
                     if ( dvId.HasValue )
@@ -1194,7 +1194,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     break;
-                    
+
                 case "In Group":
                         e.Value = e.Value;
                         break;
@@ -1254,14 +1254,14 @@ namespace RockWeb.Blocks.Event
 
                 // Set the campus
                 var lCampus = e.Row.FindControl( "lRegistrantsCampus" ) as Literal;
-                
+
                 // if it's null, try looking for the "lGroupPlacementsCampus" control since this RowDataBound event is shared between
                 // two different grids.
                 if ( lCampus == null )
                 {
                     lCampus = e.Row.FindControl( "lGroupPlacementsCampus" ) as Literal;
                 }
-                
+
                 if ( lCampus != null && PersonCampusIds != null )
                 {
                     if ( registrant.PersonAlias != null )
@@ -1355,7 +1355,7 @@ namespace RockWeb.Blocks.Event
                             mobileField.Text = mobileNumber.IsUnlisted ? "Unlisted" : mobileNumber.NumberFormatted;
                         }
                     }
-                    
+
                 }
 
                 if ( _homePhoneNumbers.Any() )
@@ -1759,7 +1759,7 @@ namespace RockWeb.Blocks.Event
                                     var qryParams = new Dictionary<string, string>();
                                     qryParams.Add( "EventCalendarId", calendarItem.EventCalendarId.ToString() );
                                     qryParams.Add( "EventItemId", calendarItem.EventItem.Id.ToString() );
-                                    calendarItems.Add( string.Format( 
+                                    calendarItems.Add( string.Format(
                                         "<a href='{0}'>{1}</a> ({2})",
                                         LinkedPageUrl( "CalendarItemPage", qryParams ),
                                         calendarItem.EventItem.Name,
@@ -1986,7 +1986,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.Gender:
                                 var ddlGenderFilter = phWaitListFormFieldFilters.FindControl( "ddlWaitlistGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
@@ -2004,7 +2004,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -2122,7 +2122,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.Gender:
                                 var ddlGenderFilter = phWaitListFormFieldFilters.FindControl( "ddlWaitlistGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
@@ -2140,7 +2140,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -2211,11 +2211,11 @@ namespace RockWeb.Blocks.Event
                         }
 
                         break;
-                        
+
                     case "Grade":
                         e.Value = Person.GradeFormattedFromGradeOffset( e.Value.AsIntegerOrNull() );
                         break;
-                        
+
                     case "First Name":
                     case "Last Name":
                     case "Email":
@@ -2223,12 +2223,12 @@ namespace RockWeb.Blocks.Event
                     case "Home Phone":
                     case "Signed Document":
                         break;
-                        
+
                     case "Gender":
                         var gender = e.Value.ConvertToEnumOrNull<Gender>();
                         e.Value = gender.HasValue ? gender.ConvertToString() : string.Empty;
                         break;
-                        
+
                     case "Campus":
                         int? campusId = e.Value.AsIntegerOrNull();
                         if ( campusId.HasValue )
@@ -2242,7 +2242,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         break;
-                        
+
                     case "Marital Status":
                         int? dvId = e.Value.AsIntegerOrNull();
                         if ( dvId.HasValue )
@@ -2256,7 +2256,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         break;
-                        
+
                     case "In Group":
                         e.Value = e.Value;
                         break;
@@ -2497,7 +2497,7 @@ namespace RockWeb.Blocks.Event
 
                                             if ( !groupMember.IsValidGroupMember( rockContext ) )
                                             {
-                                                throw new Exception( string.Format( 
+                                                throw new Exception( string.Format(
                                                     "Placing '{0}' in the '{1}' group is not valid for the following reason: {2}",
                                                     registrant.Person.FullName,
                                                     group.Name,
@@ -2515,7 +2515,7 @@ namespace RockWeb.Blocks.Event
                                                     groupMember.SetAttributeValue( attr.Key, registrant.GetAttributeValue( attr.Key ) );
                                                 }
                                             }
-                                            
+
                                             rockContext.SaveChanges();
                                             groupMember.SaveAttributeValues( rockContext );
                                         }
@@ -3107,7 +3107,7 @@ namespace RockWeb.Blocks.Event
                             .Join(
                                 rPayments,
                                 c => c.Key,
-                                p => p.Key, 
+                                p => p.Key,
                                 ( c, p ) => new
                                 {
                                     RegistrationId = c.Key,
@@ -4230,7 +4230,7 @@ namespace RockWeb.Blocks.Event
                                 gpRegistrantsGradeFilter.UseAbbreviation = true;
                                 gpRegistrantsGradeFilter.UseGradeOffsetAsValue = true;
                                 gpRegistrantsGradeFilter.CssClass = "input-width-md";
-                                    
+
                                 // Since 12th grade is the 0 Value, we need to handle the "no user preference" differently
                                 // by not calling SetValue otherwise it will select 12th grade.
                                 if ( setValues )
@@ -4808,7 +4808,7 @@ namespace RockWeb.Blocks.Event
             {
                 return;
             }
-            
+
             RegistrationTemplateFeeService registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
             var data = registrationTemplateFeeService.GetRegistrationTemplateFeeReport( (int)instanceId );
 
@@ -4909,7 +4909,7 @@ namespace RockWeb.Blocks.Event
                 {
                     cblFeeOptions.SetValues( feeOptionValues.Split( ';' ).ToList() );
                 }
-                
+
                 cblFeeOptions.Visible = true;
             }
         }
@@ -4917,7 +4917,7 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Discounts Tab
-        
+
         private void BindDiscountsFilter()
         {
             sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetUserPreference( "DiscountDateRange" );
@@ -4972,7 +4972,7 @@ namespace RockWeb.Blocks.Event
                 results = results.OrderByDescending( d => d.RegistrationDate ).ToList();
             }
 
-            
+
             gDiscounts.DataSource = results;
             gDiscounts.DataBind();
 
@@ -5003,7 +5003,7 @@ namespace RockWeb.Blocks.Event
             {
                 return;
             }
-            
+
             var discountService = new RegistrationTemplateDiscountService( new RockContext() );
             var discountCodes = discountService.GetDiscountsForRegistrationInstance( instanceId ).AsNoTracking().OrderBy( d => d.Code ).ToList();
 
@@ -5246,7 +5246,7 @@ namespace RockWeb.Blocks.Event
                                     }
 
                                     break;
-                                   
+
                                 case RegistrationPersonFieldType.MobilePhone:
                                     var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
                                     if ( tbMobilePhoneFilter != null && !string.IsNullOrWhiteSpace( tbMobilePhoneFilter.Text ) )
@@ -5813,7 +5813,7 @@ namespace RockWeb.Blocks.Event
                                     }
 
                                     break;
-                                    
+
                                 case RegistrationPersonFieldType.MobilePhone:
                                     var tbMobilePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMobilePhoneFilter" ) as RockTextBox;
                                     if ( tbMobilePhoneFilter != null && !string.IsNullOrWhiteSpace( tbMobilePhoneFilter.Text ) )
@@ -6160,7 +6160,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.Gender:
                                 var ddlGenderFilter = phGroupPlacementsFormFieldFilters.FindControl( "ddlGroupPlacementsGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
@@ -6178,7 +6178,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -6299,7 +6299,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.Gender:
                                 var ddlGenderFilter = phGroupPlacementsFormFieldFilters.FindControl( "ddlGroupPlacementsGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
@@ -6317,7 +6317,7 @@ namespace RockWeb.Blocks.Event
                                 }
 
                                 break;
-                                
+
                             case RegistrationPersonFieldType.MobilePhone:
                                 var tbMobilePhoneFilter = phGroupPlacementsFormFieldFilters.FindControl( "tbGroupPlacementsMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
@@ -6392,7 +6392,7 @@ namespace RockWeb.Blocks.Event
                     case "Grade":
                         e.Value = Person.GradeFormattedFromGradeOffset( e.Value.AsIntegerOrNull() );
                         break;
-                        
+
                     case "First Name":
                     case "Last Name":
                     case "Email":
@@ -6405,7 +6405,7 @@ namespace RockWeb.Blocks.Event
                         var gender = e.Value.ConvertToEnumOrNull<Gender>();
                         e.Value = gender.HasValue ? gender.ConvertToString() : string.Empty;
                         break;
-                        
+
                     case "Campus":
                         int? campusId = e.Value.AsIntegerOrNull();
                         if ( campusId.HasValue )
@@ -6419,7 +6419,7 @@ namespace RockWeb.Blocks.Event
                         }
 
                         break;
-                        
+
                     case "Marital Status":
                         int? dvId = e.Value.AsIntegerOrNull();
                         if ( dvId.HasValue )
@@ -6433,11 +6433,11 @@ namespace RockWeb.Blocks.Event
                         }
 
                         break;
-                        
+
                     case "In Group":
                         e.Value = e.Value;
                         break;
-                        
+
                     default:
                         e.Value = string.Empty;
                         break;

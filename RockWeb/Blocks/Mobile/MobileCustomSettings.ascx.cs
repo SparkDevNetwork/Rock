@@ -29,7 +29,7 @@ namespace RockWeb.Blocks.Mobile
     /// </summary>
     /// <seealso cref="System.Web.UI.UserControl" />
     /// <seealso cref="Rock.Web.IRockCustomSettingsUserControl" />
-    public partial class MobileCustomAdvancedSettings : System.Web.UI.UserControl, IRockCustomSettingsUserControl
+    public partial class MobileCustomSettings : System.Web.UI.UserControl, IRockCustomSettingsUserControl
     {
         #region IRockCustomSettingsUserControl implementation
 
@@ -42,6 +42,9 @@ namespace RockWeb.Blocks.Mobile
             var mobileBlock = ( BlockCache ) attributeEntity;
             var additionalSettings = mobileBlock.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
+            nbCacheDuration.Text = additionalSettings.CacheDuration.ToString();
+            cbProcessLavaOnServer.Checked = additionalSettings.ProcessLavaOnServer;
+            cbProcessLavaOnClient.Checked = additionalSettings.ProcessLavaOnClient;
             cbShowOnTablet.Checked = additionalSettings.ShowOnTablet;
             cbShowOnPhone.Checked = additionalSettings.ShowOnPhone;
             cbRequiresNetwork.Checked = additionalSettings.RequiresNetwork;
@@ -63,6 +66,9 @@ namespace RockWeb.Blocks.Mobile
             var mobileBlock = ( Block ) attributeEntity;
             var additionalSettings = mobileBlock.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
 
+            additionalSettings.CacheDuration = nbCacheDuration.Text.AsInteger();
+            additionalSettings.ProcessLavaOnServer = cbProcessLavaOnServer.Checked;
+            additionalSettings.ProcessLavaOnClient = cbProcessLavaOnClient.Checked;
             additionalSettings.ShowOnTablet = cbShowOnTablet.Checked;
             additionalSettings.ShowOnPhone = cbShowOnPhone.Checked;
             additionalSettings.RequiresNetwork = cbRequiresNetwork.Checked;

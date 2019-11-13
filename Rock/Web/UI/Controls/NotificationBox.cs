@@ -156,7 +156,7 @@ namespace Rock.Web.UI.Controls
                         writer.RenderEndTag();
                     }
 
-                    base.RenderControl( writer );
+                    writer.Write( $"<span class='js-notification-text'>{this.Text} </span>" );
 
                     if ( !string.IsNullOrWhiteSpace( this.Details ) )
                     {
@@ -165,7 +165,7 @@ namespace Rock.Web.UI.Controls
     <a data-toggle='collapse' data-parent='#{1}' href='#error-details_{1}'>Show Details</a>
 </small>
 <div id='error-details_{1}' class='collapse'>
-        <p class='margin-t-sm'>
+        <p class='margin-t-sm js-notification-details'>
         {0}
     </p>
 </div>";

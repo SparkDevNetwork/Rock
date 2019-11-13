@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Connection
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             string deleteScript = @"
-    $('table.js-grid-requests a.grid-delete-button').click(function( e ){
+    $('table.js-grid-requests a.grid-delete-button').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
             if (result) {

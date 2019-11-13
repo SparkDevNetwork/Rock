@@ -46,14 +46,14 @@ namespace Rock.Badge.Component
 {% endif %}
 
 {% if DateRange and DateRange.Summary != '' %}
-  {% capture dateRangeText %} in the {{ DateRange.Summary | Downcase  }}{% endcapture %}
+  {% capture dateRangeText %} in the {{ DateRange.Summary | Downcase }}{% endcapture %}
 {% else %}
   {% assign dateRangeText = '' %}
 {% endif %}
 
 {% if Attendance and Attendance.Count > 0 %}
   {% assign iconColor = '#0ab4dd' %}
-  {% capture tooltipText %}{{ Person.NickName }} has attended {{ Attendance.Count }} times{{ dateRangeText }}. The most recent of which was {{ Attendance.LastDateTime | Date:'MM/d/yyyy'  }}.{% endcapture %}
+  {% capture tooltipText %}{{ Person.NickName }} has attended {{ Attendance.Count }} times{{ dateRangeText }}. The most recent of which was {{ Attendance.LastDateTime | Date:'MM/d/yyyy' }}.{% endcapture %}
 {% else %}
   {% assign iconColor = '#c4c4c4' %}
   {% capture tooltipText %}{{ Person.NickName }} has not attended a group of type {{ GroupType.Name }}{{ dateRangeText }}.{% endcapture %}

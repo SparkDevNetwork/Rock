@@ -362,7 +362,7 @@ namespace Rock.MyWell
                 State = paymentInfo.State,
                 PostalCode = paymentInfo.PostalCode,
                 Country = paymentInfo.Country,
-                Email = paymentInfo.Email,
+                Email = string.Empty,
                 Phone = paymentInfo.Phone,
             };
 
@@ -581,7 +581,7 @@ namespace Rock.MyWell
         private TransactionVoidRefundResponse PostVoid( string gatewayUrl, string apiKey, string transactionId )
         {
             var restClient = new RestClient( gatewayUrl );
-            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/void", Method.GET );
+            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/void", Method.POST );
             restRequest.AddHeader( "Authorization", apiKey );
 
             var response = restClient.Execute( restRequest );
@@ -600,7 +600,7 @@ namespace Rock.MyWell
         private TransactionVoidRefundResponse PostRefund( string gatewayUrl, string apiKey, string transactionId, decimal amount )
         {
             var restClient = new RestClient( gatewayUrl );
-            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/refund", Method.GET );
+            RestRequest restRequest = new RestRequest( $"api/transaction/{transactionId}/refund", Method.POST );
             restRequest.AddHeader( "Authorization", apiKey );
 
             var refundRequest = new TransactionRefundRequest { Amount = amount };
@@ -638,6 +638,14 @@ namespace Rock.MyWell
             if ( startDayOfMonth > 28 )
             {
                 startDayOfMonth = 31;
+
+                // since we have to use magic 31 to indicate the last day of the month, adjust the NextBillDate to be the last day of the specified month
+                // (so it doesn't post on original startDate and again on the last day of the month)
+                var nextBillYear = billingPlanParameters.NextBillDateUTC.Value.Year;
+                var nextBillMonth = billingPlanParameters.NextBillDateUTC.Value.Month;
+                DateTime endOfMonth = new DateTime( nextBillYear, nextBillMonth, DateTime.DaysInMonth( nextBillYear, nextBillMonth ) );
+
+                billingPlanParameters.NextBillDateUTC = endOfMonth;
             }
 
             if ( twiceMonthlySecondDayOfMonth > 28 )
@@ -1037,22 +1045,16 @@ namespace Rock.MyWell
 
             var transactionStatus = this.GetTransactionStatus( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId );
             var transactionStatusTransaction = transactionStatus.Data.FirstOrDefault( a => a.Id == transactionId );
-            TransactionVoidRefundResponse response;
-            if ( transactionStatusTransaction.IsPendingSettlement() )
-            {
-                // https://sandbox.gotnpgateway.com/docs/api/#void
-                response = this.PostVoid( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId );
-            }
-            else
-            {
-                // https://sandbox.gotnpgateway.com/docs/api/#refund
-                response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, origTransaction.TotalAmount );
-            }
+
+            // https://sandbox.gotnpgateway.com/docs/api/#refund
+            // NOTE: If the transaction isn't settled yet, this will return an error. But that's OK
+            TransactionVoidRefundResponse response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, origTransaction.TotalAmount );
+
 
             if ( response.IsSuccessStatus() )
             {
                 var transaction = new FinancialTransaction();
-                transaction.TransactionCode = "#TODO#";
+                transaction.TransactionCode = transactionId;
                 errorMessage = string.Empty;
                 return transaction;
             }
@@ -1360,7 +1362,13 @@ namespace Rock.MyWell
 
             var paymentList = new List<Payment>();
 
-            var rockContext = new RockContext();
+            if ( searchResult.Data == null )
+            {
+                // if no payments were fount for the date range, searchResult.Data will be null
+                // so just return an empty paymentList
+                return paymentList;
+            }
+
 
             foreach ( var transaction in searchResult.Data )
             {
@@ -1371,8 +1379,26 @@ namespace Rock.MyWell
                 {
                     TransactionCode = transaction.Id,
                     Amount = transaction.Amount,
-                    TransactionDateTime = transaction.CreatedDateTime.Value,
+
+                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
+                    TransactionDateTime = transaction.CreatedDateTimeUTC.Value.ToLocalTime(),
                     GatewayScheduleId = gatewayScheduleId,
+
+                    Status = transaction.Status,
+                    IsFailure = transaction.IsFailure(),
+                    IsSettled = transaction.IsSettled(),
+                    SettledGroupId = transaction.SettlementBatchId,
+
+                    // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
+                    SettledDate = transaction.SettledDateTimeUTC?.ToLocalTime(),
+                    StatusMessage = transaction.Response,
+
+                    //// NOTE on unpopulated fields:
+                    //// CurrencyTypeValue and CreditCardTypeValue are determined by the FinanancialPaymentDetail of the ScheduledTransaction
+                    //// ScheduleActive doesn't apply because MyWell subscriptions are either active or deleted (don't exist).
+                    ////   - GetScheduledPaymentStatus will take care of setting ScheduledTransaction.IsActive to false
+                    //// SettledGroupId isn't included in the response from MyWell (this is an open issue)
+                    //// NameOnCardEncrypted, ExpirationMonthEncrypted, ExpirationYearEncrypted are set when the FinancialScheduledTransaction record is created
                 };
 
                 if ( transaction.PaymentType == "ach" )

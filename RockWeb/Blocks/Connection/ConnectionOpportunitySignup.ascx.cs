@@ -347,14 +347,14 @@ namespace RockWeb.Blocks.Connection
                 if ( opportunity == null )
                 {
                     pnlSignup.Visible = false;
-                    ShowError( "Incorrect Opportunity Type", "The requested opportunity does not exist." );
+                    ShowError( "Sorry", "The requested opportunity does not exist." );
                     return;
                 }
 
-                if ( !opportunity.IsActive )
+                if ( !( opportunity.IsActive && opportunity.ConnectionType.IsActive ) )
                 {
                     pnlSignup.Visible = false;
-                    ShowError( "Inactive Opportunity Type", "The opportunity is not currently active." );
+                    ShowError( "Inactive", "The opportunity is not currently active." );
                     return;
                 }
 
