@@ -661,6 +661,8 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.InitialValue = "0";
             RequiredFieldValidator.ControlToValidate = _hfBinaryFileId.ID;
             RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+            RequiredFieldValidator.CssClass = "validation-error help-inline";
+            RequiredFieldValidator.ErrorMessage = this.RequiredErrorMessage;
         }
 
         /// <summary>
@@ -763,18 +765,11 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                //if ( this.DisplayMode == UploaderDisplayMode.Button )
-                //{
-                //    writer.Write( "Upload File" );
-                //}
-                //else
-                //{
-                //    writer.Write( "Upload" );
-                //}
-                writer.Write( this.UploadButtonText );
 
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( this.UploadButtonText );
                 writer.RenderEndTag();
+
                 _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
                 _fileUpload.RenderControl( writer );
                 writer.RenderEndTag();
