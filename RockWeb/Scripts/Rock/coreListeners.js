@@ -19,7 +19,7 @@ $(document).on('enabledStickiness.stickyTableHeaders', function(event) {
     var navbarFixedTop = document.querySelector('.navbar-fixed-top');
 
     $(window).on('resize', function(event) {
-        if (document.querySelector('.navbar-fixed-top') !== null && getComputedStyle(navbarFixedTop)[position] === 'fixed') {
+        if (document.querySelector('.navbar-fixed-top') !== null && getComputedStyle(navbarFixedTop)['position'] === 'fixed') {
             $('.js-sticky-headers').stickyTableHeaders({ fixedOffset: $('.navbar-fixed-top') });
         } else {
             $('.js-sticky-headers').stickyTableHeaders();
