@@ -75,7 +75,6 @@ namespace RockWeb.Blocks.Crm
 
         protected string icon = string.Empty;
         protected string title = string.Empty;
-        protected bool canEditBlock = false;
 
         #region Control Overrides
 
@@ -90,24 +89,14 @@ namespace RockWeb.Blocks.Crm
 
             gFileList.DataKeyNames = new string[] { "Id" };
             gFileList.GridRebind += gFileList_GridRebind;
-
-            // Verify block authorization
-            canEditBlock = IsUserAuthorized( Authorization.EDIT );
-            bool canAdministrateBlock = IsUserAuthorized( Authorization.ADMINISTRATE );
-
-            gFileList.Actions.ShowAdd = canEditBlock;
-            gFileList.IsDeleteEnabled = canEditBlock;
+            gFileList.Actions.AddClick += gFileList_Add;
+            gFileList.Actions.ShowAdd = true;
+            gFileList.RowSelected += gFileList_RowSelected;
+            gFileList.IsDeleteEnabled = true;
             
-            if ( canEditBlock )
-            {
-                gFileList.Actions.AddClick += gFileList_Add;
-                gFileList.RowSelected += gFileList_RowSelected;
-            }
-
-            // Configure and show/hide security button
+            // Configure security button
             var securityColumn = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityColumn.EntityTypeId = this.ContextEntity().TypeId;
-            securityColumn.Visible = canAdministrateBlock;
         }
 
         protected override void OnLoad( EventArgs e )
@@ -186,16 +175,31 @@ namespace RockWeb.Blocks.Crm
             }
 
             // Remove document types from the list that do not match the EntityTypeQualifiers
-            var entityTypeQualifierFilteredDocumentTypes = new List<int>();
+            var accessDeniedForDocumentTypeList = new List<int>();
+            var editAccessDeniedForDocumentTypeList = new List<int>();
+
             foreach( var documentType in documentypesForContextEntityType )
             {
+                // Check System Security on the type
+                if ( !documentType.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
+                {
+                    accessDeniedForDocumentTypeList.Add( documentType.Id );
+                    continue;
+                }
+
+                if ( !documentType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    editAccessDeniedForDocumentTypeList.Add( documentType.Id );
+                }
+
+
                 // If the document does not have a qualifier column specified then allow it by default
                 if ( documentType.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() )
                 {
                     // Check that the EntityTypeQualifierColumn is a property for this entity, if not then remove it by default
                     if ( contextEntity.GetType().GetProperty(documentType.EntityTypeQualifierColumn) == null )
                     {
-                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
+                        accessDeniedForDocumentTypeList.Add( documentType.Id );
                         continue;
                     }
 
@@ -205,18 +209,17 @@ namespace RockWeb.Blocks.Crm
                     // If the entity property values does not match DocumentType.EntityTypeQualifierValue then it should be removed.
                     if(entityPropVal != documentType.EntityTypeQualifierValue)
                     {
-                        entityTypeQualifierFilteredDocumentTypes.Add( documentType.Id );
+                        accessDeniedForDocumentTypeList.Add( documentType.Id );
                     }
                 }
             }
 
-            // Create the final list of document types that are valid for this entity and instance of this entity.
-            var filteredDocumentTypes = documentypesForContextEntityType
-                .Where( d => !entityTypeQualifierFilteredDocumentTypes.Contains( d.Id ) )
-                .ToList();
+            // Create the list of document types that are valid for this entity, satisfy EntityTypeQualifiers, and that the current user has rights to view
+            var filteredDocumentTypes = documentypesForContextEntityType.Where( d => !accessDeniedForDocumentTypeList.Contains( d.Id ) ).ToList();
+            var editFilteredDocumentTypes = filteredDocumentTypes.Where( d => !editAccessDeniedForDocumentTypeList.Contains( d.Id ) ).ToList();
 
             PopulateDdlDocumentType( filteredDocumentTypes );
-            PopulateDdlAddEditDocumentType( filteredDocumentTypes );
+            PopulateDdlAddEditDocumentType( editFilteredDocumentTypes );
         }
 
         /// <summary>
@@ -259,20 +262,28 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            bool canView = document.IsAuthorized( Authorization.VIEW, this.CurrentPerson );
-            bool canEdit = document.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && canEditBlock;
+            // Check access for the document type and the document.
+            bool canView = document.DocumentType.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && document.IsAuthorized( Authorization.VIEW, this.CurrentPerson );
+            bool canEdit = document.DocumentType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && document.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
 
             if (!canView)
             {
-                // Hide the download button
-                var downloadButton = ( LinkButton ) e.Row.FindControl( "lbDownload" );
-                downloadButton.Visible = false;
+                e.Row.Visible = false;
             }
 
             if ( !canEdit )
             {
-                // disable edit click for row and delete button
-                e.Row.Enabled = false;
+                // disable delete button
+                var deleteField = gFileList.ColumnsOfType<DeleteField>().FirstOrDefault();
+                var deleteFieldIndex = gFileList.Columns.IndexOf( deleteField );
+                var deleteButtonCell = ( ( DataControlFieldCell ) e.Row.Cells[deleteFieldIndex] ).Controls[0];
+                deleteButtonCell.Visible = false;
+
+                // disable security button
+                var securityField = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
+                var securityFieldIndex = gFileList.Columns.IndexOf( securityField );
+                var securityButtonCell = ( ( DataControlFieldCell ) e.Row.Cells[securityFieldIndex] ).Controls[0];
+                securityButtonCell.Visible = false;
             }
         }
 
@@ -318,13 +329,21 @@ namespace RockWeb.Blocks.Crm
         protected void gFileList_RowSelected( object sender, RowEventArgs e )
         {
             ClearForm();
-            hfDocumentId.Value = e.RowKeyId.ToString();
+            
             using ( var rockContext = new RockContext() )
             {
                 var documentService = new DocumentService( rockContext );
                 var document = documentService.Get( e.RowKeyId );
 
+                bool canEdit = document.DocumentType.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && document.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                if( !canEdit)
+                {
+                    return;
+                }
+
+                hfDocumentId.Value = e.RowKeyId.ToString();
                 ddlAddEditDocumentType.SelectedValue = document.DocumentTypeId.ToString();
+                ddlAddEditDocumentType.Enabled = false;
                 tbDocumentName.Text = document.Name;
                 tbDescription.Text = document.Description;
                 fuUploader.BinaryFileId = document.BinaryFile.Id;
