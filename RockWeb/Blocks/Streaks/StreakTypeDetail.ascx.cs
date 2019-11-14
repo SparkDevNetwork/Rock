@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Transactions;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -154,7 +155,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void InitializeActionButtons()
         {
-            btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in a job and may take several minutes to complete.');";
+            btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in separate process and may take several minutes to complete.');";
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Enrollments and Exclusions will also be deleted!');", StreakType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( StreakType ) ).Id;
         }
@@ -355,20 +356,8 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
-            var job = new ServiceJobService( rockContext ).Get( Rock.SystemGuid.ServiceJob.REBUILD_STREAK.AsGuid() );
-
-            if ( job == null )
-            {
-                ShowBlockError( nbEditModeMessage, "The streak type rebuild job could not be found." );
-            }
-
-            var jobData = new Dictionary<string, string> {
-                { Rock.Jobs.RebuildStreakMaps.DataMapKey.StreakTypeId, streakType.Id.ToString() }
-            };
-
-            var transaction = new Rock.Transactions.RunJobNowTransaction( job.Id, jobData );
-            System.Threading.Tasks.Task.Run( () => transaction.Execute() );
-            ShowBlockSuccess( nbEditModeMessage, "The streak type rebuild has been started. Check the Rock Jobs page for the status." );
+            new StreakTypeRebuildTransaction( streakType.Id ).Enqueue();
+            ShowBlockSuccess( nbEditModeMessage, "The streak type rebuild has been started." );
         }
 
         /// <summary>
