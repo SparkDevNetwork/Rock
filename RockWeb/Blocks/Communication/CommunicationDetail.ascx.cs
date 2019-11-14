@@ -658,11 +658,15 @@ namespace RockWeb.Blocks.Communication
                 if ( communication == null )
                     return;
 
+                int? categoryId = cpTemplateCategory.SelectedValue.AsIntegerOrNull();
+
+                categoryId = ( categoryId == 0 ) ? null : categoryId;
+
                 var template = new CommunicationTemplate
                 {
                     SenderPersonAliasId = CurrentPersonAliasId,
                     Name = tbTemplateName.Text,
-                    CategoryId = cpTemplateCategory.SelectedValue.AsIntegerOrNull(),
+                    CategoryId = categoryId,
                     Description = tbTemplateDescription.Text,
                     Subject = communication.Subject,
                     FromName = communication.FromName,
