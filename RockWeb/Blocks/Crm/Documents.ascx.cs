@@ -75,6 +75,7 @@ namespace RockWeb.Blocks.Crm
 
         protected string icon = string.Empty;
         protected string title = string.Empty;
+        protected bool canEditBlock = false;
 
         #region Control Overrides
 
@@ -91,7 +92,7 @@ namespace RockWeb.Blocks.Crm
             gFileList.GridRebind += gFileList_GridRebind;
 
             // Verify block authorization
-            bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
+            canEditBlock = IsUserAuthorized( Authorization.EDIT );
             bool canAdministrateBlock = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             gFileList.Actions.ShowAdd = canEditBlock;
@@ -258,8 +259,8 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            bool canView = document.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson );
-            bool canEdit = document.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+            bool canView = document.IsAuthorized( Authorization.VIEW, this.CurrentPerson );
+            bool canEdit = document.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) && canEditBlock;
 
             if (!canView)
             {
