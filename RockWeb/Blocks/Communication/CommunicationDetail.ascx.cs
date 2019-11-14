@@ -46,6 +46,13 @@ namespace RockWeb.Blocks.Communication
     [Description( "Used for displaying details of an existing communication that has already been created." )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
+    /* 14-Nov-2019 - DL
+     * This block makes use of conditional UpdatePanels to allow for partial page updates.
+     * These partial updates are necessary to prevent any full-page postbacks that destroy the content of hidden Bootstrap tabs.
+     *
+     * The block also contains additional script to handle client-side rendering of Charts and Message Content.
+     */
+
     #region Block Attributes
 
     [BooleanField
@@ -713,6 +720,8 @@ namespace RockWeb.Blocks.Communication
                 }
 
                 nbTemplateCreated.Visible = true;
+
+                upPanel.Update();
             }
 
             HideDialog();
@@ -1067,6 +1076,8 @@ namespace RockWeb.Blocks.Communication
                     mdCreateTemplate.Show();
                     break;
             }
+
+            upDialog.Update();
         }
 
         /// <summary>
@@ -1085,6 +1096,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             hfActiveDialog.Value = string.Empty;
+            upDialog.Update();
         }
 
         #endregion
@@ -1738,7 +1750,7 @@ namespace RockWeb.Blocks.Communication
                             AppendMediumData( sb, "HtmlMessage", string.Format( @"
                         <iframe id='js-email-body-iframe' class='email-body'></iframe>
                         <script id='email-body' type='text/template'>{0}</script>
-                        <script type='text/javascript'>
+                        <script id='load-email-body' type='text/javascript'>
                             var doc = document.getElementById('js-email-body-iframe').contentWindow.document;
                             doc.open();
                             doc.write('<html><head><title></title></head><body>' +  $('#email-body').html() + '</body></html>');
