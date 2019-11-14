@@ -56,7 +56,7 @@
                                         {% endif %}
                                     </div>
                                         
-                                    {% assign EventItemOccurrence_LocationCampus = EventItemOccurrence | Attribute:'LocationCampus' %}
+                                    {% assign EventItemOccurrence_LocationCampus = eventItemOccurrence.EventItemOccurrence | Attribute:'LocationCampus' %}
                                     <div class="col-md-3 event-location">{{ EventItemOccurrence_LocationCampus | Default:'Offsite' }}</div>
 
                                 </div>
