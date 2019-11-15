@@ -51,26 +51,36 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlAddEdit" runat="server" Visible="false">
-            <asp:HiddenField ID="hfDocumentId" runat="server" />
-            <asp:ValidationSummary ID="valAddEditDocumentSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" DisplayMode="BulletList" />
-            <%-- Edit Controls --%>
-            <div class="row">
-                <div class="col-md-6">
-                    <Rock:RockDropDownList ID="ddlAddEditDocumentType" runat="server" Label="Document Type" Required="true" OnSelectedIndexChanged="ddlAddEditDocumentType_SelectedIndexChanged" AutoPostBack="true"/>
-                    <Rock:RockTextBox ID="tbDocumentName" runat="server" Label="Document Name" Required="true"></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine"></Rock:RockTextBox>
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="<%=this.icon %>"></i> <%=this.title %></h1>
                 </div>
-                <div class="col-md-6">
-                    <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg" UploadButtonText="Drop Files Here or Click to Select File"></Rock:FileUploader>
+                <asp:HiddenField ID="hfDocumentId" runat="server" />
+                <asp:ValidationSummary ID="valAddEditDocumentSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" DisplayMode="BulletList" />
+                <%-- Edit Controls --%>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+                        </div>
+                    </div>
+                    <div style="padding: 10px;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:RockDropDownList ID="ddlAddEditDocumentType" runat="server" Label="Document Type" Required="true" OnSelectedIndexChanged="ddlAddEditDocumentType_SelectedIndexChanged" AutoPostBack="true"/>
+                            <Rock:RockTextBox ID="tbDocumentName" runat="server" Label="Document Name" Required="true"></Rock:RockTextBox>
+                            <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine"></Rock:RockTextBox>
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select"></Rock:FileUploader>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" CausesValidation="true" />
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    </div>
                 </div>
-            </div>
-            <div class="actions">
-                <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" CausesValidation="true" />
-                <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
         </asp:Panel>
-
-
 
     </ContentTemplate>
 </asp:UpdatePanel>
