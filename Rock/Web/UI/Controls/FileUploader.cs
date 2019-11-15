@@ -684,7 +684,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "fileupload-group " + this.FormGroupCssClass );
+            writer.AddAttribute( "class", "fileupload-group" );
             writer.AddAttribute( "id", this.ClientID );
 
             if ( ToolTip.IsNotNullOrWhiteSpace() )

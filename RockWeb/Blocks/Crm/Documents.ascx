@@ -55,15 +55,12 @@
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="<%=this.icon %>"></i> <%=this.title %></h1>
                 </div>
+                <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
                 <asp:HiddenField ID="hfDocumentId" runat="server" />
-                <asp:ValidationSummary ID="valAddEditDocumentSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" DisplayMode="BulletList" />
+
                 <%-- Edit Controls --%>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
-                        </div>
-                    </div>
-                    <div style="padding: 10px;">
+                    <div class="panel-body">
+                    <asp:ValidationSummary ID="valAddEditDocumentSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" DisplayMode="BulletList" />
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlAddEditDocumentType" runat="server" Label="Document Type" Required="true" OnSelectedIndexChanged="ddlAddEditDocumentType_SelectedIndexChanged" AutoPostBack="true"/>
@@ -71,7 +68,7 @@
                             <Rock:RockTextBox ID="tbDescription" runat="server" Label="Description" TextMode="MultiLine"></Rock:RockTextBox>
                         </div>
                         <div class="col-md-6">
-                            <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select"></Rock:FileUploader>
+                            <Rock:FileUploader ID="fuUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="true" Label="Document File" RequiredErrorMessage="A Document File is required." FormGroupCssClass="label-hidden fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select"></Rock:FileUploader>
                         </div>
                     </div>
                     <div class="actions">
