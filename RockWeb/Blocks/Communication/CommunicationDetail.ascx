@@ -6,6 +6,17 @@
     }
 </script>
 
+<style>
+.chart-banner
+{
+    width: 100%;
+}
+.chart-banner canvas
+{
+    height: 350px;
+}
+</style>
+
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
@@ -89,8 +100,8 @@
                                             <div class="col-md-12">
                                                 <Rock:NotificationBox ID="nbCommunicationorCommunicationListFound" runat="server" NotificationBoxType="Warning" Text="Invalid Communication or CommunicationList Specified" Visible="false" />
                                                 <%-- Main Opens/Clicks Line Chart --%>
-                                                <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
-                                                <div class="chart-container" style="height:350px;">
+                                                <Rock:NotificationBox ID="nbOpenClicksLineChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" Visible="false" />
+                                                <div class="chart-container chart-banner">
                                                     <canvas id="openClicksLineChartCanvas" runat="server" class="js-chart-canvas-main" />
                                                 </div>
                                             </div>
@@ -101,7 +112,7 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <%-- Opens/Clicks PieChart --%>
-                                                <Rock:NotificationBox ID="nbOpenClicksPieChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" />
+                                                <Rock:NotificationBox ID="nbOpenClicksPieChartMessage" runat="server" NotificationBoxType="Info" Text="No Communication Activity" Visible="false" />
                                                 <div class="chart-container">
                                                     <canvas id="opensClicksPieChartCanvas" runat="server" class="js-chart-canvas-opens" />
                                                 </div>
@@ -170,7 +181,7 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <%-- Clients Doughnut Chart --%>
-                                                <Rock:NotificationBox ID="nbClientsDoughnutChartMessage" runat="server" NotificationBoxType="Info" Text="No Client Communication Activity" />
+                                                <Rock:NotificationBox ID="nbClientsDoughnutChartMessage" runat="server" NotificationBoxType="Info" Text="No Client Communication Activity" Visible="false" />
                                                 <div class="chart-container">
                                                     <canvas id="clientsDoughnutChartCanvas" runat="server" class="js-chart-canvas-clients" />
                                                 </div>
