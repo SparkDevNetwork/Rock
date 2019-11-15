@@ -73,8 +73,8 @@ namespace RockWeb.Blocks.Crm
             public const string ShowSecurityButton = "ShowSecurityButton";
         }
 
-        protected string icon = string.Empty;
-        protected string title = string.Empty;
+        protected string icon;
+        protected string title;
 
         #region Control Overrides
 
@@ -82,8 +82,8 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            icon = GetAttributeValue( AttributeKeys.HeadingIconCssClass );
-            title = GetAttributeValue( AttributeKeys.HeadingTitle );
+            icon = GetAttributeValue( AttributeKeys.HeadingIconCssClass ) ?? string.Empty;
+            title = GetAttributeValue( AttributeKeys.HeadingTitle ) ?? string.Empty;
 
             this.BlockUpdated += Block_BlockUpdated;
 
@@ -341,6 +341,7 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
+                pdAuditDetails.SetEntity( document, ResolveRockUrl( "~" ) );
                 hfDocumentId.Value = e.RowKeyId.ToString();
                 ddlAddEditDocumentType.SelectedValue = document.DocumentTypeId.ToString();
                 ddlAddEditDocumentType.Enabled = false;
