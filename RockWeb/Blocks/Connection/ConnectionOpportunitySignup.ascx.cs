@@ -417,7 +417,6 @@ namespace RockWeb.Blocks.Connection
                 // load campus dropdown
                 var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
                 cpCampus.Campuses = campuses;
-                cpCampus.Visible = campuses.Count > 1;
 
                 bool campusSelected = false;
 
