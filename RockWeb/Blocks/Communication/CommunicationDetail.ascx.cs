@@ -848,13 +848,17 @@ namespace RockWeb.Blocks.Communication
 
         #region Recipients Grid Events
 
+        private bool _GridIsExporting = false;
+
         /// <summary>
         /// Handles the GridRebind event of the Recipient grid controls.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void gRecipients_GridRebind( object sender, EventArgs e )
+        void gRecipients_GridRebind( object sender, GridRebindEventArgs e )
         {
+            _GridIsExporting = e.IsExporting;
+
             BindRecipientsGrid();
         }
 
@@ -873,6 +877,11 @@ namespace RockWeb.Blocks.Communication
             var listItem = e.Row.DataItem as DataRowView;
 
             if ( listItem == null )
+            {
+                return;
+            }
+
+            if ( _GridIsExporting )
             {
                 return;
             }
@@ -1348,15 +1357,14 @@ namespace RockWeb.Blocks.Communication
             var reportBuilder = new ReportTemplateBuilder( typeof( Rock.Model.Person ) );
 
             // Add default fields.
-            var connectionStatusField = reportBuilder.AddPropertyField( "ConnectionStatusValueId", "ConnectionStatusValue" );
+            if ( !_GridIsExporting )
+            {
+                var isDeceasedField = reportBuilder.AddPropertyField( "IsDeceased" );
 
-            connectionStatusField.ShowInGrid = false;
+                isDeceasedField.ShowInGrid = false;
+            }
 
-            var isDeceasedField = reportBuilder.AddPropertyField( "IsDeceased" );
-
-            isDeceasedField.ShowInGrid = false;
-
-            dynamic settings = new { ShowAsLink = true, DisplayOrder = 0 };
+            dynamic settings = new { ShowAsLink = !_GridIsExporting, DisplayOrder = 0 };
 
             reportBuilder.AddDataSelectField( "Rock.Reporting.DataSelect.Person.PersonLinkSelect", settings, "Name" );
 
@@ -1479,11 +1487,18 @@ namespace RockWeb.Blocks.Communication
                 // Build the output data for the Report by combining the report template with the filter.
                 var builder = new ReportOutputBuilder( report, dataContext );
 
+                ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.RawValue;
+
+                if ( _GridIsExporting )
+                {
+                    contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.FormattedText;
+                }
+
                 var results = builder.GetReportData( this.CurrentPerson,
                     whereExpression,
                     parameterExpression,
                     dataContext,
-                    ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.RawValue );
+                    contentType );
 
                 dataTable = results.Data;
 
@@ -2482,7 +2497,11 @@ namespace RockWeb.Blocks.Communication
         private void AddStandardRecipientFieldsToDataSource( RockContext dataContext, DataTable dataTable, ReportOutputBuilder builder ) //, int skipCount, int takeCount )
         {
             // Add the standard data to the data source.
-            dataTable.Columns.Add( "IsActive", typeof( bool ) );
+            if ( !_GridIsExporting )
+            {
+                dataTable.Columns.Add( "IsActive", typeof( bool ) );
+            }
+
             dataTable.Columns.Add( "DeliveryStatus", typeof( string ) );
             dataTable.Columns.Add( "HasOpened", typeof( bool ) );
             dataTable.Columns.Add( "HasClicked", typeof( bool ) );
