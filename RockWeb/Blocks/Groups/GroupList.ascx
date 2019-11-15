@@ -51,6 +51,7 @@
                 </div>
                 <div class="row">
                     <div class="col-md-4">
+                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectedIndexChanged" ValidationGroup="GroupName"/>
                         <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true" />
                         <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="false" AutoPostBack="false" />
                     </div>
