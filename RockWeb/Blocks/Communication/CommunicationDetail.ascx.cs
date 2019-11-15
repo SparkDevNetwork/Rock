@@ -1252,7 +1252,6 @@ namespace RockWeb.Blocks.Communication
 
             ShowStatus( communication );
 
-            // lTitle.Text = ( communication.Name ?? communication.Subject ?? "Communication" ).FormatAsHtmlTitle();
             lTitle.Text = ( string.IsNullOrEmpty( communication.Name ) ? ( string.IsNullOrEmpty( communication.Subject ) ? communication.PushTitle : communication.Subject ) : communication.Name ).FormatAsHtmlTitle();
             pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
 
@@ -2355,12 +2354,14 @@ namespace RockWeb.Blocks.Communication
                 AddCalculatedColumn( _Columns, PersonPropertyColumn.Age, "Rock.Reporting.DataSelect.Person.AgeSelect" );
                 AddCalculatedColumn( _Columns, PersonPropertyColumn.Grade, "Rock.Reporting.DataSelect.Person.GradeSelect" );
 
-                // Add Attributes
+                // Add Person Attributes that the current user is authorized to View.
                 var person = new Person();
 
                 person.LoadAttributes();
 
-                foreach ( var attribute in person.Attributes )
+                var allowedAttributes = person.Attributes.Where( a => a.Value.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList();
+
+                foreach ( var attribute in allowedAttributes )
                 {
                     AddAttributeColumn( _Columns, attribute.Value.Guid.ToString(), attribute.Value.Name );
                 }
