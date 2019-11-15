@@ -7,7 +7,7 @@
                 <div class="panel-heading">
                     <h1 class="panel-title"><i class="<%=this.icon %>"></i> <%=this.title %></h1>
                     <div class="form-inline pull-right clearfix">
-                        <asp:DropDownList ID="ddlDocumentType" runat="server" Label="Document Types" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlDocumentType_SelectedIndexChanged" />
+                        <asp:DropDownList ID="ddlDocumentType" runat="server" Label="Document Types" CssClass="form-control input-xs" IncludeGlobalOption="true" AutoPostBack="true" OnSelectedIndexChanged="ddlDocumentType_SelectedIndexChanged" />
                     </div>
                 </div>
 
