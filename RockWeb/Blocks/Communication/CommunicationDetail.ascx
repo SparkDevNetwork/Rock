@@ -326,6 +326,10 @@
                                             <%-- Block-specific Filter Fields --%>
                                             <Rock:RockTextBox ID="txbFirstNameFilter" runat="server" Label="First Name" />
                                             <Rock:RockTextBox ID="txbLastNameFilter" runat="server" Label="Last Name" />
+                                            <Rock:RockCheckBoxList ID="cblMedium" runat="server" Label="Communication Medium">
+                                                <asp:ListItem Text="Email" />
+                                                <asp:ListItem Text="SMS" />
+                                            </Rock:RockCheckBoxList>
                                             <Rock:RockCheckBoxList ID="cblDeliveryStatus" runat="server" Label="Delivery Status">
                                                 <asp:ListItem Text="Pending" />
                                                 <asp:ListItem Text="Delivered" />
@@ -340,6 +344,7 @@
                                                 <asp:ListItem Text="Clicked" />
                                                 <asp:ListItem Text="Not Clicked" />
                                             </Rock:RockCheckBoxList>
+                                            <Rock:RockTextBox ID="txbDeliveryStatusNote" runat="server" Label="Delivery Note" />
                                         </Rock:GridFilter>
                                         <Rock:Grid ID="gRecipients" runat="server" EmptyDataText="No Recipients Found" AllowSorting="true">
                                             <Columns>
