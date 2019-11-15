@@ -457,6 +457,7 @@
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="SystemGuid\Person.cs" />
+    <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
     <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
@@ -512,7 +513,6 @@
     <Compile Include="Jobs\PostV90DataMigrationsScheduledTransactionNotesToHistory.cs" />
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
     <Compile Include="Field\Types\StreakTypeFieldType.cs" />
-    <Compile Include="Jobs\RebuildStreakMaps.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
     <Compile Include="Lava\Blocks\JsonProperty.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />

@@ -97,7 +97,8 @@ namespace Rock.SystemGuid
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
 
         /// <summary>
-        /// The Job to Rebuild a Sequence.
+        /// The Job to Rebuild a Sequence. This job has been deleted and replaced with
+        /// <see cref="Rock.Transactions.StreakTypeRebuildTransaction" />
         /// </summary>
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
     }
