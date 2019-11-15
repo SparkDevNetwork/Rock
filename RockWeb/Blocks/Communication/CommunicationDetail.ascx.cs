@@ -1378,11 +1378,11 @@ namespace RockWeb.Blocks.Communication
                 }
                 else if ( columnInfo.ContentType == PersonDataSourceColumnSourceSpecifier.Calculated )
                 {
-                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name ); //, propertyName );
+                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name );
                 }
                 else if ( columnInfo.ContentType == PersonDataSourceColumnSourceSpecifier.Attribute )
                 {
-                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name ); //, propertyName );
+                    reportBuilder.AddDataSelectField( columnInfo.ColumnSourceIdentifier, columnInfo.Settings, columnInfo.Name );
                 }
             }
 
