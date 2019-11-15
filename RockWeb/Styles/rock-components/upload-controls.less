@@ -13,13 +13,22 @@
   border: 1px solid @input-border;
   border-radius: @border-radius-base;
 
-  &:focus-within {
-    border: 1px solid @input-border-focus;
-    box-shadow: @input-focus-box-shadow;
+  .has-error & {
+    border-color: @state-danger-text;
+
+    &:focus-within {
+      border-color: @brand-danger;
+      box-shadow: 0 0 0 3px fade(@brand-danger, 20%);
+    }
   }
 }
 
 .imageupload-group {
+
+  &:focus-within {
+    border-color: @input-border-focus;
+    box-shadow: @input-focus-box-shadow;
+  }
 
   .imageupload-thumbnail {
     position: relative;
@@ -60,11 +69,6 @@
     border: 1px solid @input-border;
     border-radius: 0 0 @border-radius-base @border-radius-base;
 
-    &:focus-within {
-      border-color: @input-border-focus;
-      box-shadow: @input-focus-box-shadow;
-    }
-
     ::-webkit-file-upload-button {
       cursor: pointer;
     }
@@ -104,6 +108,10 @@
 }
 
 .fileupload-group {
+  &:focus-within {
+    border-color: @input-border-focus;
+    box-shadow: @input-focus-box-shadow;
+  }
 
   .fileupload-remove {
     position: absolute;
@@ -298,7 +306,7 @@
   }
 }
 
-.fileupload-group-lg {
+.fileupload-group-lg .fileupload-group {
   display: block;
   border-style: dashed;
   border-width: 2px;
