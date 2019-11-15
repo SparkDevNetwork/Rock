@@ -183,7 +183,11 @@ namespace Rock.Web.UI.Controls
             List<int> selectedItems = new List<int>();
 
             // If there is one campus then only show if ForceVisible is true.
-            if ( campuses.Count == 1 )
+            if ( campuses.Count == 0 )
+            {
+                this.Visible = false;
+            }
+            else if ( campuses.Count == 1 )
             {
                 this.Visible = ForceVisible;
 
