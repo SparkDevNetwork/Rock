@@ -1719,6 +1719,7 @@ namespace RockWeb.Blocks.Communication
                     {
                         sb.AppendLine( "<div class='row'>" );
                         sb.AppendLine( "<div class='col-md-6'>" );
+                        sb.AppendLine( "<dl>" );
 
                         AppendMediumData( sb, "From Name", communication.FromName );
                         AppendMediumData( sb, "From Address", communication.FromEmail );
@@ -1741,13 +1742,16 @@ namespace RockWeb.Blocks.Communication
                             }
                             sb.Append( "</ul>" );
                         }
+
+                        sb.AppendLine( "</dl>" );
+
                         sb.AppendLine( "</div>" );
 
                         sb.AppendLine( "</div>" );
 
                         if ( communication.Message.IsNotNullOrWhiteSpace() )
                         {
-                            AppendMediumData( sb, "HtmlMessage", string.Format( @"
+                            AppendMediumData( sb, "HTML Message", string.Format( @"
                         <iframe id='js-email-body-iframe' class='email-body'></iframe>
                         <script id='email-body' type='text/template'>{0}</script>
                         <script id='load-email-body' type='text/javascript'>
@@ -1793,7 +1797,7 @@ namespace RockWeb.Blocks.Communication
         {
             if ( key.IsNotNullOrWhiteSpace() && value.IsNotNullOrWhiteSpace() )
             {
-                sb.AppendFormat( "<div class='form-group'><label class='control-label'>{0}</label><p class='form-control-static'>{1}</p></div>", key, value );
+                sb.AppendFormat( "<dt>{0}</dt><dd>{1}</dd>", key, value );
             }
         }
 
@@ -2342,7 +2346,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Add a Person Property to the column selection for the Recipients List. 
+        /// Add a Person Property to the column selection for the Recipients List.
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="propertyName"></param>
@@ -2361,7 +2365,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Add a calculated column to the column selection for the Recipients List. 
+        /// Add a calculated column to the column selection for the Recipients List.
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="name"></param>
@@ -2386,7 +2390,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Add a Person Attribute to the column selection for the Recipients List. 
+        /// Add a Person Attribute to the column selection for the Recipients List.
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="attributeGuid"></param>
@@ -2445,7 +2449,7 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Get the query that uniquely identifies the subset records that match the current filter.
         /// At a minimum, this query must return a unique identifier for each record that can be used to retrieve additional details about the item.
-        /// Additional information may also be retrieved and cached here if it is 
+        /// Additional information may also be retrieved and cached here if it is
         /// </summary>
         /// <param name="skipCount"></param>
         /// <param name="takeCount"></param>
@@ -2781,7 +2785,7 @@ namespace RockWeb.Blocks.Communication
         #region Block specific classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class SummaryInfo
         {
@@ -2811,7 +2815,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class TopLinksInfo
         {
@@ -2849,7 +2853,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ClientTypeUsageInfo
         {
@@ -2871,7 +2875,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class ApplicationUsageInfo
         {
