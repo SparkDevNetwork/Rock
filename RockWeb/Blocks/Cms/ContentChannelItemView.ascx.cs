@@ -700,9 +700,7 @@ Guid - ContentChannelItem Guid
             var interactionTransaction = new InteractionTransaction(
                 DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() ),
                 contentChannelItem.ContentChannel,
-                contentChannelItem );
-
-            interactionTransaction.InteractionSummary = contentChannelItem.Title;
+                contentChannelItem, new InteractionTransactionOptions { InteractionSummary = contentChannelItem.Title }  );
 
             interactionTransaction.Enqueue();
         }
