@@ -80,6 +80,7 @@
     <Compile Include="Achievement\StreakAchievementTests.cs" />
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
+    <Compile Include="Interactions\PageViewTests.cs" />
     <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />
