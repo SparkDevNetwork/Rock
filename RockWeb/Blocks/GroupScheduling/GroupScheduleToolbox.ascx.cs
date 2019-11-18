@@ -363,9 +363,9 @@ $('#{0}').tooltip();
         /// </summary>
         /// <param name="attendance">The attendance.</param>
         /// <returns></returns>
-        protected string GetOccurrenceTime( Attendance attendance )
+        protected string GetOccurrenceScheduleName( Attendance attendance )
         {
-            return attendance.Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString();
+            return attendance.Occurrence.Schedule.Name;
         }
 
         /// <summary>
@@ -381,7 +381,7 @@ $('#{0}').tooltip();
             var attendance = e.Item.DataItem as Attendance;
 
             lConfirmedOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lConfirmedOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lConfirmedOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
 
             btnCancelConfirmAttending.CommandName = "AttendanceId";
             btnCancelConfirmAttending.CommandArgument = attendance.Id.ToString();
@@ -401,7 +401,7 @@ $('#{0}').tooltip();
             var attendance = e.Item.DataItem as Attendance;
 
             lPendingOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lPendingOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lPendingOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
             btnConfirmAttending.CommandName = "AttendanceId";
             btnConfirmAttending.CommandArgument = attendance.Id.ToString();
 
