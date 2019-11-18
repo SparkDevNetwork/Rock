@@ -34,7 +34,7 @@
 
         <div id="staff" class="row soft-double-sides xs-soft-half-sides text-center push-double-top xs-push-half-top">
 
-            {% for person in campusStaff %}{% assign staffTitle = person | Attribute:'StaffTitle' %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom  {% if servicetype == 'NewSpring' and staffTitle contains 'Campus Pastor' %}hidden{% endif %}{% if servicetype == 'Fuse' and staffTitle contains 'Fuse' %}hidden{% endif %}">
+            {% for person in campusStaff %}{% assign staffTitle = person | Attribute:'StaffTitle' %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom  {% if servicetype == 'NewSpring' and staffTitle contains 'Campus Pastor' and staffTitle != 'Campus Pastor Assistant' %}hidden{% endif %}{% if servicetype == 'Fuse' and staffTitle contains 'Fuse' %}hidden{% endif %}">
 
                 {[ user imageurl:'{{ person | Attribute:'StaffImage','Url' }}' title:'{{ person.FullName }}' subtitle:'{{ staffTitle | Replace:"'","’" }}' linkurl:'mailto:{{ person | Attribute:'StaffEmail' }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
 
