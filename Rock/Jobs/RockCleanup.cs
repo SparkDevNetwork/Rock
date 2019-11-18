@@ -720,29 +720,36 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         private int CleanupInteractions( JobDataMap dataMap )
         {
-            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
-            var interactionRockContext = new Rock.Data.RockContext();
-            var currentDateTime = RockDateTime.Now;
-            var interactionChannelService = new InteractionChannelService( interactionRockContext );
-            var interactionChannelQry = interactionChannelService.Queryable().Where( a => a.RetentionDuration.HasValue );
+            
             int totalRowsDeleted = 0;
+            var commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 900;
+            var currentDateTime = RockDateTime.Now;
 
-            foreach ( var interactionChannel in interactionChannelQry.ToList() )
+            using ( var interactionRockContext = new Rock.Data.RockContext() )
             {
-                var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
-                if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
-                {
-                    retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
-                }
+                interactionRockContext.Database.CommandTimeout = commandTimeout;
+                var interactionChannelService = new InteractionChannelService( interactionRockContext );
+                var interactionChannelQry = interactionChannelService.Queryable().Where( a => a.RetentionDuration.HasValue );
 
-                // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
-                bool keepDeleting = true;
-                while ( keepDeleting )
+                bool keepDeleting;
+                int batchCleanupAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+
+                foreach ( var interactionChannel in interactionChannelQry.ToList() )
                 {
-                    var dbTransaction = interactionRockContext.Database.BeginTransaction();
-                    try
+                    var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
+                    if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
                     {
-                        string sqlCommand = @"
+                        retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                    }
+
+                    // delete in chunks (see http://dba.stackexchange.com/questions/1750/methods-of-speeding-up-a-huge-delete-from-table-with-no-clauses)
+                    keepDeleting = true;
+                    while ( keepDeleting )
+                    {
+                        var dbTransaction = interactionRockContext.Database.BeginTransaction();
+                        try
+                        {
+                            string sqlCommand = @"
 DELETE TOP (@batchAmount)
 FROM ia
 FROM [Interaction] ia
@@ -750,14 +757,44 @@ INNER JOIN [InteractionComponent] ic ON ia.InteractionComponentId = ic.Id
 WHERE ic.ChannelId = @channelId
 	AND ia.InteractionDateTime < @retentionCutoffDateTime
 ";
-                        int rowsDeleted = interactionRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "channelId", interactionChannel.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
-                        keepDeleting = rowsDeleted > 0;
-                        totalRowsDeleted += rowsDeleted;
+                            int rowsDeleted = interactionRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchCleanupAmount ), new SqlParameter( "channelId", interactionChannel.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
+                            keepDeleting = rowsDeleted > 0;
+                            totalRowsDeleted += rowsDeleted;
+                        }
+                        finally
+                        {
+                            dbTransaction.Commit();
+                        }
                     }
-                    finally
-                    {
-                        dbTransaction.Commit();
-                    }
+                }
+            }
+
+            // delete any InteractionSession records that are no longer used.
+            using ( var interactionSessionRockContext = new Rock.Data.RockContext() )
+            {
+                var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable();
+                var interactionSessionQueryable = new InteractionSessionService( interactionSessionRockContext ).Queryable();
+
+                // take a snapshot of the most recent session id so we don't have to worry about deleting a session id that might be right in the middle of getting used
+                int maxInteractionSessionId = interactionSessionQueryable.Max( a => ( int? ) a.Id ) ?? 0;
+
+                var keepDeleting = true;
+                var intersactionBatchSize = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+                while ( keepDeleting )
+                {
+                    var unusedInteractionSessionsQuery = interactionSessionQueryable
+                        .Where( s => !interactionQueryable.Any( i => i.InteractionSessionId == s.Id ) )
+                        .Where( a => a.Id < maxInteractionSessionId );
+
+                    // Event though BulkDelete has a batch amount, that could exceed our command time out since that'll just be one command for the whole thing, so let's break it up into multiple commands
+                    // Also, this helps prevent new interactions waiting the batch operation
+                    unusedInteractionSessionsQuery = unusedInteractionSessionsQuery
+                        .OrderBy( a => a.Id )
+                        .Take( intersactionBatchSize );
+
+                    var rowsDeleted = interactionSessionRockContext.BulkDelete( unusedInteractionSessionsQuery );
+                    keepDeleting = rowsDeleted > 0;
+                    totalRowsDeleted += rowsDeleted;
                 }
             }
 
