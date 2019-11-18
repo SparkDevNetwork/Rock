@@ -15,12 +15,15 @@ namespace Rock.Model
     public partial class RelatedEntityService
     {
         /// <summary>
-        /// Returns a Queryable of source related entity on the basis of purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity" /> target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
-        /// <param name="sourceEntityId">A <see cref="System.Int32"/> representing the source entity identifier.</param>
-        /// <param name="sourceEntityTypeId">A <see cref="System.Int32"/> representing the source entity type identifier.</param>
-        /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
+        /// <param name="sourceEntityId">A <see cref="System.Int32" /> representing the source entity identifier.</param>
+        /// <param name="sourceEntityTypeId">A <see cref="System.Int32" /> representing the source entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32" /> representing the related target entity type identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity" /> entities.
+        /// </returns>
         public IQueryable<IEntity> GetRelatedToSource( int sourceEntityId, int sourceEntityTypeId, int relatedEntityTypeId, string purposeKey = "" )
         {
             EntityTypeCache relatedEntityTypeCache = EntityTypeCache.Get( relatedEntityTypeId );
@@ -62,12 +65,15 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a Queryable of source related entity on the basis of purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
-        /// <param name="targetEntityId">A <see cref="System.Int32"/> representing the target entity identifier.</param>
-        /// <param name="targetEntityTypeId">A <see cref="System.Int32"/> representing the target entity type identifier.</param>
-        /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
+        /// <param name="targetEntityId">A <see cref="System.Int32" /> representing the target entity identifier.</param>
+        /// <param name="targetEntityTypeId">A <see cref="System.Int32" /> representing the target entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32" /> representing the related source entity type identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity" /> entities.
+        /// </returns>
         public IQueryable<IEntity> GetRelatedToTarget( int targetEntityId, int targetEntityTypeId, int relatedEntityTypeId, string purposeKey = "" )
         {
             EntityTypeCache relatedEntityTypeCache = EntityTypeCache.Get( relatedEntityTypeId );
