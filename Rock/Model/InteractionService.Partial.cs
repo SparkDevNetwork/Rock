@@ -247,6 +247,7 @@ namespace Rock.Model
         /// <returns></returns>
         private int GetInteractionSessionId( Guid browserSessionId, string ipAddress, int? interactionDeviceTypeId )
         {
+            var currentDateTime = RockDateTime.Now;
             // To make this more thread safe and to avoid overhead of an extra database call, etc, run a SQL block to Get/Create in one quick SQL round trip
             int interactionSessionId = this.Context.Database.SqlQuery<int>( @"
 BEGIN
@@ -262,12 +263,16 @@ BEGIN
 			[DeviceTypeId]
 			,[IpAddress]
 			,[Guid]
+            ,[CreatedDateTime]
+            ,[ModifiedDateTime]
 			)
         OUTPUT inserted.Id
 		VALUES (
 			@interactionDeviceTypeId
 			,@ipAddress
 			,@browserSessionId
+            ,@currentDateTime
+            ,@currentDateTime
 			)
 	END
 	ELSE
@@ -278,7 +283,8 @@ END
 ",
 new SqlParameter( "@browserSessionId", browserSessionId ),
 new SqlParameter( "@ipAddress", ipAddress ),
-new SqlParameter( "@interactionDeviceTypeId", interactionDeviceTypeId )
+new SqlParameter( "@interactionDeviceTypeId", interactionDeviceTypeId ),
+new SqlParameter( "@currentDateTime", currentDateTime)
 ).FirstOrDefault();
 
             return interactionSessionId;
