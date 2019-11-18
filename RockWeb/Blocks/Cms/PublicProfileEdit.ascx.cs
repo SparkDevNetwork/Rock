@@ -1274,7 +1274,16 @@ namespace RockWeb.Blocks.Cms
                             if ( showCampus )
                             {
                                 cpCampus.Campuses = CampusCache.All( false );
-                                cpCampus.SetValue( person.GetCampus() );
+
+                                // Use the current person's campus if this a new person
+                                if ( personGuid == Guid.Empty )
+                                {
+                                    cpCampus.SetValue( CurrentPerson.PrimaryCampus );
+                                }
+                                else
+                                {
+                                    cpCampus.SetValue( person.GetCampus() );
+                                }
                             }
                         }
                         tbEmail.Text = person.Email;
