@@ -160,7 +160,7 @@ namespace Rock.Model
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             DefinedValueCache.UpdateCachedEntity( this.Id, entityState );
-            DefinedTypeCache.Get( this.DefinedTypeId, (RockContext)dbContext )?.ReloadDefinedValues();
+            DefinedTypeCache.FlushItem( this.DefinedTypeId );
         }
 
         #endregion
