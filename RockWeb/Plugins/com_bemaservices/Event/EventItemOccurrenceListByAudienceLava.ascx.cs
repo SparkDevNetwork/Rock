@@ -148,7 +148,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             var audienceGuid = GetAttributeValue( "Audience" ).AsGuid();
 
             /* BEMA.FE1.Start */
-            var selectedCategoryGuids = GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
+            var selectedCategoryGuids = GetAttributeValue(AttributeKey.AdditionalAudiences ).SplitDelimitedValues( true ).AsGuidList();
 
             if ( audienceGuid != Guid.Empty || selectedCategoryGuids.Any() )
             /* BEMA.FE1.End */
