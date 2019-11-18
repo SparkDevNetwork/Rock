@@ -660,6 +660,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                                     PersonAliasId = g.PersonAlias.PersonId,
                                     Group = g.Group,
                                     PledgeFrequencyValue = g.PledgeFrequencyValue,
+                                    PledgeFrequencyValueId = g.PledgeFrequencyValueId,
                                     TotalAmount = g.TotalAmount,
                                     PersonAlias = g.PersonAlias,
                                     AmountPledged = g.TotalAmount,
@@ -913,6 +914,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             /// </summary>
             public virtual DefinedValue PledgeFrequencyValue { get; set; }
+
+            public virtual int? PledgeFrequencyValueId { get; set; }
 
 
             /// </summary>
