@@ -359,10 +359,10 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Gets the occurrence time.
+        /// Gets the occurrence schedule's name.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        /// <returns></returns>
+        /// <returns>The name of the schedule</returns>
         protected string GetOccurrenceScheduleName( Attendance attendance )
         {
             return attendance.Occurrence.Schedule.Name;
