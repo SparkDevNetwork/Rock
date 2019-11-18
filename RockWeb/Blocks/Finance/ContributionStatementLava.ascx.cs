@@ -371,21 +371,43 @@ namespace RockWeb.Blocks.Finance
                                                     Order = s.Max( a => a.Account.Order )
                                                 } )
                                                 .OrderBy( s => s.Order ) );
+
             // pledge information
+            if ( GetAttributeValue( "DisplayPledges" ).AsBoolean() )
+            {
+                List<PledgeSummary> pledges = GetPledgeDataForPersonYear( rockContext, statementYear, personAliasIds );
+                mergeFields.Add( "Pledges", pledges );
+            }
+
+            var template = GetAttributeValue( "LavaTemplate" );
+
+            lResults.Text = template.ResolveMergeFields( mergeFields );
+
+        }
+
+        /// <summary>
+        /// Gets the pledge data for the given person and year.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="statementYear">The statement year.</param>
+        /// <param name="personAliasIds">The person alias ids.</param>
+        /// <returns></returns>
+        private static List<PledgeSummary> GetPledgeDataForPersonYear( RockContext rockContext, int statementYear, List<int> personAliasIds )
+        {
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
-                                    && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
-                                .GroupBy( p => p.Account )
-                                .Select( g => new PledgeSummary
-                                {
-                                    AccountId = g.Key.Id,
-                                    AccountName = g.Key.Name,
-                                    PublicName = g.Key.PublicName,
-                                    AmountPledged = g.Sum( p => p.TotalAmount ),
-                                    PledgeStartDate = g.Min( p => p.StartDate ),
-                                    PledgeEndDate = g.Max( p => p.EndDate )
-                                } )
-                                .ToList();
+                                            .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value )
+                                                && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
+                                            .GroupBy( p => p.Account )
+                                            .Select( g => new PledgeSummary
+                                            {
+                                                AccountId = g.Key.Id,
+                                                AccountName = g.Key.Name,
+                                                PublicName = g.Key.PublicName,
+                                                AmountPledged = g.Sum( p => p.TotalAmount ),
+                                                PledgeStartDate = g.Min( p => p.StartDate ),
+                                                PledgeEndDate = g.Max( p => p.EndDate )
+                                            } )
+                                            .ToList();
 
             // add detailed pledge information
             foreach ( var pledge in pledges )
@@ -425,12 +447,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            mergeFields.Add( "Pledges", pledges );
-
-            var template = GetAttributeValue( "LavaTemplate" );
-
-            lResults.Text = template.ResolveMergeFields( mergeFields );
-
+            return pledges;
         }
 
         #endregion
