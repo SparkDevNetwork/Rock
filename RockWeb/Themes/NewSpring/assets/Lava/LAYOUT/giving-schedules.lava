@@ -9,7 +9,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">No Active Giving Schedules</div>
             <div class="panel-body">
-                <p class="push-half-bottom">It looks like you currently don't have any active giving schedules.</p>
+                <p class="push-half-bottom">It looks like you don't have any active giving schedules.</p>
                 <p class="flush"><a href="/give/now" class="btn btn-primary">Create a Giving Schedule</a></p>
             </div>
         </div>
