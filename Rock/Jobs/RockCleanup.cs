@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -201,6 +200,7 @@ namespace Rock.Jobs
         private int PersonCleanup( JobDataMap dataMap )
         {
             int resultCount = 0;
+
             // Add any missing person aliases
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
@@ -223,6 +223,7 @@ namespace Rock.Jobs
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
                 PersonService personService = new PersonService( personRockContext );
+
                 // Add any missing metaphones
                 int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
                 if ( namesToProcess > 0 )
@@ -309,10 +310,7 @@ namespace Rock.Jobs
 
                 var currentDateTime = RockDateTime.Now;
 
-                familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group
-                {
-                    IsActive = false
-                } );
+                familyRockContext.BulkUpdate( activeFamilyWithNoActiveMembers, x => new Rock.Model.Group { IsActive = false } );
             }
 
             return resultCount;
@@ -365,8 +363,7 @@ namespace Rock.Jobs
                             PersonAliasId = person.PrimaryAliasId,
                             SearchTypeValueId = alternateValueId,
                             SearchValue = alternateId
-                        }
-                    );
+                        } );
                 }
 
                 if ( itemsToInsert.Count > 0 )
@@ -453,6 +450,7 @@ namespace Rock.Jobs
         private int CleanupTemporaryBinaryFiles()
         {
             var binaryFileRockContext = new Rock.Data.RockContext();
+
             // clean out any temporary binary files
             BinaryFileService binaryFileService = new BinaryFileService( binaryFileRockContext );
             int resultCount = 0;
@@ -480,6 +478,7 @@ namespace Rock.Jobs
         {
             var registrationRockContext = new Rock.Data.RockContext();
             int totalRowsDeleted = 0;
+
             // clean out any temporary registrations
             RegistrationService registrationService = new RegistrationService( registrationRockContext );
             foreach ( var registration in registrationService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
@@ -556,7 +555,6 @@ namespace Rock.Jobs
             var workflowLogsToDeleteQuery = new WorkflowLogService( workflowContext ).Queryable().Where( a => workflowIdsOlderThanLogRetentionPeriodQuery.Contains( a.WorkflowId ) );
             BulkDeleteInChunks( workflowLogsToDeleteQuery, batchAmount, commandTimeout, maxRowDeleteLimit );
 
-
             return totalRowsDeleted;
         }
 
@@ -608,7 +606,6 @@ namespace Rock.Jobs
                 DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
 
                 totalRowsDeleted += BulkDeleteInChunks( new AuditService( auditLogRockContext ).Queryable().Where( a => a.DateTime < auditExpireDate ), batchAmount, commandTimeout );
-
             }
 
             return totalRowsDeleted;
@@ -667,7 +664,6 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         private int CleanupInteractions( JobDataMap dataMap )
         {
-
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
 
@@ -739,7 +735,6 @@ namespace Rock.Jobs
             // Event though BulkDelete has a batch amount, that could exceed our command time out since that'll just be one command for the whole thing, so let's break it up into multiple commands
             // Also, this helps prevent new record inserts waiting the batch operation (if Snapshot Isolation is disabled)
             var chunkQuery = recordsToDeleteQuery.Take( chunkSize );
-            ;
 
             using ( var bulkDeleteContext = new RockContext() )
             {
@@ -804,13 +799,13 @@ namespace Rock.Jobs
                             // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an
                             // exception will occur due to the AttributeValue query using RockContext.
                             var entityContextType = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
-                            ignore = ( entityContextType.Any() && !entityContextType.First().Value.Equals( rockContextType ) );
+                            ignore = entityContextType.Any() && !entityContextType.First().Value.Equals( rockContextType );
                         }
 
                         if ( !ignore )
                         {
-                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic )
-                            .First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic ).First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+
                             var genericMethod = classMethod.MakeGenericMethod( entityType );
                             var result = genericMethod.Invoke( this, null ) as int?;
                             if ( result.HasValue )
@@ -819,7 +814,10 @@ namespace Rock.Jobs
                             }
                         }
                     }
-                    catch { }
+                    catch
+                    {
+                        // intentionally ignore
+                    }
                 }
             }
 
@@ -1052,13 +1050,11 @@ namespace Rock.Jobs
                 var attendanceDataToDelete = attendanceService.Queryable()
                     .Where( a => a.CreatedDateTime.HasValue && a.CreatedDateTime <= olderThanDate && a.AttendanceData != null && a.AttendanceData.LabelData != null ).Select( a => a.AttendanceData );
 
-
                 if ( attendanceDataToDelete.Any() )
                 {
                     totalRowsDeleted += BulkDeleteInChunks( attendanceDataToDelete, batchAmount, commandTimeout );
                 }
             }
-
 
             return totalRowsDeleted;
         }
@@ -1073,7 +1069,6 @@ namespace Rock.Jobs
 
             return 0;
         }
-
 
         /// <summary>
         /// Does cleanup of Attribute Values
@@ -1198,10 +1193,13 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
 
             var duplicateQuery = groupMemberService.Queryable()
+
                 // Duplicates are the same person, group, and role occuring more than once
                 .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
+
                 // Filter out sets with only one occurrence because those are not duplicates
                 .Where( g => g.Count() > 1 )
+
                 // Leave the oldest membership and delete the others
                 .SelectMany( g => g.OrderBy( gm => gm.CreatedDateTime ).Skip( 1 ) );
 
@@ -1355,11 +1353,11 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
                 var personPhoneNumberQry = phoneNumberService.Queryable()
                     .Where( a => a.Person.RecordTypeValueId != namelessPersonRecordTypeId );
 
-
                 // match nameless person records to regular person records by comparing phone numbers.
                 // order so that the non-nameless person phones with an SMS number with messaging enabled are listed first
                 // then sort by the oldest person record in case there are multiple people with the same number
-                var matchedPhoneNumbersJoinQry = namelessPersonPhoneNumberQry.Join( personPhoneNumberQry,
+                var matchedPhoneNumbersJoinQry = namelessPersonPhoneNumberQry.Join(
+                    personPhoneNumberQry,
                     np => np.Number,
                     pp => pp.Number,
                     ( np, pp ) => new
@@ -1373,13 +1371,9 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
                     .ThenByDescending( j => j.PersonPhoneNumber.Person.RecordTypeValueId != namelessPersonRecordTypeId )
                     .ThenBy( j => j.PersonPhoneNumber.PersonId );
 
-                var matchedPhoneNumberList = matchedPhoneNumbersJoinQry
-                    //.Include( a => a.NamelessPersonPhoneNumber.Person )
-                    //.Include( a => a.PersonPhoneNumber.Person )
-                    .ToList();
+                var matchedPhoneNumberList = matchedPhoneNumbersJoinQry.ToList();
 
                 HashSet<int> mergedNamelessPersonIds = new HashSet<int>();
-
 
                 foreach ( var matchedPhoneNumber in matchedPhoneNumberList.ToList() )
                 {
@@ -1401,9 +1395,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
                 }
             }
 
-
             return rowsUpdated;
         }
-
     }
 }
