@@ -15,7 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Dynamic;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -126,6 +129,9 @@ namespace Rock.Web.Cache
                         default:
                             throw new DataFormatException( this.ResultFormat );
                     }
+
+                    // Append entity type id and entity id if appropriate
+                    itemFactoryResultObject = AppendEntityInformation( itemFactoryResultObject );
 
                     return new PersistedDatasetValueCache( itemFactoryResultObject );
                 };
@@ -331,5 +337,38 @@ namespace Rock.Web.Cache
 
             AccessKeyIdLookup.AddOrUpdate( persistedDataset.AccessKey, persistedDataset.Id, ( k, v ) => persistedDataset.Id );
         }
+
+        #region Private Methods
+
+        /// <summary>
+        /// Appends the entity information.
+        /// </summary>
+        /// <param name="persistedDataset">The persisted dataset.</param>
+        /// <returns></returns>
+        private dynamic AppendEntityInformation( dynamic persistedDataset )
+        {
+            if ( !this.EntityTypeId.HasValue )
+            {
+                return persistedDataset;
+            }
+
+            if ( persistedDataset is IEnumerable<ExpandoObject> )
+            {
+                foreach ( dynamic datasetItem in ( IEnumerable ) persistedDataset )
+                {
+                    datasetItem.EntityTypeId = this.EntityTypeId.Value;
+                    datasetItem.EntityId = ( int? ) datasetItem.Id;
+                }
+            }
+            else
+            {
+                persistedDataset.EntityTypeId = this.EntityTypeId.Value;
+                persistedDataset.EntityId = ( int? ) persistedDataset.Id;
+            }
+
+            return persistedDataset;
+        }
+
+        #endregion
     }
 }
