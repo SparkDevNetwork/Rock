@@ -352,6 +352,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets entities from a list of ids.
+        /// Note: This could throw a SQL complexity exception if the list of ids is longer than a couple of thousand
         /// </summary>
         /// <param name="ids">The ids.</param>
         /// <returns></returns>
@@ -362,6 +363,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets entities from a list of guids
+        /// Note: This could throw a SQL complexity exception if the list of guids is longer than a couple of thousand
         /// </summary>
         /// <param name="guids">The guids.</param>
         /// <returns></returns>
