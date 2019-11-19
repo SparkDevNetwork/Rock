@@ -395,12 +395,6 @@ namespace Rock.Jobs
                     person = prayerRequest.RequestedByPersonAlias.Person;
                 }
 
-                if ( person == null || !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
-                {
-                    _Log.LogWarning( "Notification not sent. Person does not have an email address or Email Preference is \"No Email\"." );
-                    continue;
-                }
-
                 var comments = _PrayerComments.Where( x => x.EntityId == prayerRequest.Id ).OrderBy( x => x.CreatedDateTime ).ToList();
 
                 if ( !comments.Any() )
@@ -418,17 +412,33 @@ namespace Rock.Jobs
                 mergeFields.Add( "PrayerRequest", prayerRequest );
                 mergeFields.Add( "Comments", comments );
 
-                var recipient = new RockEmailMessageRecipient( person, mergeFields );
+                RockEmailMessageRecipient recipient;
+
+                if ( person != null
+                     && person.Email.IsNotNullOrWhiteSpace() )
+                {
+                    recipient = new RockEmailMessageRecipient( person, mergeFields );
+                }
+                else
+                {
+                    // If we can't get an email address from the Requester, use the email address associated with the request.
+                    if ( prayerRequest.Email.IsNullOrWhiteSpace() )
+                    {
+                        _Log.LogWarning( "Notification not sent. No valid email address is associated with this request." );
+
+                        continue;
+                    }
+
+                    recipient = RockEmailMessageRecipient.CreateAnonymous( prayerRequest.Email, mergeFields );
+                }
 
                 var recipients = new List<RockEmailMessageRecipient> { recipient };
-
-                var errors = new List<string>();
 
                 var emailMessage = new RockEmailMessage( SystemEmailTemplateGuid.Value );
 
                 emailMessage.SetRecipients( recipients );
 
-                _Log.LogVerbose( $"Preparing notification for \"{ person.FullName }\" ({ prayerRequest.Email })... " );
+                _Log.LogVerbose( $"Preparing notification for \"{ prayerRequest.Email }\"... " );
 
                 emailMessage.CreateCommunicationRecord = this.CreateCommunicationRecord;
 
@@ -452,7 +462,7 @@ namespace Rock.Jobs
             int processedCount = 0;
             int errorCount = 0;
 
-            var errors = new List<string>();
+            List<string> errors;
 
             foreach ( var emailMessage in _Notifications )
             {
