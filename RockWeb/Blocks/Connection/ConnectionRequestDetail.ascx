@@ -1,5 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
 
+<style type="text/css">
+    .title-name {
+        margin-top:0px;
+    }
+</style>
 <Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Text="The information provided is not valid or you are not authorized to view this content." Visible="false" />
 
 <asp:UpdatePanel ID="upDetail" runat="server">
@@ -39,7 +44,7 @@
                         <div class="col-md-10">
                             <div class="row">
                                 <div class="col-md-9">
-                                    <h3><asp:Literal ID="lTitle" runat="server" /></h3>
+                                    <h3 class="title-name"><asp:Literal ID="lTitle" runat="server" /></h3>
                                 </div>
                                 <div class="col-md-3 text-right">
                                     <asp:LinkButton ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:LinkButton>
