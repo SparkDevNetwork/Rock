@@ -1,5 +1,23 @@
 <div class="push-bottom xs-push-half-bottom xs-push-half-top">
     <h2>Giving Schedules</h2>
+
+    {%- comment -%}
+        Give people a step to take if they don't have any schedules
+    {%- endcomment -%}
+    {% assign scheduleCount = rows | Size %}
+    {% if scheduleCount == 0 %}
+        <div class="panel panel-default">
+            <div class="panel-heading">No Active Giving Schedules</div>
+            <div class="panel-body">
+                <p class="push-half-bottom">It looks like you currently don't have any active giving schedules.</p>
+                <p class="flush"><a href="/give/now" class="btn btn-primary">Create a Giving Schedule</a></p>
+            </div>
+        </div>
+    {% endif %}
+
+    {%- comment -%}
+        Loop through giving schedules
+    {%- endcomment -%}
     {% for row in rows %}
         {% assign giver = row.Id3 | PersonById %}
 
