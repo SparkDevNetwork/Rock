@@ -146,7 +146,6 @@
                     if (item.IsDeceased) {
                         inactiveWarning = " <small class=\"text-danger\">(Deceased)</small>";
                     }
-                    console.log(item);
 
                     var quickSummaryInfo = "";
                     if (item.FormattedAge || item.SpouseName) {
