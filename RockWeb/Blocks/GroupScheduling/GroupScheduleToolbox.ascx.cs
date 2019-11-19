@@ -962,11 +962,10 @@ $('#{0}').tooltip();
 
             using ( var rockContext = new RockContext() )
             {
-                List<int> familyMemberAliasIds = new PersonService( rockContext )
+                var familyMemberAliasIds = new PersonService( rockContext )
                     .GetFamilyMembers( this.SelectedPersonId, true )
-                    .Select( m => m.Person.Aliases.FirstOrDefault( a => a.PersonId == m.PersonId ) )
-                    .Select( a => a.Id )
-                    .ToList();
+                    .SelectMany( m => m.Person.Aliases )
+                    .Select( a => a.Id ).ToList();
 
                 var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
                 var personScheduleExclusions = personScheduleExclusionService
