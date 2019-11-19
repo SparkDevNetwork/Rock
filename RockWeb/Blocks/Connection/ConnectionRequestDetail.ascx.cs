@@ -79,12 +79,14 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKeys.Badges )]
     [CodeEditorField(
         "Lava Heading Template",
+        IsRequired = false,
         Key = AttributeKeys.LavaHeadingTemplate,
         EditorMode = CodeEditorMode.Lava,
         Description = "The HTML Content to render above the person’s name. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         Order = 6 )]
     [CodeEditorField(
         "Lava Badge Bar",
+        IsRequired = false,
         Key = AttributeKeys.LavaBadgeBar,
         EditorMode = CodeEditorMode.Lava,
         Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
