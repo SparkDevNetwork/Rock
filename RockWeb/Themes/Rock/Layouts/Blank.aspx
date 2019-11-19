@@ -17,8 +17,8 @@
             height: auto;
             width: 100%;
             min-width: 100%;
-            margin: 0 0 0 0;
-            padding: 0 0 0 0;
+            margin: 0;
+            padding: 0;
             vertical-align: top;
         }
     </style>
