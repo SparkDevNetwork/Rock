@@ -389,25 +389,24 @@ namespace Rock.Model
 
             if ( model.SiteId.HasValue && model.SiteId != originalSiteId )
             {
-                PageCache.RemoveSiteBlocks( model.SiteId.Value );
+                PageCache.FlushPagesForSite( model.SiteId.Value );
             }
             else if ( model.LayoutId.HasValue && model.LayoutId != originalLayoutId )
             {
-                PageCache.RemoveLayoutBlocks( model.LayoutId.Value );
+                PageCache.FlushPagesForLayout( model.LayoutId.Value );
             }
 
             if ( originalSiteId.HasValue )
             {
-                PageCache.RemoveSiteBlocks( originalSiteId.Value );
+                PageCache.FlushPagesForSite( originalSiteId.Value );
             }
             else if ( originalLayoutId.HasValue )
             {
-                PageCache.RemoveLayoutBlocks( originalLayoutId.Value );
+                PageCache.FlushPagesForLayout( originalLayoutId.Value );
             }
             else if ( originalPageId.HasValue )
             {
-                var page = PageCache.Get( originalPageId.Value );
-                page.RemoveBlocks();
+                PageCache.FlushItem( originalPageId.Value );
             }
         }
 

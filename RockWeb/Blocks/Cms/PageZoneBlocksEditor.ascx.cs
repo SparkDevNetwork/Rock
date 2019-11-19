@@ -154,15 +154,17 @@ namespace RockWeb.Blocks.Cms
                         rockContext.SaveChanges();
                     }
 
-                    page.RemoveBlocks();
+                    //page.RemoveBlocks();
+                    PageCache.Remove( page.Id );
+
                     if ( block.LayoutId.HasValue )
                     {
-                        PageCache.RemoveLayoutBlocks( block.LayoutId.Value );
+                        PageCache.FlushPagesForLayout( block.LayoutId.Value );
                     }
 
                     if ( block.SiteId.HasValue )
                     {
-                        PageCache.RemoveSiteBlocks( block.SiteId.Value );
+                        PageCache.FlushPagesForSite( block.SiteId.Value );
                     }
 
                     ShowDetailForZone( ddlZones.SelectedValue );
@@ -739,11 +741,12 @@ namespace RockWeb.Blocks.Cms
 
                 if ( block.LayoutId.HasValue )
                 {
-                    PageCache.RemoveLayoutBlocks( page.LayoutId );
+                    PageCache.FlushPagesForLayout( page.LayoutId );
                 }
                 else
                 {
-                    page.RemoveBlocks();
+                    //page.RemoveBlocks();
+                    PageCache.Remove( page.Id );
                 }
 
                 mdAddBlock.Hide();
