@@ -1,0 +1,146 @@
+{% if cciid and cciid != empty %}
+
+    {% comment %}
+        Determine how we're sorting child items based on the parent channel's (channel of the cciid that was passed in) ManuallyOrdered property.
+    {% endcomment %}
+
+    {% contentchannelitem id:'{{ cciid }}' iterator:'parentItems' %}
+        {% for parentItem in parentItems %}
+            {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
+
+        {% endfor %}
+    {% endcontentchannelitem %}
+
+    {% comment %}
+        Set current item slug so we can determine what the active slide should be
+    {% endcomment %}
+    {% assign currentSlug = 'Global' | Page:'Path' | Split:'/' | Last %}
+
+    {% if sort == 'Order' %}
+
+        {% comment %}
+            If we're sorting by Order, we've got to start from the ContentChannelItemAssociation table since that's where the Order property is stored.
+        {% endcomment %}
+
+        {% sql %}
+            SELECT ROW_NUMBER() OVER (ORDER BY ccia.[Order]) - 1 'Index', cci.Id, ccis.Slug
+            FROM ContentChannelItemAssociation ccia
+            JOIN ContentChannelItem cci
+            ON ccia.ChildContentChannelItemId = cci.Id
+            JOIN ContentChannelItemSlug ccis
+            ON ccis.ContentChannelItemId = cci.Id
+            WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            ORDER BY ccia.[Order]
+        {% endsql %}
+        
+        {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
+
+    {% else %}
+
+        {% comment %}
+            If we're sorting by StartDateTime, we can go straight to the ContentChannelItem table since that property is with the other item properties/attributes we need.
+        {% endcomment %}
+
+        {% comment %}
+            Setup array of child content channel item ids ( by default they are`)
+        {% endcomment %}
+        {% sql %}
+            SELECT ROW_NUMBER() OVER (ORDER BY cci.StartDateTime) - 1 'Index', cci.Id, ccis.Slug
+            FROM ContentChannelItemAssociation ccia
+            JOIN ContentChannelItem cci
+            ON ccia.ChildContentChannelItemId = cci.Id
+            JOIN ContentChannelItemSlug ccis
+            ON ccis.ContentChannelItemId = cci.Id
+            WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            ORDER BY cci.StartDateTime
+        {% endsql %}
+
+        {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
+
+    {% endif %}
+
+    {% comment %}
+        Now that we've setup our array of child item ids, we'll loop through them and get the content channel item that corresponds to each Id and generate our swiper element.
+    {% endcomment %}
+
+    {[ swiper id:'entries' initialslide:'{{ initialslide }}' ]}
+        {% for result in results %}
+            [[ item data:'' ]]
+
+                {% contentchannelitem id:'{{ result.Id }}' iterator:'children' %}
+                    {% for child in children %}
+                        {% assign childTypeParts = child.ContentChannel.Name | Split:' - ' %}
+                        {% assign childType = childTypeParts[1] %}
+                        {% assign childChannelId = child.ContentChannel.Id %}
+                        {% capture showDate %}
+                            {% contentchannel where:'Id == {{ childChannelId | AsInteger }}' iterator:'channels' %}
+                                {% for channel in channels %}
+                                    {{ channel | Attribute:'IsDateVisible','RawValue' }}
+                                {% endfor %}
+                            {% endcontentchannel %}
+                        {% endcapture %}
+                        {% assign showDate = showDate | Trim %}
+                        {% capture guid %}{{ child.Guid }}{% endcapture %}
+                        {% capture id %}{{ child.Id }}{% endcapture %}
+                        {% capture cciid %}{{ child.Id }}{% endcapture %}
+                        {% capture type %}{{ childType | Singularize }}{% endcapture %}
+                        {% capture title %}{{ child.Title | Replace:"'","’" }}{% endcapture %}
+                        {% capture titlesize %}h4{% endcapture %}
+                        {% capture content %}{% if child.Content != empty %}<p class="push-half-bottom">{{ child.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}</p>{% endif %}{% endcapture %}
+                        {% capture textalignment %}{% endcapture %}
+                        {% capture label %}{% if childType contains "Devotional" %}Session {{ result.Index | Plus:1 }}{% endif %}{% endcapture %}
+                        
+                        {% assign actualDate = child | Attribute:'ActualDate','RawValue' %}
+                        {% assign dates = child | Attribute:'Dates','RawValue' %}
+                        {% assign dateParts = dates | Split:',' %}
+                        {% capture subtitle %}
+                            {%- comment -%}Check this item's channel to see if dates should be visible{%- endcomment -%}
+                            {% if showDate == 'True' %}
+                                {%- comment -%}If item has a date range, display it - otherwise display the item start date{%- endcomment -%}
+                                {% if dates != empty %}
+                                    {[ formatDate date:'{{ dateParts[0] }}' ]}{% if dateParts[1] != dateParts[0] %} - {[ formatDate date:'{{ dateParts[1] }}' ]}{% endif %}
+                                {% elseif actualDate != empty %}
+                                    {[ formatDate date:'{{ actualDate }}' ]}
+                                {% else %}
+                                    {[ formatDate date:'{{ child.StartDateTime }}' ]}
+                                {% endif %}
+                            {% endif %}
+                        {% endcapture %}
+                        {% capture video %}{{ child | Attribute:'Video','RawValue' }}{% endcapture %}
+                        {% capture childimage %}{{ child | Attribute:'ImageLandscape','Url' }}{% endcapture %}
+                        {% capture imageurl %}
+                            {% if childType != "Devotionals" %}
+                                {% if childimage and childimage != empty %}
+                                    {{ childimage }}
+                                {% elseif video and video != empty %}
+                                    {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+                                {% endif %}
+                            {% endif %}
+                        {% endcapture %}
+                        {% assign imageurl = imageurl | Trim %}
+                        {% capture imageoverlayurl %}{% endcapture %}
+                        {% capture imagealignment %}{% endcapture %}
+                        {% capture imageopacity %}{% endcapture %}
+                        {% capture grayscale %}{% endcapture %}
+                        {% capture backgroundvideourl %}{% endcapture %}
+                        {% capture lava %}{% endcapture %}
+                        {% capture ratio %}{% endcapture %}
+                        {% capture trimcopy %}{% endcapture %}
+                        {% capture linkcolor %}{% endcapture %}
+                        {% capture backgroundcolor %}{% endcapture %}
+                        {% capture linkurl %}{[ getPermalink cciid:'{{ child.Id }}' ]}{% endcapture %}
+                        {% capture linktext %}{% if childType contains "Sermon" or childType contains "Series" %}Watch{% else %}Read{% endif %} {{ childType | Singularize }}{% endcapture %}
+                        
+                        {[ card id:'{{ id }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
+                    {% endfor %}
+                {% endcontentchannelitem %}
+
+            [[ enditem ]]
+        {% endfor %}
+    {[ endswiper ]}
+
+{% else %}
+    <div class="alert alert-danger">
+        <p>No parent content channel item id <strong>(cciid)</strong> parameter value was provided.</p>
+    </div>
+{% endif %}

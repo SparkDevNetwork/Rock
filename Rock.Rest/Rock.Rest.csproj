@@ -173,8 +173,10 @@
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
+    <Compile Include="Controllers\DataViewsController.Partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
+    <Compile Include="Controllers\GroupFinderController.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
     <Compile Include="Controllers\StreakTypeAchievementTypesController.Partial.cs" />
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />

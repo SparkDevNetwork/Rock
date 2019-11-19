@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -298,7 +298,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class CustomerVaultImportRecord
         {
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private abstract class MigrationResult
         {
@@ -334,7 +334,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class SavedAccountMigrationResult : MigrationResult
         {
@@ -525,7 +525,7 @@ namespace RockWeb.Blocks.Finance
         #region Migrate Scheduled Transactions
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class SubscriptionCustomerImportRecord
         {
@@ -744,7 +744,7 @@ namespace RockWeb.Blocks.Finance
                             // update the scheduled transaction to point to the MyWell scheduled transaction
                             using ( var updateRockContext = new RockContext() )
                             {
-                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext 
+                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext
                                 updateRockContext.FinancialScheduledTransactions.Attach( scheduledTransaction );
                                 scheduledTransaction.TransactionCode = tempFinancialScheduledTransaction.TransactionCode;
                                 scheduledTransaction.GatewayScheduleId = tempFinancialScheduledTransaction.GatewayScheduleId;

@@ -1,0 +1,76 @@
+﻿@media print {
+  @page {
+    margin: .25in;
+
+    size: 8.5in 11in;  /* width height */
+  }
+
+  html, body {
+    padding: 0;
+    margin: 0;
+  }
+
+  body {
+    font-size: 10px;
+  }
+
+  // default sidebar navs on most pages
+  .nav-sub {
+    display: none;
+  }
+
+  // admin bar on bottom right
+  #cms-admin-footer {
+    display: none;
+  }
+
+  // don't show URLs after links
+  a[href]:after {
+    content: '' !important;
+  }
+
+  // center the page better after removing the left nav
+  #page-wrapper {
+    position: absolute;
+    left: -70px;
+  }
+
+  #content-wrapper {
+    margin-left: 70px !important;
+  }
+
+  // remove the breadcrumbs
+  .breadcrumb {
+    display: none;
+  }
+
+  // Remove the footer 
+  footer {
+    display: none;
+  }
+
+  // style panels
+  .panel .panel-heading .panel-title {
+    font-size: 12px !important;
+  }
+
+  // style the grid
+  .table {
+    overflow: hidden;
+  }
+
+  .table td,
+  .table > thead > tr > th {
+    font-size: 8px;
+  }
+
+  .table .grid-columncommand,
+  .table .grid-select-field {
+    display: none !important;
+  }
+
+  .table > tbody > tr > th,
+  .table > tbody > tr > td {
+    padding: 4px;
+  }
+}

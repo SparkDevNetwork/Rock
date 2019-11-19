@@ -19,6 +19,7 @@ pageviews.csv
 RockLogster.csv
 Quartz.xml
 StyleCop.Cache
+.vscode
 
 #specific folders
 [Oo]bj/
@@ -32,6 +33,10 @@ RockWeb/App_Data/MobileAppBundles
 .localhistory/
 TestResults/
 
+
+/RockWeb/Plugins/*
+!/RockWeb/Plugins/cc_newspring
+/RockWeb/Plugins/cc_newspring/AttendedCheckin
 Packages/*
 
 # javascript deps
