@@ -60,7 +60,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "No Longer Supported", false )]
+        [Obsolete( "No Longer Supported", true )]
         public string CssClass { get; set; }
 
         /// <summary />
@@ -151,9 +151,6 @@ namespace Rock.Client
             this.BackgroundColor = source.BackgroundColor;
             this.BinaryFileTypeId = source.BinaryFileTypeId;
             this.BorderColor = source.BorderColor;
-            #pragma warning disable 612, 618
-            this.CssClass = source.CssClass;
-            #pragma warning restore 612, 618
             this.EntityTypeId = source.EntityTypeId;
             this.EntityTypeQualifierColumn = source.EntityTypeQualifierColumn;
             this.EntityTypeQualifierValue = source.EntityTypeQualifierValue;

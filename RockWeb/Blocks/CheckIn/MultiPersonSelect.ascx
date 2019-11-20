@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('a.btn-checkin-select').click(function () {
+        $('a.btn-checkin-select').on('click', function () {
             $(this).siblings().attr('onclick', 'return false;');
         });
     });

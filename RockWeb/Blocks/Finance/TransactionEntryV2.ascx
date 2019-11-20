@@ -38,7 +38,7 @@
 
             <div class="row">
                 <%-- Transaction Entry Panel --%>
-                <asp:Panel ID="pnlTransactionEntryPanel" runat="server" CssClass="col-sm-8">
+                <asp:Panel ID="pnlTransactionEntryPanel" runat="server" CssClass="col-xs-12 col-sm-8">
                     <div class="transaction-entry-v2">
 
                      <%-- Collect Transaction Info (step 1) --%>
@@ -198,7 +198,7 @@
                 </asp:Panel>
 
                 <%-- Scheduled Gifts Panel --%>
-                <asp:Panel ID="pnlScheduledTransactions" runat="server" CssClass="col-sm-4 scheduled-transactions" Visible="false">
+                <asp:Panel ID="pnlScheduledTransactions" runat="server" CssClass="col-xs-12 col-sm-4 scheduled-transactions" Visible="false">
                     <asp:Literal ID="lScheduledTransactionsHTML" runat="server" />
                 </asp:Panel>
             </div>

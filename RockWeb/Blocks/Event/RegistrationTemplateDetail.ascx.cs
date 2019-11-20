@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Event
 
 {% if Registration.BalanceDue > 0 %}
 <p>
-    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} has a remaining balance
+    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }} has a remaining balance
     of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}.
     You can complete the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}
     using our <a href='{{ externalSite }}/Registration?RegistrationId={{ Registration.Id }}&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
@@ -273,9 +273,9 @@ namespace RockWeb.Blocks.Event
 <h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Payment Reminder</h1>
 
 <p>
-    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase  }} for {{ RegistrationInstance.Name }} has a remaining balance
+    This {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }} for {{ RegistrationInstance.Name }} has a remaining balance
     of {{ currencySymbol }}{{ Registration.BalanceDue | Format:'#,##0.00' }}. The
-    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize }} for this
     {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
 </p>
 
@@ -509,7 +509,7 @@ The logged-in person's information will be used to complete the registrar inform
 ";
 
             string deleteScript = @"
-    $('a.js-delete-template').click(function( e ){
+    $('a.js-delete-template').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this registration template? All of the instances, and the registrations and registrants from each instance will also be deleted!', function (result) {
             if (result) {
@@ -986,11 +986,6 @@ The logged-in person's information will be used to complete the registrar inform
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
-            if ( registrationTemplate.WaitListEnabled && !registrationTemplate.MaxRegistrants.HasValue )
-            {
-                validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
-            }
-
             if ( validationErrors.Any() )
             {
                 nbValidationError.Visible = true;
@@ -1317,7 +1312,7 @@ The logged-in person's information will be used to complete the registrar inform
                 int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
-                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
                     qryParams["CategoryId"] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -1391,7 +1386,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Handles the DeleteFormClick event of the tfeForm control.
+        /// Handles the DeleteFormClick event of the registrationTemplateFormEditor control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -1423,7 +1418,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ add attribute click.
+        /// Handles the add field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1437,7 +1432,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form filter field click.
+        /// Handles the filter field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1451,7 +1446,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ edit attribute click.
+        /// Handles the edit field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1465,7 +1460,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ reorder attribute click.
+        /// Handles the reorder field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1483,7 +1478,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ delete attribute click.
+        /// Handles the delete field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1500,7 +1495,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ rebind attribute click.
+        /// Handles the rebind field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1822,13 +1817,13 @@ The logged-in person's information will be used to complete the registrar inform
             var discountGuid = hfDiscountGuid.Value.AsGuidOrNull();
             var discountCode = tbDiscountCode.Text;
 
-            // If we have a guid then we are editing an existing code, so only count as a dup if the GUID doesn't match.
+            // If we have a guid then we are editing an existing code, so only count as a duplicate if the GUID doesn't match.
             if ( discountGuid != null && DiscountState.Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) && d.Guid != discountGuid ).Any() )
             {
                 return true;
             }
 
-            // If case we do not have a guid then then look for any matches.
+            // If case we do not have a guid then look for any matches.
             if ( discountGuid == null && DiscountState.Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) ).Any() )
             {
                 return true;
@@ -2425,7 +2420,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Shows the readonly details.
+        /// Shows the read-only details.
         /// </summary>
         /// <param name="registrationTemplate">The registration template.</param>
         private void ShowReadonlyDetails( RegistrationTemplate registrationTemplate )
@@ -2536,7 +2531,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Adds the "is-inactive" css class if the item is not active.
+        /// Adds the "is-inactive" CSS class if the item is not active.
         /// </summary>
         /// <param name="isActive">The is active.</param>
         /// <returns></returns>
@@ -3086,26 +3081,15 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgRegistrationAttribute_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtRegistrationAttributes.GetAttributeProperties( attribute );
+#pragma warning disable 0618 // Type or member is obsolete
+            var attribute = SaveChangesToStateCollection( edtRegistrationAttributes, RegistrationAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
             {
                 return;
             }
-
-            if ( RegistrationAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = RegistrationAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                RegistrationAttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = RegistrationAttributesState.Any() ? RegistrationAttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-
-            RegistrationAttributesState.Add( attribute );
 
             BindRegistrationAttributesGrid();
             HideDialog();
@@ -3355,7 +3339,7 @@ The logged-in person's information will be used to complete the registrar inform
                         return;
                     }
                 }
-                     
+
                 if ( singleFeeItem == null )
                 {
                     singleFeeItem = new RegistrationTemplateFeeItem();
@@ -3515,6 +3499,48 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion Dialog Methods
 
+        #region Obsolete Code
 
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
+        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
+        }
+
+        #endregion
     }
 }

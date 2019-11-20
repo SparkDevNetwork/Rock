@@ -126,11 +126,18 @@ Path: {2}",
                 var blockTypeCache = BlockTypeCache.Get( blockType.Guid );
                 if ( !blockTypeCache.IsInstancePropertiesVerified )
                 {
-                    var blockControl = this.Page.LoadControl( blockTypeCache.Path ) as RockBlock;
-                    int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
-                    Rock.Attribute.Helper.UpdateAttributes( blockControl.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
-                    blockTypeCache.MarkInstancePropertiesVerified( true );
-                    System.Diagnostics.Debug.WriteLine( string.Format( "[{1}ms] BlockType {0}", blockTypeCache.Path, stopwatch.Elapsed.TotalMilliseconds ) );
+                    try
+                    {
+                        var blockControl = this.Page.LoadControl( blockTypeCache.Path ) as RockBlock;
+                        int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
+                        Rock.Attribute.Helper.UpdateAttributes( blockControl.GetType(), blockEntityTypeId, "BlockTypeId", blockType.Id.ToString(), rockContext );
+                        blockTypeCache.MarkInstancePropertiesVerified( true );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "[{1}ms] BlockType {0}", blockTypeCache.Path, stopwatch.Elapsed.TotalMilliseconds ) );
+                    }
+                    catch (Exception ex)
+                    {
+                        ExceptionLogService.LogException( ex );
+                    }
                 }
 
                 stopwatch.Stop();

@@ -503,7 +503,7 @@ namespace RockWeb.Blocks.Communication
             htmlEditor.MergeFields.Add( "Rock.Model.Person" );
             htmlEditor.MergeFields.Add( "Communication.Subject|Subject" );
             htmlEditor.MergeFields.Add( "Communication.FromName|From Name" );
-            htmlEditor.MergeFields.Add( "Communication.FromAddress|From Address" );
+            htmlEditor.MergeFields.Add( "Communication.FromEmail|From Address" );
             htmlEditor.MergeFields.Add( "Communication.ReplyTo|Reply To" );
             htmlEditor.MergeFields.Add( "UnsubscribeOption" );
             if ( communication.AdditionalMergeFields.Any() )

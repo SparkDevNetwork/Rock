@@ -488,19 +488,19 @@ namespace Rock.Web.UI.Controls
             string script = $@"
 if ($('#{_hfModalVisible.ClientID}').val() == '1') {{
     Rock.controls.modal.showModalDialog($('#{_dialogPanel.ClientID}'), '{modalManager}');
-}} 
+}}
 else {{
     Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
 }}
 
-$('#{_cancelLink.ClientID}, #{_closeLink.ClientID}').click(function () {{
+$('#{_cancelLink.ClientID}, #{_closeLink.ClientID}').on('click', function () {{
     {this.OnCancelScript}
     $('#{_hfModalVisible.ClientID}').val('0');
     Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));
     {showParentModalOnCloseScript}
 }});
 
-$('#{_saveLink.ClientID}').click(function () {{
+$('#{_saveLink.ClientID}').on('click', function () {{
     {this.OnOkScript}
     $('#{_hfModalVisible.ClientID}').val('0');
     Rock.controls.modal.closeModalDialog($('#{_dialogPanel.ClientID}'));

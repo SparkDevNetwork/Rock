@@ -266,6 +266,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Achievement\AchievementComponent.cs" />
+    <Compile Include="Achievement\AchievementContainer.cs" />
+    <Compile Include="Achievement\Component\AccumulativeAchievement.cs" />
+    <Compile Include="Achievement\Component\StreakAchievement.cs" />
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Address\MelissaData.cs" />
     <Compile Include="Address\ServiceObjects.cs" />
@@ -416,6 +420,7 @@
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
     <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
+    <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Mobile\AdditionalBlockSettings.cs" />
@@ -441,14 +446,19 @@
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
     <Compile Include="Model\StreakAchievementAttempts.cs" />
+    <Compile Include="Model\StreakTypeAchievementTypeService.Partial.cs" />
     <Compile Include="Model\StreakTypeAchievementType.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
+    <Compile Include="Plugin\HotFixes\094_AchievementPagesAndBlocks.cs" />
+    <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="SystemGuid\Person.cs" />
+    <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
+    <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
     <Compile Include="Reporting\ReportOutputBuilder.cs" />
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
@@ -458,6 +468,7 @@
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
     <Compile Include="Web\RockCustomSettingsProvider.cs" />
@@ -814,8 +825,6 @@
     <Compile Include="Data\AnalyticHistoryFieldAttribute.cs" />
     <Compile Include="Data\HideFromReportingAttribute.cs" />
     <Compile Include="Data\AnalyticsAttribute.cs" />
-    <Compile Include="Data\IAnalyticHistorical.cs" />
-    <Compile Include="Data\IAnalytic.cs" />
     <Compile Include="Data\ICategorized.cs" />
     <Compile Include="Data\IEntity.cs" />
     <Compile Include="Data\IFeed.cs" />
@@ -1024,8 +1033,6 @@
     <Compile Include="Jobs\MigrateHistorySummaryData.cs" />
     <Compile Include="Jobs\PostV80DataMigrations.cs" />
     <Compile Include="Jobs\PostV74DataMigrations.cs" />
-    <Compile Include="Jobs\MigrateCommunicationMediumData.cs" />
-    <Compile Include="Jobs\MigrateInteractionsData.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
     <Compile Include="Jobs\DataAutomation.cs" />
@@ -1908,7 +1915,10 @@
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\StreakTypeAchievementTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\StreakTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
@@ -2165,7 +2175,6 @@
     <Compile Include="Web\UI\Controls\CurrencyBox.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\DataTextBox.cs" />
-    <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
     <Compile Include="Web\UI\Controls\DynamicControlsHtmlGenericControl.cs" />
@@ -2199,7 +2208,6 @@
     <Compile Include="Web\UI\Controls\Grid\IPriorityColumn.cs" />
     <Compile Include="Web\UI\Controls\Grid\IRockGridField.cs" />
     <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\LiquidField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ListDelimitedField.cs" />
     <Compile Include="Web\UI\Controls\Grid\PersonField.cs" />
     <Compile Include="Web\UI\Controls\Grid\MergePersonField.cs" />

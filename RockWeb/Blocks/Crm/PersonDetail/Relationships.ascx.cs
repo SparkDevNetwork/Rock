@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( ownerRole != null )
             {
                 ownerRole.LoadAttributes();
-                IsInverseRelationshipsOwner = ownerRole.Attributes.ContainsKey( "InverseRelationship" ) 
+                IsInverseRelationshipsOwner = ownerRole.Attributes.ContainsKey( "InverseRelationship" )
                     && ( ownerRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) || ownerRole.IsLeader );
             }
             else
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lbAdd.Visible = CanEdit && IsInverseRelationshipsOwner;
 
             string script = @"
-    $('a.remove-relationship').click(function(){
+    $('a.remove-relationship').on('click', function(){
         return confirm('Are you sure you want to remove this relationship?');
     });
 ";

@@ -20,7 +20,7 @@
         proxy.client.bulkUpdateStatus = function (status, alertClass) {
             var $jsResults = $('#<%= pnlProcessing.ClientID %> .js-results');
             $jsResults.removeClass('alert-danger').removeClass('alert-success').removeClass('alert-warning');
-            $jsResults.AddClass(alertClass);
+            $jsResults.addClass(alertClass);
 
             $('#<%= pnlProcessing.ClientID %> .js-results').html(status).slideDown();
             $('#<%= pnlProcessing.ClientID %> .js-progress-div').slideUp();

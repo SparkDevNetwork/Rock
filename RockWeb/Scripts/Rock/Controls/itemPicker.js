@@ -98,7 +98,7 @@
                         self.scrollToSelectedItem();
                     });
 
-                $control.find('a.picker-label').click(function (e) {
+                $control.find('a.picker-label').on('click', function (e) {
                     e.preventDefault();
                     $(this).toggleClass("active");
                     $control.find('.picker-menu').first().toggle(0, function () {
@@ -106,7 +106,7 @@
                     });
                 });
 
-                $control.find('.picker-cancel').click(function () {
+                $control.find('.picker-cancel').on('click', function () {
                     $(this).toggleClass("active");
                     $(this).closest('.picker-menu').toggle(0, function () {
                         self.updateScrollbar();
@@ -120,7 +120,7 @@
                     $control.find('.picker-select-none').show();
                 }
 
-                $control.find('.picker-btn').click(function (el) {
+                $control.find('.picker-btn').on('click', function (el) {
 
                     var rockTree = $control.find('.treeview').data('rockTree'),
                             selectedNodes = rockTree.selectedNodes,
@@ -133,7 +133,7 @@
                     selectedIds.push(node.id);
                     });
 
-                    $hfItemIds.val(selectedIds.join(',')).change(); // .change() is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
+                    $hfItemIds.val(selectedIds.join(',')).trigger('change'); // .trigger('change') is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
                     $hfItemNames.val(selectedNames.join(','));
 
                     // have the X appear on hover. something is selected
@@ -157,11 +157,11 @@
                     }
                 });
 
-                $control.find('.picker-select-none').click(function (e) {
+                $control.find('.picker-select-none').on("click", function (e) {
                     e.stopImmediatePropagation();
                     var rockTree = $control.find('.treeview').data('rockTree');
                     rockTree.clear();
-                    $hfItemIds.val('0').change(); // .change() is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
+                    $hfItemIds.val('0').trigger('change'); // .trigger('change') is used to cause jQuery to fire any "onchange" event handlers for this hidden field.
                     $hfItemNames.val('');
 
                     // don't have the X appear on hover. nothing is selected
@@ -195,7 +195,7 @@
                   if (!allItemNodesAlreadySelected) {
                     // mark them all as unselected (just in case some are selected already), then click them to select them
                     $itemNameNodes.removeClass('selected');
-                    $itemNameNodes.click();
+                    $itemNameNodes.trigger('click');
                   } else {
                     // if all were already selected, toggle them to unselected
                     rockTree.setSelected([]);

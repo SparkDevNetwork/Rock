@@ -14,19 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
-namespace Rock.Data
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// Represents a model that has an Analytic Table, 
-    /// and an Analytic Historical Table that stores previous versions of each record
+    ///
     /// </summary>
-    [RockObsolete( "1.7" )]
-    [Obsolete( "Decorate with [Analytics] instead", true )]
-    public interface IAnalyticHistorical : IAnalytic
+    public partial class PergeMerge : Rock.Migrations.RockMigration
     {
-
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            Sql( MigrationSQL._201911122101551_PergeMerge_spCrm_PersonMerge );
+        }
         
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+        }
     }
 }

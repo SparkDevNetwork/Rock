@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Finance
     </div>
     <div class=""col-xs-4"">
         <h4>Next Steps</h4>
-        <p> {{ Request.ProvidedNextSteps  }} </p>
+        <p> {{ Request.ProvidedNextSteps }} </p>
     </div>
 </div>
 
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Finance
                     <th>Details</th>
                 </tr>
             
-                {% for result in Request.BenevolenceResults  %}
+                {% for result in Request.BenevolenceResults %}
                     <tr>
                         <td>{{ result.ResultTypeValue.Value }}</td>
                         <td>{{ result.Amount }}</td>

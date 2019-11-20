@@ -874,36 +874,22 @@ namespace RockWeb.Blocks.Mobile
 
             var markup = new StringBuilder();
 
-            // The following item will be moved to additional settings soon and will need to be updated.
-            var lavaLocation = block.GetAttributeValue( "LavaRenderLocation" );
-            if ( lavaLocation.IsNotNullOrWhiteSpace() )
+            if ( additionalSettings.ProcessLavaOnServer && additionalSettings.ProcessLavaOnClient )
             {
-                switch ( lavaLocation )
-                {
-                    case "On Device":
-                        {
-                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
-                            break;
-                        }
-                    case "On Server":
-                        {
-                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
-                            break;
-                        }
-                    default:
-                        {
-                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
-                            break;
-                        }
-                }
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
             }
-            
-
-            // The following item will be moved to additional settings soon and will need to be updated.
-            var cacheDuration = block.GetAttributeValue( "CacheDuration" ).AsIntegerOrNull();
-            if ( cacheDuration.HasValue && cacheDuration != 0  )
+            else if ( additionalSettings.ProcessLavaOnServer )
             {
-                markup.Append( string.Format("<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", cacheDuration ) );
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
+            }
+            else if ( additionalSettings.ProcessLavaOnClient )
+            {
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+            }
+
+            if ( additionalSettings.CacheDuration != 0  )
+            {
+                markup.Append( string.Format("<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", additionalSettings.CacheDuration ) );
             }
             else
             {
