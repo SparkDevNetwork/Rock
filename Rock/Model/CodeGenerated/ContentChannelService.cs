@@ -58,7 +58,7 @@ namespace Rock.Model
  
             if ( new Service<ContentChannelItem>( Context ).Queryable().Any( a => a.ContentChannelId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} cannot be deleted because it contains a {1}.", ContentChannel.FriendlyTypeName, ContentChannelItem.FriendlyTypeName );
+                errorMessage = "This channel cannot be deleted because it contains items.";
                 return false;
             }  
             return true;
