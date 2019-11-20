@@ -138,6 +138,13 @@ namespace Rock.Jobs
         /// If not specified, all prayer requests will be processed.
         /// </summary>
         public List<Guid> CategoryGuidList { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include child categories].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include child categories]; otherwise, <c>false</c>.
+        /// </value>
         public bool IncludeChildCategories { get; set; }
 
         /// <summary>
@@ -563,7 +570,8 @@ namespace Rock.Jobs
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Category">Category</see> that are descendants of a <see cref="Rock.Model.Category" />
         /// </summary>
-        /// <param name="parentCategoryGuid">The parent category unique identifier.</param>
+        /// <param name="parentCategoryGuidList">The parent category unique identifier list.</param>
+        /// <param name="categoryService">The category service.</param>
         /// <returns>
         /// A collection of <see cref="Rock.Model.Category" /> entities that are descendants of the provided parent <see cref="Rock.Model.Category" />.
         /// </returns>
@@ -607,6 +615,12 @@ namespace Rock.Jobs
         {
             private List<TaskLogMessage> _Messages = new List<TaskLogMessage>();
 
+            /// <summary>
+            /// Gets the messages.
+            /// </summary>
+            /// <value>
+            /// The messages.
+            /// </value>
             public List<TaskLogMessage> Messages
             {
                 get
@@ -615,6 +629,11 @@ namespace Rock.Jobs
                 }
             }
 
+            /// <summary>
+            /// Gets the last message.
+            /// </summary>
+            /// <param name="messageType">Type of the message.</param>
+            /// <returns></returns>
             public TaskLogMessage GetLastMessage( TaskLogMessage.MessageTypeSpecifier? messageType )
             {
                 if ( messageType.HasValue )
@@ -627,29 +646,66 @@ namespace Rock.Jobs
                 }
             }
 
+            /// <summary>
+            /// Logs the verbose.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <param name="category">The category.</param>
+            /// <returns></returns>
             public TaskLogMessage LogVerbose( string message, string category = null )
             {
                 return LogMessage( TaskLogMessage.MessageTypeSpecifier.Verbose, message, category );
             }
 
+            /// <summary>
+            /// Logs the information.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <param name="category">The category.</param>
+            /// <returns></returns>
             public TaskLogMessage LogInfo( string message, string category = null )
             {
                 return LogMessage( TaskLogMessage.MessageTypeSpecifier.Info, message, category );
             }
+            /// <summary>
+            /// Logs the warning.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <param name="category">The category.</param>
+            /// <returns></returns>
             public TaskLogMessage LogWarning( string message, string category = null )
             {
                 return LogMessage( TaskLogMessage.MessageTypeSpecifier.Warning, message, category );
             }
 
+            /// <summary>
+            /// Logs the error.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <param name="category">The category.</param>
+            /// <returns></returns>
             public TaskLogMessage LogError( string message, string category = null )
             {
                 return LogMessage( TaskLogMessage.MessageTypeSpecifier.Error, message, category );
             }
+            /// <summary>
+            /// Logs the progress.
+            /// </summary>
+            /// <param name="message">The message.</param>
+            /// <param name="category">The category.</param>
+            /// <returns></returns>
             public TaskLogMessage LogProgress( string message, string category = null )
             {
                 return LogMessage( TaskLogMessage.MessageTypeSpecifier.Progress, message, category );
             }
 
+            /// <summary>
+            /// Logs the message.
+            /// </summary>
+            /// <param name="messageType">Type of the message.</param>
+            /// <param name="message">The message.</param>
+            /// <param name="category">The category.</param>
+            /// <returns></returns>
             public TaskLogMessage LogMessage( TaskLogMessage.MessageTypeSpecifier messageType, string message, string category = null )
             {
                 var newMessage = new TaskLogMessage { MessageType = messageType, Message = message, Category = category };
@@ -661,22 +717,72 @@ namespace Rock.Jobs
                 return newMessage;
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public class TaskLogMessage
             {
+                /// <summary>
+                /// 
+                /// </summary>
                 public enum MessageTypeSpecifier
                 {
+                    /// <summary>
+                    /// The information
+                    /// </summary>
                     Info = 0,
+
+                    /// <summary>
+                    /// The verbose
+                    /// </summary>
                     Verbose = 1,
+
+                    /// <summary>
+                    /// The warning
+                    /// </summary>
                     Warning = 2,
+
+                    /// <summary>
+                    /// The error
+                    /// </summary>
                     Error = 3,
+
+                    /// <summary>
+                    /// The progress
+                    /// </summary>
                     Progress = 4
                 }
 
+                /// <summary>
+                /// Gets or sets the type of the message.
+                /// </summary>
+                /// <value>
+                /// The type of the message.
+                /// </value>
                 public MessageTypeSpecifier MessageType { get; set; } = MessageTypeSpecifier.Info;
 
+                /// <summary>
+                /// Gets or sets the category.
+                /// </summary>
+                /// <value>
+                /// The category.
+                /// </value>
                 public string Category { get; set; }
+
+                /// <summary>
+                /// Gets or sets the message.
+                /// </summary>
+                /// <value>
+                /// The message.
+                /// </value>
                 public string Message { get; set; }
 
+                /// <summary>
+                /// Converts to string.
+                /// </summary>
+                /// <returns>
+                /// A <see cref="System.String" /> that represents this instance.
+                /// </returns>
                 public override string ToString()
                 {
                     var msg = $"[{MessageType}] ";
