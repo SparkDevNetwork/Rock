@@ -317,6 +317,11 @@
                         <Rock:Switch ID="swExample" runat="server" Label="Rock:Switch" Text="Rock:Switch" />
                     </div>
 
+                    <a id="RockListItems"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ListItems ID="liExample" runat="server" Label="Rock:ListItems"></Rock:ListItems>
+                    </div>
+
                     <a id="NumberRangeEditor"></a>
                     <h2>Number Range</h2>
                     <div runat="server" class="r-example">
