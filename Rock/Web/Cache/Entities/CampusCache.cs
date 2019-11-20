@@ -180,6 +180,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The order.
         /// </value>
+        [DataMember]
         public int Order { get; private set; }
 
         /// <summary>
