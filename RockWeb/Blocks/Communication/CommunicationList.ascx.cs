@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -471,7 +472,7 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        protected class CommunicationItem : DotLiquid.Drop
+        protected class CommunicationItem : RockDynamic
         {
             public int Id { get; set; }
             public CommunicationType CommunicationType { get; set; }

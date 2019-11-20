@@ -372,7 +372,7 @@ namespace Rock.Web.UI.Controls
             {
                 List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
 
-                foreach ( var attributeCategory in attributeCategories )
+                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
                     IEnumerable<AttributeCache> attributes = GetFilteredAttributesForCategory( attributeCategory );
 
@@ -543,7 +543,7 @@ namespace Rock.Web.UI.Controls
                 _phAttributes.Controls.Add( tabContent );
 
                 int tabIndex = 0;
-                foreach ( var attributeCategory in attributeCategories )
+                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
                     string categoryName = "Attributes";
                     string id = "Attributes";

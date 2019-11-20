@@ -140,18 +140,13 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Ensure that the Key is part of the AllIds list
+        /// Ensure that the Key is part of the AllIds list and create it if it does not exist
         /// </summary>
         /// <param name="key">The key.</param>
         private static void AddToAllIds( string key )
         {
             // Get the dictionary of all item ids
-            var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
-            if ( allKeys == null )
-            {
-                // All hasn't been asked for yet, so it doesn't need to be updated. Leave it null
-                return;
-            }
+            var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
 
             if ( allKeys.Contains( key ) )
             {
@@ -159,10 +154,9 @@ namespace Rock.Web.Cache
                 return;
             }
 
-            // If the key is not part of the dictionary all ready
+            // If the key is not part of the dictionary already add it
             lock ( _obj )
             {
-                // Add it.
                 allKeys.Add( key, true );
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
             }
@@ -259,6 +253,16 @@ namespace Rock.Web.Cache
         {
             var qualifiedKey = QualifiedKey( key );
 
+            if( key == AllString )
+            {
+                var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
+                foreach( var id in allIds )
+                {
+                    qualifiedKey = QualifiedKey( id );
+                    RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
+                }
+            }
+            
             RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
         }
 

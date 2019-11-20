@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-
+using System.Reflection;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
@@ -569,6 +569,85 @@ namespace Rock.Data
         }
 
         #endregion
+
+        #region Related Entities
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities of the given entity type that (optionally) also have a matching purpose key.
+        /// </summary>
+        /// <param name="entityId">A <see cref="System.Int32"/> representing the entity identifier.</param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
+        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// </returns>
+        public IQueryable<IEntity> GetRelatedEntities( int entityId, int relatedEntityTypeId, string purposeKey = "" )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
+
+            var srcQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToSource( entityId, entityType.Id, relatedEntityTypeId, purposeKey );
+
+            var tgtQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToTarget( entityId, entityType.Id, relatedEntityTypeId, purposeKey );
+
+            if ( srcQuery != null && tgtQuery != null )
+            {
+                return srcQuery.Union( tgtQuery );
+            }
+            else if ( srcQuery != null && tgtQuery == null )
+            {
+                return srcQuery;
+            }
+            else if ( srcQuery == null && tgtQuery != null )
+            {
+                return tgtQuery;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// </summary>
+        /// <param name="entityId">A <see cref="System.Int32"/> representing the source entity identifier.</param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
+        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// </returns>
+        public IQueryable<IEntity> GetRelatedToSourceEntity( int entityId, int relatedEntityTypeId, string purposeKey = "" )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
+
+            var srcQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToSource( entityId, entityType.Id, relatedEntityTypeId, purposeKey );
+
+            return srcQuery;
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// </summary>
+        /// <param name="entityId">A <see cref="System.Int32"/> representing the target entity identifier.</param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
+        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <returns>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// </returns>
+        public IQueryable<IEntity> GetRelatedToTargetEntity( int entityId, int relatedEntityTypeId, string purposeKey = "" )
+        {
+            var rockContext = this.Context as RockContext;
+
+            var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
+
+            var tgtQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToTarget( entityId, entityType.Id, relatedEntityTypeId, purposeKey );
+
+            return tgtQuery;
+        }
+
+        #endregion Related Entities
 
         #region Following
 
