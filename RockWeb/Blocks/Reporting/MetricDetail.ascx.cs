@@ -815,7 +815,7 @@ Simple metric with the default partition
 <br />
 Lava Template:
 <pre>{% attendance where:'DidAttend == true && GroupId == 56' count:'true' %}
-  {{ count }}            
+  {{ count }}
 {% endattendance %}</pre>
 
 Lava Output:
@@ -830,7 +830,7 @@ Simple metric with a MetricValueDateTime specified
 </ul>
 <br />
 Lava Template:
-<pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers'  %}
+<pre>{% webrequest url:'https://api.github.com/repos/SparkDevNetwork/Rock/subscribers' %}
     {{ results | Size }},{{ RunDateTime | SundayDate | DateAdd:-7 }} 
 {% endwebrequest %}</pre>
 
@@ -849,7 +849,7 @@ Lava that returns a Count and EntityIds for each Partition
 </ul>
 
 Lava Template:
-<pre>{% webrequest url:'https://api.example.com/statsByGroupAndCampus'  %}
+<pre>{% webrequest url:'https://api.example.com/statsByGroupAndCampus' %}
      {% for item in results %}
 	    item.Count,Item.GroupId,Item.CampusId
     {% endfor %}

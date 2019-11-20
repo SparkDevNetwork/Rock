@@ -5,7 +5,6 @@
         <script>
             Sys.Application.add_load(function () {
                 $(".transaction-image a").fluidbox();
-                $("#account_entry").height($("#individual_details").height());
             });
         </script>
         <asp:HiddenField ID="hfBackNextHistory" runat="server" />
@@ -129,15 +128,16 @@
                                                         <Rock:CurrencyBox ID="cbAccountAmount" runat="server" Label='<%#Eval( "Name" )%>' data-account-id='<%#Eval("Id")%>' CssClass="js-account-amount input-width-md" onkeydown="javascript:return handleAmountBoxKeyPress(this, event.keyCode);" onkeyup="javascript:handleAmountBoxKeyUp(event.keyCode)" />
                                                     </ItemTemplate>
                                                 </asp:Repeater>
+
+                                                <asp:Panel ID="pnlAddOptionalAccount" runat="server" CssClass="form-group currency-box" Visible="false">
+                                                    <div class="control-label padding-all-none">
+                                                        <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="hidden js-add-account" EnhanceForLongLists="true" />
+                                                    </div>
+                                                    <div class="control-wrapper">
+                                                        <Rock:CurrencyBox ID="cbOptionalAccountAmount" runat="server" CssClass="input-width-md" />
+                                                    </div>
+                                                </asp:Panel>
                                             </div>
-                                            <asp:Panel ID="pnlAddOptionalAccount" runat="server" CssClass="row" Visible="false">
-                                                <div class="col-md-8">
-                                                    <Rock:RockDropDownList ID="ddlAddAccount" runat="server" CssClass="js-add-account" EnhanceForLongLists="true" />
-                                                </div>
-                                                <div class="col-md-4" style="margin-left: -10px">
-                                                    <Rock:CurrencyBox ID="cbOptionalAccountAmount" runat="server" CssClass="input-width-md" />
-                                                </div>
-                                            </asp:Panel>
                                         </Rock:RockControlWrapper>
                                     </div>
                                 </div>
@@ -167,7 +167,7 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row actions">
                         <div class="col-md-12">
                             <asp:LinkButton ID="btnPrevious" runat="server" CssClass="btn" OnClick="btnPrevious_Click">Previous</asp:LinkButton>
                             <div class="pull-right">
@@ -243,7 +243,7 @@
                     $('#<%=pnlView.ClientID%>').rockFadeIn();
                 }
 
-                $('#<%=btnNext.ClientID%>').click(verifyUnallocated);
+                $('#<%=btnNext.ClientID%>').on('click', verifyUnallocated);
 
                 updateRemainingAccountAllocation();
 
@@ -262,7 +262,6 @@
                         } else {
                             link.text('Show More').prop('title', 'Show additional addresses');
                         }
-                        $("#account_entry").height($("#individual_details").height());
                     });
                 });
 
@@ -284,7 +283,7 @@
             function handleAmountBoxKeyPress(element, keyCode) {
                 // if Enter was pressed when in one of the Amount boxes, click the Next button.
                 if (keyCode == 13) {
-                    $('#<%=btnNext.ClientID%>')[0].click();
+                    $('#<%=btnNext.ClientID%>')[0].trigger('click');
                     return false;
                 }
                 else if (keyCode == 40) {

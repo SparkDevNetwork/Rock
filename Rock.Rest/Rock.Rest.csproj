@@ -178,6 +178,7 @@
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
     <Compile Include="Controllers\GroupFinderController.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
+    <Compile Include="Controllers\StreakTypeAchievementTypesController.Partial.cs" />
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
     <Compile Include="Controllers\MobileController.cs" />

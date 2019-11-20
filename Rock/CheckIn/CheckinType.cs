@@ -209,16 +209,6 @@ namespace Rock.CheckIn
         public bool PreventDuplicateCheckin => GetSetting( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( false );
 
         /// <summary>
-        /// Gets a value indicating whether [prevent inactive people]. Obsolete as of 1.7.0.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if [prevent inactive people]; otherwise, <c>false</c>.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use PreventInactivePeople instead.", true )]
-        public bool PreventInactivePeopele => GetSetting( "core_checkin_PreventInactivePeople" ).AsBoolean( false );
-
-        /// <summary>
         /// Gets a value indicating whether [prevent inactive people].
         /// </summary>
         /// <value>

@@ -66,7 +66,7 @@
                     }
                 }
 
-                $('.js-email-radio-option').click(function () {
+                $('.js-email-radio-option').on('click', function () {
                     toggleVisibility();
                 });
 

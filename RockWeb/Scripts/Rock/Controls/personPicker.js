@@ -93,10 +93,10 @@
                             + "&includeDetails=" + includeDetails
                             + "&includeBusinesses=" + includeBusinesses
                             + "&includeDeceased=" + includeDeceased,
-                        timeout: 20000, 
+                        timeout: 20000,
                         dataType: 'json'
                     });
-                    
+
                     // if it takes more than 1.5 seconds for the search to complete, show a wait indicator
                     if ($('.js-searching-notification').length == 0) {
                         $searchResults.prepend('<i class="fa fa-refresh fa-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
@@ -217,12 +217,12 @@
                 autoComplete._renderItem = autoCompleteCustomRenderItem;
             });
 
-            $pickerToggle.click(function (e) {
+            $pickerToggle.on('click', function (e) {
                 e.preventDefault();
                 $(this).toggleClass("active");
                 $pickerMenu.toggle(0, function () {
                     exports.personPickers[controlId].updateScrollbar();
-                    $searchFieldName.focus();
+                    $searchFieldName.trigger('focus');
                 });
             });
 
@@ -243,7 +243,7 @@
 
                     if (selectedPersonId == lastSelectedPersonId && e.type == 'click') {
                         // if they are clicking the same person twice in a row (and the details are done expanding), assume that's the one they want to pick
-                        $pickerSelect[0].click();
+                        $pickerSelect[0].trigger('click');
                     } else {
 
                         // if it is already visible but isn't the same one twice, just leave it open
@@ -291,7 +291,7 @@
                 }
             }
 
-            $pickerControl.hover(
+            $pickerControl.on('hover',
                 function () {
 
                     // only show the X if there is something picked
@@ -303,13 +303,13 @@
                     $pickerSelectNone.fadeOut(500);
                 });
 
-            $pickerCancel.click(function () {
+            $pickerCancel.on('click', function () {
                 $pickerMenu.slideUp(function () {
                     exports.personPickers[controlId].updateScrollbar();
                 });
             });
 
-            $pickerSelectNone.click(function (e) {
+            $pickerSelectNone.on('click', function (e) {
 
                 var selectedValue = '0',
                     selectedText = defaultText;
@@ -330,7 +330,7 @@
                 $pickerMenu.slideUp();
             }
 
-            $pickerSelect.click(function () {
+            $pickerSelect.on('click', function () {
                 var $radInput = $pickerControl.find('input:checked'),
                     selectedValue = $radInput.val(),
                     selectedText = $radInput.closest('.js-picker-select-item').attr('data-person-name');

@@ -93,7 +93,7 @@
                         timeout: 10000,
                         data: localDeviceConfiguration,
                         success: function (data) {
-                            
+
                             var localConfigurationStatus = data;
 
                             if ($configurationHash.val() != localConfigurationStatus.ConfigurationHash) {
@@ -200,15 +200,15 @@
                 });
 
                 if ($('.js-manager-login').length) {
-                    $('.tenkey a.digit').click(function () {
+                    $('.tenkey a.digit').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val() + $(this).html());
                     });
-                    $('.tenkey a.back').click(function () {
+                    $('.tenkey a.back').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val().slice(0, -1));
                     });
-                    $('.tenkey a.clear').click(function () {
+                    $('.tenkey a.clear').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val('');
                     });
@@ -217,7 +217,7 @@
                     var isTouchDevice = 'ontouchstart' in document.documentElement;
                     if (!isTouchDevice) {
                         if ($('.checkin-phone-entry').length) {
-                            $('.checkin-phone-entry').focus();
+                            $('.checkin-phone-entry').trigger('focus');
                         }
                     }
                 }

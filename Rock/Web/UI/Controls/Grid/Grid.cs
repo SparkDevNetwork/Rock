@@ -792,7 +792,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             // render script for popovers
             string popoverScript = @"
     $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
-    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+    $('.grid-table tr').on('click', function(){ $(this).tooltip('hide'); });;
 ";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-popover", popoverScript, true );

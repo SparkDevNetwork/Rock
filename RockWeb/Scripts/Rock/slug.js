@@ -54,7 +54,7 @@
     }
     function subscribeToEvents() {
         $(_selectors.btnAdd).unbind('click');
-        $(_selectors.btnAdd).click(function (e) {
+        $(_selectors.btnAdd).on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
             var html = '<div class="form-group rollover-container js-slug-row">' +
@@ -74,12 +74,12 @@
             subscribeToEvents();
         });
 
-        $(_selectors.inputSlug).unbind('keyup').keyup(function (e) {
+        $(_selectors.inputSlug).unbind('keyup').on("keyup", function (e) {
             this.value = this.value.toLowerCase();
         });
 
         $(_selectors.btnSlugSave).unbind('click');
-        $(_selectors.btnSlugSave).click(function (e) {
+        $(_selectors.btnSlugSave).on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
             var row = $(this).closest(_selectors.slugRow);
@@ -105,7 +105,7 @@
         });
 
         $(_selectors.btnEdit).unbind('click');
-        $(_selectors.btnEdit).click(function (e) {
+        $(_selectors.btnEdit).on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
             var row = $(this).closest(_selectors.slugRow);
@@ -114,7 +114,7 @@
         });
 
         $(_selectors.btnDelete).unbind('click');
-        $(_selectors.btnDelete).click(function (e) {
+        $(_selectors.btnDelete).on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
             var row = $(this).closest(_selectors.slugRow);

@@ -54,8 +54,8 @@ namespace RockWeb.Blocks.Prayer
         <strong>Prayer Request</strong>
     </div>
     <div class='col-md-6 text-right'>
-      {% if PrayerRequest.EnteredDateTime  %}
-          Date Entered: {{  PrayerRequest.EnteredDateTime | Date:'M/d/yyyy'  }}
+      {% if PrayerRequest.EnteredDateTime %}
+          Date Entered: {{ PrayerRequest.EnteredDateTime | Date:'M/d/yyyy' }}
       {% endif %}
     </div>
 </div>

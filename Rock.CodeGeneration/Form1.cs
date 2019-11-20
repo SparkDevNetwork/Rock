@@ -249,7 +249,15 @@ namespace Rock.CodeGeneration
                             }
                             else
                             {
-                                obsoleteList.Add( $"{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                                string messagePrefix = null;
+                                if ( rockObsolete.Version == "1.8" || rockObsolete.Version.StartsWith( "1.8.") || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                {
+                                    if ( !memberObsoleteAttribute.IsError || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                    {
+                                        messagePrefix = "###WARNING###:";
+                                    }
+                                }
+                                obsoleteList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
                             }
                         }
                     }
@@ -1200,10 +1208,7 @@ order by [parentTable], [columnName]
         private void WriteRockClientFile( string rootFolder, Type type )
         {
             // make a copy of the EntityProperties since we are deleting some for this method
-            Debug.WriteLine( $"WriteRockClientFile for {type.FullName}" );
             var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
-
-
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )

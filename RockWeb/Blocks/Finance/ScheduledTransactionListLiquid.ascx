@@ -7,7 +7,7 @@
             <asp:Repeater ID="rptScheduledTransactions" OnItemDataBound="rptScheduledTransactions_ItemDataBound" runat="server">
                 <ItemTemplate>
                     <div class="scheduledtransaction-item">
-                        <asp:Literal ID="lLiquidContent" runat="server" />
+                        <asp:Literal ID="lLavaContent" runat="server" />
                         <asp:HiddenField ID="hfScheduledTransactionId" runat="server"></asp:HiddenField>
                         <asp:HiddenField ID="hfTransfer" runat="server"></asp:HiddenField>
                         <div class="actions">

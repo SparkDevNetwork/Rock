@@ -99,13 +99,11 @@ namespace RockWeb.Blocks.Groups
     {% endif %}
 {% endif %}
 ", "CustomSetting" )]
-    [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
 
     // Lava Output Settings
     [BooleanField( "Show Lava Output", "", false, "CustomSetting" )]
     [CodeEditorField( "Lava Output", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 ", "CustomSetting" )]
-    [BooleanField( "Lava Output Debug", "", false, "CustomSetting" )]
 
     // Grid Settings
     [BooleanField( "Show Grid", "", false, "CustomSetting" )]
@@ -1072,9 +1070,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
 
-                    bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
-                    lMapInfoDebug.Visible = showDebug;
-
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
                     foreach ( var gl in groupLocations )
@@ -1111,12 +1106,6 @@ namespace RockWeb.Blocks.Groups
                             mergeFields.Add( "AllowedActions", securityActions );
 
                             string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
-
-                            if ( showDebug )
-                            {
-                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the map window.</span>", string.Empty );
-                                showDebug = false;
-                            }
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
@@ -1175,13 +1164,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
 
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the summary info.</span>" );
-                }
 
                 pnlLavaOutput.Visible = true;
             }

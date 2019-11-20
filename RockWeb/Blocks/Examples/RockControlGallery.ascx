@@ -1,8 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RockControlGallery.ascx.cs" Inherits="RockWeb.Blocks.Examples.RockControlGallery" %>
 <!-- add after bootstrap.min.css -->
-<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.css">
-<!-- add after bootstrap.min.js -->
-<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.js"></script>
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
@@ -17,19 +14,11 @@
                 $scope: $('h1,h2,h3,h4').not($exampleHeaders)
             });
             $('body').scrollspy({
-                target: '#toc'
+                target: navSelector,
+                offset: 80
             });
         });
-
-        $(window).on('activate.bs.scrollspy', function (e,f,g) {
-            var href = $("a[href^='#']", e.target).attr("href");
-            if (href && href != '#') {
-                history.replaceState({}, "", href);
-            }
-        });
-
-    })
-
+    });
 </script>
 <style>
     .rlink {
