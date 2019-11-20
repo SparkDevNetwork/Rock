@@ -25,7 +25,7 @@
 
 <script>
 
-    $('.dropdown-menu:not(a)').click(function (e) {
+    $('.dropdown-menu:not(a)').on('click', function (e) {
         e.stopPropagation();
     });
 

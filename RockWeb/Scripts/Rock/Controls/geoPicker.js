@@ -110,7 +110,7 @@
 
                 // enable delete button
                 var $deleteButton = $('#gmnoprint-delete-button_' + obj.controlId);
-                $('#gmnoprint-delete-button_' + obj.controlId).removeAttr('disabled');
+                $('#gmnoprint-delete-button_' + obj.controlId).prop("disabled", false);
                 $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "");
 
                 obj.selectedShape = shape;
@@ -441,7 +441,7 @@
             /**
             * Toggle the picker on and off when the control's link is clicked.
             */
-            $('#' + controlId + ' a.picker-label').click(function (e) {
+            $('#' + controlId + ' a.picker-label').on('click', function (e) {
                 e.preventDefault();
                 var $control = $('#' + controlId);
                 $(this).toggleClass("active");
@@ -471,7 +471,7 @@
             /**
             * Handle the toggle expand fullscreen button click.
             */
-            $('#btnExpandToggle_' + controlId).click(function () {
+            $('#btnExpandToggle_' + controlId).on('click', function () {
 
                 var $myElement = $('#geoPicker_' + self.controlId);
 
@@ -540,7 +540,7 @@
             /**
             * Handle the Cancel button click by hiding the overlay.
             */
-            $('#btnCancel_' + controlId).click(function () {
+            $('#btnCancel_' + controlId).on('click', function () {
                 $(this).closest('.picker-menu').slideUp(function () {
                     Rock.dialogs.updateModalScrollBar(controlId);
                 });
@@ -570,7 +570,7 @@
             /**
             * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field.
             */
-            $('#btnSelect_' + controlId).click(function () {
+            $('#btnSelect_' + controlId).on('click', function () {
                 var geoInput = $('#' + controlId).find('input:checked'),
                     selectedValue = self.path,
                     selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
@@ -597,7 +597,7 @@
             /**
             * Clear the selection when X is clicked
             */
-            $control.find('.picker-select-none').click(function (e) {
+            $control.find('.picker-select-none').on('click', function (e) {
                 e.stopImmediatePropagation();
                 var selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
                 $hiddenField.val("");

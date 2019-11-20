@@ -1187,7 +1187,7 @@ namespace RockWeb.Blocks.Crm
 
             string script = @"
 // activity animation
-$('.template-form > header').click(function () {
+$('.template-form > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -1198,12 +1198,12 @@ $('.template-form > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
-$('.template-form a.js-activity-delete').click(function (event) {
+$('.template-form a.js-activity-delete').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event
-$('.template-form a.template-form-reorder').click(function (event) {
+$('.template-form a.template-form-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -1668,7 +1668,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
         /*  For Backwards compatibility, we still need to deserialize from PreText, but not serialize it*/
         [JsonProperty( "PreText" )]
         private string _preText
-        {   
+        {
             set
             {
                 PreHtml = value;

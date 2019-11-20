@@ -101,10 +101,10 @@
                 $('body').toggleClass('block-highlight');
 
                 // Bind the block configure icon so that edit icons are displayed on hover
-                $(".block-configuration").hover(function (e) {
+                $(".block-configuration").on("mouseenter", function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '1049' });
-                }, function () {
+                }).on("mouseleave", function () {
                     $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
 
@@ -172,10 +172,10 @@
                 $('.zone-configuration').toggle();
 
                 // Bind the zone configure icon so that edit icons are displayed on hover
-                $(".zone-configuration").hover(function () {
+                $(".zone-configuration").on("mouseenter", function () {
                     var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
                     $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '1049' });
-                }, function () {
+                }).on("mouseleave", function () {
                     $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1000' });
                 });
             },

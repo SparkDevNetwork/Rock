@@ -80,7 +80,7 @@ namespace Rock.Attribute
                 int properties = 0;
                 foreach ( var customAttribute in type.GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                 {
-                    var contextAttribute = ( ContextAwareAttribute )customAttribute;
+                    var contextAttribute = ( ContextAwareAttribute ) customAttribute;
                     if ( contextAttribute != null && contextAttribute.IsConfigurable )
                     {
                         string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
@@ -399,8 +399,8 @@ namespace Rock.Attribute
             if ( entity is Rock.Attribute.IHasInheritedAttributes )
             {
                 rockContext = rockContext ?? new RockContext();
-                allAttributes = ( (Rock.Attribute.IHasInheritedAttributes)entity ).GetInheritedAttributes( rockContext );
-                altEntityIds = ( (Rock.Attribute.IHasInheritedAttributes)entity ).GetAlternateEntityIds( rockContext );
+                allAttributes = ( ( Rock.Attribute.IHasInheritedAttributes ) entity ).GetInheritedAttributes( rockContext );
+                altEntityIds = ( ( Rock.Attribute.IHasInheritedAttributes ) entity ).GetAlternateEntityIds( rockContext );
             }
 
             allAttributes = allAttributes ?? new List<AttributeCache>();
@@ -494,7 +494,7 @@ namespace Rock.Attribute
                         var parameterExpression = attributeValueService.ParameterExpression;
                         MemberExpression propertyExpression = Expression.Property( parameterExpression, "AttributeId" );
                         Expression expression = null;
-                        foreach ( var attributeId in attributeIds.Take(1000) )
+                        foreach ( var attributeId in attributeIds.Take( 1000 ) )
                         {
                             Expression attributeIdValue = Expression.Constant( attributeId );
                             if ( expression != null )
@@ -1206,56 +1206,150 @@ namespace Rock.Attribute
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
-        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
+        /// <param name="displayAsTabs">if set to <c>true</c> [show tabs].</param>
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true, bool displayAsTabs = false )
         {
             if ( item == null )
             {
                 return;
             }
 
-            foreach ( var attributeCategory in attributeCategories )
+            if ( displayAsTabs )
             {
-                if ( showHeading )
+                HtmlGenericControl tabs = new HtmlGenericControl( "ul" );
+                tabs.AddCssClass( "nav nav-tabs margin-b-lg" );
+
+                parentControl.Controls.Add( tabs );
+                HtmlGenericControl tabContent = new HtmlGenericControl( "div" );
+                tabContent.AddCssClass( "tab-content" );
+                parentControl.Controls.Add( tabContent );
+
+                int i = 0;
+                foreach ( var attributeCategory in attributeCategories )
                 {
-                    HtmlGenericControl header = new HtmlGenericControl( "h4" );
-
-                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
-
-                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
-                    parentControl.Controls.Add( header );
-                }
-
-                HtmlGenericControl dl = new HtmlGenericControl( "dl" );
-                parentControl.Controls.Add( dl );
-
-                foreach ( var attribute in attributeCategory.Attributes.Where( a => AttributeCache.Get( a.Id ).IsActive ) )
-                {
-                    if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
+                    string categoryName = "Attributes";
+                    string id = "Attributes";
+                    if ( attributeCategory.Category != null )
                     {
-                        // Get the Attribute Value formatted for display.
-                        string value = attribute.DefaultValue;
-                        if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
+                        categoryName = attributeCategory.Category.Name.Trim();
+                        id = attributeCategory.Category.Id.ToString();
+                    }
+
+                    HtmlGenericControl tab = new HtmlGenericControl( "div" );
+                    tab.ID = id;
+                    tab.AddCssClass( "tab-pane fade in" );
+                    tabContent.Controls.Add( tab );
+
+                    var tabClientId = tab.ClientID;
+                    #region tabs
+                    HtmlGenericControl li = new HtmlGenericControl( "li" );
+                    HtmlGenericControl a = new HtmlGenericControl( "a" );
+                    a.Attributes.Add( "data-toggle", "tab" );
+                    a.Attributes.Add( "href", "#" + tabClientId );
+
+                    a.InnerText = categoryName;
+                    li.Controls.Add( a );
+                    tabs.Controls.Add( li );
+                    #endregion tabs
+
+                    if ( i == 0 )
+                    {
+                        tab.AddCssClass( "active" );
+                        li.AddCssClass( "active" );
+                    }
+
+                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                    tab.Controls.Add( dl );
+
+                    foreach ( var attribute in attributeCategory.Attributes.Where( b => AttributeCache.Get( b.Id ).IsActive ) )
+                    {
+                        if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                         {
-                            value = item.AttributeValues[attribute.Key].Value;
+                            // Get the Attribute Value formatted for display.
+                            string value = attribute.DefaultValue;
+                            if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
+                            {
+                                value = item.AttributeValues[attribute.Key].Value;
+                            }
+
+                            string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
+
+                            // If the Attribute Value has some content, display it.
+                            if ( !string.IsNullOrWhiteSpace( controlHtml ) )
+                            {
+                                HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                                dt.InnerText = attribute.Name;
+                                dl.Controls.Add( dt );
+
+                                HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+
+                                dd.InnerHtml = controlHtml;
+                                dl.Controls.Add( dd );
+                            }
                         }
+                    }
+                    i++;
+                }
+            }
+            else
+            {
+                foreach ( var attributeCategory in attributeCategories )
+                {
+                    if ( showHeading )
+                    {
+                        HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
-                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
+                        string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
 
-                        // If the Attribute Value has some content, display it.
-                        if ( !string.IsNullOrWhiteSpace( controlHtml ) )
+                        header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
+                        parentControl.Controls.Add( header );
+                    }
+
+                    HtmlGenericControl dl = new HtmlGenericControl( "dl" );
+                    parentControl.Controls.Add( dl );
+
+                    foreach ( var attribute in attributeCategory.Attributes.Where( a => AttributeCache.Get( a.Id ).IsActive ) )
+                    {
+                        if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
                         {
-                            HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                            dt.InnerText = attribute.Name;
-                            dl.Controls.Add( dt );
+                            // Get the Attribute Value formatted for display.
+                            string value = attribute.DefaultValue;
+                            if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
+                            {
+                                value = item.AttributeValues[attribute.Key].Value;
+                            }
 
-                            HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+                            string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
 
-                            dd.InnerHtml = controlHtml;
-                            dl.Controls.Add( dd );
+                            // If the Attribute Value has some content, display it.
+                            if ( !string.IsNullOrWhiteSpace( controlHtml ) )
+                            {
+                                HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                                dt.InnerText = attribute.Name;
+                                dl.Controls.Add( dt );
+
+                                HtmlGenericControl dd = new HtmlGenericControl( "dd" );
+
+                                dd.InnerHtml = controlHtml;
+                                dl.Controls.Add( dd );
+                            }
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds the display controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="attributeCategories">The attribute categories.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="exclude">The exclude.</param>
+        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
+        {
+            AddDisplayControls( item, attributeCategories, parentControl, exclude, showHeading, false );
         }
 
         /// <summary>

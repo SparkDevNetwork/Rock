@@ -10,7 +10,7 @@
             // entityTypeId is the EntityType, and entityId is the .Id for the associated entity
             // personId and personAliasId are the person that is doing the following/un-following
             initialize: function ($followingDiv, entityTypeId, entityId, personId, personAliasId) {
-                $followingDiv.click(function () {
+                $followingDiv.on('click', function () {
                     if ($followingDiv.hasClass('following')) {
 
                         $.ajax({

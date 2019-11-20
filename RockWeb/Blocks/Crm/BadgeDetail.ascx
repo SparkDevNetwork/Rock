@@ -2,18 +2,18 @@
 
 <asp:UpdatePanel ID="upBadge" runat="server">
     <ContentTemplate>
-        
+
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-shield"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-icons"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"  />
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Badge, Rock" PropertyName="Name" Required="true" />
@@ -43,7 +43,7 @@
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="rtbQualifierValue" runat="server" Label="Qualifier Value" Required="false" />
                     </div>
-                    
+
                     <div class="col-md-6">
                         <div class="attributes">
                             <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />

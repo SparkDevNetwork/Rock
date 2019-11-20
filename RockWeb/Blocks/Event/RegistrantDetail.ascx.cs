@@ -236,7 +236,7 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                // Remove/delete any registrant fees that are no longer in UI with quantity 
+                // Remove/delete any registrant fees that are no longer in UI with quantity
                 foreach ( var dbFee in registrant.Fees.ToList() )
                 {
                     if ( !RegistrantState.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( !registrant.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
@@ -492,7 +492,7 @@ namespace RockWeb.Blocks.Event
                     null,
                     null );
             }
-            
+
             NavigateToRegistration();
         }
 
@@ -515,8 +515,8 @@ namespace RockWeb.Blocks.Event
         {
             var qryParams = new Dictionary<string, string>();
             var pageCache = PageCache.Get( RockPage.PageId );
-            if ( pageCache != null && 
-                pageCache.ParentPage != null && 
+            if ( pageCache != null &&
+                pageCache.ParentPage != null &&
                 pageCache.ParentPage.ParentPage != null &&
                 pageCache.ParentPage.ParentPage.ParentPage != null )
             {
@@ -578,7 +578,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrantState.Id > 0 && RegistrantState.GroupMemberId.HasValue )
             {
                 string editScript = string.Format( @"
-    $('a.js-edit-registrant').click(function( e ){{
+    $('a.js-edit-registrant').on('click', function( e ){{
         e.preventDefault();
         if( $('#{2} .js-person-id').val() !=='{1}'){{
         var  newPerson = $('#{2} .js-person-name' ).val();
@@ -623,8 +623,8 @@ namespace RockWeb.Blocks.Event
                         registrant.Registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         RegistrantState = new RegistrantInfo( registrant, rockContext );
-                        TemplateState = registrant.Registration.RegistrationInstance.RegistrationTemplate; 
-                        
+                        TemplateState = registrant.Registration.RegistrationInstance.RegistrationTemplate;
+
                         RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
 
                         lWizardTemplateName.Text = registrant.Registration.RegistrationInstance.RegistrationTemplate.Name;
@@ -648,7 +648,7 @@ namespace RockWeb.Blocks.Event
                         registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         TemplateState = registration.RegistrationInstance.RegistrationTemplate;
-                        
+
                         RegistrationInstanceId = registration.RegistrationInstanceId;
 
                         lWizardTemplateName.Text = registration.RegistrationInstance.RegistrationTemplate.Name;

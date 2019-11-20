@@ -204,7 +204,7 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 List<string> values = new List<string>();
-                values.AddRange( value.Split( ',' ) );
+                values.AddRange( value.SplitDelimitedValues() );
 
                 if ( control != null && control is RockCheckBoxList )
                 {

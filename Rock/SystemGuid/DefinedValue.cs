@@ -353,7 +353,7 @@ namespace Rock.SystemGuid
         public const string TRANSACTION_FREQUENCY_BIWEEKLY = "72990023-0D43-4554-8D32-28461CAB8920";
 
         /// <summary>
-        /// Twice a month
+        /// Twice a month on the 1st and 15th
         /// </summary>
         public const string TRANSACTION_FREQUENCY_TWICEMONTHLY = "791C863D-2600-445B-98F8-3E5B66A3DEC4";
 

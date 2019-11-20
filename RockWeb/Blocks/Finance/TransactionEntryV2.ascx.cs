@@ -490,7 +490,7 @@ mission. We are so grateful for your commitment.</p>
 
     {% if PaymentDetail.AccountNumberMasked  != '' %}
         <dt>Account Number</dt>
-        <dd>{{ PaymentDetail.AccountNumberMasked  }}</dd>
+        <dd>{{ PaymentDetail.AccountNumberMasked }}</dd>
     {% endif %}
 
     <dt>When<dt>
@@ -610,7 +610,7 @@ mission. We are so grateful for your commitment.</p>
         });
 
         var $toggleScheduledDetails = $('.js-toggle-scheduled-details');
-        $toggleScheduledDetails.click(function () {
+        $toggleScheduledDetails.on('click', function () {
             var $scheduledDetailsContainer = $(this).closest('.js-scheduled-transaction');
             if ($scheduledDetailsContainer.attr('data-expanded') == 1) {
                 $scheduledDetailsContainer.attr('data-expanded', 0);

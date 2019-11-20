@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Finance
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             string script = string.Format( @"
-    $('.transaction-image-thumbnail').click( function() {{
+    $('.transaction-image-thumbnail').on('click', function() {{
         var $primaryHyperlink = $('.transaction-image a');
         var $primaryImg = $('.transaction-image a img');
         var primarySrc = $primaryHyperlink.attr('href');
@@ -953,10 +953,10 @@ namespace RockWeb.Blocks.Finance
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
             cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();
             cbFilterAccountsByBatchsCampus.Checked = this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ).AsBoolean();
-            
+
             cpAccounts.Campuses = CampusCache.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
-            
+
             mdAccountsPersonalFilter.Show();
 
             cbFilterAccountsByBatchsCampus.Visible = cpAccounts.Visible;
@@ -1369,7 +1369,7 @@ namespace RockWeb.Blocks.Finance
                     rptrAddresses.DataBind();
                     btnMoreAddress.Visible = false;
                 }
-                
+
             }
         }
 

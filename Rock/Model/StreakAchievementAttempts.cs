@@ -17,9 +17,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -149,6 +151,18 @@ namespace Rock.Model
 
                 return isValid;
             }
+        }
+
+        /// <summary>
+        /// Perform tasks prior to saving changes to this entity.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        {
+            // Add a transaction to process workflows and add steps
+            new StreakAchievementAttemptChangeTransaction( entry ).Enqueue();
+            base.PreSaveChanges( dbContext, entry );
         }
 
         #endregion Overrides

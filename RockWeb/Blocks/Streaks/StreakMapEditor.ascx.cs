@@ -364,7 +364,7 @@ namespace RockWeb.Blocks.Streaks
                 endDate = endDate.SundayDate();
             }
 
-            cblCheckboxes.Label = isDaily ? "Days" : "Weeks (Monday to Sunday)";
+            cblCheckboxes.Label = isDaily ? "Days" : "Weeks";
             cblCheckboxes.Items.Clear();
 
             var minDate = GetMinDate();
@@ -397,15 +397,13 @@ namespace RockWeb.Blocks.Streaks
         {
             if ( isDaily )
             {
-                const string dateFormat = "ddd, MMM dd";
+                const string dateFormat = "ddd, MMM dd, yyyy";
                 return representedDate.ToString( dateFormat );
             }
             else
             {
-                const string dateFormat = "MMM dd";
-                return string.Format( "{0} - {1}",
-                    representedDate.AddDays( 0 - ( DaysPerWeek - 1 ) ).ToString( dateFormat ),
-                    representedDate.ToString( dateFormat ) );
+                const string dateFormat = "MMM dd, yyyy";
+                return representedDate.ToString( dateFormat );
             }
         }
 

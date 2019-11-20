@@ -122,14 +122,13 @@
             });
 
             // fadeIn/fadeOut the X buttons to delete dates
-            $modal.find('.lstSpecificDates').hover(
+            $modal.find('.lstSpecificDates').on('mouseenter',
                 function () {
                     $(this).find('li a').stop(true, true).show();
-                },
+                }).on('mouseleave',
                 function () {
                     $(this).find('li a').stop(true, true).fadeOut(500);
-                }
-            );
+                });
 
             // delete specific date from list
             $modal.find('.lstSpecificDates').off('click').on('click', 'li a', function () {
@@ -157,7 +156,7 @@
 
             // show dateRangepicker, ok, cancel so that new dateRange can be added to the list
             $modal.find('.add-exclusion-daterange').off('click').on('click', function () {
-                
+
                 $(this).hide();
                 $modal.find('.js-add-exclusion-daterange-group').show(function () {
                     Rock.controls.modal.updateSize();
@@ -209,14 +208,13 @@
             });
 
             // fadeIn/fadeOut the X buttons to delete dateRanges
-            $modal.find('.lstExclusionDateRanges').hover(
+            $modal.find('.lstExclusionDateRanges').on("mouseenter",
                 function () {
                     $(this).find('li a').stop(true, true).show();
-                },
+                }).on("mouseleave",
                 function () {
                     $(this).find('li a').stop(true, true).fadeOut(500);
-                }
-            );
+                });
 
             // delete dateRange from list
             $modal.find('.lstExclusionDateRanges').off('click').on('click', 'li a', function () {
