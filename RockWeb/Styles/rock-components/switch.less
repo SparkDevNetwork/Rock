@@ -13,11 +13,11 @@
 
     &::before {
       position: absolute;
-      top: .25rem;
+      top: 4px;
       left: -(@custom-switch-width + @custom-control-gutter);
       display: block;
       width: @custom-switch-width;
-      height: @custom-switch-indicator-size + 6px;
+      height: (@custom-switch-indicator-size + (@custom-switch-indicator-padding *2));
       pointer-events: all;
       content: "";
       background-color: #fff;
@@ -27,8 +27,8 @@
 
     &::after {
       position: absolute;
-      top: 6px;
-      left: (-(@custom-switch-width + @custom-control-gutter) + (@custom-control-switch-border-width * 2) + 2px );
+      top: 4px + @custom-switch-indicator-padding;
+      left: (-(@custom-switch-width + @custom-control-gutter) + @custom-switch-indicator-padding);
       display: block;
       width: @custom-switch-indicator-size;
       height: @custom-switch-indicator-size;
@@ -52,12 +52,17 @@
     &:focus:not(:checked) ~ .custom-control-label::before {
       border-color: @custom-control-indicator-focus-border-color;
     }
+
+    &:active ~ .custom-control-label::before {
+      color: @custom-control-indicator-active-color;
+      background-color: @custom-control-indicator-active-bg;
+    }
   }
 
   .custom-control-input:checked ~ .custom-control-label {
     &::after {
       background-color: @custom-control-indicator-bg;
-      transform: translateX((@custom-switch-width - @custom-control-indicator-size));
+      transform: translateX((@custom-switch-width - @custom-switch-indicator-size - (@custom-control-switch-border-width * 4)));
     }
 
     &::before {
