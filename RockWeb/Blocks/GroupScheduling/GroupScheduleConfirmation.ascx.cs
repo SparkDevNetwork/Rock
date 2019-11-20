@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var attendance = e.Item.DataItem as Attendance;
 
             lPendingOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lPendingOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lPendingOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
             btnConfirmAttending.CommandName = "AttendanceId";
             btnConfirmAttending.CommandArgument = attendance.Id.ToString();
             btnDeclineAttending.CommandName = "AttendanceId";
@@ -542,13 +542,13 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
-        /// Gets the occurrence time.
+        /// Gets the occurrence schedule's name.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        /// <returns></returns>
-        protected string GetOccurrenceTime( Attendance attendance )
+        /// <returns>The name of the schedule</returns>
+        protected string GetOccurrenceScheduleName( Attendance attendance )
         {
-            return attendance.Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString();
+            return attendance.Occurrence.Schedule.Name;
         }
 
         /// <summary>

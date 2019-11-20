@@ -1652,7 +1652,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="streakOccurrenceFrequency"></param>
         /// <returns></returns>
-        private static DateTime GetMaxDateForStreakBreaking( StreakOccurrenceFrequency streakOccurrenceFrequency )
+        public static DateTime GetMaxDateForStreakBreaking( StreakOccurrenceFrequency streakOccurrenceFrequency )
         {
             if ( streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily )
             {
