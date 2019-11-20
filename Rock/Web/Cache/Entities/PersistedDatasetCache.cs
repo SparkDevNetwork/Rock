@@ -40,7 +40,7 @@ namespace Rock.Web.Cache
         /// The access key.
         /// </value>
         [DataMember]
-        public string AccessKey { get; set; }
+        public string AccessKey { get; private set; }
 
         /// <summary>
         /// Gets or sets the Name of the PesistedDataset.
@@ -49,7 +49,7 @@ namespace Rock.Web.Cache
         /// A <see cref="System.String"/> representing the name of the PesistedDataset.
         /// </value>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         /// <summary>
         /// Gets or sets a user defined description of the PesistedDataset.
@@ -58,7 +58,7 @@ namespace Rock.Web.Cache
         /// A <see cref="System.String"/> representing the description of the PesistedDataset.
         /// </value>
         [DataMember]
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
         /// <summary>
         /// Gets or sets the refresh interval minutes
@@ -67,7 +67,7 @@ namespace Rock.Web.Cache
         /// The refresh interval minutes.
         /// </value>
         [DataMember]
-        public int? RefreshIntervalMinutes { get; set; }
+        public int? RefreshIntervalMinutes { get; private set; }
 
         /// <summary>
         /// Gets or sets a comma-delimited list of enabled LavaCommands
@@ -76,7 +76,7 @@ namespace Rock.Web.Cache
         /// The enabled lava commands.
         /// </value>
         [DataMember]
-        public string EnabledLavaCommands { get; set; }
+        public string EnabledLavaCommands { get; private set; }
 
         /// <summary>
         /// Gets or sets the persisted last refresh date time.
@@ -85,7 +85,7 @@ namespace Rock.Web.Cache
         /// The persisted last refresh date time.
         /// </value>
         [DataMember]
-        public DateTime? LastRefreshDateTime { get; set; }
+        public DateTime? LastRefreshDateTime { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [allow manual refresh].
@@ -94,7 +94,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [allow manual refresh]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool AllowManualRefresh { get; set; } = true;
+        public bool AllowManualRefresh { get; private set; } = true;
 
         /// <summary>
         /// Gets or sets the serialized data of the dataset. See <seealso cref="ResultFormat"/>
@@ -103,7 +103,7 @@ namespace Rock.Web.Cache
         /// The result data.
         /// </value>
         [DataMember]
-        public string ResultData { get; set; }
+        public string ResultData { get; private set; }
 
         /// <summary>
         /// returns an <see cref="System.Dynamic.ExpandoObject"/> or a list of <see cref="System.Dynamic.ExpandoObject"/>.  If <see cref="ResultData"/> can't be deserialized, returns null
