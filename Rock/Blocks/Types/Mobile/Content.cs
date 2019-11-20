@@ -46,27 +46,9 @@ namespace Rock.Blocks.Types.Mobile
         Order = 1 )]
     
     [BooleanField( "Dynamic Content",
-        Description = "If enabled then the client will download fresh content from the server every period of Cache Duration, otherwise the content will remain static.",
+        Description = "If enabled then the client will download fresh content from the server on each page (taking cache duration into account), otherwise the content will remain static.",
         IsRequired = true,
-        Category = "custommobile",
         Key = AttributeKeys.DynamicContent,
-        Order = 0 )]
-
-    [IntegerField( "Cache Duration",
-        Description = "The number of seconds the data should be cached on the client before it is requested from the server again. A value of 0 means always reload.",
-        IsRequired = false,
-        DefaultIntegerValue = 86400,
-        Category = "custommobile",
-        Key = AttributeKeys.CacheDuration,
-        Order = 1 )]
-
-    [CustomDropdownListField( "Lava Render Location",
-        "Specifies where to render the Lava",
-        "On Server, On Device, Both",
-        IsRequired = true,
-        DefaultValue = "On Server",
-        Category = "custommobile",
-        Key = AttributeKeys.LavaRenderLocation,
         Order = 2 )]
 
     [CodeEditorField( "Callback Logic",
@@ -87,11 +69,6 @@ namespace Rock.Blocks.Types.Mobile
         public static class AttributeKeys
         {
             /// <summary>
-            /// The cache duration key
-            /// </summary>
-            public const string CacheDuration = "CacheDuration";
-
-            /// <summary>
             /// The content key
             /// </summary>
             public const string Content = "Content";
@@ -105,11 +82,6 @@ namespace Rock.Blocks.Types.Mobile
             /// The enabled lava commands key
             /// </summary>
             public const string EnabledLavaCommands = "EnabledLavaCommands";
-
-            /// <summary>
-            /// The lava render location key
-            /// </summary>
-            public const string LavaRenderLocation = "LavaRenderLocation";
 
             /// <summary>
             /// The callback logic key
@@ -162,13 +134,14 @@ namespace Rock.Blocks.Types.Mobile
         [BlockAction]
         public object GetCurrentConfig()
         {
+            var additionalSettings = GetAdditionalSettings();
             var content = GetAttributeValue( AttributeKeys.Content );
             var config = new Dictionary<string, object>();
 
             //
-            // If we are rendering lava On Server or on Both, then render it.
+            // Check if we need to render lava on the server.
             //
-            if ( GetAttributeValue( AttributeKeys.LavaRenderLocation ) != "On Device" )
+            if ( additionalSettings.ProcessLavaOnServer )
             {
                 var mergeFields = RequestContext.GetCommonMergeFields();
 
@@ -176,8 +149,8 @@ namespace Rock.Blocks.Types.Mobile
             }
 
             config.Add( "Content", content );
-            config.Add( "ProcessLava", GetAttributeValue( AttributeKeys.LavaRenderLocation ) != "On Server" );
-            config.Add( "CacheDuration", GetAttributeValue( AttributeKeys.CacheDuration ).AsInteger() );
+            config.Add( "ProcessLava", additionalSettings.ProcessLavaOnClient );
+            config.Add( "CacheDuration", additionalSettings.CacheDuration );
             config.Add( "DynamicContent", GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean() );
 
             return config;

@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Cms
                 lbConfigure.Click += lbConfigure_Click;
                 configControls.Add( lbConfigure );
                 HtmlGenericControl iConfigure = new HtmlGenericControl( "i" );
-                iConfigure.Attributes.Add( "class", "fa fa fa-cog" );
+                iConfigure.Attributes.Add( "class", "fa fa-cog" );
 
                 lbConfigure.Controls.Add( iConfigure );
                 lbConfigure.CausesValidation = false;
@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !dataViewFilter.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
@@ -874,7 +874,7 @@ namespace RockWeb.Blocks.Cms
 
         #region Filter Related stuff
 
-        #endregion 
+        #endregion
 
         /// <summary>
         /// Creates the filter control.
@@ -1083,6 +1083,6 @@ namespace RockWeb.Blocks.Cms
             groupControl.Parent.Controls.Remove( groupControl );
         }
 
-        
+
     }
 }

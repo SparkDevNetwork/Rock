@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="NamelessPersonList.ascx.cs" Inherits="RockWeb.Blocks.Communication.NamelessPersonList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="NamelessPersonList.ascx.cs" Inherits="RockWeb.Blocks.Crm.NamelessPersonList" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -14,9 +14,9 @@
             <div class="panel-body">
 
                 <div class="grid grid-panel ">
-                    <Rock:Grid ID="gNamelessPersonPhoneNumberList" runat="server" AllowSorting="true" RowItemText="Nameless Person" DataKeyNames="Id">
+                    <Rock:Grid ID="gNamelessPersonList" runat="server" RowItemText="Nameless Person" DataKeyNames="Id">
                         <Columns>
-                            <Rock:RockLiteralField ID="lUnmatchedPhoneNumber" HeaderText="Phone Number" SortExpression="Number" OnDataBound="lUnmatchedPhoneNumber_DataBound" />
+                            <Rock:RockLiteralField ID="lUnmatchedPerson" HeaderText="Phone Number" OnDataBound="lUnmatchedPerson_DataBound" />
                             <Rock:LinkButtonField ID="btnLinkToPerson" Text="<i class='fa fa-user'></i>" ToolTip="Link to Person" CssClass="btn btn-default btn-sm" OnClick="btnLinkToPerson_Click" />
                         </Columns>
                     </Rock:Grid>

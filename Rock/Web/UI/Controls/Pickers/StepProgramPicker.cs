@@ -17,6 +17,7 @@
 using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
@@ -37,7 +38,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack )
+            if ( !Page.IsPostBack && Items.Count == 0 )
             {
                 LoadDropDownItems( this, true );
             }

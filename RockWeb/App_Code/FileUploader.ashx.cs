@@ -425,7 +425,7 @@ namespace RockWeb
         public string ScrubFilePath( string untrustedFilePath )
         {
             // Scrub invalid path characters
-            return Regex.Replace( untrustedFilePath, "[" + Regex.Escape( Path.GetInvalidPathChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
+            return Regex.Replace( untrustedFilePath.Trim(), "[" + Regex.Escape( Path.GetInvalidPathChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
         }
     }
 }

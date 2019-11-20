@@ -20,7 +20,11 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lIcon" runat="server" />
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">

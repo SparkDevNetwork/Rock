@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Communication
             gCommunicationTemplates.ShowConfirmDeleteDialog = false;
 
             string deleteScript = @"
-    $('table.js-grid-communicationtemplate-list a.grid-delete-button').click(function( e ){
+    $('table.js-grid-communicationtemplate-list a.grid-delete-button').on('click', function( e ){
         var $btn = $(this);
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this template?', function (result) {

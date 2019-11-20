@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( !registration.IsValid )
                     {
-                        // Controls will render the error messages                    
+                        // Controls will render the error messages
                         return;
                     }
 
@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Event
                             // ...Add, reload again
                             Registration = GetRegistration( Registration.Id );
                         }
-                        
+
                         lWizardRegistrationName.Text = Registration.ToString();
                         ShowReadonlyDetails( Registration );
                     }
@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Event
                         .FirstOrDefault();
                 }
             }
-            
+
             if ( pageCache != null && pageCache.ParentPage != null && pageCache.ParentPage.ParentPage != null  )
             {
                 qryParams.Add( "RegistrationTemplateId", templateId.ToString() );
@@ -707,7 +707,7 @@ namespace RockWeb.Blocks.Event
             nbDiscountPercentage.Text = discount != null && discount.DiscountPercentage != 0.0m ? (discount.DiscountPercentage * 100.0m).ToString("N0") : "";
             cbDiscountAmount.Text = discount != null && discount.DiscountAmount != 0.0m ? discount.DiscountAmount.ToString( "N2" ) : "";
         }
-        
+
         protected void lbResendConfirmation_Click( object sender, EventArgs e )
         {
             if ( RegistrationId.HasValue )
@@ -1046,10 +1046,10 @@ namespace RockWeb.Blocks.Event
                         var personService = new PersonService(rockContext);
                         var signatureDocumentTemplateService = new SignatureDocumentTemplateService(rockContext);
                         var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantId.Value );
-                        if ( registrant != null && 
+                        if ( registrant != null &&
                             registrant.PersonAlias != null &&
                             registrant.PersonAlias.Person != null &&
-                            Registration != null && 
+                            Registration != null &&
                             Registration.RegistrationInstance != null &&
                             Registration.RegistrationInstance.RegistrationTemplate != null )
                         {
@@ -1083,7 +1083,7 @@ namespace RockWeb.Blocks.Event
                             var sendErrorMessages = new List<string>();
                             if ( new SignatureDocumentTemplateService( rockContext ).SendDocument(
                                 signatureDocumentTemplateService.Get(Registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value),
-                                appliesTo, 
+                                appliesTo,
                                 assignedTo,
                                 Registration.RegistrationInstance.Name,
                                 email,
@@ -1488,7 +1488,7 @@ namespace RockWeb.Blocks.Event
             RegistrantsState = new List<RegistrantInfo>();
             registration.Registrants.ToList().ForEach( r => RegistrantsState.Add( new RegistrantInfo( r, rockContext ) ) );
 
-            if ( registration.RegistrationInstance != null && 
+            if ( registration.RegistrationInstance != null &&
                 registration.RegistrationInstance.RegistrationTemplate != null &&
                 registration.RegistrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
             {
@@ -1544,7 +1544,7 @@ namespace RockWeb.Blocks.Event
                 decimal balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
                 hlBalance.Text = balanceDue.FormatAsCurrency();
-                hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger : 
+                hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger :
                     balanceDue < 0 ? LabelType.Warning : LabelType.Success;
             }
             else
@@ -1581,7 +1581,7 @@ namespace RockWeb.Blocks.Event
 
             string deleteScript = @"
 
-    $('a.js-delete-registration').click(function( e ){
+    $('a.js-delete-registration').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this Registration? All of the registrants will also be deleted!', function (result) {
             if (result) {
@@ -2046,7 +2046,7 @@ namespace RockWeb.Blocks.Event
                     // Get all the transactions related to this registration
                     var qry = new FinancialTransactionService( rockContext )
                         .Queryable().AsNoTracking()
-                        .Where( t => 
+                        .Where( t =>
                             t.TransactionDateTime.HasValue &&
                             t.TransactionDetails
                                 .Any( d =>
@@ -2093,7 +2093,7 @@ namespace RockWeb.Blocks.Event
         private string FormatDetails( FinancialTransaction txn )
         {
             var details = new List<string>();
-            
+
             if ( txn.AuthorizedPersonAlias != null && txn.AuthorizedPersonAlias.Person != null )
             {
                 details.Add( txn.AuthorizedPersonAlias.Person.FullNameFormalReversed );
@@ -2368,7 +2368,7 @@ namespace RockWeb.Blocks.Event
             if ( registrant.PersonId.HasValue )
             {
                 var aProfileLink = new HtmlAnchor();
-                aProfileLink.HRef = ResolveRockUrl( string.Format( "~/Person/{0}", registrant.PersonId.Value ) ); 
+                aProfileLink.HRef = ResolveRockUrl( string.Format( "~/Person/{0}", registrant.PersonId.Value ) );
                 divLabels.Controls.Add( aProfileLink );
                 aProfileLink.AddCssClass( "btn btn-default btn-xs margin-l-sm" );
                 var iProfileLink = new HtmlGenericControl( "i" );
@@ -2612,7 +2612,7 @@ namespace RockWeb.Blocks.Event
             {
                 var rlField = new RockLiteral();
                 rlField.ID = string.Format( "rlFee_{0}_{1}_{2}", registrant.Id, fee.Id, feeInfo.FeeLabel );
-                
+
                 rlField.Label = fee.Name;
 
                 if ( fee.FeeType == RegistrationFeeType.Multiple && feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
@@ -2671,7 +2671,7 @@ namespace RockWeb.Blocks.Event
                             var campus = CampusCache.Get( fieldValue.ToString().AsInteger() );
                             rlField.Text = campus != null ? campus.Name : string.Empty;
                             break;
-                            
+
                         case RegistrationPersonFieldType.Address:
                             var location = fieldValue.ToString();
                             rlField.Text = location != null ? location.ToString() : string.Empty;
@@ -2695,7 +2695,7 @@ namespace RockWeb.Blocks.Event
                             var gender = fieldValue.ToString().ConvertToEnumOrNull<Gender>() ?? Gender.Unknown;
                             rlField.Text = gender.ConvertToString();
                             break;
-                            
+
                         case RegistrationPersonFieldType.MaritalStatus:
                             var maritalStatusDv = DefinedValueCache.Get( fieldValue.ToString().AsInteger() );
                             rlField.Text = maritalStatusDv != null ? maritalStatusDv.Value : string.Empty;

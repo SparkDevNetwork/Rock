@@ -23,6 +23,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -38,6 +39,13 @@ namespace RockWeb.Blocks.Streaks
     [Category( "Streaks" )]
     [Description( "Displays the details of the given streak for editing." )]
 
+    [LinkedPage(
+        "Achievement Attempts Page",
+        Description = "Page used for viewing a list of achievement attempts for this streak.",
+        Key = AttributeKey.AttemptsPage,
+        IsRequired = false,
+        Order = 1 )]
+
     public partial class StreakDetail : RockBlock, IDetailBlock
     {
         /// <summary>
@@ -46,6 +54,17 @@ namespace RockWeb.Blocks.Streaks
         private static int ChartBitsToShow = 350;
 
         #region Keys
+
+        /// <summary>
+        /// Keys to use for Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The attempts page
+            /// </summary>
+            public const string AttemptsPage = "AttemptsPage";
+        }
 
         /// <summary>
         /// Keys to use for Page Parameters
@@ -82,6 +101,9 @@ namespace RockWeb.Blocks.Streaks
 
             InitializeActionButtons();
             InitializeSettingsNotification();
+
+            // Add lazyload so that person-link-popover javascript works
+            RockPage.AddScriptLink( "~/Scripts/jquery.lazyload.min.js" );
         }
 
         /// <summary>
@@ -148,6 +170,35 @@ namespace RockWeb.Blocks.Streaks
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Button to go to the attempts page
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void btnAttempts_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( AttributeKey.AttemptsPage );
+        }
+
+        /// <summary>
+        /// Navigate to a linked page
+        /// </summary>
+        /// <param name="attributeKey"></param>
+        private void NavigateToLinkedPage( string attributeKey )
+        {
+            var streak = GetStreak();
+
+            if ( streak == null )
+            {
+                ShowBlockError( nbEditModeMessage, "A streak is required" );
+                return;
+            }
+
+            NavigateToLinkedPage( attributeKey, new Dictionary<string, string> {
+                { PageParameterKey.StreakId, streak.Id.ToString() }
+            } );
+        }
 
         /// <summary>
         /// The click event for the rebuild button
@@ -321,6 +372,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void DeleteRecord()
         {
+            var rockContext = GetRockContext();
             var enrollment = GetStreak();
 
             if ( enrollment != null )
@@ -334,14 +386,8 @@ namespace RockWeb.Blocks.Streaks
                 var service = GetStreakService();
                 var errorMessage = string.Empty;
 
-                if ( !service.CanDelete( enrollment, out errorMessage ) )
-                {
-                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
-
                 service.Delete( enrollment );
-                GetRockContext().SaveChanges();
+                rockContext.SaveChanges();
             }
 
             NavigateToParentPage();
@@ -362,16 +408,6 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
-            // Validate the person
-            var personId = rppPerson.PersonId;
-            var personAliasId = rppPerson.PersonAliasId;
-
-            if ( !personId.HasValue || !personAliasId.HasValue )
-            {
-                nbEditModeMessage.Text = "Person is required.";
-                return;
-            }
-
             // Get the other non-required values
             var streakTypeService = GetStreakTypeService();
             var streakTypeCache = StreakTypeCache.Get( streakType.Id );
@@ -382,6 +418,16 @@ namespace RockWeb.Blocks.Streaks
             // Add the new enrollment if we are adding
             if ( enrollment == null )
             {
+                // Validate the person
+                var personId = rppPerson.PersonId;
+                var personAliasId = rppPerson.PersonAliasId;
+
+                if ( !personId.HasValue || !personAliasId.HasValue )
+                {
+                    nbEditModeMessage.Text = "Person is required.";
+                    return;
+                }
+
                 var errorMessage = string.Empty;
                 enrollment = streakTypeService.Enroll( streakTypeCache, personId.Value, out errorMessage, enrollmentDate, locationId );
 
@@ -400,11 +446,14 @@ namespace RockWeb.Blocks.Streaks
             else
             {
                 enrollment.LocationId = locationId;
+                enrollment.EnrollmentDate = enrollmentDate ?? RockDateTime.Today;
             }
 
             if ( !enrollment.IsValid )
             {
-                // Controls will render the error messages
+                var validationResult = enrollment.ValidationResults.FirstOrDefault();
+                var message = validationResult == null ? "The values entered are not valid." : validationResult.ErrorMessage;
+                nbEditModeMessage.Text = message;
                 return;
             }
 
@@ -494,12 +543,11 @@ namespace RockWeb.Blocks.Streaks
             var enrollment = GetStreak();
             lReadOnlyTitle.Text = ActionTitle.Edit( Streak.FriendlyTypeName ).FormatAsHtmlTitle();
 
-            rppPerson.SetValue( enrollment.PersonAlias.Person );
-            rppPerson.Enabled = false;
+            rppPerson.Visible = false;
+            divPerson.Visible = true;
+            lPersonName.Text = enrollment.PersonAlias.Person.FullName;
 
             rdpEnrollmentDate.SelectedDate = enrollment.EnrollmentDate;
-            rdpEnrollmentDate.Enabled = false;
-
             rlpLocation.Location = enrollment.Location;
         }
 
@@ -517,6 +565,7 @@ namespace RockWeb.Blocks.Streaks
             pnlViewDetails.Visible = false;
             HideSecondaryBlocks( true );
             pdAuditDetails.Visible = false;
+            divPerson.Visible = false;
 
             lReadOnlyTitle.Text = ActionTitle.Add( Streak.FriendlyTypeName ).FormatAsHtmlTitle();
 
@@ -574,9 +623,10 @@ namespace RockWeb.Blocks.Streaks
             lReadOnlyTitle.Text = ActionTitle.View( Streak.FriendlyTypeName ).FormatAsHtmlTitle();
             btnRebuild.Enabled = streakType.IsActive;
 
+            lPersonHtml.Text = GetPersonHtml();
+
             var descriptionList = new DescriptionList();
             descriptionList.Add( "Streak Type", streakType.Name );
-            descriptionList.Add( "Person", enrollment.PersonAlias.Person.FullName );
             descriptionList.Add( "Enrollment Date", enrollment.EnrollmentDate.ToShortDateString() );
 
             if ( enrollment.Location != null )
@@ -594,6 +644,51 @@ namespace RockWeb.Blocks.Streaks
             lStreakData.Text = streakDetailsList.Html;
 
             RenderStreakChart();
+            SetLinkVisibility( btnAttempts, AttributeKey.AttemptsPage );
+
+            // Show the count of successful attempts on the button
+            var successfulAttemptCount = GetSuccessfulAttemptCount();
+
+            if ( successfulAttemptCount > 0 )
+            {
+                btnAttempts.Text = string.Format( @"<i class=""fa fa-medal""></i> Achievements <span class=""badge"">{0}</span>", successfulAttemptCount );
+            }
+            else
+            {
+                btnAttempts.Text = @"<i class=""fa fa-medal""></i> Achievements";
+            }
+        }
+
+        /// <summary>
+        /// Set the visibility of a button depending on if an attribute is set
+        /// </summary>
+        /// <param name="button"></param>
+        /// <param name="attributeKey"></param>
+        private void SetLinkVisibility( LinkButton button, string attributeKey )
+        {
+            var hasValue = !GetAttributeValue( attributeKey ).IsNullOrWhiteSpace();
+            button.Visible = hasValue;
+        }
+
+        /// <summary>
+        /// Gets the person HTML.
+        /// </summary>
+        /// <returns></returns>
+        private string GetPersonHtml()
+        {
+            var personImageStringBuilder = new StringBuilder();
+            var person = GetPerson();
+            const string photoFormat = "<div class=\"photo-icon photo-round photo-round-sm pull-left margin-r-sm js-person-popover\" personid=\"{0}\" data-original=\"{1}&w=50\" style=\"background-image: url( '{2}' ); background-size: cover; background-repeat: no-repeat;\"></div>";
+
+            personImageStringBuilder.AppendFormat( photoFormat, person.Id, person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+            personImageStringBuilder.Append( person.FullName );
+
+            if ( person.TopSignalColor.IsNotNullOrWhiteSpace() )
+            {
+                personImageStringBuilder.Append( person.GetSignalMarkup() );
+            }
+
+            return personImageStringBuilder.ToString();
         }
 
         /// <summary>
@@ -781,6 +876,28 @@ namespace RockWeb.Blocks.Streaks
             return _streak;
         }
         private Streak _streak = null;
+
+        /// <summary>
+        /// Gets the successful attempt count.
+        /// </summary>
+        /// <returns></returns>
+        private int GetSuccessfulAttemptCount()
+        {
+            if ( !_successfulAttempts.HasValue )
+            {
+                var streakId = PageParameter( PageParameterKey.StreakId ).AsIntegerOrNull();
+
+                if ( streakId.HasValue && streakId.Value > 0 )
+                {
+                    var rockContext = GetRockContext();
+                    var service = new StreakAchievementAttemptService( rockContext );
+                    _successfulAttempts = service.Queryable().AsNoTracking().Count( saa => saa.StreakId == streakId && saa.IsSuccessful );
+                }
+            }
+
+            return _successfulAttempts ?? 0;
+        }
+        private int? _successfulAttempts = null;
 
         /// <summary>
         /// Get the streak models for the person

@@ -40,7 +40,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
+    /// The main Person Profile block the main information about a person
     /// </summary>
     [DisplayName( "Edit Person" )]
     [Category( "CRM > Person Detail" )]
@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [BooleanField( "Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1 )]
     [CustomEnhancedListField( "Search Key Types", "Optional list of search key types to limit the display in search keys grid. No selection will show all.", @"
         DECLARE @AttributeId int = (
-	        SELECT [Id] 
+	        SELECT [Id]
 	        FROM [Attribute]
 	        WHERE [Guid] = '15C419AA-76A9-4105-AB99-8384AB0E9B44'
         )
@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	        V.[Value] AS [Text]
         FROM [DefinedType] T
         INNER JOIN [DefinedValue] V ON V.[DefinedTypeId] = T.[Id]
-        LEFT OUTER JOIN [AttributeValue] AV 
+        LEFT OUTER JOIN [AttributeValue] AV
 	        ON AV.[EntityId] = V.[Id]
 	        AND AV.[AttributeId] = @AttributeId
 	        AND AV.[Value] = 'False'
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
             string smsScript = @"
-    $('.js-sms-number').click(function () {
+    $('.js-sms-number').on('click', function () {
         if ($(this).is(':checked')) {
             $('.js-sms-number').not($(this)).prop('checked', false);
         }
