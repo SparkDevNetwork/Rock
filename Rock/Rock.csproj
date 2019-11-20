@@ -444,6 +444,7 @@
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
+    <Compile Include="Jobs\SendPrayerComments.cs" />
     <Compile Include="Mobile\AdditionalBlockSettings.cs" />
     <Compile Include="Jobs\UpdatePersistedDatasets.cs" />
     <Compile Include="Mobile\AdditionalPageSettings.cs" />
@@ -472,6 +473,7 @@
     <Compile Include="Model\StreakTypeAchievementType.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
+    <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
     <Compile Include="Plugin\HotFixes\094_AchievementPagesAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
