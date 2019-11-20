@@ -47,6 +47,11 @@ namespace Rock.SystemGuid
         public const string GROUP_ATTENDANCE_REMINDER = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA";
 
         /// <summary>
+        /// Gets the template guid for the Prayer Comments Notification
+        /// </summary>
+        public const string PRAYER_REQUEST_COMMENTS_NOTIFICATION = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
+
+        /// <summary>
         /// Gets the template guid for event registration confirmation
         /// </summary>
         public const string REGISTRATION_CONFIRMATION = "7B0F4F06-69BD-4CB4-BD04-8DA3779D5259";
