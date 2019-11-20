@@ -312,6 +312,11 @@
                         <Rock:RockRadioButtonList ID="rblExampleHorizontal" runat="server" Label="Rock:RockRadioButtonList (horizontal)" RepeatDirection="Horizontal" />
                     </div>
 
+                    <a id="RockSwitch"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:Switch ID="swExample" runat="server" Label="Rock:Switch" Text="Rock:Switch" />
+                    </div>
+
                     <a id="NumberRangeEditor"></a>
                     <h2>Number Range</h2>
                     <div runat="server" class="r-example">
