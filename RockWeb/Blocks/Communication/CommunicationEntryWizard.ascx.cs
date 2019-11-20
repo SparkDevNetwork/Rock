@@ -2342,7 +2342,7 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             Rock.Model.Communication communication = SaveAsDraft();
 
-            ShowResult( "The communication has been saved", communication );
+            ShowResult( "The communication has been saved.", communication );
         }
 
         /// <summary>
@@ -2352,16 +2352,8 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEmailEditorSaveDraft_Click( object sender, EventArgs e )
         {
-            if ( !ValidateSendDateTime() )
-            {
-                return;
-            }
-
-            Rock.Model.Communication communication = SaveAsDraft();
-            ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
-            upnlContent.Update();
+            EditorSaveDraft( nbEmailTestResult, isEmailEditor: true );
         }
-
 
         /// <summary>
         /// Handles the Click event of the btnSMSEditorSaveDraft control.
@@ -2370,13 +2362,43 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSMSEditorSaveDraft_Click( object sender, EventArgs e )
         {
+            EditorSaveDraft( nbSMSTestResult );
+        }
+
+        /// <summary>
+        /// Saves the draft communication and sets an appropriate notification message.
+        /// </summary>
+        /// <param name="isEmailEditor">if set to <c>true</c> if the editor is the email editor (not SMS).</param>
+        private void EditorSaveDraft( NotificationBox notificationBox, bool isEmailEditor = false )
+        {
             if ( !ValidateSendDateTime() )
             {
                 return;
             }
 
-            Rock.Model.Communication communication = SaveAsDraft();
-            upnlContent.Update();
+            try
+            {
+                Rock.Model.Communication communication = SaveAsDraft();
+
+                if ( isEmailEditor )
+                {
+                    ifEmailDesigner.Attributes["srcdoc"] = hfEmailEditorHtml.Value;
+                }
+
+                upnlContent.Update();
+
+                notificationBox.NotificationBoxType = NotificationBoxType.Success;
+                notificationBox.Text = "The communication has been saved.";
+            }
+            catch ( Exception ex )
+            {
+                notificationBox.NotificationBoxType = NotificationBoxType.Danger;
+                notificationBox.Text = "The communication could not be saved.";
+                ExceptionLogService.LogException( ex );
+            }
+
+            notificationBox.Dismissable = true;
+            notificationBox.Visible = true;
         }
 
         /// <summary>
