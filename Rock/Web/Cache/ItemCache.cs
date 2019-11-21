@@ -39,8 +39,8 @@ namespace Rock.Web.Cache
 
         private static readonly string KeyRegion = $"Region:{typeof( T ).Name}";
 
-
         private static string AllItemsKey => $"{typeof( T ).Name}:AllItems";
+
         private const string AllItemsRegion = "AllItemsRegion";
 
         #region Protected Methods
@@ -143,11 +143,19 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         private static void AddToAllIds( string key )
         {
+            bool allKeysPopulated = RockCacheManager<List<string>>.Instance.Cache.Exists( AllItemsKey, AllItemsRegion );
+
+            if ( !allKeysPopulated )
+            {
+                //  All hasn't been asked for yet, so it doesn't need to be updated. Leave it null
+                return;
+            }
+
             // Get the dictionary of all item ids
             var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllItemsKey, AllItemsRegion );
             if ( allKeys == null )
             {
-                // All hasn't been asked for yet, so it doesn't need to be updated. Leave it null
+                //  All hasn't been asked for yet (or was set to null), so it doesn't need to be updated. Leave it null
                 return;
             }
 
@@ -272,6 +280,14 @@ namespace Rock.Web.Cache
         {
             FlushItem( key );
 
+            bool allKeysPopulated = RockCacheManager<List<string>>.Instance.Cache.Exists( AllItemsKey, AllItemsRegion );
+
+            if ( !allKeysPopulated )
+            {
+                //  All hasn't been asked for yet, so it doesn't need to be updated. Leave it null
+                return;
+            }
+
             var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllItemsKey, AllItemsRegion ) ?? new List<string>();
             if ( !allIds.Contains( key ) )
                 return;
@@ -292,7 +308,6 @@ namespace Rock.Web.Cache
 
             RockCacheManager<List<string>>.Instance.Cache.Remove( AllItemsKey, AllItemsRegion );
         }
-
 
         /// <summary>
         /// Method that is called by the framework immediately after being added to cache

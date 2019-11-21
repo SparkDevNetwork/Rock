@@ -121,8 +121,8 @@ namespace Rock.Model
             // or past the expire date
             var content = Queryable( "ApprovedByPersonAlias.Person" )
                 .Where( c => c.IsApproved &&
-                    ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= RockDateTime.Now &&
-                    ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= RockDateTime.Now );
+                    ( c.StartDateTime ?? ( DateTime ) System.Data.SqlTypes.SqlDateTime.MinValue ) <= RockDateTime.Now &&
+                    ( c.ExpireDateTime ?? ( DateTime ) System.Data.SqlTypes.SqlDateTime.MaxValue ) >= RockDateTime.Now );
 
             // If an entity value is specified, then return content specific to that context (entityValue), 
             // otherewise return content for the current block instance
@@ -165,7 +165,6 @@ namespace Rock.Model
         }
 
         private static string HtmlContentCacheRegion => "HtmlContentCacheRegion";
-
 
         /// <summary>
         /// Returns the cached HTML for a specific blockId or, if specified, a specific entityValue (Entity Context)

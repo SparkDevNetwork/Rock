@@ -134,6 +134,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [Obsolete( "Use Get(key,region) instead" )]
+        [RockObsolete( "1.11" )]
         public static object Get( string key )
         {
             return Get( key, null );
@@ -157,6 +158,7 @@ namespace Rock.Web.Cache
         /// <param name="itemFactory">The item factory.</param>
         /// <returns></returns>
         [Obsolete( "Use GetOrAddExisting(key,region) instead" )]
+        [RockObsolete( "1.11" )]
         public static object GetOrAddExisting( string key, Func<object> itemFactory )
         {
             return GetOrAddExisting( key, null, itemFactory );
@@ -222,6 +224,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="obj">The object.</param>
         [Obsolete( "Use AddOrUpdate(key,region) instead" )]
+        [RockObsolete( "1.11" )]
         public static void AddOrUpdate( string key, object obj )
         {
             AddOrUpdate( key, null, obj );
@@ -336,6 +339,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         [Obsolete( "Use Remove(key,region) instead" )]
+        [RockObsolete( "1.11" )]
         public static void Remove( string key )
         {
             Remove( key, null );
