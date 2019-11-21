@@ -87,9 +87,6 @@ namespace RockWeb.Blocks.Core
             BuildAttributeEdits( GetLocation(), false );
         }
 
-
-
-
         /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
         /// </summary>
@@ -158,7 +155,7 @@ namespace RockWeb.Blocks.Core
             {
                 parentLocationId = location.ParentLocationId;
                 string errorMessage;
-                if ( locationService.CanDelete( location, out errorMessage ) )
+                if ( ! locationService.CanDelete( location, out errorMessage ) )
                 {
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
