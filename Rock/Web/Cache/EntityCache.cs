@@ -313,7 +313,8 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets all the instances of this type of model/entity that are currently in cache.
+        /// If not already populated, recreates the list of keys for every entity using the keyFactory. (Expensive)
+        /// Then returns the list of all items of this type
         /// </summary>
         /// <returns></returns>
         public static List<T> All( RockContext rockContext )
@@ -340,7 +341,7 @@ namespace Rock.Web.Cache
         #region Protected Methods
 
         /// <summary>
-        /// Recreates the list of all cached keys for this entity type by querying the database.
+        /// Recreates the list of keys for every entity of this type by querying the database. (Expensive)
         /// </summary>
         /// <returns></returns>
         protected static void LoadAll()
@@ -349,7 +350,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Recreates the list of all cached keys for this entity type by querying the database.
+        /// Recreates the list of keys for every entity of this type by querying the database. (Expensive)
         /// </summary>
         /// <returns></returns>
         protected static void LoadAll( RockContext rockContext )

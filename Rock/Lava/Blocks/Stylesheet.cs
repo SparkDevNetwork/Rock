@@ -138,7 +138,8 @@ namespace Rock.Lava.Blocks
                         if ( parms.ContainsKey( "cacheduration" ) )
                         {
                             var cacheKey = stylesheet.GetHashCode().ToString();
-                            var cachedStylesheet = RockCache.Get( cacheKey ) as string;
+                            var stylesheetCacheRegion = "StyleSheet";
+                            var cachedStylesheet = RockCache.Get( cacheKey, stylesheetCacheRegion ) as string;
 
                             if ( cachedStylesheet.IsNotNullOrWhiteSpace() )
                             {

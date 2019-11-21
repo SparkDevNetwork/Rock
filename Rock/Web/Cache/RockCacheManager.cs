@@ -191,7 +191,7 @@ namespace Rock.Web.Cache
             // If an expiration timespan was specific, will need to use a CacheItem to add item to cache.
             if ( expiration != TimeSpan.MaxValue )
             {
-                var cacheItem = region.IsNotNullOrWhiteSpace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key );
+                var cacheItem = region.IsNotNullOrWhiteSpace() ? Cache.GetCacheItem( key, region ) : Cache.GetCacheItem( key, RockCache.REGION_UNSPECIFIED );
                 if ( cacheItem != null )
                 {
                     Cache.Put( cacheItem.WithAbsoluteExpiration( expiration ) );

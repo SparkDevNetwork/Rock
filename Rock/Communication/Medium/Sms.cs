@@ -53,6 +53,11 @@ namespace Rock.Communication.Medium
         private const string RESPONSE_CODE_CACHE_KEY = "Rock:Communication:Sms:ResponseCodeCache";
 
         /// <summary>
+        /// The response code cache region key
+        /// </summary>
+        private const string RESPONSE_CODE_CACHE_REGION_KEY = "Rock:Communication:Sms:ResponseCodeCacheRegion";
+
+        /// <summary>
         /// Used by the GenerateResponseCode method to ensure exclusive access to the cached
         /// available response code list.
         /// </summary>
@@ -418,7 +423,7 @@ namespace Rock.Communication.Medium
 
             lock ( _responseCodesLock )
             {
-                var availableResponseCodes = RockCache.Get( RESPONSE_CODE_CACHE_KEY ) as List<string>;
+                var availableResponseCodes = RockCache.Get( RESPONSE_CODE_CACHE_KEY, RESPONSE_CODE_CACHE_REGION_KEY ) as List<string>;
 
                 //
                 // Try up to 1,000 times to find a code. This really should never go past the first
@@ -443,7 +448,7 @@ namespace Rock.Communication.Medium
 
                     if ( !isUsed )
                     {
-                        RockCache.AddOrUpdate( RESPONSE_CODE_CACHE_KEY, availableResponseCodes );
+                        RockCache.AddOrUpdate( RESPONSE_CODE_CACHE_KEY, RESPONSE_CODE_CACHE_REGION_KEY, availableResponseCodes );
                         return code;
                     }
                 }

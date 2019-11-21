@@ -55,6 +55,14 @@ namespace RockWeb.Blocks.Cms
                 return string.Format( "Rock:Template:{0}", BlockId );
             }
         }
+
+        private string TemplateCacheRegion
+        {
+            get
+            {
+                return string.Format( "Rock:RssFeedItem" );
+            }
+        }
         #endregion
 
         #region Control Methods
@@ -98,7 +106,7 @@ namespace RockWeb.Blocks.Cms
         private void ClearCache()
         {
             SyndicationFeedHelper.ClearCachedFeed( GetAttributeValue( "RSSFeedUrl" ) );
-            RockCache.Remove( TemplateCacheKey );
+            RockCache.Remove( TemplateCacheKey, TemplateCacheRegion );
         }
 
         private Template GetTemplate()

@@ -80,7 +80,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return (RockPage)this.Page;
+                return ( RockPage ) this.Page;
             }
         }
 
@@ -262,7 +262,7 @@ namespace Rock.Web.UI
             IEntity entity = ContextEntity( typeof( T ).FullName );
             if ( entity != null )
             {
-                return (T)entity;
+                return ( T ) entity;
             }
             else
             {
@@ -372,7 +372,7 @@ namespace Rock.Web.UI
         /// <param name="expiration">The expiration.</param>
         protected virtual void AddCacheItem( string key, object value, TimeSpan expiration )
         {
-            RockCache.AddOrUpdate( ItemCacheKey( key ), null, value, expiration );
+            RockCache.AddOrUpdate( ItemCacheKey( key ), ItemCacheRegion, value, expiration );
         }
 
         /// <summary>
@@ -384,7 +384,7 @@ namespace Rock.Web.UI
         /// <param name="cacheTags">The cache tags.</param>
         protected virtual void AddCacheItem( string key, object value, TimeSpan expiration, string cacheTags )
         {
-            RockCache.AddOrUpdate( ItemCacheKey( key ), null, value, expiration, cacheTags );
+            RockCache.AddOrUpdate( ItemCacheKey( key ), ItemCacheRegion, value, expiration, cacheTags );
         }
 
         /// <summary>
@@ -394,7 +394,7 @@ namespace Rock.Web.UI
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
+        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead." )]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
             AddCacheItem( key, value, TimeSpan.MaxValue );
@@ -407,7 +407,7 @@ namespace Rock.Web.UI
         /// <returns>The cached <see cref="System.Object"/> if a key match is not found, a null object will be returned.</returns>
         protected virtual object GetCacheItem( string key = "" )
         {
-            return RockCache.Get( ItemCacheKey( key ) );
+            return RockCache.Get( ItemCacheKey( key ), ItemCacheRegion );
         }
 
         /// <summary>
@@ -417,7 +417,7 @@ namespace Rock.Web.UI
         /// defaults to an empty string.</param>
         protected virtual void RemoveCacheItem( string key )
         {
-            RockCache.Remove( ItemCacheKey( key ) );
+            RockCache.Remove( ItemCacheKey( key ), ItemCacheRegion );
         }
 
         /// <summary>
@@ -426,7 +426,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use RemoveCacheItem( string key ) instead.")]
+        [Obsolete( "Use RemoveCacheItem( string key ) instead." )]
         protected virtual void FlushCacheItem( string key = "" )
         {
             RemoveCacheItem( key );
@@ -439,7 +439,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Method is no longer supported.")]
+        [Obsolete( "Method is no longer supported." )]
         protected virtual void FlushSharedBlock( int blockId )
         {
         }
@@ -461,6 +461,29 @@ namespace Rock.Web.UI
             {
                 return string.Format( cacheKeyTemplate, "Layout", BlockCache.LayoutId ?? 0, BlockCache.Id, key );
             }
+        }
+
+        /// <summary>
+        /// Gets the item cache region.
+        /// </summary>
+        /// <value>
+        /// The item cache region.
+        /// </value>
+        private string ItemCacheRegion
+        {
+            get
+            {
+                string cacheRegionTemplate = "Rock:{0}:{1}:Block:{2}:ItemCache";
+                if ( BlockCache.PageId.HasValue )
+                {
+                    return string.Format( cacheRegionTemplate, "Page", BlockCache.PageId.Value, BlockCache.Id );
+                }
+                else
+                {
+                    return string.Format( cacheRegionTemplate, "Layout", BlockCache.LayoutId ?? 0, BlockCache.Id );
+                }
+            }
+        
         }
 
         #endregion

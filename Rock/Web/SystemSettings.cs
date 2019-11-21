@@ -57,9 +57,17 @@ namespace Rock.Web
             }
         }
 
+        private static string CacheRegion
+        {
+            get
+            {
+                return "Rock:SystemSettingsRegion";
+            }
+        }
+
         private static SystemSettings Get()
         {
-            return RockCache.GetOrAddExisting( CacheKey, () => LoadSettings() ) as SystemSettings;
+            return RockCache.GetOrAddExisting( CacheKey, CacheRegion, () => LoadSettings() ) as SystemSettings;
         }
 
         /// <summary>
@@ -252,7 +260,7 @@ namespace Rock.Web
         /// </summary>
         public static void Remove()
         {
-            RockCache.Remove( CacheKey );
+            RockCache.Remove( CacheKey, CacheRegion );
 
             // use startDayOfWeekCache to optimize how long it takes to get the StartDayOfWeek, since will be used for all .GetSundayDate() calls (1 millions calls was taking 15seconds, but this reduces that down to 25 ms)
             startDayOfWeekCache = null;

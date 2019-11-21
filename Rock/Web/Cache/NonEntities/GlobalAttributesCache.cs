@@ -354,7 +354,7 @@ namespace Rock.Web.Cache
         public static GlobalAttributesCache Get()
         {
             // NOTE this can be changed plain GetOrAddExisting once the above obsolete 
-            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( AllString, Load );
+            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( "GlobalAttributesCacheCacheKey", Load );
         }
 
         private static GlobalAttributesCache Load()

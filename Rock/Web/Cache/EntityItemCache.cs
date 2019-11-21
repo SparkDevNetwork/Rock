@@ -158,7 +158,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the keys.
+        /// If not already called, recreates the list of keys for every entity using the keyFactory. (Expensive)
         /// </summary>
         /// <returns></returns>
         /// <param name="keyFactory">All keys factory.</param>
@@ -168,7 +168,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Adds the keys.
+        /// Recreates the list of keys for every entity using the keyFactory. (Expensive)
         /// </summary>
         /// <param name="keyFactory">All keys factory.</param>
         protected static List<string> AddKeys( Func<List<string>> keyFactory )
@@ -231,6 +231,10 @@ namespace Rock.Web.Cache
             ItemCache<T>.FlushItem( key );
         }
 
+        /// <summary>
+        /// Ensure that the Key is part of the AllIds list (if All() has been called)
+        /// </summary>
+        /// <param name="key">The key.</param>
         internal static void AddToAllIds( int key)
         {
             ItemCache<T>.AddToAllIds( key );

@@ -38,7 +38,7 @@ public class SyndicationFeedHelper
     /// <param name="feedUrl">A <see cref="System.String"/> representing the URL of the feed.</param>
     public static void ClearCachedFeed( string feedUrl )
     {
-        RockCache.Remove( GetFeedCacheKey( feedUrl ) );
+        RockCache.Remove( GetFeedCacheKey( feedUrl ), FeedCacheRegion );
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public class SyndicationFeedHelper
         }
 
         string cacheKey = GetFeedCacheKey( feedUrl );
-        feedDictionary = RockCache.Get( cacheKey ) as Dictionary<string, object>;
+        feedDictionary = RockCache.Get( cacheKey, "Region:Rock:SyndicationFeed" ) as Dictionary<string, object>;
 
         if ( feedDictionary == null )
         {
@@ -329,6 +329,8 @@ public class SyndicationFeedHelper
     {
         return string.Format( "Rock:SyndicationFeed:{0}", feedUrl );
     }
+
+    private static readonly string FeedCacheRegion = "Rock:SyndicationFeed";
 
     #endregion
 

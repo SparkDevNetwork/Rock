@@ -31,6 +31,8 @@ namespace Rock.Web.Cache
         private static List<IRockCacheManager> _allManagers;
         private const string CACHE_TAG_REGION_NAME = "cachetags";
 
+        internal static readonly string REGION_UNSPECIFIED = "REGION_UNSPECIFIED";
+
         #region Private Static Methods
 
         /// <summary>
@@ -131,13 +133,12 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-
-            [Obsolete("Need region?")]
+        [Obsolete( "Use Get(key,region) instead" )]
         public static object Get( string key )
         {
             return Get( key, null );
         }
-         
+
         /// <summary>
         /// Gets an item from cache using the specified key and region.
         /// </summary>
@@ -155,7 +156,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="itemFactory">The item factory.</param>
         /// <returns></returns>
-        [Obsolete( "Need region?" )]
+        [Obsolete( "Use GetOrAddExisting(key,region) instead" )]
         public static object GetOrAddExisting( string key, Func<object> itemFactory )
         {
             return GetOrAddExisting( key, null, itemFactory );
@@ -185,7 +186,7 @@ namespace Rock.Web.Cache
         {
             var value = region.IsNotNullOrWhiteSpace() ?
                 RockCacheManager<object>.Instance.Cache.Get( key, region ) :
-                RockCacheManager<object>.Instance.Cache.Get( key );
+                RockCacheManager<object>.Instance.Cache.Get( key, REGION_UNSPECIFIED );
 
             if ( value != null )
             {
@@ -220,7 +221,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="obj">The object.</param>
-        [Obsolete( "Need region?" )]
+        [Obsolete( "Use AddOrUpdate(key,region) instead" )]
         public static void AddOrUpdate( string key, object obj )
         {
             AddOrUpdate( key, null, obj );
@@ -311,7 +312,7 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( !value.Contains(key) )
+                    if ( !value.Contains( key ) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
@@ -334,7 +335,7 @@ namespace Rock.Web.Cache
         /// Removes the specified key from cache.
         /// </summary>
         /// <param name="key">The key.</param>
-        [Obsolete( "Need region?" )]
+        [Obsolete( "Use Remove(key,region) instead" )]
         public static void Remove( string key )
         {
             Remove( key, null );
@@ -353,7 +354,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                RockCacheManager<object>.Instance.Cache.Remove( key );
+                RockCacheManager<object>.Instance.Cache.Remove( key, REGION_UNSPECIFIED );
             }
         }
 
@@ -369,7 +370,7 @@ namespace Rock.Web.Cache
                 var cachedItemKeys = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
                 foreach ( var key in cachedItemKeys )
                 {
-                    Remove( key );
+                    Remove( key, CACHE_TAG_REGION_NAME );
                 }
             }
         }
@@ -600,16 +601,16 @@ namespace Rock.Web.Cache
                 {
                     configurationOptions.Password = password;
                 }
-                
+
                 var redisConnection = StackExchange.Redis.ConnectionMultiplexer.Connect( configurationOptions );
                 return redisConnection.IsConnected;
             }
-            catch(Exception)
+            catch ( Exception )
             {
                 return false;
             }
         }
-        
+
         #endregion
     }
 }

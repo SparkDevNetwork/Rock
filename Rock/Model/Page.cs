@@ -612,12 +612,6 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            //var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
-            //if ( oldPageCache != null )
-            //{
-            //    oldPageCache.RemoveChildPages();
-            //}
-
             PageCache.UpdateCachedEntity( this.Id, entityState );
 
             if ( this.ParentPageId.HasValue )

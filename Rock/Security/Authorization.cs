@@ -64,6 +64,8 @@ namespace Rock.Security
         /// </summary>
         private const string CACHE_KEY = "Rock.Security.Authorization";
 
+        private const string CACHE_REGION = "Rock.Security.AuthorizationRegion";
+
         /// <summary>
         /// Authorization to view object
         /// </summary>
@@ -135,7 +137,7 @@ namespace Rock.Security
 
         private static void AddOrUpdate( Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> authorizations )
         {
-            RockCache.AddOrUpdate( CACHE_KEY, authorizations );
+            RockCache.AddOrUpdate( CACHE_KEY, CACHE_REGION, authorizations );
         }
 
         private static Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> LoadAuthorizations()
@@ -215,7 +217,7 @@ namespace Rock.Security
         /// </summary>
         public static Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>> Get()
         {
-            return RockCache.GetOrAddExisting( CACHE_KEY, LoadAuthorizations ) as Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>>;
+            return RockCache.GetOrAddExisting( CACHE_KEY, CACHE_REGION, LoadAuthorizations ) as Dictionary<int, Dictionary<int, Dictionary<string, List<AuthRule>>>>;
         }
 
         /// <summary>
@@ -685,7 +687,7 @@ namespace Rock.Security
         /// </summary>
         public static void Clear()
         {
-            RockCache.Remove( CACHE_KEY );
+            RockCache.Remove( CACHE_KEY, CACHE_REGION );
         }
 
         /// <summary>

@@ -164,6 +164,9 @@ namespace Rock.Model
             return cacheKey;
         }
 
+        private static string HtmlContentCacheRegion => "HtmlContentCacheRegion";
+
+
         /// <summary>
         /// Returns the cached HTML for a specific blockId or, if specified, a specific entityValue (Entity Context)
         /// </summary>
@@ -173,7 +176,7 @@ namespace Rock.Model
         public static string GetCachedContent( int blockId, string entityValue )
         {
             string cacheKey = HtmlContentCacheKey( blockId, entityValue );
-            return RockCache.Get( cacheKey ) as string;
+            return RockCache.Get( cacheKey, HtmlContentCacheRegion ) as string;
         }
 
         /// <summary>
@@ -210,7 +213,7 @@ namespace Rock.Model
         /// <param name="entityValue">The entity value.</param>
         public static void FlushCachedContent( int blockId, string entityValue )
         {
-            RockCache.Remove( HtmlContentCacheKey( blockId, entityValue ) );
+            RockCache.Remove( HtmlContentCacheKey( blockId, entityValue ), HtmlContentCacheRegion );
         }
 
         #endregion

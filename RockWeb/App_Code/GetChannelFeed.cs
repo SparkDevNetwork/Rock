@@ -43,8 +43,9 @@ namespace RockWeb
             response = context.Response;
 
             string cacheKey = "Rock:GetChannelFeed:" + request.RawUrl;
-            var contentCache = RockCache.Get( cacheKey );
-            var mimeTypeCache = RockCache.Get( cacheKey + ":MimeType" );
+            string cacheRegion = "Rock:GetChannelFeed";
+            var contentCache = RockCache.Get( cacheKey, cacheRegion );
+            var mimeTypeCache = RockCache.Get( cacheKey + ":MimeType", cacheRegion );
             if ( mimeTypeCache != null && contentCache != null )
             {
                 response.ContentType = ( string ) mimeTypeCache;

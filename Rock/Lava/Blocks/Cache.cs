@@ -157,8 +157,9 @@ namespace Rock.Lava.Blocks
 
             var twoPassEnabled = parms["twopass"].AsBoolean();
 
-            var cacheKey = "lavacache-" + parms["key"];
-            if ( cacheKey == string.Empty )
+            var lavaCacheKey = "lavacache-" + parms["key"];
+            var lavaCacheRegion = "lavacache-region";
+            if ( lavaCacheKey == string.Empty )
             {
                 result.Write( "* No cache key provided. *" );
                 base.Render( context, result );
@@ -166,7 +167,7 @@ namespace Rock.Lava.Blocks
             }
 
             // Get content from cache
-            var cachedResult = RockCache.Get( cacheKey ) as CacheLavaTag;
+            var cachedResult = RockCache.Get( lavaCacheKey, lavaCacheRegion ) as CacheLavaTag;
 
             // Check that the cached value is current
             if ( cachedResult != null )
@@ -208,7 +209,7 @@ namespace Rock.Lava.Blocks
                 {
                     var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
                     var cachedHash = CalculateContentHash( _blockMarkup.ToString() );
-                    RockCache.AddOrUpdate( cacheKey, string.Empty, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration, parms["tags"] );
+                    RockCache.AddOrUpdate( lavaCacheKey, lavaCacheRegion, new CacheLavaTag { Hash = cachedHash, Content = lavaResults }, expiration, parms["tags"] );
                 }
             }
 

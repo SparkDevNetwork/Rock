@@ -31,7 +31,9 @@ namespace Rock.Model
         /// <summary>
         /// The cach e_ key
         /// </summary>
-        private const string CACHE_KEY = "Rock:GroupMemberWorkflowTriggers";
+        private const string CACHE_KEY = "Rock:GroupMemberWorkflowTriggersKey";
+
+        private const string CACHE_REGION = "Rock:GroupMemberWorkflowTriggersRegion";
 
         /// <summary>
         /// Gets the cached triggers.
@@ -39,7 +41,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static List<GroupMemberWorkflowTrigger> GetCachedTriggers()
         {
-            return RockCache.GetOrAddExisting( CACHE_KEY, () => LoadCache() ) as List<GroupMemberWorkflowTrigger>;
+            return RockCache.GetOrAddExisting( CACHE_KEY, CACHE_REGION, () => LoadCache() ) as List<GroupMemberWorkflowTrigger>;
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace Rock.Model
         /// </summary>
         public static void RemoveCachedTriggers()
         {
-            RockCache.Remove( CACHE_KEY );
+            RockCache.Remove( CACHE_KEY, CACHE_REGION );
         }
 
     }

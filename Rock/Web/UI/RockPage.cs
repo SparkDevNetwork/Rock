@@ -1157,7 +1157,7 @@ namespace Rock.Web.UI
                                 // Cache object used for block output caching
                                 Page.Trace.Warn( "Getting memory cache" );
                                 string blockCacheKey = string.Format( "Rock:BlockOutput:{0}", block.Id );
-                                var blockCacheString = RockCache.Get( blockCacheKey ) as string;
+                                var blockCacheString = RockCache.Get( blockCacheKey, "Rock:BlockOutputRegion" ) as string;
                                 if ( blockCacheString.IsNotNullOrWhiteSpace() )
                                 {
                                     // If the current block exists in our custom output cache, add the cached output instead of adding the control

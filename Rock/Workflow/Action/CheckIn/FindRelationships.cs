@@ -83,7 +83,7 @@ namespace Rock.Workflow.Action.CheckIn
         {
             string cacheKey = "Rock.FindRelationships.Roles";
 
-            List<int> roles = RockCache.Get( cacheKey ) as List<int>;
+            List<int> roles = RockCache.Get( cacheKey, "Rock.FindRelationships.RolesRegion" ) as List<int>;
 
             if ( roles == null )
             {

@@ -31,13 +31,15 @@ namespace Rock.Model
         /// </summary>
         private const string CACHE_KEY = "Rock:ConnectionWorkflows";
 
+        private const string CACHE_REGION = "Rock:ConnectionWorkflowsRegion";
+
         /// <summary>
         /// Gets the cached triggers.
         /// </summary>
         /// <returns></returns>
         public static List<ConnectionWorkflow> GetCachedTriggers()
         {
-            return RockCache.GetOrAddExisting( CACHE_KEY, () => LoadCache() ) as List<ConnectionWorkflow>;
+            return RockCache.GetOrAddExisting( CACHE_KEY, CACHE_REGION, () => LoadCache() ) as List<ConnectionWorkflow>;
         }
 
         /// <summary>
@@ -75,7 +77,7 @@ namespace Rock.Model
         /// </summary>
         public static void RemoveCachedTriggers()
         {
-            RockCache.Remove( CACHE_KEY );
+            RockCache.Remove( CACHE_KEY, CACHE_REGION );
         }
 
     }
