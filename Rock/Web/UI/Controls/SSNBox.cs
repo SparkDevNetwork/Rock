@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Control for entering a Social Security Number (SSN). Note: This control should only be used on a page that is using SSL as the SSN number is passed from client
-    /// to server in a hidden field in plain text. If the SSN is being persisted, make sure to use the TextEncrypted property instead of the Text property so that an 
+    /// to server in a hidden field in plain text. If the SSN is being persisted, make sure to use the TextEncrypted property instead of the Text property so that an
     /// encrypted version of the SSN number is stored.
     /// </summary>
     public class SSNBox : CompositeControl, IRockControl
@@ -261,7 +261,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
 
-            string script = @" 
+            string script = @"
     $('input.ssn-part').on( 'keydown', function (e) {
         if ($.inArray( e.keyCode, [46, 8, 9, 27, 13 ] ) !== -1 ||              // Allow: Ctrl/cmd+A
             ( e.keyCode == 65 && ( e.ctrlKey === true || e.metaKey === true ) ) ||      // Allow: Ctrl/cmd+C
@@ -280,19 +280,19 @@ namespace Rock.Web.UI.Controls
         if ( ( e.keyCode >= 48 && e.keyCode <= 57 ) ||      // 0-9
             ( e.keyCode >= 96 && e.keyCode <= 105 ) ) {     // numpad keys
             if ( this.value.length >= this.maxLength ) {
-                $(this).nextAll('.ssn-part:first').focus();
+                $(this).nextAll('.ssn-part').first().focus();
             }
         }
     });
 
-    $('input.ssn-part').on( 'change', function(e) {   
+    $('input.ssn-part').on( 'change', function(e) {
         var $ctrlGroup = $(this).closest('.form-control-group');
-        var ssnArea = $ctrlGroup.find('.ssn-area:first').val();
-        var ssnGroup = $ctrlGroup.find('.ssn-group:first').val();
-        var ssnSerial = $ctrlGroup.find('.ssn-serial:first').val();
+        var ssnArea = $ctrlGroup.find('.ssn-area').first().val();
+        var ssnGroup = $ctrlGroup.find('.ssn-group').first().val();
+        var ssnSerial = $ctrlGroup.find('.ssn-serial').first().val();
         var ssnFull = ssnArea + '-' + ssnGroup + '-' + ssnSerial;
 
-        var $ssn = $ctrlGroup.find('.js-ssn:first')
+        var $ssn = $ctrlGroup.find('.js-ssn').first();
         $ssn.val( ssnFull == '--' ? '' : ssnFull );
     });
 ";

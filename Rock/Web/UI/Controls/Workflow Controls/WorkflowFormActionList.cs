@@ -314,20 +314,20 @@ namespace Rock.Web.UI.Controls
     function updateFormActions( e ) {
         var $actionList = e.closest('div.form-action-list');
         var newValue = '';
-        $actionList.find('div.form-action-rows:first').children('div.form-row').each(function( index ) {
+        $actionList.find('div.form-action-rows').first().children('div.form-row').each(function( index ) {
             newValue +=
-                $(this).find('.form-action-key:first').val() + '^' +
-                $(this).find('.form-action-button:first').val() + '^' +
-                $(this).find('.form-action-value:first').val() + '^' +
-                $(this).find('.form-action-response:first').val() + '|'
+                $(this).find('.form-action-key').first().val() + '^' +
+                $(this).find('.form-action-button').first().val() + '^' +
+                $(this).find('.form-action-value').first().val() + '^' +
+                $(this).find('.form-action-response').first().val() + '|'
         });
-        $actionList.children('input:first').val(newValue);
+        $actionList.children('input').first().val(newValue);
     }
 
     $('a.form-action-add').on('click', function (e) {
         e.preventDefault();
         var $actionList = $(this).closest('.form-action-list');
-        $actionList.find('div.form-action-rows:first').append($actionList.find('.js-value-html').val());
+        $actionList.find('div.form-action-rows').first().append($actionList.find('.js-value-html').val());
     });
 
     $(document).on('click', 'a.form-action-remove', function (e) {
