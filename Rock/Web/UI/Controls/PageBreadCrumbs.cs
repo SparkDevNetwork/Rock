@@ -86,6 +86,7 @@ namespace Rock.Web.UI.Controls
                             {
                                 writer.RenderBeginTag( HtmlTextWriterTag.Li );
                                 writer.AddAttribute( HtmlTextWriterAttribute.Href, crumb.Url );
+                                writer.AddAttribute( HtmlTextWriterAttribute.Rel, "rocknofollow" ); // We don't want the rock site indexer to use breadcrumbs to crawl the site, but search engines should.
                                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                                 writer.Write( crumb.Name );
                                 writer.RenderEndTag();
