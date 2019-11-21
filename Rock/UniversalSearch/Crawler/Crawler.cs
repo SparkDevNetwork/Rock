@@ -152,7 +152,7 @@ namespace Rock.UniversalSearch.Crawler
                             htmlDoc.LoadHtml( rawPage );
 
                             // ensure the page should be indexed by looking at the robot and rock conventions
-                            HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robot']" );
+                            HtmlNode metaRobot = htmlDoc.DocumentNode.SelectSingleNode( "//meta[@name='robots']" );
                             if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "noindex" ) )
                             {
                                 // index the page
@@ -216,8 +216,9 @@ namespace Rock.UniversalSearch.Crawler
                     HtmlAttribute hrefAttribute = link.Attributes["href"];
                     string anchorLink = hrefAttribute.Value;
 
-                    // Skip links that have been flagged to not be followed.
-                    if ( link.Attributes.Contains( "rel" ) && link.Attributes["rel"].Value.Contains( "nofollow" ) )
+                    // Skip links that have been flagged to not be followed. "rocknofollow" is just for this
+                    // crawler for things like breadcrumbs and won't effect 3rd parties (e.g. google, et. al.)
+                    if ( link.Attributes.Contains( "rel" ) && ( link.Attributes["rel"].Value.Contains( "nofollow" ) || link.Attributes["rel"].Value.Contains( "rocknofollow" ) ) )
                     {
                         continue;
                     }
