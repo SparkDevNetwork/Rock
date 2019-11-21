@@ -43,6 +43,10 @@ namespace Rock.Web.Cache
         private static readonly object _obj = new object();
 
         private static readonly string KeyPrefix = $"{typeof( T ).Name}";
+
+        private static readonly string KeyRegion = $"Region:{typeof( T ).Name}";
+
+
         private static string AllKey => $"{typeof( T ).Name}:{AllString}";
         
         #region Protected Methods
@@ -102,7 +106,7 @@ namespace Rock.Web.Cache
         {
             string qualifiedKey = QualifiedKey( key );
 
-            var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey );
+            var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey, KeyRegion );
 
             if ( value != null )
             {
@@ -131,7 +135,7 @@ namespace Rock.Web.Cache
             string qualifiedKey = QualifiedKey( key );
 
             // Add the item to cache
-            RockCacheManager<T>.Instance.AddOrUpdate( qualifiedKey, item, expiration );
+            RockCacheManager<T>.Instance.AddOrUpdate( qualifiedKey, KeyRegion, item, expiration );
 
             // Do any postcache processing that this item cache type may need to do
             item.PostCached();
@@ -259,7 +263,7 @@ namespace Rock.Web.Cache
         {
             var qualifiedKey = QualifiedKey( key );
 
-            RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
+            RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey, KeyRegion );
         }
 
         /// <summary>
@@ -286,17 +290,8 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            // Calling the clear on the instance when using redis will clear all of the cache, which is bad.
-            // So let's call remove instead if using redis.
-            if ( RockCache.IsCacheSerialized )
-            {
-                FlushItem( AllString );
-            }
-            else
-            {
-                RockCacheManager<T>.Instance.Cache.Clear();
-            }
-            
+            RockCacheManager<T>.Instance.Cache.ClearRegion( KeyRegion );
+
             RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
         }
 

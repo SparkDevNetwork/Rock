@@ -131,11 +131,13 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+
+            [Obsolete("Need region?")]
         public static object Get( string key )
         {
             return Get( key, null );
         }
-
+         
         /// <summary>
         /// Gets an item from cache using the specified key and region.
         /// </summary>
@@ -153,6 +155,7 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="itemFactory">The item factory.</param>
         /// <returns></returns>
+        [Obsolete( "Need region?" )]
         public static object GetOrAddExisting( string key, Func<object> itemFactory )
         {
             return GetOrAddExisting( key, null, itemFactory );
@@ -217,6 +220,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="obj">The object.</param>
+        [Obsolete( "Need region?" )]
         public static void AddOrUpdate( string key, object obj )
         {
             AddOrUpdate( key, null, obj );
@@ -330,6 +334,7 @@ namespace Rock.Web.Cache
         /// Removes the specified key from cache.
         /// </summary>
         /// <param name="key">The key.</param>
+        [Obsolete( "Need region?" )]
         public static void Remove( string key )
         {
             Remove( key, null );
