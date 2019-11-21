@@ -44,7 +44,7 @@
                     search = function (term) {
 
                         // search for data elements in the search term
-                        var $dataEl = $("<p>" + term + "</p>").find("data:first");
+                        var $dataEl = $("<p>" + term + "</p>").find("data").first();
 
                         // see if this is a universal search by looking for return-type and return-id data params
                         var returnType = $dataEl.attr("return-type");
