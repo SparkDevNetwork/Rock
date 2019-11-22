@@ -1233,13 +1233,17 @@ $('#{0}').tooltip();
             {
                 if ( availableSchedule.GroupId != currentGroupId )
                 {
-                    currentGroupId = availableSchedule.GroupId;
+                    if ( currentGroupId != -1 )
+                    {
+                        phSignUpSchedules.Controls.Add( new LiteralControl( "</div>" ) );
+                    }
+
                     CreateGroupHeader( availableSchedule.GroupName, availableSchedule.GroupType );
                 }
 
                 if ( availableSchedule.ScheduledDateTime.Date != currentOccurrenceDate.Date )
                 {
-                    if ( currentScheduleId != -1 )
+                    if ( currentScheduleId != -1 && availableSchedule.GroupId == currentGroupId )
                     {
                         phSignUpSchedules.Controls.Add( new LiteralControl( "</div>" ) );
                     }
@@ -1248,6 +1252,7 @@ $('#{0}').tooltip();
                     CreateDateHeader( currentOccurrenceDate );
                 }
 
+                currentGroupId = availableSchedule.GroupId;
                 currentScheduleId = availableSchedule.ScheduleId;
                 CreateScheduleSignUpRow( availableSchedule, availableGroupLocationSchedules );
             }

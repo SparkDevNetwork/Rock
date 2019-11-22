@@ -478,7 +478,7 @@ namespace Rock.Model
 
             // Keep the record that belongs to the person's primary alias. Delete the others.
             var streakToKeep = streaks.FirstOrDefault( s => s.PersonAliasId == person.PrimaryAliasId );
-            var streaksToDelete = streaks.Where( s => s.Id != streakToKeep?.Id );            
+            var streaksToDelete = streaks.Where( s => s.Id != streakToKeep?.Id );
 
             // Create the enrollment if needed
             if ( streakToKeep == null )
@@ -821,8 +821,9 @@ namespace Rock.Model
             }
 
             // Check if the person had engagement at the most recent occurrence
-            var recentOccurrences = GetMostRecentOccurrences( aggregateEngagementMap, streakTypeCache.OccurrenceMap, aggregateExclusionMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, 1 );
-            var mostRecentOccurrence = recentOccurrences != null && recentOccurrences.Length == 1 ? recentOccurrences[0] : null;
+            var recentOccurrences = GetMostRecentOccurrences( aggregateEngagementMap, streakTypeCache.OccurrenceMap, aggregateExclusionMap, streakTypeCache.StartDate,
+                streakTypeCache.OccurrenceFrequency, 1, true );
+            var mostRecentOccurrence = recentOccurrences?.FirstOrDefault();
 
             // Get the date of the most recent engagement
             var mostRecentEngagementDate = GetDateOfMostRecentSetBit( aggregateEngagementMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, out errorMessage );
@@ -1116,11 +1117,11 @@ namespace Rock.Model
         public void HandleAttendanceRecord( Attendance attendance, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var rockContext = Context as RockContext;
 
             if ( attendance == null )
             {
-                errorMessage = "The attendance model is required.";
+                // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
+                // of an attendance model. We don't even know if this attendance was supposed to be related to a streak type.
                 return;
             }
 
@@ -1133,18 +1134,21 @@ namespace Rock.Model
 
             if ( !attendance.PersonAliasId.HasValue )
             {
-                errorMessage = "The person alias ID is required.";
+                // If we don't know what person this attendance is tied to then it is impossible to mark engagement in a streak. This is not
+                // an error because a null PersonAliasId is a valid state for the attendance model.
                 return;
             }
 
             // Get the occurrence to ensure all of the virtual properties are included since it's possible the incoming
             // attendance model does not have all of this data populated
+            var rockContext = Context as RockContext;
             var occurrenceService = new AttendanceOccurrenceService( rockContext );
             var occurrence = occurrenceService.Get( attendance.OccurrenceId );
 
             if ( occurrence == null )
             {
-                errorMessage = "The occurrence model is required.";
+                // This is an error state because it is an invalid data scenario.
+                errorMessage = $"The attendance record {attendance.Id} does not have a valid occurrence model.";
                 return;
             }
 
@@ -1154,7 +1158,8 @@ namespace Rock.Model
 
             if ( person == null )
             {
-                errorMessage = "The person model is required.";
+                // This is an error state because it is an invalid data scenario.
+                errorMessage = $"The person alias {attendance.PersonAliasId.Value} did not produce a valid person record.";
                 return;
             }
 
@@ -1342,9 +1347,11 @@ namespace Rock.Model
         /// <param name="mapStartDate">The start date.</param>
         /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
         /// <param name="unitCount">The unit count.</param>
+        /// <param name="unconditionallyIncludeCurrentUnit">By default, this method will not include occurrences that are the current day
+        /// or week, but there is no engagement yet. Use this param to override this behavior and always return the current unit.</param>
         /// <returns></returns>
         private static OccurrenceEngagement[] GetMostRecentOccurrences( byte[] engagementMap, byte[] occurrenceMap, byte[] exclusionMap, DateTime mapStartDate,
-            StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24 )
+            StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24, bool unconditionallyIncludeCurrentUnit = false )
         {
             if ( unitCount < 1 )
             {
@@ -1358,7 +1365,7 @@ namespace Rock.Model
             var occurrencesFound = 0;
 
             var maxDateForStreakBreaking = GetMaxDateForStreakBreaking( streakOccurrenceFrequency );
-            
+
             if ( maxDate < minDate )
             {
                 maxDate = minDate;
@@ -1367,7 +1374,7 @@ namespace Rock.Model
             bool iterationAction( int currentUnit, DateTime currentDate, bool hasOccurrence, bool hasEngagement, bool hasExclusion )
             {
                 // Don't include dates where there was an absence, but it's after the max date allowed for streak breaking.
-                if ( hasOccurrence && !hasEngagement && currentDate > maxDateForStreakBreaking )
+                if ( !unconditionallyIncludeCurrentUnit && hasOccurrence && !hasEngagement && currentDate > maxDateForStreakBreaking )
                 {
                     return occurrencesFound >= unitCount;
                 }
