@@ -96,13 +96,15 @@ namespace RockWeb.Blocks.Crm
             
             // Configure security button
             var securityColumn = gFileList.ColumnsOfType<SecurityField>().FirstOrDefault();
-            securityColumn.EntityTypeId = this.ContextEntity().TypeId;
+            if ( this.ContextEntity() != null )
+            {
+                securityColumn.EntityTypeId = this.ContextEntity().TypeId;
+            }
         }
 
         protected override void OnLoad( EventArgs e )
         {
-
-            if ( this.ContextEntity() == null )
+            if ( !IsValidBlockSettings() )
             {
                 return;
             }
@@ -122,6 +124,11 @@ namespace RockWeb.Blocks.Crm
 
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            if ( ! IsValidBlockSettings() )
+            {
+                return;
+            }
+
             PopulateDocumentTypeDropDownLists();
             BindGrid();
         }
@@ -130,6 +137,24 @@ namespace RockWeb.Blocks.Crm
 
 
         #region Private Methods
+
+        /// <summary>
+        /// Validates if the block settings are OK and sets the warning message and/or panel visibility.
+        /// </summary>
+        /// <returns>true if valid, false otherwise.</returns>
+        private bool IsValidBlockSettings()
+        {
+            if ( this.ContextEntity() == null )
+            {
+                nbMessage.Visible = true;
+                pnlList.Visible = false;
+                return false;
+            }
+
+            nbMessage.Visible = false;
+            pnlList.Visible = true;
+            return true;
+        }
 
         /// <summary>
         /// Registers the download buttons as post back controls.
@@ -164,6 +189,10 @@ namespace RockWeb.Blocks.Crm
         private void PopulateDocumentTypeDropDownLists()
         {
             var contextEntity = this.ContextEntity();
+            if ( contextEntity == null )
+            {
+                return;
+            }
             var entityTypeId = contextEntity.TypeId;
             List<DocumentTypeCache> documentypesForContextEntityType = DocumentTypeCache.GetByEntity( entityTypeId, false );
 
