@@ -323,7 +323,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             }
 
             var validatorsContent = parameters.Keys.Select( a => $"<x:Reference>{a}</x:Reference>" );
-            var parametersContent = parameters.Select( a => $"<Rock:ActionParameter Name=\"{a.Key}\" Value=\"{{Binding {a.Value}, Source={{x:Reference {a.Key}}}}}\" />" );
+            var parametersContent = parameters.Select( a => $"<Rock:Parameter Name=\"{a.Key}\" Value=\"{{Binding {a.Value}, Source={{x:Reference {a.Key}}}}}\" />" );
 
             return content.Replace( "##FIELDS##", fieldsContent )
                 .Replace( "##VALIDATORS##", string.Join( string.Empty, validatorsContent ) )
