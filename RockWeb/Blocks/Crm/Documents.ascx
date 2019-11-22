@@ -29,7 +29,7 @@
                         <Rock:RockBoundField DataField="Name" HeaderText="Name"></Rock:RockBoundField>
                         <Rock:RockBoundField DataField="DocumentType.Name" HeaderText="Type"></Rock:RockBoundField>
                         <Rock:RockBoundField DataField="CreatedByPersonName" HeaderText="Added By"></Rock:RockBoundField>
-                        <Rock:RockBoundField DataField="CreatedDateTime" HeaderText="Added On"></Rock:RockBoundField>
+                        <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Added On" FormatAsElapsedTime="true" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left"></Rock:DateTimeField>
 
                         <Rock:RockTemplateField ShowHeader="false"  ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px" ItemStyle-CssClass="grid-select-field">
                             <ItemTemplate>
