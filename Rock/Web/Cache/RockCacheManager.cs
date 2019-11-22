@@ -218,6 +218,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Clears the cache instance.
         /// </summary>
+        [Obsolete( "#########Where is this used############" )]
         public void Clear()
         {
             Cache.Clear();

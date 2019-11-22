@@ -380,6 +380,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Removes Global Attributes from cache
         /// </summary>
+        [Obsolete( "#########Where is this used############" )]
         public static void Remove()
         {
             Clear();

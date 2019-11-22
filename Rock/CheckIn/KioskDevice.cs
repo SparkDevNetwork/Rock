@@ -33,6 +33,24 @@ namespace Rock.CheckIn
     [DataContract]
     public class KioskDevice : ItemCache<KioskDevice>
     {
+        [Obsolete( "Where is KioskDevice.Clear() used" )]
+        public new static void Clear()
+        {
+            // Calling the clear on the instance when using redis will clear all of the cache, which is bad.
+            // So let's call remove instead if using redis.
+            if ( RockCache.IsCacheSerialized )
+            {
+                FlushItem( AllString );
+            }
+            else
+            {
+                RockCacheManager<KioskDevice>.Instance.Cache.Clear();
+            }
+
+            //RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
+        }
+
+
         private static ConcurrentDictionary<int, object> _locks = new ConcurrentDictionary<int,object>();
 
         /// <summary>

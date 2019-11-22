@@ -204,6 +204,7 @@ namespace Rock.Web.Cache
         /// Removes Lava shortcode from cache
         /// </summary>
         /// <param name="id"></param>
+        [Obsolete( "#########Where is this used############" )]
         public new static void Remove( int id )
         {
             Remove( id.ToString() );

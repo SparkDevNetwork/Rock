@@ -407,6 +407,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="cacheTypeName">Name of the cache type.</param>
         /// <returns></returns>
+        [Obsolete( "#########Where is this used############" )]
         public static string ClearCachedItemsForType( string cacheTypeName )
         {
             if ( _allManagers == null )
@@ -448,6 +449,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="cacheTypeName">Name of the cache type.</param>
         /// <returns></returns>
+        [Obsolete( "#########Where is this used############" )]
         public static string ClearCachedItemsForSystemType( string cacheTypeName )
         {
             switch ( cacheTypeName )

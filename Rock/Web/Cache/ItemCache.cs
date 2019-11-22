@@ -284,6 +284,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Removes all items of this type from cache.
         /// </summary>
+        [Obsolete( "#########Where is this used############" )]
         public static void Clear()
         {
             // Calling the clear on the instance when using redis will clear all of the cache, which is bad.
