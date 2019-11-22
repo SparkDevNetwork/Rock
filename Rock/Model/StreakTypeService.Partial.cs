@@ -478,7 +478,7 @@ namespace Rock.Model
 
             // Keep the record that belongs to the person's primary alias. Delete the others.
             var streakToKeep = streaks.FirstOrDefault( s => s.PersonAliasId == person.PrimaryAliasId );
-            var streaksToDelete = streaks.Where( s => s.Id != streakToKeep?.Id );            
+            var streaksToDelete = streaks.Where( s => s.Id != streakToKeep?.Id );
 
             // Create the enrollment if needed
             if ( streakToKeep == null )
@@ -1116,11 +1116,11 @@ namespace Rock.Model
         public void HandleAttendanceRecord( Attendance attendance, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var rockContext = Context as RockContext;
 
             if ( attendance == null )
             {
-                errorMessage = "The attendance model is required.";
+                // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
+                // of an attendance model. We don't even know if this attendance was supposed to be related to a streak type.
                 return;
             }
 
@@ -1133,18 +1133,21 @@ namespace Rock.Model
 
             if ( !attendance.PersonAliasId.HasValue )
             {
-                errorMessage = "The person alias ID is required.";
+                // If we don't know what person this attendance is tied to then it is impossible to mark engagement in a streak. This is not
+                // an error because a null PersonAliasId is a valid state for the attendance model.
                 return;
             }
 
             // Get the occurrence to ensure all of the virtual properties are included since it's possible the incoming
             // attendance model does not have all of this data populated
+            var rockContext = Context as RockContext;
             var occurrenceService = new AttendanceOccurrenceService( rockContext );
             var occurrence = occurrenceService.Get( attendance.OccurrenceId );
 
             if ( occurrence == null )
             {
-                errorMessage = "The occurrence model is required.";
+                // This is an error state because it is an invalid data scenario.
+                errorMessage = $"The attendance record {attendance.Id} does not have a valid occurrence model.";
                 return;
             }
 
@@ -1154,7 +1157,8 @@ namespace Rock.Model
 
             if ( person == null )
             {
-                errorMessage = "The person model is required.";
+                // This is an error state because it is an invalid data scenario.
+                errorMessage = $"The person alias {attendance.PersonAliasId.Value} did not produce a valid person record.";
                 return;
             }
 
@@ -1358,7 +1362,7 @@ namespace Rock.Model
             var occurrencesFound = 0;
 
             var maxDateForStreakBreaking = GetMaxDateForStreakBreaking( streakOccurrenceFrequency );
-            
+
             if ( maxDate < minDate )
             {
                 maxDate = minDate;
