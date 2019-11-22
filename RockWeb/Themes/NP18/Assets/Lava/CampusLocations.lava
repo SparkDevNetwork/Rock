@@ -7,7 +7,7 @@
             <img class="card-img" src="{{ campus | Attribute:'CampusPhoto','Url' }}" alt="{{campus.Name}}" />
             
         </div>
-        <div class="card card-right">
+        <div class="card card-right fullheight center">
             
             <div class="card-body">
                 <h3 class="margin-none">{{campus.Name}}</h3>
@@ -28,22 +28,40 @@
 			    {% if LocationsPageDetails != '' and LocationsPageDetails != '<p><br></p>' %}
                     {{ LocationsPageDetails }}
                 {% endif %}
-    			{[grid]}
-    			    [[column]]
-    				    <p>
-    				        {{ campus.Location.Street1 }}<br />
-    				        {{ campus.Location.City }}, {{ campus.Location.State }} {{ campus.Location.PostalCode }}
-    				    </p>
-                        <p>
-                            <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a>
-                        </p>
-                    [[endcolumn]]
-                    [[column]]
+
+                {% assign loc_Street1 = campus.Location.Street1 | Trim %}
+                {% assign loc_Street2 = campus.Location.Street2 | Trim %}
+                {% assign loc_City = campus.Location.City | Trim %}
+                {% assign loc_State = campus.Location.State | Trim %}
+                {% assign loc_PostalCode = campus.Location.PostalCode | Trim %}
+
+                {% capture locFormatted %}{{ loc_Street1 | WithFallback:'<br>','','append' }}{{ loc_Street2 | WithFallback:'<br>','','append' }}{{ loc_City }}{% if loc_City != '' and loc_State != ''%}, {% endif %}{{ loc_State }}{{ loc_PostalCode | WithFallback:' ','' }}{% endcapture %}
+
+                {% if locFormatted != '' %}
+    			    {[grid]}
+    			        [[column]]
+    				        <p>
+                                {{ locFormatted }}
+    				        </p>
+                            <p>
+                                <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&amp;destination={{campus.Location.Street1}}+{{campus.Location.City}}+{{campus.Location.State}}+{{campus.Location.PostalCode}}"><i class="np-location"></i> Map & Directions</a>
+                            </p>
+                        [[endcolumn]]
+                        [[column]]
+                            {% if campus.PhoneNumber %}
+    				            <p>
+    				                <strong>p.</strong> {{ campus.PhoneNumber }}<br />
+    				            </p>
+                            {% endif %}
+                        [[endcolumn]]
+                    {[endgrid]}
+                {% else %}
+                    {% if campus.PhoneNumber %}
     				    <p>
     				        <strong>p.</strong> {{ campus.PhoneNumber }}<br />
     				    </p>
-                    [[endcolumn]]
-                {[endgrid]}
+                    {% endif %}
+                {% endif %}
             </div>
         </div>
     </div>

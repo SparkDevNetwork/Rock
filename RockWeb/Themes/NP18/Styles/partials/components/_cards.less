@@ -58,18 +58,18 @@ a.card,
 
 @media (min-width: @screen-sm-min) {
     .card-overlay-group {
-        padding: 0.5em;
+        padding: 1em;
 
         > .card > .card-body {
             padding: 3em;
         }
 
         > .card-left {
-            margin: 0 0.5em 0 -0.5em;
+            margin: 0 1em 0 -1em;
         }
 
         > .card-right {
-            margin: -2em -0.5em 0 0.5em;
+            margin: -3em -1em 0 1em;
 
             > .card-body {
                 padding: 5em 3em 3em 3em;
@@ -82,25 +82,47 @@ a.card,
     .card-overlay-group {
         position: relative;
         padding: 0;
-        margin-bottom: 4em;
+        margin-bottom: 8em;
+        display: flex;
+        align-items: flex-start;
 
         > .card-left {
             margin: 0;
-            width: 52%;
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: 50%;
             z-index: 10;
+
+            > .card-body {
+                padding: 3.5em 3.5em 3.5em 3.5em;
+            }
+
+            &.fullheight {
+                align-self: stretch;
+            }
+
+            &.center {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
         }
 
         > .card-right {
-            margin: 1em 0 0 0;
-            width: 52%;
-            float: right;
+            margin: 4em 0 -4em -4em;
+            width: 50%;
             z-index: 5;
 
             > .card-body {
-                padding: 3.5em 3.5em 3.5em 5.5em;
+                padding: 3.5em 3.5em 3.5em 6.5em;
+            }
+
+            &.fullheight {
+                align-self: stretch;
+            }
+
+            &.center {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
             }
         }
 

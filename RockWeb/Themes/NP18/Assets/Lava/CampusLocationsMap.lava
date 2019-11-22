@@ -82,9 +82,11 @@
         // Create the Google Map using our element and options defined above
         var map = new google.maps.Map(mapElement, opts);
 
-    {%- for campus in Campuses -%}
-      {%- assign isActive = campus.IsActive -%}
-    	{%- if isActive -%}
+        {%- for campus in Campuses -%}
+        {% assign camp_Latitude = campus.Location.Latitude | Trim %}
+        {% assign camp_Longitude = campus.Location.Longitude | Trim %}
+        {%- assign isActive = campus.IsActive -%}
+    	{%- if isActive and camp_Latitude != '' and camp_Longitude != '' -%}
 	    {%- assign serviceDay = "" -%}
 	    
         // Let's add campus markers
@@ -92,8 +94,8 @@
 					var markerOptions = {
 						map: map,
 						position: {
-							lat: {{campus.Location.Latitude}},
-							lng: {{campus.Location.Longitude}},
+							lat: {{camp_Latitude}},
+							lng: {{camp_Longitude}},
 						}
 					};
 					
