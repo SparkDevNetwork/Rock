@@ -661,8 +661,7 @@ namespace Rock.Web.Cache
             var value = new AttributeCache();
             value.SetFromEntity( entity, qualifiers );
 
-            RockCacheManager<AttributeCache>.Instance.AddOrUpdate( QualifiedKey( entity.Id.ToString() ), value );
-            RockCacheManager<int?>.Instance.AddOrUpdate( QualifiedKey( value.Guid.ToString() ), value.Id );
+            RockCacheManager<AttributeCache>.Instance.AddOrUpdate( QualifiedKey( entity.Id.ToString() ), ItemCache<AttributeCache>.KeyRegion, value );
 
             return value;
 

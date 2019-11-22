@@ -296,7 +296,7 @@ namespace Rock.Web.Cache
             }
             else
             {
-                RockCacheManager<object>.Instance.AddOrUpdate( key, obj, expiration );
+                RockCacheManager<object>.Instance.AddOrUpdate( key, REGION_UNSPECIFIED, obj, expiration );
             }
 
             if ( cacheTags.IsNotNullOrWhiteSpace() )

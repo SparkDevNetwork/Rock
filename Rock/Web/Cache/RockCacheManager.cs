@@ -152,6 +152,8 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="updateValue">The update value.</param>
+        [Obsolete( "Use AddOrUpdate(key,region, updateValue) instead" )]
+        [RockObsolete( "1.11" )]
         internal void AddOrUpdate( string key, T updateValue )
         {
             AddOrUpdate( key, null, updateValue );
@@ -163,6 +165,8 @@ namespace Rock.Web.Cache
         /// <param name="key">The key.</param>
         /// <param name="updateValue">The update value.</param>
         /// <param name="expiration">The expiration.</param>
+        [Obsolete( "Use AddOrUpdate(key,region, updateValue, expiration) instead" )]
+        [RockObsolete( "1.11" )]
         internal void AddOrUpdate( string key, T updateValue, TimeSpan expiration )
         {
             AddOrUpdate( key, null, updateValue, expiration );

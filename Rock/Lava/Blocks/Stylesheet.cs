@@ -157,7 +157,7 @@ namespace Rock.Lava.Blocks
 
                                     if ( cacheDuration > 0 )
                                     {
-                                        RockCache.AddOrUpdate( cacheKey, null, stylesheet, RockDateTime.Now.AddSeconds( cacheDuration ) );
+                                        RockCache.AddOrUpdate( cacheKey, stylesheetCacheRegion, stylesheet, RockDateTime.Now.AddSeconds( cacheDuration ) );
                                     }
                                 }
 

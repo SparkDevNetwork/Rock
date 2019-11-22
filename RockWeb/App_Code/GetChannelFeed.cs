@@ -234,8 +234,8 @@ namespace RockWeb
                 var expiration = RockDateTime.Now.AddMinutes( cacheDuration );
                 if ( expiration > RockDateTime.Now )
                 {
-                    RockCache.AddOrUpdate( cacheKey + ":MimeType", null, response.ContentType, expiration );
-                    RockCache.AddOrUpdate( cacheKey, null, outputContent, expiration );
+                    RockCache.AddOrUpdate( cacheKey + ":MimeType", cacheRegion, response.ContentType, expiration );
+                    RockCache.AddOrUpdate( cacheKey, cacheRegion, outputContent, expiration );
                 };
             }
         }

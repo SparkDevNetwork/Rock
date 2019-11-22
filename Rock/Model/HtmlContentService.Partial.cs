@@ -188,7 +188,7 @@ namespace Rock.Model
         public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration )
         {
             var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
-            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), string.Empty, html, expiration );
+            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), HtmlContentCacheRegion, html, expiration );
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Rock.Model
         public static void AddCachedContent( int blockId, string entityValue, string html, int cacheDuration, string cacheTags )
         {
             var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
-            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), string.Empty, html, expiration, cacheTags );
+            RockCache.AddOrUpdate( HtmlContentCacheKey( blockId, entityValue ), HtmlContentCacheRegion, html, expiration, cacheTags );
         }
 
         /// <summary>

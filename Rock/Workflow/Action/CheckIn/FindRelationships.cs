@@ -82,8 +82,9 @@ namespace Rock.Workflow.Action.CheckIn
         private static List<int> GetRoles( RockContext rockContext )
         {
             string cacheKey = "Rock.FindRelationships.Roles";
+            var cacheRegion = "Rock.FindRelationships.RolesRegion";
 
-            List<int> roles = RockCache.Get( cacheKey, "Rock.FindRelationships.RolesRegion" ) as List<int>;
+            List<int> roles = RockCache.Get( cacheKey, cacheRegion ) as List<int>;
 
             if ( roles == null )
             {
@@ -104,7 +105,7 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                 }
 
-                RockCache.AddOrUpdate( cacheKey, null, roles, RockDateTime.Now.AddSeconds( 300 ) );
+                RockCache.AddOrUpdate( cacheKey, cacheRegion, roles, RockDateTime.Now.AddSeconds( 300 ) );
             }
 
             return roles;

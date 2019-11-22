@@ -37,7 +37,7 @@ namespace Rock.Web.Cache
 
         private static readonly string KeyPrefix = $"{typeof( T ).Name}";
 
-        private static readonly string KeyRegion = $"Region:{typeof( T ).Name}";
+        internal static readonly string KeyRegion = $"Region:{typeof( T ).Name}";
 
         private static string AllItemsKey => $"{typeof( T ).Name}:AllItems";
 
@@ -304,7 +304,7 @@ namespace Rock.Web.Cache
         /// </summary>
         public static void Clear()
         {
-            RockCacheManager<T>.Instance.Cache.ClearRegion( KeyRegion );
+            RockCacheManager<T>.Instance.Cache.Clear();
 
             RockCacheManager<List<string>>.Instance.Cache.Remove( AllItemsKey, AllItemsRegion );
         }
