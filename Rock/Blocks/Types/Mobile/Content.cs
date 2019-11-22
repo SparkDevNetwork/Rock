@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
+using Rock.Mobile.Common.Blocks.Content;
 
 namespace Rock.Blocks.Types.Mobile
 {
@@ -115,28 +116,8 @@ namespace Rock.Blocks.Types.Mobile
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            //
-            // Since we are such as simple block, we don't have any additional configuration
-            // to provide other than the basic content that will be returned on expired cache
-            // reload requests.
-            //
-            return GetCurrentConfig();
-        }
-
-        #endregion
-
-        #region Action Methods
-
-        /// <summary>
-        /// Gets the current configuration for this block.
-        /// </summary>
-        /// <returns>A collection of string/string pairs.</returns>
-        [BlockAction]
-        public object GetCurrentConfig()
-        {
             var additionalSettings = GetAdditionalSettings();
             var content = GetAttributeValue( AttributeKeys.Content );
-            var config = new Dictionary<string, object>();
 
             //
             // Check if we need to render lava on the server.
@@ -148,12 +129,50 @@ namespace Rock.Blocks.Types.Mobile
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
 
-            config.Add( "Content", content );
-            config.Add( "ProcessLava", additionalSettings.ProcessLavaOnClient );
-            config.Add( "CacheDuration", additionalSettings.CacheDuration );
-            config.Add( "DynamicContent", GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean() );
+            return new Rock.Mobile.Common.Blocks.Content.Configuration
+            {
+                Content = content,
+                ProcessLava = additionalSettings.ProcessLavaOnClient,
+                CacheDuration = additionalSettings.CacheDuration,
+                DynamicContent = GetAttributeValue( AttributeKeys.DynamicContent ).AsBoolean()
+            };
+        }
 
-            return config;
+        #endregion
+
+        #region Action Methods
+
+        /// <summary>
+        /// Gets the initial content for this block.
+        /// </summary>
+        /// <returns>The initial content.</returns>
+        [BlockAction]
+        public object GetInitialContent()
+        {
+            var additionalSettings = GetAdditionalSettings();
+            var content = GetAttributeValue( AttributeKeys.Content );
+
+            //
+            // Check if we need to render lava on the server.
+            //
+            if ( additionalSettings.ProcessLavaOnServer )
+            {
+                var mergeFields = RequestContext.GetCommonMergeFields();
+
+                content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
+            }
+
+            return new CallbackResponse
+            {
+                Content = content
+            };
+        }
+
+        [BlockAction]
+        [RockObsolete( "1.10.2" )]
+        public object GetCurrentConfig()
+        {
+            return GetInitialContent();
         }
 
         /// <summary>

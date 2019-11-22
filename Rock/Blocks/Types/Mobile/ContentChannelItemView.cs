@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Mobile.Common.Blocks.Content;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -120,15 +121,17 @@ namespace Rock.Blocks.Types.Mobile
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
+            var additionalSettings = GetAdditionalSettings();
+
             //
             // The client shell ignores this value and always requests the current config from
             // the server, so just put some placeholder data.
             //
-            return new
+            return new Rock.Mobile.Common.Blocks.Content.Configuration
             {
-                Xaml = string.Empty,
-                ProcessLava = false,
-                CacheDuration = 0,
+                Content = string.Empty,
+                ProcessLava = additionalSettings.ProcessLavaOnClient,
+                CacheDuration = additionalSettings.CacheDuration,
                 DynamicContent = true
             };
         }
@@ -138,13 +141,12 @@ namespace Rock.Blocks.Types.Mobile
         #region Actions
 
         /// <summary>
-        /// Gets the current configuration for the Content block.
+        /// Gets the initial content for the Content block.
         /// </summary>
         /// <returns></returns>
         [BlockAction]
-        public object GetCurrentConfig()
+        public object GetInitialContent()
         {
-            var additionalSettings = GetAdditionalSettings();
             var content = GetAttributeValue( AttributeKeys.ContentTemplate );
             var mergeFields = RequestContext.GetCommonMergeFields();
 
@@ -152,13 +154,17 @@ namespace Rock.Blocks.Types.Mobile
 
             content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
 
-            return new Dictionary<string, object>
+            return new CallbackResponse
             {
-                { "Content", content },
-                { "ProcessLava", additionalSettings.ProcessLavaOnServer },
-                { "CacheDuration", additionalSettings.CacheDuration },
-                { "DynamicContent", true }
+                Content = content
             };
+        }
+
+        [BlockAction]
+        [RockObsolete( "1.10.2" )]
+        public object GetCurrentConfig()
+        {
+            return GetInitialContent();
         }
 
         #endregion
