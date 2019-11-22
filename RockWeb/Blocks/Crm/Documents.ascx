@@ -39,11 +39,11 @@
 
                         <Rock:RockTemplateField ShowHeader="false" ItemStyle-CssClass="grid-columncommand">
                             <ItemTemplate>
-                                <asp:LinkButton ID="lbDownload" runat="server" CssClass="btn btn-default" Text="<i class='fa fa-download'></i>" OnClick="gFileListDownload_Click"></asp:LinkButton>
+                                <asp:LinkButton ID="lbDownload" runat="server" CssClass="btn btn-default" Text="<i class='fa fa-download'></i>" ToolTip="Download Document" OnClick="gFileListDownload_Click"></asp:LinkButton>
                             </ItemTemplate>
                         </Rock:RockTemplateField>
 
-                        <Rock:SecurityField ID="securityField" />
+                        <Rock:SecurityField ID="securityField" ToolTip="Secure Document"/>
                         <Rock:DeleteField OnClick="gFileList_DeleteClick" />
                     </Columns>
                 </Rock:Grid>
