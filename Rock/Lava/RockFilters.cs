@@ -4329,7 +4329,7 @@ namespace Rock.Lava
                 HtmlMeta metaTag = new HtmlMeta();
                 metaTag.Attributes.Add( attributeName, attributeValue );
                 metaTag.Content = input;
-                page.Header.Controls.Add( metaTag );
+                page.AddMetaTag( metaTag );
             }
 
             return null;
