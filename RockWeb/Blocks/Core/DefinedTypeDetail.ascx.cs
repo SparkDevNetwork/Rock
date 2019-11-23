@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Core
             tbTypeName.Text = definedType.Name;
 
             lTitle.Text = definedType.Name.FormatAsHtmlTitle();
-            lDescription.Text = definedType.Description;
+            lDescription.Text = definedType.Description.ConvertMarkdownToHtml();
 
             if ( !string.IsNullOrWhiteSpace( definedType.HelpText ) )
             {
