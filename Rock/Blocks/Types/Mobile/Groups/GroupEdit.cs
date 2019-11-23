@@ -260,7 +260,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             return new Rock.Mobile.Common.Blocks.Content.Configuration
             {
                 Content = null,
-                DynamicContent = true,
+                DynamicContent = true
             };
         }
 
@@ -615,10 +615,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public object GetInitialContent()
         {
-                return new Rock.Mobile.Common.Blocks.Content.Configuration
-                {
-                    Content = BuildContent()
-                };
+            return new CallbackResponse
+            {
+                Content = BuildContent()
+            };
         }
 
         [BlockAction]
