@@ -67,7 +67,7 @@ namespace Rock.Web.Cache
 
             foreach ( var cacheManager in _allManagers )
             {
-                cacheManager?.Clear();
+                cacheManager?.ClearAll();
             }
         }
 
@@ -93,7 +93,7 @@ namespace Rock.Web.Cache
 
         #region Public Static Properties
 
-        private static bool? _isCacheSerialized = null;
+        private static bool? _isDistributedCache = null;
 
         /// <summary>
         /// Gets an indicator of whether cache manager is configured in a way that items will be serialized (i.e. if using Redis)
@@ -105,20 +105,35 @@ namespace Rock.Web.Cache
         {
             get
             {
-                if ( _isCacheSerialized == null )
+                // A distributed cache (like Redis) required the cache to e serializable;
+                return IsDistributedCache;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is distributed cache (i.e. if using Redis)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is distributed cache; otherwise, <c>false</c>.
+        /// </value>
+        public static bool IsDistributedCache
+        {
+            get
+            {
+                if ( _isDistributedCache == null )
                 {
                     if ( Rock.Web.SystemSettings.GetValueFromWebConfig( Rock.SystemKey.SystemSetting.REDIS_ENABLE_CACHE_CLUSTER )?.AsBoolean() == true )
                     {
-                        _isCacheSerialized = true;
+                        _isDistributedCache = true;
                     }
                     else
                     {
                         // not using Redis, so it is safe to cache non-serializable things (like CacheLavaTemplate)
-                        _isCacheSerialized = false;
+                        _isDistributedCache = false;
                     }
                 }
 
-                return _isCacheSerialized.Value;
+                return _isDistributedCache.Value;
             }
         }
 
@@ -428,6 +443,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="cacheType">Type of the cache.</param>
         /// <returns></returns>
+        [Obsolete( "No" )]
         public static string ClearCachedItemsForType( Type cacheType )
         {
             Type rockCacheManagerType = typeof( RockCacheManager<> ).MakeGenericType( new Type[] { cacheType } );

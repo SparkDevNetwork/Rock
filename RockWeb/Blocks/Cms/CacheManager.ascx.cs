@@ -578,7 +578,6 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 UpdateExistingTag( hfTagId.ValueAsInt() );
-                DefinedValueCache.Clear();
             }
         }
 

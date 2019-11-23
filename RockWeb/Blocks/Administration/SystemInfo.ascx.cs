@@ -237,17 +237,24 @@ namespace RockWeb.Blocks.Administration
         private string GetCacheInfo()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine( "<table class='table table-condensed'>" );
+
+            var cacheCounterTypes = Enum.GetValues( typeof( CacheManager.Core.Internal.CacheStatsCounterType ) ) as CacheManager.Core.Internal.CacheStatsCounterType[];
+            var headers = cacheCounterTypes.Select( a => string.Format( "<th>{0}</th>", a.ConvertToString(true) ) ).ToList().AsDelimited( "" );
+
+            sb.AppendLine( string.Format("<tr><th>Name</th>{0}</tr>", headers) );
 
             var cacheStats = RockCache.GetAllStatistics();
             foreach ( CacheItemStatistics cacheItemStat in cacheStats.OrderBy( s => s.Name ) )
             {
                 foreach( CacheHandleStatistics cacheHandleStat in cacheItemStat.HandleStats )
                 {
-                    var stats = new List<string>();
-                    cacheHandleStat.Stats.ForEach( s => stats.Add( string.Format( "{0}: {1:N0}", s.CounterType.ConvertToString(), s.Count ) ) );
-                    sb.AppendFormat( "<p><strong>{0}:</strong><br/>{1}</p>{2}", cacheItemStat.Name, stats.AsDelimited(", "), Environment.NewLine );
+                    var columns = cacheCounterTypes.Select( a => string.Format( "<td>{0}</td>", cacheHandleStat.Stats.FirstOrDefault( s => s.CounterType == a ).Count ) ).ToList().AsDelimited( "" );
+                    sb.AppendLine( string.Format( "<tr><td>{0}</td>{1}</tr>", cacheItemStat.Name.SplitCase(), columns ) );
                 }
             }
+            sb.AppendLine( "</table>" );
+
 
             lCacheObjects.Text = sb.ToString();
 

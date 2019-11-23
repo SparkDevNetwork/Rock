@@ -218,8 +218,8 @@ namespace Rock.Slingshot
         // GroupType Lookup by ForeignKey for the ForeignSystemKey
         private Dictionary<int, GroupTypeCache> GroupTypeLookupByForeignId { get; set; }
 
-        // Lookup for Campus by UpperCase of Slingshot File's CampusId
-        private Dictionary<int, CampusCache> CampusLookupByForeignId { get; set; }
+        // Lookup for CampusId by UpperCase of Slingshot File's CampusId
+        private Dictionary<int, int> CampusIdLookupByForeignId { get; set; }
 
         /* Attendance */
         private List<SlingshotCore.Model.Attendance> SlingshotAttendanceList { get; set; }
@@ -881,7 +881,7 @@ namespace Rock.Slingshot
 
                 if ( slingshotFinancialAccount.CampusId.HasValue )
                 {
-                    financialAccountImport.CampusId = this.CampusLookupByForeignId[slingshotFinancialAccount.CampusId.Value]?.Id;
+                    financialAccountImport.CampusId = this.CampusIdLookupByForeignId[slingshotFinancialAccount.CampusId.Value];
                 }
 
                 financialAccountImport.ParentFinancialAccountForeignId = slingshotFinancialAccount.ParentAccountId == 0 ? null : slingshotFinancialAccount.ParentAccountId;
@@ -935,7 +935,7 @@ namespace Rock.Slingshot
                         break;
                 }
 
-                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
+                financialBatchImport.CampusId = slingshotFinancialBatch.CampusId.HasValue ? this.CampusIdLookupByForeignId[slingshotFinancialBatch.CampusId.Value] : ( int? ) null;
 
                 financialBatchImportList.Add( financialBatchImport );
             }
@@ -1138,7 +1138,7 @@ namespace Rock.Slingshot
                 attendanceImport.Note = slingshotAttendance.Note;
                 if ( slingshotAttendance.CampusId.HasValue )
                 {
-                    attendanceImport.CampusId = this.CampusLookupByForeignId[slingshotAttendance.CampusId.Value]?.Id;
+                    attendanceImport.CampusId = this.CampusIdLookupByForeignId[slingshotAttendance.CampusId.Value];
                 }
 
                 attendanceImportList.Add( attendanceImport );
@@ -1232,7 +1232,7 @@ namespace Rock.Slingshot
                 groupImport.Order = slingshotGroup.Order;
                 if ( slingshotGroup.CampusId.HasValue )
                 {
-                    groupImport.CampusId = this.CampusLookupByForeignId[slingshotGroup.CampusId.Value]?.Id;
+                    groupImport.CampusId = this.CampusIdLookupByForeignId[slingshotGroup.CampusId.Value];
                 }
 
                 groupImport.ParentGroupForeignId = slingshotGroup.ParentGroupId == 0 ? ( int? ) null : slingshotGroup.ParentGroupId;
@@ -1375,7 +1375,7 @@ namespace Rock.Slingshot
 
                 if ( ( slingshotBusiness.Campus?.CampusId ?? 0 ) != 0 )
                 {
-                    businessImport.CampusId = this.CampusLookupByForeignId[slingshotBusiness.Campus.CampusId]?.Id;
+                    businessImport.CampusId = this.CampusIdLookupByForeignId[slingshotBusiness.Campus.CampusId];
                 }
 
                 switch ( slingshotBusiness.RecordStatus )
@@ -1588,7 +1588,7 @@ namespace Rock.Slingshot
 
                 if ( ( slingshotPerson.Campus?.CampusId ?? 0 ) != 0 )
                 {
-                    personImport.CampusId = this.CampusLookupByForeignId[slingshotPerson.Campus.CampusId]?.Id;
+                    personImport.CampusId = this.CampusIdLookupByForeignId[slingshotPerson.Campus.CampusId];
                 }
 
                 switch ( slingshotPerson.RecordStatus )
@@ -1843,13 +1843,13 @@ namespace Rock.Slingshot
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
 
-            // Flush the campuscache just in case it was updated in the Database without rock knowing about it
-            CampusCache.Clear();
+            var campusAllList = campusService.Queryable().AsNoTracking().ToList();
+
 
             // Rock has a Unique Constraint on Campus.Name so, make sure campus name is unique and rename it if a new campus happens to have the same name as an existing campus
-            var usedCampusNames = CampusCache.All().Select( a => a.Name ).ToList();
+            var usedCampusNames = campusService.Queryable().Select( a => a.Name ).ToList();
 
-            foreach ( var importCampus in importCampuses.Where( a => !CampusCache.All().Any( c => c.ForeignId == a.CampusId && c.ForeignKey == this.ForeignSystemKey ) ) )
+            foreach ( var importCampus in importCampuses.Where( a => campusAllList.Any( c => c.ForeignId == a.CampusId && c.ForeignKey == this.ForeignSystemKey ) ) )
             {
                 var campusToAdd = new Rock.Model.Campus();
                 campusToAdd.ForeignId = importCampus.CampusId;
@@ -1871,9 +1871,6 @@ namespace Rock.Slingshot
                 campusService.Add( campusToAdd );
                 rockContext.SaveChanges();
             }
-
-            // Flush the campuscache to force to reload
-            CampusCache.Clear();
         }
 
         /// <summary>
@@ -2575,7 +2572,7 @@ namespace Rock.Slingshot
             this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
 
             // Campuses
-            this.CampusLookupByForeignId = CampusCache.All().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().ToDictionary( k => k.ForeignId.Value, v => v );
+            this.CampusIdLookupByForeignId = new CampusService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().ToDictionary( k => k.ForeignId.Value, v => v.Id );
         }
 
         /// <summary>

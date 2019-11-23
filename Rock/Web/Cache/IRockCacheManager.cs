@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -25,7 +27,13 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Clears a cache instance.
         /// </summary>
+        [Obsolete( "This can cause performance issues, especially with distributed caches. If you really need to clear, use ClearAll() " )]
         void Clear();
+
+        /// <summary>
+        /// If using a Distributed Cache, this will flush the entire cache. Otherwise, it will just flush the cache for this type
+        /// </summary>
+        void ClearAll();
 
         /// <summary>
         /// Gets the statistics for the cache instance.

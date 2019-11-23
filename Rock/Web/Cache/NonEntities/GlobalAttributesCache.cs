@@ -59,6 +59,8 @@ namespace Rock.Web.Cache
         /// </summary>
         private const string ORG_LOC_FORMATTED = "com.rockrms.orgLoctionFormatted";
 
+        private static readonly string GlobalAttributesCacheCacheKey = "GlobalAttributesCacheCacheKey";
+
         #endregion
 
         #region Constructors
@@ -354,7 +356,7 @@ namespace Rock.Web.Cache
         public static GlobalAttributesCache Get()
         {
             // NOTE this can be changed plain GetOrAddExisting once the above obsolete 
-            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( AllString, Load );
+            return ItemCache<GlobalAttributesCache>.GetOrAddExisting( GlobalAttributesCacheCacheKey, Load );
         }
 
         private static GlobalAttributesCache Load()
@@ -380,10 +382,9 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Removes Global Attributes from cache
         /// </summary>
-        [Obsolete( "#########Where is this used############" )]
         public static void Remove()
         {
-            Clear();
+            FlushItem( GlobalAttributesCacheCacheKey );
 
             if ( HttpContext.Current == null ) return;
 

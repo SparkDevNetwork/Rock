@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System;
-
+using System.Collections.Concurrent;
+using System.Linq;
 using DotLiquid;
 
 namespace Rock.Web.Cache
@@ -81,7 +82,7 @@ namespace Rock.Web.Cache
         /// <param name="content">The content.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead")]
+        [Obsolete( "Use Get instead" )]
         public static LavaTemplateCache Read( string content )
         {
             return Get( content );
@@ -96,19 +97,43 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static LavaTemplateCache Get( string key, string content )
         {
-            // If cache items need to be serialized, do not cache the template (it's not serializable)
-            if ( RockCache.IsCacheSerialized )
+            // If cache items need to be serialized or are using a distribueted cache, do not cache the template (it's not serializable)
+            if ( RockCache.IsDistributedCache || RockCache.IsCacheSerialized )
             {
-                return Load( content );
+                return Load( key, content );
             }
 
-            return GetOrAddExisting( key, () => Load( content ), new TimeSpan( 0, 10, 0 ) );
+            return GetOrAddExisting( key, () => Load( key, content ), new TimeSpan( 0, 10, 0 ) );
         }
 
-        private static LavaTemplateCache Load( string content )
+        /// <summary>
+        /// The loaded keys
+        /// </summary>
+        private static ConcurrentDictionary<string, byte> loadedKeys = new ConcurrentDictionary<string, byte>();
+
+        /// <summary>
+        /// Loads the specified key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="content">The content.</param>
+        /// <returns></returns>
+        private static LavaTemplateCache Load( string key, string content )
         {
+            loadedKeys.AddOrIgnore( key, ( byte ) 0 );
             var lavaTemplate = new LavaTemplateCache { Template = Template.Parse( content ) };
             return lavaTemplate;
+        }
+
+        /// <summary>
+        /// Flushes the cached templates.
+        /// </summary>
+        public static void FlushCachedTemplates()
+        {
+            foreach ( var loadedKey in loadedKeys.ToList() )
+            {
+                FlushItem( loadedKey.Key );
+                loadedKeys.TryRemove( loadedKey.Key, out _ );
+            }
         }
 
         #endregion

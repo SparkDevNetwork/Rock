@@ -225,6 +225,14 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Clears the cache
+        /// </summary>
+        public void ClearAll()
+        {
+            Cache.Clear();
+        }
+
+        /// <summary>
         /// Gets the statistics for the cache instance.
         /// </summary>
         /// <returns></returns>

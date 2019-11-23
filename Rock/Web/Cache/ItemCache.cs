@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
@@ -31,20 +32,10 @@ namespace Rock.Web.Cache
     public abstract class ItemCache<T> : IItemCache
         where T : IItemCache
     {
-        private const string _AllRegion = "AllItems";
-
-        /// <summary>
-        /// All string
-        /// </summary>
-        protected static readonly string AllString = "All";
-
-        // This static field will be different for each generic type. See (https://www.jetbrains.com/help/resharper/2018.1/StaticMemberInGenericType.html)
-        // This is intentional behavior in this case.
-        private static readonly object _obj = new object();
-
         private static readonly string KeyPrefix = $"{typeof( T ).Name}";
-        private static string AllKey => $"{typeof( T ).Name}:{AllString}";
-        
+
+        internal static string AllItemsKey => $"{typeof( T ).Name}:AllItems";
+
         #region Protected Methods
 
         /// <summary>
@@ -109,7 +100,8 @@ namespace Rock.Web.Cache
                 return value;
             }
 
-            if ( itemFactory == null ) return default( T );
+            if ( itemFactory == null )
+                return default( T );
 
             value = itemFactory();
             if ( value != null )
@@ -140,63 +132,31 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Ensure that the Key is part of the AllIds list
+        /// Ensure that the Key is part of the AllIds list (if All() has been called)
         /// </summary>
         /// <param name="key">The key.</param>
         private static void AddToAllIds( string key )
         {
-            // Get the dictionary of all item ids
-            var allKeys = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
-            if ( allKeys == null )
-            {
-                // All hasn't been asked for yet, so it doesn't need to be updated. Leave it null
-                return;
-            }
-
-            if ( allKeys.Contains( key ) )
-            {
-                // already has it so no need to update the cache
-                return;
-            }
-
-            // If the key is not part of the dictionary all ready
-            lock ( _obj )
-            {
-                // Add it.
-                allKeys.Add( key, true );
-                RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
-            }
+            AllKeysCache.AddKey( AllItemsKey, key );
         }
 
         /// <summary>
-        /// Gets the keys.
+        /// If not already called, recreates the list of keys for every entity using the keyFactory. (Expensive)
         /// </summary>
         /// <returns></returns>
         /// <param name="keyFactory">All keys factory.</param>
         internal protected static List<string> GetOrAddKeys( Func<List<string>> keyFactory )
         {
-            var value = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion );
-            if ( value != null )
-            {
-                return value;
-            }
-
-            return keyFactory == null ? new List<string>() : AddKeys( keyFactory );
+            return AllKeysCache.GetAllKeysOrAddExisting( AllItemsKey, keyFactory );
         }
 
         /// <summary>
-        /// Adds the keys.
+        /// Recreates the list of keys for every entity using the keyFactory. (Expensive)
         /// </summary>
         /// <param name="keyFactory">All keys factory.</param>
         internal protected static List<string> AddKeys( Func<List<string>> keyFactory )
         {
-            var allKeys = keyFactory?.Invoke();
-            if ( allKeys != null )
-            {
-                RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
-            }
-
-            return allKeys;
+            return AllKeysCache.AddAllKeys ( AllItemsKey, keyFactory );
         }
 
         #endregion
@@ -245,7 +205,11 @@ namespace Rock.Web.Cache
             FlushItem( key.ToString() );
         }
 
-        internal static void AddToAllIds( int key)
+        /// <summary>
+        /// Ensure that the Key is part of the AllIds list (if All() has been called)
+        /// </summary>
+        /// <param name="key">The key.</param>
+        internal static void AddToAllIds( int key )
         {
             AddToAllIds( key.ToString() );
         }
@@ -270,15 +234,7 @@ namespace Rock.Web.Cache
         {
             FlushItem( key );
 
-            var allIds = RockCacheManager<List<string>>.Instance.Cache.Get( AllKey, _AllRegion ) ?? new List<string>();
-            if ( !allIds.Contains( key ) )
-                return;
-
-            lock ( _obj )
-            {
-                allIds.Remove( key );
-                RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allIds );
-            }
+            AllKeysCache.RemoveKey( AllItemsKey, key );
         }
 
         /// <summary>
@@ -287,20 +243,10 @@ namespace Rock.Web.Cache
         [Obsolete( "#########Where is this used############" )]
         public static void Clear()
         {
-            // Calling the clear on the instance when using redis will clear all of the cache, which is bad.
-            // So let's call remove instead if using redis.
-            if ( RockCache.IsCacheSerialized )
-            {
-                FlushItem( AllString );
-            }
-            else
-            {
-                RockCacheManager<T>.Instance.Cache.Clear();
-            }
-            
-            RockCacheManager<List<string>>.Instance.Cache.Remove( AllKey, _AllRegion );
-        }
+            RockCacheManager<T>.Instance.Cache.Clear();
 
+            AllKeysCache.FlushItem( AllItemsKey );
+        }
 
         /// <summary>
         /// Method that is called by the framework immediately after being added to cache

@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Core
 
             // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
             // usage of this shortcode is cached with a key we can't predict.
-            LavaTemplateCache.Clear();
+            LavaTemplateCache.ClearCachedTemplates();
 
             NavigateToParentPage();
         }
