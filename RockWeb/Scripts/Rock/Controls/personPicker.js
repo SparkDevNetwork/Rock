@@ -294,14 +294,14 @@
                 }
             }
 
-            $pickerControl.on('hover',
+            $pickerControl.on('mouseenter',
                 function () {
 
                     // only show the X if there is something picked
                     if (($pickerPersonId.val() || '0') !== '0') {
                         $pickerSelectNone.stop().show();
                     }
-                },
+                }).on('mouseleave',
                 function () {
                     $pickerSelectNone.fadeOut(500);
                 });
