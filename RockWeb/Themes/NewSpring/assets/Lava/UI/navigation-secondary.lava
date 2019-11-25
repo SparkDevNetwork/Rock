@@ -29,13 +29,12 @@
 </section>
 
 <!-- Mobile Secondary Nav -->
-<div class="bg-gray-dark soft-half shadowed hidden-md hidden-lg">
-<section class="bg-primary hard flush rounded shadowed overflow-hidden">
+<section class="bg-primary hard flush shadowed hidden-md hidden-lg">
     <div class="soft-half-ends soft-sides sm-soft-half-sides xs-soft-half-sides text-right clearfix">
 
-        <a class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-center" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                {{ Page.Title }}
-            <i class="position-relative fas fa-bars" style="top: 1px; left: 5px;"></i>
+        <a class="btn btn-block btn-primary collapsed stronger letter-spacing-condensed text-decoration-none text-left" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                <span class="h5 display-inline-block flush" style="padding: 4px 0;">{{ Page.Title }}</span>
+            <i class="position-relative fas fa-angle-down fa-lg pull-right" style="top: 7px; font-size: 1.6em;"></i>
         </a>
 
         <div class="panel panel-default rounded overflow-hidden flush hidden-md hidden-lg">
@@ -62,6 +61,6 @@
 
     </div>
 </section>
-</div>
+
 
 {% endif %}
