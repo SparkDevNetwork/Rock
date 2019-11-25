@@ -1,53 +1,49 @@
-<div class="push-bottom xs-push-half-bottom xs-push-half-top">
-    <h2>Giving Schedules</h2>
+{% sql %}
+    SELECT TOP 1 AuthorizedPersonAliasId
+    FROM FinancialScheduledTransaction
+    WHERE Id = '{{ ScheduledTransaction.Id }}'
+{% endsql %}
 
-    {%- comment -%}
-        Give people a step to take if they don't have any schedules
-    {%- endcomment -%}
-    {% assign scheduleCount = rows | Size %}
-    {% if scheduleCount == 0 %}
-        <div class="panel panel-default">
-            <div class="panel-heading">No Active Giving Schedules</div>
-            <div class="panel-body">
-                <p class="push-half-bottom">It looks like you don't have any active giving schedules.</p>
-                <p class="flush"><a href="/give/now" class="btn btn-primary">Create a Giving Schedule</a></p>
-            </div>
-        </div>
-    {% endif %}
+{% assign giver = results | First | Property:'AuthorizedPersonAliasId' | PersonByAliasId %}
 
-    {%- comment -%}
-        Loop through giving schedules
-    {%- endcomment -%}
-    {% for row in rows %}
-        {% assign giver = row.Id3 | PersonById %}
+{% comment %}
+    Sum Transactions together 
+{% endcomment %}
+{% assign total = 0 %}
+{% for transaction in ScheduledTransaction.TransactionDetails %}
+    {% assign total = total | Plus:transaction.Amount %}
+{% endfor %}
 
-        {% definedvalue id:'{{ row.CurrencyTypeValueId }}' where:'DefinedTypeId == 10' iterator:'values' %}
-            {% for value in values %}
-                {% assign transactionType = value.Value %}
-            {% endfor %}
-        {% enddefinedvalue %}
-        
-        {% definedvalue id:'{{ row.TransactionFrequencyValueId }}' where:'DefinedTypeId == 23' iterator:'values' %}
-            {% for value in values %}
-                {% assign frequency = value.Value %}
-            {% endfor %}
-        {% enddefinedvalue %}
-        
-        <div class="bg-white soft xs-soft-half push-half-bottom rounded shadowed">
-            <h3 class="xs-h4 push-half-bottom">{{ row.PublicName1 }}<span class="pull-right">{{ row.Amount | FormatAsCurrency }}</span></h3>
-            <p class="push-half-bottom">
-                <small class="label label-default sans-serif letter-spacing-condensed circular">{{ frequency }}</small> 
-                <small class="label label-default sans-serif letter-spacing-condensed circular">{{ transactionType }}</small>
-            </p>
-            
-            {% if row.NextPaymentDate and row.NextPaymentDate != '' %}
-                <p class="stronger push-half-bottom"><small>Next Payment: {{ row.NextPaymentDate | Date:'MMM d, yyyy' }}</small></p>
-            {% endif %}
-            
-            <p class="flush">
-                <span class="circular background-cover" style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span> &nbsp;<span class="stronger">{{ row.NickName }} {{ row.LastName }}</span>
-                <span class="pull-right"><a class="btn btn-sm btn-danger" onclick="{{ row.Id | Postback:'DeleteScheduledTransaction' | Replace:'[ClientId]','ctl00_main_ctl32_ctl01_ctl08_upnlContent' }}">Delete Schedule</a> <a href="/account/giving/schedules/{{ row.Id }}" class="btn btn-sm btn-primary">Edit Schedule</a></span>
-            </p>
-        </div>
+{% definedvalue where:'DefinedTypeId == 11 && Value == "{{ ScheduledTransaction.CreditCardType }}"' iterator:'values' %}
+    {% for value in values %}
+        {% assign ccClass = value | Attribute:'IconCSSClass' %}
+        {% assign ccColor = value | Attribute:'Color' %}
     {% endfor %}
+{% enddefinedvalue %}
+
+<h3 class="xs-h4 push-half-bottom">Schedule #{{ ScheduledTransaction.Id }}</h3>
+
+<div class="row">
+    <div class="col-xs-12 col-md-6">
+        
+        <p class="push-half-bottom">
+            <small class="label label-default sans-serif letter-spacing-condensed circular">{{ ScheduledTransaction.FrequencyDescription }}</small> 
+            <small class="label label-default sans-serif letter-spacing-condensed circular">{% if ScheduledTransaction.CurrencyType == 'Credit Card' %}{{ ScheduledTransaction.CreditCardType }}{% else %}ACH{% endif %} {{ ScheduledTransaction.AccountNumberMasked | Right:4 }}</small>
+        </p>
+        
+        <p class="push-half-bottom">
+            <span class="circular background-cover" style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span> &nbsp;<span class="stronger">{{ giver.NickName }} {{ giver.LastName }}</span>
+        </p>
+    </div><div class="col-xs-12 col-md-6">
+        <ul class="list-unstyled push-half-bottom xs-push-bottom xs-push-half-top">
+        {% for transaction in ScheduledTransaction.TransactionDetails %}
+            <li>{{ transaction.AccountName }} <span class="pull-right"><b>{{ transaction.Amount | FormatAsCurrency }}</b></span></li>
+        {% endfor %}
+            <li class="display-inline-block width-full push-half-top soft-half-top" style="border-top: 2px solid #eee;">Total <span class="pull-right"><b>{{ total | FormatAsCurrency }}</b></span></li>
+        </ul>
+        
+        {% if ScheduledTransaction.NextPaymentDate and ScheduledTransaction.NextPaymentDate != '' %}
+            <p class="stronger push-half-bottom">Next Payment: {{ ScheduledTransaction.NextPaymentDate | Date:'MMM d, yyyy' }}</p>
+        {% endif %}
+    </div>
 </div>
