@@ -112,8 +112,7 @@ namespace Rock.Badge.Component
                     badgeIcons = badgeRow2;
                 }
                 var assessmentType = new AssessmentTypeService( new RockContext() ).GetNoTracking( assessmentTypeGuids[i].AsGuid() );
-                string resultsPath = assessmentType.AssessmentResultsPath;
-                string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?Person={Person.UrlEncodedKey}" );
+
                 string iconCssClass = assessmentType.IconCssClass;
                 string badgeHtml = string.Empty;
                 string assessmentTitle = string.Empty;
@@ -166,6 +165,8 @@ namespace Rock.Badge.Component
                 // If the latest request has been taken we want to link to it and provide a Lava merged summary
                 if ( assessmentTest != null )
                 {
+                    string resultsPath = assessmentType.AssessmentResultsPath;
+                    string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?Person={Person.UrlEncodedKey}" );
                     badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
 
                     mergeFields.Add( "Person", Person );
