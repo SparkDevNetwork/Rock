@@ -46,6 +46,7 @@ namespace Rock.UniversalSearch.Crawler
         private string _startUrl = string.Empty;
         private CookieContainer _cookieContainer = null;
         private Queue<string> _urlQueue = new Queue<string>();
+        private HashSet<long> _pageHashes = new HashSet<long>();
 
         string[] nonLinkStartsWith = new string[] { "#", "javascript:", "mailto:" };
         #endregion
@@ -83,8 +84,11 @@ namespace Rock.UniversalSearch.Crawler
         /// <returns></returns>
         public int CrawlSite( Site site, string loginId, string password )
         {
-            _site = site;
+            // Delete the indicies for the site that is being indexed.
+            IndexContainer.DeleteDocumentByProperty( typeof( SitePageIndex ), "SiteId", site.Id );
 
+            _site = site;
+            
             _startUrl = _site.IndexStartingLocation;
             var startingUri = new Uri( _startUrl );
 
@@ -180,7 +184,14 @@ namespace Rock.UniversalSearch.Crawler
                                     sitePage.PageKeywords = metaKeynotes.Attributes["content"].Value;
                                 }
 
-                                IndexContainer.IndexDocument( sitePage );
+                                // Get a hash of the content and check it against a list of to see if page has already been indexed, if not then index it and add it to the list.
+                                long contentHash = sitePage.Content.MakeInt64HashCode();
+
+                                if ( !_pageHashes.Contains( contentHash ) )
+                                {
+                                    IndexContainer.IndexDocument( sitePage );
+                                    _pageHashes.Add( contentHash );
+                                }
                             }
 
                             if ( metaRobot == null || metaRobot.Attributes["content"] == null || !metaRobot.Attributes["content"].Value.Contains( "nofollow" ) )
