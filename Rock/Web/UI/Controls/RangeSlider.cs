@@ -29,7 +29,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The minimum.
         /// </value>
-        public decimal? MinValue { get; set; }
+        public int? MinValue { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum value (defaults to 100)
@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The maximum.
         /// </value>
-        public decimal? MaxValue { get; set; }
+        public int? MaxValue { get; set; }
 
         /// <summary>
         /// Gets or sets the step value (defaults to 1)
@@ -53,11 +53,11 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected value.
         /// </value>
-        public decimal? SelectedValue
+        public int? SelectedValue
         {
             get
             {
-                return this.Text.AsDecimalOrNull();
+                return this.Text.AsIntegerOrNull();
             }
 
             set
@@ -89,7 +89,7 @@ namespace Rock.Web.UI.Controls
         private void RegisterJavascript()
         {
             var script = string.Format(
-                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', step:'{3}', from: '{4}' }});",
+                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', step:'{3}', from: '{4}' }});"
                 this.ClientID,
                 this.MinValue ?? 0,
                 this.MaxValue ?? 100,
