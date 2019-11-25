@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -38,6 +39,7 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Merge" )]
     [Category( "CRM" )]
     [Description( "Merges two or more person records into one." )]
+    [SecurityAction( SecurityActionKey.ViewAllAttributes, "Grants permission to view all person attribute values." )]
 
     [BooleanField( "Reset Login Confirmation",
         "When merging people that have different email addresses, should the logins for those people be updated to require a reconfirmation of the selected email address before being able to login? This is typically enabled as a precaution to prevent someone maliciously obtaining another person's login information simply by creating a duplicate account with same name but different login.",
@@ -45,6 +47,18 @@ namespace RockWeb.Blocks.Crm
     [LinkedPage( "Person Detail Page", "The page to navigate to after the merge is completed.", true, "", "", 1 )]
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Security Actions.
+        /// </summary>
+        public static class SecurityActionKey
+        {
+            public const string ViewAllAttributes = "ViewAllAttributes";
+        }
+
+        #endregion
+
         #region Constants
 
         private const string FAMILY_VALUES = "FamilyValues";
@@ -206,7 +220,7 @@ validity of the request before completing this merge." :
                         .ToList();
 
                     // Create the data structure used to build grid
-                    MergeData = new MergeData( people, headingKeys, CurrentPerson );
+                    MergeData = new MergeData( people, headingKeys, CurrentPerson, IsUserAuthorized( PersonMerge.SecurityActionKey.ViewAllAttributes ) );
                     MergeData.EntitySetId = setId.Value;
                     BuildColumns();
                     BindGrid();
@@ -263,7 +277,7 @@ validity of the request before completing this merge." :
                     .ToList();
 
                 // Rebuild mergdata, columns, and grid
-                MergeData = new MergeData( people, headingKeys, CurrentPerson );
+                MergeData = new MergeData( people, headingKeys, CurrentPerson, IsUserAuthorized( PersonMerge.SecurityActionKey.ViewAllAttributes ) );
                 BuildColumns();
                 BindGrid();
             }
@@ -292,7 +306,7 @@ validity of the request before completing this merge." :
                     .ToList();
 
                 // Rebuild mergedata, columns, and grid
-                MergeData = new MergeData( people, headingKeys, CurrentPerson );
+                MergeData = new MergeData( people, headingKeys, CurrentPerson, IsUserAuthorized( PersonMerge.SecurityActionKey.ViewAllAttributes ) );
                 BuildColumns();
                 BindGrid();
             }
@@ -890,6 +904,9 @@ validity of the request before completing this merge." :
 
                 nbSecurityNotice.Visible = showAlert;
 
+                // If the values of any hidden Attributes differ, display warning message.
+                SetAttributesSecurityNoticeState();
+
                 foreach ( var col in gValues.Columns.OfType<MergePersonField>() )
                 {
                     col.IsPrimaryPerson = col.PersonId == MergeData.PrimaryPersonId;
@@ -903,6 +920,21 @@ validity of the request before completing this merge." :
                 gValues.DataSource = valuesRowList;
                 gValues.DataBind();
             }
+        }
+
+        /// <summary>
+        /// Show or hide the Attributes security warning.
+        /// </summary>
+        private void SetAttributesSecurityNoticeState()
+        {
+            // Show a warning if there are any properties with differing values that the current user does not have permission to view.
+            var conflictingHiddenProperties = MergeData.Properties.Where( p => !p.HasViewPermission
+                                                        && ( p.Values.Select( v => v.Value ).Distinct().Count() > 1 ) )
+                                              .ToList();
+
+            var showWarning = conflictingHiddenProperties.Any();
+
+            nbPermissionNotice.Visible = showWarning;
         }
 
         /// <summary>
@@ -1021,6 +1053,18 @@ validity of the request before completing this merge." :
     [Serializable]
     class MergeData
     {
+        #region Developer Settings
+
+        /*
+            [01-Dec-2019 - DL]
+            This switch determines if conflicting merge properties for which the user does not have view permission should be excluded from the merge data
+            or included as a set of masked values.
+            Per the product owner, this option should only be enabled for development and diagnostic purposes.
+        */
+        private const bool _ShowSecuredProperties = false;
+
+        #endregion
+
         #region Constants
 
         private const string FAMILY_VALUES = "FamilyValues";
@@ -1080,7 +1124,10 @@ validity of the request before completing this merge." :
         /// Initializes a new instance of the <see cref="MergeData"/> class.
         /// </summary>
         /// <param name="people">The people.</param>
-        public MergeData( List<Person> people, List<string> headingKeys, Person currentPerson )
+        /// <param name="headingKeys">The key values of the merge categories to display.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <param name="grantPermissionForAllAttributes">Should the current user be granted permission to view all secured Attributes?</param>
+        public MergeData( List<Person> people, List<string> headingKeys, Person currentPerson, bool grantPermissionForAllAttributes )
         {
             People = new List<MergePerson>();
             Properties = new List<PersonProperty>();
@@ -1117,17 +1164,22 @@ validity of the request before completing this merge." :
                 }
             }
 
+            var hiddenAttributeKeys = new List<string>();
+
             foreach ( var person in people )
             {
                 AddProperty( "PersonAttributes", "Person Attributes", 0, string.Empty );
                 person.LoadAttributes();
                 foreach ( var attribute in person.Attributes.OrderBy( a => a.Value.Order ) )
                 {
-                    // To avoid data loss we will no longer check attribute.Value.IsAuthorized() for the current person.
                     string value = person.GetAttributeValue( attribute.Key );
                     bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
                     string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
-                    AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, false, attribute.Value );
+
+                    var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
+                                            || grantPermissionForAllAttributes;
+
+                    AddProperty( "attr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );                    
                 }
             }
 
@@ -1147,11 +1199,14 @@ validity of the request before completing this merge." :
                     family.LoadAttributes();
                     foreach ( var attribute in family.Attributes.OrderBy( a => a.Value.Order ) )
                     {
-                        // To avoid data loss we will no longer check VIEW attribute.Value.IsAuthorized() for the current person.
                         string value = family.GetAttributeValue( attribute.Key );
                         bool condensed = attribute.Value.FieldType.Class == typeof( Rock.Field.Types.ImageFieldType ).FullName;
                         string formattedValue = attribute.Value.FieldType.Field.FormatValue( null, attribute.Value.EntityTypeId, person.Id, value, attribute.Value.QualifierValues, condensed );
-                        AddProperty( "groupattr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, false, attribute.Value );
+
+                        var hasViewPermission = attribute.Value.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson )
+                                                || grantPermissionForAllAttributes;
+
+                        AddProperty( "groupattr_" + attribute.Key, attribute.Value.Name, person.Id, value, formattedValue, hasViewPermission, selected: false, attribute: attribute.Value );
                     }
                 }
             }
@@ -1254,8 +1309,11 @@ validity of the request before completing this merge." :
 
             ValuesRow headingRow = null;
 
-            // Only show properties that for the selected headingKeys, and have more than one distinct value build the row data
-            var visibleProperties = Properties.Where( p => headingKeys.Contains( p.Key ) || p.Values.Select( v => v.Value ).Distinct().Count() > 1 ).ToList();
+            // Only show properties that match the selected headingKeys, and have more than one distinct value.
+            var visibleProperties = Properties.Where( p => ( p.HasViewPermission || _ShowSecuredProperties )
+                                                           && ( headingKeys.Contains( p.Key ) || p.Values.Select( v => v.Value ).Distinct().Count() > 1 ) )
+                                              .ToList();
+
             foreach ( var personProperty in visibleProperties )
             {
                 var valuesRow = new ValuesRow();
@@ -1266,8 +1324,25 @@ validity of the request before completing this merge." :
                     ValuesRowPersonPersonProperty valuesRowPersonPersonProperty = new ValuesRowPersonPersonProperty();
                     valuesRowPersonPersonProperty.Person = person;
                     valuesRowPersonPersonProperty.PersonProperty = personProperty;
-                    valuesRowPersonPersonProperty.PersonPropertyValue = personProperty.Values.Where( v => v.PersonId == person.Id ).FirstOrDefault();
-                    valuesRow.PersonPersonPropertyList.Add( valuesRowPersonPersonProperty );
+
+                    bool addValuesRow;
+
+                    if ( personProperty.HasViewPermission )
+                    {
+                        valuesRowPersonPersonProperty.PersonPropertyValue = personProperty.Values.Where( v => v.PersonId == person.Id ).FirstOrDefault();
+                        addValuesRow = true;
+                    }
+                    else
+                    {
+                        // The current user does not have permission to view the property, so mask the value.
+                        valuesRowPersonPersonProperty.PersonPropertyValue = new PersonPropertyValue() { PersonId = person.Id, Selected = false, Value = null, FormattedValue = "<span class='label label-danger'>secured</span>" };
+                        addValuesRow = _ShowSecuredProperties;
+                    }
+
+                    if ( addValuesRow )
+                    {
+                        valuesRow.PersonPersonPropertyList.Add( valuesRowPersonPersonProperty );
+                    }
                 }
 
                 if ( headingKeys.Contains( personProperty.Key ) )
@@ -1328,23 +1403,37 @@ validity of the request before completing this merge." :
                 person.ContributionFinancialAccount != null ? person.ContributionFinancialAccount.PublicName : string.Empty );
         }
 
-        private void AddProperty( string key, int personId, string value, bool selected = false )
+        private void AddProperty( string key, int personId, string value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, key.SplitCase(), personId, value, value, selected );
+            AddProperty( key, key.SplitCase(), personId, value, value, hasViewPermission, selected: selected );
         }
 
-        private void AddProperty( string key, string label, int personId, string value, bool selected = false )
+        private void AddProperty( string key, string label, int personId, string value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, label, personId, value, value, selected );
+            AddProperty( key, label, personId, value, value, hasViewPermission, selected: selected );
         }
 
-        private void AddProperty( string key, string label, int personId, string value, string formattedValue, bool selected = false, AttributeCache attribute = null )
+        /// <summary>
+        /// Adds a merge property value for the specified person.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="label"></param>
+        /// <param name="personId"></param>
+        /// <param name="value"></param>
+        /// <param name="formattedValue"></param>
+        /// <param name="selected"></param>
+        /// <param name="attribute"></param>
+        /// <param name=""></param>
+        private void AddProperty( string key, string label, int personId, string value, string formattedValue, bool hasViewPermission = true, bool selected = false, AttributeCache attribute = null )
         {
             var property = GetProperty( key, true, label );
             if ( attribute != null )
             {
                 property.AttributeId = attribute.Id;
             }
+
+            property.HasViewPermission = hasViewPermission;
+
             var propertyValue = property.Values.Where( v => v.PersonId == personId ).FirstOrDefault();
             if ( propertyValue == null )
             {
@@ -1356,14 +1445,17 @@ validity of the request before completing this merge." :
             propertyValue.Selected = selected;
         }
 
-        private void AddProperty( string key, int personId, DefinedValue value, bool selected = false )
+        private void AddProperty( string key, int personId, DefinedValue value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, key.SplitCase(), personId, value, selected );
+            AddProperty( key, key.SplitCase(), personId, value, hasViewPermission, selected );
         }
 
-        private void AddProperty( string key, string label, int personId, DefinedValue value, bool selected = false )
+        private void AddProperty( string key, string label, int personId, DefinedValue value, bool hasViewPermission = true, bool selected = false )
         {
             var property = GetProperty( key, true, label );
+
+            property.HasViewPermission = hasViewPermission;
+
             var propertyValue = property.Values.Where( v => v.PersonId == personId ).FirstOrDefault();
             if ( propertyValue == null )
             {
@@ -1375,19 +1467,19 @@ validity of the request before completing this merge." :
             propertyValue.Selected = selected;
         }
 
-        private void AddProperty( string key, int personId, bool? value, bool selected = false )
+        private void AddProperty( string key, int personId, bool? value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, personId, ( value ?? false ).ToString(), selected );
+            AddProperty( key, personId, ( value ?? false ).ToString(), hasViewPermission, selected );
         }
 
-        private void AddProperty( string key, int personId, DateTime? value, bool selected = false )
+        private void AddProperty( string key, int personId, DateTime? value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, personId, value.HasValue ? value.Value.ToShortDateString() : string.Empty, selected );
+            AddProperty( key, personId, value.HasValue ? value.Value.ToShortDateString() : string.Empty, hasViewPermission, selected );
         }
 
-        private void AddProperty( string key, int personId, Enum value, bool selected = false )
+        private void AddProperty( string key, int personId, Enum value, bool hasViewPermission = true, bool selected = false )
         {
-            AddProperty( key, key.SplitCase(), personId, value.ConvertToString( false ), value.ConvertToString(), selected );
+            AddProperty( key, key.SplitCase(), personId, value.ConvertToString( false ), value.ConvertToString(), hasViewPermission, selected: selected );
         }
 
         public PersonProperty GetProperty( string key, bool createIfNotFound = false, string label = "" )
@@ -1464,6 +1556,11 @@ validity of the request before completing this merge." :
         public string Label { get; set; }
         public int? AttributeId { get; set; }
         public List<PersonPropertyValue> Values { get; set; }
+
+        /// <summary>
+        /// Does the current user have view permission for this property?
+        /// </summary>
+        public bool HasViewPermission { get; set; }
 
         public PersonProperty()
         {
