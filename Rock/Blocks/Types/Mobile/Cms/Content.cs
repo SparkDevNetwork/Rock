@@ -20,7 +20,7 @@ using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Mobile.Common.Blocks.Content;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Displays custom XAML content on the page.
@@ -28,7 +28,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Content" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Displays custom XAML content on the page." )]
     [IconCssClass( "fa fa-align-center" )]
 
