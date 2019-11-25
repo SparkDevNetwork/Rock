@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Scheduled Transaction Summary" )]
     [Category( "Finance" )]
     [Description( "Block that shows a summary of the scheduled transactions for the currently logged in user." )]
-    [CodeEditorField( "Template", "Lava template for the content to be placed on the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionSummary.lava'  %}", "", 1 )]
+    [CodeEditorField( "Template", "Lava template for the content to be placed on the page.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/ScheduledTransactionSummary.lava' %}", "", 1 )]
     [LinkedPage("Manage Scheduled Transactions Page", "Link to be used for managing an individual's scheduled transactions.", false, "", "", 3)]
     [LinkedPage( "Transaction History Page", "Link to use for viewing an individual's transaction history.", false, "", "", 4 )]
     [LinkedPage("Transaction Entry Page", "Link to use when adding new transactions.", false, "", "", 5)]

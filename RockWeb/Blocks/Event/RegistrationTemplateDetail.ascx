@@ -73,7 +73,7 @@
                                             AutoPostBack="true" OnCheckedChanged="cbMultipleRegistrants_CheckedChanged" />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
+                                        <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Max Registrants Per Registration"
                                          Help="The maximum number of registrants that a person is allowed to register at one time. Leave blank for unlimited." Visible="false" />
                                     </div>
                                 </div>
@@ -87,7 +87,7 @@
                                                 Help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                         </div>
 
-                                        <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Check to enable a 'wait list' once the registration's maximum attendees has been reached." />
+                                        <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Check to enable a 'wait list' once the registration's maximum attendees has been reached. The 'Maximum Attendees' must be set on the registration instance for this feature to work." />
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
@@ -577,36 +577,38 @@
                     return ui;
                 };
 
-                $('#cb-showdetails').change(function () {
+                $('#cb-showdetails').on('change', function () {
                     $('#registration-details').slideDown();
                     $('#registration-detailscheckbox').slideUp();
                 });
 
-                $('.js-expandable-summary-wrapper > label.control-label').click(function () {
+                $('.js-expandable-summary-wrapper > label.control-label').on('click', function () {
                     $(this).closest('.js-expandable-summary-wrapper').find('.js-expandable-summary').toggle(500);
                 })
 
                 // NOTE: js-optional-form-list is a div created in codebehind around the optional forms
                 var $formList = $('.js-optional-form-list');
 
-                $formList.sortable({
-                    helper: fixHelper,
-                    handle: '.form-reorder',
-                    containment: 'parent',
-                    tolerance: 'pointer',
-                    start: function (event, ui) {
-                        {
-                            var start_pos = ui.item.index();
-                            ui.item.data('start_pos', start_pos);
+                if ($formList.length > 0) {
+                    $formList.sortable({
+                        helper: fixHelper,
+                        handle: '.form-reorder',
+                        containment: 'parent',
+                        tolerance: 'pointer',
+                        start: function (event, ui) {
+                            {
+                                var start_pos = ui.item.index();
+                                ui.item.data('start_pos', start_pos);
+                            }
+                        },
+                        update: function (event, ui) {
+                            {
+                                var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
+                            }
                         }
-                    },
-                    update: function (event, ui) {
-                        {
-                            var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
-                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
-                        }
-                    }
-                });
+                    });
+                }
 
             });
         </script>

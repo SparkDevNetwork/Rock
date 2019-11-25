@@ -29,6 +29,7 @@ namespace Rock.Model
     /// <summary>
     /// Model for filtering entities by campus.
     /// </summary>
+    /// <seealso cref="T:Rock.Data.Model{Rock.Model.EntityCampusFilter}" />
     [RockDomain( "Core" )]
     [NotAudited]
     [Table( "EntityCampusFilter" )]
@@ -95,6 +96,7 @@ namespace Rock.Model
     /// <summary>
     /// EntityCampusFilterConfiguration class
     /// </summary>
+    /// <seealso cref="T:System.Data.Entity.ModelConfiguration.EntityTypeConfiguration{Rock.Model.EntityCampusFilter}" />
     public partial class EntityCampusFilterConfiguration : EntityTypeConfiguration<EntityCampusFilter>
     {
         /// <summary>

@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     function clearActiveDialog() {
-        $('#<%= btnHideDialog.ClientID %>').click();
+        $('#<%= btnHideDialog.ClientID %>').trigger('click');
     }
 
     function updateField(obj) {

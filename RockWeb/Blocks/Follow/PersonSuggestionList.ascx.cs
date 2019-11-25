@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Follow
             gSuggestions.Actions.AddCustomActionControl( lbIgnore );
 
             string ignoreScript = @"
-    $('a.js-ignore').click(function( e ){
+    $('a.js-ignore').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to ignore the selected people?', function (result) {
             if (result) {
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Follow
                         suggestion.Status = FollowingSuggestedStatus.Ignored;
                     }
 
-                    rockContext.SaveChanges(); 
+                    rockContext.SaveChanges();
                 }
             }
 
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Follow
                         s.PersonAliasId == CurrentPersonAlias.Id )
                     .Join( personAliasQry, s => s.EntityId, p => p.Id, ( s, p ) => new { s, p } )
                     .Where( j => !followedPersonIds.Contains( j.p.PersonId ) )
-                    .Select( j => new 
+                    .Select( j => new
                     {
                         j.s.Id,
                         j.s.LastPromotedDateTime,

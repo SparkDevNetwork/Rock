@@ -121,7 +121,7 @@ namespace Rock.Chart
         public string GetJson()
         {
             // Return the chart configuration using the default layout - width determined by container, aspect ratio not preserved.
-            return GetJson( sizeToFitContainerWidth:true, maintainAspectRatio:false );
+            return GetJson( sizeToFitContainerWidth: true, maintainAspectRatio: false );
         }
 
         /// <summary>
@@ -142,6 +142,18 @@ namespace Rock.Chart
         /// <param name="maintainAspectRatio">if set to <c>true</c> [maintain aspect ratio].</param>
         /// <returns></returns>
         public string GetJson( bool sizeToFitContainerWidth, bool maintainAspectRatio )
+        {
+            return GetJson( sizeToFitContainerWidth, maintainAspectRatio, true );
+        }
+
+        /// <summary>
+        /// Get the chart configuration in JSON format that is compatible for use with the Chart.js component.
+        /// </summary>
+        /// <param name="sizeToFitContainerWidth">if set to <c>true</c> [size to fit container width].</param>
+        /// <param name="maintainAspectRatio">if set to <c>true</c> [maintain aspect ratio].</param>
+        /// <param name="displayLegend">Should the legend be displayed</param>
+        /// <returns></returns>
+        public string GetJson( bool sizeToFitContainerWidth, bool maintainAspectRatio, bool displayLegend )
         {
             // Create the data structure for Chart.js parameter "data.datasets".
             dynamic chartData;
@@ -189,7 +201,7 @@ namespace Rock.Chart
 
             var optionsYaxes = new List<object>() { new { ticks = new { beginAtZero = true, suggestedMax, stepSize }, stacked = isStacked } };
 
-            var optionsLegend = new { position = "bottom", display = true };
+            var optionsLegend = new { position = "bottom", display = displayLegend };
 
             // Create the data structure for Chart.js parameter "options".
 
@@ -735,7 +747,7 @@ namespace Rock.Chart
 
                 foreach ( var categoryName in categoryNames )
                 {
-                    var localMaxValue = dataPoints.Where(x => x.Category == categoryName ).Sum( x => x.Value );
+                    var localMaxValue = dataPoints.Where( x => x.Category == categoryName ).Sum( x => x.Value );
 
                     if ( localMaxValue > maxValue )
                     {

@@ -473,58 +473,61 @@ namespace Rock.Model
         public void PersistResult( int? databaseTimeoutSeconds = null )
         {
             List<string> errorMessages;
-            var dbContext = this.GetDbContext();
 
-            DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
-
-            // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
-            dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
-
-            var qry = this.GetQuery( null, dbContext, dataViewFilterOverrides, databaseTimeoutSeconds, out errorMessages );
-            if ( !errorMessages.Any() )
+            using ( var dbContext = this.GetDbContext() )
             {
-                RockContext rockContext = dbContext as RockContext;
-                if ( rockContext == null )
+                DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
+
+                // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
+                dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
+
+                var qry = this.GetQuery( null, dbContext, dataViewFilterOverrides, databaseTimeoutSeconds, out errorMessages );
+                if ( !errorMessages.Any() )
                 {
-                    rockContext = new RockContext();
-                }
+                    RockContext rockContext = dbContext as RockContext;
+                    if ( rockContext == null )
+                    {
+                        rockContext = new RockContext();
+                    }
 
-                rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
-                var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
+                    rockContext.Database.CommandTimeout = databaseTimeoutSeconds;
+                    var savedDataViewPersistedValues = rockContext.DataViewPersistedValues.Where( a => a.DataViewId == this.Id );
 
-                var updatedEntityIdsQry = qry.Select( a => a.Id );
+                    var updatedEntityIdsQry = qry.Select( a => a.Id );
 
-                if ( !( rockContext is RockContext ) )
-                {
-                    // if this DataView doesn't use a RockContext get the EntityIds into memory as as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
-                    updatedEntityIdsQry = updatedEntityIdsQry.ToList().AsQueryable();
-                }
+                    if ( !( rockContext is RockContext ) )
+                    {
+                        // if this DataView doesn't use a RockContext get the EntityIds into memory as as a List<int> then back into IQueryable<int> so that we aren't use multiple dbContexts
+                        updatedEntityIdsQry = updatedEntityIdsQry.ToList().AsQueryable();
+                    }
 
-                var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
-                var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
+                    var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
+                    var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
 
-                int removeCount = persistedValuesToRemove.Count();
-                if ( removeCount > 0 )
-                {
-                    // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
-                    int? deleteBatchSize = removeCount > 50000 ? 25000 : ( int? ) null;
+                    int removeCount = persistedValuesToRemove.Count();
+                    if ( removeCount > 0 )
+                    {
+                        // increase the batch size if there are a bunch of rows (and this is a narrow table with no references to it)
+                        int? deleteBatchSize = removeCount > 50000 ? 25000 : ( int? ) null;
 
-                    int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove, deleteBatchSize );
-                }
+                        int rowRemoved = rockContext.BulkDelete( persistedValuesToRemove, deleteBatchSize );
+                    }
 
-                if ( persistedEntityIdsToInsert.Any() )
-                {
-                    List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert.OrderBy( a => a )
-                        .Select( a =>
-                        new DataViewPersistedValue
-                        {
-                            DataViewId = this.Id,
-                            EntityId = a
-                        } ).ToList();
+                    if ( persistedEntityIdsToInsert.Any() )
+                    {
+                        List<DataViewPersistedValue> persistedValuesToInsert = persistedEntityIdsToInsert.OrderBy( a => a )
+                            .Select( a =>
+                            new DataViewPersistedValue
+                            {
+                                DataViewId = this.Id,
+                                EntityId = a
+                            } ).ToList();
 
-                    rockContext.BulkInsert( persistedValuesToInsert );
+                        rockContext.BulkInsert( persistedValuesToInsert );
+                    }
                 }
             }
+
         }
 
         /// <summary>

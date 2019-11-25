@@ -22,7 +22,7 @@ namespace Rock.Constants
     /// This class holds Rock's well known System Setting keys.
     /// </summary>
     [Obsolete( "Use Rock.SystemKey.SystemSetting instead" )]
-    [RockObsolete( "1.10" )]
+    [RockObsolete( "1.10")]
     public static class SystemSettingKeys
     {
         /// <summary>
@@ -30,14 +30,14 @@ namespace Rock.Constants
         /// The value it stores is the current version of Rock for that installation.
         /// </summary>
         [Obsolete( "Use Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID instead" )]
-        [RockObsolete( "1.10" )]
+        [RockObsolete( "1.10")]
         public static readonly string ROCK_INSTANCE_ID = Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID;
 
         /// <summary>
         /// Holds the System Setting key for the sample data load date/time.
         /// </summary>
         [Obsolete( "Use Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE instead" )]
-        [RockObsolete( "1.10" )]
+        [RockObsolete( "1.10")]
         public static readonly string SAMPLEDATA_DATE = Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE;
     }
 }

@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('div.js-family-select').click(function () {
+        $('div.js-family-select').on('click', function () {
 
             var $familySelectDiv = $(this);
 
@@ -21,7 +21,7 @@
             var $familySelectBtn = $familySelectDiv.find('a');
             $familySelectBtn.attr('data-loading-text', 'Loading...');
             Rock.controls.bootstrapButton.showLoading($familySelectBtn);
-            
+
             window.location = 'javascript: ' + postbackUrl;
         });
 
