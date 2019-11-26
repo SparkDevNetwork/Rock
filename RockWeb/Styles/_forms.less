@@ -302,6 +302,16 @@ dl:not(.dl-horizontal) {
     float: left;
     margin-top: 8px;
   }
+
+  .form-group-auto & {
+    display: -ms-flexbox;
+    display: flex;
+
+    .form-control {
+      -ms-flex: 1 1 0;
+      flex: 1 1 0;
+    }
+  }
 }
 
 // change margins in panel headings
