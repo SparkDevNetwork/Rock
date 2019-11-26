@@ -89,7 +89,7 @@ namespace Rock.Web.UI.Controls
         private void RegisterJavascript()
         {
             var script = string.Format(
-                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', step:'{3}', from: '{4}' }});"
+                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', step:'{3}', from: '{4}' }});",
                 this.ClientID,
                 this.MinValue ?? 0,
                 this.MaxValue ?? 100,
