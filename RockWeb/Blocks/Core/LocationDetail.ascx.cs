@@ -171,8 +171,6 @@ namespace RockWeb.Blocks.Core
 
                 locationService.Delete( location );
                 rockContext.SaveChanges();
-
-                Rock.CheckIn.KioskDevice.Clear();
             }
 
             // reload page, selecting the deleted location's parent
@@ -293,21 +291,12 @@ namespace RockWeb.Blocks.Core
 
             } );
 
-            // If this is a names location (or was previously)
-            if ( !string.IsNullOrWhiteSpace( location.Name ) || ( previousName ?? string.Empty ) != (location.Name ?? string.Empty ) )
-            {
-                // flush the checkin config
-                Rock.CheckIn.KioskDevice.Clear();
-            }
-
             if ( _personId.HasValue )
             {
                 NavigateToParentPage( new Dictionary<string, string> { { "PersonId", _personId.Value.ToString() } } );
             }
             else
             {
-                Rock.CheckIn.KioskDevice.Clear();
-
                 var qryParams = new Dictionary<string, string>();
                 qryParams["LocationId"] = location.Id.ToString();
                 qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );

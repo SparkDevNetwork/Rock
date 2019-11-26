@@ -189,8 +189,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentGroupType.ChildGroupTypes.Add( checkinArea );
 
                     rockContext.SaveChanges();
-                    
-                    Rock.CheckIn.KioskDevice.Clear();
 
                     SelectArea( newGuid );
                 }
@@ -231,8 +229,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentArea.ChildGroupTypes.Add( checkinArea );
 
                     rockContext.SaveChanges();
-                    
-                    Rock.CheckIn.KioskDevice.Clear();
 
                     SelectArea( newGuid );
                 }
@@ -265,8 +261,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     parentArea.Groups.Add( checkinGroup );
 
                     rockContext.SaveChanges();
-                    
-                    Rock.CheckIn.KioskDevice.Clear();
 
                     SelectGroup( newGuid );
                 }
@@ -301,8 +295,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     groupService.Add( checkinGroup );
 
                     rockContext.SaveChanges();
-
-                    Rock.CheckIn.KioskDevice.Clear();
 
                     SelectGroup( newGuid );
                 }
@@ -347,9 +339,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                             group.IsActive = false; //Inactivate if attendance
                         }
                     }
-                    rockContext.SaveChanges();
 
-                    Rock.CheckIn.KioskDevice.Clear();
+                    rockContext.SaveChanges();
 
                     SelectGroup( null );
                 }
@@ -564,8 +555,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                             }
 
                             rockContext.SaveChanges();
-                            
-                            Rock.CheckIn.KioskDevice.Clear();
 
                             nbSaveSuccess.Visible = true;
                             BuildRows();
@@ -615,8 +604,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         {
                             rockContext.SaveChanges();
                             group.SaveAttributeValues( rockContext );
-
-                            Rock.CheckIn.KioskDevice.Clear();
+                            
                             nbSaveSuccess.Visible = true;
                             BuildRows();
                         }
@@ -667,9 +655,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                         groupType.ChildGroupTypes.Clear();
                         groupTypeService.Delete( groupType );
                         rockContext.SaveChanges();
-                        Rock.CheckIn.KioskDevice.Clear();
-
                     }
+
                     SelectArea( null );
                 }
 
@@ -690,7 +677,6 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                         groupService.Delete( group ); //Delete if group isn't active
                         rockContext.SaveChanges();
-                        Rock.CheckIn.KioskDevice.Clear();
                         SelectGroup( null );
                     }
                 }
@@ -922,8 +908,6 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 rockContext.SaveChanges();
             }
-
-            Rock.CheckIn.KioskDevice.Clear();
 
             BuildRows();
         }

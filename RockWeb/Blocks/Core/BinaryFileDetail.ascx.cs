@@ -405,19 +405,6 @@ namespace RockWeb.Blocks.Core
                 binaryFile.SaveAttributeValues( rockContext );
             } );
 
-            Rock.CheckIn.KioskLabel.Remove( binaryFile.Guid );
-
-            if ( !prevBinaryFileTypeId.Equals( binaryFile.BinaryFileTypeId ) )
-            {
-                var checkInBinaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
-                if ( checkInBinaryFileType != null && (
-                    ( prevBinaryFileTypeId.HasValue && prevBinaryFileTypeId.Value == checkInBinaryFileType.Id ) ||
-                    ( binaryFile.BinaryFileTypeId.HasValue && binaryFile.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) ) )
-                {
-                    Rock.CheckIn.KioskDevice.Clear();
-                }
-            }
-
             NavigateToParentPage();
         }
 

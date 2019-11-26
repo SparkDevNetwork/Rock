@@ -39,7 +39,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFile" )]
     [DataContract]
-    public partial class BinaryFile : Model<BinaryFile>
+    public partial class BinaryFile : Model<BinaryFile>, ICacheable
     {
         #region Entity Properties
 
@@ -321,7 +321,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [HideFromReporting]
-        public virtual Dictionary<string,string> StorageSettings
+        public virtual Dictionary<string, string> StorageSettings
         {
             get
             {
@@ -395,7 +395,7 @@ namespace Rock.Model
                         {
                             if ( BinaryFileType.MaxHeight.HasValue &&
                                 BinaryFileType.MaxHeight != 0 &&
-                                BinaryFileType.MaxWidth.HasValue && 
+                                BinaryFileType.MaxWidth.HasValue &&
                                 BinaryFileType.MaxWidth != 0 )
                             {
                                 ResizeSettings settings = new ResizeSettings();
@@ -581,6 +581,20 @@ namespace Rock.Model
             {
                 return this.BinaryFileType != null ? this.BinaryFileType : base.ParentAuthority;
             }
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            Rock.CheckIn.KioskLabel.FlushItem( this.Id );
+        }
+
+        public IEntityCache GetCacheObject()
+        {
+            return null;
         }
 
         #endregion

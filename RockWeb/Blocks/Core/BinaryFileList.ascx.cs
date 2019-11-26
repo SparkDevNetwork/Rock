@@ -144,16 +144,9 @@ namespace RockWeb.Blocks.Core
                 }
 
                 Guid guid = binaryFile.Guid;
-                bool clearDeviceCache = binaryFile.BinaryFileType.Guid.Equals( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
 
                 binaryFileService.Delete( binaryFile );
                 rockContext.SaveChanges();
-
-                if ( clearDeviceCache )
-                {
-                    Rock.CheckIn.KioskDevice.Clear();
-                    Rock.CheckIn.KioskLabel.Remove( guid );
-                }
             }
 
             BindGrid();

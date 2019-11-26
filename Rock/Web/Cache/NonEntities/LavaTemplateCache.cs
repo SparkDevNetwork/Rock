@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using DotLiquid;
 
@@ -107,11 +106,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// The loaded keys
-        /// </summary>
-        private static ConcurrentDictionary<string, byte> loadedKeys = new ConcurrentDictionary<string, byte>();
-
-        /// <summary>
         /// Loads the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
@@ -119,21 +113,8 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         private static LavaTemplateCache Load( string key, string content )
         {
-            loadedKeys.AddOrIgnore( key, ( byte ) 0 );
             var lavaTemplate = new LavaTemplateCache { Template = Template.Parse( content ) };
             return lavaTemplate;
-        }
-
-        /// <summary>
-        /// Flushes the cached templates.
-        /// </summary>
-        public static void FlushCachedTemplates()
-        {
-            foreach ( var loadedKey in loadedKeys.ToList() )
-            {
-                FlushItem( loadedKey.Key );
-                loadedKeys.TryRemove( loadedKey.Key, out _ );
-            }
         }
 
         #endregion

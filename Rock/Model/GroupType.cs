@@ -791,7 +791,7 @@ namespace Rock.Model
             set { _triggers = value; }
         }
         private ICollection<GroupMemberWorkflowTrigger> _triggers;
-        
+
         /// <summary>
         /// Gets or sets the group schedule exclusions.
         /// </summary>
@@ -931,8 +931,10 @@ namespace Rock.Model
         /// <summary>
         /// A dictionary of actions that this class supports and the description of each.
         /// </summary>
-        public override Dictionary<string, string> SupportedActions {
-            get {
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
                 if ( _supportedActions == null )
                 {
                     _supportedActions = new Dictionary<string, string>();
@@ -1001,7 +1003,7 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
         {
-            if (state == EntityState.Deleted)
+            if ( state == EntityState.Deleted )
             {
                 ChildGroupTypes.Clear();
 
@@ -1025,7 +1027,7 @@ namespace Rock.Model
                 var changeEntry = dbContext.ChangeTracker.Entries<GroupType>().Where( a => a.Entity == this ).FirstOrDefault();
                 if ( changeEntry != null )
                 {
-                    var originalIndexState = (bool)changeEntry.OriginalValues["IsIndexEnabled"];
+                    var originalIndexState = ( bool ) changeEntry.OriginalValues["IsIndexEnabled"];
 
                     if ( originalIndexState == true && IsIndexEnabled == false )
                     {
@@ -1225,6 +1227,11 @@ namespace Rock.Model
             }
 
             GroupTypeCache.UpdateCachedEntity( this.Id, entityState );
+
+            if ( this.TakesAttendance )
+            {
+                Rock.CheckIn.KioskDevice.ClearCachedItems();
+            }
         }
 
         #endregion

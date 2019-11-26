@@ -906,28 +906,9 @@ namespace RockWeb
 
             var all = FieldTypeCache.All();
 
-            // Read all the qualifiers first so that EF doesn't perform a query for each attribute when it's cached
-            var qualifiers = new Dictionary<int, Dictionary<string, string>>();
-            foreach ( var attributeQualifier in new Rock.Model.AttributeQualifierService( rockContext ).Queryable().AsNoTracking() )
-            {
-                try
-                {
-                    if ( !qualifiers.ContainsKey( attributeQualifier.AttributeId ) )
-                    {
-                        qualifiers.Add( attributeQualifier.AttributeId, new Dictionary<string, string>() );
-                    }
-
-                    qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
-                }
-                catch ( Exception ex )
-                {
-                    LogError( ex, null );
-                }
-            }
-
             // Cache all the attributes, except for user preferences
-            
-            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable( "Categories" );
+
+            var attributeQuery = new Rock.Model.AttributeService( rockContext ).Queryable().Include( a => a.Categories ).Include( a => a.AttributeQualifiers );
             int? personUserValueEntityTypeId = EntityTypeCache.GetId( Person.USER_VALUE_ENTITY );
             if (personUserValueEntityTypeId.HasValue)
             {
@@ -936,10 +917,7 @@ namespace RockWeb
 
             foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
             {
-                if ( qualifiers.ContainsKey( attribute.Id ) )
-                    Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
-                else
-                    Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
+                Rock.Web.Cache.AttributeCache.Get( attribute );
             }
 
             // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
@@ -1170,6 +1148,8 @@ namespace RockWeb
         /// </summary>
         public static void DrainTransactionQueue()
         {
+            return;
+
             // process the transaction queue
             if ( !Global.QueueInUse )
             {

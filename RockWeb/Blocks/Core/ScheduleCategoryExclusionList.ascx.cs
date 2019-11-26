@@ -162,8 +162,6 @@ namespace RockWeb.Blocks.Core
 
                     service.Delete( exclusion );
                     rockContext.SaveChanges();
-                    
-                    Rock.CheckIn.KioskDevice.Clear();
                 }
                 else
                 {
@@ -233,8 +231,6 @@ namespace RockWeb.Blocks.Core
             if ( exclusion.IsValid )
             {
                 rockContext.SaveChanges();
-                
-                Rock.CheckIn.KioskDevice.Clear();
 
                 hfIdValue.Value = string.Empty;
                 modalDetails.Hide();

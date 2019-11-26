@@ -113,6 +113,8 @@ namespace Rock.Model
         {
             // Update CategoryCache ScheduleExclusions
             CategoryCache.UpdateCachedEntity( this.CategoryId, entityState );
+
+            Rock.CheckIn.KioskDevice.ClearCachedItems();
         }
 
         #endregion

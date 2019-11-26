@@ -468,7 +468,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         {
                             location.SoftRoomThreshold = threshold;
                             rockContext.SaveChanges();
-                            Rock.CheckIn.KioskDevice.Clear();
                         }
                     }
 
@@ -589,7 +588,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                         {
                             location.IsActive = tgl.Checked;
                             rockContext.SaveChanges();
-                            Rock.CheckIn.KioskDevice.Clear();
                         }
                     }
                     NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.IsActive = tgl.Checked );
@@ -613,7 +611,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     {
                         location.SoftRoomThreshold = nbThreshold.Text.AsIntegerOrNull();
                         rockContext.SaveChanges();
-                        Rock.CheckIn.KioskDevice.Clear();
 
                         NavData.Locations.Where( l => l.Id == id.Value ).ToList().ForEach( l => l.SoftThreshold = softThreshold );
                     }

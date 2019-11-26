@@ -978,13 +978,11 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         location.IsActive = true;
                         rockContext.SaveChanges();
-                        KioskDevice.Clear();
                     }
                     else if ( e.CommandName == "Close" && location.IsActive )
                     {
                         location.IsActive = false;
                         rockContext.SaveChanges();
-                        KioskDevice.Clear();
                     }
                 }
 

@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.CheckIn
                                 if ( !groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
                                 {
                                     var schedule = scheduleService.Get( scheduleId );
-                                    groupLocation.Schedules.Add( schedule );
+                                    groupLocation.AddSchedule( schedule );
                                 }
                             }
                             else
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.CheckIn
                                 // This schedule is not selected, so if GroupLocationSchedule has this schedule, delete it
                                 if ( groupLocation.Schedules.Any( a => a.Id == scheduleId ) )
                                 {
-                                    groupLocation.Schedules.Remove( groupLocation.Schedules.FirstOrDefault( a => a.Id == scheduleId ) );
+                                    groupLocation.RemoveSchedule( groupLocation.Schedules.FirstOrDefault( a => a.Id == scheduleId ) );
                                 }
                             }
                         }
@@ -220,8 +220,6 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             rockContext.SaveChanges();
-
-            Rock.CheckIn.KioskDevice.Clear();
 
             if ( _groupTypeId.HasValue )
             {

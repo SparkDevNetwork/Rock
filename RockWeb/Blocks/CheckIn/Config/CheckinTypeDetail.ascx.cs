@@ -161,8 +161,6 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                 groupTypeService.Delete( groupType );
                 rockContext.SaveChanges();
-
-                Rock.CheckIn.KioskDevice.Clear();
             }
 
             var pageRef = new PageReference( CurrentPageReference.PageId, CurrentPageReference.RouteId );
@@ -338,8 +336,6 @@ namespace RockWeb.Blocks.CheckIn.Config
                     groupType = groupTypeService.Get( groupType.Id );
                     ShowReadonlyDetails( groupType );
                 }
-
-                Rock.CheckIn.KioskDevice.Clear();
             }
         }
 

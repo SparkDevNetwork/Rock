@@ -217,7 +217,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            // doesn't apply
+            // doesn't apply since KiockDevice isn't an IEntityCache
             return null;
         }
 

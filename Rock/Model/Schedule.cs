@@ -25,7 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using DDay.iCal;
-
+using Rock.CheckIn;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Schedule" )]
     [DataContract]
-    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag
+    public partial class Schedule : Model<Schedule>, ICategorized, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 
@@ -1050,6 +1050,29 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            // If this is a named schedule, it might be used by one or more kiosks
+            if ( this.Name.IsNotNullOrWhiteSpace() )
+            {
+                Rock.CheckIn.KioskDevice.ClearCachedItems();
+            }
+        }
+
+        public IEntityCache GetCacheObject()
+        {
+            return null;
+        }
+
+        #endregion ICacheable
 
         #region consts
 

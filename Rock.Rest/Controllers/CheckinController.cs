@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -54,6 +55,8 @@ namespace Rock.Rest.Controllers
             }
 
             LocalDeviceConfigurationStatus localDeviceConfigurationStatus = CheckinConfigurationHelper.GetLocalDeviceConfigurationStatus( localDeviceConfiguration, HttpContext.Current.Request );
+
+            Debug.WriteLine( localDeviceConfigurationStatus.ConfigurationHash );
 
             return localDeviceConfigurationStatus;
         }

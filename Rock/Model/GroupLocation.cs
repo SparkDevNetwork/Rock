@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -40,7 +41,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupLocation" )]
     [DataContract]
-    public partial class GroupLocation : Model<GroupLocation>, IOrdered
+    public partial class GroupLocation : Model<GroupLocation>, IOrdered, ICacheable
     {
         #region Entity Properties
 
@@ -188,6 +189,18 @@ namespace Rock.Model
 
         #region Public Methods
 
+        public void AddSchedule(Schedule schedule)
+        {
+            //this.Schedules.Add( schedule );
+            this.ModifiedDateTime = RockDateTime.Now;
+        }
+
+        public void RemoveSchedule( Schedule schedule )
+        {
+            //this.Schedules.Remove( schedule );
+            this.ModifiedDateTime = RockDateTime.Now;
+        }
+
         /// <summary>
         /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
@@ -282,6 +295,34 @@ namespace Rock.Model
         public override string ToString()
         {
             return Group.ToStringSafe() + " at " + Location.ToStringSafe();
+        }
+
+        #endregion
+
+        #region ICacheable
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
+        {
+            if ( this.Location.IsNamedLocation )
+            {
+                Rock.CheckIn.KioskDevice.ClearCachedItems();
+            }
+        }
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            // doesn't apply since GroupLocation isn't an IEntityCache
+            return null;
         }
 
         #endregion

@@ -36,6 +36,8 @@ namespace Rock.Web.Cache
 
         internal static string AllItemsKey => $"{typeof( T ).Name}:AllItems";
 
+        internal static string KeysCacheKey => $"{typeof( T ).Name}:KeysCache";
+
         #region Protected Methods
 
         /// <summary>
@@ -47,6 +49,12 @@ namespace Rock.Web.Cache
         {
             return $"{KeyPrefix}:{key}";
         }
+
+        /// <summary>
+        /// Gets if T is <see cref="IUseCacheRegion"></see>, returns the Region for the Cache to store this in
+        /// </summary>
+        /// <returns></returns>
+        internal protected static string RegionKey => $"Region:{KeyPrefix}";
 
         /// <summary>
         /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache.
@@ -93,7 +101,7 @@ namespace Rock.Web.Cache
         {
             string qualifiedKey = QualifiedKey( key );
 
-            var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey );
+            T value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey, RegionKey );
 
             if ( value != null )
             {
@@ -123,7 +131,7 @@ namespace Rock.Web.Cache
             string qualifiedKey = QualifiedKey( key );
 
             // Add the item to cache
-            RockCacheManager<T>.Instance.AddOrUpdate( qualifiedKey, item, expiration );
+            RockCacheManager<T>.Instance.AddOrUpdate( qualifiedKey, RegionKey, item, expiration );
 
             // Do any postcache processing that this item cache type may need to do
             item.PostCached();
@@ -156,7 +164,7 @@ namespace Rock.Web.Cache
         /// <param name="keyFactory">All keys factory.</param>
         internal protected static List<string> AddKeys( Func<List<string>> keyFactory )
         {
-            return AllKeysCache.AddAllKeys ( AllItemsKey, keyFactory );
+            return AllKeysCache.AddAllKeys( AllItemsKey, keyFactory );
         }
 
         #endregion
@@ -223,7 +231,7 @@ namespace Rock.Web.Cache
         {
             var qualifiedKey = QualifiedKey( key );
 
-            RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey );
+            RockCacheManager<T>.Instance.Cache.Remove( qualifiedKey, RegionKey );
         }
 
         /// <summary>
@@ -240,11 +248,16 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Removes all items of this type from cache.
         /// </summary>
-        [Obsolete( "#########Where is this used############" )]
+        [Obsolete( "This can cause performance issues. Use ClearCachedItems instead" )]
         public static void Clear()
         {
-            RockCacheManager<T>.Instance.Cache.Clear();
+            RockCacheManager<T>.Instance.Cache.ClearRegion( RegionKey );
+            AllKeysCache.FlushItem( AllItemsKey );
+        }
 
+        public static void ClearCachedItems()
+        {
+            RockCacheManager<T>.Instance.Cache.ClearRegion( RegionKey );
             AllKeysCache.FlushItem( AllItemsKey );
         }
 

@@ -654,9 +654,12 @@ namespace Rock.Web.Cache
         /// <param name="entity">The entity.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
+        [Obsolete("Why?")]
         public static AttributeCache Get( Model.Attribute entity, Dictionary<string, string> qualifiers )
         {
-            if ( entity == null ) return null;
+            return Get( entity );
+
+            /*f ( entity == null ) return null;
 
             var value = new AttributeCache();
             value.SetFromEntity( entity, qualifiers );
@@ -664,6 +667,7 @@ namespace Rock.Web.Cache
             RockCacheManager<AttributeCache>.Instance.AddOrUpdate( QualifiedKey( entity.Id.ToString() ), value );
 
             return value;
+            */
         }
 
         /// <summary>

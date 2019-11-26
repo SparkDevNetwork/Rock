@@ -152,7 +152,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Removes the key.
+        /// Adds the key.
         /// </summary>
         /// <param name="allItemsKey">All items key.</param>
         /// <param name="itemKey">The item key.</param>

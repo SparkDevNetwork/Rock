@@ -28,19 +28,11 @@ using Rock.Web.Cache;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// The status of a check-in device.  
+    /// Kiosk Device Cache
     /// </summary>
     [DataContract]
     public class KioskDevice : ItemCache<KioskDevice>
     {
-        [Obsolete( "Where is KioskDevice.Clear() used?. Don't use it" )]
-        public new static void Clear()
-        {
-            ItemCache<KioskDevice>.Clear();
-        }
-
-        private static ConcurrentDictionary<int, object> _locks = new ConcurrentDictionary<int,object>();
-
         /// <summary>
         /// Prevents a default instance of the <see cref="KioskDevice" /> class from being created.
         /// </summary>
