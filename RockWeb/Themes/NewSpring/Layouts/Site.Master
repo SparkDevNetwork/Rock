@@ -36,6 +36,7 @@
     <head runat="server">
         <meta charset="utf-8">
         <title></title>
+
         <!-- Set the viewport width to device width for mobile -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
 
@@ -87,6 +88,7 @@
                 });
             });
         </script>
+
 
         <asp:ContentPlaceHolder ID="css" runat="server" />
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
