@@ -17,54 +17,61 @@
         {% endif %}
     {% endfor %}
     
-    {[ accordion ]}
-    [[ item title:'<i class="fas fa-filter"></i> &nbsp;Filters' ]]
-    <h3 class="h4 push-half-bottom">Date Range</h3>
-    {% assign now = 'Now' %}
-    {% assign currentMonth = now | Date:'M' %}
-    <p>
-        <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="1/1/{{ now | Date:'yyyy' }}" data-end-date="{{ now | Date:'M/d/yyyy' }}" style="margin-bottom: 3px;">YTD</a>
-        <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="{{ now | DateAdd:-1,'M' | Date:'M' }}/1/{% if currentMonth == 1 %}{{ now | DateAdd:-1,'y' | Date:'yyyy' }}{% else %}{{ now | Date:'yyyy' }}{% endif %}" data-end-date="{{ now | DateAdd:-1,'M' | Date:'M' }}/{{ now | DateAdd:-1,'M' | DaysInMonth }}/{% if currentMonth == 1 %}{{ now | DateAdd:-1,'y' | Date:'yyyy' }}{% else %}{{ now | Date:'yyyy' }}{% endif %}" style="margin-bottom: 3px;">Last Month</a>
-        <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="1/1/{{ now | DateAdd:-1,'y' | Date:'yyyy' }}" data-end-date="12/31/{{ now | DateAdd:-1,'y' | Date:'yyyy' }}" style="margin-bottom: 3px;">Last Year</a>
-        <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="1/1/2000" data-end-date="{{ now | Date:'M/d/yyyy' }}" style="margin-bottom: 3px;">All Transactions</a>
-    </p>
-    
+    <div class="row"><div class="col-xs-12 col-md-6">
 
-    <h3 class="h4 push-half-bottom">Custom Dates</h3>
-    <div class="form-group date-picker display-inline-block">
-        <div class="control-wrapper">
-            <div class="input-group input-width-md js-date-picker date">
-                <input name="ctl00$main$ctl23$ctl01$ctl06$dpExample" type="text" id="StartDate" class="form-control datepicker" value=""><span class="input-group-addon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
-            </div><span id="StartDate_dav" class="validation-error help-inline" style="display:none;"></span>
+        {[ accordion ]}
+        [[ item title:'<i class="fas fa-filter"></i> &nbsp;Filters' ]]
+        <h3 class="h4 push-half-bottom">Date Range</h3>
+        {% assign now = 'Now' %}
+        {% assign currentMonth = now | Date:'M' %}
+        <p>
+            <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="1/1/{{ now | Date:'yyyy' }}" data-end-date="{{ now | Date:'M/d/yyyy' }}" style="margin-bottom: 3px;">YTD</a>
+            <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="{{ now | DateAdd:-1,'M' | Date:'M' }}/1/{% if currentMonth == 1 %}{{ now | DateAdd:-1,'y' | Date:'yyyy' }}{% else %}{{ now | Date:'yyyy' }}{% endif %}" data-end-date="{{ now | DateAdd:-1,'M' | Date:'M' }}/{{ now | DateAdd:-1,'M' | DaysInMonth }}/{% if currentMonth == 1 %}{{ now | DateAdd:-1,'y' | Date:'yyyy' }}{% else %}{{ now | Date:'yyyy' }}{% endif %}" style="margin-bottom: 3px;">Last Month</a>
+            <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="1/1/{{ now | DateAdd:-1,'y' | Date:'yyyy' }}" data-end-date="12/31/{{ now | DateAdd:-1,'y' | Date:'yyyy' }}" style="margin-bottom: 3px;">Last Year</a>
+            <a href="#" class="btn btn-primary btn-sm quick-filter" data-start-date="1/1/2000" data-end-date="{{ now | Date:'M/d/yyyy' }}" style="margin-bottom: 3px;">All Transactions</a>
+        </p>
+        
+    
+        <h3 class="h4 push-half-bottom">Custom Dates</h3>
+        <div class="form-group date-picker display-inline-block">
+            <div class="control-wrapper">
+                <div class="input-group input-width-md js-date-picker date">
+                    <input name="ctl00$main$ctl23$ctl01$ctl06$dpExample" type="text" id="StartDate" class="form-control datepicker" value=""><span class="input-group-addon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                </div><span id="StartDate_dav" class="validation-error help-inline" style="display:none;"></span>
+            </div>
         </div>
-    </div>
-
-    <div class="form-group date-picker display-inline-block">
-        <div class="control-wrapper">
-            <div class="input-group input-width-md js-date-picker date">
-                <input name="ctl00$main$ctl23$ctl01$ctl06$dpExample" type="text" id="EndDate" class="form-control datepicker" value=""><span class="input-group-addon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
-            </div><span id="EndDate_dav" class="validation-error help-inline" style="display:none;"></span>
+    
+        <div class="form-group date-picker display-inline-block">
+            <div class="control-wrapper">
+                <div class="input-group input-width-md js-date-picker date">
+                    <input name="ctl00$main$ctl23$ctl01$ctl06$dpExample" type="text" id="EndDate" class="form-control datepicker" value=""><span class="input-group-addon"><i class="fa fa-calendar" aria-hidden="true"></i></span>
+                </div><span id="EndDate_dav" class="validation-error help-inline" style="display:none;"></span>
+            </div>
         </div>
-    </div>
-    <p>
-        <a href="#" class="btn btn-primary btn-sm" data-filter>Filter Transactions</a>
-    </p>
-    [[ enditem ]]
-    {[ endaccordion ]}
+        <p>
+            <a href="#" class="btn btn-primary btn-sm" data-filter>Filter Transactions</a>
+        </p>
+        [[ enditem ]]
+        {[ endaccordion ]}
     
-    {% comment %}
-        Calculate Sum of Transactions
-    {% endcomment %}
+    </div><div class="col-xs-12 col-md-6">
     
-    {% assign sumTotal = 0 %}
-    {% for row in rows %}
+        {% comment %}
+            Calculate Sum of Transactions
+        {% endcomment %}
+        
+        {% assign sumTotal = 0 %}
+        {% for row in rows %}
+    
+            {% assign sumTotal = sumTotal | Plus:row.Amount %}
+        {% endfor %}
+        
+        <h3 class="flush">Total <span class="pull-right">{{ sumTotal | FormatAsCurrency }}</span></h3>
+        <p class="italic text-gray-light">{{ startDate | Date:'MMM d, yyyy' }} - {{ endDate | Date:'MMM d, yyyy' }}</p>
+    
+        <p class="md-text-right"><a href="https://newspring.cc/page/651?StatementYear={{ 'Now' | Date:'yyyy' }}" class="btn btn-primary xs-btn-block">View {{ 'Now' | Date:'yyyy' }} Contributions</a></p>
 
-        {% assign sumTotal = sumTotal | Plus:row.Amount %}
-    {% endfor %}
-    
-    <h4 class="flush">Total <span class="pull-right">{{ sumTotal | FormatAsCurrency }}</span></h4>
-    <p class="italic text-gray-light">{{ startDate | Date:'MMM d, yyyy' }} - {{ endDate | Date:'MMM d, yyyy' }}</p>
-
+    </div></div>
     
     {% for row in rows %}
         {% assign giver = row.PersonId | PersonById %}
@@ -81,7 +88,7 @@
             <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom">{{ row.TransactionDateTime | Date:'MMM d, yyyy' }}</p>
             <p class="push-half-bottom"><span class="circular background-cover" style="position:relative; top: 8px; display: inline-block; width: 30px; height: 30px; background-image:url('{{ giver.PhotoUrl }}');"></span> &nbsp;<span class="stronger">{{ row.NickName }} {{ row.LastName }}</span></p>
 
-            <p class="flush text-right"><a href="/account/giving/{{ row.Id }}" class="btn btn-sm btn-primary" target="_blank">View Details</a></p>
+            <p class="flush text-right"><a href="/give/transaction/{{ row.Id }}" class="btn btn-sm btn-primary" target="_blank">View Transaction</a></p>
             
         </div>
         
@@ -139,7 +146,6 @@
 
     // Cover page with throbber/loader
     function showThrobber(){
-        console.log('show throbber');
         var throbber = `
         <div class="position-fixed full-screen" style="z-index: 999999999; background-color: rgba(0,0,0,.8); display: flex; align-items: center; justify-content: center;">
             <i class="fas fa-2x fa-spinner-third text-primary rotating" style="max-width: 50%;"></i>
