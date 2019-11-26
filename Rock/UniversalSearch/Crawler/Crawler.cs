@@ -38,7 +38,7 @@ namespace Rock.UniversalSearch.Crawler
     public class Crawler
     {
         #region Private Fields
-        private string _userAgent = "Rock Web Indexer";
+        private string _userAgent = "Rock Web Crawler";
         private List<string> _previouslyCrawledPages = new List<string>();
         private Site _site = null;
         private string _baseUrl = string.Empty;
