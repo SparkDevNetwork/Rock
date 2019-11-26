@@ -312,6 +312,16 @@ namespace Rock.SystemGuid
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>
+        /// Template Block
+        /// </summary>
+        public const string TEMPLATE_BLOCK = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183";
+
+        /// <summary>
+        /// Template
+        /// </summary>
+        public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
+
+        /// <summary>
         /// Guid for the types of map styles
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
