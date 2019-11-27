@@ -158,7 +158,7 @@ namespace Rock.Model
                     return null;
                 }
 
-                var gatewayComponent = transaction.FinancialGateway.GetGatewayComponent();
+                var gatewayComponent = transaction.FinancialGateway?.GetGatewayComponent();
                 if ( gatewayComponent == null )
                 {
                     errorMessage = "Could not get the Gateway component in order to process the refund";
