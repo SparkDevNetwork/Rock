@@ -79,13 +79,18 @@ namespace Rock.Storage.AssetStorage.ApiClient
             var request = _storageService.Objects.List( bucketName );
             request.OauthToken = GetOauthToken();
             request.Delimiter = delimiter;
-            request.Prefix = prefix;
+            request.Prefix = prefix == "/" ? null : prefix;
             var objects = new List<Google.Apis.Storage.v1.Data.Object>();
 
             do
             {
                 var response = request.Execute();
-                objects.AddRange( response.Items );
+
+                if ( response.Items != null )
+                {
+                    objects.AddRange( response.Items );
+                }
+
                 request.PageToken = response.NextPageToken;
             } while ( !request.PageToken.IsNullOrWhiteSpace() );
 
