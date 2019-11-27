@@ -432,6 +432,7 @@
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberEdit.cs" />
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
     <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
