@@ -13,7 +13,7 @@
                 $notificationBox.show();
 
                 $('.js-notification-text', $notificationBox).html(message);
-                $('.js-notification-details', $notificationBox).html('<pre>'+ results + '</pre>');
+                $('.js-notification-details', $notificationBox).html('<pre>' + results + '</pre>');
             }
         }
 
@@ -69,7 +69,11 @@
                             <li>Disable saved account and scheduled transaction options on any remaining Transaction Entry blocks that use the NMI gateway.</li>
                             <li>Run the 'Download Payments' job to get any NMI scheduled transactions that have occurred.</li>
                             <li>Get freshly generated Import files from My Well.</li>
-                            <li>Run the migrations immediately after getting the import files.</li>
+                            <li>Run the migrations immediately after getting the import files.
+                            <ul>
+                                <li>The two migration operations can be run in any order, and can safely be run multiple times. They are not dependent on each other.</li>
+                            </ul>
+                            </li>
                             <li>Monitor scheduled transactions for the next couple of days to ensure that no new NMI scheduled transactions occur. If they do, refund any duplicate schedule transactions that might have happened to prevent people from getting double billed.</li>
                         </ol>
 
@@ -78,7 +82,7 @@
                         <Rock:RockDropDownList ID="ddlNMIGateway" Label="NMI Gateway" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlNMIGateway_SelectedIndexChanged" />
                         <Rock:RockDropDownList ID="ddlMyWellGateway" Label="My Well Gateway" runat="server" />
 
-                        <Rock:RockControlWrapper ID="rcbNMIPersonFiles" runat="server" Label="Profiles" Help="Select the Profiles to migrate, or leave all un-select to migrate all">
+                        <Rock:RockControlWrapper ID="rcbNMIPersonFiles" runat="server" Label="Profiles" Help="Select the Profiles to migrate, or leave all un-selected to migrate all">
                             <Rock:Grid ID="gNMIPersonProfiles" runat="server" OnRowDataBound="gNMIPersonProfiles_RowDataBound" DataKeyNames="Id" AllowSorting="true" Label="People with NMI Profiles">
                                 <Columns>
                                     <Rock:SelectField />
@@ -93,7 +97,8 @@
 
                         <h4>Saved Accounts</h4>
                         <p>
-                            This will migrate Saved Accounts from NMI to My Well. To start the migration, select the Vault Import file that was sent to you from My Well.
+                            This will migrate Saved Accounts from NMI to My Well. It does this by modifying each Saved Account to use the MyWell CustomerId instead of the NMI CustomerId (nothing in either gateway is modified)
+                            To start the migration, select the Vault Import file that was sent to you from My Well.
                             Make sure the Vault Import file was generated <b>after</b> the last NMI Saved Account was saved.
                             Click the 'Migrate Saved Accounts' button to start.
                             It is safe to run this import more than once. It will only affect records that weren't successfully migrated previously.
@@ -115,13 +120,14 @@
 
                         <h4>Scheduled Transactions</h4>
                         <p>
-                            This will migrate Schedule Transactions from NMI to My Well. <b>After each scheduled transaction is migrated to My Well, the NMI subscription will be deleted from the NMI gateway.</b>. To start the migration, select the Schedule Transactions Import file that was sent to you from My Well.
+                            This will migrate Schedule Transactions from NMI to My Well. <b>After each scheduled transaction is migrated to My Well, the NMI subscription will be deleted from the NMI gateway.</b> To start the migration, select the Schedule Transactions Import file that was sent to you from My Well.
                             Make sure the Scheduled Import file was generated <b>after</b> the last NMI Scheduled Transaction was created.
                             Click the 'Migrate Scheduled Transactions' button to start. Depending on the number of scheduled transactions on your system, this may take a few minutes.
                             It is safe to run this import more than once. It will only affect records that weren't successfully migrated previously.
                         </p>
                         <Rock:FileUploader ID="fuScheduleImportFile" runat="server" Label="Select Schedule Import File" IsBinaryFile="true" UploadAsTemporary="true" DisplayMode="DropZone" OnFileUploaded="fuScheduleImportFile_FileUploaded" />
                         <div class="actions margin-b-md">
+                            <Rock:NotificationBox ID="nbMigrationScheduledConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                             <asp:LinkButton ID="btnMigrateScheduledTransactions" runat="server" CssClass="btn btn-primary js-migrate-scheduled-transactions-button" OnClick="btnMigrateScheduledTransactions_Click" Enabled="false">Migrate Scheduled Transactions</asp:LinkButton>
                         </div>
                         <asp:Panel ID="pnlMigrateScheduledTransactionsResults" runat="server">
