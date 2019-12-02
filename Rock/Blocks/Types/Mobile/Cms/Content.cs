@@ -18,7 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
-using Rock.Mobile.Common.Blocks.Content;
+using Rock.Common.Mobile.Blocks.Content;
 
 namespace Rock.Blocks.Types.Mobile.Cms
 {
@@ -129,7 +129,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
 
-            return new Rock.Mobile.Common.Blocks.Content.Configuration
+            return new Rock.Common.Mobile.Blocks.Content.Configuration
             {
                 Content = content,
                 ProcessLava = additionalSettings.ProcessLavaOnClient,

@@ -18,8 +18,8 @@ using System;
 using System.ComponentModel;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.RegisterAccount;
 using Rock.Data;
-using Rock.Mobile.Common.Blocks.RegisterAccount;
 using Rock.Model;
 using Rock.Web.Cache;
 
