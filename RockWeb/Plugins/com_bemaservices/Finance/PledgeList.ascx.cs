@@ -471,7 +471,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                 if ( txnsSelected.Any() )
                 {
-                    hfActiveDialog.Value = "Reassign";
+                    hfActiveDialog.Value = "REASSIGN";
                     ShowDialog();
                 }
                 else
