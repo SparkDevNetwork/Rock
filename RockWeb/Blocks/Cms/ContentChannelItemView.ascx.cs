@@ -682,6 +682,13 @@ Guid - ContentChannelItem Guid
         /// </summary>
         private void LaunchInteraction()
         {
+            // don't log visits from crawlers
+            var clientType = InteractionDeviceType.GetClientType( Request.UserAgent );
+            if ( clientType == "Crawler" )
+            {
+                return;
+            }
+
             bool logInteractions = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
             if ( !logInteractions )
             {
