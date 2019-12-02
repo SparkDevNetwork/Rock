@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Event
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
     [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, Category ="", Order = 7,
+    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, Category = "", Order = 7,
         Key = AttributeKey.ConfirmAccountTemplate )]
 
     [TextField( "Family Term",
@@ -69,13 +69,19 @@ namespace RockWeb.Blocks.Event
         Description = "Force the email to be updated on the person's record.",
         DefaultBooleanValue = false,
         Order = 9,
-        Key =AttributeKey.ForceEmailUpdate )]
+        Key = AttributeKey.ForceEmailUpdate )]
 
     [BooleanField( "Show Field Descriptions",
         Description = "Show the field description as help text",
         DefaultBooleanValue = true,
         Order = 10,
         Key = AttributeKey.ShowFieldDescriptions )]
+
+    [BooleanField( "Enabled Saved Account",
+        Key = AttributeKey.EnableSavedAccount,
+        Description = "Set this to false to disable the using Saved Account as a payment option, and to also disable the option to create saved account for future use.",
+        DefaultBooleanValue = true,
+        Order = 11 )]
     public partial class RegistrationEntry : RockBlock
     {
         private static class AttributeKey
@@ -84,6 +90,7 @@ namespace RockWeb.Blocks.Event
             public const string FamilyTerm = "FamilyTerm";
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
+            public const string EnableSavedAccount = "EnableSavedAccount";
         }
 
         #region Fields
@@ -4104,7 +4111,9 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( nbAmountPaid.Visible = true &&
+                var enableSavedAccount = this.GetAttributeValue( AttributeKey.EnableSavedAccount ).AsBoolean();
+
+                if ( enableSavedAccount && ( nbAmountPaid.Visible = true ) &&
                     nbAmountPaid.Text.AsDecimalOrNull().HasValue &&
                     nbAmountPaid.Text.AsDecimalOrNull().Value > 0.0M &&
                     ( rblSavedCC.Items.Count == 0 || ( rblSavedCC.SelectedValueAsId() ?? 0 ) == 0 ) )
@@ -5334,12 +5343,12 @@ namespace RockWeb.Blocks.Event
                                 // default Payment is more than min and less than balance due, so we can use it
                                 RegistrationState.PaymentAmount = defaultPayment;
                             }
-                            else if (defaultPayment <= minimumPayment)
+                            else if ( defaultPayment <= minimumPayment )
                             {
                                 // default Payment is less than min, so use min instead
                                 RegistrationState.PaymentAmount = minimumPayment;
                             }
-                            else if (defaultPayment >= balanceDue)
+                            else if ( defaultPayment >= balanceDue )
                             {
                                 // default Payment is more than balance due, so use balance due
                                 RegistrationState.PaymentAmount = balanceDue;
@@ -5518,6 +5527,11 @@ namespace RockWeb.Blocks.Event
             var currentValue = rblSavedCC.SelectedValue;
 
             rblSavedCC.Items.Clear();
+
+            if ( this.GetAttributeValue( AttributeKey.EnableSavedAccount ).AsBoolean() == false )
+            {
+                return;
+            }
 
             if ( CurrentPerson != null )
             {
