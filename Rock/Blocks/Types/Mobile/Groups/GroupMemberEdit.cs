@@ -21,9 +21,9 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
 using Rock.Mobile;
-using Rock.Mobile.Common.Blocks.Content;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -150,7 +150,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             //
             // Indicate that we are a dynamic content providing block.
             //
-            return new Rock.Mobile.Common.Blocks.Content.Configuration
+            return new Rock.Common.Mobile.Blocks.Content.Configuration
             {
                 Content = null,
                 DynamicContent = true

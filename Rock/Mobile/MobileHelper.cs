@@ -21,10 +21,10 @@ using System.Text;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
-using Rock.Mobile.Common;
-using Rock.Mobile.Common.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -130,7 +130,7 @@ namespace Rock.Mobile
                 FirstName = person.FirstName,
                 NickName = person.NickName,
                 LastName = person.LastName,
-                Gender = ( Common.Enums.Gender ) person.Gender,
+                Gender = ( Rock.Common.Mobile.Enums.Gender ) person.Gender,
                 BirthDate = person.BirthDate,
                 Email = person.Email,
                 HomePhone = person.PhoneNumbers.Where( p => p.NumberTypeValueId == homePhoneTypeId ).Select( p => p.NumberFormatted ).FirstOrDefault(),

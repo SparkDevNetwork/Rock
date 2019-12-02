@@ -19,8 +19,8 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
-using Rock.Mobile.Common.Blocks.Content;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -126,7 +126,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             // The client shell ignores this value and always requests the current config from
             // the server, so just put some placeholder data.
             //
-            return new Rock.Mobile.Common.Blocks.Content.Configuration
+            return new Rock.Common.Mobile.Blocks.Content.Configuration
             {
                 Content = string.Empty,
                 ProcessLava = additionalSettings.ProcessLavaOnClient,

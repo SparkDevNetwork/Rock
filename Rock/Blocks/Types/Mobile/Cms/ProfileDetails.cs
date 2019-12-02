@@ -18,8 +18,8 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
 using Rock.Mobile;
-using Rock.Mobile.Common;
 using Rock.Model;
 using Rock.Web.Cache;
 

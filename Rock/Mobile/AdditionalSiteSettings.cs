@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+
+using Rock.Common.Mobile.Enums;
 using Rock.DownhillCss;
-using Rock.Mobile.Common.Enums;
 
 namespace Rock.Mobile
 {
@@ -82,7 +83,7 @@ namespace Rock.Mobile
         /// <value>
         /// The type of the shell.
         /// </value>
-        public ShellType? ShellType { get; set; } = Common.Enums.ShellType.Flyout;
+        public ShellType? ShellType { get; set; } = Rock.Common.Mobile.Enums.ShellType.Flyout;
 
         /// <summary>
         /// Gets or sets the tab location.

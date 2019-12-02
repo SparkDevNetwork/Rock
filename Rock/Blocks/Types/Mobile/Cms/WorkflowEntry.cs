@@ -20,9 +20,9 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.WorkflowEntry;
 using Rock.Data;
-using Rock.Mobile.Common;
-using Rock.Mobile.Common.Blocks.WorkflowEntry;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
