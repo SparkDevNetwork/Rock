@@ -53,6 +53,8 @@
   <ItemGroup>
     <Compile Include="Jobs\SyncESpaceEvents.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\QueryExtensions.cs" />
+    <Compile Include="Utility\SyncHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, processorArchitecture=MSIL">
@@ -64,9 +66,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="NewPointe.ESpace, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="NewPointe.eSpace, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Documents\VS Code\espace-dotnet\NewPointe.ESpace\bin\Release\net472\NewPointe.ESpace.dll</HintPath>
+      <HintPath>..\libs\NewPointe.eSpace.dll</HintPath>
     </Reference>
     <Reference Include="Quartz">
       <HintPath>..\libs\Quartz\Quartz.dll</HintPath>

@@ -145,7 +145,4 @@ Write-Host "Finishing up";
 Get-FilesystemLinks $OldBackupRoot | ForEach-Object { $_.Delete() };
 Remove-Item -Recurse -Force $OldBackupRoot;
 
-Copy-ContentsRecursively -Force $NewBackupRoot $OldBackupRoot;
-
-Get-FilesystemLinks $NewBackupRoot | ForEach-Object { $_.Delete() };
-Remove-Item -Recurse -Force $NewBackupRoot;
+Move-Item -Force $NewBackupRoot $OldBackupRoot;

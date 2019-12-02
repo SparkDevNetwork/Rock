@@ -13,6 +13,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using NewPointe.eSpace;
+using org.newpointe.eSpace.Utility;
 
 namespace org.newpointe.eSpace.Jobs
 {
@@ -47,7 +48,7 @@ namespace org.newpointe.eSpace.Jobs
             // Get the configuration for the job
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            var approvalAttributeGuid = dataMap.GetString( AttributeKey_Calendar ).AsGuid();
+            var approvalAttributeGuid = dataMap.GetString( AttributeKey_ApprovedAttribute ).AsGuid();
             var approvalAttribute = AttributeCache.Get( approvalAttributeGuid );
 
             // Collect some values for matching
@@ -74,8 +75,8 @@ namespace org.newpointe.eSpace.Jobs
             // Log in
             client.SetCredentials( eSpaceUsername, eSpacePassword );
 
-            // Get all events
-            var eSpaceEvents = await client.GetEvents();
+            // Get all future events
+            var eSpaceEvents = await client.GetEvents( new GetEventsOptions { StartDate = DateTime.Now } );
 
             // Group by event id (the eSpace api returns "events" as a merged event and schedule)
             var eSpaceEventsById = eSpaceEvents.GroupBy( e => e.EventId );
@@ -90,56 +91,30 @@ namespace org.newpointe.eSpace.Jobs
 
                 try
                 {
-
-                    // Create our Rock services
-                    var rockContext = new RockContext();
-                    var personService = new PersonService( rockContext );
-                    var eventItemService = new EventItemService( rockContext );
-                    var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
-                    var eventItemAudienceService = new EventItemAudienceService( rockContext );
-
                     // Use the first item as the main event - Note that some properties
                     // here are actually part of the schedule, not the event
                     var eSpaceEvent = eSpaceEventGroup.FirstOrDefault();
 
+                    // Skip draft events
+                    if ( eSpaceEvent.Status == "Draft" ) continue;
+
                     // Update the job status
                     context.UpdateLastStatusMessage( $@"Syncing event {eventSyncedCount} of {eventTotalCount} ({Math.Round( (double) eventSyncedCount / eventTotalCount * 100, 0 )}%, {eventErrorCount} events with errors)" );
 
-                    // Get the best match for this event's campus
-                    var eSpaceEventLocationCodes = new List<string>();
-                    if ( eSpaceEvent.Locations != null ) eSpaceEventLocationCodes.AddRange( eSpaceEvent.Locations.Select( l => l.LocationCode ) );
-                    if ( eSpaceEvent.PublicLocations != null ) eSpaceEventLocationCodes.AddRange( eSpaceEvent.PublicLocations.Select( l => l.LocationCode ) );
-                    var eventCampusId = campuses.FirstOrDefault( c => eSpaceEventLocationCodes.Contains( c.ShortCode, StringComparer.OrdinalIgnoreCase ) )?.Id;
-
-                    var rockEventItem = CreateOrUpdateEvent(
-                        eventItemService,
+                    // Sync the event
+                    await SyncHelper.SyncEvent(
+                        client,
                         eSpaceEvent,
+                        new GetEventOccurrencesOptions
+                        {
+                            StartDate = DateTime.Now
+                        },
                         calendar,
-                        publicCalendar
+                        publicCalendar,
+                        null,
+                        approvalAttribute?.Key
                     );
 
-                    // Get all eSpace occurrences for the event
-                    var eSpaceEventOccurrences = await client.GetEventOccurrences( new GetEventOccurrencesOptions { EventId = eSpaceEvent.EventId } );
-
-                    // Loop through each eSpace occurrences
-                    foreach ( var eSpaceEventOccurrence in eSpaceEventOccurrences )
-                    {
-
-                        // Create or Update the Rock Occurrence
-                        CreateOrUpdateOccurrence(
-                            personService,
-                            eventItemOccurrenceService,
-                            eventCampusId,
-                            approvalAttribute,
-                            rockEventItem,
-                            eSpaceEvent,
-                            eSpaceEventOccurrence
-                        );
-
-                    }
-
-                    // Save our changes
-                    rockContext.SaveChanges();
 
                 }
                 catch ( Exception ex )
@@ -152,198 +127,6 @@ namespace org.newpointe.eSpace.Jobs
 
             // Update the job status
             context.UpdateLastStatusMessage( $@"Synced {eventSyncedCount} events with {eventErrorCount} errors." );
-
-        }
-
-        public static EventItem CreateOrUpdateEvent(
-            EventItemService eventItemService,
-            NewPointe.eSpace.Models.Event eSpaceEvent,
-            EventCalendarCache calendar,
-            EventCalendarCache publicCalendar
-        )
-        {
-
-            // Look for a matching Rock event
-            EventItem eventItem = eventItemService.Queryable().FirstOrDefault(
-                e => e.ForeignKey == "eSpaceEventId" && e.ForeignId == eSpaceEvent.EventId
-            );
-
-            // If we didn't find any, create a new one
-            if ( eventItem == null )
-            {
-                eventItem = new EventItem
-                {
-                    ForeignKey = "eSpaceEventId",
-                    ForeignId = eSpaceEvent.EventId
-                };
-                eventItemService.Add( eventItem );
-            }
-
-            // Update the event 
-            eventItem.Name = eSpaceEvent.EventName;
-            eventItem.IsApproved = eSpaceEvent.Status == "Approved";
-            eventItem.Summary = eSpaceEvent.PublicNotes;
-
-            // If it's not on the calendar, add it
-            if ( !eventItem.EventCalendarItems.Any( ci => ci.EventCalendarId == calendar.Id ) )
-            {
-                eventItem.EventCalendarItems.Add( new EventCalendarItem { EventCalendarId = calendar.Id } );
-            }
-
-            // If it's public add it to the public calendar
-            if ( ( eSpaceEvent.IsPublic ?? false ) && publicCalendar != null )
-            {
-                if ( !eventItem.EventCalendarItems.Any( ci => ci.EventCalendarId == publicCalendar.Id ) )
-                {
-                    eventItem.EventCalendarItems.Add( new EventCalendarItem { EventCalendarId = publicCalendar.Id } );
-                }
-            }
-
-            return eventItem;
-
-        }
-
-        public static void CreateOrUpdateOccurrence(
-            PersonService personService,
-            EventItemOccurrenceService eventItemOccurrenceService,
-            int? eventCampusId,
-            AttributeCache approvalAttribute,
-            EventItem eventItem,
-            NewPointe.eSpace.Models.Event eSpaceEvent,
-            NewPointe.eSpace.Models.Occurrence eSpaceEventOccurrence
-        )
-        {
-
-            // Try to find an existing occurrence
-            EventItemOccurrence occurrence = eventItemOccurrenceService.Queryable().FirstOrDefault(
-                o => o.ForeignKey == "eSpaceOccurrenceId" && o.ForeignId == eSpaceEventOccurrence.OccurrenceId
-            );
-
-            // If we didn't find any, create a new one
-            if ( occurrence == null )
-            {
-                occurrence = new EventItemOccurrence
-                {
-                    ForeignKey = "eSpaceOccurrenceId",
-                    ForeignId = eSpaceEventOccurrence.OccurrenceId
-                };
-                eventItemOccurrenceService.Add( occurrence );
-            }
-
-            // If we didn't find any, create a new one
-            if ( occurrence == null ) eventItemOccurrenceService.Add( occurrence = new EventItemOccurrence() );
-
-            // Update the Occurrence Info
-            occurrence.EventItem = eventItem;
-            occurrence.Location = eSpaceEvent.OffsiteLocation;
-            occurrence.CampusId = eventCampusId;
-            occurrence.Schedule = CreateOrUpdateSchedule( occurrence.Schedule, eSpaceEvent, eSpaceEventOccurrence );
-
-            if ( eSpaceEvent.Contacts != null && eSpaceEvent.Contacts.Length > 0 )
-            {
-                occurrence.ContactEmail = eSpaceEvent.Contacts[0].Email;
-                occurrence.ContactPhone = eSpaceEvent.Contacts[0].Phone;
-
-                Person contactPerson = personService.FindPerson(
-                    eSpaceEvent.Contacts[0].FirstName,
-                    eSpaceEvent.Contacts[0].LastName,
-                    eSpaceEvent.Contacts[0].Email,
-                    false
-                );
-
-                if ( contactPerson != null )
-                {
-                    occurrence.ContactPersonAlias = contactPerson.PrimaryAlias;
-                }
-
-            }
-
-            if ( eSpaceEventOccurrence.EventStatus == "Approved" && approvalAttribute != null )
-            {
-                occurrence.LoadAttributes();
-                occurrence.SetAttributeValue( approvalAttribute.Key, "Approved" );
-            }
-
-
-        }
-
-        private static Schedule CreateOrUpdateSchedule( Schedule schedule, NewPointe.eSpace.Models.Event eSpaceEvent, NewPointe.eSpace.Models.Occurrence eSpaceEventOccurrence )
-        {
-
-            // Check that the schedule is correct
-            if ( schedule != null )
-            {
-
-                schedule.EffectiveStartDate = eSpaceEventOccurrence.EventStart;
-                schedule.EffectiveEndDate = eSpaceEventOccurrence.EventEnd;
-                schedule.Name = eSpaceEventOccurrence.EventName.Truncate( 50 );
-
-
-                // Get the calendar event
-                var calendarEvent = schedule.GetCalendarEvent();
-
-                // Set the start/end dates
-                if ( eSpaceEventOccurrence.EventStart.HasValue )
-                {
-                    calendarEvent.Start = new DDay.iCal.iCalDateTime( eSpaceEventOccurrence.EventStart.Value );
-                }
-
-                if ( eSpaceEventOccurrence.EventEnd.HasValue )
-                {
-                    calendarEvent.End = new DDay.iCal.iCalDateTime( eSpaceEventOccurrence.EventEnd.Value );
-                }
-
-                if ( eSpaceEventOccurrence.IsAllDay ?? false )
-                {
-                    calendarEvent.IsAllDay = true;
-                }
-
-                // Clear any recurrence rules
-                calendarEvent.RecurrenceRules = new List<DDay.iCal.IRecurrencePattern>();
-                calendarEvent.RecurrenceDates = new List<DDay.iCal.IPeriodList>();
-                calendarEvent.ExceptionRules = new List<DDay.iCal.IRecurrencePattern>();
-                calendarEvent.ExceptionDates = new List<DDay.iCal.IPeriodList>();
-
-                // Serialize the event
-                var calendar = new DDay.iCal.iCalendar();
-                calendar.Events.Add( calendarEvent );
-                var serializer = new DDay.iCal.Serialization.iCalendar.iCalendarSerializer( calendar );
-
-                // Set the new iCal data
-                schedule.iCalendarContent = serializer.SerializeToString( calendar );
-
-            }
-            else
-            {
-
-                // Create the calendar event
-                var calendarEvent = new DDay.iCal.Event
-                {
-                    Start = new DDay.iCal.iCalDateTime( eSpaceEventOccurrence.EventStart.Value ),
-                    End = new DDay.iCal.iCalDateTime( eSpaceEventOccurrence.EventEnd.Value ),
-                    IsAllDay = eSpaceEventOccurrence.IsAllDay ?? false
-                };
-
-                // Serialize the event
-                var calendar = new DDay.iCal.iCalendar();
-                calendar.Events.Add( calendarEvent );
-                var serializer = new DDay.iCal.Serialization.iCalendar.iCalendarSerializer( calendar );
-                var iCalendarContent = serializer.SerializeToString( calendar );
-
-                // Create the schedule
-                schedule = new Schedule
-                {
-                    EffectiveStartDate = eSpaceEventOccurrence.EventStart,
-                    EffectiveEndDate = eSpaceEventOccurrence.EventEnd,
-                    Name = eSpaceEventOccurrence.EventName.Truncate( 50 ),
-                    ForeignKey = "eSpaceOccurrenceId",
-                    ForeignId = eSpaceEventOccurrence.OccurrenceId,
-                    iCalendarContent = iCalendarContent
-                };
-
-            }
-
-            return schedule;
 
         }
 

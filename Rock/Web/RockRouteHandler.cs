@@ -303,8 +303,7 @@ namespace Rock.Web
                  * 3. domain/shortlink
                  *
                  * We can get the Site from:
-                 * 1. The "SiteId" query string
-                 * 2. The domain
+                 * 1. The domain
                  *
                  * We can infer the Site from:
                  * 1. The "last_site" cookie
@@ -322,9 +321,6 @@ namespace Rock.Web
                  *
                  * What are the possibilities?
                  *
-                 * - site id + page id
-                 * - site id + route
-                 * - site id + shortlink
                  * - domain + page id
                  * - domain + route
                  * - domain + shortlink
@@ -344,9 +340,6 @@ namespace Rock.Web
                  *   - domain + page id
                  *   - domain + route
                  *   - domain + shortlink
-                 *   - site id + page id
-                 *   - site id + route
-                 *   - site id + shortlink
                  *   - any site + page id + dialog layout
                  *   - any site + route + dialog layout
                  * - Else (loose matching mode)
@@ -361,6 +354,7 @@ namespace Rock.Web
                  * Note 1: page id can't be restricted by matched site because that breaks Block Properties dialogs.
                  * Note 2: restricting routes breaks the Child Pages dialog, grrr. Let's try prioritizing layout type == Dialog.
                  * Note 3: page id can't be restricted by site id because that breaks the CMS -> Sites details page.
+                 * Note 4: the sites config block also uses the SiteId= parameter, which messes with things and can lock you out of those settings
                  *
                  * Conclusion: We either need a better way of deciding when to use "strict mode" (page or site setting?),
                  * or we need to refactor how system pages work so they behave properly
@@ -397,25 +391,6 @@ namespace Rock.Web
                 }
 
 
-                // site id
-                var querySite = GetSiteByQueryString( requestContext );
-                if ( querySite != null )
-                {
-
-                    // site id + page id
-                    if ( defaultRoutePage != null && querySite.Id == defaultRoutePage.SiteId ) return GetHandlerForPage( requestContext, defaultRoutePage );
-
-                    // site id + route
-                    var querySiteRoutePage = routePages.Where( p => querySite.Id == p.Page.SiteId ).FirstOrDefault();
-                    if ( querySiteRoutePage != null ) return GetHandlerForPage( requestContext, querySiteRoutePage.Page, querySiteRoutePage.RouteId );
-
-                    // site id + shortlink
-                    var querySiteRouteShortLink = routeShortLinks.Where( l => querySite.Id == l.SiteId ).FirstOrDefault();
-                    if ( querySiteRouteShortLink != null ) return GetHandlerForShortLink( requestContext, querySiteRouteShortLink );
-
-                }
-
-
                 // Match pages and routes with dialog layouts so dialogs still work properly
 
                 // any site + page id + dialog layout
@@ -426,8 +401,8 @@ namespace Rock.Web
                 if ( anySiteRouteDialogPage != null ) return GetHandlerForPage( requestContext, anySiteRouteDialogPage.Page, anySiteRouteDialogPage.RouteId );
 
 
-                // Strict matching for site id or domain matches (We don't want routes from one site to be accessible from all others - It makes a complete mess of SEO)
-                if ( domainSite != null || querySite != null ) return GetHandlerFor404( requestContext, domainSite ?? querySite );
+                // Strict matching for domain matches (We don't want routes from one domain to be accessible from all others - It makes a complete mess of SEO)
+                if ( domainSite != null ) return GetHandlerFor404( requestContext, domainSite );
 
 
                 // any site + page id

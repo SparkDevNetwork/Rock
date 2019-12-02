@@ -42,6 +42,10 @@ node_modules
 /Installers/CheckScannerInstall/UpgradeLog2.htm
 /Installers/CheckScannerInstall_2017/CheckScannerInstall
 
-# [NP] Ignore Binaries
+# NewPointe stuff
 /org.newpointe.*/bin
 /org.newpointe.*/obj
+/RockWeb/Content
+/RockWeb/wp-content
+/RockWeb/App_Data/Files
+/RockWeb/App_Data/RockShop

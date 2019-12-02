@@ -178,7 +178,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 indexName = typeof( T ).Name.ToLower();
             }
 
-            _client.DeleteByQueryAsync<T>( indexName, typeof( T ).Name.ToLower(), d => d.MatchAll() );
+            _client.DeleteByQueryAsync( new DeleteByQueryRequest( Indices.Index( indexName ), typeof( T ) ) );
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 createIndexRequest.Settings.NumberOfShards = GetAttributeValue( "ShardCount" ).AsInteger();
 
                 var typeMapping = new TypeMapping();
-                typeMapping.Dynamic = DynamicMapping.Allow;
+                typeMapping.Dynamic = true;
                 typeMapping.Properties = new Properties();
                 
                 createIndexRequest.Mappings.Add( indexName, typeMapping );
@@ -254,12 +254,12 @@ namespace Rock.UniversalSearch.IndexComponents
                         var propertyName = Char.ToLowerInvariant( property.Name[0] ) + property.Name.Substring( 1 );
 
                         // rewrite non-string index option (would be nice if they made the enums match up...)
-                        NonStringIndexOption nsIndexOption = NonStringIndexOption.NotAnalyzed;
+                        bool nsIndexOption = true;
                         if ( attribute.Type != IndexFieldType.String )
                         {
                             if ( attribute.Index == IndexType.NotIndexed )
                             {
-                                nsIndexOption = NonStringIndexOption.No;
+                                nsIndexOption = false;
                             }
                         }
 
@@ -493,7 +493,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                     {
                                         if ( !string.IsNullOrWhiteSpace( queryTerm ) )
                                         {
-                                            wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", Rewrite = RewriteMultiTerm.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
+                                            wildcardQuery &= new QueryStringQuery { Query = queryTerm + "*", Analyzer = "whitespace", MultiTermQueryRewrite = MultiTermQueryRewrite.ScoringBoolean }; // without the rewrite all results come back with the score of 1; analyzer of whitespaces says don't fancy parse things like check-in to 'check' and 'in'
                                         }
                                     }
 
@@ -593,7 +593,7 @@ namespace Rock.UniversalSearch.IndexComponents
                                 document["Explain"] = hit.Explanation.ToJson();
                             }
 
-                            document.Score = hit.Score;
+                            document.Score = hit.Score ?? 0;
 
                             documents.Add( document );
                         }
@@ -622,7 +622,7 @@ namespace Rock.UniversalSearch.IndexComponents
         }}
 }}", Char.ToLowerInvariant( propertyName[0] ) + propertyName.Substring( 1 ), propertyValue );
 
-            var response = _client.DeleteByQuery<IndexModelBase>( documentType.Name.ToLower(), documentType.Name.ToLower(), qd => qd.Query( q => q.Raw( jsonSearch ) ) );
+            var response = _client.DeleteByQuery<IndexModelBase>( qd => new DeleteByQueryRequest( documentType.Name.ToLower(), documentType ) { Query = new RawQuery( jsonSearch ) } );
         }
 
         /// <summary>
