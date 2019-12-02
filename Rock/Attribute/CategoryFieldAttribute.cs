@@ -70,6 +70,8 @@ namespace Rock.Attribute
             set
             {
                 FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+
+                FieldTypeClass = value ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName;
             }
         }
 
