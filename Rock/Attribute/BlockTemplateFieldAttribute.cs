@@ -29,7 +29,7 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockTemplateFieldAttribute" /> class.
         /// </summary>
-        /// <param name="blockTypeGuid">The block type GUID.</param>
+        /// <param name="templateBlockValueGuid">The template block defined value GUID.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
@@ -37,19 +37,19 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public BlockTemplateFieldAttribute( string blockTypeGuid = "", string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
+        public BlockTemplateFieldAttribute( string templateBlockValueGuid = "", string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.BlockTemplateFieldType ).FullName )
         {
-            if ( !string.IsNullOrWhiteSpace( blockTypeGuid ) )
+            if ( !string.IsNullOrWhiteSpace( templateBlockValueGuid ) )
             {
                 Guid guid = Guid.Empty;
-                if ( Guid.TryParse( blockTypeGuid, out guid ) )
+                if ( Guid.TryParse( templateBlockValueGuid, out guid ) )
                 {
-                    var blockType = BlockTypeCache.Get( guid );
-                    if ( blockType != null )
+                    var definedValue = DefinedValueCache.Get( guid );
+                    if ( definedValue != null )
                     {
-                        var configValue = new Field.ConfigurationValue( blockType.Id.ToString() );
-                        FieldConfigurationValues.Add( Rock.Field.Types.BlockTemplateFieldType.BLOCK_TYPE_KEY, configValue );
+                        var configValue = new Field.ConfigurationValue( definedValue.Id.ToString() );
+                        FieldConfigurationValues.Add( Rock.Field.Types.BlockTemplateFieldType.TEMPLATE_BLOCK_KEY, configValue );
 
                     }
                 }
