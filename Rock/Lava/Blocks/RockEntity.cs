@@ -208,8 +208,8 @@ namespace Rock.Lava.Blocks
                     }
 
                     // Make the query from the expression
-                    // NOTE: We can't use AsNoTracking because lazy-loading doesn't always work https://stackoverflow.com/a/20290275/1755417
-                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+                    // Note: Use GetNoTracking to help improve performance
+                    MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetNoTracking", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
 
                     if ( getMethod != null )
                     {
