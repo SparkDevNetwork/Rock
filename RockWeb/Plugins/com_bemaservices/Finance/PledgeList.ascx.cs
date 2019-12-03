@@ -368,7 +368,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                                                            .DefaultIfEmpty( 0 )
                                                            .Sum();
                 /* BEMA.UI3.Start */
-                var amountGivenField = gPledges.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.HeaderText == "Amount Given" );
+                var amountGivenField = gPledges.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.DataField == "AmountGiven" );
                 if ( amountGivenField != null )
                 {
                     var cell2 = e.Row.Cells[gPledges.Columns.IndexOf( amountGivenField )].Text = pledge.AmountGiven.ToString( "C" );
@@ -376,7 +376,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 /* BEMA.UI3.End */
 
                 /* BEMA.UI4.Start */
-                var amountRemainingField = gPledges.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.HeaderText == "Amount Remaining" );
+                var amountRemainingField = gPledges.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.DataField == "AmountRemaining" );
                 if ( amountRemainingField != null )
                 {
                     var cell3 = e.Row.Cells[gPledges.Columns.IndexOf( amountRemainingField )].Text = ( pledge.AmountGiven > pledge.AmountPledged ) ? "0" : ( pledge.AmountPledged - pledge.AmountGiven ).ToString( "C" );
@@ -386,7 +386,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 /* BEMA.UI5.Start */
                 if ( pledge.ModifiedByPersonAliasId != null )
                 {
-                    var modifiedByField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Modified By" );
+                    var modifiedByField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "ModifiedBy" );
                     if ( modifiedByField != null )
                     {
                         var cell4 = e.Row.Cells[gPledges.Columns.IndexOf( modifiedByField )].Text = new PersonAliasService( rockContext ).Get( pledge.ModifiedByPersonAliasId.Value ).ToString();
