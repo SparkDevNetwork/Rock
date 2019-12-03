@@ -15,18 +15,17 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
-using Rock.Mobile.Common.Blocks.Content;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Displays custom XAML content on the page.
@@ -34,7 +33,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Content Channel Item View" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Displays a content channel item by formatting it with XAML." )]
     [IconCssClass( "fa fa-chalkboard" )]
 
@@ -127,7 +126,7 @@ namespace Rock.Blocks.Types.Mobile
             // The client shell ignores this value and always requests the current config from
             // the server, so just put some placeholder data.
             //
-            return new Rock.Mobile.Common.Blocks.Content.Configuration
+            return new Rock.Common.Mobile.Blocks.Content.Configuration
             {
                 Content = string.Empty,
                 ProcessLava = additionalSettings.ProcessLavaOnClient,

@@ -17,17 +17,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
+using System.Text;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
+using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
-using Rock.Mobile.Common;
-using Rock.Mobile.Common.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+
 using Authorization = Rock.Security.Authorization;
 
 namespace Rock.Mobile
@@ -129,7 +130,7 @@ namespace Rock.Mobile
                 FirstName = person.FirstName,
                 NickName = person.NickName,
                 LastName = person.LastName,
-                Gender = ( Common.Enums.Gender ) person.Gender,
+                Gender = ( Rock.Common.Mobile.Enums.Gender ) person.Gender,
                 BirthDate = person.BirthDate,
                 Email = person.Email,
                 HomePhone = person.PhoneNumbers.Where( p => p.NumberTypeValueId == homePhoneTypeId ).Select( p => p.NumberFormatted ).FirstOrDefault(),
@@ -495,5 +496,164 @@ namespace Rock.Mobile
 
             return explicitRules;
         }
+
+        #region XAML Helper Methods
+
+        /// <summary>
+        /// Builds the attribute fields.
+        /// </summary>
+        /// <param name="entity">The entity whose attribute values are going to be edited.</param>
+        /// <param name="attributes">The attributes to be displayed.</param>
+        /// <param name="postbackParameters">The postback parameters to request, key is node name and value is property path.</param>
+        /// <param name="includeHeader">if set to <c>true</c> [include header].</param>
+        /// <param name="person">If not null then security will be enforced for this person.</param>
+        /// <returns>
+        /// A XAML string that contains any attribute fields as well as the header text.
+        /// </returns>
+        public static string GetEditAttributesXaml( IHasAttributes entity, List<AttributeCache> attributes = null, Dictionary<string, string> postbackParameters = null, bool includeHeader = true, Person person = null )
+        {
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes();
+            }
+
+            attributes = attributes ?? entity.Attributes.Values.ToList();
+
+            if ( !attributes.Any() )
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+
+            sb.AppendLine( "<StackLayout Spacing=\"0\">" );
+
+            if ( includeHeader )
+            {
+                sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"heading1\" />" );
+                sb.AppendLine( "<BoxView Color=\"#888\" HeightRequest=\"1\" Margin=\"0 0 12 0\" />" );
+            }
+
+            foreach ( var attribute in attributes )
+            {
+                var label = attribute.AbbreviatedName.IsNotNullOrWhiteSpace() ? attribute.AbbreviatedName : attribute.Name;
+
+                if ( person != null && !attribute.IsAuthorized( Authorization.EDIT, person ) )
+                {
+                    if ( person == null || attribute.IsAuthorized( Authorization.VIEW, person ) )
+                    {
+                        sb.AppendLine( GetReadOnlyFieldXaml( label, "" ) );
+                    }
+                }
+                else
+                {
+                    var fieldName = $"attribute_{attribute.Id}";
+                    var configurationValues = attribute.QualifierValues
+                        .ToDictionary( a => a.Key, a => a.Value.Value )
+                        .ToJson();
+
+                    sb.AppendLine( GetSingleFieldXaml( $"<Rock:AttributeValueEditor x:Name=\"{fieldName}\" Label=\"{label}\" IsRequired=\"{attribute.IsRequired}\" FieldType=\"{attribute.FieldType.Class}\" ConfigurationValues=\"{{}}{configurationValues.EncodeXml( true )}\" Value=\"{entity.GetAttributeValue( attribute.Key ).EncodeXml( true )}\" />" ) );
+                    postbackParameters.Add( fieldName, "Value" );
+                }
+            }
+
+            sb.AppendLine( "</StackLayout>" );
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Updates the editable attributes in the given entity. This method should be called
+        /// to update the attributes with the postback data received from a prevoius
+        /// GetEditAttributeXaml() call.
+        /// </summary>
+        /// <param name="entity">The entity whose attribute values will be updated.</param>
+        /// <param name="postbackData">The postback data.</param>
+        /// <param name="attributes">If not null, updating will be limited to these attributes.</param>
+        /// <param name="person">If not null then security will be enforced for this person.</param>
+        public static void UpdateEditAttributeValues( IHasAttributes entity, Dictionary<string, object> postbackData, List<AttributeCache> attributes = null, Person person = null )
+        {
+            if ( entity.Attributes == null )
+            {
+                entity.LoadAttributes();
+            }
+
+            attributes = attributes ?? entity.Attributes.Values.ToList();
+
+            foreach ( var attribute in attributes )
+            {
+                if ( person != null && !attribute.IsAuthorized( Authorization.EDIT, person ) )
+                {
+                    continue;
+                }
+
+                var keyName = $"attribute_{attribute.Id}";
+                if ( postbackData.ContainsKey( keyName ) )
+                {
+                    entity.SetAttributeValue( attribute.Key, postbackData[keyName].ToStringSafe() );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the XAML to display a single field in the mobile shell.
+        /// </summary>
+        /// <param name="fieldXaml">The field.</param>
+        /// <param name="wrapped">if set to <c>true</c> the SingleField wraps the field in a border.</param>
+        public static string GetSingleFieldXaml( string fieldXaml, bool wrapped = true )
+        {
+            return $"<Rock:SingleField Wrapped=\"{wrapped}\">{fieldXaml}</Rock:SingleField>";
+        }
+
+        /// <summary>
+        /// Gets the XAML to display a single read-only field in the mobile shell.
+        /// </summary>
+        /// <param name="label">The label of the field.</param>
+        /// <param name="text">The text content of the field.</param>
+        public static string GetReadOnlyFieldXaml( string label, string text )
+        {
+            return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />", false );
+        }
+
+        /// <summary>
+        /// Gets the XAML for rendering a text box.
+        /// </summary>
+        /// <param name="name">The name of the control.</param>
+        /// <param name="label">The label.</param>
+        /// <param name="value">The current value.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="multiline">if set to <c>true</c> [multiline].</param>
+        /// <returns></returns>
+        public static string GetTextEditFieldXaml( string name, string label, string value, bool isRequired, bool multiline = false )
+        {
+            return $"<Rock:TextBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" />";
+        }
+
+        /// <summary>
+        /// Gets the XAML for rendering a single select drop down.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="label">The label.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="items">The items.</param>
+        /// <returns></returns>
+        public static string GetDropDownFieldXaml( string name, string label, string value, bool isRequired, IEnumerable<KeyValuePair<string, string>> items )
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine( $"<Rock:Picker x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" SelectedValue=\"{value.EncodeXml( true )}\">" );
+
+            foreach ( var kvp in items )
+            {
+                sb.AppendLine( $"<Rock:PickerItem Value=\"{kvp.Key.EncodeXml( true )}\" Text=\"{kvp.Value.EncodeXml( true )}\" />" );
+            }
+
+            sb.AppendLine( "</Rock:Picker>" );
+
+            return sb.ToString();
+        }
+
+        #endregion
     }
 }
