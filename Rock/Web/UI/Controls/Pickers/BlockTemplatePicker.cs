@@ -257,28 +257,28 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the block type identifier ( Required )
+        /// Gets or sets the template block defined value identifier ( Required )
         /// </summary>
         /// <value>
-        /// The block type identifier.
+        /// The template block defined value identifier.
         /// </value>
-        public int? BlockTypeId
+        public int? TemplateBlockValueId
         {
             get
             {
-                return _blockTypeId;
+                return _templateBlockValueId;
             }
 
             set
             {
-                _blockTypeId = value;
+                _templateBlockValueId = value;
             }
         }
 
         /// <summary>
-        /// The block type identifier
+        /// The template block identifier
         /// </summary>
-        private int? _blockTypeId;
+        private int? _templateBlockValueId;
 
         #endregion
 
@@ -418,14 +418,9 @@ namespace Rock.Web.UI.Controls
 
             int optionCount = 0;
             StringBuilder htmlBuilder = new StringBuilder();
-            if ( _blockTypeId.HasValue )
+            if ( _templateBlockValueId.HasValue )
             {
-                var blockType = BlockTypeCache.Get( _blockTypeId.Value );
-                var blockTemplateDefinedValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.TEMPLATE_BLOCK ).DefinedValues
-                                                .Where( a => a.Value.SplitDelimitedValues( "-" ).Count() == 2 &&
-                                                 a.Value.SplitDelimitedValues( "-" ).First().Trim().Equals( blockType.Category, StringComparison.InvariantCultureIgnoreCase ) &&
-                                                 a.Value.SplitDelimitedValues( "-" ).Last().Trim().Equals( blockType.Name, StringComparison.InvariantCultureIgnoreCase ) )
-                                                .FirstOrDefault();
+                var blockTemplateDefinedValue = DefinedValueCache.Get( _templateBlockValueId.Value );
 
                 if ( blockTemplateDefinedValue != null )
                 {
