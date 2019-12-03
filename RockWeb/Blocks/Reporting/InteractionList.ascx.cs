@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Reporting
     
 
 	        {% for interaction in Interactions %}
-		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
+		        {% if InteractionDetailPage != null and InteractionDetailPage != '' %}
                     <a href = '{{ InteractionDetailPage }}?InteractionId={{ interaction.Id }}'>
                 {% endif %}
 		        
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Reporting
                     </div>
                 </div>
 		        
-		        {% if InteractionDetailPage != null and InteractionDetailPage != ''  %}
+		        {% if InteractionDetailPage != null and InteractionDetailPage != '' %}
     		        </a>
 		        {% endif %}
 	        {% endfor %}	

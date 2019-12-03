@@ -41,12 +41,10 @@
                         <div id="map_wrapper">
                             <div id="map_canvas" class="mapping"></div>
                         </div>
-                        <asp:Literal ID="lMapInfoDebug" runat="server" />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlLavaOutput" runat="server" CssClass="margin-v-sm">
                         <asp:Literal ID="lLavaOverview" runat="server" />
-                        <asp:Literal ID="lLavaOutputDebug" runat="server" />
                     </asp:Panel>
 
                     <asp:Panel ID="pnlGrid" runat="server" CssClass="margin-v-sm">

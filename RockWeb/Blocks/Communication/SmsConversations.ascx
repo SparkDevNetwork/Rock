@@ -114,7 +114,7 @@
                     var objDiv = $(".messages-outer-container")[0];
                     objDiv.scrollTop = objDiv.scrollHeight;
 
-                    $("#<%=upConversation.ClientID %> .js-back").click(function () {
+                    $("#<%=upConversation.ClientID %> .js-back").on("click", function () {
                         $('#<%=upConversation.ClientID %>').removeClass("has-focus");
                         return false;
                     });

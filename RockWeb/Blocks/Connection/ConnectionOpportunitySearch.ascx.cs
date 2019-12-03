@@ -165,7 +165,7 @@ namespace RockWeb.Blocks.Connection
                 var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
                 var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
 
-                var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive == true );
+                var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive && a.ConnectionType.IsActive );
 
                 if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
                 {

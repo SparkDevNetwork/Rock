@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        
+
         [Bindable( true )]
         [Category( "Appearance" )]
         [DefaultValue( "" )]
@@ -370,7 +370,7 @@ namespace Rock.Web.UI.Controls
         phoneNumberBoxFormatNumber($(this));
     });
 
-    $('div.phone-number-box ul.dropdown-menu a').click( function(e) {
+    $('div.phone-number-box ul.dropdown-menu a').on('click', function(e) {
         e.preventDefault();
         $(this).closest('div.input-group').find('input:hidden').val($(this).html());
         $(this).closest('div.input-group-btn').find('button').html($(this).html() + ' <span class=""caret""></span>');
@@ -512,7 +512,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            
+
 
             ( (WebControl)this ).AddCssClass( "form-control js-phone-format" );
             if ( !string.IsNullOrWhiteSpace( Placeholder ) )

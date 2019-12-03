@@ -14,18 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
-namespace Rock.Data
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// Represents a model that has an Analytic Table
+    ///
     /// </summary>
-    [RockObsolete( "1.7" )]
-    [Obsolete("Decorate with [Analytics] instead", true )]
-    public interface IAnalytic : IEntity
+    public partial class CustomSundayDate_GivingAnalytics : Rock.Migrations.RockMigration
     {
-
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            Sql( MigrationSQL._201911010002535_CustomSundayDate_GivingAnalytics_spFinance_GivingAnalyticsQuery_TransactionData );
+        }
         
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+        }
     }
 }

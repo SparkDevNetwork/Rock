@@ -27,12 +27,6 @@
     <meta charset="utf-8">
     <title></title>
 
-    <!-- Sentry -->
-    <script src="https://cdn.ravenjs.com/3.5.1/raven.min.js"></script>
-    <script type="text/javascript">
-        Raven.config("<%# Rock.Web.Cache.GlobalAttributesCache.Read().GetValue( "PublicSentryDSN" ) %>").install();
-    </script>
-
     <script type="text/javascript">var _sf_startpt = (new Date()).getTime()</script>
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
     <script src="<%# ResolveRockUrl("~/Scripts/jquery-1.10.2.min.js", true) %>"></script>

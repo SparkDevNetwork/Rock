@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Site List" )]
     [Category( "CMS" )]
@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             string deleteScript = @"
-                $('table.js-grid-site-list a.grid-delete-button').click(function( e ){
+                $('table.js-grid-site-list a.grid-delete-button').on('click', function( e ){
                     var $btn = $(this);
                     e.preventDefault();
                     var siteName = $btn.closest('tr').find('.js-name').text();
@@ -264,7 +264,7 @@ namespace RockWeb.Blocks.Cms
                     rockContext.SaveChanges();
 
                 } );
-                
+
             }
 
             BindGrid();
@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Cms
                 gSites.ColumnsOfType<RockTemplateField>().First( c => c.ID == "colDomains" ).Visible = false;
             }
 
-            // Default show inactive to false if no filter (user preference) applied. 
+            // Default show inactive to false if no filter (user preference) applied.
             bool showInactiveSites = rFilterSite.GetUserPreference( INCLUE_INACTIVE ).AsBoolean();
 
             if ( siteType.Count() > 0 )

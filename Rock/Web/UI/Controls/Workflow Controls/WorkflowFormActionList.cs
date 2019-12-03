@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class WorkflowFormActionList : CompositeControl
     {
@@ -251,25 +251,25 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _actionControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Button Type
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _buttonHtmlControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Activity Value
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _activityControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Response
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-4" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _responseControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Remove Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-1" );
@@ -315,16 +315,16 @@ namespace Rock.Web.UI.Controls
         var $actionList = e.closest('div.form-action-list');
         var newValue = '';
         $actionList.find('div.form-action-rows:first').children('div.form-row').each(function( index ) {
-            newValue += 
-                $(this).find('.form-action-key:first').val() + '^' + 
-                $(this).find('.form-action-button:first').val() + '^' + 
-                $(this).find('.form-action-value:first').val() + '^' + 
+            newValue +=
+                $(this).find('.form-action-key:first').val() + '^' +
+                $(this).find('.form-action-button:first').val() + '^' +
+                $(this).find('.form-action-value:first').val() + '^' +
                 $(this).find('.form-action-response:first').val() + '|'
         });
-        $actionList.children('input:first').val(newValue);            
+        $actionList.children('input:first').val(newValue);
     }
 
-    $('a.form-action-add').click(function (e) {
+    $('a.form-action-add').on('click', function (e) {
         e.preventDefault();
         var $actionList = $(this).closest('.form-action-list');
         $actionList.find('div.form-action-rows:first').append($actionList.find('.js-value-html').val());
@@ -334,11 +334,11 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         var $rows = $(this).closest('div.form-action-rows');
         $(this).closest('div.form-row').remove();
-        updateFormActions($rows);            
+        updateFormActions($rows);
     });
 
     $(document).on('focusout', '.js-form-action-input', function (e) {
-        updateFormActions($(this));            
+        updateFormActions($(this));
     });
 ";
 

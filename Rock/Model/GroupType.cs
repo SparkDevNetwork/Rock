@@ -385,7 +385,7 @@ namespace Rock.Model
             }
         }
         private string _groupViewLavaTemplate;
-        private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+        private string _defaultLavaTemplate = @"{% if Group.GroupType.GroupCapacityRule != 'None' and Group.GroupCapacity != '' %}
 		{% assign warningLevel = ''warning'' %}
 
 		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
@@ -453,7 +453,7 @@ namespace Rock.Model
 		{% for groupLocation in groupLocations %}
 	    	{% if groupLocation.Location.GeoPoint != null and groupLocation.Location.GeoPoint != '' %}
 	    	{% capture markerPoints %}{{ groupLocation.Location.Latitude }},{{ groupLocation.Location.Longitude }}{% endcapture %}
-	    	{% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}', markerPoints   %}
+	    	{% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}', markerPoints %}
 	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}','' %}
 	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=450x250&zoom=13&format=png&key=' %}
             {% assign mapLink = mapLink | Append: googleAPIKey %}
@@ -469,11 +469,11 @@ namespace Rock.Model
 	    	    {% endif %}
 	    	 </div>
 		    {% endif %}
-		    {% if groupLocation.Location.GeoFence != null and groupLocation.Location.GeoFence != ''  %}
+		    {% if groupLocation.Location.GeoFence != null and groupLocation.Location.GeoFence != '' %}
 
 		    {% assign mapLink = staticMapStyle | Replace:'{MarkerPoints}','' %}
 		    {% assign googlePolygon = 'enc:' | Append: groupLocation.Location.GooglePolygon %}
-	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}', googlePolygon  %}
+	    	{% assign mapLink = mapLink | Replace:'{PolygonPoints}', googlePolygon %}
 	    	{% assign mapLink = mapLink | Append:'&sensor=false&size=350x200&format=png&key=' %}
 	    	{% assign mapLink = mapLink | Append: googleAPIKey %}
 		    <div class='group-location-map'>
@@ -504,7 +504,7 @@ namespace Rock.Model
 			{% assign countRegistration = countRegistration | Plus: 1 %}
 		{% endif %}
 		{% assign countLoop = countLoop | Plus: 1 %}
-		{% if countRegistration > 0 and countLoop == linkageCount  %}
+		{% if countRegistration > 0 and countLoop == linkageCount %}
 		</ul>
 		{% endif %}
 	{% endfor %}
@@ -519,7 +519,7 @@ namespace Rock.Model
 			{% assign countEventItemOccurrences = countEventItemOccurrences | Plus: 1 %}
 		{% endif %}
 		{% assign countLoop = countLoop | Plus: 1 %}
-		{% if countEventItemOccurrences > 0  and countLoop == linkageCount %}
+		{% if countEventItemOccurrences > 0 and countLoop == linkageCount %}
 			</ul>
 		{% endif %}
 	{% endfor %}
@@ -530,7 +530,7 @@ namespace Rock.Model
 			{% if contentChannelItemsCount > 0 %}
 			{% assign contentChannelItems = linkage.EventItemOccurrence.ContentChannelItems %}
 				{% for contentChannelItem in contentChannelItems %}
-				{% if contentChannelItem.ContentChannelItem != null  %}
+				{% if contentChannelItem.ContentChannelItem != null %}
 					{% if countContentItems == 0 %}
 					<strong> Content Items</strong>
 					<ul class=""list-unstyled"">

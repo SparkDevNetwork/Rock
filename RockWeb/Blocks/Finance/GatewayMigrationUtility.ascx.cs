@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        ///
+        /// 
         /// </summary>
         private class ScheduledTransactionMigrationResult : MigrationResult
         {

@@ -30,7 +30,7 @@ namespace Rock.Data
     /// Helper class to set view cache
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Does nothing. No longer needed," )]
+    [Obsolete( "Does nothing. No longer needed,", true )]
     public static class RockInteractiveViews
     {
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="path">The path.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Does nothing. No longer needed,")]
+        [Obsolete("Does nothing. No longer needed,", true )]
         public static void SetViewFactory( string path )
         {
         }

@@ -4,7 +4,7 @@
     Sys.Application.add_load(function () {
         $(".photo a").fluidbox();
 
-        $('.js-cancel-checkin').click(function (event) {
+        $('.js-cancel-checkin').on('click', function (event) {
             event.stopImmediatePropagation();
             var personName = $('H4.js-checkin-person-name').first().text();
             return Rock.dialogs.confirmDelete(event, 'Checkin for ' + personName);

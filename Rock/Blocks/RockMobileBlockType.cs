@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Attribute;
+using Rock.Mobile;
 using Rock.Web;
 
 namespace Rock.Blocks
@@ -56,6 +57,15 @@ namespace Rock.Blocks
         /// </returns>
         public abstract object GetMobileConfigurationValues();
 
+        /// <summary>
+        /// Gets the additional settings defined for this block instance.
+        /// </summary>
+        /// <returns>An AdditionalBlockSettings object.</returns>
+        public AdditionalBlockSettings GetAdditionalSettings()
+        {
+            return BlockCache?.AdditionalSettings.FromJsonOrNull<AdditionalBlockSettings>() ?? new AdditionalBlockSettings();
+        }
+
         #endregion
 
         #region Custom Settings
@@ -66,7 +76,7 @@ namespace Rock.Blocks
         /// </summary>
         /// <seealso cref="Rock.Web.RockCustomSettingsUserControlProvider" />
         [TargetType( typeof( RockMobileBlockType ) )]
-        public class RockMobileBlockTypeCustomAdvancedSettingsProvider : RockCustomSettingsUserControlProvider
+        public class RockMobileBlockTypeCustomSettingsProvider : RockCustomSettingsUserControlProvider
         {
             /// <summary>
             /// Gets the path to the user control file.
@@ -74,7 +84,7 @@ namespace Rock.Blocks
             /// <value>
             /// The path to the user control file.
             /// </value>
-            protected override string UserControlPath => "~/Blocks/Mobile/MobileCustomAdvancedSettings.ascx";
+            protected override string UserControlPath => "~/Blocks/Mobile/MobileCustomSettings.ascx";
 
             /// <summary>
             /// Gets the custom settings title. Used when displaying tabs or links to these settings.
@@ -82,7 +92,7 @@ namespace Rock.Blocks
             /// <value>
             /// The custom settings title.
             /// </value>
-            public override string CustomSettingsTitle => "Advanced Settings";
+            public override string CustomSettingsTitle => "Mobile Settings";
         }
 
         #endregion
