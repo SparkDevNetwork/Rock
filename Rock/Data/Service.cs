@@ -97,6 +97,7 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
+        /// Note: You can sometimes improve performance by using Queryable().AsNoTracking(), but be careful. Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
         /// </summary>
         /// <returns></returns>
         public virtual IQueryable<T> Queryable()
@@ -201,7 +202,8 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets the model with the id value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
+        /// Use this if you won't be making any changes to the record and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
         /// </summary>
         /// <param name="id">id</param>
         /// <returns></returns>
@@ -212,7 +214,8 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets the model with the Guid value but doesn't load it into the EF ChangeTracker.
-        /// Use this if you won't be making any changes to the record
+        /// Use this if you won't be making any changes to the record and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
         /// </summary>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
@@ -258,6 +261,8 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets a list of items that match the specified expression with EF tracking disabled.
+        /// Use this if you won't be making any changes to the records and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
@@ -281,7 +286,8 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets the specified parameter expression with no tracking.
-        /// </summary>
+        /// Use this if you won't be making any changes to the records and don't need lazy loading
+        /// Note: Lazy-Loading doesn't always work with AsNoTracking  https://stackoverflow.com/a/20290275/1755417/// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
         /// <param name="sortProperty">The sort property.</param>
