@@ -212,8 +212,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.2.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.2.12\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.0\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
@@ -433,6 +433,7 @@
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberEdit.cs" />
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
     <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
@@ -442,8 +443,8 @@
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
-    <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
-    <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\LavaItemList.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
@@ -511,12 +512,12 @@
     <Compile Include="Web\RockCustomSettingsUserControlProvider.cs" />
     <Compile Include="Net\RockRequestContext.cs" />
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
-    <Compile Include="Blocks\Types\Mobile\ContentChannelItemList.cs" />
-    <Compile Include="Blocks\Types\Mobile\Content.cs" />
-    <Compile Include="Blocks\Types\Mobile\Login.cs" />
-    <Compile Include="Blocks\Types\Mobile\ProfileDetails.cs" />
-    <Compile Include="Blocks\Types\Mobile\Register.cs" />
-    <Compile Include="Blocks\Types\Mobile\WorkflowEntry.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Content.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Register.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\WorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />

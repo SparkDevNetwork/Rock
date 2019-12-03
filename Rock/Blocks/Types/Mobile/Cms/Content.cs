@@ -18,9 +18,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
-using Rock.Mobile.Common.Blocks.Content;
+using Rock.Common.Mobile.Blocks.Content;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Displays custom XAML content on the page.
@@ -28,7 +28,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Content" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Displays custom XAML content on the page." )]
     [IconCssClass( "fa fa-align-center" )]
 
@@ -129,7 +129,7 @@ namespace Rock.Blocks.Types.Mobile
                 content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
             }
 
-            return new Rock.Mobile.Common.Blocks.Content.Configuration
+            return new Rock.Common.Mobile.Blocks.Content.Configuration
             {
                 Content = content,
                 ProcessLava = additionalSettings.ProcessLavaOnClient,

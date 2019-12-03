@@ -343,15 +343,9 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public virtual string GetRootFolder( AssetStorageProvider assetStorageProvider )
         {
-            if ( _rootFolder == null )
-            {
-                var rawRootFolder = GetAttributeValue( assetStorageProvider, CommonAttributeKey.RootFolder ).Trim();
-                _rootFolder = FixRootFolder( rawRootFolder );
-            }
-
-            return _rootFolder;
+            var rawRootFolder = GetAttributeValue( assetStorageProvider, CommonAttributeKey.RootFolder ).Trim();
+            return FixRootFolder( rawRootFolder );
         }
-        private string _rootFolder = null;
 
         /// <summary>
         /// Gets the icon for the file type based on the extension of the provided file name.

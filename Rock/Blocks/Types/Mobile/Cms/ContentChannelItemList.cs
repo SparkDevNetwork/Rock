@@ -35,7 +35,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Lists content channel items for a given channel and allow the user to
@@ -44,7 +44,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Content Channel Item List" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Lists content channel items for a given channel." )]
     [IconCssClass( "fa fa-th-list" )]
 

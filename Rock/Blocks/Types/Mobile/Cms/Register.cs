@@ -18,12 +18,12 @@ using System;
 using System.ComponentModel;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.RegisterAccount;
 using Rock.Data;
-using Rock.Mobile.Common.Blocks.RegisterAccount;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Allows the user to register a new account on a mobile application.
@@ -31,7 +31,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Register" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Allows the user to register a new account on a mobile application." )]
     [IconCssClass( "fa fa-user-plus" )]
 

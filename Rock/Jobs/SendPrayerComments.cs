@@ -314,33 +314,41 @@ namespace Rock.Jobs
 
             this.SendNotifications();
 
+            // Construct the result message.
             var resultMessage = _Log.GetLastMessage( TaskLog.TaskLogMessage.MessageTypeSpecifier.Progress );
+
+            var sb = new StringBuilder();
 
             if ( resultMessage != null )
             {
-                context.Result = resultMessage.Message;
+                sb.AppendLine( resultMessage.Message );
+            }
+            else
+            {
+                sb.AppendLine( "The job did not complete." );
             }
 
             var errors = _Log.Messages.Where( x => x.MessageType == TaskLog.TaskLogMessage.MessageTypeSpecifier.Error ).ToList();
 
             if ( errors.Any() )
             {
-                var sb = new StringBuilder();
-
-                sb.AppendLine();
-                sb.Append( string.Format( "Error Details: ", errors.Count() ) );
+                sb.Append( "Error Details: " );
 
                 errors.ForEach( e => { sb.AppendLine(); sb.Append( e.Message ); } );
+            }
 
-                string errorMessage = sb.ToString();
+            var message = sb.ToString();
 
-                context.Result += errorMessage;
+            context.Result = message;
 
-                var exception = new Exception( errorMessage );
+            // If any errors occurred, throw an exception.
+            if ( errors.Any() )
+            {
+                var exception = new Exception( message );
 
-                var context2 = HttpContext.Current;
+                var httpContext = HttpContext.Current;
 
-                ExceptionLogService.LogException( exception, context2 );
+                ExceptionLogService.LogException( exception, httpContext );
 
                 throw exception;
             }
@@ -366,7 +374,7 @@ namespace Rock.Jobs
             {
                 _CategoryIdList = GetCategoryIdList( this.CategoryGuidList, categoryService );
 
-                if ( _CategoryIdList.Any() )
+                if ( !_CategoryIdList.Any() )
                 {
                     _Log.LogError( "Category List is invalid. No matching Categories found." );
                 }

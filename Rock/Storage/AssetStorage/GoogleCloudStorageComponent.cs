@@ -406,6 +406,11 @@ namespace Rock.Storage.AssetStorage
             if ( asset.Type == AssetType.Folder )
             {
                 name = FixRootFolder( name );
+
+                if ( name.IsNullOrWhiteSpace() && !asset.Name.IsNullOrWhiteSpace() )
+                {
+                    name = FixRootFolder( asset.Name );
+                }
             }
 
             return new Google.Apis.Storage.v1.Data.Object

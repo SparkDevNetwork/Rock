@@ -344,7 +344,7 @@ namespace Rock.Net
 
             if ( Headers != null && Headers.ContainsKey( "X-Rock-DeviceData" ) )
             {
-                mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Mobile.Common.DeviceData>() );
+                mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );
             }
 
             return mergeFields;

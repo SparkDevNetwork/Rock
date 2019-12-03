@@ -21,8 +21,9 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
-using Rock.Mobile.Common.Blocks.Content;
+using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -191,7 +192,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// The page parameter keys for the GroupEdit block.
         /// </summary>
-        public static class PagePArameterKeys
+        public static class PageParameterKeys
         {
             public const string GroupId = "GroupId";
         }
@@ -257,10 +258,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
             //
             // Indicate that we are a dynamic content providing block.
             //
-            return new Rock.Mobile.Common.Blocks.Content.Configuration
+            return new Rock.Common.Mobile.Blocks.Content.Configuration
             {
                 Content = null,
-                DynamicContent = true,
+                DynamicContent = true
             };
         }
 
@@ -295,7 +296,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         </Button.CommandParameter>
     </Button>
 
-    <Button StyleClass=""btn,btn-link"" Text=""Cancel"" Command=""{Binding PopPage}"" />
+    <Button StyleClass=""btn,btn-link"" Text=""Cancel"" ##CANCEL## />
 </StackLayout>";
 
             var parameters = new Dictionary<string, string>();
@@ -303,7 +304,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             using ( var rockContext = new RockContext() )
             {
-                var groupId = RequestContext.GetPageParameter( PagePArameterKeys.GroupId ).AsInteger();
+                var groupId = RequestContext.GetPageParameter( PageParameterKeys.GroupId ).AsInteger();
                 var group = new GroupService( rockContext ).Get( groupId );
 
                 if ( group == null )
@@ -316,14 +317,23 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 }
 
                 group.LoadAttributes( rockContext );
-                var attributes = GetEditableAttributes( group, rockContext );
+                var attributes = GetEditableAttributes( group );
 
                 fieldsContent = BuildCommonFields( group, parameters );
-                fieldsContent += BuildAttributeFields( group, attributes, parameters );
+                fieldsContent += MobileHelper.GetEditAttributesXaml( group, attributes, parameters );
             }
 
             var validatorsContent = parameters.Keys.Select( a => $"<x:Reference>{a}</x:Reference>" );
-            var parametersContent = parameters.Select( a => $"<Rock:ActionParameter Name=\"{a.Key}\" Value=\"{{Binding {a.Value}, Source={{x:Reference {a.Key}}}}}\" />" );
+            var parametersContent = parameters.Select( a => $"<Rock:Parameter Name=\"{a.Key}\" Value=\"{{Binding {a.Value}, Source={{x:Reference {a.Key}}}}}\" />" );
+
+            if ( GroupDetailPage.HasValue )
+            {
+                content = content.Replace( "##CANCEL##", $"Command=\"{{Binding ReplacePage}}\" CommandParameter=\"{GroupDetailPage}\"" );
+            }
+            else
+            {
+                content = content.Replace( "##CANCEL##", "Command=\"{Binding PopPage}\"" );
+            }
 
             return content.Replace( "##FIELDS##", fieldsContent )
                 .Replace( "##VALIDATORS##", string.Join( string.Empty, validatorsContent ) )
@@ -344,12 +354,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 if ( EnableGroupNameEdit )
                 {
-                    AppendField( sb, $"<Rock:TextBox x:Name=\"name\" Label=\"Name\" IsRequired=\"true\" Text=\"{group.Name.EncodeXml( true )}\" />" );
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( $"<Rock:TextBox x:Name=\"name\" Label=\"Name\" IsRequired=\"true\" Text=\"{group.Name.EncodeXml( true )}\" />" ) );
                     parameters.Add( "name", "Text" );
                 }
                 else
                 {
-                    AppendLiteral( sb, "Name", group.Name );
+                    sb.AppendLine( MobileHelper.GetReadOnlyFieldXaml( "Name", group.Name ) );
                 }
             }
 
@@ -357,12 +367,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 if ( EnableDescriptionEdit )
                 {
-                    AppendField( sb, $"<Rock:TextBox x:Name=\"description\" Label=\"Description\" IsRequired=\"false\" Text=\"{group.Description.EncodeXml( true )}\" />" );
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( $"<Rock:TextBox x:Name=\"description\" Label=\"Description\" IsRequired=\"false\" Text=\"{group.Description.EncodeXml( true )}\" />" ) );
                     parameters.Add( "description", "Text" );
                 }
                 else
                 {
-                    AppendLiteral( sb, "Description", group.Name );
+                    sb.AppendLine( MobileHelper.GetReadOnlyFieldXaml( "Description", group.Name ) );
                 }
             }
 
@@ -370,12 +380,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 if ( EnableCampusEdit )
                 {
-                    AppendField( sb, $"<Rock:CampusPicker x:Name=\"campus\" Label=\"Campus\" IsRequired=\"{group.GroupType.GroupsRequireCampus}\" SelectedValue=\"{group.Campus?.Guid.ToStringSafe()}\" />" );
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( $"<Rock:CampusPicker x:Name=\"campus\" Label=\"Campus\" IsRequired=\"{group.GroupType.GroupsRequireCampus}\" SelectedValue=\"{group.Campus?.Guid.ToStringSafe()}\" />" ) );
                     parameters.Add( "campus", "SelectedValue" );
                 }
                 else
                 {
-                    AppendLiteral( sb, "Campus", group.Campus.Name );
+                    sb.AppendLine( MobileHelper.GetReadOnlyFieldXaml( "Campus", group.Campus.Name ) );
                 }
             }
 
@@ -383,12 +393,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 if ( EnableGroupCapacityEdit )
                 {
-                    AppendField( sb, $"<Rock:NumberBox x:Name=\"capacity\" Label=\"Capacity\" IsRequired=\"false\" Text=\"{group.GroupCapacity}\" />" );
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( $"<Rock:NumberBox x:Name=\"capacity\" Label=\"Capacity\" IsRequired=\"false\" Text=\"{group.GroupCapacity}\" />" ) );
                     parameters.Add( "capacity", "Text" );
                 }
                 else
                 {
-                    AppendLiteral( sb, "Group Capacity", group.Name );
+                    sb.AppendLine( MobileHelper.GetReadOnlyFieldXaml( "Group Capacity", group.Name ) );
                 }
             }
 
@@ -396,12 +406,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 if ( EnableActiveStatusEdit )
                 {
-                    AppendField( sb, $"<Rock:CheckBox x:Name=\"active\" Label=\"Is Active\" IsRequired=\"false\" IsChecked=\"{group.IsActive}\" />", false );
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( $"<Rock:CheckBox x:Name=\"active\" Label=\"Is Active\" IsRequired=\"false\" IsChecked=\"{group.IsActive}\" />", false ) );
                     parameters.Add( "active", "IsChecked" );
                 }
                 else
                 {
-                    AppendLiteral( sb, "Is Active", group.IsActive ? "Yes" : "No" );
+                    sb.AppendLine( MobileHelper.GetReadOnlyFieldXaml( "Is Active", group.IsActive ? "Yes" : "No" ) );
                 }
             }
 
@@ -409,72 +419,16 @@ namespace Rock.Blocks.Types.Mobile.Groups
             {
                 if ( EnablePublicStatusEdit )
                 {
-                    AppendField( sb, $"<Rock:CheckBox x:Name=\"public\" Label=\"Is Public\" IsRequired=\"false\" IsChecked=\"{group.IsPublic}\" />", false );
+                    sb.AppendLine( MobileHelper.GetSingleFieldXaml( $"<Rock:CheckBox x:Name=\"public\" Label=\"Is Public\" IsRequired=\"false\" IsChecked=\"{group.IsPublic}\" />", false ) );
                     parameters.Add( "public", "IsChecked" );
                 }
                 else
                 {
-                    AppendLiteral( sb, "Is Public", group.IsPublic ? "Yes" : "No" );
+                    sb.AppendLine( MobileHelper.GetReadOnlyFieldXaml( "Is Public", group.IsPublic ? "Yes" : "No" ) );
                 }
             }
 
             return sb.ToString();
-        }
-
-        /// <summary>
-        /// Builds the attribute fields.
-        /// </summary>
-        /// <param name="group">The group.</param>
-        /// <param name="attributes">The attributes.</param>
-        /// <param name="parameters">The parameters.</param>
-        /// <returns>A XAML string that contains any attribute fields as well as the header text.</returns>
-        private string BuildAttributeFields( Group group, List<AttributeCache> attributes, Dictionary<string, string> parameters )
-        {
-            if ( !attributes.Any() )
-            {
-                return string.Empty;
-            }
-
-            var sb = new StringBuilder();
-
-            sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"heading1\" />" );
-            sb.AppendLine( "<BoxView Color=\"#888\" HeightRequest=\"1\" Margin=\"0 0 12 0\" />" );
-
-            foreach ( var attribute in attributes )
-            {
-                var fieldName = $"attribute_{attribute.Id}";
-                var label = attribute.AbbreviatedName.IsNotNullOrWhiteSpace() ? attribute.AbbreviatedName : attribute.Name;
-                var configurationValues = attribute.QualifierValues
-                    .ToDictionary( a => a.Key, a => a.Value.Value )
-                    .ToJson();
-
-                AppendField( sb, $"<Rock:AttributeValueEditor x:Name=\"{fieldName}\" Label=\"{label}\" IsRequired=\"{attribute.IsRequired}\" FieldType=\"{attribute.FieldType.Class}\" ConfigurationValues=\"{{}}{configurationValues.EncodeXml( true )}\" Value=\"{group.GetAttributeValue( attribute.Key ).EncodeXml( true )}\" />" );
-                parameters.Add( fieldName, "Value" );
-            }
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Appends the XAML field to the StringBuilder.
-        /// </summary>
-        /// <param name="sb">The string builder to append to.</param>
-        /// <param name="field">The field.</param>
-        /// <param name="wrapped">if set to <c>true</c> the SingleField wraps the field in a border.</param>
-        private void AppendField( StringBuilder sb, string field, bool wrapped = true )
-        {
-            sb.AppendLine( $"<Rock:SingleField Wrapped=\"{wrapped}\">{field}</Rock:SingleField>" );
-        }
-
-        /// <summary>
-        /// Appends the literal text field.
-        /// </summary>
-        /// <param name="sb">The string builder to append to..</param>
-        /// <param name="label">The label of the field.</param>
-        /// <param name="text">The text content of the field.</param>
-        private void AppendLiteral( StringBuilder sb, string label, string text )
-        {
-            AppendField( sb, $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />", false );
         }
 
         /// <summary>
@@ -486,7 +440,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             using ( var rockContext = new RockContext() )
             {
-                var groupId = RequestContext.GetPageParameter( PagePArameterKeys.GroupId ).AsInteger();
+                var groupId = RequestContext.GetPageParameter( PageParameterKeys.GroupId ).AsInteger();
                 var group = new GroupService( rockContext ).Get( groupId );
 
                 if ( group == null || !group.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
@@ -535,18 +489,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 //
                 // Save all the attribute values.
                 //
-                var attributes = GetEditableAttributes( group, rockContext );
-                if ( attributes.Any() )
-                {
-                    foreach ( var attribute in attributes )
-                    {
-                        var keyName = $"attribute_{attribute.Id}";
-                        if ( parameters.ContainsKey( keyName ) )
-                        {
-                            group.SetAttributeValue( attribute.Key, parameters[keyName].ToStringSafe() );
-                        }
-                    }
-                }
+                MobileHelper.UpdateEditAttributeValues( group, parameters, GetEditableAttributes( group ) );
 
                 //
                 // Save all changes to database.
@@ -563,7 +506,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 return new CallbackResponse
                 {
                     Command = "ReplacePage",
-                    CommandParameter = $"{GroupDetailPage}?GroupId={RequestContext.GetPageParameter( PagePArameterKeys.GroupId )}"
+                    CommandParameter = $"{GroupDetailPage}?GroupId={RequestContext.GetPageParameter( PageParameterKeys.GroupId )}"
                 };
             }
             else
@@ -579,10 +522,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Gets the editable attributes.
         /// </summary>
-        /// <param name="group">The group.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private List<AttributeCache> GetEditableAttributes( Group group, RockContext rockContext )
+        private List<AttributeCache> GetEditableAttributes( IHasAttributes entity )
         {
             if ( AttributeCategory.HasValue )
             {
@@ -590,9 +533,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 if ( category != null )
                 {
-                    group.LoadAttributes( rockContext );
-
-                    return group.Attributes.Values
+                    return entity.Attributes.Values
                         .Where( a => a.CategoryIds.Contains( category.Id ) )
                         .Where( a => a.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                         .OrderBy( a => a.Order )
@@ -615,10 +556,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public object GetInitialContent()
         {
-                return new Rock.Mobile.Common.Blocks.Content.Configuration
-                {
-                    Content = BuildContent()
-                };
+            return new CallbackResponse
+            {
+                Content = BuildContent()
+            };
         }
 
         [BlockAction]
