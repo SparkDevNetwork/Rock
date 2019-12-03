@@ -34,7 +34,7 @@ namespace Rock.Field.Types
 
         #region Configuration
 
-        public static readonly string BLOCK_TYPE_KEY = "blocktype";
+        public static readonly string TEMPLATE_BLOCK_KEY = "templateblock";
         private static readonly Guid _CustomGuid = new Guid( "ffffffff-ffff-ffff-ffff-ffffffffffff" );
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( BLOCK_TYPE_KEY );
+            configKeys.Add( TEMPLATE_BLOCK_KEY );
             return configKeys;
         }
 
@@ -56,23 +56,16 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            // build a drop down list of defined types (the one that gets selected is
-            // used to build a list of defined values) 
-            var ddl = new RockDropDownList();
-            controls.Add( ddl );
-            ddl.AutoPostBack = true;
-            ddl.EnhanceForLongLists = true;
-            ddl.SelectedIndexChanged += OnQualifierUpdated;
-            ddl.Label = "Block Type";
-            ddl.Required = true;
-            ddl.Help = "Type of block to select templates from.";
+            var dvpTemplateBlock = new DefinedValuePicker();
+            dvpTemplateBlock.DisplayDescriptions = true;
+            controls.Add( dvpTemplateBlock );
+            dvpTemplateBlock.AutoPostBack = true;
+            dvpTemplateBlock.SelectedIndexChanged += OnQualifierUpdated;
 
-            ddl.Items.Add( new ListItem() );
-
-            var blockTypes = BlockTypeCache.All();
-            blockTypes.ForEach( g =>
-                ddl.Items.Add( new ListItem( g.Category + "-" + g.Name, g.Id.ToString().ToUpper() ) )
-            );
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.TEMPLATE_BLOCK.AsGuid() );
+            dvpTemplateBlock.DefinedTypeId = definedType?.Id;
+            dvpTemplateBlock.Label = "Template Block";
+            dvpTemplateBlock.Help = "An optional setting to select template block from..";
 
             return controls;
         }
@@ -85,13 +78,21 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( BLOCK_TYPE_KEY, new ConfigurationValue( "Block Type", "Type of block to select templates from.", "" ) );
+            configurationValues.Add( TEMPLATE_BLOCK_KEY, new ConfigurationValue( "Template Block", "Type of Template Block to select.", "" ) );
 
             if ( controls != null && controls.Count == 1 )
             {
-                if ( controls[0] != null && controls[0] is DropDownList )
+                if ( controls[0] != null && controls[0] is DefinedValuePicker )
                 {
-                    configurationValues[BLOCK_TYPE_KEY].Value = ( ( DropDownList ) controls[0] ).SelectedValue;
+                    int? definedValueId = ( ( DefinedValuePicker ) controls[0] ).SelectedValueAsInt();
+                    if ( definedValueId.HasValue )
+                    {
+                        var definedValue = DefinedValueCache.Get( definedValueId.Value );
+                        if ( definedValue != null )
+                        {
+                            configurationValues[TEMPLATE_BLOCK_KEY].Value = definedValue.Guid.ToString();
+                        }
+                    }
                 }
             }
 
@@ -107,9 +108,17 @@ namespace Rock.Field.Types
         {
             if ( controls != null && controls.Count == 1 && configurationValues != null )
             {
-                if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( BLOCK_TYPE_KEY ) )
+                if ( controls[0] != null && controls[0] is DefinedValuePicker && configurationValues.ContainsKey( TEMPLATE_BLOCK_KEY ) )
                 {
-                    ( ( DropDownList ) controls[0] ).SelectedValue = configurationValues[BLOCK_TYPE_KEY].Value;
+                    Guid? definedValueGuid = configurationValues[TEMPLATE_BLOCK_KEY].Value.AsGuidOrNull();
+                    if ( definedValueGuid.HasValue )
+                    {
+                        var definedValue = DefinedValueCache.Get( definedValueGuid.Value );
+                        if ( definedValue != null )
+                        {
+                            ( ( DefinedValuePicker ) controls[0] ).SetValue( definedValue.Id.ToString() );
+                        }
+                    }
                 }
             }
         }
@@ -179,12 +188,12 @@ namespace Rock.Field.Types
         {
             BlockTemplatePicker editControl = new BlockTemplatePicker { ID = id };
 
-            if ( configurationValues != null && configurationValues.ContainsKey( BLOCK_TYPE_KEY ) )
+            if ( configurationValues != null && configurationValues.ContainsKey( TEMPLATE_BLOCK_KEY ) )
             {
-                int blockTypeId = 0;
-                if ( Int32.TryParse( configurationValues[BLOCK_TYPE_KEY].Value, out blockTypeId ) && blockTypeId > 0 )
+                int blockTemplateDefinedValueId = 0;
+                if ( Int32.TryParse( configurationValues[TEMPLATE_BLOCK_KEY].Value, out blockTemplateDefinedValueId ) && blockTemplateDefinedValueId > 0 )
                 {
-                    editControl.BlockTypeId = blockTypeId;
+                    editControl.TemplateBlockValueId = blockTemplateDefinedValueId;
                 }
             }
 
