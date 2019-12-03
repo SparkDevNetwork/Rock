@@ -4043,20 +4043,33 @@ namespace Rock.Lava
             // Determine if dataset is a collection or a single object
             bool isCollection;
 
-            if ( dataObject is IEntity )
+            if ( dataObject is IEntity entity )
             {
+                // Get help LazyLoading work when they are put into a RockDynamic, attach the Entities to a RockContext
+                var rockContext = GetRockContext( context );
+                var entityDbSet = rockContext.Set( entity.GetType() );
+                entityDbSet.Attach( entity );
+
                 resultDataObject = new RockDynamic( dataObject );
                 resultDataObject.EntityTypeId = EntityTypeCache.GetId( dataObject.GetType() );
                 isCollection = false;
             }
             else if ( dataObject is IEnumerable<IEntity> entityList )
             {
+                var firstEntity = entityList.FirstOrDefault();
                 var dynamicEntityList = new List<RockDynamic>();
-                foreach ( var item in entityList )
+                if ( firstEntity != null )
                 {
-                    dynamic entity = new RockDynamic( item );
-                    entity.EntityTypeId = EntityTypeCache.GetId( item.GetType() );
-                    dynamicEntityList.Add( entity );
+                    // Get help LazyLoading work when they are put into a RockDynamic, attach the Entities to a RockContext
+                    var rockContext = GetRockContext(context);
+                    var entityDbSet = rockContext.Set( firstEntity.GetType() );
+                    foreach ( var item in entityList )
+                    {
+                        entityDbSet?.Attach( item );
+                        dynamic rockDynamicItem = new RockDynamic( item );
+                        rockDynamicItem.EntityTypeId = EntityTypeCache.GetId( item.GetType() );
+                        dynamicEntityList.Add( rockDynamicItem );
+                    }
                 }
 
                 resultDataObject = dynamicEntityList;
