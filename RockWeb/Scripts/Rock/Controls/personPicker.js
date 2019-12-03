@@ -246,7 +246,15 @@
 
                     if (selectedPersonId == lastSelectedPersonId && e.type == 'click') {
                         // if they are clicking the same person twice in a row (and the details are done expanding), assume that's the one they want to pick
-                        $pickerSelect[0].trigger('click');
+                        var selectedText = $selectedItem.attr('data-person-name');
+
+                        setSelectedPerson(selectedPersonId, selectedText);
+
+                        // Fire the postBack for the Select button.
+                        var postBackUrl = $pickerSelect.prop('href');
+                        if (postBackUrl) {
+                            window.location = postBackUrl;
+                        }
                     } else {
 
                         // if it is already visible but isn't the same one twice, just leave it open
