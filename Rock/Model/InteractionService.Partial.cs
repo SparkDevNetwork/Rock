@@ -282,7 +282,7 @@ BEGIN
 END
 ",
 new SqlParameter( "@browserSessionId", browserSessionId ),
-new SqlParameter( "@ipAddress", ipAddress ),
+new SqlParameter( "@ipAddress", ipAddress.Truncate(45) ),
 new SqlParameter( "@interactionDeviceTypeId", interactionDeviceTypeId ),
 new SqlParameter( "@currentDateTime", currentDateTime)
 ).FirstOrDefault();
