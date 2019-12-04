@@ -693,38 +693,32 @@ namespace RockWeb.Blocks.Groups
 
                 groupLocation.CopyPropertiesFrom( groupLocationState );
 
+                // Update Group Location Schedules
                 var existingSchedules = groupLocation.Schedules.Select( s => s.Guid ).ToList();
                 var existingGroupLocationConfigs = groupLocation.GroupLocationScheduleConfigs.Select( g => g );
-
-                var addedSchedules = new List<int>();
 
                 foreach ( var scheduleState in groupLocationState.Schedules.Where( s => !existingSchedules.Contains( s.Guid ) ).ToList() )
                 {
                     var schedule = scheduleService.Get( scheduleState.Guid );
                     if ( schedule != null )
                     {
-                        addedSchedules.Add( schedule.Id );
                         groupLocation.Schedules.Add( schedule );
                     }
                 }
 
-
-                // Select group configs with min, desired or max values 
+                // Get existing configurations with modified capacity values.
                 var modifiedScheduleConfigs = groupLocationState.GroupLocationScheduleConfigs
                     .Where( s => groupLocation.GroupLocationScheduleConfigs
                         .Where( exs => ( exs.ScheduleId == s.ScheduleId )
                             && exs.GroupLocationId == s.GroupLocationId
                             && ( exs.MinimumCapacity != s.MinimumCapacity
                             || exs.DesiredCapacity != s.DesiredCapacity
-                            || exs.MaximumCapacity != s.MaximumCapacity ) ).Any() );
+                            || exs.MaximumCapacity != s.MaximumCapacity ) ).Any() )
+                    .ToList();
 
-                // Handles case where group location schedules exisited without group location schedule configs
-                var newGroupLocationScheduleConfigs = existingGroupLocationConfigs.Count() > 0 
-                    ? groupLocationState.GroupLocationScheduleConfigs
-                    .Where( s => addedSchedules.Contains( s.ScheduleId ) ).ToList()
-                    : groupLocationState.GroupLocationScheduleConfigs;
+                // Add new scheduling configurations.
+                var newGroupLocationScheduleConfigs = groupLocationState.GroupLocationScheduleConfigs.Where( s => s.GroupLocationId == 0 ).ToList();
 
-                // Add scheduling configs
                 foreach ( var addedGroupLocationScheduleConfigs in newGroupLocationScheduleConfigs )
                 {
                     groupLocation.GroupLocationScheduleConfigs.Add(
