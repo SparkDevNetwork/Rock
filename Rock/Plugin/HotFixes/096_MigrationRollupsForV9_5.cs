@@ -28,11 +28,11 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            SetAssessmentAttributeValuesBlockSettings_Up();
-            FixDQSocialMediaLinks();
-            DisableInteractionSessionsListPageSearchIndex();
-            ChartJsLavaShortCode();
-            FixDefinedTypeDescriptionFormatting();
+            //SetAssessmentAttributeValuesBlockSettings_Up();
+            //FixDQSocialMediaLinks();
+            //DisableInteractionSessionsListPageSearchIndex();
+            //ChartJsLavaShortCode();
+            //FixDefinedTypeDescriptionFormatting();
         }
 
         /// <summary>
