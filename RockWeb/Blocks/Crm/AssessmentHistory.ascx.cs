@@ -291,7 +291,7 @@ namespace RockWeb.Blocks.Crm
         /// <returns></returns>
         private bool UserCanDelete()
         {
-            return IsUserAuthorized( Authorization.ADMINISTRATE );
+            return IsUserAuthorized( Authorization.EDIT );
         }
 
         #endregion Data Helpers
