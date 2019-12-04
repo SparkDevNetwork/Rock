@@ -70,96 +70,80 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            string[] assessmentTypeGuids = new string[] { };
+            var assessmentTypes = new List<AssessmentTypeCache>();
 
             // Create a list of assessments that should be included in the badge
             if ( !String.IsNullOrEmpty( GetAttributeValue( badge, AttributeKeys.AssessmentsToShow ) ) )
             {
                 // Get from attribute if available
                 var assessmentTypesGuidString = GetAttributeValue( badge, AttributeKeys.AssessmentsToShow );
-                assessmentTypeGuids = assessmentTypesGuidString.IsNullOrWhiteSpace() ? null : assessmentTypesGuidString.Split( new char[] { ',' } );
+                var assessmentTypeGuids = assessmentTypesGuidString.IsNullOrWhiteSpace() ? null : assessmentTypesGuidString.Split( new char[] { ',' } );
+                foreach( var assessmentGuid in assessmentTypeGuids )
+                {
+                    assessmentTypes.Add( AssessmentTypeCache.Get( assessmentGuid ) );
+                }
             }
             else
             {
                 // If none are selected then all are used.
-                assessmentTypeGuids = new string[]
-                {
-                    Rock.SystemGuid.AssessmentType.CONFLICT,
-                    Rock.SystemGuid.AssessmentType.DISC,
-                    Rock.SystemGuid.AssessmentType.EQ,
-                    Rock.SystemGuid.AssessmentType.GIFTS,
-                    Rock.SystemGuid.AssessmentType.MOTIVATORS
-                };
+                assessmentTypes = AssessmentTypeCache.All();
             }
+
+            // Need a list of primitive types for assessmentTestsTaken linq
+            var availableTypes = assessmentTypes.Select( t => t.Id ).ToList();
+
+            // Get a list of all of the tests a the person has taken that the component is configured to show.
+            var assessmentTestsTaken = new AssessmentService( new RockContext() )
+                .Queryable()
+                .Where( a => a.PersonAlias.PersonId == Person.Id )
+                .Where( a => a.Status == AssessmentRequestStatus.Complete )
+                .Where( a => availableTypes.Contains( a.AssessmentTypeId ) )
+                .OrderByDescending( a => a.CreatedDateTime )
+                .ToList();
 
             StringBuilder toolTipText = new StringBuilder();
             StringBuilder badgeRow1 = new StringBuilder( $@"<div class='badge-row'>" );
             StringBuilder badgeRow2 = new StringBuilder();
-            if ( assessmentTypeGuids.Length > 1 )
+
+            if ( assessmentTypes.Count > 1 )
             {
                 badgeRow2.AppendLine( $@"<div class='badge-row'>" );
             }
 
-            for ( int i = 0; i < assessmentTypeGuids.Length; i++ )
+            for ( int i = 0; i < assessmentTypes.Count; i++ )
             {
                 StringBuilder badgeIcons = new StringBuilder();
-                if ( i % 2 == 0 )
-                {
-                    badgeIcons = badgeRow1;
-                }
-                else
-                {
-                    badgeIcons = badgeRow2;
-                }
-                var assessmentType = new AssessmentTypeService( new RockContext() ).GetNoTracking( assessmentTypeGuids[i].AsGuid() );
-                string resultsPath = assessmentType.AssessmentResultsPath;
-                string resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{resultsPath}?Person={Person.UrlEncodedKey}" );
-                string iconCssClass = assessmentType.IconCssClass;
-                string badgeHtml = string.Empty;
-                string assessmentTitle = string.Empty;
-                var mergeFields = new Dictionary<string, object>();
-                string mergedBadgeSummaryLava = "Not taken";
 
-                switch ( assessmentTypeGuids[i].ToUpper() )
+                badgeIcons = i % 2 == 0 ? badgeRow1 : badgeRow2;
+
+                var assessmentType = assessmentTypes[i];
+                var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={this.Person.GetPersonActionIdentifier( "Assessment" ) }" );
+                var assessmentTitle = assessmentType.Title;
+                var mergeFields = new Dictionary<string, object>();
+                var mergedBadgeSummaryLava = "Not taken";
+
+                switch ( assessmentType.Guid.ToString().ToUpper() )
                 {
                     case Rock.SystemGuid.AssessmentType.CONFLICT:
 
-                        var conflictsThemes = new Dictionary<string, decimal>();
-                        conflictsThemes.Add( "Winning", Person.GetAttributeValue( "core_ConflictThemeWinning" ).AsDecimalOrNull() ?? 0 );
-                        conflictsThemes.Add( "Solving", Person.GetAttributeValue( "core_ConflictThemeSolving" ).AsDecimalOrNull() ?? 0 );
-                        conflictsThemes.Add( "Accommodating", Person.GetAttributeValue( "core_ConflictThemeAccommodating" ).AsDecimalOrNull() ?? 0 );
+                        var conflictsThemes = new Dictionary<string, decimal>
+                        {
+                            { "Winning", Person.GetAttributeValue( "core_ConflictThemeWinning" ).AsDecimalOrNull() ?? 0 },
+                            { "Solving", Person.GetAttributeValue( "core_ConflictThemeSolving" ).AsDecimalOrNull() ?? 0 },
+                            { "Accommodating", Person.GetAttributeValue( "core_ConflictThemeAccommodating" ).AsDecimalOrNull() ?? 0 }
+                        };
 
                         string highestScoringTheme = conflictsThemes.Where( x => x.Value == conflictsThemes.Max( v => v.Value ) ).Select( x => x.Key ).FirstOrDefault() ?? string.Empty;
                         mergeFields.Add( "ConflictTheme", highestScoringTheme );
                         assessmentTitle = "Conflict Theme";
                         break;
 
-                    case Rock.SystemGuid.AssessmentType.DISC:
-                        assessmentTitle = "DISC";
-                        break;
-
                     case Rock.SystemGuid.AssessmentType.EQ:
                         assessmentTitle = "EQ Self Aware";
                         break;
-
-                    case Rock.SystemGuid.AssessmentType.GIFTS:
-                        assessmentTitle = "Spiritual Gifts";
-                        break;
-
-                    case Rock.SystemGuid.AssessmentType.MOTIVATORS:
-                        assessmentTitle = "Motivators";
-                        break;
                 }
 
-                // Check if person has taken test
-                var assessmentTest = new AssessmentService( new RockContext() )
-                    .Queryable()
-                    .Where( a => a.PersonAlias.PersonId == Person.Id )
-                    .Where( a => a.AssessmentTypeId == assessmentType.Id )
-                    .Where( a => a.Status == AssessmentRequestStatus.Complete )
-                    .OrderByDescending( a => a.CreatedDateTime )
-                    .FirstOrDefault();
-
+                var assessmentTest = assessmentTestsTaken.Where( t => t.AssessmentTypeId == assessmentType.Id ).FirstOrDefault();
                 string badgeColor = assessmentTest != null ? assessmentType.BadgeColor : UNTAKEN_BADGE_COLOR;
 
                 badgeIcons.AppendLine( $@"<div class='badge'>" );
@@ -175,7 +159,7 @@ namespace Rock.Badge.Component
                 badgeIcons.AppendLine( $@"
                         <span class='fa-stack'>
                             <i style='color:{badgeColor};' class='fa fa-circle fa-stack-2x'></i>
-                            <i class='{iconCssClass} fa-stack-1x'></i>
+                            <i class='{assessmentType.IconCssClass} fa-stack-1x'></i>
                         </span>" );
 
                 // Close the anchor for the linked assessment test
@@ -190,18 +174,18 @@ namespace Rock.Badge.Component
                     <p class='margin-b-sm'>
                         <span class='fa-stack'>
                             <i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i>
-                            <i style='font-size:15px; color:#ffffff;' class='{iconCssClass} fa-stack-1x'></i>
+                            <i style='font-size:15px; color:#ffffff;' class='{assessmentType.IconCssClass} fa-stack-1x'></i>
                         </span>
                         <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
                     </p>" );
             }
 
             badgeRow1.AppendLine( $@"</div>" );
-            if ( assessmentTypeGuids.Length > 1 )
+
+            if ( assessmentTypes.Count > 1 )
             {
                 badgeRow2.AppendLine( $@"</div>" );
             }
-
 
             writer.Write( $@" <div class='badge badge-id-{badge.Id}'><div class='badge-grid' data-toggle='tooltip' data-html='true' data-sanitize='false' data-original-title=""{toolTipText.ToString()}"">" );
             writer.Write( badgeRow1.ToString() );
