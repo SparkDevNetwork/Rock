@@ -89,6 +89,10 @@
     <Compile Include="Migrations\201912041645157_GroupInactiveReason.Designer.cs">
       <DependentUpon>201912041645157_GroupInactiveReason.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201912042320379_Rollup_1204.cs" />
+    <Compile Include="Migrations\201912042320379_Rollup_1204.Designer.cs">
+      <DependentUpon>201912042320379_Rollup_1204.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -948,6 +952,9 @@
     <EmbeddedResource Include="Migrations\201912041645157_GroupInactiveReason.resx">
       <DependentUpon>201912041645157_GroupInactiveReason.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912042320379_Rollup_1204.resx">
+      <DependentUpon>201912042320379_Rollup_1204.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
     </EmbeddedResource>
@@ -1591,6 +1598,9 @@
     </Content>
     <Content Include="Migrations\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\201912042320379_Rollup_1204_chartjsfix.sql">
+      <DependentUpon>201912042320379_Rollup_1204.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.1\201910241702033_ufnCrm_GetFamilyTitle.sql">
       <DependentUpon>201910241702033_FixGetFamilyTitleSpaces.cs</DependentUpon>

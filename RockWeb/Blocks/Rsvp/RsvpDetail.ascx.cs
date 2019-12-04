@@ -642,6 +642,7 @@ namespace RockWeb.Blocks.RSVP
                     rsvp.Decline = ( attendee.RSVP == Rock.Model.RSVP.No );
                     rsvp.DeclineReason = attendee.DeclineReasonValueId;
                     rsvp.DeclineNote = attendee.Note;
+                    rsvp.RSVPDateTime = attendee.RSVPDateTime;
                     attendees.Add( rsvp );
                     existingAttendanceRecords.Add( attendee.PersonAlias.PersonId );
                 }
@@ -785,22 +786,31 @@ var dnutChart = new Chart(dnutCtx, {{
                                 rockContext.SaveChanges();
                             }
 
-                            attendance.RSVPDateTime = DateTime.Now;
-                            attendance.RSVP = Rock.Model.RSVP.Yes;
+                            // only set the RSVP and Date if the value is changing 
+                            if ( attendance.RSVP != Rock.Model.RSVP.Yes )
+                            {
+                                attendance.RSVPDateTime = DateTime.Now;
+                                attendance.RSVP = Rock.Model.RSVP.Yes;
+                            }
                             attendance.Note = string.Empty;
                             attendance.DeclineReasonValueId = null;
                         }
                         else if ( attendee.Decline )
                         {
-                            attendance.RSVPDateTime = DateTime.Now;
-                            attendance.RSVP = Rock.Model.RSVP.No;
+                            // only set the RSVP and Date if the value is changing 
+                            if ( attendance.RSVP != Rock.Model.RSVP.No )
+                            {
+                                attendance.RSVPDateTime = DateTime.Now;
+                                attendance.RSVP = Rock.Model.RSVP.No;
+                            }
+
                             attendance.Note = attendee.DeclineNote;
                             if ( attendee.DeclineReason != 0 )
                             {
                                 attendance.DeclineReasonValueId = attendee.DeclineReason;
                             }
                         }
-                        else
+                        else 
                         {
                             attendance.RSVPDateTime = null;
                             attendance.RSVP = Rock.Model.RSVP.Unknown;
@@ -1026,9 +1036,29 @@ var dnutChart = new Chart(dnutCtx, {{
             /// </value>
             public bool Decline { get; set; }
 
+            /// <summary>
+            /// Gets or sets the decline reason (defined value Id).
+            /// </summary>
+            /// <value>
+            /// The decline reason (defined value Id).
+            /// </value>
             public int? DeclineReason { get; set; }
 
+            /// <summary>
+            /// Gets or sets the decline note.
+            /// </summary>
+            /// <value>
+            /// The decline note.
+            /// </value>
             public string DeclineNote { get; set; }
+
+            /// <summary>
+            /// Gets or sets the RSVP date time.
+            /// </summary>
+            /// <value>
+            /// The RSVP date time.
+            /// </value>
+            public DateTime? RSVPDateTime { get; set; }
         }
 
         #endregion

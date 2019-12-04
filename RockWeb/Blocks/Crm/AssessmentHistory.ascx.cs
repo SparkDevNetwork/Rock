@@ -133,13 +133,11 @@ namespace RockWeb.Blocks.Crm
                         break;
                     }
 
-                    var rockContext = new RockContext();
-                    var assessmentTypeService = new AssessmentTypeService( rockContext );
-                    var assessmentType = assessmentTypeService.Get( assessmentTypeId.Value );
+                    var assessmentTypeCache = AssessmentTypeCache.Get( assessmentTypeId.Value );
 
-                    if ( assessmentType != null )
+                    if ( assessmentTypeCache != null )
                     {
-                        e.Value = assessmentType.Title;
+                        e.Value = assessmentTypeCache.Title;
                     }
 
                     break;
