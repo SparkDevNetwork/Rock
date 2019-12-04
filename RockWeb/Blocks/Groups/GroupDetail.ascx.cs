@@ -803,6 +803,10 @@ namespace RockWeb.Blocks.Groups
             group.IsActive = cbIsActive.Checked;
             group.IsPublic = cbIsPublic.Checked;
 
+            // Don't save inactive properties if the group is active.
+            group.InactiveReasonValueId = cbIsActive.Checked ? null : ddlInactiveReason.SelectedValueAsInt();
+            group.InactiveReasonNote = cbIsActive.Checked ? null : tbInactiveNote.Text;
+
             group.SchedulingMustMeetRequirements = cbSchedulingMustMeetRequirements.Checked;
             group.AttendanceRecordRequiredForCheckIn = ddlAttendanceRecordRequiredForCheckIn.SelectedValueAsEnum<AttendanceRecordRequiredForCheckIn>();
             group.ScheduleCancellationPersonAliasId = ppScheduleCancellationPerson.PersonAliasId;
@@ -1532,15 +1536,34 @@ namespace RockWeb.Blocks.Groups
             cbIsPublic.Checked = group.IsPublic;
 
             var rockContext = new RockContext();
-
             var groupService = new GroupService( rockContext );
             var attributeService = new AttributeService( rockContext );
+
+            if ( group.GroupType != null && group.GroupType.EnableInactiveReason )
+            {
+                ddlInactiveReason.Visible = true;
+                ddlInactiveReason.Items.Add( new ListItem() );
+                ddlInactiveReason.Required = group.GroupType.RequiresInactiveReason;
+
+                foreach ( var reason in new GroupTypeService( rockContext ).GetInactiveReasonsForGroupType( group.GroupTypeId ).Select(r => new { Text = r.Value, Value = r.Id } ) )
+                {
+                    ddlInactiveReason.Items.Add( new ListItem( reason.Text, reason.Value.ToString() ) );
+                }
+
+                ddlInactiveReason.SelectedValue = group.InactiveReasonValueId.ToString();
+
+                tbInactiveNote.Visible = true;
+                tbInactiveNote.Text = group.InactiveReasonNote;
+
+            }
+
+            // The inactivate child groups checkbox should only be visible if there are children to inactivate. js on the page will consume this.
+            hfHasChildGroups.Value = groupService.GetAllDescendentGroupIds( group.Id, false ).Any() ? "true" : "false";
 
             LoadDropDowns( rockContext );
 
             ddlSignatureDocumentTemplate.SetValue( group.RequiredSignatureDocumentTemplateId );
             gpParentGroup.SetValue( group.ParentGroup ?? groupService.Get( group.ParentGroupId ?? 0 ) );
-
 
             // Hide sync and requirements panel if no admin access
             bool canAdministrate = group.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );

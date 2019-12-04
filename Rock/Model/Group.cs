@@ -292,6 +292,25 @@ namespace Rock.Model
         [DataMember]
         public virtual int? GroupAdministratorPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the inactive reason value identifier.
+        /// </summary>
+        /// <value>
+        /// The inactive reason value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? InactiveReasonValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive reason note.
+        /// </summary>
+        /// <value>
+        /// The inactive reason note.
+        /// </value>
+        [DataMember]
+        public string InactiveReasonNote  { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -528,6 +547,14 @@ namespace Rock.Model
         /// The schedule cancellation person alias.
         /// </value>
         public virtual PersonAlias ScheduleCancellationPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive group reason.
+        /// </summary>
+        /// <value>
+        /// The inactive group reason.
+        /// </value>
+        public virtual DefinedValue InactiveReasonValue { get; set; }
 
         #endregion
 
@@ -1177,6 +1204,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.StatusValue ).WithMany().HasForeignKey( p => p.StatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCancellationPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Group queries.

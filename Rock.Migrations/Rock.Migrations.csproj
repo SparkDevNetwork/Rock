@@ -85,6 +85,10 @@
     <Compile Include="Migrations\201912041421345_AssessmentHistoryBlock.Designer.cs">
       <DependentUpon>201912041421345_AssessmentHistoryBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201912041645157_GroupInactiveReason.cs" />
+    <Compile Include="Migrations\201912041645157_GroupInactiveReason.Designer.cs">
+      <DependentUpon>201912041645157_GroupInactiveReason.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -940,6 +944,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201912041421345_AssessmentHistoryBlock.resx">
       <DependentUpon>201912041421345_AssessmentHistoryBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912041645157_GroupInactiveReason.resx">
+      <DependentUpon>201912041645157_GroupInactiveReason.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
