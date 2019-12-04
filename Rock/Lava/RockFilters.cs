@@ -4061,7 +4061,7 @@ namespace Rock.Lava
                 if ( firstEntity != null )
                 {
                     // Get help LazyLoading work when they are put into a RockDynamic, attach the Entities to a RockContext
-                    var rockContext = GetRockContext(context);
+                    var rockContext = GetRockContext( context );
                     var entityDbSet = rockContext.Set( firstEntity.GetType() );
                     foreach ( var item in entityList )
                     {
@@ -4092,6 +4092,104 @@ namespace Rock.Lava
                 else
                 {
                     resultDataObject = ( resultDataObject as ExpandoObject )?.ShallowCopy() ?? resultDataObject;
+                }
+            }
+
+            List<int> entityIdList;
+
+            int? dataObjectEntityTypeId = null;
+
+            if ( dataObject is IEntity dataObjectAsEntity )
+            {
+                dataObjectEntityTypeId = EntityTypeCache.GetId( dataObject.GetType() );
+                entityIdList = new List<int>();
+                entityIdList.Add( dataObjectAsEntity.Id );
+            }
+            else if ( dataObject is IEnumerable<IEntity> dataObjectAsEntityList )
+            {
+                var firstDataObject = dataObjectAsEntityList.FirstOrDefault();
+                if ( firstDataObject != null )
+                {
+                    dataObjectEntityTypeId = EntityTypeCache.GetId( firstDataObject.GetType() );
+                }
+
+                entityIdList = dataObjectAsEntityList.Select( a => a.Id ).ToList();
+            }
+            else
+            {
+                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
+                if ( isCollection )
+                {
+                    IEnumerable<dynamic> dataObjectAsCollection = dataObject as IEnumerable<dynamic>;
+
+                    entityIdList = dataObjectAsCollection
+                            .Select( x => ( int? ) x.Id )
+                            .Where( e => e.HasValue )
+                            .Select( e => e.Value ).ToList();
+
+                    // the dataObjects will each have the same EntityTypeId (assuming they are from a persisted dataset, so we can determine EntityTypeId from the first one
+                    dataObjectEntityTypeId = dataObjectAsCollection.Select( a => ( int? ) a.EntityTypeId ).FirstOrDefault();
+                }
+                else
+                {
+                    int? entityId = ( int? ) resultDataObject.Id;
+                    dataObjectEntityTypeId = ( int? ) resultDataObject.EntityTypeId;
+                    entityIdList = new List<int>();
+                    if ( entityId.HasValue )
+                    {
+                        entityIdList.Add( entityId.Value );
+                    }
+                }
+            }
+
+            // if we don't know the EntityTypeId, we won't be able to figure out following, so just return the original object
+            if ( !dataObjectEntityTypeId.HasValue )
+            {
+                return dataObject;
+            }
+
+            List<int> followedEntityIds;
+
+            var currentPerson = GetCurrentPerson( context );
+
+            if ( currentPerson != null )
+            {
+                var rockContext = new RockContext();
+                followedEntityIds = new FollowingService( rockContext ).Queryable()
+                                        .Where( a => a.PersonAlias.PersonId == currentPerson.Id
+                                            && a.EntityTypeId == dataObjectEntityTypeId
+                                            && entityIdList.Contains( a.EntityId ) )
+                                        .Select( a => a.EntityId ).ToList();
+            }
+            else
+            {
+                followedEntityIds = new List<int>();
+            }
+
+            // Append new following properties if collection
+            if ( isCollection )
+            {
+                foreach ( dynamic result in ( IEnumerable ) resultDataObject )
+                {
+                    int? entityId = ( int? ) result.Id;
+
+                    if ( entityId.HasValue )
+                    {
+                        result.IsFollowing = followedEntityIds.Contains( entityId.Value );
+                        result.FollowingEntityTypeId = dataObjectEntityTypeId;
+                        result.FollowingEntityId = entityId;
+                    }
+                }
+            }
+            else
+            {
+                int? entityId = ( int? ) resultDataObject.Id;
+
+                if ( entityId.HasValue )
+                {
+                    resultDataObject.IsFollowing = followedEntityIds.Contains( entityId.Value );
+                    resultDataObject.FollowingEntityTypeId = dataObjectEntityTypeId;
+                    resultDataObject.FollowingEntityId = entityId;
                 }
             }
 
@@ -4149,119 +4247,26 @@ namespace Rock.Lava
                 dataObject = AppendFollowing( context, dataObject );
             }
 
-            List<int> entityIdList;
-
-            bool isCollection;
-            int? dataObjectEntityTypeId = null;
-
             dynamic resultDataObject = dataObject;
 
-            if ( dataObject is IEntity dataObjectAsEntity )
-            {
-                dataObjectEntityTypeId = EntityTypeCache.GetId( dataObject.GetType() );
-                entityIdList = new List<int>();
-                entityIdList.Add( dataObjectAsEntity.Id );
-                isCollection = false;
-            }
-            else if ( dataObject is IEnumerable<IEntity> dataObjectAsEntityList )
-            {
-                var firstDataObject = dataObjectAsEntityList.FirstOrDefault();
-                if ( firstDataObject != null )
-                {
-                    dataObjectEntityTypeId = EntityTypeCache.GetId( dataObject.GetType() );
-                }
+            var isCollection = dataObject is IEnumerable<IDynamicMetaObjectProvider>;
 
-                entityIdList = dataObjectAsEntityList.Select( a => a.Id ).ToList();
-
-                isCollection = true;
-            }
-            else
-            {
-                // if the dataObject is neither a single IEntity or a list if IEntity, it is probably from a PersistedDataset 
-
-                // Note: Since a single ExpandoObject actually is an IEnumerable (of fields), we'll have to see if this is an IEnumerable of ExpandoObjects to see if we should treat it as a collection
-                isCollection = dataObject is IEnumerable<ExpandoObject> || dataObject is IEnumerable<RockDynamic>;
-
-                if ( isCollection )
-                {
-                    IEnumerable<dynamic> dataObjectAsCollection = dataObject as IEnumerable<dynamic>;
-
-                    entityIdList = dataObjectAsCollection
-                            .Select( x => ( int? ) x.Id )
-                            .Where( e => e.HasValue )
-                            .Select( e => e.Value ).ToList();
-
-                    // the dataObjects will each have the same EntityTypeId (assuming they are from a persisted dataset, so we can determine EntityTypeId from the first one
-                    dataObjectEntityTypeId = dataObjectAsCollection.Select( a => ( int? ) a.EntityTypeId ).FirstOrDefault();
-                }
-                else
-                {
-                    int? entityId = ( int? ) resultDataObject.Id;
-                    dataObjectEntityTypeId = ( int? ) resultDataObject.EntityTypeId;
-                    entityIdList = new List<int>();
-                    if ( entityId.HasValue )
-                    {
-                        entityIdList.Add( entityId.Value );
-                    }
-                }
-            }
-
-            // if we don't know the EntityTypeId, we won't be able to figure out following, so just return the original object
-            if ( !dataObjectEntityTypeId.HasValue )
-            {
-                return dataObject;
-            }
-
-            List<int> followedEntityIds;
-
-            if ( currentPerson != null )
-            {
-                var rockContext = new RockContext();
-                followedEntityIds = new FollowingService( rockContext ).Queryable()
-                                        .Where( a => a.PersonAlias.PersonId == currentPerson.Id
-                                            && a.EntityTypeId == dataObjectEntityTypeId
-                                            && entityIdList.Contains( a.EntityId ) )
-                                        .Select( a => a.EntityId ).ToList();
-            }
-            else
-            {
-                followedEntityIds = new List<int>();
-            }
-
-            // Append new following properties if collection
-            if ( isCollection )
-            {
-                foreach ( dynamic result in ( IEnumerable ) resultDataObject )
-                {
-                    int? entityId = ( int? ) result.Id;
-
-                    if ( entityId.HasValue )
-                    {
-                        result.IsFollowing = followedEntityIds.Contains( entityId.Value );
-                        result.FollowingEntityTypeId = dataObjectEntityTypeId;
-                        result.FollowingEntityId = entityId;
-                    }
-                }
-            }
-            else
-            {
-                int? entityId = ( int? ) resultDataObject.Id;
-
-                if ( entityId.HasValue )
-                {
-                    resultDataObject.IsFollowing = followedEntityIds.Contains( entityId.Value );
-                    resultDataObject.FollowingEntityTypeId = dataObjectEntityTypeId;
-                    resultDataObject.FollowingEntityId = entityId;
-                }
-            }
+            var resultDataObjectAsCollection = new List<IDynamicMetaObjectProvider>();
 
             // If requested only followed items filter
             if ( followFilterType == FollowFilterType.Followed )
             {
                 if ( isCollection )
                 {
-                    resultDataObject = ( ( IEnumerable ) resultDataObject ).Cast<dynamic>()
-                    .Where( d => d.IsFollowing == true ).ToList();
+                    foreach ( dynamic item in ( IEnumerable ) resultDataObject )
+                    {
+                        if ( item.IsFollowing == true )
+                        {
+                            resultDataObjectAsCollection.Add( item );
+                        }
+                    }
+
+                    resultDataObject = resultDataObjectAsCollection;
                 }
                 else
                 {
@@ -4277,8 +4282,15 @@ namespace Rock.Lava
             {
                 if ( isCollection )
                 {
-                    resultDataObject = ( ( IEnumerable ) resultDataObject ).Cast<dynamic>()
-                        .Where( d => d.IsFollowing == false ).ToList();
+                    foreach ( dynamic item in ( IEnumerable ) resultDataObject )
+                    {
+                        if ( item.IsFollowing == false )
+                        {
+                            resultDataObjectAsCollection.Add( item );
+                        }
+                    }
+
+                    resultDataObject = resultDataObjectAsCollection;
                 }
                 else
                 {
