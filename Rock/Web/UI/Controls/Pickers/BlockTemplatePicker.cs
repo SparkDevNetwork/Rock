@@ -439,7 +439,7 @@ namespace Rock.Web.UI.Controls
                             var imageUrl = string.Format( "~/GetImage.ashx?guid={0}", item.GetAttributeValue( "Icon" ).AsGuid() );
                             var imgSrc = string.Format( "<img src='{0}' width='100%'/>", ResolveUrl( imageUrl ) );
 
-                            string html = string.Format( @"<div class='col-md-4 col-sm-6'><div class='radio'><label><input type = 'radio' class='js-template-picker' name='template-id' id='{0}' value='{0}' {2} {3}><span class='label-text'><b>{1}</b></span>
+                            string html = string.Format( @"<div class='col-md-4 col-sm-6'><div class='radio'><label><input type = 'radio' class='js-template-picker' name='template-id-{5}' id='{0}' value='{0}' {2} {3}><span class='label-text'><b>{1}</b></span>
                                                 </label>
                                             </div>
                                             <div class='row'>
@@ -452,7 +452,8 @@ namespace Rock.Web.UI.Controls
                                             item.Value,
                                             _hfTemplateKey.Value.AsGuid() == item.Guid ? "checked" : "",
                                             this.Enabled ? "" : "disabled",
-                                            imgSrc );
+                                            imgSrc,
+                                            this.ID );
                             htmlBuilder.Append( html );
                         }
                     }
@@ -485,12 +486,12 @@ namespace Rock.Web.UI.Controls
 
         private void RegisterClientScript()
         {
-            string script = @"
-      $('input.js-template-picker').change(function () {
-            $('input.js-template-id').val($(this).val());
-        });
+            string script = $@"
+      $('input[type=radio][name=template-id-{this.ID}]').change(function () {{
+            $('#{_hfTemplateKey.ClientID}').val($(this).val());
+        }});
 ";
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "block-template-picker", script, true );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "block-template-picker-"+this.ID, script, true );
         }
 
         /// <summary>
