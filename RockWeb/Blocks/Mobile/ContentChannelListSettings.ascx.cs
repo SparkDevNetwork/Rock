@@ -25,7 +25,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Blocks.Types.Mobile;
+using Rock.Blocks.Types.Mobile.Cms;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -33,7 +33,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-using AttributeKeys = Rock.Blocks.Types.Mobile.ContentChannelItemList.AttributeKeys;
+using AttributeKeys = Rock.Blocks.Types.Mobile.Cms.ContentChannelItemList.AttributeKeys;
 
 namespace RockWeb.Blocks.Mobile
 {

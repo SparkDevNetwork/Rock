@@ -53,14 +53,37 @@
                     <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
-                        <div class="row">
+                        <div class="row" style="display:flex; align-items:center;">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
-                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="margin-l-md js-inactivatechildgroups" Style="display: none" />
+                            </div>
+                            <div class="col-md-3">
                                 <Rock:RockCheckBox ID="cbIsPublic" runat="server" CssClass="js-ispublicgroup" Text="Public" />
+                            </div>
+                        </div>
+
+                        <div class="row js-inactivateoptions">
+                            <div class="col-md-6 pull-right">
+                                <%-- Inactive Reason ddl this isn't a defined value picker since the values can be filtered by group type --%>
+                                <Rock:RockDropDownList ID="ddlInactiveReason" runat="server" Visible="false" Label="Inactive Reason" />
+                            </div>
+                        </div>
+
+                        <div class="row js-inactivateoptions">
+                            <div class="col-md-6 pull-right">
+                                <%-- Inactive note multi line --%>
+                                <Rock:DataTextBox ID="tbInactiveNote" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="InactiveReasonNote" TextMode="MultiLine" Rows="4" Visible="false" Label="Inactive Note" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 pull-right">
+                                <%-- Inactivate child groups checkbox --%>
+                                <Rock:RockCheckBox ID="cbInactivateChildGroups" runat="server" Text="Inactivate Child Groups" ContainerCssClass="js-inactivatechildgroups" Style="display: none" />
+                                <Rock:HiddenFieldWithClass ID="hfHasChildGroups" runat="server" CssClass="js-haschildgroups" />
                             </div>
                         </div>
 
@@ -82,7 +105,7 @@
                                         </div>
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
-                                    <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" />
+                                    <Rock:DefinedValuePicker ID="dvpGroupStatus" runat="server" Label="Status" Visible="false" />
                                     <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0" />
                                     <Rock:PersonPicker ID="ppAdministrator" runat="server" />
                                 </div>
@@ -464,7 +487,7 @@
 
             Sys.Application.add_load(function () {
                 function setIsActiveControls(activeCheckbox) {
-
+                    debugger
                     var $inactiveLabel = $(activeCheckbox).closest(".js-group-panel").find('.js-inactivegroup-label');
                     if ($(activeCheckbox).is(':checked')) {
                         $inactiveLabel.hide();
@@ -473,12 +496,22 @@
                         $inactiveLabel.show();
                     }
 
-                    // if isactive was toggled from Active to Inactive, show the inactivate child groups checkbox
+                    // if isactive was toggled from Active to Inactive and the group has child groups, show the inactivate child groups checkbox
+                    var hasChildren = $('.js-haschildgroups').val();
+                    var rfvId = "<%= ddlInactiveReason.ClientID %>" + "_rfv";
+
                     if ($(activeCheckbox).is(':checked')) {
+                        $('.js-inactivateoptions').hide();
                         $('.js-inactivatechildgroups').hide();
+                        enableRequiredField(rfvId, false);
                     }
                     else {
-                        $('.js-inactivatechildgroups').show();
+                        $('.js-inactivateoptions').show();
+                        enableRequiredField(rfvId, true);
+
+                        if (hasChildren === "true") {
+                            $('.js-inactivatechildgroups').show();
+                        }
                     }
                 }
 
@@ -489,6 +522,19 @@
                     }
                     else {
                         $privateLabel.show();
+                    }
+                }
+
+                function enableRequiredField(validatorId, enable) {
+                    var jqObj = $('#' + validatorId);
+                    if (jqObj != null) {
+                        var domObj = jqObj.get(0);
+                        if (domObj != null) {
+                            console.log( validatorId + ': found');
+                            ValidatorEnable(domObj, enable);
+                        } else {
+                            console.log( validatorId + ': NOT found');
+                        }
                     }
                 }
 

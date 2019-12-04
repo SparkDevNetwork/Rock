@@ -175,6 +175,11 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
 
         /// <summary>
+        /// The grouptype inactive reason
+        /// </summary>
+        public const string GROUPTYPE_INACTIVE_REASONS = "EB5D9839-F770-4E22-8B56-0B09397307D9";
+
+        /// <summary>
         /// Guid for the types of interaction service.
         /// </summary>
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
