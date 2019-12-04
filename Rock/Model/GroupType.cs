@@ -633,6 +633,24 @@ namespace Rock.Model
         [DataMember]
         public bool EnableRSVP { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable inactive reason].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable inactive reason]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableInactiveReason { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [requires inactive reason].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [requires inactive reason]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresInactiveReason { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related
