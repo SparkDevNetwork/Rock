@@ -1947,6 +1947,7 @@
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AssessmentTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypeAchievementTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />
