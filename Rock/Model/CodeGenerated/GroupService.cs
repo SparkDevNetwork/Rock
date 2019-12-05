@@ -193,6 +193,8 @@ namespace Rock.Model
             target.GroupCapacity = source.GroupCapacity;
             target.GroupTypeId = source.GroupTypeId;
             target.InactiveDateTime = source.InactiveDateTime;
+            target.InactiveReasonNote = source.InactiveReasonNote;
+            target.InactiveReasonValueId = source.InactiveReasonValueId;
             target.IsActive = source.IsActive;
             target.IsArchived = source.IsArchived;
             target.IsPublic = source.IsPublic;

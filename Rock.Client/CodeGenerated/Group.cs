@@ -68,6 +68,12 @@ namespace Rock.Client
         public DateTime? InactiveDateTime { get; set; }
 
         /// <summary />
+        public string InactiveReasonNote { get; set; }
+
+        /// <summary />
+        public int? InactiveReasonValueId { get; set; }
+
+        /// <summary />
         public bool IsActive { get; set; } = true;
 
         /// <summary />
@@ -155,6 +161,8 @@ namespace Rock.Client
             this.GroupCapacity = source.GroupCapacity;
             this.GroupTypeId = source.GroupTypeId;
             this.InactiveDateTime = source.InactiveDateTime;
+            this.InactiveReasonNote = source.InactiveReasonNote;
+            this.InactiveReasonValueId = source.InactiveReasonValueId;
             this.IsActive = source.IsActive;
             this.IsArchived = source.IsArchived;
             this.IsPublic = source.IsPublic;

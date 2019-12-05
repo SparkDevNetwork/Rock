@@ -60,6 +60,7 @@ namespace Rock.Jobs
     [DisallowConcurrentExecution]
     public class RockCleanup : IJob
     {
+        /// <summary>
         /// Keys to use for Attributes
         /// </summary>
         private static class AttributeKey
@@ -720,14 +721,16 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Does a <see cref="RockContext.BulkDelete"></see> on the records listed in the query, but does it in chunks to help prevent timeouts
+        /// Does a <see cref="T:RockContext.BulkDelete"></see> on the records listed in the query, but does it in chunks to help prevent timeouts
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="recordsToDeleteQuery">The records to delete query.</param>
         /// <param name="chunkSize">Size of the chunk.</param>
         /// <param name="commandTimeout">The command timeout.</param>
-        /// <param name="maxNumberOfRecordsToDelete">Stops bulk deleting if the total amount exceeds the maximum number of records to delete. </param>
-        /// <returns>The number of records deleted</returns>
+        /// <param name="maxNumberOfRecordsToDelete">Stops bulk deleting if the total amount exceeds the maximum number of records to delete.</param>
+        /// <returns>
+        /// The number of records deleted
+        /// </returns>
         private static int BulkDeleteInChunks<T>( IQueryable<T> recordsToDeleteQuery, int chunkSize, int commandTimeout, int maxNumberOfRecordsToDelete ) where T : class
         {
             int totalRowsDeleted = 0;

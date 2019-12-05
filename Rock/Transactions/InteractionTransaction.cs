@@ -208,13 +208,12 @@ namespace Rock.Transactions
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractionTransaction"/> class.
+        /// Initializes a new instance of the <see cref="InteractionTransaction" /> class.
         /// </summary>
         /// <param name="channelMediumTypeValue">The channel medium type value.</param>
         /// <param name="channelEntity">The channel entity.</param>
         /// <param name="componentEntity">The component entity.</param>
-        /// <param name="interactionSummary">The interaction summary. If this is null, it will be determined by the page title (if available) </param>
-        /// <param name="personAliasId">The person alias identifier. If this is null, it be whatever the CurrentPersonAlias of the page is. </param>
+        /// <param name="options">The options.</param>
         public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntity channelEntity, IEntity componentEntity, InteractionTransactionOptions options )
         {
             if ( channelEntity == null || componentEntity == null )
@@ -403,7 +402,6 @@ namespace Rock.Transactions
         /// Logs the interactions.
         /// </summary>
         /// <param name="interactionInfosToProcess">The interaction infos to process.</param>
-        /// <param name="interactionsToInsert">The interactions to insert.</param>
         /// <param name="rockContext">The rock context.</param>
         private void LogInteractions( List<InteractionInfo> interactionInfosToProcess, RockContext rockContext )
         {
