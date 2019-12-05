@@ -148,6 +148,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reloads the exclusion values.
         /// </summary>
+        [Obsolete("This will not work with a distributed cache system such as Redis. The StreakType will need to be flushed from cache.")]
+        [RockObsolete("1.10")]
         public void ReloadOccurrenceExclusions()
         {
             // set ids to null so it load them all at once on demand
@@ -192,7 +194,7 @@ namespace Rock.Web.Cache
             StartDate = sourceModel.StartDate;
             OccurrenceMap = sourceModel.OccurrenceMap;
 
-            ReloadOccurrenceExclusions();
+            _streakTypeExclusionIds = null;
         }
 
         /// <summary>

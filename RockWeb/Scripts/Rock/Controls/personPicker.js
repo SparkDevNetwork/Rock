@@ -143,6 +143,9 @@
                     if (!item.IsActive && item.RecordStatus) {
                         inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
                     }
+                    if (item.IsDeceased) {
+                        inactiveWarning = " <small class=\"text-danger\">(Deceased)</small>";
+                    }
 
                     var quickSummaryInfo = "";
                     if (item.FormattedAge || item.SpouseName) {
@@ -243,7 +246,15 @@
 
                     if (selectedPersonId == lastSelectedPersonId && e.type == 'click') {
                         // if they are clicking the same person twice in a row (and the details are done expanding), assume that's the one they want to pick
-                        $pickerSelect[0].trigger('click');
+                        var selectedText = $selectedItem.attr('data-person-name');
+
+                        setSelectedPerson(selectedPersonId, selectedText);
+
+                        // Fire the postBack for the Select button.
+                        var postBackUrl = $pickerSelect.prop('href');
+                        if (postBackUrl) {
+                            window.location = postBackUrl;
+                        }
                     } else {
 
                         // if it is already visible but isn't the same one twice, just leave it open
@@ -291,14 +302,14 @@
                 }
             }
 
-            $pickerControl.on('hover',
+            $pickerControl.on('mouseenter',
                 function () {
 
                     // only show the X if there is something picked
                     if (($pickerPersonId.val() || '0') !== '0') {
                         $pickerSelectNone.stop().show();
                     }
-                },
+                }).on('mouseleave',
                 function () {
                     $pickerSelectNone.fadeOut(500);
                 });

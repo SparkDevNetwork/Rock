@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Data

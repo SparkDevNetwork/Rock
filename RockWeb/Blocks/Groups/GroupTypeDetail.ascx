@@ -147,7 +147,15 @@
                                         <Rock:RockCheckBox ID="cbGroupRSVPEnabled" runat="server" Label="Group RSVP Enabled" Text="Yes"
                                             Help="This option will allow group RSVP." />
                                     </div>
-                        </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbEnableInactiveReason" runat="server" Label="Enable Inactive Reason" Help="Allows a reason for inactivation to be selected. The reasons are setup in the Defined Type 'Inactive Group Reasons'" AutoPostBack="true" OnCheckedChanged="cbEnableInactiveReason_CheckedChanged" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockCheckBox ID="cbRequireInactiveReason" runat="server" Label="Require Inactive Reason" Help="Requires an Inactive Reason to be selected for the group when inactivating it. The reasons are setup in the Defined Type 'Inactive Group Reasons'" Enabled="false" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </Rock:PanelWidget>

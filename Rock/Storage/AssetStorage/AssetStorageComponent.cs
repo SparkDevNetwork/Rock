@@ -32,6 +32,17 @@ namespace Rock.Storage.AssetStorage
     /// <seealso cref="Rock.Extension.Component" />
     public abstract class AssetStorageComponent : Component
     {
+        /// <summary>
+        /// Common attribute keys
+        /// </summary>
+        protected static class CommonAttributeKey
+        {
+            /// <summary>
+            /// The root folder
+            /// </summary>
+            public const string RootFolder = "RootFolder";
+        }
+
         #region Constructors
 
         /// <summary>
@@ -323,6 +334,17 @@ namespace Rock.Storage.AssetStorage
             {
                 return rootFolder + "/";
             }
+        }
+
+        /// <summary>
+        /// Gets the root folder attribute value and fixes it to ensure it is trimmed and ends with a '/'.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <returns></returns>
+        public virtual string GetRootFolder( AssetStorageProvider assetStorageProvider )
+        {
+            var rawRootFolder = GetAttributeValue( assetStorageProvider, CommonAttributeKey.RootFolder ).Trim();
+            return FixRootFolder( rawRootFolder );
         }
 
         /// <summary>

@@ -621,8 +621,11 @@ namespace Rock.MyWell
         /// <param name="subscriptionRequestParameters">The subscription request parameters.</param>
         /// <param name="scheduleTransactionFrequencyValueGuid">The schedule transaction frequency value unique identifier.</param>
         /// <param name="startDate">The start date.</param>
-        private static void SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDate )
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private static bool SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDate, out string errorMessage )
         {
+            errorMessage = string.Empty;
             BillingPlanParameters billingPlanParameters = subscriptionRequestParameters as BillingPlanParameters;
 
             // NOTE: Don't convert startDate to UTC, let the gateway worry about that
@@ -632,7 +635,6 @@ namespace Rock.MyWell
             int billingCycleInterval = 1;
             string billingDays = null;
             int startDayOfMonth = subscriptionRequestParameters.NextBillDateUTC.Value.Day;
-            int twiceMonthlySecondDayOfMonth = subscriptionRequestParameters.NextBillDateUTC.Value.AddDays( 15 ).Day;
 
             // MyWell Gateway doesn't allow Day of Month over 28, but will automatically schedule for the last day of the month if you pass in 31
             if ( startDayOfMonth > 28 )
@@ -648,20 +650,15 @@ namespace Rock.MyWell
                 billingPlanParameters.NextBillDateUTC = endOfMonth;
             }
 
-            if ( twiceMonthlySecondDayOfMonth > 28 )
-            {
-                twiceMonthlySecondDayOfMonth = 31;
-            }
-
             if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY.AsGuid() )
             {
                 billingFrequency = BillingFrequency.monthly;
                 billingDays = $"{startDayOfMonth}";
             }
-            else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY.AsGuid() )
+            else if ( scheduleTransactionFrequencyValueGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
             {
                 // see https://sandbox.gotnpgateway.com/docs/api/#bill-once-month-on-the-1st-and-the-15th-until-canceled
-                var twiceMonthlyDays = new int[2] { startDayOfMonth, twiceMonthlySecondDayOfMonth };
+                var twiceMonthlyDays = new int[2] { 1, 15 };
                 billingFrequency = BillingFrequency.twice_monthly;
 
                 // twiceMonthly Days have to be in numeric order
@@ -689,11 +686,17 @@ namespace Rock.MyWell
                 billingDays = $"{startDayOfMonth}";
                 billingDuration = 1;
             }
+            else
+            {
+                errorMessage = $"Unsupported Schedule Frequency {DefinedValueCache.Get( scheduleTransactionFrequencyValueGuid )?.Value}";
+                return false;
+            }
 
             billingPlanParameters.BillingFrequency = billingFrequency;
             billingPlanParameters.BillingCycleInterval = billingCycleInterval;
             billingPlanParameters.BillingDays = billingDays;
             billingPlanParameters.Duration = billingDuration;
+            return true;
         }
 
         /// <summary>
@@ -919,11 +922,10 @@ namespace Rock.MyWell
             get
             {
                 var values = new List<DefinedValueCache>();
-
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
-                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
             }
@@ -1048,7 +1050,7 @@ namespace Rock.MyWell
 
             // https://sandbox.gotnpgateway.com/docs/api/#refund
             // NOTE: If the transaction isn't settled yet, this will return an error. But that's OK
-            TransactionVoidRefundResponse response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, origTransaction.TotalAmount );
+            TransactionVoidRefundResponse response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, amount );
 
 
             if ( response.IsSuccessStatus() )
@@ -1099,14 +1101,23 @@ namespace Rock.MyWell
                     Amount = paymentInfo.Amount
                 };
 
-                SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate );
+                string subscriptionId;
 
-                var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
-                var subscriptionId = subscriptionResult.Data?.Id;
-
-                if ( subscriptionId.IsNullOrWhiteSpace() )
+                if ( SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate, out errorMessage ) )
                 {
-                    errorMessage = subscriptionResult.Message;
+
+                    var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
+                    subscriptionId = subscriptionResult.Data?.Id;
+
+                    if ( subscriptionId.IsNullOrWhiteSpace() )
+                    {
+                        errorMessage = subscriptionResult.Message;
+                        return null;
+                    }
+                }
+                else
+                {
+                    // error from SetSubscriptionBillingPlanParameters
                     return null;
                 }
 
@@ -1190,17 +1201,27 @@ namespace Rock.MyWell
 
             var transactionFrequencyGuid = DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId ).Guid;
 
-            SetSubscriptionBillingPlanParameters( subscriptionParameters, transactionFrequencyGuid, scheduledTransaction.StartDate );
+            FinancialGateway financialGateway;
+            string gatewayUrl;
+            string apiKey;
 
-            FinancialGateway financialGateway = scheduledTransaction.FinancialGateway;
-
-            var gatewayUrl = this.GetGatewayUrl( financialGateway );
-            var apiKey = this.GetPrivateApiKey( financialGateway );
-
-            var subscriptionResult = this.UpdateSubscription( gatewayUrl, apiKey, subscriptionId, subscriptionParameters );
-            if ( !subscriptionResult.IsSuccessStatus() )
+            if ( SetSubscriptionBillingPlanParameters( subscriptionParameters, transactionFrequencyGuid, scheduledTransaction.StartDate, out errorMessage ) )
             {
-                errorMessage = subscriptionResult.Message;
+                financialGateway = scheduledTransaction.FinancialGateway;
+
+                gatewayUrl = this.GetGatewayUrl( financialGateway );
+                apiKey = this.GetPrivateApiKey( financialGateway );
+
+                var subscriptionResult = this.UpdateSubscription( gatewayUrl, apiKey, subscriptionId, subscriptionParameters );
+                if ( !subscriptionResult.IsSuccessStatus() )
+                {
+                    errorMessage = subscriptionResult.Message;
+                    return false;
+                }
+            }
+            else
+            {
+                // error from SetSubscriptionBillingPlanParameters
                 return false;
             }
 

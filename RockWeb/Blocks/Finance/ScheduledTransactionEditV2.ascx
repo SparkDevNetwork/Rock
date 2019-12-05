@@ -12,7 +12,7 @@
 
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false" />
 
-        <%-- Prompt for Changes to Scheduled Transaction --%> 
+        <%-- Prompt for Changes to Scheduled Transaction --%>
         <asp:Panel ID="pnlPromptForChanges" runat="server">
             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
@@ -22,9 +22,9 @@
                 <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Next Gift" />
             </div>
 
-            <Rock:RockControlWrapper ID="rcsPaymentMethod" runat="server" Label="Payment Method">
+            <Rock:RockControlWrapper ID="rcsPaymentMethod" runat="server" FormGroupCssClass="form-group-auto" Label="Payment Method">
                 <asp:Panel ID="pnlSelectSavedAccount" runat="server" CssClass="form-control-group js-person-saved-account">
-                    <Rock:RockDropDownList ID="ddlPersonSavedAccount" CssClass="input-width-xxl" runat="server" />
+                    <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" />
                     <a class="js-add-payment btn btn-default">Add</a>
                 </asp:Panel>
             </Rock:RockControlWrapper>

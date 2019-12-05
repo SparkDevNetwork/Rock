@@ -72,7 +72,7 @@
                                 }
                                 else {
                                     if ($('#' + $target.attr('id') + '>[data-zone-location="Layout"]').length > 0)
-                                        $source.insertAfter($('#' + $target.attr('id') + '>[data-zone-location="Layout"]:last'));
+                                        $source.insertAfter($('#' + $target.attr('id') + '>[data-zone-location="Layout"]').last());
                                     else
                                         $target.append($source);
                                     $moveLink.attr('data-zone-location', 'Layout');

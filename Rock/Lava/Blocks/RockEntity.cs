@@ -77,26 +77,26 @@ namespace Rock.Lava.Blocks
 
             bool hasFilter = false;
 
+            var modelName = string.Empty;
+
             // get a service for the entity based off it's friendly name
-            var entityTypes = EntityTypeCache.All();
-
-            var model = string.Empty;
-
             if ( _entityName == "business" )
             {
-                model = "Rock.Model.Person";
+                modelName = "Rock.Model.Person";
             }
             else
             {
-                model = "Rock.Model." + _entityName;
+                modelName = "Rock.Model." + _entityName;
             }
 
             // Check first to see if this is a core model
-            var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+            var entityTypeCache = EntityTypeCache.Get( modelName );
 
-            // If not, look for first plug-in model that has same friendly name
             if ( entityTypeCache == null )
             {
+                var entityTypes = EntityTypeCache.All();
+
+                // If not, look for first plug-in model that has same friendly name
                 entityTypeCache = entityTypes
                     .Where( e =>
                         e.IsEntity &&
@@ -105,13 +105,13 @@ namespace Rock.Lava.Blocks
                         e.FriendlyName.RemoveSpaces().ToLower() == _entityName )
                     .OrderBy( e => e.Id )
                     .FirstOrDefault();
-            }
 
-            // If still null check to see if this was a duplicate class and full class name was used as entity name
-            if ( entityTypeCache == null )
-            {
-                model = _entityName.Replace( '_', '.' );
-                entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                // If still null check to see if this was a duplicate class and full class name was used as entity name
+                if ( entityTypeCache == null )
+                {
+                    modelName = _entityName.Replace( '_', '.' );
+                    entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, modelName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                }
             }
 
             if ( entityTypeCache != null )
@@ -208,7 +208,9 @@ namespace Rock.Lava.Blocks
                     }
 
                     // Make the query from the expression
+                    // Note: Use GetNoTracking to help improve performance
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetNoTracking", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+
                     if ( getMethod != null )
                     {
                         // get a listing of ids and build it into the query expression

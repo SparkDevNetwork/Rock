@@ -15,17 +15,17 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Displays custom XAML content on the page.
@@ -33,7 +33,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Content Channel Item View" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Displays a content channel item by formatting it with XAML." )]
     [IconCssClass( "fa fa-chalkboard" )]
 
@@ -120,15 +120,17 @@ namespace Rock.Blocks.Types.Mobile
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
+            var additionalSettings = GetAdditionalSettings();
+
             //
             // The client shell ignores this value and always requests the current config from
             // the server, so just put some placeholder data.
             //
-            return new
+            return new Rock.Common.Mobile.Blocks.Content.Configuration
             {
-                Xaml = string.Empty,
-                ProcessLava = false,
-                CacheDuration = 0,
+                Content = string.Empty,
+                ProcessLava = additionalSettings.ProcessLavaOnClient,
+                CacheDuration = additionalSettings.CacheDuration,
                 DynamicContent = true
             };
         }
@@ -138,13 +140,12 @@ namespace Rock.Blocks.Types.Mobile
         #region Actions
 
         /// <summary>
-        /// Gets the current configuration for the Content block.
+        /// Gets the initial content for the Content block.
         /// </summary>
         /// <returns></returns>
         [BlockAction]
-        public object GetCurrentConfig()
+        public object GetInitialContent()
         {
-            var additionalSettings = GetAdditionalSettings();
             var content = GetAttributeValue( AttributeKeys.ContentTemplate );
             var mergeFields = RequestContext.GetCommonMergeFields();
 
@@ -152,13 +153,21 @@ namespace Rock.Blocks.Types.Mobile
 
             content = content.ResolveMergeFields( mergeFields, null, GetAttributeValue( AttributeKeys.EnabledLavaCommands ) );
 
-            return new Dictionary<string, object>
+            return new CallbackResponse
             {
-                { "Content", content },
-                { "ProcessLava", additionalSettings.ProcessLavaOnServer },
-                { "CacheDuration", additionalSettings.CacheDuration },
-                { "DynamicContent", true }
+                Content = content
             };
+        }
+
+        /// <summary>
+        /// Gets the current configuration.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        [RockObsolete( "1.10.2" )]
+        public object GetCurrentConfig()
+        {
+            return GetInitialContent();
         }
 
         #endregion
@@ -315,11 +324,11 @@ namespace Rock.Blocks.Types.Mobile
             }
 
             var mediumType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_CONTENTCHANNEL.AsGuid() );
-            var interactionTransaction = new InteractionTransaction( mediumType, contentChannelItem.ContentChannel, contentChannelItem )
-            {
-                InteractionSummary = contentChannelItem.Title,
-                CurrentPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId
-            };
+            var interactionTransaction = new InteractionTransaction(
+                mediumType,
+                contentChannelItem.ContentChannel,
+                contentChannelItem,
+                new InteractionTransactionOptions { InteractionSummary = contentChannelItem.Title, PersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId } );
 
             interactionTransaction.Enqueue();
         }

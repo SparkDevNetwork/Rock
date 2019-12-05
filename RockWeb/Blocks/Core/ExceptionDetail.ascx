@@ -102,8 +102,8 @@
 
 <script type="text/javascript">
     function toggleStackTrace(exceptionId) {
-        $("[id*=trStackTrace_" + exceptionId + "]:first").toggleClass("exceptionDetail-stackTrace-hide");
-        $("[id*=trStackTrace_" + exceptionId + "]:first").toggleClass("exceptionDetail-stackTrace-show");
+        $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-hide");
+        $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-show");
 
         var link = $("#lbToggleStackTrace_" + exceptionId);
 

@@ -281,7 +281,11 @@ namespace RockWeb.Blocks.Core
                     }
 
                     Guid familyGroupType = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                    var orderIds = qryPersons.Select( a => a.Id ).ToList();
+
+                    // Create a query for the set of person Ids.
+                    // Avoid using ToList() here - for large result sets, the materialized list may cause an overflow when used to filter subsequent queries.
+                    var qryPersonIds = qryPersons.Select( a => a.Id );
+
                     if ( isGroupMemberEntityType )
                     {
                         qryPersons = qryPersons.Distinct();
@@ -289,7 +293,7 @@ namespace RockWeb.Blocks.Core
 
                     var qryFamilyGroupMembers = new GroupMemberService( rockContext ).Queryable( "GroupRole,Person" ).AsNoTracking()
                         .Where( a => a.Group.GroupType.Guid == familyGroupType )
-                        .Where( a => orderIds.Contains( a.PersonId ) );
+                        .Where( a => qryPersonIds.Contains( a.PersonId ) );
 
 
                     var qryCombined = qryFamilyGroupMembers.Join(
@@ -370,7 +374,10 @@ namespace RockWeb.Blocks.Core
                         mergeObjectsDictionary.AddOrIgnore( primaryGroupPerson.Id, mergeObject );
                     }
 
-                    mergeObjectsDictionary = mergeObjectsDictionary.OrderBy( a => orderIds.IndexOf( a.Key ) ).ToDictionary( x => x.Key, y => y.Value );
+                    // Add the records to the merge dictionary, preserving the selection order.
+                    var orderedPersonIdList = qryPersonIds.ToList();
+
+                    mergeObjectsDictionary = mergeObjectsDictionary.OrderBy( a => orderedPersonIdList.IndexOf( a.Key ) ).ToDictionary( x => x.Key, y => y.Value );
                 }
                 else if ( isGroupMemberEntityType )
                 {

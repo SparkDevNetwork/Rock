@@ -19,7 +19,7 @@ using System.Web.UI;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class RangeSlider : RockTextBox
     {
@@ -38,6 +38,14 @@ namespace Rock.Web.UI.Controls
         /// The maximum.
         /// </value>
         public int? MaxValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the step value (defaults to 1)
+        /// </summary>
+        /// <value>
+        /// The maximum.
+        /// </value>
+        public decimal? StepValue { get; set; }
 
         /// <summary>
         /// Gets or sets the selected value.
@@ -81,10 +89,11 @@ namespace Rock.Web.UI.Controls
         private void RegisterJavascript()
         {
             var script = string.Format(
-                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', from: '{3}' }});",
+                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', step:'{3}', from: '{4}' }});",
                 this.ClientID,
                 this.MinValue ?? 0,
                 this.MaxValue ?? 100,
+                this.StepValue ?? 1,
                 this.SelectedValue ?? 0 );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "range_slider-" + this.ClientID, script, true );

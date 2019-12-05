@@ -94,7 +94,7 @@ namespace Rock.Model
         {
             if ( item.FinancialPaymentDetailId.HasValue )
             {
-                var paymentDetailsService = new FinancialPaymentDetailService( (Rock.Data.RockContext)this.Context );
+                var paymentDetailsService = new FinancialPaymentDetailService( ( Rock.Data.RockContext ) this.Context );
                 var paymentDetail = paymentDetailsService.Get( item.FinancialPaymentDetailId.Value );
                 if ( paymentDetail != null )
                 {
@@ -128,8 +128,16 @@ namespace Rock.Model
                 {
                     var result = gateway.GetScheduledPaymentStatus( scheduledTransaction, out errorMessages );
 
-                    var lastTransactionDate = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ScheduledTransactionId.HasValue && a.ScheduledTransactionId == scheduledTransaction.Id ).Max( t => t.TransactionDateTime );
+                    var scheduledTransactionId = scheduledTransaction.Id;
+                    var lastTransactionDate = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ScheduledTransactionId.HasValue && a.ScheduledTransactionId == scheduledTransactionId && a.TransactionDateTime.HasValue ).Max( t => ( DateTime? ) t.TransactionDateTime.Value );
                     scheduledTransaction.NextPaymentDate = gateway.GetNextPaymentDate( scheduledTransaction, lastTransactionDate );
+                    if ( scheduledTransaction.TransactionFrequencyValueId == DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) )
+                    {
+                        if ( !scheduledTransaction.NextPaymentDate.HasValue || scheduledTransaction.NextPaymentDate < RockDateTime.Now )
+                        {
+                            scheduledTransaction.IsActive = false;
+                        }
+                    }
 
                     return result;
                 }
@@ -153,7 +161,7 @@ namespace Rock.Model
             {
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
-                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                    scheduledTransaction.FinancialGateway.LoadAttributes( ( RockContext ) this.Context );
                 }
 
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
@@ -188,7 +196,7 @@ namespace Rock.Model
             {
                 if ( scheduledTransaction.FinancialGateway.Attributes == null )
                 {
-                    scheduledTransaction.FinancialGateway.LoadAttributes( (RockContext)this.Context );
+                    scheduledTransaction.FinancialGateway.LoadAttributes( ( RockContext ) this.Context );
                 }
 
                 var gateway = scheduledTransaction.FinancialGateway.GetGatewayComponent();
@@ -233,7 +241,8 @@ namespace Rock.Model
 
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
 
-            var newTransactions = new List<FinancialTransaction>();
+            var newTransactionsForReceiptEmails = new List<FinancialTransaction>();
+
             var failedPayments = new List<FinancialTransaction>();
 
             var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
@@ -477,7 +486,7 @@ namespace Rock.Model
 
                             if ( receiptEmail.HasValue && txnAmount > 0.0M )
                             {
-                                newTransactions.Add( transaction );
+                                newTransactionsForReceiptEmails.Add( transaction );
                             }
 
                             if (
@@ -557,10 +566,10 @@ namespace Rock.Model
             var updatePaymentStatusTxn = new Rock.Transactions.UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
 
-            if ( receiptEmail.HasValue && newTransactions.Any() )
+            if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
                 // Queue a transaction to send receipts
-                var newTransactionIds = newTransactions.Select( t => t.Id ).ToList();
+                var newTransactionIds = newTransactionsForReceiptEmails.Select( t => t.Id ).ToList();
                 var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }

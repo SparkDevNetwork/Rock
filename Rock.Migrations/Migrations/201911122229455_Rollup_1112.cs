@@ -30,7 +30,6 @@ namespace Rock.Migrations
         public override void Up()
         {
             CodeGenMigrationsUp();
-            ChangeTwiceMonthly();
         }
 
         /// <summary>
@@ -61,18 +60,6 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteAttribute( "C73A4952-F2A5-4326-939C-4F2F693ADB68" );
             // Attrib for BlockType: Connection Request Detail:Lava Badge Bar
             RockMigrationHelper.DeleteAttribute( "120E931F-0245-4183-A95D-49094D85FD6F" );
-        }
-
-        /// <summary>
-        /// MP: Change Twice Monthly to 1st and 15th
-        /// </summary>
-        private void ChangeTwiceMonthly()
-        {
-            Sql( @"
-                UPDATE [DefinedValue]
-                SET [Value] = '1st and 15th'
-                    ,[Description] = '1st and 15th'
-                WHERE [Guid] = '791C863D-2600-445B-98F8-3E5B66A3DEC4' AND [Value] = 'Twice a Month'" );
         }
     }
 }

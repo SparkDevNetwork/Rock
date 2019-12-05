@@ -684,6 +684,7 @@ namespace Rock.Rest.Controllers
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
                     IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
+                    IsDeceased = a.IsDeceased,
                     RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Get( a.RecordStatusValueId.Value ).Value : string.Empty,
                     Age = Person.GetAge( a.BirthDate ) ?? -1,
                     FormattedAge = a.FormatAge(),
@@ -791,6 +792,7 @@ namespace Rock.Rest.Controllers
                 recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
             }
 
+            personSearchResult.IsDeceased = person.IsDeceased;
             personSearchResult.ImageHtmlTag = Person.GetPersonPhotoImageTag( person, 50, 50 );
             personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
             personSearchResult.ConnectionStatus = person.ConnectionStatusValueId.HasValue ? DefinedValueCache.Get( person.ConnectionStatusValueId.Value ).Value : string.Empty;
@@ -1185,6 +1187,14 @@ namespace Rock.Rest.Controllers
         ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is deceased.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is deceased; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsDeceased { get; set; }
 
         /// <summary>
         /// Gets or sets the image HTML tag.
