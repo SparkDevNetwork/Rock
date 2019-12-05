@@ -25,6 +25,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -353,7 +354,7 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        protected class CommunicationItem
+        protected class CommunicationItem : RockDynamic
         {
             public int Id { get; set; }
             public CommunicationType CommunicationType { get; set; }

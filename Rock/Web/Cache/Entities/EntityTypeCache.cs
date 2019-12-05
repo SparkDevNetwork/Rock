@@ -36,7 +36,7 @@ namespace Rock.Web.Cache
     {
         #region Static Fields
 
-        private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>();
+        private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>( StringComparer.OrdinalIgnoreCase );
 
         #endregion
 

@@ -2655,41 +2655,41 @@ Sys.Application.add_load(function () {
         {
             if ( page != null && page.Header != null )
             {
-                if ( !ReplaceExistingHtmlMeta( page, htmlMeta ) )
-                {
-                    // Find last meta element
-                    int index = 0;
-                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                    {
-                        if ( page.Header.Controls[i] is HtmlMeta )
-                        {
-                            index = i;
-                            break;
-                        }
-                    }
+                RemoveExistingHtmlMeta( page, htmlMeta );
 
-                    if ( index == page.Header.Controls.Count )
+                // Find last meta element
+                int index = 0;
+                for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
+                {
+                    if ( page.Header.Controls[i] is HtmlMeta )
                     {
-                        page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.Add( htmlMeta );
-                    }
-                    else
-                    {
-                        page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.AddAt( ++index, htmlMeta );
+                        index = i;
+                        break;
                     }
                 }
+
+                if ( index == page.Header.Controls.Count )
+                {
+                    page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
+                    page.Header.Controls.Add( htmlMeta );
+                }
+                else
+                {
+                    page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
+                    page.Header.Controls.AddAt( ++index, htmlMeta );
+                }
+
             }
         }
 
         /// <summary>
-        /// Replaces an existing HtmlMeta control if all attributes match except for Content.
-        /// Returns <c>true</c> if the meta tag already exists and was replaced.
+        /// Removes an existing HtmlMeta control if all attributes match except for Content.
+        /// Returns <c>true</c> if the meta tag already exists and was removed.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for..</param>
+        /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for.</param>
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the meta tag already exists; otherwise <c>false</c>.</returns>
-        private static bool ReplaceExistingHtmlMeta( Page page, HtmlMeta newMeta )
+        private static bool RemoveExistingHtmlMeta( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
 
@@ -2699,19 +2699,14 @@ Sys.Application.add_load(function () {
                 {
                     if ( control is HtmlMeta )
                     {
-                        HtmlMeta existingMeta = (HtmlMeta)control;
+                        HtmlMeta existingMeta = ( HtmlMeta )control;
 
                         bool sameAttributes = true;
-                        bool hasContentAttribute_NewMeta = false;
                         bool hasContentAttribute_ExistingMeta = ( existingMeta.Attributes["Content"] != null );
 
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
                         {
-                            if ( attributeKey.ToLower() == "content" )
-                            {
-                                hasContentAttribute_NewMeta = true;
-                            }
-                            else
+                            if ( attributeKey.ToLower() != "content" ) // ignore content attribute.
                             { 
                                 if ( existingMeta.Attributes[attributeKey] == null ||
                                     existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
@@ -2724,25 +2719,7 @@ Sys.Application.add_load(function () {
 
                         if ( sameAttributes )
                         {
-                            if ( hasContentAttribute_NewMeta )
-                            {
-                                if ( hasContentAttribute_ExistingMeta )
-                                {
-                                    existingMeta.Attributes["Content"] = newMeta.Attributes["Content"];
-                                }
-                                else
-                                {
-                                    existingMeta.Attributes.Add( "Content", newMeta.Attributes["Content"] );
-                                }
-                            }
-                            else
-                            {
-                                if ( hasContentAttribute_ExistingMeta )
-                                {
-                                    existingMeta.Attributes.Remove( "Content" );
-                                }
-                            }
-
+                            page.Header.Controls.Remove( existingMeta );
                             existsAlready = true;
                             break;
                         }

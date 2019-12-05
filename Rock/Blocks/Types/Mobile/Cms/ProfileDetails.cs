@@ -18,12 +18,12 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
 using Rock.Mobile;
-using Rock.Mobile.Common;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Allows the user to edit their account on a mobile application.
@@ -31,7 +31,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Profile Details" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Allows the user to edit their account on a mobile application." )]
     [IconCssClass( "fa fa-user-cog" )]
 

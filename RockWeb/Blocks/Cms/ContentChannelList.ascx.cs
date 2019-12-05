@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Cms
                 string errorMessage;
                 if ( !contentChannelService.CanDelete( contentChannel, out errorMessage ) )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Warning );
                     return;
                 }
 

@@ -20,14 +20,14 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.WorkflowEntry;
 using Rock.Data;
-using Rock.Mobile.Common;
-using Rock.Mobile.Common.Blocks.WorkflowEntry;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Types.Mobile
+namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
     /// Allows for filling out workflows from a mobile application.
@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
     [DisplayName( "Workflow Entry" )]
-    [Category( "Mobile" )]
+    [Category( "Mobile > Cms" )]
     [Description( "Allows for filling out workflows from a mobile application." )]
     [IconCssClass( "fa fa-gears" )]
 

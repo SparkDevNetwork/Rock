@@ -74,6 +74,9 @@ namespace Rock.Client
         public bool EnableGroupTag { get; set; }
 
         /// <summary />
+        public bool EnableInactiveReason { get; set; }
+
+        /// <summary />
         public bool? EnableLocationSchedules { get; set; }
 
         /// <summary />
@@ -318,6 +321,9 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
+        public bool RequiresInactiveReason { get; set; }
+
+        /// <summary />
         public bool RequiresReasonIfDeclineSchedule { get; set; }
 
         /// <summary />
@@ -402,6 +408,7 @@ namespace Rock.Client
             this.Description = source.Description;
             this.EnableGroupHistory = source.EnableGroupHistory;
             this.EnableGroupTag = source.EnableGroupTag;
+            this.EnableInactiveReason = source.EnableInactiveReason;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.EnableRSVP = source.EnableRSVP;
             this.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
@@ -428,6 +435,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.RequiresInactiveReason = source.RequiresInactiveReason;
             this.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             this.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             this.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;

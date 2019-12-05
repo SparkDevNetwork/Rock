@@ -2099,6 +2099,9 @@ namespace Rock.Web.UI.Controls
 
     #region Extension Methods
 
+    /// <summary>
+    /// 
+    /// </summary>
     public static class AttributeEditorExtensions
     {
         /// <summary>

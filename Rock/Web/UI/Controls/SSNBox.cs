@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// Control for entering a Social Security Number (SSN). Note: This control should only be used on a page that is using SSL as the SSN number is passed from client
-    /// to server in a hidden field in plain text. If the SSN is being persisted, make sure to use the TextEncrypted property instead of the Text property so that an 
+    /// to server in a hidden field in plain text. If the SSN is being persisted, make sure to use the TextEncrypted property instead of the Text property so that an
     /// encrypted version of the SSN number is stored.
     /// </summary>
     public class SSNBox : CompositeControl, IRockControl
@@ -172,11 +172,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 return RequiredFieldValidator.ValidationGroup;
             }
             set
             {
+                EnsureChildControls();
                 RequiredFieldValidator.ValidationGroup = value;
+                this.RegularExpressionValidator.ValidationGroup = value;
             }
         }
 
@@ -190,7 +193,23 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                if ( !Required && string.IsNullOrEmpty( hfSSN.Value ) )
+                {
+                    // Value is not required and not provided.  No need to do anything else.
+                    return true;
+                }
+
+                // Ensure that child controls have been built.
+                EnsureChildControls();
+
+                if ( Required )
+                {
+                    return this.RequiredFieldValidator.IsValid && this.RegularExpressionValidator.IsValid;
+                }
+                else
+                {
+                    return this.RegularExpressionValidator.IsValid;
+                }
             }
         }
 
@@ -226,6 +245,14 @@ namespace Rock.Web.UI.Controls
         private TextBox ssnSerial;
 
         /// <summary>
+        /// Gets or sets the custom validator.
+        /// </summary>
+        /// <value>
+        /// The custom validator.
+        /// </value>
+        protected RegularExpressionValidator RegularExpressionValidator { get; set; }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -234,7 +261,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
 
-            string script = @" 
+            string script = @"
     $('input.ssn-part').on( 'keydown', function (e) {
         if ($.inArray( e.keyCode, [46, 8, 9, 27, 13 ] ) !== -1 ||              // Allow: Ctrl/cmd+A
             ( e.keyCode == 65 && ( e.ctrlKey === true || e.metaKey === true ) ) ||      // Allow: Ctrl/cmd+C
@@ -253,18 +280,20 @@ namespace Rock.Web.UI.Controls
         if ( ( e.keyCode >= 48 && e.keyCode <= 57 ) ||      // 0-9
             ( e.keyCode >= 96 && e.keyCode <= 105 ) ) {     // numpad keys
             if ( this.value.length >= this.maxLength ) {
-                $(this).nextAll('.ssn-part:first').focus();
+                $(this).nextAll('.ssn-part').first().focus();
             }
         }
     });
 
-    $('input.ssn-part').on( 'change', function(e) {   
+    $('input.ssn-part').on( 'change', function(e) {
         var $ctrlGroup = $(this).closest('.form-control-group');
-        var ssnArea = $ctrlGroup.find('.ssn-area:first').val();
-        var ssnGroup = $ctrlGroup.find('.ssn-group:first').val();
-        var ssnSerial = $ctrlGroup.find('.ssn-serial:first').val();
-        var $ssn = $ctrlGroup.find('.js-ssn:first')
-        $ssn.val( ( ssnArea.length == 3 ? ssnArea + '-' : '' ) + ( ssnGroup.length == 2 ? ssnGroup + '-' : '' ) + ssnSerial );
+        var ssnArea = $ctrlGroup.find('.ssn-area').first().val();
+        var ssnGroup = $ctrlGroup.find('.ssn-group').first().val();
+        var ssnSerial = $ctrlGroup.find('.ssn-serial').first().val();
+        var ssnFull = ssnArea + '-' + ssnGroup + '-' + ssnSerial;
+
+        var $ssn = $ctrlGroup.find('.js-ssn').first();
+        $ssn.val( ssnFull == '--' ? '' : ssnFull );
     });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ssn-box", script, true );
@@ -341,6 +370,7 @@ namespace Rock.Web.UI.Controls
         public SSNBox()
             : base()
         {
+            this.RegularExpressionValidator = new RegularExpressionValidator();
             RequiredFieldValidator = new HiddenFieldValidator();
             HelpBlock = new HelpBlock();
             WarningBlock = new WarningBlock();
@@ -359,6 +389,16 @@ namespace Rock.Web.UI.Controls
             hfSSN = new HiddenFieldWithClass();
             hfSSN.ID = string.Format( "hfSSN_{0}", this.ID );
             hfSSN.CssClass = "js-ssn";
+
+            this.RegularExpressionValidator.ID = ID + "_rev";
+            this.RegularExpressionValidator.CssClass = "validation-error help-inline";
+            this.RegularExpressionValidator.ValidationExpression = @"\d{3}-\d{2}-\d{4}";
+            this.RegularExpressionValidator.ControlToValidate = hfSSN.ID;
+            this.RegularExpressionValidator.ErrorMessage = ( this.Label != string.Empty ? this.Label : "SSN" ) + " is invalid.";
+            this.RegularExpressionValidator.Enabled = true;
+            this.RegularExpressionValidator.Display = ValidatorDisplay.Dynamic;
+            this.RegularExpressionValidator.ValidationGroup = ValidationGroup;
+            Controls.Add( this.RegularExpressionValidator );
 
             this.RequiredFieldValidator.InitialValue = string.Empty;
             this.RequiredFieldValidator.ControlToValidate = hfSSN.ID;
@@ -420,6 +460,8 @@ namespace Rock.Web.UI.Controls
             ssnSerial.RenderControl( writer );
 
             writer.RenderEndTag();
+
+            this.RegularExpressionValidator.RenderControl( writer );
         }
 
     }

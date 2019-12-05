@@ -90,7 +90,7 @@
 
                         // set focus
                         if (!isTouchDevice) {
-                            $(".input-account .form-control:first").focus();
+                            $(".input-account .form-control").first().focus();
                         }
 
                         // setup digits buttons
@@ -115,7 +115,7 @@
                     // register entry
                     //
                     if ($(".js-pnlregister").is(":visible")) {
-                        $(".input-account .form-control:first").focus();
+                        $(".input-account .form-control").first().focus();
                     }
                 });
             });

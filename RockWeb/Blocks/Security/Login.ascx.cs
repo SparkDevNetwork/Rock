@@ -256,9 +256,10 @@ Thank you for logging in, however, we need to confirm the email associated with 
                         var isSuccess = component.AuthenticateAndTrack( userLogin, tbPassword.Text );
                         rockContext.SaveChanges();
 
+                        CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
+
                         if ( isSuccess )
                         {
-                            CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;
                         }
                     }

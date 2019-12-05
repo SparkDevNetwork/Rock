@@ -525,6 +525,8 @@ namespace RockWeb.Blocks.Groups
             groupType.EnableSpecificGroupRequirements = cbEnableSpecificGroupReq.Checked;
             groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
             groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
+            groupType.EnableInactiveReason = cbEnableInactiveReason.Checked;
+            groupType.RequiresInactiveReason = cbRequireInactiveReason.Checked;
 
             // RSVP
             groupType.EnableRSVP = cbGroupRSVPEnabled.Checked;
@@ -912,6 +914,10 @@ namespace RockWeb.Blocks.Groups
             cbEnableSpecificGroupReq.Checked = groupType.EnableSpecificGroupRequirements;
             cbAllowSpecificGrpMemWorkFlows.Checked = groupType.AllowSpecificGroupMemberWorkflows;
             cbEnableGroupHistory.Checked = groupType.EnableGroupHistory;
+
+            cbEnableInactiveReason.Checked = groupType.EnableInactiveReason;
+            cbRequireInactiveReason.Enabled = groupType.EnableInactiveReason;
+            cbRequireInactiveReason.Checked = groupType.RequiresInactiveReason;
 
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
@@ -2923,5 +2929,10 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+        protected void cbEnableInactiveReason_CheckedChanged( object sender, EventArgs e )
+        {
+            cbRequireInactiveReason.Enabled = cbEnableInactiveReason.Checked;
+        }
     }
 }
