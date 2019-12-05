@@ -22,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Rock.Rest.XML</DocumentationFile>
-    <LangVersion>7</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,8 +32,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Rock.Rest.XML</DocumentationFile>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -51,6 +53,9 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Rock.Mobile.Common, Version=0.2.10.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Mobile.Common.0.2.10\lib\net452\Rock.Mobile.Common.dll</HintPath>
     </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
@@ -98,6 +103,7 @@
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
+    <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
@@ -106,6 +112,8 @@
     <Compile Include="Controllers\CodeGenerated\CommunicationResponsesController.cs" />
     <Compile Include="Controllers\CodeGenerated\CommunicationTemplateAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DocumentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\DocumentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.cs" />
@@ -119,25 +127,45 @@
     <Compile Include="Controllers\CodeGenerated\MetaNickNameLookupsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteAttachmentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteWatchesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\PersistedDatasetsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonScheduleExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepTypePrerequisitesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepWorkflowsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StepWorkflowTriggersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\ServiceJobHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\SignalTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NcoaHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageShortLinksController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
+    <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
+    <Compile Include="Controllers\StepProgramsController.Partial.cs" />
+    <Compile Include="Controllers\StreakTypeAchievementTypesController.Partial.cs" />
+    <Compile Include="Controllers\StreakTypesController.Partial.cs" />
     <Compile Include="Controllers\GroupMemberHistoricalsController.Partial.cs" />
+    <Compile Include="Controllers\MobileController.cs" />
     <Compile Include="Controllers\NotesController.Partial.cs" />
     <Compile Include="Controllers\PbxController.cs" />
     <Compile Include="Controllers\PrayerRequestsController.Partial.cs" />
     <Compile Include="Controllers\PresenceController.cs" />
     <Compile Include="Controllers\PersonalDevicesController.Partial.cs" />
+    <Compile Include="HeaderTokens.cs" />
     <Compile Include="IHasCustomHttpRoutes.cs" />
+    <Compile Include="Jwt\JwtHelper.cs" />
+    <Compile Include="Jwt\JwtConfig.cs" />
     <Compile Include="Swagger\RockSwaggerHelper.cs" />
     <Compile Include="Swagger\RockDocumentFilter.cs" />
     <Compile Include="Swagger\RockOperationFilter.cs" />
@@ -283,7 +311,7 @@
     <Compile Include="Controllers\CodeGenerated\PagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PeopleController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonAliasController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PersonBadgesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\BadgesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonDuplicatesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonPreviousNamesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonViewedsController.cs" />
@@ -339,7 +367,7 @@
     <Compile Include="Controllers\MetricValuesController.Partial.cs" />
     <Compile Include="Controllers\PagesController.Partial.cs" />
     <Compile Include="Controllers\PeopleController.Partial.cs" />
-    <Compile Include="Controllers\PersonBadgesController.cs" />
+    <Compile Include="Controllers\BadgesController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
     <Compile Include="Controllers\TagsController.Partial.cs" />
@@ -383,6 +411,7 @@
     <EmbeddedResource Include="Swagger\CustomAssets\screen.css" />
     <EmbeddedResource Include="Swagger\CustomAssets\typography.css" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

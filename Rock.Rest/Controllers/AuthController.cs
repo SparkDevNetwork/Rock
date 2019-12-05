@@ -14,9 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Web.Http;
-
+using Microsoft.IdentityModel.Tokens;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 
@@ -36,27 +40,46 @@ namespace Rock.Rest.Controllers
         [System.Web.Http.Route( "api/Auth/Login" )]
         public void Login( [FromBody]LoginParameters loginParameters )
         {
-            bool valid = false;
-
-            var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
-            var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-            if ( userLogin != null && userLogin.EntityType != null )
-            {
-                var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
-                if ( component != null && component.IsActive )
-                {
-                    if ( component.Authenticate( userLogin, loginParameters.Password ) )
-                    {
-                        valid = true;
-                        Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, loginParameters.Persisted, false );
-                    }
-                }
-            }
-
-            if ( !valid )
+            if ( !IsLoginValid( loginParameters ) )
             {
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
             }
+
+            Rock.Security.Authorization.SetAuthCookie( loginParameters.Username, loginParameters.Persisted, false );
+        }
+
+        /// <summary>
+        /// Check if the login parameters are valid
+        /// </summary>
+        /// <param name="loginParameters"></param>
+        /// <returns></returns>
+        private bool IsLoginValid( LoginParameters loginParameters )
+        {
+            if ( loginParameters == null || loginParameters.Username.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            UserLogin userLogin;
+            using ( var rockContext = new RockContext() )
+            {
+                var userLoginService = new UserLoginService( rockContext );
+                userLogin = userLoginService.GetByUserName( loginParameters.Username );
+
+                if ( userLogin == null || userLogin.EntityType == null )
+                {
+                    return false;
+                }
+            }
+
+            var component = AuthenticationContainer.GetComponent( userLogin.EntityType.Name );
+
+            if ( component == null || !component.IsActive )
+            {
+                return false;
+            }
+
+            return component.Authenticate( userLogin, loginParameters.Password );
         }
     }
 }

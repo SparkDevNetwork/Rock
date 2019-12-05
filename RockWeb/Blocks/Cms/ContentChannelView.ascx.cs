@@ -667,15 +667,6 @@ $(document).ready(function() {
 
                 var template = GetTemplate();
 
-                if ( template.Registers.ContainsKey( "EnabledCommands" ) )
-                {
-                    template.Registers["EnabledCommands"] = GetAttributeValue( "EnabledLavaCommands" );
-                }
-                else // this should never happen
-                {
-                    template.Registers.Add( "EnabledCommands", GetAttributeValue( "EnabledLavaCommands" ) );
-                }
-
                 outputContents = template.Render( Hash.FromDictionary( mergeFields ) );
 
                 if ( OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
@@ -740,6 +731,9 @@ $(document).ready(function() {
                         string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
                         AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
                     }
+
+                    var enabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
+                    template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
                 }
             }
             catch ( Exception ex )

@@ -467,6 +467,50 @@ namespace Rock.Web
 
 
         /// <summary>
+        /// Determines whether the given PageId or Route exists on the requesting site
+        /// </summary>
+        /// <param name="requestingSite">The requesting site.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if [is site match] [the specified requesting site]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsSiteMatch( SiteCache requestingSite, int? pageId )
+        {
+            // No requesting site, no page, no match
+            if ( requestingSite == null || pageId == null )
+            {
+                return false;
+            }
+
+            int? pageSiteId = PageCache.Get( pageId.Value )?.Layout.SiteId;
+            if ( pageSiteId != null && pageSiteId == requestingSite.Id)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the given PageId or Route is exclusive to another site.
+        /// </summary>
+        /// <param name="requestingSite">The requesting site.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if [is page exclusive to another site] [the specified requesting site]; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsPageExclusiveToAnotherSite( SiteCache requestingSite, int? pageId )
+        {
+            if ( pageId != null )
+            {
+                var pageSite = PageCache.Get( pageId.Value )?.Layout.Site;
+                return pageSite == null ? false : pageSite.EnableExclusiveRoutes && requestingSite.Id != pageSite.Id;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Reregisters the routes from PageRoute and default routes. Does not affect ODataService routes. Call this method after saving changes to PageRoute entities.
         /// </summary>
         public static void ReregisterRoutes()

@@ -140,6 +140,9 @@ namespace Rock.Client
         public string PhotoUrl { get; set; }
 
         /// <summary />
+        public int? PrimaryCampusId { get; set; }
+
+        /// <summary />
         public int? PrimaryFamilyId { get; set; }
 
         /// <summary />

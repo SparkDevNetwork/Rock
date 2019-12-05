@@ -23,6 +23,9 @@
             $noteEditor.find('input:checkbox').prop('checked', false);
             $noteEditor.find('.js-notesecurity').hide();
 
+            var $noteprivateInput = $noteEditor.find('.js-noteprivate');
+            $noteprivateInput.parent().show();
+
             if (addNote) {
                 // display the 'noteEditor' as a new note
                 var $noteList = $noteContainer.find('.js-notelist').first();
@@ -54,6 +57,7 @@
                     $currentNote.append($noteEditor)
                 }
                 else if (editNote) {
+                    var isprivatevisible = $(this).data('isprivatevisible');
                     // display the 'noteEditor' in place of the currentNote
                   $.get(Rock.settings.get('baseUrl') + 'api/notes/GetNoteEditData?noteId=' + currentNoteId, function (noteData) {
                         $noteEditor.find('.js-parentnoteid').val(noteData.ParentNoteId);
@@ -69,8 +73,12 @@
                       $datetimepicker.last().val(timeWithouthSecond);
 
 
-                        var $noteTypeInput = $noteEditor.find('.js-notenotetype');
+                      var $noteTypeInput = $noteEditor.find('.js-notenotetype');
 
+                      var $noteprivateInput = $noteEditor.find('.js-noteprivate');
+                      if (!isprivatevisible) {
+                          $noteprivateInput.parent().hide();
+                      }
                         // noteType dropdown will only be rendered if more than one notetype is pickable
                         if ($noteTypeInput.length) {
 

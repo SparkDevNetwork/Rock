@@ -875,7 +875,6 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             {
                 this.RemoveCssClass( "table-bordered" );
                 this.RemoveCssClass( "table-striped" );
-                this.RemoveCssClass( "table-hover" );
                 this.AddCssClass( "table-condensed" );
                 this.AddCssClass( "table-light" );
             }
@@ -885,7 +884,16 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 this.RemoveCssClass( "table-light" );
                 this.AddCssClass( "table-bordered" );
                 this.AddCssClass( "table-striped" );
+            }
+
+            if ( DisplayType == GridDisplayType.Full
+                 && this.RowClickEnabled )
+            {
                 this.AddCssClass( "table-hover" );
+            }
+            else
+            {
+                this.RemoveCssClass( "table-hover" );
             }
 
             base.RenderControl( writer );
@@ -1955,7 +1963,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     }
                 }
 
-                
+
 
                 if ( CustomColumns != null && CustomColumns.Any() )
                 {
@@ -1987,8 +1995,14 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
                 if ( typeof( DotLiquid.Drop ).IsAssignableFrom( oType ) )
                 {
-                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
-                    allprops = allprops.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
+                    //var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
+                    Type dotLiquidDropType = typeof( DotLiquid.Drop );
+                    allprops = allprops.Where( a => a.DeclaringType != dotLiquidDropType ).ToList();
+                }
+                else if ( typeof( RockDynamic ).IsAssignableFrom( oType ) )
+                {
+                    Type rockDynamicType = typeof( RockDynamic );
+                    allprops = allprops.Where( a => a.DeclaringType != typeof( RockDynamic ) ).ToList();
                 }
 
                 // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
@@ -2134,7 +2148,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                             {
                                 var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
                                 string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
-                                string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false ).ReverseCurrencyFormatting().ToString();
+                                string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false )?.ReverseCurrencyFormatting()?.ToString();
                                 if ( !string.IsNullOrEmpty( resultHtml ) )
                                 {
                                     worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;

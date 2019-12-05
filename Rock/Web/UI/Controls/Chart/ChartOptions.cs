@@ -85,6 +85,8 @@ function (val, axis) {
   return formattedValue;
 }".Trim();
 
+            this.series = this.series ?? new SeriesOptions( false, true, false );
+
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.lines );
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.bars );
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.points );

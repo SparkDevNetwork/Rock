@@ -27,7 +27,7 @@
 
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
+                                <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
@@ -49,11 +49,14 @@
                                     <asp:ListItem Value="Personal" Text="Personal" />
                                 </Rock:RockRadioButtonList>
                                 <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
+                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Tag, Rock" PropertyName="IconCssClass" Label="Icon CSS Class" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" EnhanceForLongLists="true" />
                                 <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
                                 <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
+                                <Rock:ColorPicker ID="cpBackground" runat="server" Label="Background Color" Help="The background color to use when displaying tag." />
+                                <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                             </div>
                         </asp:Panel>
 

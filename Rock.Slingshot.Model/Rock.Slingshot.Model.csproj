@@ -20,7 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>7</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -58,6 +59,7 @@
     <Compile Include="GroupAddressImport.cs" />
     <Compile Include="PersonAddressImport.cs" />
     <Compile Include="PersonImport.cs" />
+    <Compile Include="PersonSearchKeyImport.cs" />
     <Compile Include="PhoneNumberImport.cs" />
     <Compile Include="PhotoImport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

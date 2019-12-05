@@ -11,14 +11,14 @@
                         <asp:HiddenField ID="hfScheduledTransactionId" runat="server"></asp:HiddenField>
                         <asp:HiddenField ID="hfTransfer" runat="server"></asp:HiddenField>
                         <div class="actions">
-                            <asp:Button ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" OnClick="btnEdit_Click" CssClass="btn btn-default" />
-                            <Rock:BootstrapButton ID="bbtnDelete" runat="server" OnClick="bbtnDelete_Click" Text="Delete" CssClass="btn btn-danger" />
+                            <asp:Button ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" OnClick="btnEdit_Click" CssClass="btn btn-default edit" />
+                            <Rock:BootstrapButton ID="bbtnDelete" runat="server" OnClick="bbtnDelete_Click" Text="Delete" CssClass="btn btn-danger delete" />
                         </div>
                     </div>
                 </ItemTemplate>
             </asp:Repeater>
-        </div>        
-        
+        </div>
+
         <asp:Panel ID="pnlNoScheduledTransactions" runat="server" CssClass="alert alert-info" Visible="false">
             <asp:Literal ID="lNoScheduledTransactionsMessage" runat="server" />
         </asp:Panel>
@@ -26,6 +26,6 @@
         <asp:LinkButton ID="lbAddScheduledTransaction" runat="server" CssClass="btn btn-primary" OnClick="lbAddScheduledTransaction_Click" />
 
         <asp:Literal ID="lDebug" runat="server" />
-        
+
     </ContentTemplate>
 </asp:UpdatePanel>

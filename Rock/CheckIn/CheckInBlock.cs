@@ -142,7 +142,7 @@ namespace Rock.CheckIn
 
         /// <summary>
         /// Gets a value indicating whether the kiosk has active group types and locations that 
-        /// are open for check-in.
+        /// are open for check-in or check-out.
         /// </summary>
         /// <value>
         /// <c>true</c> if kiosk is active; otherwise, <c>false</c>.
@@ -151,12 +151,17 @@ namespace Rock.CheckIn
         {
             get
             {
-                if ( CurrentCheckInState == null ||
-                    CurrentCheckInState.Kiosk == null ||
-                    CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentGroupTypeIds ).Count == 0 ||
-                    !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentGroupTypeIds ) )
+                if ( CurrentCheckInState == null || CurrentCheckInState.Kiosk == null || CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentGroupTypeIds ).Count == 0 )
                 {
                     return false;
+                }
+                else if ( ! CurrentCheckInType.AllowCheckout && !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentGroupTypeIds ) )
+                {
+                    return false;
+                }
+                else if ( CurrentCheckInType.AllowCheckout && CurrentCheckInState.Kiosk.HasActiveCheckOutLocations( CurrentGroupTypeIds ) )
+                {
+                    return true;
                 }
                 else
                 {

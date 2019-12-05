@@ -88,6 +88,15 @@ namespace Rock.Checkr
                 var lockObject = _lockObjects.GetOrAdd( workflow.Id, new object() );
                 lock ( lockObject )
                 {
+                    // Checkr can respond very fast, possibly before the workflow finishes.
+                    // Save the workflow now to ensure previously completed activities/actions
+                    // are not run again via the checkr webhook. This is not done at the Action
+                    // or Activity level for speed reasons.
+                    if ( workflow.IsPersisted == true )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
                     Person person;
                     int? personAliasId;
                     if ( !GetPerson( rockContext, workflow, personAttribute, out person, out personAliasId, errorMessages ) )
@@ -119,7 +128,7 @@ namespace Rock.Checkr
                         UpdateWorkflowRequestStatus( workflow, rockContext, "FAIL" );
                         return true;
                     }
-
+                    
                     using ( var newRockContext = new RockContext() )
                     {
                         var backgroundCheckService = new BackgroundCheckService( newRockContext );
@@ -156,7 +165,7 @@ namespace Rock.Checkr
 
                     _lockObjects.TryRemove( workflow.Id, out _ ); // we no longer need that lock for this workflow
                 }
-
+                
                 return true;
 
             }

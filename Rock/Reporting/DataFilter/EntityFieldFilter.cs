@@ -149,8 +149,6 @@ namespace Rock.Reporting.DataFilter
 
             string script = string.Format( scriptFormat, entityType.Name, sb.ToString() );
             ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), entityType.Name + "-property-selection", script, true );
-
-            RegisterFilterCompareChangeScript( filterControl );
         }
 
         /// <summary>
