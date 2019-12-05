@@ -26,6 +26,7 @@ steps:
     restoreSolution: '$(solution)'
     feedsToUse: 'config'
     nugetConfigPath: 'NuGet.config'
+    includeNuGetOrg: true
 
 - task: CopyFiles@2
   inputs:
