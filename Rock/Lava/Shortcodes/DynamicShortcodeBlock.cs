@@ -391,7 +391,7 @@ namespace Rock.Lava.Shortcodes
             }
 
             // OK, now let's look for any passed variables ala: name:variable
-            var variableTokens = Regex.Matches( resolvedMarkup, @"\w*:\w+" )
+            var variableTokens = Regex.Matches( markup, @"\w*:\w+" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();

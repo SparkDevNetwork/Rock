@@ -633,21 +633,15 @@ namespace Rock.Reporting
                 // Special processing for Entity Type "Workflow" to handle sub-types that are distinguished by WorkflowTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Rock.Model.Workflow ) ) && attribute.EntityTypeQualifierColumn == "WorkflowTypeId" )
                 {
-                    int workflowTypeId = attribute.EntityTypeQualifierValue.AsInteger();
-                    if ( _workflowTypeNameLookup == null )
+                    using ( var rockContext = externalRockContext == null ? new RockContext() : null )
                     {
-                        using ( var rockContext = new RockContext() )
+                        var workflowType = WorkflowTypeCache.Get( attribute.EntityTypeQualifierValue.AsInteger(), externalRockContext ?? rockContext );
+                        if ( workflowType != null )
                         {
-                            _workflowTypeNameLookup = new WorkflowTypeService( rockContext ).Queryable().ToDictionary( k => k.Id, v => v.Name );
+                            // Append the Qualifier to the title for Workflow Attributes
+                            entityField.AttributeEntityTypeQualifierName = workflowType.Name;
+                            entityField.Title = string.Format( "({1}) {0} ", attribute.Name, workflowType.Name );
                         }
-                    }
-
-                    var workflowTypeName = _workflowTypeNameLookup.ContainsKey( workflowTypeId ) ? _workflowTypeNameLookup[workflowTypeId] : null;
-                    if ( workflowTypeName != null )
-                    {
-                        // Append the Qualifier to the title for Workflow Attributes
-                        entityField.AttributeEntityTypeQualifierName = workflowTypeName;
-                        entityField.Title = string.Format( "({1}) {0} ", attribute.Name, workflowTypeName );
                     }
                 }
             }
