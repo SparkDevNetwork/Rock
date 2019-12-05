@@ -34,7 +34,11 @@ namespace Rock.Field.Types
 
         #region Configuration
 
+        /// <summary>
+        /// The template block key
+        /// </summary>
         public static readonly string TEMPLATE_BLOCK_KEY = "templateblock";
+
         private static readonly Guid _CustomGuid = new Guid( "ffffffff-ffff-ffff-ffff-ffffffffffff" );
 
         /// <summary>

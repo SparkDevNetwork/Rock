@@ -621,6 +621,8 @@ namespace Rock.MyWell
         /// <param name="subscriptionRequestParameters">The subscription request parameters.</param>
         /// <param name="scheduleTransactionFrequencyValueGuid">The schedule transaction frequency value unique identifier.</param>
         /// <param name="startDate">The start date.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
         private static bool SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDate, out string errorMessage )
         {
             errorMessage = string.Empty;

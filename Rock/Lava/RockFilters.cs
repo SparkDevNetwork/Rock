@@ -4026,10 +4026,10 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Appends Following information to entity/entities or a data object created from <see cref="PersistedDataset(Context, string, string)"/>.
+        /// Appends Following information to entity/entities or a data object created from <see cref="PersistedDataset(Context, string, string)" />.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="resultDataObject">The data object.</param>
+        /// <param name="dataObject">The data object.</param>
         /// <returns></returns>
         public static object AppendFollowing( DotLiquid.Context context, object dataObject )
         {
@@ -4230,6 +4230,7 @@ namespace Rock.Lava
         /// <summary>
         /// Filters the followed.
         /// </summary>
+        /// <param name="context">The context.</param>
         /// <param name="currentPerson">The current person.</param>
         /// <param name="dataObject">The data object.</param>
         /// <param name="followFilterType">Type of the follow filter.</param>

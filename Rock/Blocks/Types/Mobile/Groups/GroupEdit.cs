@@ -160,32 +160,74 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The show group name
+            /// </summary>
             public const string ShowGroupName = "ShowGroupName";
 
+            /// <summary>
+            /// The enable group name edit
+            /// </summary>
             public const string EnableGroupNameEdit = "EnableGroupNameEdit";
 
+            /// <summary>
+            /// The show description
+            /// </summary>
             public const string ShowDescription = "ShowDescription";
 
+            /// <summary>
+            /// The enable description edit
+            /// </summary>
             public const string EnableDescriptionEdit = "EnableDescriptionEdit";
 
+            /// <summary>
+            /// The show campus
+            /// </summary>
             public const string ShowCampus = "ShowCampus";
 
+            /// <summary>
+            /// The enable campus edit
+            /// </summary>
             public const string EnableCampusEdit = "EnableCampusEdit";
 
+            /// <summary>
+            /// The show group capacity
+            /// </summary>
             public const string ShowGroupCapacity = "ShowGroupCapacity";
 
+            /// <summary>
+            /// The enable group capacity edit
+            /// </summary>
             public const string EnableGroupCapacityEdit = "EnableGroupCapacityEdit";
 
+            /// <summary>
+            /// The show active status
+            /// </summary>
             public const string ShowActiveStatus = "ShowActiveStatus";
 
+            /// <summary>
+            /// The enable active status edit
+            /// </summary>
             public const string EnableActiveStatusEdit = "EnableActiveStatusEdit";
 
+            /// <summary>
+            /// The show public status
+            /// </summary>
             public const string ShowPublicStatus = "ShowPublicStatus";
 
+            /// <summary>
+            /// The enable public status edit
+            /// </summary>
             public const string EnablePublicStatusEdit = "EnablePublicStatusEdit";
 
+            /// <summary>
+            /// The attribute category
+            /// </summary>
             public const string AttributeCategory = "AttributeCategory";
 
+            /// <summary>
+            /// The group detail page
+            /// </summary>
             public const string GroupDetailPage = "GroupDetailPage";
         }
 
@@ -194,37 +236,124 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         public static class PageParameterKeys
         {
+            /// <summary>
+            /// The group identifier
+            /// </summary>
             public const string GroupId = "GroupId";
         }
 
         #region Attribute Properties
 
+        /// <summary>
+        /// Gets a value indicating whether [show group name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show group name]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowGroupName => GetAttributeValue( AttributeKeys.ShowGroupName ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable group name edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group name edit]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnableGroupNameEdit => GetAttributeValue( AttributeKeys.EnableGroupNameEdit ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [show description].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show description]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowDescription => GetAttributeValue( AttributeKeys.ShowDescription ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable description edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable description edit]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnableDescriptionEdit => GetAttributeValue( AttributeKeys.EnableDescriptionEdit ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [show campus].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show campus]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowCampus => GetAttributeValue( AttributeKeys.ShowCampus ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable campus edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable campus edit]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnableCampusEdit => GetAttributeValue( AttributeKeys.EnableCampusEdit ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [show group capacity].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show group capacity]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowGroupCapacity => GetAttributeValue( AttributeKeys.ShowGroupCapacity ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable group capacity edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable group capacity edit]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnableGroupCapacityEdit => GetAttributeValue( AttributeKeys.EnableGroupCapacityEdit ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [show active status].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show active status]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowActiveStatus => GetAttributeValue( AttributeKeys.ShowActiveStatus ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable active status edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable active status edit]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnableActiveStatusEdit => GetAttributeValue( AttributeKeys.EnableActiveStatusEdit ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [show public status].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show public status]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowPublicStatus => GetAttributeValue( AttributeKeys.ShowPublicStatus ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable public status edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable public status edit]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnablePublicStatusEdit => GetAttributeValue( AttributeKeys.EnablePublicStatusEdit ).AsBoolean();
 
+        /// <summary>
+        /// Gets the attribute category.
+        /// </summary>
+        /// <value>
+        /// The attribute category.
+        /// </value>
         protected Guid? AttributeCategory => GetAttributeValue( AttributeKeys.AttributeCategory ).AsGuidOrNull();
 
+        /// <summary>
+        /// Gets the group detail page.
+        /// </summary>
+        /// <value>
+        /// The group detail page.
+        /// </value>
         protected Guid? GroupDetailPage => GetAttributeValue( AttributeKeys.GroupDetailPage ).AsGuidOrNull();
 
         #endregion
@@ -523,7 +652,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Gets the editable attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         private List<AttributeCache> GetEditableAttributes( IHasAttributes entity )
         {
@@ -562,6 +690,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
             };
         }
 
+        /// <summary>
+        /// Gets the current configuration.
+        /// </summary>
+        /// <returns></returns>
         [BlockAction]
         [RockObsolete( "1.10.2" )]
         public object GetCurrentConfig()

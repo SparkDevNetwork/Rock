@@ -80,6 +80,12 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+        /// <summary>
+        /// Gets or sets the warning text.
+        /// </summary>
+        /// <value>
+        /// The warning text.
+        /// </value>
         [
         Bindable( true ),
         Category( "Appearance" ),

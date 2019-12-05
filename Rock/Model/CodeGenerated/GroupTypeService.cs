@@ -143,6 +143,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.EnableGroupHistory = source.EnableGroupHistory;
             target.EnableGroupTag = source.EnableGroupTag;
+            target.EnableInactiveReason = source.EnableInactiveReason;
             target.EnableLocationSchedules = source.EnableLocationSchedules;
             target.EnableRSVP = source.EnableRSVP;
             target.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
@@ -168,6 +169,7 @@ namespace Rock.Model
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.RequiresInactiveReason = source.RequiresInactiveReason;
             target.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             target.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
