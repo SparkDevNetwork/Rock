@@ -3973,7 +3973,7 @@ namespace Rock.Lava
         /// <returns></returns>
         public static string ToJSON( object input )
         {
-            return input.ToJson( Formatting.Indented );
+            return input.ToJson( Formatting.Indented, ignoreErrors: true );
         }
 
         /// <summary>
@@ -4045,11 +4045,6 @@ namespace Rock.Lava
 
             if ( dataObject is IEntity entity )
             {
-                // Get help LazyLoading work when they are put into a RockDynamic, attach the Entities to a RockContext
-                var rockContext = GetRockContext( context );
-                var entityDbSet = rockContext.Set( entity.GetType() );
-                entityDbSet.Attach( entity );
-
                 resultDataObject = new RockDynamic( dataObject );
                 resultDataObject.EntityTypeId = EntityTypeCache.GetId( dataObject.GetType() );
                 isCollection = false;
@@ -4060,12 +4055,8 @@ namespace Rock.Lava
                 var dynamicEntityList = new List<RockDynamic>();
                 if ( firstEntity != null )
                 {
-                    // Get help LazyLoading work when they are put into a RockDynamic, attach the Entities to a RockContext
-                    var rockContext = GetRockContext( context );
-                    var entityDbSet = rockContext.Set( firstEntity.GetType() );
                     foreach ( var item in entityList )
                     {
-                        entityDbSet?.Attach( item );
                         dynamic rockDynamicItem = new RockDynamic( item );
                         rockDynamicItem.EntityTypeId = EntityTypeCache.GetId( item.GetType() );
                         dynamicEntityList.Add( rockDynamicItem );
@@ -4155,11 +4146,8 @@ namespace Rock.Lava
             if ( currentPerson != null )
             {
                 var rockContext = new RockContext();
-                followedEntityIds = new FollowingService( rockContext ).Queryable()
-                                        .Where( a => a.PersonAlias.PersonId == currentPerson.Id
-                                            && a.EntityTypeId == dataObjectEntityTypeId
-                                            && entityIdList.Contains( a.EntityId ) )
-                                        .Select( a => a.EntityId ).ToList();
+                followedEntityIds = new FollowingService( rockContext ).GetFollowedItems( dataObjectEntityTypeId.Value, currentPerson.Id )
+                    .Where( e => entityIdList.Contains( e.Id ) ).Select( a => a.Id ).ToList();
             }
             else
             {
