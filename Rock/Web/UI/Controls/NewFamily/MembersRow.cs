@@ -518,6 +518,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "rowid", ID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
+                writer.AddAttribute( "data-label", "Role" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rblRole.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -527,11 +528,13 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowTitle )
                 {
+                    writer.AddAttribute( "data-label", "Title" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
                     _dvpTitle.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
+                writer.AddAttribute( "data-label", "Name" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _tbFirstName.IsValid ? "" : " has-error" ) );
@@ -564,15 +567,18 @@ namespace Rock.Web.UI.Controls
 
                 if ( this.ShowSuffix )
                 {
+                    writer.AddAttribute( "data-label", "Suffix" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
                     _dvpSuffix.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
+                writer.AddAttribute( "data-label", "Connection Status" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _dvpConnectionStatus.RenderControl( writer );
                 writer.RenderEndTag();
 
+                writer.AddAttribute( "data-label", "Gender" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rblGender.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -580,6 +586,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
+                writer.AddAttribute( "data-label", "Birthdate" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _dpBirthdate.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -589,6 +596,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( ShowGradeColumn )
                 {
+                    writer.AddAttribute( "data-label", "Grade" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
                     if ( ShowGradePicker )
                     {
@@ -597,6 +605,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
+                writer.AddAttribute( "data-label", "Cancel" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 _lbDelete.RenderControl( writer );
                 writer.RenderEndTag();
