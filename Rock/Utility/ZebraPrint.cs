@@ -244,9 +244,6 @@ namespace Rock.Utility
             }});
         }}
 
-	    // label data
-        var labelData = {0};
-
 		function onDeviceReady() {{
             try {{			
                 printLabels();
@@ -262,7 +259,7 @@ namespace Rock.Utility
 		
 		function printLabels() {{
 		    ZebraPrintPlugin.printTags(
-            	JSON.stringify(labelData), 
+            	JSON.stringify({0}), 
             	function(result) {{ 
 			        console.log('Tag printed');
 			    }},

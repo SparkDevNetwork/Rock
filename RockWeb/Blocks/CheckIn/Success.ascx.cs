@@ -188,6 +188,7 @@ namespace RockWeb.Blocks.CheckIn
 
                         if ( printFromClient.Any() )
                         {
+                            // When debugging and using ngrok you will need to change this to the ngrok address (e.g. var urlRoot = "http://developrock.ngrok.io";). Not sure why this isn't using a global attribute.
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
                             printFromClient
                                 .OrderBy( l => l.PersonId )
