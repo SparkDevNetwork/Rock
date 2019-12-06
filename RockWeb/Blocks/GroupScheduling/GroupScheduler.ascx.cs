@@ -918,6 +918,7 @@ btnCopyToClipboard.ClientID );
 
             List<string> errorMessages;
             var emailsSent = attendanceService.SendScheduleConfirmationSystemEmails( sendConfirmationAttendancesQuery, out errorMessages );
+            bool isSendConfirmationAttendancesFound = sendConfirmationAttendancesQuery.Any();
             rockContext.SaveChanges();
 
             StringBuilder summaryMessageBuilder = new StringBuilder();
@@ -936,7 +937,7 @@ btnCopyToClipboard.ClientID );
             else
             {
                 alertType = ModalAlertType.Information;
-                if ( emailsSent > 0 && sendConfirmationAttendancesQuery.Any() )
+                if ( emailsSent > 0 && isSendConfirmationAttendancesFound )
                 {
                     summaryMessageBuilder.AppendLine( string.Format( "Successfully sent {0} confirmation {1}", emailsSent, "email".PluralizeIf( emailsSent != 1 ) ) );
                 }
