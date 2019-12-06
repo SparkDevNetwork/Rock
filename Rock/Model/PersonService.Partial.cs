@@ -3947,6 +3947,31 @@ FROM (
         }
 
         /// <summary>
+        /// Ensures the GivingId is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateGivingIdAll( RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET GivingId = (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)
+WHERE GivingId IS NULL OR GivingId != (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)" );
+        }
+
+        /// <summary>
         /// Updates the person giving leader identifier for the specified person, or for all persons in the database if personId is null.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
