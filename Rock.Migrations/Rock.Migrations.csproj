@@ -93,6 +93,10 @@
     <Compile Include="Migrations\201912042320379_Rollup_1204.Designer.cs">
       <DependentUpon>201912042320379_Rollup_1204.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201912062159235_PersonGivingId.cs" />
+    <Compile Include="Migrations\201912062159235_PersonGivingId.Designer.cs">
+      <DependentUpon>201912062159235_PersonGivingId.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -954,6 +958,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201912042320379_Rollup_1204.resx">
       <DependentUpon>201912042320379_Rollup_1204.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912062159235_PersonGivingId.resx">
+      <DependentUpon>201912062159235_PersonGivingId.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>

@@ -313,7 +313,7 @@ namespace Rock.Model
         /// The giver identifier.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [Index("IX_GivingId")]
         public string GivingId
         {
             get
