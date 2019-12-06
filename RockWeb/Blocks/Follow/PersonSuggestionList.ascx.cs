@@ -63,14 +63,14 @@ namespace RockWeb.Blocks.Follow
 
             var lbFollow = new LinkButton();
             lbFollow.ID = "lbFollow";
-            lbFollow.CssClass = "btn btn-default btn-sm pull-left";
+            lbFollow.CssClass = "btn btn-primary btn-sm pull-left margin-v-sm";
             lbFollow.Text = "<i class='fa fa-flag'></i> Follow";
             lbFollow.Click += lbFollow_Click;
             gSuggestions.Actions.AddCustomActionControl( lbFollow );
 
             var lbIgnore = new LinkButton();
             lbIgnore.ID = "lbIgnore";
-            lbIgnore.CssClass = "btn btn-default btn-sm pull-left js-ignore";
+            lbIgnore.CssClass = "btn btn-default btn-sm pull-left margin-v-sm js-ignore";
             lbIgnore.Text = "<i class='fa fa-flag-o'></i> Ignore";
             lbIgnore.Click += lbIgnore_Click;
             gSuggestions.Actions.AddCustomActionControl( lbIgnore );
