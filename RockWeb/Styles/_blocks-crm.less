@@ -1058,7 +1058,6 @@ span.field-value {
       padding-left: 35%;
 
       /* Behave  like a "row" */
-      border: 0;
       border-bottom: 1px solid @gray-lighter;
     }
 
@@ -1096,44 +1095,12 @@ span.field-value {
 
     /* Label the data */
     tbody {
-      td:nth-of-type(1)::before {
-        content: "Role";
+      td::before {
+        content: attr(data-label);
       }
 
-      td:nth-of-type(2)::before {
-        content: "Title";
-      }
-
-      td:nth-of-type(3)::before {
-        content: "Name";
-      }
-
-      td:nth-of-type(4)::before {
-        content: "Suffix";
-      }
-
-      td:nth-of-type(5)::before {
-        content: "Connection Status";
-      }
-
-      td:nth-of-type(6)::before {
-        content: "Gender";
-      }
-
-      td:nth-of-type(7)::before {
-        content: "Birthdate";
-      }
-
-      td:nth-of-type(8):empty {
+      td:empty {
         display: none;
-      }
-
-      td:nth-of-type(8)::before {
-        content: "Grade";
-      }
-
-      td:nth-of-type(9)::before {
-        content: "Cancel";
       }
     }
 
@@ -1152,10 +1119,7 @@ span.field-value {
     }
 
     > tbody > tr > td > .form-group {
-      &:last-of-type {
-        margin-bottom: 0;
-      }
-
+      &:last-of-type,
       .radio:last-of-type {
         margin-bottom: 0;
       }
@@ -1206,7 +1170,6 @@ span.field-value {
         font-size: @grid-column-header-font-size;
         font-weight: @grid-column-header-font-weight;
         color: @grid-column-header-text-color;
-        // content: "Person #" counter(rowNumber);
         background-color: @grid-column-header-bg;
         border-bottom: 2px solid @grid-column-header-border-color;
 
