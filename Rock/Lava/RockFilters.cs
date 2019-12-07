@@ -3715,7 +3715,7 @@ namespace Rock.Lava
                 return input;
             }
 
-            return string.Format( "<![CDATA[{0}]]", input );
+            return string.Format( "<![CDATA[{0}]]>", input );
         }
 
         /// <summary>
