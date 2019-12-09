@@ -3076,16 +3076,20 @@ namespace Rock.Model
                 UPDATE Person
                     SET [BirthDate] = (
 		                    CASE 
-			                    WHEN (
-					                    [BirthYear] IS NOT NULL
-					                    AND [BirthYear] > 1800
-					                    )
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
 				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
 			                    ELSE NULL
 			                    END
 		                    )
                     FROM Person
-                    WHERE IsDeceased = 0
+                    WHERE [BirthDate] != (
+		                    CASE 
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    AND IsDeceased = 0
                     AND RecordStatusValueId <> {inactiveStatusId}";
 
             rockContext = rockContext ?? new RockContext();

@@ -88,7 +88,7 @@
 
                         <Rock:PanelWidget ID="wpConnectionRequestAttributes" runat="server" Title="Connection Request Attributes" CssClass="group-type-attribute-panel">
                             <Rock:NotificationBox ID="nbConnectionRequestAttributes" runat="server" NotificationBoxType="Info"
-                                Text="Connection Request Attributes apply to members in this opportunity.  Each member will have their own value for these attributes" />
+                                Text="Connection Request Attributes apply to requests in this opportunity.  Each request will have their own value for these attributes" />
                             <Rock:RockControlWrapper ID="rcwConnectionRequestAttributesInherited" runat="server" Label="Inherited Connection Request Attributes">
                                 <div class="grid">
                                     <Rock:Grid ID="gConnectionRequestAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Inherited Connection Request Attribute">
