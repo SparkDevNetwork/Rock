@@ -12482,6 +12482,102 @@ BEGIN
 	-- fix up any birthdates that got set to a future date
 	UPDATE Person set BirthYear = DATEPART(year, SysDateTime()) - 1 where BirthDate > SysDateTime();
 
+    UPDATE Person
+                    SET [BirthDate] = (
+		                    CASE 
+			                    WHEN (
+					                    [BirthYear] IS NOT NULL
+					                    AND [BirthYear] > 1800
+					                    )
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    FROM Person
+                    where [BirthDate] != (
+		                    CASE 
+			                    WHEN (
+					                    [BirthYear] IS NOT NULL
+					                    AND [BirthYear] > 1800
+					                    )
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+
+
+        UPDATE Person
+        SET GivingId = (
+		        CASE 
+			        WHEN [GivingGroupId] IS NOT NULL
+				        THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			        ELSE 'P' + CONVERT([varchar], [Id])
+			        END
+		        )
+        WHERE GivingId IS NULL OR GivingId != (
+		        CASE 
+			        WHEN [GivingGroupId] IS NOT NULL
+				        THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			        ELSE 'P' + CONVERT([varchar], [Id])
+			        END
+		        )
+
+        UPDATE x
+        SET x.PrimaryFamilyId = x.CalculatedPrimaryFamilyId
+            ,x.PrimaryCampusId = x.CalculatedPrimaryCampusId
+        FROM (
+            SELECT p.Id
+                ,p.NickName
+                ,p.LastName
+                ,p.PrimaryFamilyId
+                ,p.PrimaryCampusId
+                ,pf.CalculatedPrimaryFamilyId
+                ,pf.CalculatedPrimaryCampusId
+            FROM Person p
+            OUTER APPLY (
+                SELECT TOP 1
+                    g.Id [CalculatedPrimaryFamilyId]
+                    ,g.CampusId [CalculatedPrimaryCampusId]
+                FROM GroupMember gm
+                JOIN [Group] g ON g.Id = gm.GroupId
+                WHERE g.GroupTypeId = @familyGroupType
+                    AND gm.PersonId = p.Id
+                ORDER BY gm.GroupOrder
+                    ,gm.GroupId
+                ) pf
+            WHERE (
+                    (ISNULL(p.PrimaryFamilyId, 0) != ISNULL(pf.CalculatedPrimaryFamilyId, 0))
+                    OR (ISNULL(p.PrimaryCampusId, 0) != ISNULL(pf.CalculatedPrimaryCampusId, 0))
+                    ) ) x
+
+            UPDATE x
+            SET x.GivingLeaderId = x.CalculatedGivingLeaderId
+            FROM (
+	            SELECT p.Id
+		            ,p.NickName
+		            ,p.LastName
+		            ,p.GivingLeaderId
+		            ,isnull(pf.CalculatedGivingLeaderId, p.Id) CalculatedGivingLeaderId
+	            FROM Person p
+	            OUTER APPLY (
+		            SELECT TOP 1 p2.[Id] CalculatedGivingLeaderId
+		            FROM [GroupMember] gm
+		            INNER JOIN [GroupTypeRole] r ON r.[Id] = gm.[GroupRoleId]
+		            INNER JOIN [Person] p2 ON p2.[Id] = gm.[PersonId]
+		            WHERE gm.[GroupId] = p.GivingGroupId
+			            AND p2.[IsDeceased] = 0
+			            AND p2.[GivingGroupId] = p.GivingGroupId
+		            ORDER BY r.[Order]
+			            ,p2.[Gender]
+			            ,p2.[BirthYear]
+			            ,p2.[BirthMonth]
+			            ,p2.[BirthDay]
+		            ) pf
+	            WHERE (
+			            p.GivingLeaderId IS NULL
+			            OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
+			            )) x
+
     COMMIT TRANSACTION
 
     IF OBJECT_ID('tempdb..#lastNames') IS NOT NULL
