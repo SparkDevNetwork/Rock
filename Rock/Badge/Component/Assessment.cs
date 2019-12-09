@@ -92,13 +92,11 @@ namespace Rock.Badge.Component
             // Need a list of primitive types for assessmentTestsTaken linq
             var availableTypes = assessmentTypes.Select( t => t.Id ).ToList();
 
-            // Get a list of all of the tests a the person has taken that the component is configured to show.
+            // Get a list of the assessment tests for the person where the latest requested of each type is complete and is allowed by the component configuration.
             var assessmentTestsTaken = new AssessmentService( new RockContext() )
-                .Queryable()
-                .Where( a => a.PersonAlias.PersonId == Person.Id )
+                .GetLatestAssessmentsForPerson( Person.Id )
                 .Where( a => a.Status == AssessmentRequestStatus.Complete )
                 .Where( a => availableTypes.Contains( a.AssessmentTypeId ) )
-                .OrderByDescending( a => a.CreatedDateTime )
                 .ToList();
 
             StringBuilder toolTipText = new StringBuilder();
