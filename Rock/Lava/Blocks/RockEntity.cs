@@ -89,8 +89,8 @@ namespace Rock.Lava.Blocks
                 modelName = "Rock.Model." + _entityName;
             }
 
-            // Check first to see if this is a core model
-            var entityTypeCache = EntityTypeCache.Get( modelName );
+            // Check first to see if this is a core model. use the createIfNotFound = false option
+            var entityTypeCache = EntityTypeCache.Get( modelName, false );
 
             if ( entityTypeCache == null )
             {
