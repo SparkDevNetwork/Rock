@@ -132,7 +132,14 @@ namespace Rock.Plugins.com_bemaservices.Finance
                 }
                 financialPledge.LoadAttributes();
                 phAttributes.Controls.Clear();
-                Helper.AddEditControls( financialPledge, phAttributes, true, BlockValidationGroup );
+
+                var attributes = financialPledge.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson );
+                if ( attributes.Any() )
+                {
+                    Helper.AddEditControls( string.Empty, attributes.OrderBy( a => a.Value.Order ).Select( a => a.Key ).ToList(),
+                        financialPledge, phAttributes, BlockValidationGroup, true, new List<string>());
+                }
+                //Helper.AddEditControls( financialPledge, phAttributes, true, BlockValidationGroup );
             }
             /* BEMA.FE1.End */
 
