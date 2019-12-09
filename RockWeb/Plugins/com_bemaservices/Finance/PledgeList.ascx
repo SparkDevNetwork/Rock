@@ -82,7 +82,7 @@
             SaveButtonText="Reassign" OnSaveClick="dlgReassign_SaveClick" OnCancelScript="clearActiveDialog();">
             <Content>
 
-                <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Pledges To" Required="true" ValidationGroup="Reassign" />
+                <Rock:PersonPicker ID="ppReassign" runat="server" Label="Reassign Selected Pledges To" Required="true" ValidationGroup="Reassign" IncludeBusinesses="true" />
                 <Rock:AccountPicker ID="apReassign" runat="server" Label="Account" Required="false" ValidationGroup="Account" AllowMultiSelect="false" DisplayActiveOnly="true" />
 
 
