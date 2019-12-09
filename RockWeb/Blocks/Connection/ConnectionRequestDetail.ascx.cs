@@ -721,7 +721,7 @@ namespace RockWeb.Blocks.Connection
 
             int? defaultConnectorPersonId = null;
             var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
-            if ( connectionRequest != null )
+            if ( connectionRequest != null && connectionOpportunity != null )
             {
                 defaultConnectorPersonId = connectionOpportunity.GetDefaultConnectorPersonId( connectionRequest.CampusId );
                 if ( defaultConnectorPersonId.HasValue )
@@ -1545,6 +1545,11 @@ namespace RockWeb.Blocks.Connection
             if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )
             {
                 lbConnect.Visible = false;
+                lbTransfer.Visible = false;
+            }
+
+            if ( connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.Count <= 1 )
+            {
                 lbTransfer.Visible = false;
             }
 
