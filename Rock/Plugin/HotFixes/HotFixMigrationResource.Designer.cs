@@ -669,5 +669,27 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_096_MigrationRollupsForV9_5_chartjsfix", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
     }
 }
