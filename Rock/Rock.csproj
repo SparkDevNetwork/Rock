@@ -511,6 +511,7 @@
     <Compile Include="Plugin\HotFixes\089_MigrationRollupsForV9_3.cs" />
     <Compile Include="Plugin\HotFixes\088_FixAttributeQualifierMotivatorDefinedType.cs" />
     <Compile Include="Plugin\HotFixes\087_AddNonCashAssetTypes.cs" />
+    <Compile Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange.cs" />
     <Compile Include="Plugin\HotFixes\096_MigrationRollupsForV9_5.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -2434,6 +2435,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\096_MigrationRollupsForV9_5_chartjsfix.sql">
       <DependentUpon>096_MigrationRollupsForV9_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>097_FamilyAnalyticsProcChange.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
