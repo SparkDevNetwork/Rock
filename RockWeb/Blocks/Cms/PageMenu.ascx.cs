@@ -37,21 +37,85 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Page Menu" )]
     [Category( "CMS" )]
     [Description( "Renders a page menu based on a root page and lava template." )]
-    [CodeEditorField( "Template", "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
-        CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, true, @"{% include '~~/Assets/Lava/PageNav.lava' %}", order: 0)]
-    [LavaCommandsField("Enabled Lava Commands", description: "The Lava commands that should be enabled for this content channel item block.", required: false, order: 1)]
-    [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
-    [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
-    [TextField( "CSS File", "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the style sheet in the current theme's styles folder.", false, "" )]
-    [BooleanField( "Include Current Parameters", "Flag indicating if current page's route parameters should be used when building URL for child pages", false )]
-    [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building URL for child pages", false )]
-    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false )]
-    [KeyValueListField( "Include Page List", "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.", false, "", "Title", "Link" )]
 
+    #region Block Attributes
+
+    [CodeEditorField(
+        "Template",
+        Description = "The lava template to use for rendering. This template would typically be in the theme's \"Assets/Lava\" folder.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = true,
+        DefaultValue = @"{% include '~~/Assets/Lava/PageNav.lava' %}",
+        Order = 0,
+        Key = AttributeKey.Template )]
+    [LavaCommandsField(
+        "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled for this content channel item block.",
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.EnabledLavaCommands )]
+    [LinkedPage(
+        "Root Page",
+        Description = "The root page to use for the page collection. Defaults to the current page instance if not set.",
+        IsRequired = false,
+        Key = AttributeKey.RootPage )]
+    [TextField(
+        "Number of Levels",
+        Description = "Number of parent-child page levels to display. Default 3.",
+        IsRequired = false,
+        DefaultValue = "3",
+        Key = AttributeKey.NumberofLevels )]
+    [TextField(
+        "CSS File",
+        Description = "Optional CSS file to add to the page for styling. Example 'Styles/nav.css' would point the style sheet in the current theme's styles folder.",
+        IsRequired = false,
+        Key = AttributeKey.CSSFile )]
+    [BooleanField(
+        "Include Current Parameters",
+        Description = "Flag indicating if current page's route parameters should be used when building URL for child pages",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.IncludeCurrentParameters )]
+    [BooleanField(
+        "Include Current QueryString",
+        Description = "Flag indicating if current page's QueryString should be used when building URL for child pages",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.IncludeCurrentQueryString )]
+    [BooleanField(
+        "Is Secondary Block",
+        Description = "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.IsSecondaryBlock )]
+    [KeyValueListField(
+        "Include Page List",
+        Description = "List of pages to include in the Lava. Any ~/ will be resolved by Rock. Enable debug for assistance. Example 'Give Now' with '~/page/186' or 'Me' with '~/MyAccount'.",
+        IsRequired = false,
+        KeyPrompt = "Title",
+        ValuePrompt = "Link",
+        Key = AttributeKey.IncludePageList )]
+
+    #endregion
     public partial class PageMenu : RockBlock, ISecondaryBlock
     {
-        private static readonly string ROOT_PAGE = "RootPage";
-        private static readonly string NUM_LEVELS = "NumberofLevels";
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string Template = "Template";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
+            public const string RootPage = "RootPage";
+            public const string NumberofLevels = "NumberofLevels";
+            public const string CSSFile = "CSSFile";
+            public const string IncludeCurrentParameters = "IncludeCurrentParameters";
+            public const string IncludeCurrentQueryString = "IncludeCurrentQueryString";
+            public const string IsSecondaryBlock = "IsSecondaryBlock";
+            public const string IncludePageList = "IncludePageList";
+        }
+
+        #endregion Attribute Keys
+
+        #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
         {
@@ -63,9 +127,9 @@ namespace RockWeb.Blocks.Cms
             this.AddConfigurationUpdateTrigger( upContent );
 
             // add css file to page
-            if ( GetAttributeValue( "CSSFile" ).Trim() != string.Empty )
+            if ( GetAttributeValue( AttributeKey.CSSFile ).Trim() != string.Empty )
             {
-                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( "CSSFile" ) ), false );
+                RockPage.AddCSSLink( ResolveRockUrl( GetAttributeValue( AttributeKey.CSSFile ) ), false );
             }
         }
 
@@ -96,7 +160,7 @@ namespace RockWeb.Blocks.Cms
                 PageCache currentPage = PageCache.Get( RockPage.PageId );
                 PageCache rootPage = null;
 
-                var pageRouteValuePair = GetAttributeValue( ROOT_PAGE ).SplitDelimitedValues(false).AsGuidOrNullList();
+                var pageRouteValuePair = GetAttributeValue( AttributeKey.RootPage ).SplitDelimitedValues(false).AsGuidOrNullList();
                 if ( pageRouteValuePair.Any() && pageRouteValuePair[0].HasValue && !pageRouteValuePair[0].Value.IsEmpty() )
                 {
                     rootPage = PageCache.Get( pageRouteValuePair[0].Value );
@@ -108,16 +172,16 @@ namespace RockWeb.Blocks.Cms
                     rootPage = currentPage;
                 }
 
-                int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
+                int levelsDeep = Convert.ToInt32( GetAttributeValue( AttributeKey.NumberofLevels ) );
 
                 Dictionary<string, string> pageParameters = null;
-                if ( GetAttributeValue( "IncludeCurrentParameters" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.IncludeCurrentParameters ).AsBoolean() )
                 {
                     pageParameters = CurrentPageReference.Parameters;
                 }
 
                 NameValueCollection queryString = null;
-                if ( GetAttributeValue( "IncludeCurrentQueryString" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.IncludeCurrentQueryString ).AsBoolean() )
                 {
                     queryString = CurrentPageReference.QueryString;
                 }
@@ -153,7 +217,7 @@ namespace RockWeb.Blocks.Cms
                 var lavaTemplate = GetTemplate();
 
                 // Apply Enabled Lava Commands
-                var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
+                var enabledCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
                 lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
 
                 string content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
@@ -175,6 +239,8 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        #endregion Base Control Methods
+
         #region Methods
 
         private string CacheKey()
@@ -184,7 +250,7 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
-            var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( "Template" ) );
+            var cacheTemplate = LavaTemplateCache.Get( CacheKey(), GetAttributeValue( AttributeKey.Template ) );
             return cacheTemplate != null ? cacheTemplate.Template : null;
         }
 
@@ -194,7 +260,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            if ( GetAttributeValue( "IsSecondaryBlock" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBoolean() )
             {
                 phContent.Visible = visible;
             }
@@ -225,7 +291,7 @@ namespace RockWeb.Blocks.Cms
         {
             var properties = new Dictionary<string, object>();
 
-            var navPagesString = GetAttributeValue( "IncludePageList" );
+            var navPagesString = GetAttributeValue( AttributeKey.IncludePageList );
 
             if ( !string.IsNullOrWhiteSpace( navPagesString ) )
             {
