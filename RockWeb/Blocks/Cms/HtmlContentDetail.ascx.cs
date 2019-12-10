@@ -42,27 +42,123 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )] 
     [Description( "Adds an editable HTML fragment to the page." )]
 
-    [SecurityAction( Authorization.EDIT, "The roles and/or users that can edit the HTML content.")]
-    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
+    #region Block Attributes
 
-    [LavaCommandsField("Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 0)]
-    [BooleanField( "Start in Code Editor mode", "Start the editor in code editor mode instead of WYSIWYG editor mode.", defaultValue: true, key:"UseCodeEditor", order:1 )]
-    [TextField("Document Root Folder", "The folder to use as the root when browsing or uploading documents.", false, "~/Content", "", 2 )]
-    [TextField( "Image Root Folder", "The folder to use as the root when browsing or uploading images.", false, "~/Content", "", 3 )]
-    [BooleanField( "User Specific Folders", "Should the root folders be specific to current user?", false, "", 4 )]
-    [IntegerField( "Cache Duration", "Number of seconds to cache the content.", false, 0, "", 5 )]
-    [TextField( "Context Parameter", "Query string parameter to use for 'personalizing' content based on unique values.", false, "", "", 6 )]
-    [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 7 )]
-    [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 8, "SupportVersions" )]
-    [BooleanField( "Require Approval", "Require that content be approved?", false, "", 9 )]
-    [CustomCheckboxListField("Cache Tags", "Cached tags are used to link cached content so that it can be expired as a group", CACHE_TAG_LIST, false, key: "CacheTags", order: 10)]
+    [SecurityAction(
+        Authorization.EDIT,
+        "The roles and/or users that can edit the HTML content." )]
+
+    [SecurityAction(
+        Authorization.APPROVE,
+        "The roles and/or users that have access to approve HTML content." )]
+
+    [LavaCommandsField(
+        "Enabled Lava Commands",
+        Description = "The Lava commands that should be enabled for this HTML block.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.EnabledLavaCommands )]
+
+    [BooleanField(
+        "Start in Code Editor mode",
+        Description = "Start the editor in code editor mode instead of WYSIWYG editor mode.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.UseCodeEditor,
+        Order = 1 )]
+
+    [TextField(
+        "Document Root Folder",
+        Description = "The folder to use as the root when browsing or uploading documents.",
+        IsRequired = false,
+        DefaultValue = "~/Content",
+        Order = 2,
+        Key = AttributeKey.DocumentRootFolder )]
+
+    [TextField(
+        "Image Root Folder",
+        Description = "The folder to use as the root when browsing or uploading images.",
+        IsRequired = false,
+        DefaultValue = "~/Content",
+        Order = 3,
+        Key = AttributeKey.ImageRootFolder )]
+    [BooleanField(
+        "User Specific Folders",
+        Description = "Should the root folders be specific to current user?",
+        DefaultBooleanValue = false,
+        Order = 4,
+        Key = AttributeKey.UserSpecificFolders )]
+    [IntegerField(
+        "Cache Duration",
+        Description = "Number of seconds to cache the content.",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 5,
+        Key = AttributeKey.CacheDuration )]
+    [TextField(
+        "Context Parameter",
+        Description = "Query string parameter to use for 'personalizing' content based on unique values.",
+        IsRequired = false,
+        Order = 6,
+        Key = AttributeKey.ContextParameter )]
+
+    [TextField(
+        "Context Name",
+        Description = "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.",
+        IsRequired = false,
+        Order = 7,
+        Key = AttributeKey.ContextName )]
+    [BooleanField(
+        "Enable Versioning",
+        Description = "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.",
+        DefaultBooleanValue = false,
+        Order = 8,
+        Key = AttributeKey.SupportVersions )]
+    [BooleanField(
+        "Require Approval",
+        Description = "Require that content be approved?",
+        DefaultBooleanValue = false,
+        Order = 9 )]
+    [CustomCheckboxListField(
+        "Cache Tags",
+        Description = "Cached tags are used to link cached content so that it can be expired as a group",
+        ListSource = CACHE_TAG_LIST,
+        IsRequired = false,
+        Key = AttributeKey.CacheTags,
+        Order = 10 )]
     // Disable QuickEdit for v7
     //[CustomDropdownListField( "Quick Edit", "Allow quick editing of HTML contents.", "AIREDIT^In Place Editing,DBLCLICK^Double-Click For Edit Dialog", false, "", "", 11, "QuickEdit")]
 
-    [BooleanField( "Is Secondary Block", "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.", false, "", 11 )]
+    [BooleanField(
+        "Is Secondary Block",
+        Description = "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",
+        DefaultBooleanValue = false,
+        Order = 11,
+        Key = AttributeKey.IsSecondaryBlock )]
+
     [ContextAware]
+    #endregion Block Attributes
     public partial class HtmlContentDetail : RockBlockCustomSettings, ISecondaryBlock
     {
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
+            public const string UseCodeEditor = "UseCodeEditor";
+            public const string DocumentRootFolder = "DocumentRootFolder";
+            public const string ImageRootFolder = "ImageRootFolder";
+            public const string UserSpecificFolders = "UserSpecificFolders";
+            public const string CacheDuration = "CacheDuration";
+            public const string ContextParameter = "ContextParameter";
+            public const string ContextName = "ContextName";
+            public const string SupportVersions = "SupportVersions";
+            public const string RequireApproval = "RequireApproval";
+            public const string CacheTags = "CacheTags";
+            public const string IsSecondaryBlock = "IsSecondaryBlock";
+        }
+
+        #endregion Attribute Keys
 
         #region Properties
 
@@ -154,11 +250,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void HtmlContentDetail_BlockUpdated( object sender, EventArgs e )
         {
-            bool supportsVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
-            bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
+            bool supportsVersioning = GetAttributeValue( AttributeKey.SupportVersions ).AsBoolean();
+            bool requireApproval = GetAttributeValue( AttributeKey.RequireApproval ).AsBoolean();
             if ( requireApproval && ! supportsVersioning )
             {
-                SetAttributeValue( "SupportVersions", "true" );
+                SetAttributeValue( AttributeKey.SupportVersions, "true" );
                 SaveAttributeValues();
             }
 
@@ -185,8 +281,8 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSave_Click( object sender, EventArgs e )
         {
-            bool supportVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
-            bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
+            bool supportVersioning = GetAttributeValue( AttributeKey.SupportVersions ).AsBoolean();
+            bool requireApproval = GetAttributeValue( AttributeKey.RequireApproval ).AsBoolean();
 
             var rockContext = new RockContext();
             HtmlContentService htmlContentService = new HtmlContentService( rockContext );
@@ -476,7 +572,7 @@ namespace RockWeb.Blocks.Cms
             upnlHtmlContentEdit.Update();
             mdEdit.Show();
 
-            bool useCodeEditor = GetAttributeValue( "UseCodeEditor" ).AsBoolean();
+            bool useCodeEditor = GetAttributeValue( AttributeKey.UseCodeEditor ).AsBoolean();
 
             htmlEditor.StartInCodeEditorMode = useCodeEditor;
 
@@ -522,14 +618,14 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            string documentRoot = GetAttributeValue( "DocumentRootFolder" );
-            string imageRoot = GetAttributeValue( "ImageRootFolder" );
-            htmlEditor.UserSpecificRoot = GetAttributeValue( "UserSpecificFolders" ).AsBoolean();
+            string documentRoot = GetAttributeValue( AttributeKey.DocumentRootFolder );
+            string imageRoot = GetAttributeValue( AttributeKey.ImageRootFolder );
+            htmlEditor.UserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean();
             htmlEditor.DocumentFolderRoot = documentRoot;
             htmlEditor.ImageFolderRoot = imageRoot;
 
-            bool supportsVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
-            bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
+            bool supportsVersioning = GetAttributeValue( AttributeKey.SupportVersions ).AsBoolean();
+            bool requireApproval = GetAttributeValue( AttributeKey.RequireApproval ).AsBoolean();
 
             lVersion.Visible = supportsVersioning;
             lbShowVersionGrid.Visible = supportsVersioning;
@@ -657,8 +753,8 @@ namespace RockWeb.Blocks.Cms
             string entityValue = EntityValue();
             string html = string.Empty;
 
-            int cacheDuration = GetAttributeValue( "CacheDuration" ).AsInteger();
-            string cacheTags = GetAttributeValue( "CacheTags" ) ?? string.Empty;
+            int cacheDuration = GetAttributeValue( AttributeKey.CacheDuration ).AsInteger();
+            string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
             string cachedContent = null;
 
             // only load from the cache if a cacheDuration was specified
@@ -694,7 +790,7 @@ namespace RockWeb.Blocks.Cms
                             mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
                             mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
 
-                            html = content.Content.ResolveMergeFields( mergeFields, GetAttributeValue("EnabledLavaCommands") );
+                            html = content.Content.ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
                          }
                         else
                         {
@@ -735,13 +831,13 @@ namespace RockWeb.Blocks.Cms
         {
             string entityValue = string.Empty;
 
-            string contextParameter = GetAttributeValue( "ContextParameter" );
+            string contextParameter = GetAttributeValue( AttributeKey.ContextParameter );
             if ( !string.IsNullOrEmpty( contextParameter ) )
             {
                 entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
             }
 
-            string contextName = GetAttributeValue( "ContextName" );
+            string contextName = GetAttributeValue( AttributeKey.ContextName );
             if ( !string.IsNullOrEmpty( contextName ) )
             {
                 entityValue += "&ContextName=" + contextName;
@@ -756,7 +852,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="visible">if set to <c>true</c> [visible].</param>
         public void SetVisible( bool visible )
         {
-            if ( this.GetAttributeValue("IsSecondaryBlock").AsBooleanOrNull() ?? false )
+            if ( this.GetAttributeValue( AttributeKey.IsSecondaryBlock ).AsBooleanOrNull() ?? false )
             {
                 if ( lHtmlContent.Visible != visible )
                 {
