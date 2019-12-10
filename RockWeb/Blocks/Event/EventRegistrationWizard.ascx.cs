@@ -518,12 +518,12 @@ namespace RockWeb.Blocks.Event
 
         public class CommitResult
         {
-            public string RegistrationInstanceId, GroupId, EventId, EventOccurrenceId, RegistrationTitle;
+            public string RegistrationInstanceId, GroupId, EventItemId, EventOccurrenceId, RegistrationTitle;
             public CommitResult()
             {
                 RegistrationInstanceId = "";
                 GroupId = "";
-                EventId = "";
+                EventItemId = "";
                 EventOccurrenceId = "";
                 RegistrationTitle = "";
             }
@@ -712,7 +712,7 @@ namespace RockWeb.Blocks.Event
                         Helper.GetEditValues( phAttributes, eventCalendarItem );
                         eventCalendarItem.SaveAttributeValues();
                     }
-                    result.EventId = eventItem.Id.ToString();
+                    result.EventItemId = eventItem.Id.ToString();
                 }
                 else // "Existing Event" option selected.
                 {
@@ -795,14 +795,14 @@ namespace RockWeb.Blocks.Event
                 hlGroup.NavigateUrl = GetPageUrl( GetAttributeValue( AttributeKey.GroupViewerPage ), qryGroup );
             }
 
-            if ( string.IsNullOrWhiteSpace( result.EventId ) )
+            if ( string.IsNullOrWhiteSpace( result.EventItemId ) )
             {
                 liEventLink.Visible = false;
             }
             else
             {
                 var qryEventDetail = new Dictionary<string, string>();
-                qryEventDetail.Add( "EventId", result.EventId );
+                qryEventDetail.Add( "EventItemId", result.EventItemId );
                 hlEventDetail.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_DETAIL, qryEventDetail );
             }
 
@@ -1626,7 +1626,7 @@ namespace RockWeb.Blocks.Event
             hfPreviousName.Value = tbRegistrationName.Text;
         }
 
-        protected void cblCalendars_SelectionChanged( object sender, EventArgs e )
+        protected void cblCalendars_SelectedIndexChanged( object sender, EventArgs e )
         {
             Session["CurrentCalendars"] = cblCalendars.SelectedValuesAsInt;
             ShowItemAttributes();
