@@ -28,7 +28,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            Sql( HotFixMigrationResource._097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset );
+            //Sql( HotFixMigrationResource._097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset );
         }
 
         /// <summary>
