@@ -118,9 +118,11 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 // Get a list of unique PersonAliasIDs from Assessments where the CreatedDateTime is less than the cut off date and LastReminderDate is null or greater than the reminder date.
+                // Only the latest assessment for each type and person is considered. For example a past DISC assessment that is still pending but a newer one is complete. The past one will
+                // not be considered.
                 var assessmentService = new AssessmentService( rockContext );
                 var personAliasIds = assessmentService
-                    .Queryable()
+                    .GetLatestAssessments()
                     .AsNoTracking()
                     .Where( a => a.Status == AssessmentRequestStatus.Pending )
                     .Where( a => currentDate <= DbFunctions.AddDays( a.RequestedDateTime, cutOffDays ) )

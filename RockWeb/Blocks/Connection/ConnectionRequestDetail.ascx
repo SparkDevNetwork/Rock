@@ -72,7 +72,7 @@
                     </div>
                     <asp:Literal ID="lBadgeBar" runat="server" />
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" DisplayAsTabs="true"/>
                         </div>
                     </div>
