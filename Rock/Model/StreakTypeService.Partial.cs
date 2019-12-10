@@ -126,7 +126,7 @@ namespace Rock.Model
             var aggregateExclusionMap = GetAggregateExclusionMap( streaks, streakTypeCache, locationId );
             var engagementMap = GetAggregateMap( engagementMaps );
 
-            return GetMostRecentOccurrences( engagementMap, streakTypeCache.OccurrenceMap, aggregateExclusionMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, unitCount );
+            return GetMostRecentOccurrences( streakTypeCache, engagementMap, aggregateExclusionMap, unitCount );
         }
 
         /// <summary>
@@ -161,17 +161,9 @@ namespace Rock.Model
                 return null;
             }
 
-            var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var maxDate = RockDateTime.Today;
-            var minDate = streakTypeCache.StartDate;
-            enrollmentDate = enrollmentDate ?? maxDate;
-
-            if ( !isDaily )
-            {
-                enrollmentDate = enrollmentDate.Value.SundayDate();
-                maxDate = maxDate.SundayDate();
-                minDate = minDate.SundayDate();
-            }
+            var maxDate = AlignDate( RockDateTime.Today, streakTypeCache );
+            var minDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
+            enrollmentDate = AlignDate( enrollmentDate ?? maxDate, streakTypeCache );
 
             if ( enrollmentDate.Value > maxDate )
             {
@@ -313,11 +305,18 @@ namespace Rock.Model
             var rockContext = new RockContext();
             var streakTypeService = new StreakTypeService( rockContext );
             var streakType = streakTypeService.Get( streakTypeId );
+            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
 
             // Validate the parameters
             if ( streakType == null )
             {
                 errorMessage = "A valid streak type is required";
+                return;
+            }
+
+            if ( streakTypeCache == null )
+            {
+                errorMessage = "A valid streak type cache is required";
                 return;
             }
 
@@ -328,7 +327,6 @@ namespace Rock.Model
             }
 
             // Get the occurrences that did occur
-            var isDaily = streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
             var occurrenceService = new AttendanceOccurrenceService( rockContext );
 
             var occurrenceQuery = occurrenceService.Queryable()
@@ -344,25 +342,32 @@ namespace Rock.Model
 
             // Limit the output to the dates according to the frequency
             var occurrenceDates = occurrenceQuery
-                .Select( ao => isDaily ? ao.OccurrenceDate : ao.SundayDate )
+                .Select( o => o.OccurrenceDate )
                 .Distinct()
                 .OrderBy( d => d )
                 .ToArray();
 
             var numberOfOccurrences = occurrenceDates.Length;
+
             if ( numberOfOccurrences < 1 )
             {
                 errorMessage = "No attendance occurrences were found.";
                 return;
             }
 
+            for ( var i = 0; i < numberOfOccurrences; i++ )
+            {
+                occurrenceDates[i] = AlignDate( occurrenceDates[i], streakTypeCache );
+            }
+
             // Set the streak type occurrence map according to the dates returned
             streakType.StartDate = occurrenceDates.First();
+            streakTypeCache.SetFromEntity( streakType );
             var occurrenceMap = AllocateNewByteArray();
 
             for ( var i = 0; i < numberOfOccurrences; i++ )
             {
-                occurrenceMap = SetBit( occurrenceMap, streakType.StartDate, occurrenceDates[i], streakType.OccurrenceFrequency, true, out errorMessage );
+                occurrenceMap = SetBit( streakTypeCache, occurrenceMap, occurrenceDates[i], true, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -427,10 +432,17 @@ namespace Rock.Model
             }
 
             var streakType = streakTypeService.Get( streakTypeId );
+            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
 
             if ( streakType == null )
             {
                 errorMessage = "A valid streak type is required";
+                return;
+            }
+
+            if ( streakTypeCache == null )
+            {
+                errorMessage = "A valid streak type cache is required";
                 return;
             }
 
@@ -441,16 +453,20 @@ namespace Rock.Model
             }
 
             // Get the attendance that did occur
-            var isDaily = streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var startDate = isDaily ? streakType.StartDate.Date : streakType.StartDate.SundayDate();
+            var startDate = AlignDate( streakType.StartDate, streakTypeCache );
+            var minDate = startDate;
+
+            // Walk back the min date to see what actual minimum date is that aligns to the start date
+            while( AlignDate( minDate.AddDays(-1), streakTypeCache ) == startDate )
+            {
+                minDate = minDate.AddDays( -1 );
+            }
 
             var attendanceQuery = attendanceService.Queryable().AsNoTracking().Where( a =>
                 a.PersonAlias.PersonId == personId &&
                 a.DidAttend == true &&
-                a.Occurrence.DidNotOccur != true && (
-                    ( isDaily && a.Occurrence.OccurrenceDate >= startDate ) ||
-                    ( !isDaily && a.Occurrence.SundayDate >= startDate )
-                ) );
+                a.Occurrence.DidNotOccur != true &&
+                a.Occurrence.OccurrenceDate >= minDate );
 
             // If the structure information is set, then limit the attendances by the matching groups
             if ( streakType.StructureType.HasValue && streakType.StructureEntityId.HasValue )
@@ -461,14 +477,20 @@ namespace Rock.Model
 
             // Get the attended dates
             var datesAttended = attendanceQuery
-                .Select( a => isDaily ? a.Occurrence.OccurrenceDate : a.Occurrence.SundayDate )
+                .Select( a => a.Occurrence.OccurrenceDate )
                 .Distinct()
                 .OrderBy( d => d )
                 .ToArray();
 
             var attendanceDateCount = datesAttended.Length;
+
+            for ( var i = 0; i < attendanceDateCount; i++ )
+            {
+                datesAttended[i] = AlignDate( datesAttended[i], streakTypeCache );
+            }
+
             var enrollmentDate = attendanceDateCount == 0 ?
-                ( isDaily ? RockDateTime.Today : RockDateTime.Today.SundayDate() ) :
+                AlignDate( RockDateTime.Now, streakTypeCache ) :
                 datesAttended.First();
 
             // Get the enrollments
@@ -516,8 +538,7 @@ namespace Rock.Model
             // Loop over each date attended and set the bit corresponding to that date
             for ( var dateIndex = 0; dateIndex < attendanceDateCount; dateIndex++ )
             {
-                engagementMap = SetBit( engagementMap, streakType.StartDate, datesAttended[dateIndex], streakType.OccurrenceFrequency, true,
-                    out errorMessage );
+                engagementMap = SetBit( streakTypeCache, engagementMap, datesAttended[dateIndex], true, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -573,9 +594,8 @@ namespace Rock.Model
             AndBitOperation( aggregateEngagementMap, streakTypeCache.OccurrenceMap ?? new byte[aggregateEngagementMap.Length] );
 
             // Validate and adjust the dates
-            var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var maxDate = isDaily ? RockDateTime.Today : RockDateTime.Today.SundayDate();
-            var streakTypeMapStartDate = isDaily ? streakTypeCache.StartDate.Date : streakTypeCache.StartDate.SundayDate();
+            var maxDate = AlignDate( RockDateTime.Now, streakTypeCache );
+            var streakTypeMapStartDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
 
             // Apply default values to parameters
             if ( startDate < streakTypeMapStartDate )
@@ -588,12 +608,8 @@ namespace Rock.Model
                 endDate = RockDateTime.Today;
             }
 
-            // Adjust the start and stop dates based on the selected frequency
-            if ( !isDaily )
-            {
-                startDate = startDate.SundayDate();
-                endDate = endDate.SundayDate();
-            }
+            startDate = AlignDate( startDate, streakTypeCache );
+            endDate = AlignDate( endDate, streakTypeCache );
 
             if ( startDate > endDate )
             {
@@ -601,7 +617,7 @@ namespace Rock.Model
             }
 
             // Calculate the number of frequency units that the results are based upon (inclusive)
-            var numberOfFrequencyUnits = GetFrequencyUnitDifference( startDate, endDate, streakTypeCache.OccurrenceFrequency, true );
+            var numberOfFrequencyUnits = GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, true );
 
             // Calculate the aggregate exclusion map, which are all of the exclusion maps ORed together
             var exclusionMaps = streakTypeCache.StreakTypeExclusions
@@ -612,8 +628,7 @@ namespace Rock.Model
             exclusionMaps.AddRange( streaks.Where( s => s.ExclusionMap != null ).Select( s => s.ExclusionMap ) );
             var aggregateExclusionMap = GetAggregateMap( exclusionMaps.ToArray() );
 
-            IterateMaps( streakTypeMapStartDate, startDate, endDate, streakTypeCache.OccurrenceFrequency, streakTypeCache.OccurrenceMap,
-                aggregateEngagementMap, aggregateExclusionMap, iterationAction, out errorMessage );
+            IterateMaps( streakTypeCache, startDate, endDate, aggregateEngagementMap, aggregateExclusionMap, iterationAction, out errorMessage );
         }
 
         /// <summary>
@@ -650,9 +665,8 @@ namespace Rock.Model
                 return null;
             }
 
-            var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var maxDate = isDaily ? RockDateTime.Today : RockDateTime.Today.SundayDate();
-            var streakTypeMapStartDate = isDaily ? streakTypeCache.StartDate.Date : streakTypeCache.StartDate.SundayDate();
+            var maxDate = AlignDate( RockDateTime.Now, streakTypeCache );
+            var streakTypeMapStartDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
 
             // Apply default values to parameters
             if ( !startDate.HasValue )
@@ -671,11 +685,8 @@ namespace Rock.Model
             }
 
             // Adjust the start and stop dates based on the selected frequency
-            if ( !isDaily )
-            {
-                startDate = startDate.Value.SundayDate();
-                endDate = endDate.Value.SundayDate();
-            }
+            startDate = AlignDate( startDate.Value, streakTypeCache );
+            endDate = AlignDate( endDate.Value, streakTypeCache );
 
             // Validate the parameters
             if ( startDate > maxDate )
@@ -710,7 +721,7 @@ namespace Rock.Model
             var enrollmentDate = streaks.Any() ? streaks.Min( se => se.EnrollmentDate ) : ( DateTime? ) null;
 
             // Calculate the number of frequency units that the results are based upon (inclusive)
-            var numberOfFrequencyUnits = GetFrequencyUnitDifference( startDate.Value, endDate.Value, streakTypeCache.OccurrenceFrequency, true );
+            var numberOfFrequencyUnits = GetFrequencyUnitDifference( startDate.Value, endDate.Value, streakTypeCache, true );
 
             // Calculate the aggregate engagement map, which are all of the engagement maps ORed together
             var engagementMaps = streaks.Where( se => se.EngagementMap != null ).Select( se => se.EngagementMap ).ToArray();
@@ -737,7 +748,7 @@ namespace Rock.Model
 
             // Get the max date that streaks can be broken. This is to avoid breaking streaks while people still have time to
             // engage in that day or week (because it is the current day or week)
-            var maxDateForStreakBreaking = GetMaxDateForStreakBreaking( streakTypeCache.OccurrenceFrequency );
+            var maxDateForStreakBreaking = GetMaxDateForStreakBreaking( streakTypeCache );
 
             // Iterate over the maps from the start to the end date
             bool iterationAction( int currentUnit, DateTime currentDate, bool hasOccurrence, bool hasEngagement, bool hasExclusion )
@@ -812,8 +823,7 @@ namespace Rock.Model
                 return false;
             }
 
-            IterateMaps( streakTypeMapStartDate, startDate.Value, endDate.Value, streakTypeCache.OccurrenceFrequency, streakTypeCache.OccurrenceMap,
-                aggregateEngagementMap, aggregateExclusionMap, iterationAction, out errorMessage );
+            IterateMaps( streakTypeCache, startDate.Value, endDate.Value, aggregateEngagementMap, aggregateExclusionMap, iterationAction, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -821,12 +831,11 @@ namespace Rock.Model
             }
 
             // Check if the person had engagement at the most recent occurrence
-            var recentOccurrences = GetMostRecentOccurrences( aggregateEngagementMap, streakTypeCache.OccurrenceMap, aggregateExclusionMap, streakTypeCache.StartDate,
-                streakTypeCache.OccurrenceFrequency, 1, true );
+            var recentOccurrences = GetMostRecentOccurrences( streakTypeCache, aggregateEngagementMap, aggregateExclusionMap, 1, true );
             var mostRecentOccurrence = recentOccurrences?.FirstOrDefault();
 
             // Get the date of the most recent engagement
-            var mostRecentEngagementDate = GetDateOfMostRecentSetBit( aggregateEngagementMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, out errorMessage );
+            var mostRecentEngagementDate = GetDateOfMostRecentSetBit( streakTypeCache, aggregateEngagementMap, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -842,7 +851,7 @@ namespace Rock.Model
                 beginningOfYear = streakTypeCache.StartDate;
             }
 
-            var engagementsThisYear = CountSetBits( aggregateEngagementMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, beginningOfYear, today, out errorMessage );
+            var engagementsThisYear = CountSetBits( streakTypeCache, aggregateEngagementMap, beginningOfYear, today, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -857,7 +866,7 @@ namespace Rock.Model
                 beginningOfMonth = streakTypeCache.StartDate;
             }
 
-            var engagementsThisMonth = CountSetBits( aggregateEngagementMap, streakTypeCache.StartDate, streakTypeCache.OccurrenceFrequency, beginningOfMonth, today, out errorMessage );
+            var engagementsThisMonth = CountSetBits( streakTypeCache, aggregateEngagementMap, beginningOfMonth, today, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -974,17 +983,9 @@ namespace Rock.Model
             }
 
             // Apply default values to parameters
-            var isDaily = streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var maxDate = RockDateTime.Today;
-            var minDate = streakTypeCache.StartDate.Date;
-            dateOfEngagement = ( dateOfEngagement ?? maxDate ).Date;
-
-            if ( !isDaily )
-            {
-                dateOfEngagement = dateOfEngagement.Value.SundayDate();
-                minDate = minDate.SundayDate();
-                maxDate = maxDate.SundayDate();
-            }
+            var maxDate = AlignDate( RockDateTime.Today, streakTypeCache );
+            var minDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
+            dateOfEngagement = AlignDate( dateOfEngagement ?? maxDate, streakTypeCache );
 
             // Validate the engagement date
             if ( dateOfEngagement < minDate )
@@ -1028,8 +1029,7 @@ namespace Rock.Model
             }
 
             // Mark engagement on the enrollment map
-            streak.EngagementMap = SetBit( streak.EngagementMap, streakTypeCache.StartDate, dateOfEngagement.Value,
-                streakTypeCache.OccurrenceFrequency, true, out errorMessage );
+            streak.EngagementMap = SetBit( streakTypeCache, streak.EngagementMap, dateOfEngagement.Value, true, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1048,8 +1048,7 @@ namespace Rock.Model
             // Ensure the occurrence bit is set on the streak type model. Check first if it is already set because updating the streak type
             // occurrence map means that all streaks need to be recalculated, so it's expensive
             var streakType = Get( streakTypeCache.Id );
-            var isOccurrenceSet = IsBitSet( streakType.OccurrenceMap, streakType.StartDate, dateOfEngagement.Value,
-                streakType.OccurrenceFrequency, out errorMessage );
+            var isOccurrenceSet = IsBitSet( streakTypeCache, streakType.OccurrenceMap, dateOfEngagement.Value, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1058,8 +1057,7 @@ namespace Rock.Model
 
             if ( !isOccurrenceSet )
             {
-                streakType.OccurrenceMap = SetBit( streakType.OccurrenceMap, streakType.StartDate, dateOfEngagement.Value,
-                    streakType.OccurrenceFrequency, true, out errorMessage );
+                streakType.OccurrenceMap = SetBit( streakTypeCache, streakType.OccurrenceMap, dateOfEngagement.Value, true, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -1335,36 +1333,47 @@ namespace Rock.Model
         public static OccurrenceEngagement[] GetMostRecentEngagementBits( byte[] engagementMap, byte[] occurrenceMap, DateTime mapStartDate,
             StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24 )
         {
-            return GetMostRecentOccurrences( engagementMap, occurrenceMap, null, mapStartDate, streakOccurrenceFrequency, unitCount );
+            // Try to accommodate this without knowing the streak type id until this method is removed since it is obsolete
+            var streakTypeCache = StreakTypeCache.All().FirstOrDefault( st =>
+                st.StartDate == mapStartDate &&
+                st.OccurrenceFrequency == streakOccurrenceFrequency &&
+                st.OccurrenceMap.Length == occurrenceMap.Length );
+
+            if ( streakTypeCache == null )
+            {
+                return null;
+            }
+
+            return GetMostRecentOccurrences( streakTypeCache, engagementMap, null, unitCount );
         }
 
         /// <summary>
         /// Get the most recent bits from a map where there was an occurrence
         /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="engagementMap">The engagement map.</param>
-        /// <param name="occurrenceMap">The occurrence map.</param>
         /// <param name="exclusionMap">The exclusion map.</param>
-        /// <param name="mapStartDate">The start date.</param>
-        /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
         /// <param name="unitCount">The unit count.</param>
-        /// <param name="unconditionallyIncludeCurrentUnit">By default, this method will not include occurrences that are the current day
-        /// or week, but there is no engagement yet. Use this param to override this behavior and always return the current unit.</param>
+        /// <param name="unconditionallyIncludeCurrentUnit">if set to <c>true</c> [unconditionally include current unit].</param>
         /// <returns></returns>
-        private static OccurrenceEngagement[] GetMostRecentOccurrences( byte[] engagementMap, byte[] occurrenceMap, byte[] exclusionMap, DateTime mapStartDate,
-            StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24, bool unconditionallyIncludeCurrentUnit = false )
+        private static OccurrenceEngagement[] GetMostRecentOccurrences( StreakTypeCache streakTypeCache, byte[] engagementMap, byte[] exclusionMap,
+            int unitCount = 24, bool unconditionallyIncludeCurrentUnit = false )
         {
             if ( unitCount < 1 )
             {
                 return null;
             }
 
-            var isDaily = streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var maxDate = isDaily ? RockDateTime.Today : RockDateTime.Now.SundayDate();
-            var minDate = isDaily ? mapStartDate : mapStartDate.SundayDate();
+            var streakOccurrenceFrequency = streakTypeCache.OccurrenceFrequency;
+            var mapStartDate = streakTypeCache.StartDate;
+            var occurrenceMap = streakTypeCache.OccurrenceMap;
+
+            var maxDate = AlignDate( RockDateTime.Now, streakTypeCache );
+            var minDate = AlignDate( mapStartDate, streakTypeCache );
             var occurrenceEngagements = new OccurrenceEngagement[unitCount];
             var occurrencesFound = 0;
 
-            var maxDateForStreakBreaking = GetMaxDateForStreakBreaking( streakOccurrenceFrequency );
+            var maxDateForStreakBreaking = GetMaxDateForStreakBreaking( streakTypeCache );
 
             if ( maxDate < minDate )
             {
@@ -1394,7 +1403,7 @@ namespace Rock.Model
                 return occurrencesFound >= unitCount;
             }
 
-            ReverseIterateMaps( mapStartDate, minDate, maxDate, streakOccurrenceFrequency, occurrenceMap, engagementMap, exclusionMap, iterationAction, out var errorMessage );
+            ReverseIterateMaps( streakTypeCache, minDate, maxDate, engagementMap, exclusionMap, iterationAction, out var errorMessage );
             return occurrenceEngagements;
         }
 
@@ -1452,6 +1461,8 @@ namespace Rock.Model
         /// <param name="occurrenceFrequency"></param>
         /// <param name="errorMessage"></param>
         /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the override with StreakTypeCache instead.", false )]
         public static bool IsBitSet( byte[] map, DateTime mapStartDate, DateTime bitDate, StreakOccurrenceFrequency occurrenceFrequency, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -1481,6 +1492,46 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines if the bit at the bitDate in the map is set.
+        /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <param name="map">The map.</param>
+        /// <param name="bitDate">The bit date.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if [is bit set] [the specified streak type cache]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsBitSet( StreakTypeCache streakTypeCache, byte[] map, DateTime bitDate, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( map == null || map.Length == 0 )
+            {
+                return false;
+            }
+
+            var mapStartDate = streakTypeCache.StartDate;
+
+            if ( bitDate < mapStartDate )
+            {
+                errorMessage = "The specified date occurs before the streak type start date";
+                return false;
+            }
+
+            var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, streakTypeCache, false );
+            var bytesNeeded = unitsFromStart / BitsPerByte + 1;
+            var byteIndex = map.Length - bytesNeeded;
+            var byteBitValue = ( byte ) ( 1 << ( unitsFromStart % BitsPerByte ) );
+
+            if ( byteIndex < 0 )
+            {
+                return false;
+            }
+
+            return ( map[byteIndex] & byteBitValue ) == byteBitValue;
+        }
+
+        /// <summary>
         /// Set the bit that corresponds to bitDate. This method works in-place unless the array has to grow. Note that if the array does not
         /// grow and get reallocated, then Entity Framework will not track the change. If needed, force the property state to Modified:
         /// rockContext.Entry( streakModel ).Property( s => s.OccurrenceMap ).IsModified = true;
@@ -1492,6 +1543,8 @@ namespace Rock.Model
         /// <param name="errorMessage"></param>
         /// <param name="newValue"></param>
         /// <returns></returns>
+        [Obsolete( "Use the override with StreakTypeCache param instead" )]
+        [RockObsolete( "1.10" )]
         public static byte[] SetBit( byte[] map, DateTime mapStartDate, DateTime bitDate, StreakOccurrenceFrequency occurrenceFrequency, bool newValue, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -1509,6 +1562,59 @@ namespace Rock.Model
             }
 
             var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, occurrenceFrequency, false );
+            var bytesNeeded = unitsFromStart / BitsPerByte + 1;
+
+            if ( map == null )
+            {
+                map = AllocateNewByteArray( bytesNeeded );
+            }
+            else if ( bytesNeeded > map.Length )
+            {
+                // Grow the map to accommodate the new value
+                map = PadLeft( map, bytesNeeded );
+            }
+
+            // Set the target bit within it's byte
+            var byteIndex = map.Length - bytesNeeded;
+            var byteBitValue = ( byte ) ( 1 << ( unitsFromStart % BitsPerByte ) );
+
+            if ( newValue )
+            {
+                map[byteIndex] |= byteBitValue;
+            }
+            else
+            {
+                map[byteIndex] &= ( byte ) ~byteBitValue;
+            }
+
+            return map;
+        }
+
+        /// <summary>
+        /// Set the bit that corresponds to bitDate. This method works in-place unless the array has to grow. Note that if the array does not
+        /// grow and get reallocated, then Entity Framework will not track the change. If needed, force the property state to Modified:
+        /// rockContext.Entry( streakModel ).Property( s => s.OccurrenceMap ).IsModified = true;
+        /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <param name="map">The map.</param>
+        /// <param name="bitDate">The bit date.</param>
+        /// <param name="newValue">if set to <c>true</c> [new value].</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public static byte[] SetBit( StreakTypeCache streakTypeCache, byte[] map, DateTime bitDate, bool newValue, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var occurrenceFrequency = streakTypeCache.OccurrenceFrequency;
+            var mapStartDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
+            bitDate = AlignDate( bitDate, streakTypeCache );
+
+            if ( bitDate < mapStartDate )
+            {
+                errorMessage = "The specified date occurs before the streak type start date";
+                return map;
+            }
+
+            var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, streakTypeCache, false );
             var bytesNeeded = unitsFromStart / BitsPerByte + 1;
 
             if ( map == null )
@@ -1598,6 +1704,27 @@ namespace Rock.Model
         #region Date Calculation Helpers
 
         /// <summary>
+        /// Aligns the date. For daily streaks, this is the date portion only.  For weekly, this is the Sunday date calculated
+        /// based on the first day of the week (streak type or system setting).
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <returns></returns>
+        public static DateTime AlignDate( DateTime dateTime, StreakTypeCache streakTypeCache )
+        {
+            if ( streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                return dateTime.Date;
+            }
+            else if ( streakTypeCache.FirstDayOfWeek.HasValue )
+            {
+                return RockDateTime.GetSundayDate( dateTime, streakTypeCache.FirstDayOfWeek.Value );
+            }
+
+            return dateTime.SundayDate();
+        }
+
+        /// <summary>
         /// Increments the date time according to the frequency.
         /// </summary>
         /// <param name="dateTime">The date time.</param>
@@ -1624,6 +1751,8 @@ namespace Rock.Model
         /// <param name="occurrenceFrequency">The occurrence frequency.</param>
         /// <param name="isInclusive">if set to <c>true</c> [is inclusive].</param>
         /// <returns></returns>
+        [Obsolete( "Use the override with StreakTypeCache param instead" )]
+        [RockObsolete( "1.10" )]
         public static int GetFrequencyUnitDifference( DateTime startDate, DateTime endDate, StreakOccurrenceFrequency occurrenceFrequency, bool isInclusive )
         {
             var isDaily = occurrenceFrequency == StreakOccurrenceFrequency.Daily;
@@ -1653,12 +1782,48 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Get the number of frequency units (days or weeks) between the two dates
+        /// </summary>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <param name="isInclusive">if set to <c>true</c> [is inclusive].</param>
+        /// <returns></returns>
+        public static int GetFrequencyUnitDifference( DateTime startDate, DateTime endDate, StreakTypeCache streakTypeCache, bool isInclusive )
+        {
+            var occurrenceFrequency = streakTypeCache.OccurrenceFrequency;
+            var isDaily = occurrenceFrequency == StreakOccurrenceFrequency.Daily;
+
+            startDate = AlignDate( startDate, streakTypeCache );
+            endDate = AlignDate( endDate, streakTypeCache );
+
+            // Calculate the difference in days
+            var numberOfDays = endDate.Date.Subtract( startDate.Date ).Days;
+            var oneFrequencyUnitOfDays = isDaily ? 1 : DaysPerWeek;
+
+            // Adjust to be inclusive if needed
+            if ( isInclusive && numberOfDays >= 0 )
+            {
+                numberOfDays += oneFrequencyUnitOfDays;
+            }
+            else if ( isInclusive )
+            {
+                numberOfDays -= oneFrequencyUnitOfDays;
+            }
+
+            // Convert from days to the frequency units
+            return isDaily ? numberOfDays : ( numberOfDays / DaysPerWeek );
+        }
+
+        /// <summary>
         /// Gets the maximum date for allowing streaks toe be broken. This is the end of the last fully elapsed frequency unit (day or week).
         /// The idea is that streaks should not be broken until the period for engagement has fully elapsed. Until that time period has
         /// elapsed, people still have time to engage and it isn't fair to show their streak as broken.
         /// </summary>
         /// <param name="streakOccurrenceFrequency"></param>
         /// <returns></returns>
+        [Obsolete( "Use the override with StreakTypeCache param instead" )]
+        [RockObsolete( "1.10" )]
         public static DateTime GetMaxDateForStreakBreaking( StreakOccurrenceFrequency streakOccurrenceFrequency )
         {
             if ( streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily )
@@ -1667,7 +1832,26 @@ namespace Rock.Model
             }
 
             // Weekly - this will need to be adjusted when the SundayDate method is replaced the with configurable start/end of week
-            return RockDateTime.Now.SundayDate().AddDays( -7 );
+            return RockDateTime.Now.SundayDate().AddDays( -1 * DaysPerWeek );
+        }
+
+        /// <summary>
+        /// Gets the maximum date for allowing streaks toe be broken. This is the end of the last fully elapsed frequency unit (day or week).
+        /// The idea is that streaks should not be broken until the period for engagement has fully elapsed. Until that time period has
+        /// elapsed, people still have time to engage and it isn't fair to show their streak as broken.
+        /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <returns></returns>
+        public static DateTime GetMaxDateForStreakBreaking( StreakTypeCache streakTypeCache )
+        {
+            var currentBitDate = AlignDate( RockDateTime.Now, streakTypeCache );
+
+            if ( streakTypeCache.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                return currentBitDate.AddDays( -1 );
+            }
+
+            return currentBitDate.AddDays( -1 * DaysPerWeek );
         }
 
         #endregion Date Helpers
@@ -1858,14 +2042,13 @@ namespace Rock.Model
         /// <summary>
         /// Count the number of bits that are set in the map within the specified inclusive date range
         /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="map">The map.</param>
-        /// <param name="mapStartDate">The map start date.</param>
-        /// <param name="occurrenceFrequency">The occurrence frequency.</param>
         /// <param name="rangeMin">The range minimum.</param>
         /// <param name="rangeMax">The range maximum.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private int CountSetBits( byte[] map, DateTime mapStartDate, StreakOccurrenceFrequency occurrenceFrequency, DateTime rangeMin, DateTime rangeMax, out string errorMessage )
+        private int CountSetBits( StreakTypeCache streakTypeCache, byte[] map, DateTime rangeMin, DateTime rangeMax, out string errorMessage )
         {
             var count = 0;
 
@@ -1880,19 +2063,18 @@ namespace Rock.Model
                 return false;
             }
 
-            IterateMaps( mapStartDate, rangeMin, rangeMax, occurrenceFrequency, null, map, null, iterationAction, out errorMessage );
+            IterateMaps( streakTypeCache, rangeMin, rangeMax, map, null, iterationAction, out errorMessage );
             return count;
         }
 
         /// <summary>
         /// Get the date of the most recent bit that is set in the map
         /// </summary>
+        /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="map">The map.</param>
-        /// <param name="mapStartDate">The start date.</param>
-        /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        private static DateTime? GetDateOfMostRecentSetBit( byte[] map, DateTime mapStartDate, StreakOccurrenceFrequency streakOccurrenceFrequency, out string errorMessage )
+        private static DateTime? GetDateOfMostRecentSetBit( StreakTypeCache streakTypeCache, byte[] map, out string errorMessage )
         {
             DateTime? mostRecentBitDate = null;
 
@@ -1907,7 +2089,7 @@ namespace Rock.Model
                 return mostRecentBitDate.HasValue;
             }
 
-            ReverseIterateMaps( mapStartDate, mapStartDate, RockDateTime.Today, streakOccurrenceFrequency, new byte[0], map, new byte[0], iterationAction, out errorMessage );
+            ReverseIterateMaps( streakTypeCache, streakTypeCache.StartDate, RockDateTime.Today, map, null, iterationAction, out errorMessage );
             return mostRecentBitDate;
         }
 
@@ -1915,25 +2097,22 @@ namespace Rock.Model
         /// Iterates over each bit in the maps over the given timeframe from min to max. The actionPerIteration is called for each bit.
         /// actionPerIteration( currentUnit, hasOccurrence, hasEngagement, hasExclusion );
         /// </summary>
-        /// <param name="mapStartDate">The map start date.</param>
+        /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="iterationStartDate">The iteration start date.</param>
         /// <param name="iterationEndDate">The iteration end date.</param>
-        /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
-        /// <param name="occurrenceMap">The occurrence map.</param>
         /// <param name="engagementMap">The engagement map.</param>
         /// <param name="exclusionMap">The exclusion map.</param>
         /// <param name="actionPerIteration">The action per iteration. Returns a bool indicating if the iteration should stop early (isDone).</param>
-        /// <param name="errorMessage"></param>
-        private static void IterateMaps( DateTime mapStartDate, DateTime iterationStartDate, DateTime iterationEndDate,
-            StreakOccurrenceFrequency streakOccurrenceFrequency, byte[] occurrenceMap, byte[] engagementMap, byte[] exclusionMap,
-            Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
+        /// <param name="errorMessage">The error message.</param>
+        private static void IterateMaps( StreakTypeCache streakTypeCache, DateTime iterationStartDate, DateTime iterationEndDate, byte[] engagementMap,
+            byte[] exclusionMap, Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
         {
             errorMessage = string.Empty;
 
-            var isDaily = streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var today = isDaily ? RockDateTime.Today : RockDateTime.Now.SundayDate();
-            var maxDate = isDaily ? iterationEndDate : iterationEndDate.SundayDate();
-            var minDate = isDaily ? iterationStartDate : iterationStartDate.SundayDate();
+            var today = AlignDate( RockDateTime.Now, streakTypeCache );
+            var maxDate = AlignDate( iterationEndDate, streakTypeCache );
+            var minDate = AlignDate( iterationStartDate, streakTypeCache );
+            var mapStartDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
 
             if ( maxDate > today )
             {
@@ -1954,10 +2133,10 @@ namespace Rock.Model
             }
 
             // Calculate the difference in min date to the map start date
-            var slideStartUnitsToFuture = GetFrequencyUnitDifference( mapStartDate, minDate, streakOccurrenceFrequency, false );
+            var slideStartUnitsToFuture = GetFrequencyUnitDifference( mapStartDate, minDate, streakTypeCache, false );
 
             // Calculate the number of frequency units that the results are based upon (inclusive)
-            var numberOfFrequencyUnits = GetFrequencyUnitDifference( minDate, maxDate, streakOccurrenceFrequency, true );
+            var numberOfFrequencyUnits = GetFrequencyUnitDifference( minDate, maxDate, streakTypeCache, true );
 
             // Prepare to iterate over the bytes
             var currentUnit = 0;
@@ -1965,7 +2144,7 @@ namespace Rock.Model
             var initialByteOffset = slideStartUnitsToFuture / BitsPerByte + 1;
             var currentByteBitValue = 1 << ( slideStartUnitsToFuture % BitsPerByte );
 
-            occurrenceMap = occurrenceMap ?? new byte[0];
+            var occurrenceMap = streakTypeCache.OccurrenceMap ?? new byte[0];
             var occurrenceMapLength = occurrenceMap.Length;
             var currentOccurrenceByteIndex = occurrenceMapLength - initialByteOffset;
             var currentOccurrenceByte = GetByteFromMap( occurrenceMap, currentOccurrenceByteIndex );
@@ -1998,7 +2177,7 @@ namespace Rock.Model
                 // Iterate to the next bit
                 currentUnit++;
                 currentByteBitValue = currentByteBitValue << 1;
-                currentDate = IncrementDateTime( currentDate, streakOccurrenceFrequency, false );
+                currentDate = IncrementDateTime( currentDate, streakTypeCache.OccurrenceFrequency, false );
 
                 // If the bit value is beyond the current byte, then increment to the next byte
                 if ( currentByteBitValue > byte.MaxValue )
@@ -2021,25 +2200,22 @@ namespace Rock.Model
         /// Iterates over each bit in the maps over the given timeframe from max to min. The actionPerIteration is called for each bit.
         /// actionPerIteration( currentUnit, hasOccurrence, hasEngagement, hasExclusion );
         /// </summary>
-        /// <param name="mapStartDate">The map start date.</param>
+        /// <param name="streakTypeCache">The streak type cache.</param>
         /// <param name="iterationStartDate">The iteration start date.</param>
         /// <param name="iterationEndDate">The iteration end date.</param>
-        /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
-        /// <param name="occurrenceMap">The occurrence map.</param>
         /// <param name="engagementMap">The engagement map.</param>
         /// <param name="exclusionMap">The exclusion map.</param>
         /// <param name="actionPerIteration">The action per iteration. Returns a bool indicating if the iteration should stop early (isDone).</param>
-        /// <param name="errorMessage"></param>
-        private static void ReverseIterateMaps( DateTime mapStartDate, DateTime iterationStartDate, DateTime iterationEndDate,
-            StreakOccurrenceFrequency streakOccurrenceFrequency, byte[] occurrenceMap, byte[] engagementMap, byte[] exclusionMap,
-            Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
+        /// <param name="errorMessage">The error message.</param>
+        private static void ReverseIterateMaps( StreakTypeCache streakTypeCache, DateTime iterationStartDate, DateTime iterationEndDate,
+            byte[] engagementMap, byte[] exclusionMap, Func<int, DateTime, bool, bool, bool, bool> actionPerIteration, out string errorMessage )
         {
             errorMessage = string.Empty;
 
-            var isDaily = streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily;
-            var today = isDaily ? RockDateTime.Today : RockDateTime.Now.SundayDate();
-            var maxDate = isDaily ? iterationEndDate : iterationEndDate.SundayDate();
-            var minDate = isDaily ? iterationStartDate : iterationStartDate.SundayDate();
+            var today = AlignDate( RockDateTime.Now, streakTypeCache );
+            var maxDate = AlignDate( iterationEndDate, streakTypeCache );
+            var minDate = AlignDate( iterationStartDate, streakTypeCache );
+            var mapStartDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
 
             if ( maxDate > today )
             {
@@ -2060,10 +2236,10 @@ namespace Rock.Model
             }
 
             // Calculate the difference in min date to the map start date
-            var slideStartUnitsToFuture = GetFrequencyUnitDifference( mapStartDate, maxDate, streakOccurrenceFrequency, false );
+            var slideStartUnitsToFuture = GetFrequencyUnitDifference( mapStartDate, maxDate, streakTypeCache, false );
 
             // Calculate the number of frequency units that the results are based upon (inclusive)
-            var numberOfFrequencyUnits = GetFrequencyUnitDifference( minDate, maxDate, streakOccurrenceFrequency, true );
+            var numberOfFrequencyUnits = GetFrequencyUnitDifference( minDate, maxDate, streakTypeCache, true );
 
             // Prepare to iterate over the bytes
             var currentUnit = numberOfFrequencyUnits - 1;
@@ -2071,7 +2247,7 @@ namespace Rock.Model
             var initialByteOffset = slideStartUnitsToFuture / BitsPerByte + 1;
             var currentByteBitValue = 1 << ( slideStartUnitsToFuture % BitsPerByte );
 
-            occurrenceMap = occurrenceMap ?? new byte[0];
+            var occurrenceMap = streakTypeCache.OccurrenceMap ?? new byte[0];
             var occurrenceMapLength = occurrenceMap.Length;
             var currentOccurrenceByteIndex = occurrenceMapLength - initialByteOffset;
             var currentOccurrenceByte = GetByteFromMap( occurrenceMap, currentOccurrenceByteIndex );
@@ -2103,13 +2279,13 @@ namespace Rock.Model
 
                 // Iterate to the next bit
                 currentUnit--;
-                currentDate = IncrementDateTime( currentDate, streakOccurrenceFrequency, true );
+                currentDate = IncrementDateTime( currentDate, streakTypeCache.OccurrenceFrequency, true );
                 currentByteBitValue = currentByteBitValue >> 1;
 
                 // If the bit value is beyond the current byte, then increment to the next byte
                 if ( currentByteBitValue == 0 )
                 {
-                    currentByteBitValue = 1 << 7;
+                    currentByteBitValue = 1 << ( BitsPerByte - 1 );
 
                     currentOccurrenceByteIndex++;
                     currentOccurrenceByte = GetByteFromMap( occurrenceMap, currentOccurrenceByteIndex );

@@ -133,7 +133,7 @@ namespace Rock.Achievement.Component
 
             // Get the max date that streaks can be broken. This is to avoid breaking streaks while people still have time to
             // engage in that day or week (because it is the current day or week)
-            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache.OccurrenceFrequency );
+            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache );
 
             // Track the accumulation
             var accumulation = new ComputedStreak( minDate ) { EndDate = minDate };
@@ -239,7 +239,7 @@ namespace Rock.Achievement.Component
 
             // Get the max date that streaks can be broken. This is to avoid breaking streaks while people still have time to
             // engage in that day or week (because it is the current day or week)
-            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache.OccurrenceFrequency );
+            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache );
 
             // Track the attempts in a list that will be returned. The int is the streak count for that attempt
             var attempts = new List<StreakAchievementAttempt>();
