@@ -318,9 +318,14 @@ namespace Rock.Rest.Controllers
             {
                 result = action.Invoke( block, parameters.ToArray() );
             }
+            catch ( TargetInvocationException ex )
+            {
+                ExceptionLogService.LogApiException( ex.InnerException, Request, GetPersonAlias() );
+                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+            }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
+                ExceptionLogService.LogApiException( ex, Request, GetPersonAlias() );
                 result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
             }
 
