@@ -83,6 +83,12 @@ namespace Rock.Web.Cache
         public StreakOccurrenceFrequency OccurrenceFrequency { get; private set; }
 
         /// <summary>
+        /// Gets or sets the first day of the week for Weekly streak types. Default to system setting if null.
+        /// </summary>
+        [DataMember]
+        public DayOfWeek? FirstDayOfWeek { get; private set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="DateTime"/> associated with the first bit of this streak type.
         /// </summary>
         [DataMember]
@@ -193,6 +199,7 @@ namespace Rock.Web.Cache
             OccurrenceFrequency = sourceModel.OccurrenceFrequency;
             StartDate = sourceModel.StartDate;
             OccurrenceMap = sourceModel.OccurrenceMap;
+            FirstDayOfWeek = sourceModel.FirstDayOfWeek;
 
             _streakTypeExclusionIds = null;
         }

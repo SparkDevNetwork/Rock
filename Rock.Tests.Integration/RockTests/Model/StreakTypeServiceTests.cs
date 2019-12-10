@@ -214,9 +214,81 @@ namespace Rock.Tests.Integration.RockTests.Model
 
         #endregion GetStreakData
 
-        #region Weekly Streak Tests
+        #region GetFrequencyUnitDifference
 
-        // These tests use SundayDate which requires a database connection
+        /// <summary>
+        /// Calculating the difference in daily dates inclusively works correctly
+        /// </summary>
+        [TestMethod]
+        public void GetFrequencyUnitDifferenceInclusiveDaily()
+        {
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Daily
+            } );
+
+            var isInclusive = true;
+
+            // Month of January is 31 days long
+            var startDate = new DateTime( 2019, 1, 1 );
+            var endDate = new DateTime( 2019, 1, 31 );
+            var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( 31, result );
+
+            // Year of 2019 is 365 days long
+            startDate = new DateTime( 2019, 1, 1 );
+            endDate = new DateTime( 2019, 12, 31 );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( 365, result );
+
+            // Negative calculation is okay
+            startDate = new DateTime( 2019, 1, 1 );
+            endDate = new DateTime( 2018, 12, 31 );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( -2, result );
+
+            // Same day calculation is 1 day because of inclusiveness
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( 1, result );
+        }
+
+        /// <summary>
+        /// Calculating the difference in daily dates exclusively works correctly
+        /// </summary>
+        [TestMethod]
+        public void GetFrequencyUnitDifferenceExclusiveDaily()
+        {
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Daily
+            } );
+
+            var isInclusive = false;
+
+            // Month of January is 31 days long
+            var startDate = new DateTime( 2019, 1, 1 );
+            var endDate = new DateTime( 2019, 1, 31 );
+            var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( 30, result );
+
+            // Year of 2019 is 365 days long
+            startDate = new DateTime( 2019, 1, 1 );
+            endDate = new DateTime( 2019, 12, 31 );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( 364, result );
+
+            // Negative calculation is okay
+            startDate = new DateTime( 2019, 1, 1 );
+            endDate = new DateTime( 2018, 12, 31 );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( -1, result );
+
+            // Same day calculation is 0
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
+            Assert.AreEqual( 0, result );
+        }
 
         /// <summary>
         /// Calculating the difference in daily dates exclusively works correctly
@@ -224,29 +296,34 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void GetFrequencyUnitDifferenceExclusiveWeekly()
         {
-            var frequency = StreakOccurrenceFrequency.Weekly;
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Weekly
+            } );
+
             var isInclusive = false;
 
             // Month of January is 4 weeks long
             var startDate = new DateTime( 2019, 1, 1 );
             var endDate = new DateTime( 2019, 1, 31 );
-            var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, frequency, isInclusive );
+            var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
             Assert.AreEqual( 4, result );
 
             // Year of 2019 is 52 weeks long
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2019, 12, 31 );
-            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, frequency, isInclusive );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
             Assert.AreEqual( 52, result );
 
             // Negative calculation is okay
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2018, 12, 26 );
-            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, frequency, isInclusive );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
             Assert.AreEqual( -1, result );
 
             // Same week calculation is 0
-            result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, frequency, isInclusive );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
             Assert.AreEqual( 0, result );
         }
 
@@ -256,30 +333,83 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void GetFrequencyUnitDifferenceInclusiveWeekly()
         {
-            var frequency = StreakOccurrenceFrequency.Weekly;
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Weekly
+            } );
+
             var isInclusive = true;
 
             // Month of January is 4 weeks long
             var startDate = new DateTime( 2019, 1, 1 );
             var endDate = new DateTime( 2019, 1, 31 );
-            var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, frequency, isInclusive );
+            var result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
             Assert.AreEqual( 5, result );
 
             // Year of 2019 is 52 weeks long
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2019, 12, 31 );
-            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, frequency, isInclusive );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
             Assert.AreEqual( 53, result );
 
             // Negative calculation is okay
             startDate = new DateTime( 2019, 1, 1 );
             endDate = new DateTime( 2018, 12, 26 );
-            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, frequency, isInclusive );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, endDate, streakTypeCache, isInclusive );
             Assert.AreEqual( -2, result );
 
             // Same day calculation is 1 day because of inclusiveness
-            result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, frequency, isInclusive );
+            result = StreakTypeService.GetFrequencyUnitDifference( startDate, startDate, streakTypeCache, isInclusive );
             Assert.AreEqual( 1, result );
+        }
+
+        #endregion GetFrequencyUnitDifference
+
+        #region IsBitSet
+
+        /// <summary>
+        /// Checks if bits are set in the byte map that is daily occurrences
+        /// </summary>
+        [TestMethod]
+        public void IsBitSetIsCorrectForDailyMap()
+        {
+            var mapStartDate = new DateTime( 2019, 1, 1 );
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Daily,
+                StartDate = mapStartDate
+            } );
+
+            // Day Offset             3210 9876     5432 1098     7654 3210
+            var map = new byte[] { 0b_1000_0000, 0b_0010_0000, 0b_0000_0100 };
+
+            for ( var dayOffset = -5; dayOffset < 100; dayOffset++ )
+            {
+                var date = mapStartDate.AddDays( dayOffset );
+                var isSet = StreakTypeService.IsBitSet( streakTypeCache, map, date, out var errorMessage );
+
+                if ( dayOffset < 0 )
+                {
+                    // Should get error about checking a bit that is pre-start-date
+                    Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() );
+                }
+                else
+                {
+                    Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() );
+
+                    // The day of the month is the offset + 1 since offset 0 is Jan 1, 2019
+                    if ( date.Year == 2019 && date.Month == 1 && ( date.Day == 3 || date.Day == 14 || date.Day == 24 ) )
+                    {
+                        Assert.IsTrue( isSet );
+                    }
+                    else
+                    {
+                        Assert.IsFalse( isSet );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -288,14 +418,21 @@ namespace Rock.Tests.Integration.RockTests.Model
         [TestMethod]
         public void IsBitSetIsCorrectForWeeklyMap()
         {
+            var startDate = new DateTime( 2019, 1, 6 );
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Weekly,
+                StartDate = startDate
+            } );
+
             // Week Offset            3210 9876     5432 1098     7654 3210
             var map = new byte[] { 0b_1000_0000, 0b_0010_0000, 0b_0000_0100 };
-            var mapStartDate = new DateTime( 2019, 1, 6 );
 
             for ( var dayOffset = -5; dayOffset < 250; dayOffset++ )
             {
-                var date = mapStartDate.AddDays( dayOffset );
-                var isSet = StreakTypeService.IsBitSet( map, mapStartDate, date, StreakOccurrenceFrequency.Weekly, out var errorMessage );
+                var date = startDate.AddDays( dayOffset );
+                var isSet = StreakTypeService.IsBitSet( streakTypeCache, map, date, out var errorMessage );
 
                 if ( dayOffset < 0 )
                 {
@@ -329,12 +466,24 @@ namespace Rock.Tests.Integration.RockTests.Model
             }
         }
 
+        #endregion IsBitSet
+
+        #region SetBit
+
         /// <summary>
-        /// Resetting bits works correctly for weekly maps
+        /// Resetting bits works correctly for daily maps
         /// </summary>
         [TestMethod]
-        public void ResetBitWorksForWeeklyMap()
+        public void ResetBitWorksForDailyMap()
         {
+            var startDate = new DateTime( 2019, 1, 1 );
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Daily,
+                StartDate = startDate
+            } );
+
             // Offset             7654 3210
             const byte byte2 = 0b_0000_0100;
 
@@ -345,12 +494,9 @@ namespace Rock.Tests.Integration.RockTests.Model
             const byte byte0 = 0b_1000_0000;
 
             var map = new byte[] { byte0, byte1, byte2 };
-            var startDate = new DateTime( 2019, 1, 6 );
-            var frequency = StreakOccurrenceFrequency.Weekly;
-            var valueForReset = false;
 
             // Reset a bit before the start date and get an error
-            var result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( -1 * 7 ), frequency, valueForReset, out var errorMessage );
+            var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 ), false, out var errorMessage );
             Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
             Assert.AreSame( result, map ); // Verify in-place operation
             Assert.AreEqual( byte0, result[0] ); // Verify no changes
@@ -358,7 +504,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Reset a bit that is already 0
-            result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( 0 * 7 ), frequency, valueForReset, out errorMessage );
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 ), false, out errorMessage );
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
             Assert.AreSame( result, map ); // Verify in-place operation
             Assert.AreEqual( byte0, result[0] ); // Verify no changes
@@ -366,7 +512,74 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Reset the first set bit
-            result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( 2 * 7 ), frequency, valueForReset, out errorMessage );
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 ), false, out errorMessage );
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( 0, result[2] ); // Verify change
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+
+            // Reset a bit beyond the array and force it to grow
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 ), false, out errorMessage );
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
+            var newLength = 128;
+            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.AreEqual( 0, result[newLength - 1] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
+            Assert.AreEqual( byte0, result[newLength - 3] ); // Verify no changes
+
+            // Verify all other bytes are unset
+            for ( var i = 0; i < ( newLength - 3 ); i++ )
+            {
+                Assert.AreEqual( 0, result[i] );
+            }
+        }
+
+        /// <summary>
+        /// Resetting bits works correctly for weekly maps
+        /// </summary>
+        [TestMethod]
+        public void ResetBitWorksForWeeklyMap()
+        {
+            var startDate = new DateTime( 2019, 1, 6 );
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Weekly,
+                StartDate = startDate
+            } );
+
+            // Offset             7654 3210
+            const byte byte2 = 0b_0000_0100;
+
+            // Offset             5432 1098
+            const byte byte1 = 0b_0010_0000;
+
+            // Offset             3210 9876
+            const byte byte0 = 0b_1000_0000;
+
+            var map = new byte[] { byte0, byte1, byte2 };
+            var valueForReset = false;
+
+            // Reset a bit before the start date and get an error
+            var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 * 7 ), valueForReset, out var errorMessage );
+            Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
+
+            // Reset a bit that is already 0
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 * 7 ), valueForReset, out errorMessage );
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
+
+            // Reset the first set bit
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 * 7 ), valueForReset, out errorMessage );
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
             Assert.AreSame( result, map ); // Verify in-place operation
             Assert.AreEqual( 0, result[2] ); // Verify change
@@ -374,7 +587,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( byte0, result[0] ); // Verify no changes
 
             // Reset a bit beyond the array and force it to grow
-            result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( 24 * 7 ), frequency, valueForReset, out errorMessage );
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 * 7 ), valueForReset, out errorMessage );
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
             Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
@@ -391,11 +604,19 @@ namespace Rock.Tests.Integration.RockTests.Model
         }
 
         /// <summary>
-        /// Setting bits works correctly for weekly maps
+        /// Setting bits works correctly for daily maps
         /// </summary>
         [TestMethod]
-        public void SetBitWorksForWeeklyMap()
+        public void SetBitWorksForDailyMap()
         {
+            var startDate = new DateTime( 2019, 1, 1 );
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Daily,
+                StartDate = startDate
+            } );
+
             const byte lsb = 0b_0000_0001; // Least significant bit
             const byte msb = 0b_1000_0000; // Most significant bit
 
@@ -409,11 +630,9 @@ namespace Rock.Tests.Integration.RockTests.Model
             const byte byte0 = 0b_1000_0000;
 
             var map = new byte[] { byte0, byte1, byte2 };
-            var startDate = new DateTime( 2019, 1, 6 );
-            var frequency = StreakOccurrenceFrequency.Weekly;
 
             // Set a bit before the start date and get an error
-            var result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( -1 * 7 ), frequency, true, out var errorMessage );
+            var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 ), true, out var errorMessage );
             Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
             Assert.AreSame( result, map ); // Verify in-place operation
             Assert.AreEqual( byte0, result[0] ); // Verify no changes
@@ -421,7 +640,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Set a bit that is already set
-            result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( 2 * 7 ), frequency, true, out errorMessage );
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 ), true, out errorMessage );
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
             Assert.AreSame( result, map ); // Verify in-place operation
             Assert.AreEqual( byte0, result[0] ); // Verify no changes
@@ -429,7 +648,85 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( byte2, result[2] ); // Verify no changes
 
             // Set the least significant bit
-            result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( 0 * 7 ), frequency, true, out errorMessage );
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 ), true, out errorMessage );
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte2 | lsb, result[2] ); // Verify change
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+
+            // Set the most significant bit
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 23 ), true, out errorMessage );
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte2 | lsb, result[2] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte0 | msb, result[0] ); // Verify change
+
+            // Set a bit beyond the array and force it to grow
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 ), true, out errorMessage );
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
+            var newLength = 128;
+            Assert.IsTrue( result.Length == newLength ); // Verify the array grew to the next multiple of 128            
+            Assert.AreEqual( byte2 | lsb, result[newLength - 1] ); // Verify no additional changes
+            Assert.AreEqual( byte1, result[newLength - 2] ); // Verify no changes
+            Assert.AreEqual( byte0 | msb, result[newLength - 3] ); // Verify no additional changes
+            Assert.AreEqual( lsb, result[newLength - 4] ); // Verify first bit in first new byte is set
+
+            // Verify all other bytes are unset
+            for ( var i = 0; i < ( newLength - 4 ); i++ )
+            {
+                Assert.AreEqual( 0, result[i] );
+            }
+        }
+
+        /// <summary>
+        /// Setting bits works correctly for weekly maps
+        /// </summary>
+        [TestMethod]
+        public void SetBitWorksForWeeklyMap()
+        {
+            var startDate = new DateTime( 2019, 1, 6 );
+            var streakTypeCache = new StreakTypeCache();
+            streakTypeCache.SetFromEntity( new StreakType
+            {
+                OccurrenceFrequency = StreakOccurrenceFrequency.Weekly,
+                StartDate = startDate
+            } );
+
+            const byte lsb = 0b_0000_0001; // Least significant bit
+            const byte msb = 0b_1000_0000; // Most significant bit
+
+            // Offset             7654 3210
+            const byte byte2 = 0b_0000_0100;
+
+            // Offset             5432 1098
+            const byte byte1 = 0b_0010_0000;
+
+            // Offset             3210 9876
+            const byte byte0 = 0b_1000_0000;
+
+            var map = new byte[] { byte0, byte1, byte2 };
+
+            // Set a bit before the start date and get an error
+            var result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( -1 * 7 ), true, out var errorMessage );
+            Assert.IsFalse( errorMessage.IsNullOrWhiteSpace() ); // Verify error occurred
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
+
+            // Set a bit that is already set
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 2 * 7 ), true, out errorMessage );
+            Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no error
+            Assert.AreSame( result, map ); // Verify in-place operation
+            Assert.AreEqual( byte0, result[0] ); // Verify no changes
+            Assert.AreEqual( byte1, result[1] ); // Verify no changes
+            Assert.AreEqual( byte2, result[2] ); // Verify no changes
+
+            // Set the least significant bit
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 0 * 7 ), true, out errorMessage );
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
             Assert.AreSame( result, map ); // Verify in-place operation
             Assert.AreEqual( byte2 | lsb, result[2] ); // Verify change
@@ -437,7 +734,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( byte0, result[0] ); // Verify no changes
 
             // Set the most significant bit
-            result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( 23 * 7 ), frequency, true, out errorMessage );
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 23 * 7 ), true, out errorMessage );
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
             Assert.AreSame( result, map ); // Verify in-place operation
             Assert.AreEqual( byte2 | lsb, result[2] ); // Verify no additional changes
@@ -445,7 +742,7 @@ namespace Rock.Tests.Integration.RockTests.Model
             Assert.AreEqual( byte0 | msb, result[0] ); // Verify change
 
             // Set a bit beyond the array and force it to grow
-            result = StreakTypeService.SetBit( map, startDate, startDate.AddDays( 24 * 7 ), frequency, true, out errorMessage );
+            result = StreakTypeService.SetBit( streakTypeCache, map, startDate.AddDays( 24 * 7 ), true, out errorMessage );
             Assert.IsTrue( errorMessage.IsNullOrWhiteSpace() ); // Verify no errors
             Assert.AreNotSame( result, map ); // Verify memory allocation occurred for new array
             var newLength = 128;
@@ -462,6 +759,6 @@ namespace Rock.Tests.Integration.RockTests.Model
             }
         }
 
-        #endregion Weekly Streak Tests
+        #endregion SetBit
     }
 }
