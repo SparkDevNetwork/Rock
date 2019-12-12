@@ -806,8 +806,27 @@ namespace RockWeb.Blocks.Crm
 
                 foreach ( var addressKey in addressKeys )
                 {
+                    /*
+                     * 12/12/2019 BJW
+                     *
+                     * There was a bug around address merge if the primary person (person to keep) has a later creation date than the other person.
+                     * In that case, the address properties that are not displayed in the UI (because neither person has an address of that type)
+                     * have the older person record's address property "selected". This caused the code to try to merge the address, but it
+                     * didn't exist. The solution was to not call groupLocationService.Delete( currentTargetFamilyLocation ) if the
+                     * currentTargetFamilyLocation is null.  Furthermore, there is no need to do anything if all of the address property values
+                     * are empty (for example: no one has a work address).
+                     *
+                     * Task: https://app.asana.com/0/1120115219297347/1153049097899625/f
+                     */
+
                     // Get the current value for the merge target.
                     var property = MergeData.GetProperty( addressKey );
+
+                    // If there are no values for this address type then no action is required
+                    if ( property.Values.All( v => v.Value.IsNullOrWhiteSpace() ) )
+                    {
+                        continue;
+                    }
 
                     var primaryPersonGroupLocationValue = property.Values.Where( v => v.PersonId == MergeData.PrimaryPersonId ).FirstOrDefault();
 
@@ -866,10 +885,12 @@ namespace RockWeb.Blocks.Crm
                     {
                         if ( mergeSourceFamilyLocation == null )
                         {
-                            // Remove the existing address.
-                            primaryFamily.GroupLocations.Remove( currentTargetFamilyLocation );
-
-                            groupLocationService.Delete( currentTargetFamilyLocation );
+                            // Remove the existing address if it exists
+                            if ( currentTargetFamilyLocation != null )
+                            {
+                                primaryFamily.GroupLocations.Remove( currentTargetFamilyLocation );
+                                groupLocationService.Delete( currentTargetFamilyLocation );
+                            }
                         }
                         else
                         {
@@ -1025,7 +1046,6 @@ namespace RockWeb.Blocks.Crm
                 ////labelCol.HeaderStyle.CssClass = "grid-section-header";
                 gValues.Columns.Add( labelCol );
 
-                var personService = new PersonService( new RockContext() );
                 foreach ( var person in MergeData.People )
                 {
                     var personCol = new MergePersonField();
