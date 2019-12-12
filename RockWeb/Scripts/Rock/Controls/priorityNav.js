@@ -7,11 +7,6 @@
         const RESIZE_DURATION = 500;
         const TAB_KEYCODE = 9;
 
-        const Event = {
-            RESIZE: 'resize',
-            FOCUS: 'focus'
-        };
-
         const ClassName = {
             PRIORITY: 'priority',
             HIDE: 'sr-only',
@@ -28,12 +23,7 @@
         const MenuLabelAllHiddenDefault = 'Menu';
 
         var MenuTemplate = function(MenuLabel) {
-            return `
-            <li class="overflow-nav dropdown">
-                <a href="#" class="dropdown-toggle nav-link overflow-nav-link" data-toggle="dropdown" role="button" aria-haspopup="true">${MenuLabel}</a>
-                <ul class="overflow-nav-list dropdown-menu dropdown-menu-right"></ul>
-            </li>
-          `;
+            return '<li class="overflow-nav dropdown"><a href="#" class="dropdown-toggle nav-link overflow-nav-link" data-toggle="dropdown" role="button" aria-haspopup="true">' + MenuLabel + '</a><ul class="overflow-nav-list dropdown-menu dropdown-menu-right"></ul></li>';
         };
 
         var exports = {
@@ -73,7 +63,7 @@
                 this._$menu.append(MenuTemplate(MenuLabel));
             },
 
-            _setupMenu() {
+            _setupMenu: function() {
                 const $allNavElements = this._$allNavElements;
 
                 // Checking top position of first item (sometimes changes)
@@ -121,7 +111,7 @@
                     // Check if menu doesn't overflow after process
                     if (this._$menu.find('.overflow-nav').position().top !== firstPos.top) {
                         const $item = $(this._element)
-                            .find(`.${ClassName.HIDE}`)
+                            .find('.' + ClassName.HIDE)
                             .first()
                             .prev();
                         const $itemDuplicate = $item.clone();
@@ -145,25 +135,25 @@
                 this._$menu.find('.overflow-nav').attr('aria-hidden', true);
             },
 
-            _tearDown() {
+            _tearDown: function() {
                 this._$menu.find('.overflow-nav-list').empty();
                 this._$menu.find('.overflow-nav').addClass('hidden');
                 this._$allNavElements.removeClass(ClassName.HIDE);
                 this._$allNavElements.find('a').attr('tabindex', 0);
             },
 
-            _bindUIActions() {
-                $(window).on(Event.RESIZE, () => {
+            _bindUIActions: function() {
+                $(window).on('resize', function() {
                     this._$menu.addClass(ClassName.RESIZING);
 
-                    setTimeout(() => {
+                    setTimeout( function() {
                         this._tearDown();
                         this._setupMenu();
                         this._$menu.removeClass(ClassName.RESIZING);
                     }, RESIZE_DURATION);
                 });
 
-                this._$menu.find('.overflow-nav .dropdown-toggle').on('keyup', e => {
+                this._$menu.find('.overflow-nav .dropdown-toggle').on('keyup', function(e) {
                     if (e.which === TAB_KEYCODE) {
                         $(e.target).dropdown('toggle');
                     }
