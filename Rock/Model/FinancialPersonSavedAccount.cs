@@ -15,13 +15,19 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Financial;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -179,7 +185,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialPaymentDetail FinancialPaymentDetail { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the history items.
+        /// </summary>
+        /// <value>
+        /// The history items.
+        /// </value>
+        [NotMapped]
+        private List<History> HistoryItems { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -237,6 +252,129 @@ namespace Rock.Model
             }
 
             return reference;
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            BuildHistoryItems( dbContext, entry );
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Rock.Data.DbContext dbContext )
+        {
+            if ( HistoryItems != null && HistoryItems.Any() )
+            {
+                new SaveHistoryTransaction( HistoryItems ).Enqueue();
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the history.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        private void BuildHistoryItems( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            var rockContext = ( RockContext ) dbContext;
+
+            if ( !PersonAliasId.HasValue )
+            {
+                // Sometimes, especially if the model is being deleted, the person alias id might not be
+                // populated, but we can query to try to get it. We need to use a new rock context to get
+                // the actual value from the DB
+                var service = new FinancialPersonSavedAccountService( new RockContext() );
+                PersonAliasId = service.Get( Id ).PersonAliasId;
+
+                if ( !PersonAliasId.HasValue )
+                {
+                    // We can't log history if we don't know who the saved account belongs to
+                    return;
+                }
+            }
+            
+            var personAlias = PersonAlias;
+
+            if ( personAlias == null )
+            {
+                var personAliasService = new PersonAliasService( rockContext );
+                personAlias = personAliasService.Get( PersonAliasId.Value );
+            }
+
+            var personId = personAlias?.PersonId;
+
+            if ( !personId.HasValue )
+            {
+                throw new InvalidDataException( $"No person ID was found for person alias {PersonAliasId}" );
+            }
+
+            History.HistoryVerb verb;
+
+            switch ( entry.State )
+            {
+                case EntityState.Added:
+                    verb = History.HistoryVerb.Add;
+                    break;
+                case EntityState.Deleted:
+                    verb = History.HistoryVerb.Delete;
+                    break;
+                default:
+                    // As of now, there is no requirement to log other events
+                    return;
+            }
+
+            var historyChangeList = new History.HistoryChangeList();
+            historyChangeList.AddChange( verb, History.HistoryChangeType.Record, "Financial Person Saved Account" );
+
+            var changes = HistoryService.GetChanges(
+                typeof( Person ),
+                Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
+                personId.Value,
+                historyChangeList,
+                GetNameForHistory(),
+                typeof( FinancialPersonSavedAccount ),
+                Id,
+                dbContext.GetCurrentPersonAlias()?.Id,
+                dbContext.SourceOfChange );
+
+            HistoryItems = new List<History>();
+            HistoryItems.AddRange( changes );
+        }
+
+        /// <summary>
+        /// Get the name of the saved account
+        /// </summary>
+        /// <param name="savedAccount"></param>
+        /// <returns></returns>
+        private string GetNameForHistory()
+        {
+            const string unnamed = "<Unnamed>";
+
+            var name = Name.IsNullOrWhiteSpace() ? unnamed : Name.Trim();
+            var financialPaymentDetail = FinancialPaymentDetail;
+
+            if ( financialPaymentDetail == null )
+            {
+                // Try to query this using a different context in case the financial payment detail has been deleted in this context
+                var rockContext = new RockContext();
+                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
+                financialPaymentDetail = financialPersonSavedAccountService.Get( Id )?.FinancialPaymentDetail;
+            }
+
+            if ( financialPaymentDetail != null && !financialPaymentDetail.AccountNumberMasked.IsNullOrWhiteSpace() )
+            {
+                name = string.Format( "{0} ({1})", name, financialPaymentDetail.AccountNumberMasked );
+            }
+
+            return name;
         }
 
         #endregion
