@@ -471,7 +471,7 @@ namespace RockWeb.Blocks.Utility
 </li>
 ";
 
-                    // put the file timestamp as part of the url to that changed files are loaded from the server instead of the browser cache
+                    // put the file timestamp as part of the URL to that changed files are loaded from the server instead of the browser cache
                     var fileDateTime = File.GetLastWriteTimeUtc( filePath );
                     imageUrl += "&timeStamp=" + fileDateTime.Ticks.ToString();
 

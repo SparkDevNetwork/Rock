@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Cms
     /// Adds an editable HTML fragment to the page.
     /// </summary>
     [DisplayName( "HTML Content" )]
-    [Category( "CMS" )] 
+    [Category( "CMS" )]
     [Description( "Adds an editable HTML fragment to the page." )]
 
     #region Block Attributes
@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Cms
             }
 
             HtmlContentService.FlushCachedContent( this.BlockId, EntityValue() );
-            
+
             ShowView();
         }
 
@@ -297,7 +297,7 @@ namespace RockWeb.Blocks.Cms
             string newContent = htmlEditor.Text;
 
             // check if the new content is valid
-            // NOTE: This is a limited check that will only warn of invalid HTML the first 
+            // NOTE: This is a limited check that will only warn of invalid HTML the first
             // time a user clicks the save button. Any errors encountered on the second runthrough
             // are assumed to be intentional.
             HtmlDocument doc = new HtmlDocument();
@@ -321,7 +321,7 @@ namespace RockWeb.Blocks.Cms
             //// create a new record only in the following situations:
             ////   - this is the first time this htmlcontent block got content (new block and edited for the first time)
             ////   - the content was changed, versioning is enabled, and OverwriteVersion is not checked
-            
+
             // if the existing content changed, and the overwrite option was not checked, create a new version
             if (htmlContent != null)
             {
@@ -395,7 +395,7 @@ namespace RockWeb.Blocks.Cms
 
             rockContext.SaveChanges();
 
-            // flush cache content 
+            // flush cache content
             HtmlContentService.FlushCachedContent( htmlContent.BlockId, htmlContent.EntityValue );
 
             ShowView();
@@ -553,7 +553,7 @@ namespace RockWeb.Blocks.Cms
 
             gVersions.EntityTypeId = EntityTypeCache.Get<HtmlContent>().Id;
             gVersions.DataSource = versions;
-            
+
             gVersions.DataBind();
         }
 
@@ -710,7 +710,7 @@ namespace RockWeb.Blocks.Cms
             hfApprovalStatus.Value = approved.ToTrueFalse();
 
             if ( personAlias != null && personAlias.Person != null )
-            { 
+            {
                 lblApprovalStatusPerson.Visible = true;
                 lblApprovalStatusPerson.Text = "by " + personAlias.Person.FullName;
                 hfApprovalStatusPersonId.Value = personAlias.Person.Id.ToString();
@@ -722,7 +722,7 @@ namespace RockWeb.Blocks.Cms
         }
 
         /// <summary>
-        /// Gets the maximum version that this HtmlContent block 
+        /// Gets the maximum version that this HtmlContent block
         /// </summary>
         /// <returns></returns>
         private int? GetMaxVersionOfHtmlContent()
@@ -785,7 +785,7 @@ namespace RockWeb.Blocks.Cms
                             }
 
                             mergeFields.Add( "CurrentBrowser", this.RockPage.BrowserClient );
-                            
+
                             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
                             mergeFields.Add( "CurrentPersonCanEdit", IsUserAuthorized( Authorization.EDIT ) );
                             mergeFields.Add( "CurrentPersonCanAdministrate", IsUserAuthorized( Authorization.ADMINISTRATE ) );
@@ -803,7 +803,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                // Resolve any dynamic url references
+                // Resolve any dynamic URL references
                 string appRoot = ResolveRockUrl( "~/" );
                 string themeRoot = ResolveRockUrl( "~~/" );
                 html = html.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
@@ -858,7 +858,7 @@ namespace RockWeb.Blocks.Cms
                 {
                     lHtmlContent.Visible = visible;
 
-                    // upnlHtmlContent has UpdateMode=Conditional so tell it to update if Visible changed 
+                    // upnlHtmlContent has UpdateMode=Conditional so tell it to update if Visible changed
                     upnlHtmlContentView.Update();
                 }
             }
