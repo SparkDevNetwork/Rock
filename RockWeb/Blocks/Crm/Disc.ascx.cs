@@ -296,7 +296,7 @@ namespace Rockweb.Blocks.Crm
                         if ( _targetPerson.Id != CurrentPerson.Id )
                         {
                             // If the current person is not the target person and there are no results to show then show a not taken message.
-                            HidePanelsAndShowError( string.Format("{0} does not have results for the EQ Inventory Assessment.", _targetPerson.FullName ) );
+                            HidePanelsAndShowError( string.Format("{0} does not have results for the DISC Assessment.", _targetPerson.FullName ) );
                         }
                         else
                         {
