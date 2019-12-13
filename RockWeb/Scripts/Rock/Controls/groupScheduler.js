@@ -115,7 +115,7 @@
                             return;
                         }
 
-                        if (target == null) {
+                        if (target === null) {
                             // don't do anything if a person is dragged into an invalid container
                             return;
                         }
