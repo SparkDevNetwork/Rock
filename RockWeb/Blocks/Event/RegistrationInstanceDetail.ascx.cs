@@ -524,19 +524,20 @@ namespace RockWeb.Blocks.Event
                 {
                     instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
                     ShowReadonlyDetails( instance );
-                }
 
-                // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
-                    ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
-                        instance.RegistrationTemplate.Cost > 0 ||
-                        instance.RegistrationTemplate.Fees.Count > 0 ) )
-                {
-                    btnSendPaymentReminder.Visible = true;
-                }
-                else
-                {
-                    btnSendPaymentReminder.Visible = false;
+
+                    // show send payment reminder link
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                        ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
+                            instance.RegistrationTemplate.Cost > 0 ||
+                            instance.RegistrationTemplate.Fees.Count > 0 ) )
+                    {
+                        btnSendPaymentReminder.Visible = true;
+                    }
+                    else
+                    {
+                        btnSendPaymentReminder.Visible = false;
+                    }
                 }
             }
         }
@@ -632,6 +633,13 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fRegistrations_ClearFilterClick( object sender, EventArgs e )
         {
+            fRegistrations.SaveUserPreference( "Registrations Date Range", "Registration Date Range", string.Empty );
+            fRegistrations.SaveUserPreference( "Payment Status", string.Empty );
+            fRegistrations.SaveUserPreference( "RegisteredBy First Name", string.Empty );
+            fRegistrations.SaveUserPreference( "RegisteredBy Last Name", string.Empty );
+            fRegistrations.SaveUserPreference( "Registrant First Name", string.Empty );
+            fRegistrations.SaveUserPreference( "Registrant Last Name", string.Empty );
+
             fRegistrants.DeleteUserPreferences();
             BindRegistrationsFilter();
         }
@@ -2971,8 +2979,8 @@ namespace RockWeb.Blocks.Event
         {
             sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( "Registrations Date Range" );
             ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( "Payment Status" ) );
-            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( "Registered By First Name" );
-            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( "Registered By Last Name" );
+            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( "RegisteredBy First Name" );
+            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( "RegisteredBy Last Name" );
             tbRegistrationRegistrantFirstName.Text = fRegistrations.GetUserPreference( "Registrant First Name" );
             tbRegistrationRegistrantLastName.Text = fRegistrations.GetUserPreference( "Registrant Last Name" );
         }

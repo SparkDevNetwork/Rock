@@ -2749,57 +2749,66 @@ namespace RockWeb.Blocks.Event
         /// <param name="tab"></param>
         private void SetActiveAccountPanel( RegistrationDetailAccountPanelSpecifier tab )
         {
-            bool showTabAccount = false;
-            bool showTabFees = false;
-            bool showTabPayments = false;
+            ShowTabAccont( false );
+            ShowTabFees( false );
+            ShowTabPayments( false );
 
-            bool showCCDetails = false;
-            bool showPaymentInfo = false;
-            bool showPaymentAmount = false;
-            bool showPaymentManual = false;
-            bool showPaymentSubmit = false;
-            bool showPaymentSubmitStep2 = false;
+            pnlPaymentInfo.Visible = false;
+            phPaymentAmount.Visible = false;
+            phManualDetails.Visible = false;
+            phCCDetails.Visible = false;
+            aStep2Submit.Visible = false;
+            lbSubmitPayment.Visible = false;
 
-            if ( tab == RegistrationDetailAccountPanelSpecifier.AccountSummary )
+            switch ( tab )
             {
-                showTabAccount = true;
-            }
-            else if ( tab == RegistrationDetailAccountPanelSpecifier.FeeList )
-            {
-                showTabFees = true;
-            }
-            else if ( tab == RegistrationDetailAccountPanelSpecifier.PaymentList )
-            {
-                showTabPayments = true;
-            }
-            else if ( tab == RegistrationDetailAccountPanelSpecifier.PaymentManualDetails )
-            {
-                showTabPayments = true;
+                case RegistrationDetailAccountPanelSpecifier.AccountSummary:
+                    ShowTabAccont( true );
+                    break;
 
-                showPaymentInfo = true;
-                showPaymentAmount = true;
-                showPaymentManual = true;
-                showPaymentSubmit = true;
-            }
-            else if ( tab == RegistrationDetailAccountPanelSpecifier.PaymentProcess )
-            {
-                showTabPayments = true;
+                case RegistrationDetailAccountPanelSpecifier.FeeList:
+                    ShowTabFees( true );
+                    break;
 
-                showPaymentInfo = true;
-                showPaymentAmount = true;
-                showPaymentSubmit = true;
+                case RegistrationDetailAccountPanelSpecifier.PaymentList:
+                    ShowTabPayments( true );
+                    break;
 
-            }
-            else if ( tab == RegistrationDetailAccountPanelSpecifier.PaymentCardDetails )
-            {
-                showTabPayments = true;
+                case RegistrationDetailAccountPanelSpecifier.PaymentManualDetails:
+                    ShowTabPayments( true );
+                    pnlPaymentInfo.Visible = true;
+                    phPaymentAmount.Visible = true;
+                    phManualDetails.Visible = true;
+                    lbSubmitPayment.Visible = true;
+                    break;
 
-                showCCDetails = true;
-                showPaymentSubmitStep2 = true;
+                case RegistrationDetailAccountPanelSpecifier.PaymentCardDetails:
+                    ShowTabPayments( true );
+                    pnlPaymentInfo.Visible = true;
+                    phCCDetails.Visible = true;
+                    aStep2Submit.Visible = true;
+                    break;
+
+                case RegistrationDetailAccountPanelSpecifier.PaymentProcess:
+                    ShowTabPayments( true );
+                    pnlPaymentInfo.Visible = true;
+                    phPaymentAmount.Visible = true;
+                    lbSubmitPayment.Visible = true;
+                    break;
+
+                default:
+                    break;
             }
+
+            pnlPaymentDetails.Visible = !pnlPaymentInfo.Visible;
 
             lnkTabAccount.Attributes["href"] = "#" + tabPaneAccount.ClientID;
+            lnkTabFees.Attributes["href"] = "#" + tabPaneFees.ClientID;
+            lnkTabPayments.Attributes["href"] = "#" + tabPanePayments.ClientID;
+        }
 
+        private void ShowTabAccont( bool showTabAccount)
+        {
             if ( showTabAccount )
             {
                 tabAccount.AddCssClass( "active" );
@@ -2810,9 +2819,10 @@ namespace RockWeb.Blocks.Event
                 tabAccount.RemoveCssClass( "active" );
                 tabPaneAccount.RemoveCssClass( "active" );
             }
+        }
 
-            lnkTabFees.Attributes["href"] = "#" + tabPaneFees.ClientID;
-
+        private void ShowTabFees( bool showTabFees )
+        {
             if ( showTabFees )
             {
                 tabFees.AddCssClass( "active" );
@@ -2824,8 +2834,10 @@ namespace RockWeb.Blocks.Event
                 tabPaneFees.RemoveCssClass( "active" );
             }
 
-            lnkTabPayments.Attributes["href"] = "#" + tabPanePayments.ClientID;
+        }
 
+        private void ShowTabPayments( bool showTabPayments )
+        {
             if ( showTabPayments )
             {
                 tabPayments.AddCssClass( "active" );
@@ -2836,19 +2848,6 @@ namespace RockWeb.Blocks.Event
                 tabPayments.RemoveCssClass( "active" );
                 tabPanePayments.RemoveCssClass( "active" );
             }
-
-            // Payments Pane shows either Payments List or Payment Details, depending upon state.
-            pnlPaymentInfo.Visible = showPaymentInfo;
-            pnlPaymentDetails.Visible = !showPaymentInfo;
-
-            // Set the status of the Payment Details pane controls.
-            phCCDetails.Visible = showCCDetails;
-
-            lbSubmitPayment.Visible = showPaymentSubmit;
-            aStep2Submit.Visible = showPaymentSubmitStep2;
-
-            phManualDetails.Visible = showPaymentManual;
-            phPaymentAmount.Visible = showPaymentAmount;
         }
 
         #endregion
