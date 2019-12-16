@@ -712,6 +712,8 @@ namespace Rock.Model
             // New Year's Day            Jan 1
             holidayList.Add( new Holiday( "NewYears", new DateTime( vYear, 1, 1 ) ) );
 
+            // NOTE: DayOfWeek.Monday is used since these Holidays occur on Mondays ( it has nothing to do with RockDateTime.FirstDayOfWeek)
+
             // Martin Luther King, Jr. third Mon in Jan
             holidayList.Add( new Holiday( "MLK", GetNthDayOfNthWeek( new DateTime( vYear, 1, 1 ), DayOfWeek.Monday, ThirdWeek ) ) );
 

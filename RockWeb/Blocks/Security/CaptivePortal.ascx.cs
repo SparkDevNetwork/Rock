@@ -189,7 +189,7 @@ namespace RockWeb.Blocks.Security
             // Go through the UA ignore list and don't load anything we don't care about or want.
             foreach ( string userAgentToIgnore in _userAgentsToIgnore )
             {
-                if ( Request.UserAgent.StartsWith( userAgentToIgnore ) )
+                if ( Request.UserAgent == null || Request.UserAgent.StartsWith( userAgentToIgnore ) )
                 {
                     return;
                 }

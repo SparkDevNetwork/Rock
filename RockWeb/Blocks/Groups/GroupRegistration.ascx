@@ -47,7 +47,7 @@
                             <Rock:RockCheckBox ID="cbSpouseSms"  runat="server" Label="&nbsp;" Text="Enable SMS" />
                         </div>
                     </div>
-                    <Rock:EmailBox ID="tbSpouseEmail" runat="server" Label="Email" />
+                    <Rock:EmailBox ID="tbSpouseEmail" runat="server" Label="Spouse Email" />
                 </asp:Panel>
 
             </div>

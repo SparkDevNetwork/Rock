@@ -110,6 +110,7 @@ namespace Rock.Model
         /// The status message as HTML.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         public string StatusMessageAsHtml
         {
             get
@@ -125,6 +126,7 @@ namespace Rock.Model
         /// The job duration in seconds.
         /// </value>
         [LavaInclude]
+        [NotMapped]
         public int? DurationSeconds
         {
             get

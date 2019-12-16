@@ -986,11 +986,6 @@ The logged-in person's information will be used to complete the registrar inform
                 validationErrors.Add( "A Financial Gateway is required when the registration has a cost or additional fees or is configured to allow instances to set a cost." );
             }
 
-            if ( registrationTemplate.WaitListEnabled && !registrationTemplate.MaxRegistrants.HasValue )
-            {
-                validationErrors.Add( "To enable a wait list you must provide a maximum number of registrants." );
-            }
-
             if ( validationErrors.Any() )
             {
                 nbValidationError.Visible = true;
@@ -1317,7 +1312,7 @@ The logged-in person's information will be used to complete the registrar inform
                 int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
-                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
+                    // Cancelling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page
                     var qryParams = new Dictionary<string, string>();
                     qryParams["CategoryId"] = parentCategoryId.ToString();
                     NavigateToPage( RockPage.Guid, qryParams );
@@ -1391,7 +1386,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Handles the DeleteFormClick event of the tfeForm control.
+        /// Handles the DeleteFormClick event of the registrationTemplateFormEditor control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -1423,7 +1418,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ add attribute click.
+        /// Handles the add field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1437,7 +1432,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form filter field click.
+        /// Handles the filter field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1451,7 +1446,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ edit attribute click.
+        /// Handles the edit field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1465,7 +1460,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ reorder attribute click.
+        /// Handles the reorder field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1483,7 +1478,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ delete attribute click.
+        /// Handles the delete field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1500,7 +1495,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Tfes the form_ rebind attribute click.
+        /// Handles the rebind field click on the registrationTemplateFormEditor.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -1767,6 +1762,15 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgDiscount_SaveClick( object sender, EventArgs e )
         {
+            if ( IsDiscountCodeAlreadyUsed() )
+            {
+                nbDuplicateDiscountCode.Text = @"The discount code <b>""" + tbDiscountCode.Text + @"</b>"" is already in use.";
+                nbDuplicateDiscountCode.Visible = true;
+                return;
+            }
+
+            nbDuplicateDiscountCode.Visible = false;
+
             RegistrationTemplateDiscount discount = null;
             var discountGuid = hfDiscountGuid.Value.AsGuidOrNull();
             if ( discountGuid.HasValue )
@@ -1806,6 +1810,26 @@ The logged-in person's information will be used to complete the registrar inform
             hfDiscountGuid.Value = string.Empty;
 
             BuildControls();
+        }
+
+        private bool IsDiscountCodeAlreadyUsed()
+        {
+            var discountGuid = hfDiscountGuid.Value.AsGuidOrNull();
+            var discountCode = tbDiscountCode.Text;
+
+            // If we have a guid then we are editing an existing code, so only count as a duplicate if the GUID doesn't match.
+            if ( discountGuid != null && DiscountState.Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) && d.Guid != discountGuid ).Any() )
+            {
+                return true;
+            }
+
+            // If case we do not have a guid then look for any matches.
+            if ( discountGuid == null && DiscountState.Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) ).Any() )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -2396,7 +2420,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Shows the readonly details.
+        /// Shows the read-only details.
         /// </summary>
         /// <param name="registrationTemplate">The registration template.</param>
         private void ShowReadonlyDetails( RegistrationTemplate registrationTemplate )
@@ -2507,7 +2531,7 @@ The logged-in person's information will be used to complete the registrar inform
         }
 
         /// <summary>
-        /// Adds the "is-inactive" css class if the item is not active.
+        /// Adds the "is-inactive" CSS class if the item is not active.
         /// </summary>
         /// <param name="isActive">The is active.</param>
         /// <returns></returns>
@@ -3211,6 +3235,8 @@ The logged-in person's information will be used to complete the registrar inform
             drpDiscountDateRange.UpperValue = discount.EndDate;
             cbcAutoApplyDiscount.Checked = discount.AutoApplyDiscount;
 
+            nbDuplicateDiscountCode.Text = string.Empty;
+            nbDuplicateDiscountCode.Visible = false;
             ShowDialog( dlgDiscount );
         }
 

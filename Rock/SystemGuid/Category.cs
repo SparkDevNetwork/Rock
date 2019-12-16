@@ -31,7 +31,12 @@ namespace Rock.SystemGuid
         #endregion DataView Categories
 
         #region Defined Type Categories
-        
+
+        /// <summary>
+        /// Campus Category
+        /// </summary>
+        public const string DEFINEDTYPE_CAMPUS = "4503C83E-4171-4EAE-99C1-A3647E065181";
+
         /// <summary>
         /// CMS Category
         /// </summary>

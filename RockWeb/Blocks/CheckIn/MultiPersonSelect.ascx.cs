@@ -253,7 +253,7 @@ namespace RockWeb.Blocks.CheckIn
                         var pnlChangeButton = e.Item.FindControl( "pnlChangeButton" ) as Panel;
                         if ( pnlPersonButton != null && pnlChangeButton != null )
                         {
-                            pnlPersonButton.CssClass = "col-xs-12 col-sm-9 col-md-10";
+                            pnlPersonButton.CssClass = "checkin-person-btn checkin-person-has-change col-xs-12 col-sm-9 col-md-10";
                             pnlChangeButton.Visible = selectedOptions.Count > 1 || AnyUnselectedOptions( person );
                         }
                     }
@@ -269,9 +269,9 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         lPersonButton.Text = string.Format( @"
 <div class='row'>
-    <div class='col-md-4 family-personselect'>{0}</div>
-    <div class='col-md-8 auto-select text-light'>
-        <div class='auto-select-caption'>is checking into...</div>
+    <div class='col-md-5 family-personselect'>{0}</div>
+    <div class='col-md-7 auto-select family-auto-select'>
+        <div class='auto-select-caption'>Current Selection</div>
         <div class='auto-select-details'>{1}</div>
     </div>
 </div>
@@ -510,8 +510,8 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     return string.Format( @"
 <div class='row'>
-    <div class='col-md-4 family-personselect'>{0}</div>
-    <div class='col-md-8 text-light'><small>is checking into...<br/>{1}</small></div>
+    <div class='col-md-5 family-personselect'>{0}</div>
+    <div class='col-md-7 auto-select family-auto-select'><div class='auto-select-caption'>Current Selection</div><div class='auto-select-details'>{1}</div></div>
 </div>
 ", person.Person.FullName, options.AsDelimited( "<br/>" ) );
                 }

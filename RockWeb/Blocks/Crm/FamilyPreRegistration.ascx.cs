@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
 
-    [BooleanField( "Show Campus", "Should the campus field be displayed?", true, "", 0 )]
+    [BooleanField( "Show Campus", "Should the campus field be displayed? If there is only one active campus then the campus field will not show.", true, "", 0 )]
     [CampusField( "Default Campus", "An optional campus to use by default when adding a new family.", false, "", "", 1 )]
     [CustomDropdownListField( "Planned Visit Date", "How should the Planned Visit Date field be displayed (this value is only used when starting a workflow)?", HIDE_OPTIONAL_REQUIRED, false, "Optional", "", 2 )]
     [AttributeField( Rock.SystemGuid.EntityType.GROUP, "GroupTypeId", Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "Family Attributes", "The Family attributes that should be displayed", false, true, "", "", 3 )]
@@ -797,8 +797,15 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             if ( GetAttributeValue( "ShowCampus" ).AsBoolean() )
             {
                 cpCampus.Campuses = CampusCache.All( false );
-                pnlCampus.Visible = true;
-                cpCampus.Required = GetAttributeValue("RequireCampus").AsBoolean();
+                if ( CampusCache.All( false ).Count > 1 )
+                {
+                    pnlCampus.Visible = true;
+                    cpCampus.Required = GetAttributeValue( "RequireCampus" ).AsBoolean();
+                }
+                else
+                {
+                    pnlCampus.Visible = false;
+                }
             }
             else
             {
@@ -1515,7 +1522,8 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             ValidateRequiredField( "AdultGender", "Gender is required for each adult.", ddlGender1.SelectedValueAsEnumOrNull<Gender>() != null, ddlGender2.SelectedValueAsEnumOrNull<Gender>() != null, errorMessages );
             ValidateRequiredField( ADULT_BIRTHDATE_KEY, "Birthdate is required for each adult.", dpBirthDate1.SelectedDate != null, dpBirthDate2.SelectedDate != null, errorMessages );
             ValidateRequiredField( ADULT_EMAIL_KEY, "Email is required for each adult.", tbEmail1.Text.IsNotNullOrWhiteSpace(), tbEmail2.Text.IsNotNullOrWhiteSpace(), errorMessages );
-            ValidateRequiredField( ADULT_MOBILE_KEY, "Mobile Phone is required for each adult.", PhoneNumber.CleanNumber( pnMobilePhone1.Number ).IsNotNullOrWhiteSpace(), PhoneNumber.CleanNumber( pnMobilePhone2.Number ).IsNotNullOrWhiteSpace(), errorMessages );
+            //ValidateRequiredField( ADULT_MOBILE_KEY, "A valid Mobile Phone is required for each adult.", pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
+            bool isPhoneValid = ValidateRequiredField( ADULT_MOBILE_KEY, string.Empty, pnMobilePhone1.IsValid, pnMobilePhone2.IsValid, errorMessages );
 
             if ( errorMessages.Any() )
             {
@@ -1535,6 +1543,11 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 }
             }
 
+            if (!isPhoneValid)
+            {
+                return false;
+            }
+
             return true;
         }
 
@@ -1546,7 +1559,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
         /// <param name="adult1HasValue">if set to <c>true</c> [adult1 has value].</param>
         /// <param name="adult2HasValue">if set to <c>true</c> [adult2 has value].</param>
         /// <param name="errorMessages">The error messages.</param>
-        private void ValidateRequiredField( string attributeKey, string errorMessage, bool adult1HasValue, bool adult2HasValue, List<String> errorMessages )
+        private bool ValidateRequiredField( string attributeKey, string errorMessage, bool adult1HasValue, bool adult2HasValue, List<String> errorMessages )
         {
             if ( GetAttributeValue( attributeKey ) == "Required" )
             {
@@ -1555,9 +1568,18 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                     ( tbFirstName2.Text.IsNotNullOrWhiteSpace() && !adult2HasValue )
                 )
                 {
-                    errorMessages.Add( errorMessage );
+                    if ( errorMessage.IsNotNullOrWhiteSpace() )
+                    {
+                        errorMessages.Add( errorMessage );
+                    }
+
+                    return false;
                 }
+
+                return true;
             }
+
+            return true;
         }
 
         /// <summary>

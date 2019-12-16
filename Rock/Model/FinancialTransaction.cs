@@ -280,15 +280,28 @@ namespace Rock.Model
         public string StatusMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
-        public DateTime? SundayDate { get; set; }
+        [Index( "IX_SundayDate" )]
+        public DateTime? SundayDate
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
+                // Also, on an Insert/Update this will be the value saved to the database
+                return TransactionDateTime?.SundayDate();
+            }
+
+            set
+            {
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
+            }
+        }
 
         /// <summary>
         /// Gets or sets the non cash asset type value identifier.
@@ -561,10 +574,10 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var rockContext = (RockContext)dbContext;
+            var rockContext = ( RockContext ) dbContext;
 
             HistoryChangeList = new History.HistoryChangeList();
-            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList> ();
+            BatchHistoryChangeList = new Dictionary<int, History.HistoryChangeList>();
 
             switch ( entry.State )
             {
@@ -577,14 +590,14 @@ namespace Rock.Model
                         History.EvaluateChange( HistoryChangeList, "Authorized Person", string.Empty, person );
                         History.EvaluateChange( HistoryChangeList, "Batch", string.Empty, History.GetValue<FinancialBatch>( Batch, BatchId, rockContext ) );
                         History.EvaluateChange( HistoryChangeList, "Gateway", string.Empty, History.GetValue<FinancialGateway>( FinancialGateway, FinancialGatewayId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", (DateTime?)null, TransactionDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Transaction Date/Time", ( DateTime? ) null, TransactionDateTime );
                         History.EvaluateChange( HistoryChangeList, "Transaction Code", string.Empty, TransactionCode );
                         History.EvaluateChange( HistoryChangeList, "Summary", string.Empty, Summary );
-                        History.EvaluateChange( HistoryChangeList, "Type", (int?)null, TransactionTypeValue, TransactionTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Source", (int?)null, SourceTypeValue, SourceTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", (int?)null, ScheduledTransactionId );
+                        History.EvaluateChange( HistoryChangeList, "Type", ( int? ) null, TransactionTypeValue, TransactionTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Source", ( int? ) null, SourceTypeValue, SourceTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Scheduled Transaction Id", ( int? ) null, ScheduledTransactionId );
                         History.EvaluateChange( HistoryChangeList, "Processed By", string.Empty, History.GetValue<PersonAlias>( ProcessedByPersonAlias, ProcessedByPersonAliasId, rockContext ) );
-                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", (DateTime?)null, ProcessedDateTime );
+                        History.EvaluateChange( HistoryChangeList, "Processed Date/Time", ( DateTime? ) null, ProcessedDateTime );
                         History.EvaluateChange( HistoryChangeList, "Status", string.Empty, Status );
                         History.EvaluateChange( HistoryChangeList, "Status Message", string.Empty, StatusMessage );
 
@@ -694,14 +707,14 @@ namespace Rock.Model
         {
             if ( HistoryChangeList.Any() )
             {
-                HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
+                HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), this.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId );
             }
 
             foreach ( var keyVal in BatchHistoryChangeList )
             {
                 if ( keyVal.Value.Any() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), keyVal.Key, keyVal.Value, string.Empty, typeof( FinancialTransaction ), this.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 
@@ -733,7 +746,7 @@ namespace Rock.Model
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.NonCashAssetTypeValue ).WithMany().HasForeignKey( t => t.NonCashAssetTypeValueId ).WillCascadeOnDelete( false );
-            }
+        }
     }
 
     #endregion Entity Configuration

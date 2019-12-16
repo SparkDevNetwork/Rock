@@ -37,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "CommunicationTemplate" )]
     [DataContract]
-    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails
+    public partial class CommunicationTemplate : Model<CommunicationTemplate>, ICommunicationDetails, ICampusFilterable
     {
 
         #region Entity Properties

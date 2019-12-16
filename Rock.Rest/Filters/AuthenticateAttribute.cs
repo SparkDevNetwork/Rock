@@ -14,14 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Linq;
 using System.Security.Principal;
 using System.ServiceModel.Channels;
+using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-
 using Rock.Model;
+using Rock.Rest.Jwt;
 
 namespace Rock.Rest.Filters
 {
@@ -39,39 +39,79 @@ namespace Rock.Rest.Filters
         {
             // See if user is logged in
             var principal = System.Threading.Thread.CurrentPrincipal;
-            if ( principal != null && principal.Identity != null && !String.IsNullOrWhiteSpace(principal.Identity.Name))
+            if ( principal != null && principal.Identity != null && !string.IsNullOrWhiteSpace( principal.Identity.Name ) )
             {
                 //var userLoginService = new UserLoginService();
                 //var user = userLoginService.GetByUserName(principal.Identity.Name);
                 //if ( user != null )
                 //{
-                    actionContext.Request.SetUserPrincipal( principal );
-                    return;
+                actionContext.Request.SetUserPrincipal( principal );
+                return;
                 //}
             }
 
             // If not, see if there's a valid token
-            string authToken = null;
-            if (actionContext.Request.Headers.Contains("Authorization-Token"))
-                authToken = actionContext.Request.Headers.GetValues( "Authorization-Token" ).FirstOrDefault();
-            if ( String.IsNullOrWhiteSpace( authToken ) )
+            TryRetrieveHeader( actionContext, HeaderTokens.AuthorizationToken, out var authToken );
+
+            if ( string.IsNullOrWhiteSpace( authToken ) )
             {
                 string queryString = actionContext.Request.RequestUri.Query;
-                authToken = System.Web.HttpUtility.ParseQueryString(queryString).Get("apikey");
+                authToken = System.Web.HttpUtility.ParseQueryString( queryString ).Get( "apikey" );
             }
 
-            if (! String.IsNullOrWhiteSpace( authToken ) )
+            if ( !string.IsNullOrWhiteSpace( authToken ) )
             {
                 var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
                 var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
                 if ( userLogin != null )
                 {
                     var identity = new GenericIdentity( userLogin.UserName );
-                    principal = new GenericPrincipal(identity, null);
+                    principal = new GenericPrincipal( identity, null );
                     actionContext.Request.SetUserPrincipal( principal );
                     return;
                 }
             }
+
+            // If still not successful, check for a JSON Web Token
+            if ( TryRetrieveHeader( actionContext, HeaderTokens.JWT, out var jwtString ) )
+            {
+                Person person = null;
+
+                // We need to wait for the JwtHelper.GetPerson method rather than using the await keyword. The await keyword
+                // forces this entire method to be async causing the Secured attribute to process before everything
+                // is finished here
+                Task.Run( async () =>
+                {
+                    person = await JwtHelper.GetPerson( jwtString );
+                } ).Wait();
+
+                if ( person != null )
+                {
+                    actionContext.Request.Properties.Add( "Person", person );
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get a header value from the request headers
+        /// </summary>
+        /// <param name="actionContext"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private bool TryRetrieveHeader( HttpActionContext actionContext, string key, out string value )
+        {
+            value = null;
+            var hasValue = actionContext.Request.Headers.TryGetValues( key, out var values );
+            hasValue = hasValue && values.Any();
+
+            if ( hasValue )
+            {
+                value = values.First();
+            }
+
+            return hasValue;
         }
     }
 }
