@@ -125,6 +125,18 @@ namespace org.newpointe.eSpace.Jobs
 
             }
 
+            var eSpaceEventIds = eSpaceEvents.Select( e => e.EventId ).ToArray();
+
+            var rockContext = new RockContext();
+            var eventItemService = new EventItemService( rockContext );
+            var desyncedEvents = eventItemService.Queryable().Where( e => e.ForeignKey == SyncHelper.ForeignKey_eSpaceEventId && !eSpaceEventIds.Contains( e.ForeignId ) );
+
+            if(desyncedEvents.Any())
+            {
+                eventItemService.DeleteRange( desyncedEvents );
+                rockContext.SaveChanges();
+            }
+
             // Update the job status
             context.UpdateLastStatusMessage( $@"Synced {eventSyncedCount} events with {eventErrorCount} errors." );
 

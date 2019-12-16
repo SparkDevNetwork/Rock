@@ -119,5 +119,24 @@ namespace org.newpointe.eSpace.Utility
             return calendarItem;
         }
 
+        /// <summary>
+        /// Adds the event to a Calendar.
+        /// </summary>
+        /// <param name="eventItem">The event</param>
+        /// <param name="calendar">The calendar</param>
+        /// <param name="created">If a new calendar item was created</param>
+        /// <returns>The calendar item for the event</returns>
+        public static void RemoveFromCalendar( this EventItem eventItem, EventCalendarCache calendar, out bool removed )
+        {
+            removed = false;
+            if ( calendar == null ) return;
+            var calendarItem = eventItem.EventCalendarItems.FirstOrDefault( ci => ci.EventCalendarId == calendar.Id );
+            if ( calendarItem != null )
+            {
+                removed = true;
+                eventItem.EventCalendarItems.Remove( calendarItem );
+            }
+        }
+
     }
 }

@@ -16,14 +16,14 @@ namespace org.newpointe.eSpace.Utility
 {
     static class SyncHelper
     {
-        const string ForeignKey_eSpaceEventId = "eSpaceEventId";
-        const string ForeignKey_eSpaceOccurrenceId = "eSpaceOccurrenceId";
+        public const string ForeignKey_eSpaceEventId = "eSpaceEventId";
+        public const string ForeignKey_eSpaceOccurrenceId = "eSpaceOccurrenceId";
 
-        const string ESpaceStatus_Draft = "Draft";
-        const string ESpaceStatus_Pending = "Pending";
-        const string ESpaceStatus_PartialApproved = "PartialApproved";
-        const string ESpaceStatus_Approved = "Approved";
-        const string ESpaceStatus_Canceled = "Canceled";
+        public const string ESpaceStatus_Draft = "Draft";
+        public const string ESpaceStatus_Pending = "Pending";
+        public const string ESpaceStatus_PartialApproved = "PartialApproved";
+        public const string ESpaceStatus_Approved = "Approved";
+        public const string ESpaceStatus_Canceled = "Canceled";
 
         /// <summary>
         /// Returns all Campuses that match the given eSpace Locations.
@@ -134,17 +134,34 @@ namespace org.newpointe.eSpace.Utility
                 }
 
                 // Check public calendar
-                if ( publicCalendar != null && ( eSpaceEvent.IsPublic ?? false ) )
+                if ( publicCalendar != null )
                 {
-                    rockEvent.AddToCalendar( publicCalendar, out var addedToCalendar );
-                    changed = changed || addedToCalendar;
+                    if ( eSpaceEvent.IsPublic ?? false )
+                    {
+                        rockEvent.AddToCalendar( publicCalendar, out var addedToCalendar );
+                        changed = changed || addedToCalendar;
+                    }
+                    else
+                    {
+                        rockEvent.RemoveFromCalendar( publicCalendar, out var removedFromCalendar );
+                        changed = changed || removedFromCalendar;
+                    }
                 }
 
                 // Check private calendar
-                if ( privateCalendar != null && !( eSpaceEvent.IsPublic ?? false ) )
+                if ( privateCalendar != null )
                 {
-                    rockEvent.AddToCalendar( privateCalendar, out var addedToCalendar );
-                    changed = changed || addedToCalendar;
+                    if ( !( eSpaceEvent.IsPublic ?? false ) )
+                    {
+                        rockEvent.AddToCalendar( privateCalendar, out var addedToCalendar );
+                        changed = changed || addedToCalendar;
+                    }
+                    else
+                    {
+                        rockEvent.RemoveFromCalendar( privateCalendar, out var removedFromCalendar );
+                        changed = changed || removedFromCalendar;
+                    }
+
                 }
 
                 // Fetch the occurrences for the event
@@ -168,6 +185,7 @@ namespace org.newpointe.eSpace.Utility
 
                 }
 
+                var syncedRockOccurrences = new List<EventItemOccurrence>(); ;
                 var rockOccurrencesWithAttributeChanges = new List<EventItemOccurrence>();
 
                 // Update each occurrence
@@ -175,10 +193,20 @@ namespace org.newpointe.eSpace.Utility
                 {
                     var rockOccurrence = SyncOccurrence( eSpaceEvent, eSpaceOccurrence, rockEvent, campusLocation, contactPerson, occurrenceApprovedAttributeKey, out var occurrenceChanged, out var occurrenceAttributeChanged );
                     changed = changed || occurrenceChanged;
+                    syncedRockOccurrences.Add( rockOccurrence );
                     if ( occurrenceAttributeChanged )
                     {
                         rockOccurrencesWithAttributeChanges.Add( rockOccurrence );
                     }
+                }
+
+                // Remove any desynced occurrences
+                var removedOccurrences = rockEvent.EventItemOccurrences.Except( syncedRockOccurrences );
+                foreach ( var occurrence in removedOccurrences )
+                {
+                    rockEvent.EventItemOccurrences.Remove( occurrence );
+                    eventItemOccurrenceService.Delete( occurrence );
+                    changed = true;
                 }
 
                 // If anything was updated, save it
