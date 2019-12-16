@@ -108,6 +108,29 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// NOTE: Only use this in case where we don't know if this is a property name, attribute key, or EntityField.UniqueName (for example, it is specified in a Query parameter or entity command).
+        /// Returns all the possible EntityFields that have the specified PropertyName or AttributeKey
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="fieldNameOrAttributeKey">The field name or attribute key.</param>
+        /// <returns></returns>
+        public static List<EntityField> FindFromFieldName( Type entityType, string fieldNameOrAttributeKey )
+        {
+            var entityFields = EntityHelper.GetEntityFields( entityType, true, true )
+                .Where( a =>
+                    a.UniqueName == fieldNameOrAttributeKey
+                    ||
+                    ( a.FieldKind == FieldKind.Property && a.Name == fieldNameOrAttributeKey )
+                    ||
+                    ( a.FieldKind == FieldKind.Attribute
+                      && a.AttributeGuid.HasValue
+                      && AttributeCache.Get( a.AttributeGuid.Value )?.Key == fieldNameOrAttributeKey )
+                    );
+
+            return entityFields.ToList();
+        }
+
+        /// <summary>
         /// Gets the entity fields.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -157,7 +180,7 @@ namespace Rock.Reporting
             {
                 entityFields = new List<EntityField>();
             }
-            
+
             List<PropertyInfo> entityProperties = entityType.GetProperties().ToList();
 
             // filter the properties to narrow down the ones that we want to include in EntityFields
@@ -300,7 +323,7 @@ namespace Rock.Reporting
             {
                 int entityTypeId = entityTypeCache.Id;
                 List<AttributeCache> cacheAttributeList;
-                if ( entity != null  )
+                if ( entity != null )
                 {
                     // if a specific entity is set, we only need to get the Attributes that the Entity has
                     if ( entity is IHasAttributes )

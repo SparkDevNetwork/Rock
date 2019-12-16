@@ -235,6 +235,23 @@
                     <h3>Challenges</h3>
                     <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
 
+                    <asp:Panel id="pnlAdditionalInformation" runat="server" Visible="false">
+                        <h3>Under Pressure</h3>
+                        <asp:Literal ID="lUnderPressure" runat="server"></asp:Literal>
+
+                        <h3>Motivation</h3>
+                        <asp:Literal ID="lMotivation" runat="server"></asp:Literal>
+
+                        <h3>Team Contribution</h3>
+                        <asp:Literal ID="lTeamContribution" runat="server"></asp:Literal>
+
+                        <h3>Leadership Style</h3>
+                        <asp:Literal ID="lLeadershipStyle" runat="server"></asp:Literal>
+
+                        <h3>Follower Style</h3>
+                        <asp:Literal ID="lFollowerStyle" runat="server"></asp:Literal>
+                    </asp:Panel>
+
                     <div class="actions margin-t-lg margin-b-lg">
                         <asp:Button ID="btnRetakeTest" runat="server" Visible="false" Text="Retake Test" CssClass="btn btn-default" OnClick="btnRetakeTest_Click" />
                     </div>
