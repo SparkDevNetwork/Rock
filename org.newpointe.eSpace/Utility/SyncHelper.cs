@@ -201,7 +201,7 @@ namespace org.newpointe.eSpace.Utility
                 }
 
                 // Remove any desynced occurrences
-                var removedOccurrences = rockEvent.EventItemOccurrences.Except( syncedRockOccurrences );
+                var removedOccurrences = rockEvent.EventItemOccurrences.Except( syncedRockOccurrences ).ToList();
                 foreach ( var occurrence in removedOccurrences )
                 {
                     rockEvent.EventItemOccurrences.Remove( occurrence );
