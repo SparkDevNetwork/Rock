@@ -15,19 +15,16 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
-using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Financial;
-using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -186,15 +183,6 @@ namespace Rock.Model
         [DataMember]
         public virtual FinancialPaymentDetail FinancialPaymentDetail { get; set; }
 
-        /// <summary>
-        /// Gets or sets the history items.
-        /// </summary>
-        /// <value>
-        /// The history items.
-        /// </value>
-        [NotMapped]
-        private List<History> HistoryItems { get; set; }
-
         #endregion
 
         #region Public Methods
@@ -254,71 +242,54 @@ namespace Rock.Model
             return reference;
         }
 
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext"></param>
-        /// <param name="entry"></param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
-        {
-            BuildHistoryItems( dbContext, entry );
-            base.PreSaveChanges( dbContext, entry );
-        }
+        #endregion Public Methods
+
+        #region History
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Rock.Data.DbContext dbContext )
-        {
-            if ( HistoryItems != null && HistoryItems.Any() )
-            {
-                new SaveHistoryTransaction( HistoryItems ).Enqueue();
-            }
-        }
-
-        /// <summary>
-        /// Evaluates the history.
+        /// This method is called in the
+        /// <see cref="M:Rock.Data.Model`1.PreSaveChanges(Rock.Data.DbContext,System.Data.Entity.Infrastructure.DbEntityEntry,System.Data.Entity.EntityState)" />
+        /// method. Use it to populate <see cref="P:Rock.Data.Model`1.HistoryItems" /> if needed.
+        /// These history items are queued to be written into the database post save (so that they
+        /// are only written if the save actually occurs).
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
-        private void BuildHistoryItems( Data.DbContext dbContext, DbEntityEntry entry )
+        /// <param name="state">The state.</param>
+        protected override void BuildHistoryItems( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            var rockContext = ( RockContext ) dbContext;
+            // Sometimes, especially if the model is being deleted, some properties might not be
+            // populated, but we can query to try to get their original value. We need to use a new
+            // rock context to get the actual value from the DB
+            var rockContext = new RockContext();
+            var service = new FinancialPersonSavedAccountService( rockContext );
+            var originalModel = service.Queryable( "PersonAlias, FinancialPaymentDetail" )
+                .FirstOrDefault( fpsa => fpsa.Id == Id );
 
-            if ( !PersonAliasId.HasValue )
-            {
-                // Sometimes, especially if the model is being deleted, the person alias id might not be
-                // populated, but we can query to try to get it. We need to use a new rock context to get
-                // the actual value from the DB
-                var service = new FinancialPersonSavedAccountService( new RockContext() );
-                PersonAliasId = service.Get( Id ).PersonAliasId;
-
-                if ( !PersonAliasId.HasValue )
-                {
-                    // We can't log history if we don't know who the saved account belongs to
-                    return;
-                }
-            }
-            
-            var personAlias = PersonAlias;
-
-            if ( personAlias == null )
-            {
-                var personAliasService = new PersonAliasService( rockContext );
-                personAlias = personAliasService.Get( PersonAliasId.Value );
-            }
-
-            var personId = personAlias?.PersonId;
+            // Use the original value for the person alias or the new value if that is not set
+            var personId = ( originalModel?.PersonAlias ?? PersonAlias )?.PersonId;
 
             if ( !personId.HasValue )
             {
-                throw new InvalidDataException( $"No person ID was found for person alias {PersonAliasId}" );
+                // If this model is new, it won't have any virtual properties hydrated or an original
+                // record in the database
+                if ( PersonAliasId.HasValue )
+                {
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var personAlias = personAliasService.Get( PersonAliasId.Value );
+                    personId = personAlias?.PersonId;
+                }
+
+                // We can't log history if we don't know who the saved account belongs to
+                if ( !personId.HasValue )
+                {
+                    return;
+                }
             }
 
             History.HistoryVerb verb;
 
-            switch ( entry.State )
+            switch ( state )
             {
                 case EntityState.Added:
                     verb = History.HistoryVerb.Add;
@@ -334,50 +305,36 @@ namespace Rock.Model
             var historyChangeList = new History.HistoryChangeList();
             historyChangeList.AddChange( verb, History.HistoryChangeType.Record, "Financial Person Saved Account" );
 
-            var changes = HistoryService.GetChanges(
+            HistoryItems = HistoryService.GetChanges(
                 typeof( Person ),
                 Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(),
                 personId.Value,
                 historyChangeList,
-                GetNameForHistory(),
+                GetNameForHistory( originalModel?.FinancialPaymentDetail ?? FinancialPaymentDetail ),
                 typeof( FinancialPersonSavedAccount ),
                 Id,
                 dbContext.GetCurrentPersonAlias()?.Id,
                 dbContext.SourceOfChange );
-
-            HistoryItems = new List<History>();
-            HistoryItems.AddRange( changes );
         }
 
         /// <summary>
         /// Get the name of the saved account
         /// </summary>
-        /// <param name="savedAccount"></param>
+        /// <param name="financialPaymentDetail">The financial payment detail.</param>
         /// <returns></returns>
-        private string GetNameForHistory()
+        private string GetNameForHistory( FinancialPaymentDetail financialPaymentDetail )
         {
-            const string unnamed = "<Unnamed>";
-
-            var name = Name.IsNullOrWhiteSpace() ? unnamed : Name.Trim();
-            var financialPaymentDetail = FinancialPaymentDetail;
-
-            if ( financialPaymentDetail == null )
-            {
-                // Try to query this using a different context in case the financial payment detail has been deleted in this context
-                var rockContext = new RockContext();
-                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
-                financialPaymentDetail = financialPersonSavedAccountService.Get( Id )?.FinancialPaymentDetail;
-            }
+            var fpsaName = Name.IsNullOrWhiteSpace() ? "<Unnamed>" : Name.Trim();
 
             if ( financialPaymentDetail != null && !financialPaymentDetail.AccountNumberMasked.IsNullOrWhiteSpace() )
             {
-                name = string.Format( "{0} ({1})", name, financialPaymentDetail.AccountNumberMasked );
+                return string.Format( "{0} ({1})", fpsaName, financialPaymentDetail.AccountNumberMasked.Trim() );
             }
 
-            return name;
+            return fpsaName;
         }
 
-        #endregion
+        #endregion History
 
     }
 
