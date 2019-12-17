@@ -58,7 +58,7 @@ WHERE o.type = 'V'
 
             var metricsWithAnalyticsEnabled = this.Queryable().Where( a => a.EnableAnalytics ).Include( a => a.MetricPartitions ).AsNoTracking().ToList();
 
-            var metricViewNames = metricsWithAnalyticsEnabled.Select( a => $"{analyticMetricViewsPrefix}{a.Title.RemoveSpecialCharacters()}" ).ToList();
+            var metricViewNames = metricsWithAnalyticsEnabled.Select( a => $"{analyticMetricViewsPrefix}{a.Title.RemoveSpecialCharacters().RemoveSpaces() }" ).ToList();
             var orphanedDatabaseViews = databaseAnalyticMetricViews.Where( a => !metricViewNames.Contains( a.ViewName ) ).ToList();
 
             // DROP any Metric Analytic Views that are orphaned.  In other words, there are views named 'AnalyticsFactMetric***' that don't have a metric. 
@@ -71,14 +71,14 @@ WHERE o.type = 'V'
             // Make sure that each Metric with EnableAnalytics=True has a SQL View and that the View Definition is correct
             foreach ( var metric in metricsWithAnalyticsEnabled )
             {
-                string metricViewName = $"{analyticMetricViewsPrefix}{metric.Title.RemoveSpecialCharacters()}";
+                string metricViewName = $"{analyticMetricViewsPrefix}{metric.Title.RemoveSpecialCharacters().RemoveSpaces() }";
                 var metricEntityPartitions = metric.MetricPartitions.Where(a => a.EntityTypeId.HasValue).OrderBy( a => a.Order ).ThenBy( a => a.Label ).Select( a => new
                 {
                     a.Label,
                     a.EntityTypeId
                 } );
 
-                var viewPartitionSELECTClauses = metricEntityPartitions.Select( a => $"      ,pvt.[{a.EntityTypeId}] as [{a.Label}Id]" ).ToList().AsDelimited( "\n" );
+                var viewPartitionSELECTClauses = metricEntityPartitions.Select( a => $"      ,pvt.[{a.EntityTypeId}] as [{a.Label.RemoveSpecialCharacters().RemoveSpaces()}Id]" ).ToList().AsDelimited( "\n" );
                 List<string> partitionEntityLookupSELECTs = new List<string>();
                 List<string> partitionEntityLookupJOINs = new List<string>();
                 foreach ( var metricPartition in metricEntityPartitions )
@@ -91,14 +91,14 @@ WHERE o.type = 'V'
                         {
                             if ( metricPartitionEntityType.Id == EntityTypeCache.GetId<DefinedValue>() )
                             {
-                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Value [{metricPartition.Label.RemoveSpecialCharacters()}Name]" );
+                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Value [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
                             }
                             else if ( metricPartitionEntityType.GetEntityType().GetProperty( "Name" ) != null )
                             {
-                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Name [{metricPartition.Label.RemoveSpecialCharacters()}Name]" );
+                                partitionEntityLookupSELECTs.Add( $"j{metricPartition.EntityTypeId}.Name [{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Name]" );
                             }
 
-                            partitionEntityLookupJOINs.Add( $"LEFT JOIN [{tableAttribute.Name}] j{metricPartition.EntityTypeId} ON p.{metricPartition.Label.RemoveSpecialCharacters()}Id = j{metricPartition.EntityTypeId}.Id" );
+                            partitionEntityLookupJOINs.Add( $"LEFT JOIN [{tableAttribute.Name}] j{metricPartition.EntityTypeId} ON p.{metricPartition.Label.RemoveSpecialCharacters().RemoveSpaces()}Id = j{metricPartition.EntityTypeId}.Id" );
                         }
                     }
                 }
