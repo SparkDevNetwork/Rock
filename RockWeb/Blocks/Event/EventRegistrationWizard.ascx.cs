@@ -518,12 +518,13 @@ namespace RockWeb.Blocks.Event
 
         public class CommitResult
         {
-            public string RegistrationInstanceId, GroupId, EventItemId, EventOccurrenceId, RegistrationTitle;
+            public string RegistrationInstanceId, GroupId, EventItemId, FirstEventCalendarId, EventOccurrenceId, RegistrationTitle;
             public CommitResult()
             {
                 RegistrationInstanceId = "";
                 GroupId = "";
                 EventItemId = "";
+                FirstEventCalendarId = "";
                 EventOccurrenceId = "";
                 RegistrationTitle = "";
             }
@@ -706,11 +707,15 @@ namespace RockWeb.Blocks.Event
                     eventItemService.Add( eventItem );
                     rockContext.SaveChanges();
 
-                    foreach ( var eventCalendarItem in eventItem.EventCalendarItems )
+                    foreach ( var eventCalendarItem in eventItem.EventCalendarItems.OrderBy( i => i.EventCalendarId ) )
                     {
                         eventCalendarItem.LoadAttributes();
                         Helper.GetEditValues( phAttributes, eventCalendarItem );
                         eventCalendarItem.SaveAttributeValues();
+                        if ( string.IsNullOrWhiteSpace( result.FirstEventCalendarId ) )
+                        {
+                            result.FirstEventCalendarId = eventCalendarItem.EventCalendarId.ToString();
+                        }
                     }
                     result.EventItemId = eventItem.Id.ToString();
                 }
@@ -803,6 +808,7 @@ namespace RockWeb.Blocks.Event
             {
                 var qryEventDetail = new Dictionary<string, string>();
                 qryEventDetail.Add( "EventItemId", result.EventItemId );
+                qryEventDetail.Add( "EventCalendarId", result.FirstEventCalendarId  );
                 hlEventDetail.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_DETAIL, qryEventDetail );
             }
 
@@ -936,6 +942,8 @@ namespace RockWeb.Blocks.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            this.BlockUpdated += Block_BlockUpdated;
 
             // Tell the browsers to not cache. This will help prevent browser using stale wizard stuff after navigating away from this page
             Page.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
@@ -1537,6 +1545,17 @@ namespace RockWeb.Blocks.Event
         #endregion Wizard Navigation Control
 
         #region Control Event Handlers
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // reload page if block settings where changed
+            this.NavigateToCurrentPageReference();
+        }
 
         protected void ppContact_SelectPerson( object sender, EventArgs e )
         {

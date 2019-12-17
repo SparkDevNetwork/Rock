@@ -679,6 +679,7 @@
     <Compile Include="Plugin\HotFixes\089_MigrationRollupsForV9_3.cs" />
     <Compile Include="Plugin\HotFixes\088_FixAttributeQualifierMotivatorDefinedType.cs" />
     <Compile Include="Plugin\HotFixes\087_AddNonCashAssetTypes.cs" />
+    <Compile Include="Plugin\HotFixes\098_FixContributionStatementLava.cs" />
     <Compile Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange.cs" />
     <Compile Include="Plugin\HotFixes\096_MigrationRollupsForV9_5.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
