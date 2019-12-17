@@ -101,6 +101,20 @@ namespace Rock.Rest.Filters
                         {
                             person = userLogin.Person;
                             actionContext.Request.Properties.Add( "Person", person );
+
+                            /* 12/12/2019 BJW
+                             *
+                             * Setting this current person item was only done in put, post, and patch in the ApiController
+                             * class. Set it here so that it is always set for all methods, including delete. This enhances
+                             * history logging done in the pre and post save model hooks (when the pre-save event is called
+                             * we can access DbContext.GetCurrentPersonAlias and log who deleted the record).
+                             *
+                             * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
+                             */
+                            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+                            {
+                                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", person );
+                            }
                         }
                     }
                 }
