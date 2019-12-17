@@ -29,10 +29,10 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             //Fix TYPO in ContributionStatementLava block attribute
-            Sql( @"
-                UPDATE [Attribute]
-                SET [Description] = 'A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be used.'
-                WHERE [Guid] = 'EA87DB7F-F053-40A9-B8FB-064D691ACA9D'" );
+            //Sql( @"
+            //    UPDATE [Attribute]
+            //    SET [Description] = 'A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be used.'
+            //    WHERE [Guid] = 'EA87DB7F-F053-40A9-B8FB-064D691ACA9D'" );
         }
 
         /// <summary>
