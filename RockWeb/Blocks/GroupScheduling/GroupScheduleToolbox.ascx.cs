@@ -934,8 +934,15 @@ $('#{0}').tooltip();
             {
                 var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
                 var personScheduleExclusion = personScheduleExclusionService.Get( e.RowKeyId );
+
                 if ( personScheduleExclusion != null )
                 {
+                    var scheduleExclusionChildren = personScheduleExclusionService.Queryable().Where( x => x.ParentPersonScheduleExclusionId == personScheduleExclusion.Id );
+                    foreach ( var scheduleExclusionChild in scheduleExclusionChildren )
+                    {
+                        scheduleExclusionChild.ParentPersonScheduleExclusionId = null;
+                    }
+
                     personScheduleExclusionService.Delete( personScheduleExclusion );
                     rockContext.SaveChanges();
                     BindBlackoutDates();
