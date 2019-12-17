@@ -1,0 +1,34 @@
+.badge-partner {
+    color: #008CD0;
+}
+
+.in-columns .checkbox-inline:first-child, .in-columns .radio-inline:first-child {
+    padding-left: 30px;
+}
+
+// Temporary Fix for Safari 13 Select Rendering Bug
+html {
+  text-rendering: auto !important;
+}
+
+select {
+  text-rendering: auto !important;
+  -webkit-font-smoothing: none !important;
+}
+// End Temporary Fix
+
+// Make email approval iframe larger so its easier to read through email
+.communication-detail iframe.email-body {
+  height: 950px;
+}
+
+// Prevent descenders from being cut off - TL
+.groupmembers .person-info h4 {
+  line-height: 1.4;
+}
+
+// Make code editors in modals taller - TL
+.modal-content .code-editor-container {
+  min-height: 600px !important;
+}
+
