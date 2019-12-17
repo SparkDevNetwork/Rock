@@ -336,6 +336,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the duration in minutes.
+        /// </summary>
+        /// <value>
+        /// The duration in minutes.
+        /// </value>
+        [LavaInclude]
+        public virtual int DurationInMinutes
+        {
+            get
+            {
+                DDay.iCal.Event calendarEvent = this.GetCalendarEvent();
+                if ( calendarEvent != null && calendarEvent.DTStart != null && calendarEvent.DTEnd != null )
+                {
+                    return ( int ) calendarEvent.DTEnd.Subtract( calendarEvent.DTStart ).TotalMinutes;
+                }
+
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
