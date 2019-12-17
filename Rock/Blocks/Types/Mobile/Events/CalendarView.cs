@@ -228,7 +228,9 @@ namespace Rock.Blocks.Types.Mobile.Events
                     Name = a.Value,
                     Color = a.GetAttributeValue( "HighlightColor")
                 } ),
-                SummaryContent = EventSummary
+                SummaryContent = EventSummary,
+                DetailPage,
+                ShowFilter
             };
         }
 
