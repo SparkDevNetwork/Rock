@@ -90,6 +90,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.Description = source.Description;
             target.EnableAttendance = source.EnableAttendance;
+            target.FirstDayOfWeek = source.FirstDayOfWeek;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
