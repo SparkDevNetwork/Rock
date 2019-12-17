@@ -697,7 +697,9 @@ namespace RockWeb.Blocks.Groups
                     .ToList();
 
                 // Add new scheduling configurations.
-                var newGroupLocationScheduleConfigs = groupLocationState.GroupLocationScheduleConfigs.Where( s => s.GroupLocationId == 0 ).ToList();
+                var newGroupLocationScheduleConfigs = groupLocationState.GroupLocationScheduleConfigs
+                    .Where( s => !existingGroupLocationConfigs.Any( a => a.ScheduleId == s.ScheduleId ) )
+                    .ToList();
 
                 foreach ( var addedGroupLocationScheduleConfigs in newGroupLocationScheduleConfigs )
                 {
