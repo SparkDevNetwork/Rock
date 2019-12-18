@@ -73,7 +73,7 @@
                 $datepicker.css('color', '');
 
                 // var checkDate = Date.parse($datepicker.val());
-                if ($datepicker.val() === null || $datepicker.val() == "") {
+                if ($datepicker.val() == null || $datepicker.val() == "") {
                     // blank, don't color, just return
                     return;
                 }
