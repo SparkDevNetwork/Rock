@@ -50,7 +50,7 @@
                         var returnType = $dataEl.attr("return-type");
                         var returnId = $dataEl.attr("return-id");
 
-                        if (returnType == null || returnId == null) {
+                        if (returnType === null || returnId === null) {
                             var otherParams = '';
 
                             // take any data attributes and add them as query parameters to the url

@@ -20,6 +20,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -58,9 +59,7 @@ namespace Rock.Web.UI.Controls
                 picker.Items.Add( new ListItem() );
             }
 
-            var rockContext = new RockContext();
-            var assessmentTypeService = new AssessmentTypeService( rockContext );
-            var assessmentTypes = assessmentTypeService.Queryable().AsNoTracking()
+            var assessmentTypes = AssessmentTypeCache.All()
                 .Where( at => at.IsActive )
                 .OrderBy( at => at.Title )
                 .ThenBy( at => at.Id )

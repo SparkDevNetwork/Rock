@@ -612,6 +612,8 @@ namespace Rock.Mobile
         /// <param name="text">The text content of the field.</param>
         public static string GetReadOnlyFieldXaml( string label, string text )
         {
+            text = text ?? string.Empty;
+
             return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />", false );
         }
 
@@ -623,10 +625,41 @@ namespace Rock.Mobile
         /// <param name="value">The current value.</param>
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
         /// <param name="multiline">if set to <c>true</c> [multiline].</param>
+        /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
-        public static string GetTextEditFieldXaml( string name, string label, string value, bool isRequired, bool multiline = false )
+        public static string GetTextEditFieldXaml( string name, string label, string value, bool isRequired, bool multiline = false, int maxLength = 0 )
         {
-            return $"<Rock:TextBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" />";
+            string maxLengthStr = string.Empty;
+
+            value = value ?? string.Empty;
+
+            if ( maxLength > 0 )
+            {
+                maxLengthStr = $"MaxLength=\"{maxLength}\" ";
+            }
+
+            if ( multiline )
+            {
+                return $"<Rock:TextEditor x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" MinimumHeightRequest=\"80\" AutoSize=\"TextChanges\" {maxLengthStr}/>";
+            }
+
+            return $"<Rock:TextBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" {maxLengthStr}/>";
+        }
+
+        /// <summary>
+        /// Gets the XAML for rendering an e-mail text box.
+        /// </summary>
+        /// <param name="name">The name of the control.</param>
+        /// <param name="label">The label.</param>
+        /// <param name="value">The current value.</param>
+        /// <param name="isRequired">if set to <c>true</c> [is required].</param>
+        /// <param name="multiline">if set to <c>true</c> [multiline].</param>
+        /// <returns></returns>
+        public static string GetEmailEditFieldXaml( string name, string label, string value, bool isRequired, bool multiline = false )
+        {
+            value = value ?? string.Empty;
+
+            return $"<Rock:TextBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" Text=\"{value.EncodeXml( true )}\" Keyboard=\"Email\" />";
         }
 
         /// <summary>
@@ -642,6 +675,8 @@ namespace Rock.Mobile
         {
             var sb = new StringBuilder();
 
+            value = value ?? string.Empty;
+
             sb.AppendLine( $"<Rock:Picker x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"{isRequired}\" SelectedValue=\"{value.EncodeXml( true )}\">" );
 
             foreach ( var kvp in items )
@@ -652,6 +687,18 @@ namespace Rock.Mobile
             sb.AppendLine( "</Rock:Picker>" );
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets the XAML for rendering a check box.
+        /// </summary>
+        /// <param name="name">The name of the control.</param>
+        /// <param name="label">The label.</param>
+        /// <param name="isChecked">The current value.</param>
+        /// <returns></returns>
+        public static string GetCheckBoxFieldXaml( string name, string label, bool isChecked )
+        {
+            return $"<Rock:CheckBox x:Name=\"{name}\" Label=\"{label.EncodeXml( true )}\" IsRequired=\"true\" IsChecked=\"{isChecked}\" />";
         }
 
         #endregion

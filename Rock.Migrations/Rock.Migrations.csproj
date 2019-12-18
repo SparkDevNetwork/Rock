@@ -93,6 +93,30 @@
     <Compile Include="Migrations\201912042320379_Rollup_1204.Designer.cs">
       <DependentUpon>201912042320379_Rollup_1204.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201912062159235_PersonGivingId.cs" />
+    <Compile Include="Migrations\201912062159235_PersonGivingId.Designer.cs">
+      <DependentUpon>201912062159235_PersonGivingId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912092001240_FamilyAnalyticsGivingId.cs" />
+    <Compile Include="Migrations\201912092001240_FamilyAnalyticsGivingId.Designer.cs">
+      <DependentUpon>201912092001240_FamilyAnalyticsGivingId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912101519091_StreakTypeStartOfWeek.cs" />
+    <Compile Include="Migrations\201912101519091_StreakTypeStartOfWeek.Designer.cs">
+      <DependentUpon>201912101519091_StreakTypeStartOfWeek.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912101633552_PendingPeopleDataViewRecordTypeFilter.cs" />
+    <Compile Include="Migrations\201912101633552_PendingPeopleDataViewRecordTypeFilter.Designer.cs">
+      <DependentUpon>201912101633552_PendingPeopleDataViewRecordTypeFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912122130404_CacheViewerBlock.cs" />
+    <Compile Include="Migrations\201912122130404_CacheViewerBlock.Designer.cs">
+      <DependentUpon>201912122130404_CacheViewerBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912171753289_Rollup_1217.cs" />
+    <Compile Include="Migrations\201912171753289_Rollup_1217.Designer.cs">
+      <DependentUpon>201912171753289_Rollup_1217.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -955,6 +979,24 @@
     <EmbeddedResource Include="Migrations\201912042320379_Rollup_1204.resx">
       <DependentUpon>201912042320379_Rollup_1204.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912062159235_PersonGivingId.resx">
+      <DependentUpon>201912062159235_PersonGivingId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912092001240_FamilyAnalyticsGivingId.resx">
+      <DependentUpon>201912092001240_FamilyAnalyticsGivingId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912101519091_StreakTypeStartOfWeek.resx">
+      <DependentUpon>201912101519091_StreakTypeStartOfWeek.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912101633552_PendingPeopleDataViewRecordTypeFilter.resx">
+      <DependentUpon>201912101633552_PendingPeopleDataViewRecordTypeFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912122130404_CacheViewerBlock.resx">
+      <DependentUpon>201912122130404_CacheViewerBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912171753289_Rollup_1217.resx">
+      <DependentUpon>201912171753289_Rollup_1217.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
     </EmbeddedResource>
@@ -1702,6 +1744,9 @@
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
     </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <None Include="Migrations\201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>201912092001240_FamilyAnalyticsGivingId.cs</DependentUpon>
+    </None>
     <None Include="Migrations\Version 9.0\Version 1.9.0\201809142151587_ContentComponents_AdUnit.Lava">
       <DependentUpon>201809142151587_ContentComponents.cs</DependentUpon>
     </None>

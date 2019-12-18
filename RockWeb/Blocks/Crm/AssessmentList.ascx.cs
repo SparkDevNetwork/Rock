@@ -216,7 +216,7 @@ namespace Rockweb.Blocks.Crm
                                 Status = a.Status,
                                 Requester = a.RequesterPersonAlias.Person.NickName + " " + a.RequesterPersonAlias.Person.LastName
                             } )
-                            .OrderBy( x => x.Status )
+                            .OrderByDescending( x => x.RequestedDate )
                             .ThenByDescending( x => x.CompletedDate )
                             .FirstOrDefault(),
                     

@@ -658,7 +658,7 @@ namespace RockWeb.Blocks.Connection
 
                     ddlTransferOpportunity.Items.Clear();
                     foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
-                        .Where( o => o.Id != connectionRequest.ConnectionOpportunityId ).OrderBy( o => o.Name ) )
+                        .OrderBy( o => o.Name ) )
                     {
                         ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     }
@@ -669,7 +669,7 @@ namespace RockWeb.Blocks.Connection
                     rbTransferNoConnector.Checked = false;
 
                     rbTransferCurrentConnector.Text = string.Format( "Current Connector: {0}", connectionRequest.ConnectorPersonAlias != null ? connectionRequest.ConnectorPersonAlias.ToString() : "No Connector" );
-
+                    ddlTransferOpportunity.SetValue( connectionRequest.ConnectionOpportunityId );
                     ddlTransferOpportunity_SelectedIndexChanged( null, null );
                 }
             }
@@ -721,7 +721,7 @@ namespace RockWeb.Blocks.Connection
 
             int? defaultConnectorPersonId = null;
             var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
-            if ( connectionRequest != null )
+            if ( connectionRequest != null && connectionOpportunity != null )
             {
                 defaultConnectorPersonId = connectionOpportunity.GetDefaultConnectorPersonId( connectionRequest.CampusId );
                 if ( defaultConnectorPersonId.HasValue )
@@ -1554,6 +1554,11 @@ namespace RockWeb.Blocks.Connection
             if ( connectionRequest.ConnectionState == ConnectionState.Inactive || connectionRequest.ConnectionState == ConnectionState.Connected )
             {
                 lbConnect.Visible = false;
+                lbTransfer.Visible = false;
+            }
+
+            if ( connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.Count <= 1 )
+            {
                 lbTransfer.Visible = false;
             }
 

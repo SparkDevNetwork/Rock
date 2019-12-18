@@ -374,7 +374,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <value>
         /// The class name of the mobile block to use during rendering on the device
         /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Group.GroupEdit";
+        public override string MobileBlockType => "Rock.Mobile.Blocks.Groups.GroupEdit";
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.

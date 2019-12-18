@@ -604,6 +604,18 @@ namespace Rock.Web.Cache
                 return false;
             }
         }
+
+        /// <summary>
+        /// Gets all model cache types.
+        /// </summary>
+        /// <returns></returns>
+        public static List<Type> GetAllModelCacheTypes()
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where( t =>
+                t.BaseType != null &&
+                t.BaseType.IsGenericType &&
+                t.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) ).ToList();
+        }
         
         #endregion
     }
