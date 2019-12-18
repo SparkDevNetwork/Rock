@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Contribution Statement Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a Lava based contribution statement." )]
-    [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
+    [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be used.", false, order: 0 )]
     [BooleanField( "Display Pledges", "Determines if pledges should be shown.", true, order: 1 )]
     [CodeEditorField( "Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
 {{ pageTitle | SetPageTitle }}

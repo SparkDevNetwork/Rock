@@ -175,6 +175,16 @@ namespace RockWeb.Blocks.Streaks
         #region Events
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFrequencyOccurrence control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlFrequencyOccurrence_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncFrequencyControls();
+        }
+
+        /// <summary>
         /// Button to go to the map editor page
         /// </summary>
         /// <param name="sender"></param>
@@ -415,16 +425,25 @@ namespace RockWeb.Blocks.Streaks
                 streakType.OccurrenceFrequency = frequencySelected;
 
                 var selectedDate = rdpStartDate.SelectedDate ?? RockDateTime.Today;
-                streakType.StartDate = isDaily ? selectedDate : selectedDate.SundayDate();                
+                streakType.StartDate = isDaily ? selectedDate : selectedDate.SundayDate();
             }
 
             streakType.Name = tbName.Text;
             streakType.IsActive = cbActive.Checked;
             streakType.Description = tbDescription.Text;
             streakType.EnableAttendance = cbEnableAttendance.Checked;
-            streakType.RequiresEnrollment = cbRequireEnrollment.Checked;            
-            streakType.StructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );            
+            streakType.RequiresEnrollment = cbRequireEnrollment.Checked;
+            streakType.StructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );
             streakType.StructureEntityId = GetStructureEntityIdSelected();
+
+            if ( streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                streakType.FirstDayOfWeek = null;
+            }
+            else
+            {
+                streakType.FirstDayOfWeek = dowPicker.SelectedDayOfWeek;
+            }
 
             if ( !streakType.IsValid )
             {
@@ -531,9 +550,11 @@ namespace RockWeb.Blocks.Streaks
             cbRequireEnrollment.Checked = streakType.RequiresEnrollment;
             rdpStartDate.SelectedDate = streakType.StartDate;
             ddlFrequencyOccurrence.SelectedValue = streakType.OccurrenceFrequency.ToString();
+            dowPicker.SelectedDayOfWeek = streakType.FirstDayOfWeek;
             ddlStructureType.SelectedValue = structureType.HasValue ? structureType.Value.ToString() : string.Empty;
 
             RenderAttendanceStructureControls();
+            SyncFrequencyControls();
         }
 
         /// <summary>
@@ -557,6 +578,8 @@ namespace RockWeb.Blocks.Streaks
 
             lReadOnlyTitle.Text = ActionTitle.Add( StreakType.FriendlyTypeName ).FormatAsHtmlTitle();
             hlInactive.Visible = false;
+
+            SyncFrequencyControls();
         }
 
         /// <summary>
@@ -689,6 +712,23 @@ namespace RockWeb.Blocks.Streaks
                     return dvpStructureGroupTypePurposePicker.SelectedDefinedValueId;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
+            }
+        }
+
+        /// <summary>
+        /// Synchronizes the frequency controls.
+        /// </summary>
+        private void SyncFrequencyControls()
+        {
+            var frequencySelected = GetEnumSelected<StreakOccurrenceFrequency>( ddlFrequencyOccurrence ) ?? StreakOccurrenceFrequency.Daily;
+
+            if ( frequencySelected == StreakOccurrenceFrequency.Daily )
+            {
+                dowPicker.Visible = false;
+            }
+            else
+            {
+                dowPicker.Visible = true;
             }
         }
 

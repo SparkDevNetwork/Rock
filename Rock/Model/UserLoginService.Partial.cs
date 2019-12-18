@@ -235,7 +235,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether a new UserLogin with the specified parameters would be valid 
+        /// Determines whether a new UserLogin with the specified parameters would be valid
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         /// <param name="password">The password.</param>
@@ -464,7 +464,7 @@ namespace Rock.Model
             {
                 string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.Url.AbsoluteUri );
 
-                // obfuscate the url specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
+                // obfuscate the URL specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
                 Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
                 cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
 

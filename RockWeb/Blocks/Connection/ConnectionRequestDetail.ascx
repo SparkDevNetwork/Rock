@@ -72,7 +72,7 @@
                     </div>
                     <asp:Literal ID="lBadgeBar" runat="server" />
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" DisplayAsTabs="true"/>
                         </div>
                     </div>
@@ -180,7 +180,7 @@
                     <div class="row">
                         <div class="col-md-6">
 
-                            <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="New Opportunity">
+                            <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="Opportunity">
                                 <div class="row">
                                     <div class="col-md-8">
                                         <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTransferOpportunity_SelectedIndexChanged" EnhanceForLongLists="true" />
