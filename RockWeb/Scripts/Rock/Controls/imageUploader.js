@@ -8,7 +8,7 @@
             options.isBinaryFile = options.isBinaryFile || 'T';
 
             // default setImageUrlOnUpload to true if not specified
-            if (options.setImageUrlOnUpload === null) {
+            if (options.setImageUrlOnUpload == null) {
                 options.setImageUrlOnUpload = true;
             }
 
