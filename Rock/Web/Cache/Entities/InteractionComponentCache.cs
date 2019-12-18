@@ -147,6 +147,10 @@ namespace Rock.Web.Cache
             {
                 int? interactionComponentId = null;
                 var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId, componentEntityId, componentName );
+
+                // If a new component was added above we need to save the change
+                rockContext.SaveChanges();
+
                 if ( interactionComponent != null )
                 {
                     interactionComponentId = Get( interactionComponent ).Id;
