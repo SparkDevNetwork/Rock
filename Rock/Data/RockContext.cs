@@ -1558,6 +1558,14 @@ namespace Rock.Data
         public DbSet<RegistrationTemplateFormField> RegistrationTemplateFormFields { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template placements.
+        /// </summary>
+        /// <value>
+        /// The registration template placements.
+        /// </value>
+        public DbSet<RegistrationTemplatePlacement> RegistrationTemplatePlacements { get; set; }
+
+        /// <summary>
         /// Gets or sets the related entities.
         /// </summary>
         /// <value>
