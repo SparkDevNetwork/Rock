@@ -91,7 +91,7 @@ namespace Rock.Model
             // but at least one of these has a value, then we should lookup or create a session
             if ( browserSessionId.HasValue || ipAddress.IsNotNullOrWhiteSpace() || deviceTypeId.HasValue )
             {
-                var interactionSessionId = GetInteractionSessionId( browserSessionId.Value, ipAddress, deviceTypeId );
+                var interactionSessionId = GetInteractionSessionId( browserSessionId ?? Guid.NewGuid(), ipAddress, deviceTypeId );
                 interaction.InteractionSessionId = interactionSessionId;
             }
 
