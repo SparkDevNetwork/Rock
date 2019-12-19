@@ -45,8 +45,7 @@ namespace Rock.Model
         /// <value>
         /// The person alias identifier.
         /// </value>
-        [Required]
-        [DataMember( IsRequired = true )]
+        [DataMember]
         public int? PersonAliasId { get; set; }
 
         /// <summary>
