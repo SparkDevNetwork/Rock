@@ -189,6 +189,15 @@ namespace Rock.Model
         [DataMember]
         public int? ItemTagCategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this content is structured.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this content is structured; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsStructuredContent { get; set; }
+
         #endregion
 
         #region Virtual Properties
