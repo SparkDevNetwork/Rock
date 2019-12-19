@@ -641,6 +641,15 @@ namespace RockWeb.Blocks.Groups
             groupMember.GroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
             groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+            // Check if the group member is valid. This includes checking for met group requirements.
+            cvGroupMember.IsValid = groupMember.IsValidGroupMember( rockContext );
+
+            if ( !cvGroupMember.IsValid )
+            {
+                cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
+
             groupMemberService.Add( groupMember );
             rockContext.SaveChanges();
 
