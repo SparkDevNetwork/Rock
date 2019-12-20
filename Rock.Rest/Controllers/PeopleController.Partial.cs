@@ -113,7 +113,13 @@ namespace Rock.Rest.Controllers
         public Person GetCurrentPerson()
         {
             var rockContext = new Rock.Data.RockContext();
-            return new PersonService( rockContext ).Get( GetPerson().Id );
+            var person = GetPerson();
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            return new PersonService( rockContext ).Get( person.Id );
         }
 
         /// <summary>
