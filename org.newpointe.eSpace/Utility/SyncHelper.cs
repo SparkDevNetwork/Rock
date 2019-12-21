@@ -133,6 +133,8 @@ namespace org.newpointe.eSpace.Utility
                     changed = changed || addedToCalendar;
                 }
 
+                var eventCalendarItemService = new EventCalendarItemService( rockContext );
+
                 // Check public calendar
                 if ( publicCalendar != null )
                 {
@@ -143,7 +145,7 @@ namespace org.newpointe.eSpace.Utility
                     }
                     else
                     {
-                        rockEvent.RemoveFromCalendar( publicCalendar, out var removedFromCalendar );
+                        rockEvent.RemoveFromCalendar( eventCalendarItemService, publicCalendar, out var removedFromCalendar );
                         changed = changed || removedFromCalendar;
                     }
                 }
@@ -158,7 +160,7 @@ namespace org.newpointe.eSpace.Utility
                     }
                     else
                     {
-                        rockEvent.RemoveFromCalendar( privateCalendar, out var removedFromCalendar );
+                        rockEvent.RemoveFromCalendar( eventCalendarItemService, privateCalendar, out var removedFromCalendar );
                         changed = changed || removedFromCalendar;
                     }
 
@@ -240,9 +242,11 @@ namespace org.newpointe.eSpace.Utility
             // Get or create the linked Rock occurrence
             var rockOccurrence = rockEvent.EventItemOccurrences.GetOrCreateByForeignId( ForeignKey_eSpaceOccurrenceId, eSpaceOccurrence.OccurrenceId.Value, out changed );
 
-            if ( rockOccurrence.CampusId != campus?.Id )
+            // Update the campus
+            var CampusId = ( eSpaceEvent.IsOffSite ?? false ) ? null : campus?.Id;
+            if ( rockOccurrence.CampusId != CampusId )
             {
-                rockOccurrence.CampusId = campus?.Id;
+                rockOccurrence.CampusId = CampusId;
                 changed = true;
             }
 

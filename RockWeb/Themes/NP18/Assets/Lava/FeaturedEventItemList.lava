@@ -17,7 +17,7 @@
                 {% assign ShownEventItemIds = ShownEventItemIds | Append:event.EventItemOccurrence.EventItemId | Append:',' %}
                 {% assign ShownEventItemCount = ShownEventItemCount | Plus:1 | AsInteger %}
 
-                <a class="card card-clickable {{event.Name | ToCssClass }}" href="/events?event={{ event.EventItemOccurrence.EventItem.Id }}&date={{ event.EventItemOccurrence.Schedule.NextStartDateTime | Date:'yyyy-MM-dd'}}#events_list">
+                <a class="card card-clickable {{event.Name | ToCssClass }}" href="/events?filter={{ event.EventItemOccurrence.EventItem.Name | EscapeDataString }}&date={{ event.EventItemOccurrence.Schedule.NextStartDateTime | Date:'yyyy-MM-dd'}}#events_list">
                     <img class="card-img" src="{{event.EventItem.Photo.Path}}"/>
                     <div class="card-body">
                           <h4>{{event.Name}}</h4>

@@ -126,7 +126,7 @@ namespace org.newpointe.eSpace.Utility
         /// <param name="calendar">The calendar</param>
         /// <param name="created">If a new calendar item was created</param>
         /// <returns>The calendar item for the event</returns>
-        public static void RemoveFromCalendar( this EventItem eventItem, EventCalendarCache calendar, out bool removed )
+        public static void RemoveFromCalendar( this EventItem eventItem, EventCalendarItemService eventCalendarItemService, EventCalendarCache calendar, out bool removed )
         {
             removed = false;
             if ( calendar == null ) return;
@@ -134,7 +134,7 @@ namespace org.newpointe.eSpace.Utility
             if ( calendarItem != null )
             {
                 removed = true;
-                eventItem.EventCalendarItems.Remove( calendarItem );
+                eventCalendarItemService.Delete( calendarItem );
             }
         }
 
