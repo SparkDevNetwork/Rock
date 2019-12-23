@@ -40,6 +40,7 @@ using Rock.Web.UI.Controls;
  * - UI3) Added Amount Given column
  * - UI4) Added Amount Remaining column
  * - UI5) Added Modified By Column
+ * - UI6) Added Ability to show grid filter when the person filter is hidden
  */
 namespace RockWeb.Plugins.com_bemaservices.Finance
 {
@@ -115,6 +116,17 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         Category = "BEMA Additional Features" )]
     // UMC Value = true
     /* BEMA.UI5.End */
+
+    /* BEMA.UI6.Start */
+    [BooleanField(
+        "Show Grid Filter when Person Filter is hidden?",
+        Key = AttributeKey.AlwaysShowGridFilter,
+        Description = "Should the grid filter be shown even when the person filter is hidden.",
+        DefaultValue = "False",
+        Category = "BEMA Additional Features" )]
+    // UMC Value = true
+    /* BEMA.UI6.End */
+
     [ContextAware]
     public partial class PledgeList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
@@ -128,6 +140,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             public const string ShowAmountGivenColumn = "ShowAmountGivenColumn";
             public const string ShowAmountRemainingColumn = "ShowAmountRemainingColumn";
             public const string ShowModifiedByColumn = "ShowModifiedByColumn";
+            public const string AlwaysShowGridFilter = "AlwaysShowGridFilter";
         }
 
         #endregion
@@ -249,7 +262,11 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     personField.Visible = false;
                 }
                 gfPledges.Visible = false;
-            }
+
+                /* BEMA.UI6.Start */
+                gfPledges.Visible = GetAttributeValue( AttributeKey.AlwaysShowGridFilter ).AsBoolean();
+                /* BEMA.UI6.End */
+            }        
 
             var forField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "For" );
             if ( forField != null )
