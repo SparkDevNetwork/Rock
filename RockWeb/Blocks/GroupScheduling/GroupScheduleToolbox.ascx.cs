@@ -485,7 +485,7 @@ $('#{0}').tooltip();
         /// </summary>
         private void BindUpcomingSchedulesGrid()
         {
-            var currentDateTime = RockDateTime.Now;
+            var currentDateTime = RockDateTime.Now.Date;
             var rockContext = new RockContext();
 
             var qryConfirmedScheduled = new AttendanceService( rockContext ).GetConfirmedScheduled()
