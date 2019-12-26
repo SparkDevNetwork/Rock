@@ -205,7 +205,7 @@ namespace Rock.Web.Cache
         public bool IsAnalyticHistory { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether this attribute is active.
+        /// Gets or sets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
