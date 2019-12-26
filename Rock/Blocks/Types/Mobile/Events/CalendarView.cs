@@ -129,19 +129,14 @@ namespace Rock.Blocks.Types.Mobile.Events
     <StackLayout Spacing=""0"">
         <Label StyleClass=""calendar-event-title"" Text=""{Binding Name}"" />
         {% if Item.EndDateTime == null %}
-            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }}"" />
+            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }}"" LineBreakMode=""NoWrap"" />
         {% else %}
-            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }} - {{ Item.EndDateTime | Date:'h:mm tt' }}"" />
+            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }} - {{ Item.EndDateTime | Date:'h:mm tt' }}"" LineBreakMode=""NoWrap"" />
         {% endif %}
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width=""*"" />
-                <ColumnDefinition Width=""Auto"" />
-            </Grid.ColumnDefinitions>
-
-            <Label Grid.Row=""0"" Grid.Column=""0"" StyleClass=""calendar-event-audience"" Text=""{{ Item.AudienceNames | Join:', ' }}"" />
-            <Label Grid.Row=""0"" Grid.Column=""1"" StyleClass=""calendar-event-campus"" Text=""{{ Item.Campus }}"" HorizontalTextAlignment=""End"" />
-        </Grid>
+        <StackLayout Orientation=""Horizontal"">
+            <Label HorizontalOptions=""FillAndExpand"" StyleClass=""calendar-event-audience"" Text=""{{ Item.Audiences | Select:'Name' | Join:', ' }}"" />
+            <Label StyleClass=""calendar-event-campus"" Text=""{{ Item.Campus }}"" HorizontalTextAlignment=""End"" LineBreakMode=""NoWrap"" />
+        </StackLayout>
     </StackLayout>
 </Frame>
 ";

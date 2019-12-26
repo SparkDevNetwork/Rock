@@ -117,6 +117,14 @@
     <Compile Include="Migrations\201912171753289_Rollup_1217.Designer.cs">
       <DependentUpon>201912171753289_Rollup_1217.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201912191346243_AddIsStructuredContent.cs" />
+    <Compile Include="Migrations\201912191346243_AddIsStructuredContent.Designer.cs">
+      <DependentUpon>201912191346243_AddIsStructuredContent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201912191549521_AddRegistrationTemplatePlacement.cs" />
+    <Compile Include="Migrations\201912191549521_AddRegistrationTemplatePlacement.Designer.cs">
+      <DependentUpon>201912191549521_AddRegistrationTemplatePlacement.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -996,6 +1004,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201912171753289_Rollup_1217.resx">
       <DependentUpon>201912171753289_Rollup_1217.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912191346243_AddIsStructuredContent.resx">
+      <DependentUpon>201912191346243_AddIsStructuredContent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201912191549521_AddRegistrationTemplatePlacement.resx">
+      <DependentUpon>201912191549521_AddRegistrationTemplatePlacement.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
