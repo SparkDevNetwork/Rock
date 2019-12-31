@@ -40,23 +40,27 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Merge" )]
     [Category( "CRM" )]
     [Description( "Merges two or more person records into one." )]
+
     [SecurityAction( SecurityActionKey.ViewAllAttributes, "Grants permission to view all person attribute values." )]
 
     #region Block Attributes
 
-    [BooleanField( "Reset Login Confirmation",
+    [BooleanField(
+        "Reset Login Confirmation",
         Description = RESET_LOGIN_CONFIRMATION_DESCRIPTION,
         DefaultBooleanValue = true,
         Order = 0,
         Key = AttributeKey.ResetLoginConfirmation )]
 
-    [LinkedPage( "Person Detail Page",
+    [LinkedPage(
+        "Person Detail Page",
         Description = "The page to navigate to after the merge is completed.",
         IsRequired = true,
         Order = 1,
         Key = AttributeKey.PersonDetailPage )]
 
     #endregion Block Attributes
+
     public partial class PersonMerge : Rock.Web.UI.RockBlock
     {
         #region Security Actions

@@ -34,9 +34,19 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows a list of all badges." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
     public partial class BadgeList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+        #endregion Attribute Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -92,7 +102,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBadge_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BadgeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BadgeId", 0 );
         }
 
         /// <summary>
@@ -102,7 +112,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBadge_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "BadgeId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "BadgeId", e.RowKeyId );
         }
 
         /// <summary>
