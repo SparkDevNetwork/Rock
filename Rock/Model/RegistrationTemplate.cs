@@ -447,6 +447,8 @@ namespace Rock.Model
         ///   <c>true</c> if [allow group placement]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No longer used. Replaced by Group Placement feature (RegistrationTemplatePlacement, etc)" )]
         public bool AllowGroupPlacement { get; set; }
 
         /// <summary>

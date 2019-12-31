@@ -94,19 +94,13 @@ namespace Rock.Model
         public bool AllowMultiplePlacements { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [is internal].
+        /// Gets or sets a value indicating whether is limited to administration purposes.
         /// </summary>
         /// <value>
         /// <c>true</c> if this registration template placement is internal; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsInternal
-        {
-            get { return _isInternal; }
-            set { _isInternal = value; }
-        }
-        private bool _isInternal = true;
-
+        public bool IsInternal { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the cost.
