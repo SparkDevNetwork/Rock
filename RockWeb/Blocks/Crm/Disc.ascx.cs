@@ -39,8 +39,10 @@ namespace Rockweb.Blocks.Crm
     [Description( "Allows you to take a DISC test and saves your DISC score." )]
 
     #region Block Attributes
-    [CodeEditorField( "Instructions",
-        Key = AttributeKeys.Instructions,
+
+    [CodeEditorField(
+        "Instructions",
+        Key = AttributeKey.Instructions,
         Description = "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
         EditorTheme = CodeEditorTheme.Rock,
@@ -49,28 +51,32 @@ namespace Rockweb.Blocks.Crm
         DefaultValue = InstructionsDefaultValue,
         Order = 0 )]
 
-    [TextField( "Set Page Title",
-        Key = AttributeKeys.SetPageTitle,
+    [TextField(
+        "Set Page Title",
+        Key = AttributeKey.SetPageTitle,
         Description = "The text to display as the heading.",
         IsRequired = false,
         DefaultValue = "DISC Assessment",
         Order = 1 )]
 
-    [TextField( "Set Page Icon",
-        Key = AttributeKeys.SetPageIcon,
+    [TextField(
+        "Set Page Icon",
+        Key = AttributeKey.SetPageIcon,
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
         DefaultValue = "fa fa-chart-bar",
         Order = 2 )]
 
-    [IntegerField( "Number of Questions",
-        Key = AttributeKeys.NumberofQuestions,
+    [IntegerField(
+        "Number of Questions",
+        Key = AttributeKey.NumberOfQuestions,
         Description = "The number of questions to show per page while taking the test",
         IsRequired = true,
         DefaultIntegerValue = 5,
         Order = 3 )]
 
     #endregion Block Attributes
+
     public partial class Disc : Rock.Web.UI.RockBlock
     {
         #region Attribute Default Values
@@ -93,13 +99,13 @@ namespace Rockweb.Blocks.Crm
         #endregion Attribute Default Values
 
         #region Attribute Keys
-        private static class AttributeKeys
+        private static class AttributeKey
         {
             // Block Attributes
             public const string Instructions = "Instructions";
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
-            public const string NumberofQuestions = "NumberofQuestions";
+            public const string NumberOfQuestions = "NumberofQuestions";
 
             // Other Attributes
             public const string Strengths = "Strengths";
@@ -175,8 +181,8 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         public int QuestionCount
         {
-            get { return ViewState[AttributeKeys.NumberofQuestions] as int? ?? 0; }
-            set { ViewState[AttributeKeys.NumberofQuestions] = value; }
+            get { return ViewState[AttributeKey.NumberOfQuestions] as int? ?? 0; }
+            set { ViewState[AttributeKey.NumberOfQuestions] = value; }
         }
 
         /// <summary>
@@ -604,13 +610,13 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         private void SetPanelTitleAndIcon()
         {
-            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
+            string panelTitle = this.GetAttributeValue( AttributeKey.SetPageTitle );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
             }
 
-            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
+            string panelIcon = this.GetAttributeValue( AttributeKey.SetPageIcon );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
@@ -633,7 +639,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "Person", _targetPerson );
             }
 
-            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
+            lInstructions.Text = GetAttributeValue( AttributeKey.Instructions ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -680,14 +686,14 @@ namespace Rockweb.Blocks.Crm
             if ( personalityValue != null )
             {
                 lDescription.Text = personalityValue.Description;
-                lStrengths.Text = personalityValue.GetAttributeValue( AttributeKeys.Strengths );
-                lChallenges.Text = personalityValue.GetAttributeValue( AttributeKeys.Challenges );
+                lStrengths.Text = personalityValue.GetAttributeValue( AttributeKey.Strengths );
+                lChallenges.Text = personalityValue.GetAttributeValue( AttributeKey.Challenges );
 
-                lUnderPressure.Text = personalityValue.GetAttributeValue( AttributeKeys.UnderPressure );
-                lMotivation.Text = personalityValue.GetAttributeValue( AttributeKeys.Motivation );
-                lTeamContribution.Text = personalityValue.GetAttributeValue( AttributeKeys.TeamContribution );
-                lLeadershipStyle.Text = personalityValue.GetAttributeValue( AttributeKeys.LeadershipStyle );
-                lFollowerStyle.Text = personalityValue.GetAttributeValue( AttributeKeys.FollowerStyle );
+                lUnderPressure.Text = personalityValue.GetAttributeValue( AttributeKey.UnderPressure );
+                lMotivation.Text = personalityValue.GetAttributeValue( AttributeKey.Motivation );
+                lTeamContribution.Text = personalityValue.GetAttributeValue( AttributeKey.TeamContribution );
+                lLeadershipStyle.Text = personalityValue.GetAttributeValue( AttributeKey.LeadershipStyle );
+                lFollowerStyle.Text = personalityValue.GetAttributeValue( AttributeKey.FollowerStyle );
             }
         }
 
@@ -713,7 +719,7 @@ namespace Rockweb.Blocks.Crm
             if ( QuestionCount == 0 && _assessmentResponses != null )
             {
                 // Set the max number of questions to be no greater than the actual number of questions.
-                int numQuestions = this.GetAttributeValue( AttributeKeys.NumberofQuestions ).AsInteger();
+                int numQuestions = this.GetAttributeValue( AttributeKey.NumberOfQuestions ).AsInteger();
                 QuestionCount = ( numQuestions > _assessmentResponses.Count ) ? _assessmentResponses.Count : numQuestions;
             }
 
