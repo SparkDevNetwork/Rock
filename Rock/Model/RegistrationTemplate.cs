@@ -633,6 +633,21 @@ namespace Rock.Model
         private ICollection<RegistrationTemplateDiscount> _discounts;
 
         /// <summary>
+        /// Gets or sets the placements.
+        /// </summary>
+        /// <value>
+        /// The placements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<RegistrationTemplatePlacement> Placements
+        {
+            get { return _placements ?? ( _placements = new Collection<RegistrationTemplatePlacement>() ); }
+            set { _placements = value; }
+        }
+
+        private ICollection<RegistrationTemplatePlacement> _placements;
+
+        /// <summary>
         /// Gets or sets the fees.
         /// </summary>
         /// <value>

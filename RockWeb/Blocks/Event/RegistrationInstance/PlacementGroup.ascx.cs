@@ -169,12 +169,18 @@ namespace RockWeb.Blocks.Event.RegistrationInstance
 
         protected void btnConfiguration_Click( object sender, EventArgs e )
         {
-
+            mdPlacementConfiguration.Show();
         }
 
         protected void rptPlacementGroups_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
         {
 
+        }
+
+        protected void mdPlacementConfiguration_SaveClick( object sender, EventArgs e )
+        {
+            // TODO
+            mdPlacementConfiguration.Hide();
         }
 
         #endregion

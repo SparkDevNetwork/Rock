@@ -579,7 +579,22 @@ namespace Rock.Data
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities of the given entity type that (optionally) also have a matching purpose key.
         /// </summary>
-        /// <param name="entityId">A <see cref="System.Int32"/> representing the entity identifier.</param>
+        /// <typeparam name="TT">The type of the Related Entities.</typeparam>
+        /// <param name="entityId">The Id of the entity you want to get the list of related entities for</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <returns></returns>
+        public IQueryable<TT> GetRelatedEntities<TT>( int entityId, string purposeKey = "" ) where TT:IEntity
+        {
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var relatedEntities = GetRelatedEntities( entityId, relatedEntityTypeId.Value, purposeKey ).Cast<TT>();
+
+            return relatedEntities;
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities of the given entity type that (optionally) also have a matching purpose key.
+        /// </summary>
+        /// <param name="entityId">The Id of the entity you want to get the list of related entities for</param>
         /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
         /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
         /// <returns>

@@ -1,5 +1,19 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PlacementGroup.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstance.PlacementGroup" %>
 
+<style>
+    .registrant-gender-boy {
+        background-color: lightblue;
+        border-color: blue;
+        color: blue;
+    }
+
+    .registrant-gender-girl {
+        background-color: lightpink;
+        border-color: deeppink;
+        color: deeppink;
+    }
+</style>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -111,9 +125,9 @@
                                                                 </div>
                                                             </ItemTemplate>
                                                         </asp:Repeater>
-                                                        
+
                                                     </div>
-                                                    
+
                                                 </div>
 
                                             </asp:Panel>
@@ -127,6 +141,53 @@
                 </asp:Panel>
             </div>
 
+        </asp:Panel>
+
+
+        <%-- Placement Configuration (User preferences) --%>
+        <asp:Panel ID="pnlConfiguration" runat="server">
+            <Rock:ModalDialog ID="mdPlacementConfiguration" runat="server" Title="Placement Configuration" OnSaveClick="mdPlacementConfiguration_SaveClick">
+                <Content>
+                    <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" />
+
+                    <%-- This will only be shown when in Registration Template mode --%>
+                    <Rock:PanelWidget ID="pwRegistrationInstanceConfiguration" runat="server" Title="Registration Instance Configuration">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockCheckBox ID="cbShowRegistrationInstanceName" runat="server" Label="Show Registration Instance Name" Help="When enabled, the registration instance name will be included in the details of each registrant in the Registrants list" Checked="true" />
+
+                                <Rock:RockCheckBoxList ID="cblRegistrationInstances" runat="server" Label="Registration Instances" Help="Set the registration instances to include. If none are selected, then all will be included." />
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pnlRegistrationConfiguration" runat="server" Title="Registrant Configuration">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbHighlightGenders" runat="server" Label="Highlight Genders" Help="Enable this to highlight each registrant to indicate their gender (pink, blue)." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbShowFees" runat="server" Label="Show Fees" Help="Enable this to show any fees associated with each registrant." />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:RockDropDownList ID="ddlDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registration (did you mean Registrant or both??) Attributes" />
+
+                                <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
+                                    ##TODO##
+                                </Rock:RockControlWrapper>
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pwGroupConfiguration" runat="server" Title="Group Configuration">
+                        ##TODO##
+                    </Rock:PanelWidget>
+
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
     </ContentTemplate>
