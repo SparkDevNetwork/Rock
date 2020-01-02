@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         "Default Connection Status",
         Key = AttributeKey.DefaultConnectionStatus,
         Description = "The connection status that should be set by default",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
