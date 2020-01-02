@@ -483,12 +483,14 @@
     <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
     <Compile Include="Plugin\HotFixes\094_AchievementPagesAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
+    <Compile Include="Plugin\HotFixes\099_RefreshRestControllerMethods.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="Storage\AssetStorage\ApiClient\GoogleClient.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
     <Compile Include="SystemGuid\Person.cs" />
+    <Compile Include="Transactions\RegisterControllersTransaction.cs" />
     <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
     <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
