@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Crm
 
         private static class DefaultValue
         {
-            public const string CompleteMessageLava = @"<div class='alert alert-success'>We have received your updated information. Thank you for helping us keep your information current.</div>",
+            public const string CompleteMessageLava = @"<div class='alert alert-success'>We have received your updated information. Thank you for helping us keep your information current.</div>";
         }
 
         private static class BlockAttributeDescription
