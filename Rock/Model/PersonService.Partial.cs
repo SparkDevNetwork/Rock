@@ -3005,7 +3005,6 @@ namespace Rock.Model
             int? primaryPersonId = null;
 
             var rockContext = new RockContext();
-
             try
             {
                 rockContext.WrapTransaction( () =>
@@ -3019,7 +3018,7 @@ namespace Rock.Model
                     var taggedItemService = new TaggedItemService( rockContext );
                     var personSearchKeyService = new PersonSearchKeyService( rockContext );
 
-                    var anonymousPersonGuid = Guid.Parse( "802235dc-3ca5-94b0-4326-aace71180f48" );
+                    var anonymousPersonGuid = Guid.Parse( SystemGuid.Person.GIVER_ANONYMOUS );
                     Person primaryPerson = personService.Get( anonymousPersonGuid );
                     Person expungePerson = personService.Get( personId );
                     if ( primaryPerson != null && expungePerson != null )
