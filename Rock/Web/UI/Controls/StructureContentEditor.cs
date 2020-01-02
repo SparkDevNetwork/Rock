@@ -18,17 +18,6 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:StructureContentEditor runat=server></{0}:StructureContentEditor>" )]
     public class StructureContentEditor : CompositeControl, IRockControl
     {
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( System.EventArgs e )
-        {
-            base.OnInit( e );
-
-            EnsureChildControls();
-        }
-
         #region IRockControl implementation
 
         /// <summary>
@@ -293,6 +282,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            base.OnInit( e );
+
+            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
+            {
+                RockPage.AddScriptLink( Page, "~/Scripts/Bundles/StructureContentEditorPlugins", false );
+            }
+
+            EnsureChildControls();
+        }
+
+
+        /// <summary>
         /// Called by the ASP.NET page framework after event processing has finished but
         /// just before rendering begins.
         /// </summary>
@@ -300,24 +306,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
-
-            if ( this.Visible && !ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
-            {
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/header.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/image.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/delimiter.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/list.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/checklist.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/quote.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/code.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/embed.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/table.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/link.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/warning.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/marker.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/inline-code.js" );
-                RockPage.AddScriptLink( Page, "~/Scripts/editor.js/editor.js" );
-            }
         }
 
         /// <summary>
@@ -351,23 +339,12 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.WriteLine();
 
-            // add editor.js on demand only when there will be a structure content editor rendered
+            // add script on demand only when there will be an htmleditor rendered
             if ( ScriptManager.GetCurrent( this.Page ).IsInAsyncPostBack )
             {
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "header-include", ResolveUrl( "~/Scripts/editor.js/header.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "image-include", ResolveUrl( "~/Scripts/editor.js/image.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "delimiter-include", ResolveUrl( "~/Scripts/editor.js/delimiter.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "list-include", ResolveUrl( "~/Scripts/editor.js/list.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "checklist-include", ResolveUrl( "~/Scripts/editor.js/checklist.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "quote-include", ResolveUrl( "~/Scripts/editor.js/quote.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "code-include", ResolveUrl( "~/Scripts/editor.js/code.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "embed-include", ResolveUrl( "~/Scripts/editor.js/embed.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "table-include", ResolveUrl( "~/Scripts/editor.js/table.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "link-include", ResolveUrl( "~/Scripts/editor.js/link.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "warning-include", ResolveUrl( "~/Scripts/editor.js/warning.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "marker-include", ResolveUrl( "~/Scripts/editor.js/marker.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "inline-include", ResolveUrl( "~/Scripts/editor.js/inline-code.js" ) );
-                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "editor-include", ResolveUrl( "~/Scripts/editor.js/editor.js" ) );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "summernote-lib", ( ( RockPage ) this.Page ).ResolveRockUrl( "~/Scripts/summernote/summernote.min.js", true ) );
+                var bundleUrl = System.Web.Optimization.BundleResolver.Current.GetBundleUrl( "~/Scripts/Bundles/StructureContentEditorPlugins" );
+                ScriptManager.RegisterClientScriptInclude( this.Page, this.Page.GetType(), "editorjs-plugins", bundleUrl );
             }
 
             RegisterJavascript();
@@ -379,8 +356,8 @@ namespace Rock.Web.UI.Controls
         private void RegisterJavascript()
         {
             var script = string.Format( @"
-const fieldContent = $('#{1}').val();
- const output = document.getElementById('output');
+var fieldContent = $('#{1}').val();
+ var output = document.getElementById('output');
 /**
  * To initialize the Editor, create a new instance with configuration object
  * @see docs/installation.md for mode details
