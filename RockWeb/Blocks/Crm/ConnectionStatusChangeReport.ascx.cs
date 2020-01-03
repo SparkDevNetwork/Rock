@@ -93,6 +93,7 @@ namespace RockWeb.Blocks.Crm
         #region Constants
 
         private const string _urlValuesListDelimiter = ",";
+        private const int _MaxRecords = 100000;
 
         #endregion
 
@@ -252,7 +253,7 @@ namespace RockWeb.Blocks.Crm
 
             // Period.
             if ( settings.ReportPeriod.Range != TimePeriodRangeSpecifier.Current
-                 && settings.ReportPeriod.TimeUnit != TimePeriodUnitSpecifier.Year )
+                 || settings.ReportPeriod.TimeUnit != TimePeriodUnitSpecifier.Year )
             {
                 // Only set the period parameter if it is not the default setting.
                 queryParams.Add( PageParameterKey.Period, settings.ReportPeriod.ToDelimitedString( _urlValuesListDelimiter ) );
@@ -321,6 +322,22 @@ namespace RockWeb.Blocks.Crm
                 // If this is an initial page load, run the Report.
                 // Otherwise, it will be loaded from ViewState.
                 this.LoadReport();
+
+                var eventCount = _changeEvents.Count();
+
+                if ( _changeEvents != null
+                     && eventCount > _MaxRecords )
+                {
+                    _changeEvents.Clear();
+
+                    nbNotice.NotificationBoxType = NotificationBoxType.Danger;
+                    nbNotice.Title = "Report Failed.";
+                    nbNotice.Text = string.Format( "The result set is too large ({0:#,###} records). Retry the report with a more restrictive filter.", eventCount );
+
+                    nbNotice.Visible = true;
+
+                    _showResults = false;
+                }
             }
 
             pnlResults.Visible = _showResults;
@@ -419,8 +436,6 @@ namespace RockWeb.Blocks.Crm
             var modelsAdded = GetChangeEventViewModels( report.ChangeEvents );
 
             _changeEvents.AddRange( modelsAdded );
-
-            BindReport();
         }
 
         /// <summary>
@@ -446,7 +461,22 @@ namespace RockWeb.Blocks.Crm
 
                 vm.DateChanged = info.EventDate;
 
-                vm.PhotoUrl = Person.GetPersonPhotoUrl( info.PersonId );
+                /*
+                 * Calculate the Age Classification here to prevent the database query that will otherwise be made when the PhotoUrl is retrieved.
+                */
+                AgeClassification ageClassification;
+
+                if ( info.Age.HasValue
+                     && info.Age.Value < 18 )
+                {
+                    ageClassification = AgeClassification.Child;
+                }
+                else
+                {
+                    ageClassification = AgeClassification.Adult;
+                }
+
+                vm.PhotoUrl = Person.GetPersonPhotoUrl( info.PersonId, info.PhotoId, info.Age, info.Gender, info.RecordTypeValueGuid, ageClassification );
 
                 vm.OriginalStatus = info.OldConnectionStatusName;
                 vm.UpdatedStatus = info.NewConnectionStatusName;
