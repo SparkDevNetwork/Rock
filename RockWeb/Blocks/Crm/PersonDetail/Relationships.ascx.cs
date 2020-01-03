@@ -37,12 +37,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
     #region Block Attributes
 
-    [GroupRoleField(
-        Name = "Group Type/Role Filter",
-        Key = AttributeKey.GroupTypeRoleFilter,
-        Description = "The Group Type and role to display other members from.",
-        IsRequired = false,
-        Order = 0 )]
+    //[GroupRoleField(
+    //    Name = "Group Type/Role Filter",
+    //    Key = AttributeKey.GroupTypeRoleFilter,
+    //    Description = "The Group Type and role to display other members from.",
+    //    IsRequired = false,
+    //    Order = 0 )]
+
+    [GroupRoleField( null, "Group Type/Role Filter", "The Group Type and role to display other members from.", false, null, null, 0, AttributeKey.GroupTypeRoleFilter )]
 
     [BooleanField(
         "Show Role",

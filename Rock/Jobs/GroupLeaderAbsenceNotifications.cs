@@ -45,12 +45,7 @@ namespace Rock.Jobs
         IsRequired = true,
         Order = 1 )]
 
-    [GroupRoleField(
-        Name = "Group Role Filter",
-        Key = AttributeKey.GroupRoleFilter,
-        Description = "Optional group role to filter the absent members by.To select the role you’ll need to select a group type.",
-        IsRequired = false,
-        Order = 2 )]
+    [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the absent members by. To select the role you'll need to select a group type.", false, null, null, 2, AttributeKey.GroupRoleFilter )]
 
     [IntegerField( "Minimum Absences",
         Key = AttributeKey.MinimumAbsences,
