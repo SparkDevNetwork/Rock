@@ -448,7 +448,7 @@ validity of the request before completing this merge." :
                         primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive" ) ?? true;
                         primaryPerson.EmailNote = GetNewStringValue( "EmailNote" );
                         primaryPerson.EmailPreference = ( EmailPreference ) GetNewEnumValue( "EmailPreference", typeof( EmailPreference ) );
-                        primaryPerson.SystemNote = GetNewStringValue( "InactiveReasonNote" );
+                        primaryPerson.InactiveReasonNote = GetNewStringValue( "InactiveReasonNote" );
                         primaryPerson.SystemNote = GetNewStringValue( "SystemNote" );
                         primaryPerson.ContributionFinancialAccountId = GetNewIntValue( "ContributionFinancialAccountId" );
 
