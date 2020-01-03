@@ -24,7 +24,7 @@ namespace Rock.Attribute
     /// Field Attribute for adding a structure content editor.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    class StructureContentEditorFieldAttribute : FieldAttribute
+    public class StructureContentEditorFieldAttribute : FieldAttribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StructureContentEditorFieldAttribute" /> class.
