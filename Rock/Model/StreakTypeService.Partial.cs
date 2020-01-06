@@ -1044,18 +1044,23 @@ namespace Rock.Model
             }
 
             // Apply default values to parameters
+            if ( !dateOfEngagement.HasValue )
+            {
+                dateOfEngagement = RockDateTime.Today;
+            }
+
             var maxDate = AlignDate( RockDateTime.Today, streakTypeCache );
             var minDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
-            dateOfEngagement = AlignDate( dateOfEngagement ?? maxDate, streakTypeCache );
+            var alignedDateOfEngagement = AlignDate( dateOfEngagement.Value, streakTypeCache );
 
             // Validate the engagement date
-            if ( dateOfEngagement < minDate )
+            if ( alignedDateOfEngagement < minDate )
             {
                 errorMessage = "Cannot mark engagement before the streak type start date";
                 return;
             }
 
-            if ( dateOfEngagement > maxDate )
+            if ( alignedDateOfEngagement > maxDate )
             {
                 errorMessage = "Cannot mark engagement in the future";
                 return;
@@ -1075,7 +1080,7 @@ namespace Rock.Model
             if ( streak == null )
             {
                 // Enroll the person since they are marking engagement and enrollment is not required
-                streak = Enroll( streakTypeCache, personId, out errorMessage, dateOfEngagement, locationId );
+                streak = Enroll( streakTypeCache, personId, out errorMessage, alignedDateOfEngagement, locationId );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -1090,7 +1095,7 @@ namespace Rock.Model
             }
 
             // Mark engagement on the enrollment map
-            streak.EngagementMap = SetBit( streakTypeCache, streak.EngagementMap, dateOfEngagement.Value, true, out errorMessage );
+            streak.EngagementMap = SetBit( streakTypeCache, streak.EngagementMap, alignedDateOfEngagement, true, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1109,7 +1114,7 @@ namespace Rock.Model
             // Ensure the occurrence bit is set on the streak type model. Check first if it is already set because updating the streak type
             // occurrence map means that all streaks need to be recalculated, so it's expensive
             var streakType = Get( streakTypeCache.Id );
-            var isOccurrenceSet = IsBitSet( streakTypeCache, streakType.OccurrenceMap, dateOfEngagement.Value, out errorMessage );
+            var isOccurrenceSet = IsBitSet( streakTypeCache, streakType.OccurrenceMap, alignedDateOfEngagement, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1118,7 +1123,7 @@ namespace Rock.Model
 
             if ( !isOccurrenceSet )
             {
-                streakType.OccurrenceMap = SetBit( streakTypeCache, streakType.OccurrenceMap, dateOfEngagement.Value, true, out errorMessage );
+                streakType.OccurrenceMap = SetBit( streakTypeCache, streakType.OccurrenceMap, alignedDateOfEngagement, true, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
