@@ -703,6 +703,9 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindGroupGrid()
         {
+            // Hide the campus column if the campus filter is not visible.
+            gConnectionOpportunityGroups.ColumnsOfType<RockBoundField>().First( c => c.DataField == "CampusName" ).Visible = rcwCampus.Visible;
+
             gConnectionOpportunityGroups.DataSource = GroupsState;
             gConnectionOpportunityGroups.DataBind();
         }
@@ -991,6 +994,9 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void BindConnectorGroupsGrid()
         {
+            // Hide the campus column if the campus filter is not visible.
+            gConnectionOpportunityConnectorGroups.ColumnsOfType<RockBoundField>().First( c => c.DataField == "CampusName" ).Visible = rcwCampus.Visible;
+
             gConnectionOpportunityConnectorGroups.DataSource = ConnectorGroupsState;
             gConnectionOpportunityConnectorGroups.DataBind();
 
@@ -1624,6 +1630,11 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private void LoadDropDowns( ConnectionOpportunity connectionOpportunity )
         {
+            if ( CampusCache.All().Count == 1 )
+            {
+                rcwCampus.Visible = false;
+            }
+
             cblCampus.Items.Clear();
             cblCampus.DataSource = CampusCache.All();
             cblCampus.DataBind();

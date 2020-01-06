@@ -296,8 +296,6 @@ function ()
             writer.RenderEndTag();
 
             writer.RenderEndTag();
-
-            RegisterFilterCompareChangeScript( filterControl );
         }
 
         /// <summary>

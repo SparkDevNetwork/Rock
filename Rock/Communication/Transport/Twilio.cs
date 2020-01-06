@@ -85,13 +85,13 @@ namespace Rock.Communication.Transport
 
                 List<Uri> attachmentMediaUrls = GetAttachmentMediaUrls( rockMessage.Attachments.AsQueryable() );
 
-                foreach ( var recipientData in rockMessage.GetRecipientData() )
+                foreach ( var recipient in rockMessage.GetRecipients() )
                 {
                     try
                     {
                         foreach ( var mergeField in mergeFields )
                         {
-                            recipientData.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                            recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                         }
 
                         CommunicationRecipient communicationRecipient = null;
@@ -99,19 +99,20 @@ namespace Rock.Communication.Transport
                         using ( var rockContext = new RockContext() )
                         {
                             CommunicationRecipientService communicationRecipientService = new CommunicationRecipientService( rockContext );
-                            int? recipientId = recipientData.CommunicationRecipientId.AsIntegerOrNull();
+                            int? recipientId = recipient.CommunicationRecipientId;
                             if ( recipientId != null )
                             {
                                 communicationRecipient = communicationRecipientService.Get( recipientId.Value );
                             }
 
-                            string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipientData.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
-                            Person recipientPerson = ( Person ) recipientData.MergeFields.GetValueOrNull( "Person" );
+                            string message = ResolveText( smsMessage.Message, smsMessage.CurrentPerson, communicationRecipient, smsMessage.EnabledLavaCommands, recipient.MergeFields, smsMessage.AppRoot, smsMessage.ThemeRoot );
+                            Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
 
                             // Create the communication record and send using that if we have a person since a communication record requires a valid person. Otherwise just send without creating a communication record.
                             if ( rockMessage.CreateCommunicationRecord && recipientPerson != null )
                             {
                                 var communicationService = new CommunicationService( rockContext );
+
                                 Rock.Model.Communication communication = communicationService.CreateSMSCommunication( smsMessage.CurrentPerson, recipientPerson?.PrimaryAliasId, message, smsMessage.FromNumber, string.Empty, smsMessage.communicationName );
 
                                 // Since we just created a new communication record, we need to move any attachments from the rockMessage
@@ -130,7 +131,7 @@ namespace Rock.Communication.Transport
                             }
                             else
                             {
-                                MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipientData.To );
+                                MessageResource response = SendToTwilio( smsMessage.FromNumber.Value, null, attachmentMediaUrls, message, recipient.To );
 
                                 if ( response.ErrorMessage.IsNotNullOrWhiteSpace() )
                                 {
@@ -424,7 +425,7 @@ namespace Rock.Communication.Transport
                     createMessageOptions.MediaUrl = attachmentMediaUrls;
                 }
 
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !callbackUrl.Contains(".ngrok.io") )
                 {
                     createMessageOptions.StatusCallback = null;
                 }

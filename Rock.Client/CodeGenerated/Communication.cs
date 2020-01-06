@@ -53,6 +53,9 @@ namespace Rock.Client
         public string EnabledLavaCommands { get; set; }
 
         /// <summary />
+        public bool ExcludeDuplicateRecipientAddress { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -179,6 +182,7 @@ namespace Rock.Client
             this.CommunicationTemplateId = source.CommunicationTemplateId;
             this.CommunicationType = source.CommunicationType;
             this.EnabledLavaCommands = source.EnabledLavaCommands;
+            this.ExcludeDuplicateRecipientAddress = source.ExcludeDuplicateRecipientAddress;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.FromEmail = source.FromEmail;

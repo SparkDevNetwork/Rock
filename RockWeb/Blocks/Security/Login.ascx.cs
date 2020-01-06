@@ -455,7 +455,7 @@ Thank you for logging in, however, we need to confirm the email associated with 
             {
                 string redirectUrl = ExtensionMethods.ScrubEncodedStringForXSSObjects(returnUrl);
                 redirectUrl =  Server.UrlDecode( redirectUrl );
-                Response.Redirect( redirectUrl );
+                Response.Redirect( redirectUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else if ( !string.IsNullOrWhiteSpace( redirectUrlSetting ) )
@@ -486,8 +486,8 @@ Thank you for logging in, however, we need to confirm the email associated with 
             mergeFields.Add( "Person", userLogin.Person );
             mergeFields.Add( "User", userLogin );
 
-            var recipients = new List<RecipientData>();
-            recipients.Add( new RecipientData( userLogin.Person.Email, mergeFields ) );
+            var recipients = new List<RockEmailMessageRecipient>();
+            recipients.Add( new RockEmailMessageRecipient( userLogin.Person, mergeFields ) );
 
             var message = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
             message.SetRecipients( recipients );

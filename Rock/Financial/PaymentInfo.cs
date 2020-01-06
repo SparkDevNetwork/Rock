@@ -124,6 +124,16 @@ namespace Rock.Financial
         public string Country { get; set; }
 
         /// <summary>
+        /// Returns True if the payment info includes Address Data (Street1 or Street2).
+        /// For example, if updating a scheduled transaction, the address data could be null since the gateway would already know this.
+        /// </summary>
+        /// <returns></returns>
+        public bool IncludesAddressData()
+        {
+            return this.Street1.IsNotNullOrWhiteSpace() || this.Street2.IsNotNullOrWhiteSpace();
+        }
+
+        /// <summary>
         /// Gets or sets the ip address.
         /// </summary>
         /// <value>

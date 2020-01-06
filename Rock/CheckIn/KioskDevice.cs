@@ -111,13 +111,23 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Subset of the KioskGroupTypes that are configured and currently active or check in.
+        /// Subset of the KioskGroupTypes that are configured and currently active for check in.
         /// </summary>
         /// <param name="configuredGroupTypes">The configured group types.</param>
         /// <returns></returns>
         public List<KioskGroupType> ActiveGroupTypes( List<int> configuredGroupTypes )
         {
             return FilteredGroupTypes( configuredGroupTypes ).Where( t => t.IsCheckInActive ).ToList();
+        }
+
+        /// <summary>
+        /// Subset of the KioskGroupTypes that are configured and currently active for check out.
+        /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <returns></returns>
+        public List<KioskGroupType> ActiveForCheckOutGroupTypes( List<int> configuredGroupTypes )
+        {
+            return FilteredGroupTypes( configuredGroupTypes ).Where( t => t.IsCheckOutActive ).ToList();
         }
 
         /// <summary>
@@ -140,6 +150,17 @@ namespace Rock.CheckIn
         public bool HasActiveLocations(List<int> configuredGroupTypes)
         {
             return ActiveGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.IsCheckInActive && l.IsActiveAndNotFull ) );
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has active locations for check-out.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasActiveCheckOutLocations( List<int> configuredGroupTypes )
+        {
+            return ActiveForCheckOutGroupTypes( configuredGroupTypes ).SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.IsCheckOutActive ) );
         }
 
         /// <summary>
@@ -344,7 +365,7 @@ namespace Rock.CheckIn
                         var kioskSchedule = new KioskSchedule( schedule );
                         kioskSchedule.CampusId = kioskLocation.CampusId;
                         kioskSchedule.CheckInTimes = schedule.GetCheckInTimes( currentDateTime );
-                        if ( kioskSchedule.IsCheckInActive || kioskSchedule.NextActiveDateTime.HasValue )
+                        if ( kioskSchedule.IsCheckInActive || kioskSchedule.IsCheckOutActive || kioskSchedule.NextActiveDateTime.HasValue )
                         {
                             kioskLocation.KioskSchedules.Add( kioskSchedule );
                             activeSchedules.Add( schedule.Id, kioskSchedule );

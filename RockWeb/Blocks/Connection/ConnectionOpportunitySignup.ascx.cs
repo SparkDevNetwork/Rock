@@ -38,15 +38,80 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Block used to sign up for a connection opportunity." )]
 
-    [BooleanField( "Display Home Phone", "Whether to display home phone", true, "", 0 )]
-    [BooleanField( "Display Mobile Phone", "Whether to display mobile phone", true, "", 1 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the response message.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}", "", 2 )]
-    [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", true, "", 4 )]
-    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2", "", 5 )]
-    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49", "", 6 )]
-    [ConnectionOpportunityField( "Connection Opportunity", "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).", false, "", "", 7 )]
+    [BooleanField(
+        "Display Home Phone",
+        Description ="Whether to display home phone",
+        DefaultBooleanValue = true,
+        Order = 0 )]
+    [BooleanField( "Display Mobile Phone",
+        Description = "Whether to display mobile phone",
+        DefaultBooleanValue = true,
+        Order = 1 )]
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display the response message.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% include '~~/Assets/Lava/OpportunityResponseMessage.lava' %}",
+        Order = 2 )]
+    [BooleanField( "Enable Campus Context",
+        Description = "If the page has a campus context its value will be used as a filter",
+        DefaultBooleanValue = true,
+        Order = 4 )]
+    [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600",
+        Name = "Connection Status",
+        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = "368DD475-242C-49C4-A42C-7278BE690CC2",
+        Order = 5 )]
+    [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
+        Name = "Record Status",
+        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
+        Order = 6 )]
+    [ConnectionOpportunityField( "Connection Opportunity",
+        "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).",
+        false,
+        "",
+        "",
+        7,
+        "ConnectionOpportunity" )]
+    [AttributeCategoryField(
+        "Include Attribute Categories",
+        Description = "Attributes in these Categories will be displayed.",
+        Key = AttributeKey.IncludeAttributeCategories,
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.ConnectionRequest",
+        IsRequired = false,
+        Order = 8 )]
+    [AttributeCategoryField(
+        "Exclude Attribute Categories",
+        Description = "Attributes in these Categories will not be displayed.",
+        Key = AttributeKey.ExcludeAttributeCategories,
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.ConnectionRequest",
+        IsRequired = false,
+        Order = 9 )]
+
     public partial class ConnectionOpportunitySignup : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string IncludeAttributeCategories = "IncludeAttributeCategories";
+            public const string ExcludeAttributeCategories = "ExcludeAttributeCategories";
+        }
+
+        #endregion
+
         #region Fields
 
         DefinedValueCache _homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
@@ -232,8 +297,15 @@ namespace RockWeb.Blocks.Connection
                             return;
                         }
 
-                        connectionRequestService.Add( connectionRequest );
-                        rockContext.SaveChanges();
+                        // Save changes
+                        avcAttributes.GetEditValues( connectionRequest );
+
+                        rockContext.WrapTransaction( () =>
+                        {
+                            connectionRequestService.Add( connectionRequest );
+                            rockContext.SaveChanges();
+                            connectionRequest.SaveAttributeValues( rockContext );
+                        } );
 
                         var mergeFields = new Dictionary<string, object>();
                         mergeFields.Add( "Opportunity", new ConnectionOpportunityService( rockContext ).Get( _opportunityId ) );
@@ -275,25 +347,15 @@ namespace RockWeb.Blocks.Connection
                 if ( opportunity == null )
                 {
                     pnlSignup.Visible = false;
-                    ShowError( "Incorrect Opportunity Type", "The requested opportunity does not exist." );
+                    ShowError( "Sorry", "The requested opportunity does not exist." );
                     return;
                 }
 
-                if ( !opportunity.IsActive )
+                if ( !( opportunity.IsActive && opportunity.ConnectionType.IsActive ) )
                 {
                     pnlSignup.Visible = false;
-                    ShowError( "Inactive Opportunity Type", "The opportunity is not currently active." );
+                    ShowError( "Inactive", "The opportunity is not currently active." );
                     return;
-                }
-
-                // load campus dropdown
-                var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
-                cpCampus.Campuses = campuses;
-                cpCampus.Visible = campuses.Any();
-
-                if ( campuses.Any() )
-                {
-                    cpCampus.SetValue( campuses.First().Id );
                 }
 
                 pnlSignup.Visible = true;
@@ -350,27 +412,72 @@ namespace RockWeb.Blocks.Connection
                             pnMobile.CountryCode = cellPhoneNumber.CountryCode;
                         }
                     }
+                }
 
+                // load campus dropdown
+                var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
+                cpCampus.Campuses = campuses;
+
+                bool campusSelected = false;
+
+                // If there is only one campus for this opportunity then select it automatically.
+                if ( campuses.Count == 1 )
+                {
+                    cpCampus.SetValue( campuses.First().Id );
+                    campusSelected = true;
+                }
+
+                // If there is more than one campus for the opportunity then try to set it to the Page Campus context
+                if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() && campusSelected == false )
+                {
+                    var contextCampus = RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus;
+                    if ( contextCampus != null && campuses.Where( c => c.Id == contextCampus.Id ).Any() )
+                    {
+                        cpCampus.SelectedCampusId = contextCampus.Id;
+                        campusSelected = true;
+                    }
+                }
+
+                if ( registrant != null && campusSelected == false )
+                {
+                    // If a campus has not yet been selected then use the registrant's campus if it is in the list of campuses for the opportunity.
                     var campus = registrant.GetCampus();
-                    if ( campus != null )
+                    if ( campus != null && campuses.Where( c => c.Id == campus.Id ).Any() )
                     {
                         cpCampus.SelectedCampusId = campus.Id;
                     }
                 }
-                else
-                {
-                    // set the campus to the context
-                    if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
-                    {
-                        var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
-                        var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-                        if ( contextCampus != null )
-                        {
-                            cpCampus.SelectedCampusId = contextCampus.Id;
-                        }
-                    }
+                // Load Attributes
+                var connectionRequest = new ConnectionRequest { Id = 0 };
+
+                connectionRequest.ConnectionOpportunityId = opportunityId;
+
+                var categoryService = new CategoryService( rockContext );
+
+                var includedCategoryGuidList = GetAttributeValue( AttributeKey.IncludeAttributeCategories ).SplitDelimitedValues().AsGuidList();
+
+                string[] includedCategoryNameList = null;
+
+                if ( includedCategoryGuidList.Any() )
+                {
+                    includedCategoryNameList = categoryService.Queryable().Where( x => includedCategoryGuidList.Contains( x.Guid ) ).Select( x => x.Name ).ToArray();
                 }
+
+                avcAttributes.IncludedCategoryNames = includedCategoryNameList;
+
+                var excludedCategoryGuidList = GetAttributeValue( AttributeKey.ExcludeAttributeCategories ).SplitDelimitedValues().AsGuidList();
+
+                string[] excludedCategoryNameList = null;
+
+                if ( excludedCategoryGuidList.Any() )
+                {
+                    excludedCategoryNameList = categoryService.Queryable().Where( x => excludedCategoryGuidList.Contains( x.Guid ) ).Select( x => x.Name ).ToArray();
+                }
+
+                avcAttributes.ExcludedCategoryNames = excludedCategoryNameList;
+
+                avcAttributes.AddEditControls( connectionRequest, false );
 
                 // show debug info
                 var mergeFields = new Dictionary<string, object>();

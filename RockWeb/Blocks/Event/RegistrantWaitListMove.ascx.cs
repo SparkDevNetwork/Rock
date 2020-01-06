@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Event
                         emailMessage.FromEmail = tbFromEmail.Text;
                         emailMessage.FromName = tbFromName.Text;
                         emailMessage.Subject = tbFromSubject.Text;
-                        emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                        emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeObjects ) );
                         emailMessage.Message = ceEmailMessage.Text;
                         emailMessage.AppRoot = ResolveRockUrl( "~/" );
                         emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );

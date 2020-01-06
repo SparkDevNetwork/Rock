@@ -359,13 +359,13 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Gets the occurrence time.
+        /// Gets the occurrence schedule's name.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        /// <returns></returns>
-        protected string GetOccurrenceTime( Attendance attendance )
+        /// <returns>The name of the schedule</returns>
+        protected string GetOccurrenceScheduleName( Attendance attendance )
         {
-            return attendance.Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString();
+            return attendance.Occurrence.Schedule.Name;
         }
 
         /// <summary>
@@ -381,7 +381,7 @@ $('#{0}').tooltip();
             var attendance = e.Item.DataItem as Attendance;
 
             lConfirmedOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lConfirmedOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lConfirmedOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
 
             btnCancelConfirmAttending.CommandName = "AttendanceId";
             btnCancelConfirmAttending.CommandArgument = attendance.Id.ToString();
@@ -401,7 +401,7 @@ $('#{0}').tooltip();
             var attendance = e.Item.DataItem as Attendance;
 
             lPendingOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lPendingOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lPendingOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
             btnConfirmAttending.CommandName = "AttendanceId";
             btnConfirmAttending.CommandArgument = attendance.Id.ToString();
 
@@ -1392,7 +1392,7 @@ $('#{0}').tooltip();
                     var locationId = ddlSignupLocations.SelectedValue.AsIntegerOrNull();
                     var groupId = hfGroupId.Value.AsInteger();
                     var attendanceId = hfAttendanceId.Value.AsIntegerOrNull();
-                    AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrCreateAttendanceOccurrence( occurrenceDate, scheduleId, locationId, groupId );
+                    AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
                     var attendanceService = new AttendanceService( rockContext );
 
                     if ( attendanceId.HasValue )

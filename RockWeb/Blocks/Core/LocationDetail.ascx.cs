@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Core
 
             if ( location == null )
             {
-                location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId };
+                location = new Location { Id = 0, IsActive = true, ParentLocationId = parentLocationId, State = acAddress.GetDefaultState(), Country = acAddress.GetDefaultCountry() };
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
             }

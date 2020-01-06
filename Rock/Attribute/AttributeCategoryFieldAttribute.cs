@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Field.Types;
 using Rock.Web.Cache;
 
@@ -66,11 +67,13 @@ namespace Rock.Attribute
             set
             {
                 FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+
+                FieldTypeClass = value ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName;
             }
         }
 
         /// <summary>
-        /// Gets or sets the name of the entity type
+        /// Gets or sets the name of the entity type <seealso cref="EntityType"/>
         /// </summary>
         public string EntityTypeName
         {
@@ -89,6 +92,26 @@ namespace Rock.Attribute
                 {
                     FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityType.Id.ToString() ) );
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the entity for this Attribute Category
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public Type EntityType
+        {
+            get
+            {
+                string entityTypeName = this.EntityTypeName;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
+            }
+
+            set
+            {
+                this.EntityTypeName = value.FullName;
             }
         }
     }

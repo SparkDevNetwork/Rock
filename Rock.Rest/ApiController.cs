@@ -117,6 +117,84 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Gets records that have a particular attribute value.
+        /// Example: api/People/GetByAttributeValue?attributeKey=FirstVisit&amp;value=2012-12-15
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="caseSensitive">if set to <c>true</c> [case sensitive].</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException">
+        /// </exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByAttributeValue" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByAttributeValue( [FromUri]int? attributeId = null, [FromUri]string attributeKey = null, [FromUri]string value = null, [FromUri]bool caseSensitive = false )
+        {
+            // Value is always required
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The value param is required" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Either key or id is required, but not both
+            var queryByKey = !attributeKey.IsNullOrWhiteSpace();
+            var queryById = attributeId.HasValue;
+
+            if ( queryByKey == queryById )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "Either attributeKey or attributeId must be specified, but not both" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Query for the models that have the value for the attribute
+            var rockContext = Service.Context as RockContext;
+            var query = Service.Queryable().AsNoTracking();
+            var valueComparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            if ( queryById )
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.AttributeId == attributeId && a.Value.Equals( value, valueComparison ) );
+            }
+            else
+            {
+                query = query.WhereAttributeValue( rockContext,
+                    a => a.Attribute.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) && a.Value.Equals( value, valueComparison ) );
+            }
+
+            return query;
+        }
+
+        /// <summary>
+        /// Gets items associated with a campus uisng the EntityCampusFilter model. The Entity must implement ICampusFilterable.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByCampus" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByCampus( [FromUri]int campusId )
+        {
+            if ( !typeof( T ).GetInterfaces().Contains( typeof( ICampusFilterable ) ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The model does not support campus filtering." );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var rockContext = Service.Context as RockContext;
+            var result = Service
+                .Queryable()
+                .AsNoTracking()
+                .WhereCampus( rockContext, campusId );
+
+            return result;
+        }
+
+        /// <summary>
         /// POST endpoint. Use this to INSERT a new record
         /// </summary>
         /// <param name="value">The value.</param>
@@ -376,11 +454,42 @@ namespace Rock.Rest
 
                 if ( paramExpression != null )
                 {
-                    return Service.Get( paramExpression, whereExpression );
+                    return Service.GetNoTracking( paramExpression, whereExpression );
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Determines if the entity id is in the data view
+        /// </summary>
+        /// <param name="dataViewId">The data view identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [ActionName( "InDataView" )]
+        [EnableQuery]
+        [HttpGet]
+        public bool InDataView( int dataViewId, int entityId )
+        {
+            var rockContext = new RockContext();
+
+            var dataView = new DataViewService( rockContext ).Get( dataViewId );
+
+            // since DataViews can be secured at the Dataview or Category level, specifically check for CanView
+            CheckCanView( dataView, GetPerson() );
+
+            if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
+            {
+                var errorMessages = new List<string>();
+                var qryGroupsInDataView = dataView.GetQuery( null, rockContext, null, out errorMessages ) as IQueryable<T>;
+                qryGroupsInDataView = qryGroupsInDataView.Where( d => d.Id == entityId );
+
+                return qryGroupsInDataView.Any();
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -449,6 +558,35 @@ namespace Rock.Rest
 
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
             }
+        }
+
+        /// <summary>
+        /// Gets a query of the items that are followed by a specific person. For example, ~/api/Groups/FollowedItems
+        /// would return a list of groups that the person is following. Either ?personId= or ?personAliasId= can be
+        /// specified to indicate what person you want to see the followed items for.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [ActionName( "FollowedItems" )]
+        [EnableQuery]
+        public IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
+        {
+            if ( !personId.HasValue )
+            {
+                if ( personAliasId.HasValue )
+                {
+                    personId = new PersonAliasService( this.Service.Context as RockContext ).GetPersonId( personAliasId.Value );
+                }
+            }
+
+            if ( personId.HasValue )
+            {
+                return Service.GetFollowed( personId.Value );
+            }
+
+            throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.BadRequest ) { ReasonPhrase = "either personId or personAliasId must be specified"  } );
         }
 
         /// <summary>

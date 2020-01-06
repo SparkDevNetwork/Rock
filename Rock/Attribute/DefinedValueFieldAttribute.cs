@@ -30,6 +30,8 @@ namespace Rock.Attribute
         private const string DEFINED_TYPE_KEY = "definedtype";
         private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
         private const string ENHANCED_SELECTION_KEY = "enhancedselection";
+        private const string INCLUDE_INACTIVE_KEY = "includeInactive";
+        private const string DISPLAY_DESCRIPTION = "displaydescription";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute"/> class.
@@ -86,6 +88,41 @@ namespace Rock.Attribute
                 Key = Name?.Replace( " ", string.Empty );
             }
 
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="definedTypeGuid">The defined type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="allowMultiple">if set to <c>true</c> [allow multiple].</param>
+        /// <param name="enhanced">if set to <c>true</c> [enhanced].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <param name="displayDescription">if set to <c>true</c> [display description].</param>
+        public DefinedValueFieldAttribute( string definedTypeGuid, string name, string description, bool required, bool allowMultiple, bool enhanced, string defaultValue, string category, int order, string key = null, bool includeInactive = false, bool displayDescription = true )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueFieldType ).FullName )
+        {
+            this.DefinedTypeGuid = definedTypeGuid;
+            this.AllowMultiple = allowMultiple;
+            this.Enhanced = enhanced;
+            this.IncludeInactive = includeInactive;
+            this.DisplayDescription = displayDescription;
+
+            if ( string.IsNullOrWhiteSpace( Name ) )
+            {
+                this.Name = DefinedValueCache.Get( definedTypeGuid.AsGuid() )?.Value;
+            }
+
+            if ( string.IsNullOrWhiteSpace( Key ) )
+            {
+                Key = Name?.Replace( " ", string.Empty );
+            }
         }
 
         /// <summary>
@@ -157,6 +194,44 @@ namespace Rock.Attribute
             set
             {
                 FieldConfigurationValues.AddOrReplace( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [include inactive].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include inactive]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactive
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( INCLUDE_INACTIVE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( INCLUDE_INACTIVE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [display description].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [display description]; otherwise, <c>false</c>.
+        /// </value>
+        public bool DisplayDescription
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( DISPLAY_DESCRIPTION ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( DISPLAY_DESCRIPTION, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
     }

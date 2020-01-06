@@ -100,15 +100,28 @@ namespace Rock.Model
         public bool? DidNotOccur { get; set; }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
-        public DateTime SundayDate { get; set; }
+        [Index( "IX_SundayDate" )]
+        public DateTime SundayDate
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
+                // Also, on an Insert/Update this will be the value saved to the database
+                return OccurrenceDate.SundayDate();
+            }
+
+            set
+            {
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
+            }
+        }
 
         /// <summary>
         /// Gets or sets the notes.
@@ -127,6 +140,56 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? AnonymousAttendanceCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Accept Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string AcceptConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Decline Confirmation Message (for RSVP).
+        /// </summary>
+        /// <value>
+        /// The message.
+        /// </value>
+        [DataMember]
+        public string DeclineConfirmationMessage { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not to show the Decline Confirmation Message.
+        /// </summary>
+        [DataMember]
+        public bool ShowDeclineReasons { get; set; }
+
+        /// <summary>
+        /// A comma-separated list of integer ID values representing the Decline Reasons selected by the attendee.
+        /// </summary>
+        /// <value>
+        /// The integer IDs.
+        /// </value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string DeclineReasonValueIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurrence is associated.
+        /// </summary>
+        [DataMember]
+        public int? StepTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string Name { get; set; }
 
         #endregion
 
@@ -219,6 +282,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the Step Type.
+        /// </summary>
+        [DataMember]
+        public virtual StepType StepType { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -296,6 +365,7 @@ namespace Rock.Model
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.StepType ).WithMany().HasForeignKey( p => p.StepTypeId ).WillCascadeOnDelete( true );
         }
     }
 
