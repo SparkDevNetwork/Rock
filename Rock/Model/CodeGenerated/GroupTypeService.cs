@@ -93,6 +93,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<RegistrationTemplatePlacement>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, RegistrationTemplatePlacement.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -131,6 +137,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdministratorTerm = source.AdministratorTerm;
+            target.AllowAnyChildGroupType = source.AllowAnyChildGroupType;
             target.AllowedScheduleTypes = source.AllowedScheduleTypes;
             target.AllowGroupSync = source.AllowGroupSync;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
