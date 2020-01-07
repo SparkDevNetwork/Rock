@@ -130,6 +130,22 @@ namespace Rock.Model
         #endregion
     }
 
+    /// <summary>
+    /// see <see cref="RelatedEntity.PurposeKey" />
+    /// </summary>
+    public static class RelatedEntityPurposeKey
+    {
+        /// <summary>
+        /// The group placement
+        /// </summary>
+        public const string GroupPlacement = "PLACEMENT";
+
+        /// <summary>
+        /// The group placement template
+        /// </summary>
+        public const string GroupPlacementTemplate = "PLACEMENT-TEMPLATE";
+    }
+
     #region Entity Configuration
 
     /// <summary>

@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Rock.Model;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
 
@@ -577,30 +578,75 @@ namespace Rock.Data
         #region Related Entities
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities of the given entity type that (optionally) also have a matching purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> related target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
         /// <typeparam name="TT">The type of the Related Entities.</typeparam>
-        /// <param name="entityId">The Id of the entity you want to get the list of related entities for</param>
+        /// <param name="entityId">The entity identifier.</param>
         /// <param name="purposeKey">The purpose key.</param>
         /// <returns></returns>
-        public IQueryable<TT> GetRelatedEntities<TT>( int entityId, string purposeKey = "" ) where TT:IEntity
+        public IQueryable<TT> GetRelatedToSourceEntity<TT>( int entityId, string purposeKey ) where TT : IEntity
         {
             var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
-            var relatedEntities = GetRelatedEntities( entityId, relatedEntityTypeId.Value, purposeKey ).Cast<TT>();
+            var relatedEntities = GetRelatedToSourceEntity( entityId, relatedEntityTypeId.Value, purposeKey ).Cast<TT>();
 
             return relatedEntities;
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities of the given entity type that (optionally) also have a matching purpose key.
+        /// Sets the related target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="relatedEntities">The related entities.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        public void SetRelatedToSourceEntity<TT>( int entityId, List<TT> relatedEntities, string purposeKey ) where TT : IEntity
+        {
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
+            var currentRelatedEntities = GetRelatedToSourceEntity<TT>( entityId, purposeKey ).ToList();
+
+            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
+            var relatedEntityIds = relatedEntities.Select( a => a.Id ).ToList();
+
+            // delete related entities that are no longer in the list
+            foreach ( var currentRelatedEntity in currentRelatedEntities.Where( a => !relatedEntityIds.Contains(a.Id) ) )
+            {
+                // get related entity record(s) that need to be deleted since the relatedEntity is no longer in the list
+                var relatedEntityToDelete = relatedEntityService.Queryable()
+                    .Where( a => a.SourceEntityTypeId == sourceEntityTypeId.Value
+                            && a.TargetEntityTypeId == relatedEntityTypeId.Value
+                            && a.SourceEntityId == entityId
+                            && a.TargetEntityId == currentRelatedEntity.Id
+                            && a.PurposeKey == purposeKey ).ToList();
+                relatedEntityService.DeleteRange( relatedEntityToDelete );
+            }
+
+            // add related entity record for related entities that that don't have a related entity record
+            foreach ( var relatedEntityId in relatedEntityIds.Where( a => !currentRelatedEntities.Any( r => r.Id == a ) ) )
+            {
+                var relatedEntityRecord = new RelatedEntity();
+                relatedEntityRecord.SourceEntityTypeId = sourceEntityTypeId.Value;
+                relatedEntityRecord.SourceEntityId = entityId;
+
+                relatedEntityRecord.TargetEntityTypeId = relatedEntityTypeId.Value;
+                relatedEntityRecord.TargetEntityId = relatedEntityId;
+
+                relatedEntityRecord.PurposeKey = purposeKey;
+                relatedEntityService.Add( relatedEntityRecord );
+            }
+        }
+
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities of the given entity type that (optionally) also have a matching purpose key.
         /// </summary>
         /// <param name="entityId">The Id of the entity you want to get the list of related entities for</param>
         /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
         /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
         /// <returns>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities.
         /// </returns>
-        public IQueryable<IEntity> GetRelatedEntities( int entityId, int relatedEntityTypeId, string purposeKey = "" )
+        public IQueryable<IEntity> GetRelatedSourceOrTargetEntities( int entityId, int relatedEntityTypeId, string purposeKey )
         {
             var rockContext = this.Context as RockContext;
 
@@ -627,41 +673,41 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
-        /// <param name="entityId">A <see cref="System.Int32"/> representing the source entity identifier.</param>
-        /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
-        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <param name="sourceEntityId">The source entity identifier.</param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32" /> representing the related entity type identifier.</param>
+        /// <param name="purposeKey">A <see cref="System.String" /> representing the purpose key.</param>
         /// <returns>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> entities.
         /// </returns>
-        public IQueryable<IEntity> GetRelatedToSourceEntity( int entityId, int relatedEntityTypeId, string purposeKey = "" )
+        public IQueryable<IEntity> GetRelatedToSourceEntity( int sourceEntityId, int relatedEntityTypeId, string purposeKey )
         {
             var rockContext = this.Context as RockContext;
 
             var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
 
-            var srcQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToSource( entityId, entityType.Id, relatedEntityTypeId, purposeKey );
+            var srcQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToSource( sourceEntityId, entityType.Id, relatedEntityTypeId, purposeKey );
 
             return srcQuery;
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
-        /// <param name="entityId">A <see cref="System.Int32"/> representing the target entity identifier.</param>
-        /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
-        /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
+        /// <param name="targetEntityId">The target entity identifier.</param>
+        /// <param name="relatedEntityTypeId">A <see cref="System.Int32" /> representing the related entity type identifier.</param>
+        /// <param name="purposeKey">A <see cref="System.String" /> representing the purpose key.</param>
         /// <returns>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> entities.
         /// </returns>
-        public IQueryable<IEntity> GetRelatedToTargetEntity( int entityId, int relatedEntityTypeId, string purposeKey = "" )
+        public IQueryable<IEntity> GetRelatedToTargetEntity( int targetEntityId, int relatedEntityTypeId, string purposeKey )
         {
             var rockContext = this.Context as RockContext;
 
             var entityType = EntityTypeCache.Get( typeof( T ), false, rockContext );
 
-            var tgtQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToTarget( entityId, entityType.Id, relatedEntityTypeId, purposeKey );
+            var tgtQuery = new Rock.Model.RelatedEntityService( rockContext ).GetRelatedToTarget( targetEntityId, entityType.Id, relatedEntityTypeId, purposeKey );
 
             return tgtQuery;
         }
@@ -726,7 +772,6 @@ namespace Rock.Data
         /// <param name="query">The query.</param>
         /// <param name="parameters">The parameters.</param>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public IEnumerable<T> ExecuteQuery( string query, params object[] parameters )
         {
             return _objectSet.SqlQuery( query, parameters );

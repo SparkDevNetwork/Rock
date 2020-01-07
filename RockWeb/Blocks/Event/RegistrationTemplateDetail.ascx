@@ -251,11 +251,11 @@
 
                     <%-- Placement Configuration --%>
                     <Rock:PanelWidget ID="pwPlacementConfiguration" runat="server" Title="Placement Configuration">
-                        <Rock:Grid ID="gPlacementConfigurations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Placement Configuration">
+                        <Rock:Grid ID="gPlacementConfigurations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Placement Configuration" OnRowDataBound="gPlacementConfigurations_RowDataBound">
                             <Columns>
-                                <Rock:RockBoundField DataField="GroupTypeName" HeaderText="Group Type" />
-                                <Rock:RockBoundField DataField="SharedGroupNames" HeaderText="Shared Groups" />
-                                <Rock:RockBoundField DataField="AllowMultiple" HeaderText="Allow Multiple" />
+                                <Rock:RockLiteralField ID="lGroupTypeName" HeaderText="Group Type" />
+                                <Rock:RockLiteralField ID="lSharedGroupNames" HeaderText="Shared Groups" />
+                                <Rock:RockBoundField DataField="AllowMultiplePlacements" HeaderText="Allow Multiple" />
                                 <Rock:EditField OnClick="gPlacementConfigurations_EditClick" />
                                 <Rock:DeleteField OnClick="gPlacementConfigurations_DeleteClick" />
                             </Columns>
@@ -532,18 +532,18 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbPlacementConfigurationName" runat="server" Label="Name" />
+                        <Rock:RockTextBox ID="tbPlacementConfigurationName" runat="server" Label="Name" Required="true" MaxLength="100" ValidationGroup="PlacementConfiguration"/>
                     </div>
                     <div class="col-md-6">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:GroupTypePicker ID="gtpPlacementConfigurationGroupType" runat="server" Label="Group Type" Help="The group type to limit placement groups by." AutoPostBack="true" OnSelectedIndexChanged="gtpPlacementConfigurationGroupType_SelectedIndexChanged" />
+                        <Rock:GroupTypePicker ID="gtpPlacementConfigurationGroupType" runat="server" Label="Group Type" Help="The group type to limit placement groups by." ValidationGroup="PlacementConfiguration" Required="true" AutoPostBack="true" OnSelectedIndexChanged="gtpPlacementConfigurationGroupType_SelectedIndexChanged" />
                         <Rock:RockCheckBox ID="cbPlacementConfigurationAllowMultiple" runat="server" Label="Allow Multiple" Help="Determines if a registrant can be in more than one group for this placement." />
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbPlacementConfigurationIconCssClass" runat="server" Label="Icon CSS Class" Help="CSS Icon to use for the placement. If not provided, the icon for the group type will be used." />
+                        <Rock:RockTextBox ID="tbPlacementConfigurationIconCssClass" runat="server" Label="Icon CSS Class" Help="CSS Icon to use for the placement. If not provided, the icon for the group type will be used." ValidationGroup="PlacementConfiguration" />
                     </div>
                 </div>
 
@@ -552,16 +552,16 @@
                     <p>The groups below will be linked as placement groups to each registration instance of this template.</p>
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:Grid ID="gPlacementConfigurationSharedGroups" runat="server" DisplayType="Light" AllowPaging="false" AllowSorting="false">
+                            <Rock:Grid ID="gPlacementConfigurationSharedGroups" runat="server" DisplayType="Light" DataKeyNames="Id" AllowPaging="false" AllowSorting="false">
                                 <Columns>
-                                    <Rock:RockBoundField DataField="GroupName" HeaderText="Group" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Group" />
                                     <Rock:EditField OnClick="gPlacementConfigurationSharedGroups_EditClick" />
                                 </Columns>
                             </Rock:Grid>
                         </div>
                         <div class="col-md-6">
                             <asp:Panel ID="pnlPlacementConfigurationAddSharedGroup" runat="server" Visible="false">
-                                <Rock:GroupPicker ID="gpPlacementConfigurationAddSharedGroup" runat="server" Label="Group" />
+                                <Rock:RockDropDownList ID="ddlPlacementConfigurationAddSharedGroup" runat="server" Label="Group" />
                                 <asp:LinkButton ID="btnPlacementConfigurationAddSharedGroup" runat="server" CssClass="btn btn-sm btn-primary" Text="Add" OnClick="btnPlacementConfigurationAddSharedGroup_Click" />
                             </asp:Panel>
                         </div>
