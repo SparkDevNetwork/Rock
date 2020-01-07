@@ -24,6 +24,7 @@ namespace Rock.Plugin.HotFixes
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 44, "1.7.0" )]
     [Obsolete( "The Communication.MediumDataJson and CommunicationTemplate.MediumDataJson fields will be removed in Rock 1.10. So the plugin will be changed to do nothing starting in Rock 1.10" )]
+    [RockObsolete( "1.10" )]
     public class EnsureCommunicationMigration : Migration
     {
         /// <summary>

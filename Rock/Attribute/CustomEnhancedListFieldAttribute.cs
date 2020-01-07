@@ -47,16 +47,9 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomEnhancedListFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="CustomEnhancedListFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="listSource">The list source.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="key">The key.</param>
         public CustomEnhancedListFieldAttribute( string name )
             : base( name, "", false, "", "", 0, null, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName)
         {
