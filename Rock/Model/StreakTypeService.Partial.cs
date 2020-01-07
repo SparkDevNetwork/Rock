@@ -20,7 +20,6 @@ using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Dynamic;
-using System.Text;
 using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -301,6 +300,18 @@ namespace Rock.Model
         /// <param name="errorMessage"></param>
         public static void RebuildStreakTypeFromAttendance( int streakTypeId, out string errorMessage )
         {
+            RebuildStreakTypeFromAttendance( null, streakTypeId, out errorMessage );
+        }
+
+        /// <summary>
+        /// Rebuild the streak type occurrence map and streak maps from the attendance structure of the streak type.
+        /// This method makes it's own Rock Context and saves changes.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        /// <param name="streakTypeId">The streak type identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
+        public static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, int streakTypeId, out string errorMessage )
+        {
             errorMessage = string.Empty;
             var rockContext = new RockContext();
             var streakTypeService = new StreakTypeService( rockContext );
@@ -361,7 +372,8 @@ namespace Rock.Model
             }
 
             // Set the streak type occurrence map according to the dates returned
-            streakType.StartDate = occurrenceDates.First();
+            var firstOccurrenceDate = occurrenceDates.First();
+            streakType.StartDate = AlignDate( firstOccurrenceDate, streakTypeCache );
             streakTypeCache.SetFromEntity( streakType );
             var occurrenceMap = AllocateNewByteArray();
 
@@ -377,21 +389,50 @@ namespace Rock.Model
 
             streakType.OccurrenceMap = occurrenceMap;
             rockContext.SaveChanges();
+            streakTypeCache = StreakTypeCache.Get( streakTypeId );
 
             // Get all of the attendees for the streak type
             var personIds = occurrenceQuery
                 .SelectMany( ao => ao.Attendees.Where( a => a.DidAttend == true && a.PersonAlias != null ) )
                 .Select( a => a.PersonAlias.PersonId )
-                .Distinct();
+                .Distinct()
+                .ToList();
+
+            var totalCount = personIds.LongCount();
+            var batchCounter = 0;
+            var totalCounter = 0L;
 
             foreach ( var personId in personIds )
             {
-                RebuildStreakFromAttendance( streakTypeId, personId, out errorMessage );
+                if ( batchCounter == 0 )
+                {
+                    rockContext = new RockContext();
+                }
+
+                RebuildStreakFromAttendance( rockContext, streakTypeCache, streakType, streakType.StartDate, personId, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
                     return;
                 }
+
+                batchCounter++;
+                totalCounter++;
+
+                if ( batchCounter == 100 )
+                {
+                    rockContext.SaveChanges();
+                    rockContext.Dispose();
+                    batchCounter = 0;
+
+                    progress?.Report( ( int ) ( decimal.Divide( totalCounter, totalCount ) * 100 ) );
+                }
+            }
+
+            if ( batchCounter > 0 )
+            {
+                rockContext.SaveChanges();
+                rockContext.Dispose();
             }
         }
 
@@ -404,33 +445,9 @@ namespace Rock.Model
         /// <param name="errorMessage">The error message.</param>
         public static void RebuildStreakFromAttendance( int streakTypeId, int personId, out string errorMessage )
         {
-            errorMessage = string.Empty;
             var rockContext = new RockContext();
 
             var streakTypeService = new StreakTypeService( rockContext );
-            var streakService = new StreakService( rockContext );
-            var attendanceService = new AttendanceService( rockContext );
-            var personService = new PersonService( rockContext );
-
-            var person = personService.Queryable( "Aliases" ).AsNoTracking().FirstOrDefault( p => p.Id == personId );
-
-            // Validate the parameters
-            if ( person == null )
-            {
-                // This probably happened because the person is deceased
-                streakService.DeleteRange(
-                    streakService.Queryable().Where( se =>
-                        se.StreakTypeId == streakTypeId &&
-                        se.PersonAlias.PersonId == personId ) );
-                return;
-            }
-
-            if ( !person.PrimaryAliasId.HasValue )
-            {
-                errorMessage = $"The person with id {personId} did not have a primary alias id";
-                return;
-            }
-
             var streakType = streakTypeService.Get( streakTypeId );
             var streakTypeCache = StreakTypeCache.Get( streakTypeId );
 
@@ -454,10 +471,55 @@ namespace Rock.Model
 
             // Get the attendance that did occur
             var startDate = AlignDate( streakType.StartDate, streakTypeCache );
-            var minDate = startDate;
+
+            RebuildStreakFromAttendance( rockContext, streakTypeCache, streakType, startDate, personId, out errorMessage );
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Rebuild the streak map from the attendance structure of the streak type.
+        /// This method makes it's own Rock Context and saves changes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="streakTypeCache">The streak type cache.</param>
+        /// <param name="streakType">Type of the streak.</param>
+        /// <param name="alignedStreakTypeStartDate">The aligned streak type start date.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
+        private static void RebuildStreakFromAttendance( RockContext rockContext, StreakTypeCache streakTypeCache, StreakType streakType,
+            DateTime alignedStreakTypeStartDate, int personId, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var streakTypeService = new StreakTypeService( rockContext );
+            var streakService = new StreakService( rockContext );
+            var attendanceService = new AttendanceService( rockContext );
+            var personService = new PersonService( rockContext );
+
+            var person = personService.Queryable( "Aliases" ).AsNoTracking().FirstOrDefault( p => p.Id == personId );
+
+            // Validate the parameters
+            if ( person == null )
+            {
+                // This probably happened because the person is deceased
+                streakService.DeleteRange(
+                    streakService.Queryable().Where( se =>
+                        se.StreakTypeId == streakTypeCache.Id &&
+                        se.PersonAlias.PersonId == personId ) );
+                return;
+            }
+
+            if ( !person.PrimaryAliasId.HasValue )
+            {
+                errorMessage = $"The person with id {personId} did not have a primary alias id";
+                return;
+            }
+
+            // Get the attendance that did occur
+            var minDate = alignedStreakTypeStartDate;
 
             // Walk back the min date to see what actual minimum date is that aligns to the start date
-            while( AlignDate( minDate.AddDays(-1), streakTypeCache ) == startDate )
+            while ( AlignDate( minDate.AddDays( -1 ), streakTypeCache ) == alignedStreakTypeStartDate )
             {
                 minDate = minDate.AddDays( -1 );
             }
@@ -495,7 +557,7 @@ namespace Rock.Model
 
             // Get the enrollments
             var streaks = streakService.Queryable().Where( se =>
-                se.StreakTypeId == streakTypeId
+                se.StreakTypeId == streakType.Id
                 && se.PersonAlias.PersonId == personId ).ToList();
 
             // Keep the record that belongs to the person's primary alias. Delete the others.
@@ -507,7 +569,7 @@ namespace Rock.Model
             {
                 streakToKeep = new Streak
                 {
-                    StreakTypeId = streakTypeId,
+                    StreakTypeId = streakType.Id,
                     PersonAliasId = person.PrimaryAliasId.Value,
                     EnrollmentDate = enrollmentDate
                 };
@@ -547,7 +609,6 @@ namespace Rock.Model
             }
 
             streakToKeep.EngagementMap = engagementMap;
-            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -983,18 +1044,23 @@ namespace Rock.Model
             }
 
             // Apply default values to parameters
+            if ( !dateOfEngagement.HasValue )
+            {
+                dateOfEngagement = RockDateTime.Today;
+            }
+
             var maxDate = AlignDate( RockDateTime.Today, streakTypeCache );
             var minDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
-            dateOfEngagement = AlignDate( dateOfEngagement ?? maxDate, streakTypeCache );
+            var alignedDateOfEngagement = AlignDate( dateOfEngagement.Value, streakTypeCache );
 
             // Validate the engagement date
-            if ( dateOfEngagement < minDate )
+            if ( alignedDateOfEngagement < minDate )
             {
                 errorMessage = "Cannot mark engagement before the streak type start date";
                 return;
             }
 
-            if ( dateOfEngagement > maxDate )
+            if ( alignedDateOfEngagement > maxDate )
             {
                 errorMessage = "Cannot mark engagement in the future";
                 return;
@@ -1014,7 +1080,7 @@ namespace Rock.Model
             if ( streak == null )
             {
                 // Enroll the person since they are marking engagement and enrollment is not required
-                streak = Enroll( streakTypeCache, personId, out errorMessage, dateOfEngagement, locationId );
+                streak = Enroll( streakTypeCache, personId, out errorMessage, alignedDateOfEngagement, locationId );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
@@ -1029,7 +1095,7 @@ namespace Rock.Model
             }
 
             // Mark engagement on the enrollment map
-            streak.EngagementMap = SetBit( streakTypeCache, streak.EngagementMap, dateOfEngagement.Value, true, out errorMessage );
+            streak.EngagementMap = SetBit( streakTypeCache, streak.EngagementMap, alignedDateOfEngagement, true, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1048,7 +1114,7 @@ namespace Rock.Model
             // Ensure the occurrence bit is set on the streak type model. Check first if it is already set because updating the streak type
             // occurrence map means that all streaks need to be recalculated, so it's expensive
             var streakType = Get( streakTypeCache.Id );
-            var isOccurrenceSet = IsBitSet( streakTypeCache, streakType.OccurrenceMap, dateOfEngagement.Value, out errorMessage );
+            var isOccurrenceSet = IsBitSet( streakTypeCache, streakType.OccurrenceMap, alignedDateOfEngagement, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1057,7 +1123,7 @@ namespace Rock.Model
 
             if ( !isOccurrenceSet )
             {
-                streakType.OccurrenceMap = SetBit( streakTypeCache, streakType.OccurrenceMap, dateOfEngagement.Value, true, out errorMessage );
+                streakType.OccurrenceMap = SetBit( streakTypeCache, streakType.OccurrenceMap, alignedDateOfEngagement, true, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {

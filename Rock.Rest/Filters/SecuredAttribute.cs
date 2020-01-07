@@ -40,23 +40,15 @@ namespace Rock.Rest.Filters
         /// <param name="actionContext">The action context.</param>
         public override void OnActionExecuting( HttpActionContext actionContext )
         {
+            var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) actionContext.ActionDescriptor;
+
             var controller = actionContext.ActionDescriptor.ControllerDescriptor;
             string controllerClassName = controller.ControllerType.FullName;
             string actionMethod = actionContext.Request.Method.Method;
-            string actionPath = actionContext.Request.GetRouteData().Route.RouteTemplate.Replace( "{controller}", controller.ControllerName );
 
-            //// find any additional arguments that aren't part of the RouteTemplate that qualified the action method
-            //// for example: ~/person/search?name={name}&includeHtml={includeHtml}&includeDetails={includeDetails}&includeBusinesses={includeBusinesses}
-            //// is a different action method than ~/person/search?name={name}.
-            //// Also exclude any ODataQueryOptions parameters (those don't end up as put of the apiId)
-            var routeQueryParams = actionContext.ActionArguments.Where( a => actionPath.IndexOf( "{" + a.Key + "}", StringComparison.OrdinalIgnoreCase ) < 0 && !( a.Value is System.Web.Http.OData.Query.ODataQueryOptions ) );
-            if ( routeQueryParams.Any())
-            {
-                var actionPathQueryString = routeQueryParams.Select( a => string.Format( "{0}={{{0}}}", a.Key ) ).ToList().AsDelimited( "&" );
-                actionPath += "?" + actionPathQueryString;
-            }
+            var apiId = RestControllerService.GetApiId( reflectedHttpActionDescriptor.MethodInfo, actionMethod, controller.ControllerName );
+            ISecured item = RestActionCache.Get( apiId );
 
-            ISecured item = RestActionCache.Get( actionMethod + actionPath );
             if ( item == null )
             {
                 // if there isn't a RestAction in the database, use the Controller as the secured item
