@@ -122,6 +122,8 @@
     <Compile Include="Controllers\CheckinController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AssessmentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AssessmentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
@@ -130,6 +132,9 @@
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DocumentTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EntityCampusFiltersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupDemographicTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupDemographicValuesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.cs" />
@@ -150,6 +155,7 @@
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RelatedEntitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SmsActionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />
@@ -157,6 +163,7 @@
     <Compile Include="Controllers\CodeGenerated\StepTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepWorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepWorkflowTriggersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakAchievementAttemptsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />

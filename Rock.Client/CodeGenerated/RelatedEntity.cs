@@ -27,30 +27,12 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for ContentChannel that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for RelatedEntity that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class ContentChannelEntity
+    public partial class RelatedEntityEntity
     {
         /// <summary />
         public int Id { get; set; }
-
-        /// <summary />
-        public string ChannelUrl { get; set; }
-
-        /// <summary />
-        public bool ChildItemsManuallyOrdered { get; set; }
-
-        /// <summary />
-        public int ContentChannelTypeId { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.ContentControlType ContentControlType { get; set; }
-
-        /// <summary />
-        public string Description { get; set; }
-
-        /// <summary />
-        public bool EnableRss { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -59,25 +41,7 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public string IconCssClass { get; set; }
-
-        /// <summary />
-        public bool IsIndexEnabled { get; set; }
-
-        /// <summary />
-        public bool IsStructuredContent { get; set; }
-
-        /// <summary />
-        public bool IsTaggingEnabled { get; set; }
-
-        /// <summary />
-        public bool ItemsManuallyOrdered { get; set; }
-
-        /// <summary />
-        public int? ItemTagCategoryId { get; set; }
-
-        /// <summary />
-        public string ItemUrl { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -85,19 +49,25 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public int Order { get; set; }
 
         /// <summary />
-        public bool RequiresApproval { get; set; }
+        public string PurposeKey { get; set; }
 
         /// <summary />
-        public string RootImageDirectory { get; set; }
+        public string QualifierValue { get; set; }
 
         /// <summary />
-        public int? StructuredContentToolValueId { get; set; }
+        public int SourceEntityId { get; set; }
 
         /// <summary />
-        public int? TimeToLive { get; set; }
+        public int SourceEntityTypeId { get; set; }
+
+        /// <summary />
+        public int TargetEntityId { get; set; }
+
+        /// <summary />
+        public int TargetEntityTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -126,33 +96,23 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source ContentChannel object
+        /// Copies the base properties from a source RelatedEntity object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( ContentChannel source )
+        public void CopyPropertiesFrom( RelatedEntity source )
         {
             this.Id = source.Id;
-            this.ChannelUrl = source.ChannelUrl;
-            this.ChildItemsManuallyOrdered = source.ChildItemsManuallyOrdered;
-            this.ContentChannelTypeId = source.ContentChannelTypeId;
-            this.ContentControlType = source.ContentControlType;
-            this.Description = source.Description;
-            this.EnableRss = source.EnableRss;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IconCssClass = source.IconCssClass;
-            this.IsIndexEnabled = source.IsIndexEnabled;
-            this.IsStructuredContent = source.IsStructuredContent;
-            this.IsTaggingEnabled = source.IsTaggingEnabled;
-            this.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
-            this.ItemTagCategoryId = source.ItemTagCategoryId;
-            this.ItemUrl = source.ItemUrl;
+            this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.RequiresApproval = source.RequiresApproval;
-            this.RootImageDirectory = source.RootImageDirectory;
-            this.StructuredContentToolValueId = source.StructuredContentToolValueId;
-            this.TimeToLive = source.TimeToLive;
+            this.Order = source.Order;
+            this.PurposeKey = source.PurposeKey;
+            this.QualifierValue = source.QualifierValue;
+            this.SourceEntityId = source.SourceEntityId;
+            this.SourceEntityTypeId = source.SourceEntityTypeId;
+            this.TargetEntityId = source.TargetEntityId;
+            this.TargetEntityTypeId = source.TargetEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -164,21 +124,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for ContentChannel that includes all the fields that are available for GETs. Use this for GETs (use ContentChannelEntity for POST/PUTs)
+    /// Client model for RelatedEntity that includes all the fields that are available for GETs. Use this for GETs (use RelatedEntityEntity for POST/PUTs)
     /// </summary>
-    public partial class ContentChannel : ContentChannelEntity
+    public partial class RelatedEntity : RelatedEntityEntity
     {
         /// <summary />
-        public ICollection<ContentChannel> ChildContentChannels { get; set; }
+        public EntityType SourceEntityType { get; set; }
 
         /// <summary />
-        public ContentChannelType ContentChannelType { get; set; }
-
-        /// <summary />
-        public Category ItemTagCategory { get; set; }
-
-        /// <summary />
-        public DefinedValue StructuredContentToolValue { get; set; }
+        public EntityType TargetEntityType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
