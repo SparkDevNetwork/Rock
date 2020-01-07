@@ -161,6 +161,7 @@ namespace RockWeb.Blocks.Finance
     [TextField(
         "Anonymous Giving Tool-tip",
         Key = AttributeKey.AnonymousGivingTooltip,
+        IsRequired = false,
         Description = "The tool-tip for the 'Give Anonymously' check box.",
         Category = AttributeCategory.None,
         Order = 25 )]
@@ -260,11 +261,18 @@ namespace RockWeb.Blocks.Finance
         Order = 3 )]
 
     [TextField(
-        "Give Button Text",
-        Key = AttributeKey.GiveButtonText,
+        "Give Button Text - Now ",
+        Key = AttributeKey.GiveButtonNowText,
         DefaultValue = "Give Now",
         Category = AttributeCategory.TextOptions,
         Order = 4 )]
+
+    [TextField(
+        "Give Button Text - Scheduled",
+        Key = AttributeKey.GiveButtonScheduledText,
+        DefaultValue = "Schedule Your Gift",
+        Category = AttributeCategory.TextOptions,
+        Order = 5 )]
 
     [CodeEditorField(
         "Amount Summary Template",
@@ -273,7 +281,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The text (HTML) to display on the amount summary page. <span class='tip tip-lava'></span>",
         DefaultValue = DefaultAmountSummaryTemplate,
         Category = AttributeCategory.TextOptions,
-        Order = 5 )]
+        Order = 6 )]
 
     [CodeEditorField(
         "Finish Lava Template",
@@ -282,7 +290,7 @@ namespace RockWeb.Blocks.Finance
         Description = "The text (HTML) to display on the success page. <span class='tip tip-lava'></span>",
         DefaultValue = DefaultFinishLavaTemplate,
         Category = AttributeCategory.TextOptions,
-        Order = 6 )]
+        Order = 7 )]
 
     #endregion
 
@@ -671,7 +679,9 @@ mission. We are so grateful for your commitment.</p>
 
             public const string GiftTerm = "GiftTerm";
 
-            public const string GiveButtonText = "GiveButtonText";
+            public const string GiveButtonNowText = "GiveButtonNowText";
+
+            public const string GiveButtonScheduledText = "GiveButtonScheduledText";
 
             public const string AmountSummaryTemplate = "AmountSummaryTemplate";
 
@@ -1248,6 +1258,9 @@ mission. We are so grateful for your commitment.</p>
                 financialScheduledTransactionService.GetStatus( scheduledTransaction, out errorMessage );
             }
 
+            // in case .GetStatus set an schedule to IsActive=False, filter the scheduledTransactionList by IsActive=True again
+            scheduledTransactionList = scheduledTransactionList.Where( a => a.IsActive ).ToList();
+
             rockContext.SaveChanges();
 
             if ( !scheduledTransactionList.Any() )
@@ -1653,7 +1666,7 @@ mission. We are so grateful for your commitment.</p>
             }
 
             lIntroMessage.Text = introMessageTemplate.ResolveMergeFields( introMessageMergeFields );
-            btnGiveNow.Text = GetAttributeValue( AttributeKey.GiveButtonText );
+            btnGiveNow.Text = GetAttributeValue( AttributeKey.GiveButtonNowText );
 
             pnlTransactionEntry.Visible = true;
 
@@ -2283,9 +2296,11 @@ mission. We are so grateful for your commitment.</p>
                 }
 
                 dtpStartDate.Label = string.Format( "Process {0} On", giftTerm );
+                btnGiveNow.Text = this.GetAttributeValue( AttributeKey.GiveButtonNowText );
             }
             else
             {
+                btnGiveNow.Text = this.GetAttributeValue( AttributeKey.GiveButtonScheduledText );
                 dtpStartDate.Visible = true;
                 dtpStartDate.Label = "Start Giving On";
             }

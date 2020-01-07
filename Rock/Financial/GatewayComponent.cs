@@ -388,8 +388,10 @@ namespace Rock.Financial
                 return scheduledTransaction.StartDate;
             }
 
+            var transactionFrequencyValue = DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId );
+
             // If scheduled transaction does not have a frequency, just return null
-            if ( scheduledTransaction.TransactionFrequencyValue == null )
+            if ( transactionFrequencyValue == null )
             {
                 return null;
             }
@@ -403,7 +405,7 @@ namespace Rock.Financial
 
             // Calculate the next payment date based on the frequency
             DateTime? nextPayment = null;
-            switch ( scheduledTransaction.TransactionFrequencyValue.Guid.ToString().ToUpper() )
+            switch ( transactionFrequencyValue.Guid.ToString().ToUpper() )
             {
                 case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
                     nextPayment = startDate.AddDays( 7 );
