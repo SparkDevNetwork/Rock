@@ -38,6 +38,9 @@ namespace Rock.Client
         public string AdministratorTerm { get; set; } = @"Administrator";
 
         /// <summary />
+        public bool AllowAnyChildGroupType { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.ScheduleType AllowedScheduleTypes { get; set; }
 
         /// <summary />
@@ -72,6 +75,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool EnableGroupTag { get; set; }
+
+        /// <summary />
+        public bool EnableInactiveReason { get; set; }
 
         /// <summary />
         public bool? EnableLocationSchedules { get; set; }
@@ -318,6 +324,9 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
+        public bool RequiresInactiveReason { get; set; }
+
+        /// <summary />
         public bool RequiresReasonIfDeclineSchedule { get; set; }
 
         /// <summary />
@@ -390,6 +399,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdministratorTerm = source.AdministratorTerm;
+            this.AllowAnyChildGroupType = source.AllowAnyChildGroupType;
             this.AllowedScheduleTypes = source.AllowedScheduleTypes;
             this.AllowGroupSync = source.AllowGroupSync;
             this.AllowMultipleLocations = source.AllowMultipleLocations;
@@ -402,6 +412,7 @@ namespace Rock.Client
             this.Description = source.Description;
             this.EnableGroupHistory = source.EnableGroupHistory;
             this.EnableGroupTag = source.EnableGroupTag;
+            this.EnableInactiveReason = source.EnableInactiveReason;
             this.EnableLocationSchedules = source.EnableLocationSchedules;
             this.EnableRSVP = source.EnableRSVP;
             this.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
@@ -428,6 +439,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
+            this.RequiresInactiveReason = source.RequiresInactiveReason;
             this.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             this.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             this.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;

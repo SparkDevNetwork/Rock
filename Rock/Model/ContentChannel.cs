@@ -198,6 +198,16 @@ namespace Rock.Model
         [DataMember]
         public bool IsStructuredContent { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Structure Content Tool Id.
+        /// </summary>
+        /// <value>
+        /// The structure content tool value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? StructuredContentToolValueId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -219,6 +229,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category ItemTagCategory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the content channel's structure content tool.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the content channel's structure content tool.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue StructuredContentToolValue { get; set; }
 
         /// <summary>
         /// Gets or sets the items.
@@ -441,6 +460,7 @@ namespace Rock.Model
             this.HasMany( p => p.ChildContentChannels ).WithMany( c => c.ParentContentChannels ).Map( m => { m.MapLeftKey( "ContentChannelId" ); m.MapRightKey( "ChildContentChannelId" ); m.ToTable( "ContentChannelAssociation" ); } );
             this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ItemTagCategory ).WithMany().HasForeignKey( c => c.ItemTagCategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.StructuredContentToolValue ).WithMany().HasForeignKey( p => p.StructuredContentToolValueId ).WillCascadeOnDelete( false );
         }
     }
 

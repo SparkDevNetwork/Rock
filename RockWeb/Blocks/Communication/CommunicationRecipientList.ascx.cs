@@ -328,8 +328,7 @@ namespace RockWeb.Blocks.Communication
             {
                 Id = c.Id,
                 CommunicationType = c.CommunicationType,
-                // Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
-                Subject = string.IsNullOrEmpty( c.Name ) ? ( string.IsNullOrEmpty( c.Subject ) ? c.PushTitle : c.Subject ) : c.Name,
+                Subject = string.IsNullOrEmpty( c.Subject ) ? ( string.IsNullOrEmpty( c.PushTitle ) ? c.Name : c.PushTitle ) : c.Subject,
                 CreatedDateTime = c.CreatedDateTime,
                 Sender = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person : null,
                 Status = c.Status,

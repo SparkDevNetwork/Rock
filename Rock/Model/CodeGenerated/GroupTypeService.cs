@@ -93,6 +93,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, RegistrationTemplate.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<RegistrationTemplatePlacement>( Context ).Queryable().Any( a => a.GroupTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, RegistrationTemplatePlacement.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -131,6 +137,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdministratorTerm = source.AdministratorTerm;
+            target.AllowAnyChildGroupType = source.AllowAnyChildGroupType;
             target.AllowedScheduleTypes = source.AllowedScheduleTypes;
             target.AllowGroupSync = source.AllowGroupSync;
             target.AllowMultipleLocations = source.AllowMultipleLocations;
@@ -143,6 +150,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.EnableGroupHistory = source.EnableGroupHistory;
             target.EnableGroupTag = source.EnableGroupTag;
+            target.EnableInactiveReason = source.EnableInactiveReason;
             target.EnableLocationSchedules = source.EnableLocationSchedules;
             target.EnableRSVP = source.EnableRSVP;
             target.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
@@ -168,6 +176,7 @@ namespace Rock.Model
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.RequiresInactiveReason = source.RequiresInactiveReason;
             target.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             target.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
