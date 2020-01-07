@@ -555,7 +555,7 @@
                             <Rock:Grid ID="gPlacementConfigurationSharedGroups" runat="server" DisplayType="Light" DataKeyNames="Id" AllowPaging="false" AllowSorting="false">
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Group" />
-                                    <Rock:EditField OnClick="gPlacementConfigurationSharedGroups_EditClick" />
+                                    <Rock:DeleteField OnClick="gPlacementConfigurationSharedGroups_DeleteClick" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

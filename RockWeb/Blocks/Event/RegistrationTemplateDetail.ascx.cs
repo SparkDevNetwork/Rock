@@ -483,7 +483,6 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplatePlacementGuidGroupIdsState = JsonConvert.DeserializeObject<Dictionary<Guid, List<int>>>( json );
             }
 
-
             json = ViewState[ViewStateKey.FeeStateJSON] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
@@ -1330,6 +1329,11 @@ The logged-in person's information will be used to complete the registrar inform
 
                     var sharedPlacementGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid ) ?? new List<int>();
                     var sharedPlacementGroups = groupService.GetByIds( sharedPlacementGroupIds ).ToList();
+                    if ( registrationTemplatePlacement.Id == 0 )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
                     registrationTemplatePlacementService.SetPlacementGroupTemplates( registrationTemplatePlacement, sharedPlacementGroups );
                 }
 
@@ -2376,7 +2380,6 @@ The logged-in person's information will be used to complete the registrar inform
                     .ThenBy( a => a.Name )
                     .ToList();
 
-
                 var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
 
                 RegistrationTemplatePlacementState = registrationTemplate.Placements.ToList();
@@ -3003,7 +3006,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             // If this is a RegistrantAttribute, the ShowOnGrid is determined by the Attribute's ShowOnGrid, so we don't need to show the top ShowOnGrid option
             // Also, if this is a GroupMemberAttribute, we'll hide the ShowOnGrid and they'll have to go the GroupMemberList block to see those
-            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute && fieldSource != RegistrationFieldSource.GroupMemberAttribute );
+            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute ) && ( fieldSource != RegistrationFieldSource.GroupMemberAttribute );
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
 
             edtRegistrantAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrantAttribute;
@@ -3412,8 +3415,8 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="registrationFeeType">Type of the registration fee.</param>
         private void BindFeeItemsControls( List<RegistrationTemplateFeeItem> feeItems, RegistrationFeeType registrationFeeType )
         {
-            rcwFeeItemsSingle.Visible = ( registrationFeeType == RegistrationFeeType.Single );
-            rcwFeeItemsMultiple.Visible = ( registrationFeeType == RegistrationFeeType.Multiple );
+            rcwFeeItemsSingle.Visible = registrationFeeType == RegistrationFeeType.Single;
+            rcwFeeItemsMultiple.Visible = registrationFeeType == RegistrationFeeType.Multiple;
             nbFeeItemsConfigurationWarning.Visible = false;
 
             if ( registrationFeeType == RegistrationFeeType.Single )
@@ -3567,7 +3570,6 @@ The logged-in person's information will be used to complete the registrar inform
             return feeItemsHtml.AsDelimited( ", " );
         }
 
-
         #endregion Fee Methods
 
         #region Dialog Methods
@@ -3614,6 +3616,9 @@ The logged-in person's information will be used to complete the registrar inform
 
         #region Placement Configuration Related
 
+        /// <summary>
+        /// Binds the placement configurations grid.
+        /// </summary>
         private void BindPlacementConfigurationsGrid()
         {
             if ( RegistrationTemplatePlacementState != null )
@@ -3623,6 +3628,11 @@ The logged-in person's information will be used to complete the registrar inform
             }
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void gPlacementConfigurations_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             RegistrationTemplatePlacement registrationTemplatePlacement = e.Row.DataItem as RegistrationTemplatePlacement;
@@ -3635,20 +3645,35 @@ The logged-in person's information will be used to complete the registrar inform
             lGroupTypeName.Text = GroupTypeCache.Get( registrationTemplatePlacement.GroupTypeId ).Name;
             Literal lSharedGroupNames = e.Row.FindControl( "lSharedGroupNames" ) as Literal;
             var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid );
-            lSharedGroupNames.Text = sharedGroupIds.AsDelimited( "," );
+            var sharedGroupNameList = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).Select( a => a.Name ).ToList();
 
+            lSharedGroupNames.Text = sharedGroupNameList.AsDelimited( ", ", " and " );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
         private void gPlacementConfigurations_GridRebind( object sender, GridRebindEventArgs e )
         {
             BindPlacementConfigurationsGrid();
         }
 
+        /// <summary>
+        /// Handles the AddClick event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPlacementConfigurations_AddClick( object sender, EventArgs e )
         {
             gPlacementConfigurationsAddEdit( Guid.NewGuid() );
         }
 
+        /// <summary>
+        /// gs the placement configurations add edit.
+        /// </summary>
+        /// <param name="registrationPlacementConfigurationGuid">The registration placement configuration unique identifier.</param>
         private void gPlacementConfigurationsAddEdit( Guid registrationPlacementConfigurationGuid )
         {
             hfRegistrationPlacementConfigurationGuid.Value = registrationPlacementConfigurationGuid.ToString();
@@ -3665,7 +3690,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbPlacementConfigurationAllowMultiple.Checked = registrationTemplatePlacement.AllowMultiplePlacements;
             tbPlacementConfigurationIconCssClass.Text = registrationTemplatePlacement.IconCssClass;
 
-            List<int> sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationPlacementConfigurationGuid );
+            List<int> sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationPlacementConfigurationGuid ) ?? new List<int>();
             hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
 
             gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
@@ -3674,22 +3699,37 @@ The logged-in person's information will be used to complete the registrar inform
             dlgPlacementConfiguration.Show();
         }
 
+        /// <summary>
+        /// Handles the EditClick event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPlacementConfigurations_EditClick( object sender, RowEventArgs e )
         {
             gPlacementConfigurationsAddEdit( ( Guid ) e.RowKeyValue );
         }
 
+        /// <summary>
+        /// Handles the DeleteClick event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPlacementConfigurations_DeleteClick( object sender, RowEventArgs e )
         {
+            var registrationTemplatePlacement = RegistrationTemplatePlacementState.FirstOrDefault( a => a.Guid == ( Guid ) e.RowKeyValue );
+            if ( registrationTemplatePlacement != null )
+            {
+                RegistrationTemplatePlacementState.Remove( registrationTemplatePlacement );
 
+                BindPlacementConfigurationsGrid();
+            }
         }
 
-        private void gPlacementConfigurationSharedGroups_AddClick( object sender, EventArgs e )
-        {
-            LoadAddSharedPlacementGroupsDropDown( gtpPlacementConfigurationGroupType.SelectedGroupTypeId );
-            pnlPlacementConfigurationAddSharedGroup.Visible = true;
-        }
-
+        /// <summary>
+        /// Handles the SaveClick event of the dlgPlacementConfiguration control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgPlacementConfiguration_SaveClick( object sender, EventArgs e )
         {
             var registrationTemplatePlacementGuid = hfRegistrationPlacementConfigurationGuid.Value.AsGuid();
@@ -3711,12 +3751,40 @@ The logged-in person's information will be used to complete the registrar inform
             BindPlacementConfigurationsGrid();
         }
 
-
-        protected void gPlacementConfigurationSharedGroups_EditClick( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the AddClick event of the gPlacementConfigurationSharedGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gPlacementConfigurationSharedGroups_AddClick( object sender, EventArgs e )
         {
-
+            LoadAddSharedPlacementGroupsDropDown( gtpPlacementConfigurationGroupType.SelectedGroupTypeId );
+            pnlPlacementConfigurationAddSharedGroup.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the DeleteClick event of the gPlacementConfigurationSharedGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gPlacementConfigurationSharedGroups_DeleteClick( object sender, RowEventArgs e )
+        {
+            var sharedGroupIds = hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList();
+            var selectedGroupId = e.RowKeyId;
+            if ( sharedGroupIds.Contains( selectedGroupId ) )
+            {
+                sharedGroupIds.Remove( selectedGroupId );
+                hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
+            }
+
+            BindPlacementConfigurationSharedGroups( sharedGroupIds );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPlacementConfigurationAddSharedGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPlacementConfigurationAddSharedGroup_Click( object sender, EventArgs e )
         {
             var sharedGroupIds = hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList();
@@ -3730,6 +3798,15 @@ The logged-in person's information will be used to complete the registrar inform
                 }
             }
 
+            BindPlacementConfigurationSharedGroups( sharedGroupIds );
+        }
+
+        /// <summary>
+        /// Binds the placement configuration shared groups.
+        /// </summary>
+        /// <param name="sharedGroupIds">The shared group ids.</param>
+        private void BindPlacementConfigurationSharedGroups( List<int> sharedGroupIds )
+        {
             gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             gPlacementConfigurationSharedGroups.DataBind();
         }
@@ -3746,6 +3823,10 @@ The logged-in person's information will be used to complete the registrar inform
             LoadAddSharedPlacementGroupsDropDown( gtpPlacementConfigurationGroupType.SelectedGroupTypeId );
         }
 
+        /// <summary>
+        /// Loads the add shared placement groups drop down.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
         private void LoadAddSharedPlacementGroupsDropDown( int? groupTypeId )
         {
             ddlPlacementConfigurationAddSharedGroup.Items.Clear();

@@ -593,6 +593,18 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Deletes any related entities that reference the specified entity
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        public void DeleteRelatedEntities( T entity )
+        {
+            var relatedEntityService = new RelatedEntityService( this.Context as RockContext );
+            var sourceOrTargetEntityTypeId = EntityTypeCache.GetId<T>();
+            var relatedEntityRecords = relatedEntityService.Queryable().Where( a => ( a.SourceEntityTypeId == sourceOrTargetEntityTypeId && a.SourceEntityId == entity.Id ) || ( a.TargetEntityTypeId == sourceOrTargetEntityTypeId && a.TargetEntityId == entity.Id ) ).ToList();
+            relatedEntityService.DeleteRange( relatedEntityRecords );
+        }
+
+        /// <summary>
         /// Sets the related target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
         /// <typeparam name="TT">The type of the t.</typeparam>
@@ -609,7 +621,7 @@ namespace Rock.Data
             var relatedEntityIds = relatedEntities.Select( a => a.Id ).ToList();
 
             // delete related entities that are no longer in the list
-            foreach ( var currentRelatedEntity in currentRelatedEntities.Where( a => !relatedEntityIds.Contains(a.Id) ) )
+            foreach ( var currentRelatedEntity in currentRelatedEntities.Where( a => !relatedEntityIds.Contains( a.Id ) ) )
             {
                 // get related entity record(s) that need to be deleted since the relatedEntity is no longer in the list
                 var relatedEntityToDelete = relatedEntityService.Queryable()
@@ -635,7 +647,6 @@ namespace Rock.Data
                 relatedEntityService.Add( relatedEntityRecord );
             }
         }
-
 
         /// <summary>
         /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities of the given entity type that (optionally) also have a matching purpose key.
