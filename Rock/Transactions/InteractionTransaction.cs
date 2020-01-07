@@ -176,6 +176,7 @@ namespace Rock.Transactions
         /// The interaction summary.
         /// </value>
         [Obsolete( "Use the constructor that takes InteractionTransactionOptions" )]
+        [RockObsolete( "1.11" )]
         public string InteractionSummary { get; set; }
 
         /// <summary>
@@ -185,6 +186,7 @@ namespace Rock.Transactions
         ///   <c>true</c> if [log crawlers]; otherwise, <c>false</c>.
         /// </value>
         [Obsolete( "Use the constructor that takes InteractionTransactionOptions" )]
+        [RockObsolete( "1.11" )]
         public bool LogCrawlers { get; set; } = false;
 
         /// <summary>
@@ -194,6 +196,7 @@ namespace Rock.Transactions
         /// The current person alias identifier.
         /// </value>
         [Obsolete( "Use the constructor that takes InteractionTransactionOptions" )]
+        [RockObsolete( "1.11" )]
         public int? CurrentPersonAliasId { get; set; }
 
         /// <summary>
