@@ -38,8 +38,10 @@ namespace Rockweb.Blocks.Crm
     [Description( "Allows you to take a conflict profile test and saves your conflict profile score." )]
 
     #region Block Attributes
-    [CodeEditorField( "Instructions",
-        Key = AttributeKeys.Instructions,
+
+    [CodeEditorField(
+        "Instructions",
+        Key = AttributeKey.Instructions,
         Description = "The text (HTML) to display at the top of the instructions section.  <span class='tip tip-lava'></span> <span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
         EditorTheme = CodeEditorTheme.Rock,
@@ -48,8 +50,9 @@ namespace Rockweb.Blocks.Crm
         DefaultValue = InstructionsDefaultValue,
         Order = 0 )]
 
-    [CodeEditorField( "Results Message",
-        Key = AttributeKeys.ResultsMessage,
+    [CodeEditorField(
+        "Results Message",
+        Key = AttributeKey.ResultsMessage,
         Description = "The text (HTML) to display at the top of the results section.<span class='tip tip-lava'></span><span class='tip tip-html'></span>",
         EditorMode = CodeEditorMode.Html,
         EditorTheme = CodeEditorTheme.Rock,
@@ -58,15 +61,17 @@ namespace Rockweb.Blocks.Crm
         DefaultValue = ResultsMessageDefaultValue,
         Order = 1 )]
 
-    [TextField( "Set Page Title",
-        Key = AttributeKeys.SetPageTitle,
+    [TextField(
+        "Set Page Title",
+        Key = AttributeKey.SetPageTitle,
         Description = "The text to display as the heading.",
         IsRequired = false,
         DefaultValue = "Conflict Profile",
         Order = 2 )]
 
-    [TextField( "Set Page Icon",
-        Key = AttributeKeys.SetPageIcon,
+    [TextField(
+        "Set Page Icon",
+        Key = AttributeKey.SetPageIcon,
         Description = "The css class name to use for the heading icon.",
         IsRequired = false,
         DefaultValue = "fa fa-handshake",
@@ -74,7 +79,7 @@ namespace Rockweb.Blocks.Crm
 
     [IntegerField(
         "Number of Questions",
-        Key = AttributeKeys.NumberOfQuestions,
+        Key = AttributeKey.NumberOfQuestions,
         Description = "The number of questions to show per page while taking the test",
         IsRequired = true,
         DefaultIntegerValue = 7,
@@ -82,11 +87,13 @@ namespace Rockweb.Blocks.Crm
 
     [BooleanField(
         "Allow Retakes",
-        Key = AttributeKeys.AllowRetakes,
+        Key = AttributeKey.AllowRetakes,
         Description = "If enabled, the person can retake the test after the minimum days passes.",
         DefaultBooleanValue = true,
         Order = 5 )]
+
     #endregion Block Attributes
+
     public partial class ConflictProfile : Rock.Web.UI.RockBlock
     {
         #region AttributeDefaultValues
@@ -186,7 +193,7 @@ namespace Rockweb.Blocks.Crm
         #endregion AttributeDefaultValues
 
         #region Attribute Keys
-        private static class AttributeKeys
+        private static class AttributeKey
         {
             public const string NumberOfQuestions = "NumberofQuestions";
             public const string Instructions = "Instructions";
@@ -261,12 +268,12 @@ namespace Rockweb.Blocks.Crm
         {
             get
             {
-                return ViewState[AttributeKeys.NumberOfQuestions] as int? ?? 0;
+                return ViewState[AttributeKey.NumberOfQuestions] as int? ?? 0;
             }
 
             set
             {
-                ViewState[AttributeKeys.NumberOfQuestions] = value;
+                ViewState[AttributeKey.NumberOfQuestions] = value;
             }
         }
 
@@ -582,13 +589,13 @@ namespace Rockweb.Blocks.Crm
         /// </summary>
         private void SetPanelTitleAndIcon()
         {
-            string panelTitle = this.GetAttributeValue( AttributeKeys.SetPageTitle );
+            string panelTitle = this.GetAttributeValue( AttributeKey.SetPageTitle );
             if ( !string.IsNullOrEmpty( panelTitle ) )
             {
                 lTitle.Text = panelTitle;
             }
 
-            string panelIcon = this.GetAttributeValue( AttributeKeys.SetPageIcon );
+            string panelIcon = this.GetAttributeValue( AttributeKey.SetPageIcon );
             if ( !string.IsNullOrEmpty( panelIcon ) )
             {
                 iIcon.Attributes["class"] = panelIcon;
@@ -611,7 +618,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "Person", _targetPerson );
             }
 
-            lInstructions.Text = GetAttributeValue( AttributeKeys.Instructions ).ResolveMergeFields( mergeFields );
+            lInstructions.Text = GetAttributeValue( AttributeKey.Instructions ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -623,7 +630,7 @@ namespace Rockweb.Blocks.Crm
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
 
-            var allowRetakes = GetAttributeValue( AttributeKeys.AllowRetakes ).AsBoolean();
+            var allowRetakes = GetAttributeValue( AttributeKey.AllowRetakes ).AsBoolean();
             var minDays = assessment.AssessmentType.MinimumDaysToRetake;
 
             if ( !_isQuerystringPersonKey && allowRetakes && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( minDays ) <= RockDateTime.Now )
@@ -655,7 +662,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "EngagementProfileWinning", result.EngagementWinningScore );
             }
 
-            lResult.Text = GetAttributeValue( AttributeKeys.ResultsMessage ).ResolveMergeFields( mergeFields );
+            lResult.Text = GetAttributeValue( AttributeKey.ResultsMessage ).ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
@@ -677,7 +684,7 @@ namespace Rockweb.Blocks.Crm
             if ( QuestionCount == 0 && _assessmentResponses != null )
             {
                 // Set the max number of questions to be no greater than the actual number of questions.
-                int numQuestions = this.GetAttributeValue( AttributeKeys.NumberOfQuestions ).AsInteger();
+                int numQuestions = this.GetAttributeValue( AttributeKey.NumberOfQuestions ).AsInteger();
                 QuestionCount = ( numQuestions > _assessmentResponses.Count ) ? _assessmentResponses.Count : numQuestions;
             }
 

@@ -30,9 +30,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Handles displaying badges for an entity." )]
 
-    [BadgesField( "Badges" )]
+    [BadgesField(
+        "Badges",
+        Key = AttributeKey.Badges,
+        Description = "The badges to display.",
+        Order = 0 )]
+
     public partial class Badges : ContextEntityBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string Badges = "Badges";
+        }
+        #endregion Attribute Keys
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -43,7 +55,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( !Page.IsPostBack && Entity != null && Entity.Id != 0 )
             {
-                string badgeList = GetAttributeValue( "Badges" );
+                string badgeList = GetAttributeValue( AttributeKey.Badges );
                 if ( !string.IsNullOrWhiteSpace( badgeList ) )
                 {
                     foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )

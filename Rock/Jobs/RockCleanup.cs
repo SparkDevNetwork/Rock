@@ -857,7 +857,7 @@ namespace Rock.Jobs
             {
                 var attributeValueService = new AttributeValueService( rockContext );
                 int? entityTypeId = EntityTypeCache.GetId<T>();
-                var entityIdsQuery = new Service<T>( rockContext ).Queryable().Select( a => a.Id );
+                var entityIdsQuery = new Service<T>( rockContext ).AsNoFilter().Select( a => a.Id );
                 var orphanedAttributeValuesQuery = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) );
                 recordsDeleted += BulkDeleteInChunks( orphanedAttributeValuesQuery, batchAmount, commandTimeout );
             }

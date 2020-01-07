@@ -38,6 +38,9 @@ namespace Rock.Client
         public string AdministratorTerm { get; set; } = @"Administrator";
 
         /// <summary />
+        public bool AllowAnyChildGroupType { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.ScheduleType AllowedScheduleTypes { get; set; }
 
         /// <summary />
@@ -396,6 +399,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdministratorTerm = source.AdministratorTerm;
+            this.AllowAnyChildGroupType = source.AllowAnyChildGroupType;
             this.AllowedScheduleTypes = source.AllowedScheduleTypes;
             this.AllowGroupSync = source.AllowGroupSync;
             this.AllowMultipleLocations = source.AllowMultipleLocations;
