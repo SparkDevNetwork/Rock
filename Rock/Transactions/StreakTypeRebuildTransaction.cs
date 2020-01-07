@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using Rock.Model;
 
 namespace Rock.Transactions
@@ -23,8 +24,17 @@ namespace Rock.Transactions
     /// Transaction to rebuild streak type data from attendance data
     /// </summary>
     /// <seealso cref="Rock.Transactions.ITransaction" />
-    public class StreakTypeRebuildTransaction : ITransaction
+    public class StreakTypeRebuildTransaction : ITransactionWithProgress
     {
+        /// <summary>
+        /// Gets the progress. Should report between 0 and 100 to represent the percent complete or
+        /// null if the progress cannot be calculated.
+        /// </summary>
+        /// <value>
+        /// The progress.
+        /// </value>
+        public Progress<int?> Progress { get; private set; }
+
         /// <summary>
         /// Gets the streak type identifier.
         /// </summary>
@@ -37,6 +47,7 @@ namespace Rock.Transactions
         public StreakTypeRebuildTransaction( int streakTypeId )
         {
             StreakTypeId = streakTypeId;
+            Progress = new Progress<int?>();
         }
 
         /// <summary>
@@ -44,12 +55,24 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            StreakTypeService.RebuildStreakTypeFromAttendance( StreakTypeId, out var errorMessage );
+            ReportProgress( 0 );
+            StreakTypeService.RebuildStreakTypeFromAttendance( Progress, StreakTypeId, out var errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
                 ExceptionLogService.LogException( errorMessage );
             }
+
+            ReportProgress( 100 );
+        }
+
+        /// <summary>
+        /// Reports the progress.
+        /// </summary>
+        /// <param name="progress">The progress.</param>
+        private void ReportProgress(int progress)
+        {
+            ( ( IProgress<int?> ) Progress ).Report( progress );
         }
     }
 }
