@@ -95,7 +95,13 @@ namespace Rock.Jobs
             var groupHistoricalService = new GroupHistoricalService( rockContext );
             var groupService = new GroupService( rockContext );
 
-            var groupsWithHistoryEnabledQuery = groupService.Queryable().Where( a => a.GroupType.EnableGroupHistory == true ).AsNoTracking();
+            // Note that this query is explicitly unioning archived groups (via groupService.GetArchived())
+            // because groupService.Queryable() and the GroupConfiguration class explicitly filter out archived groups.
+            var groupsWithHistoryEnabledQuery = groupService.Queryable()
+                .Where( a => a.GroupType.EnableGroupHistory == true )
+                .Union( groupService.GetArchived().Where( a => a.GroupType.EnableGroupHistory == true ) )
+                .AsNoTracking();
+
             var groupHistoricalsCurrentQuery = groupHistoricalService.Queryable().Where( a => a.CurrentRowIndicator == true ).AsNoTracking();
 
             // Mark GroupHistorical Rows as History ( CurrentRowIndicator = false, etc ) if any of the tracked field values change

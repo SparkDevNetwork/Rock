@@ -296,6 +296,20 @@ namespace Rock.Rest.Controllers
                 {
                     try
                     {
+                        //
+                        // If the target type is nullable and the action parameter is an empty
+                        // string then consider it null. A GET query cannot have null values.
+                        //
+                        if ( Nullable.GetUnderlyingType( methodParameters[i].ParameterType ) != null )
+                        {
+                            if ( actionParameters[key].Type == JTokenType.String && actionParameters[key].ToString() == string.Empty )
+                            {
+                                parameters.Add( null );
+
+                                continue;
+                            }
+                        }
+
                         parameters.Add( actionParameters[key].ToObject( methodParameters[i].ParameterType ) );
                     }
                     catch

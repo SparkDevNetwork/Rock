@@ -651,6 +651,15 @@ namespace Rock.Model
         [DataMember]
         public bool RequiresInactiveReason { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating if group type allows any child group type.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow any child group type]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowAnyChildGroupType { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related
