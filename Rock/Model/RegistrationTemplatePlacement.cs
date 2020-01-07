@@ -17,6 +17,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
@@ -134,6 +136,22 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            if ( state == EntityState.Deleted )
+            {
+                new RegistrationTemplatePlacementService( dbContext as RockContext ).DeleteRelatedEntities( this );
+            }
+
+            base.PreSaveChanges( dbContext, entry, state );
+        }
     }
 
     #region Entity Configuration
@@ -150,7 +168,6 @@ namespace Rock.Model
         {
             this.HasRequired( i => i.RegistrationTemplate ).WithMany( t => t.Placements ).HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
-
         }
     }
 
