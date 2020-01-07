@@ -487,7 +487,6 @@
     <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
     <Compile Include="Plugin\HotFixes\094_AchievementPagesAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
-    <Compile Include="Plugin\HotFixes\099_RefreshRestControllerMethods.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
