@@ -19,7 +19,7 @@ namespace Rock.Migrations.Migrations {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class RockMigrationSQL {
@@ -1815,6 +1815,30 @@ namespace Rock.Migrations.Migrations {
         public static string _201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset {
             get {
                 return ResourceManager.GetString("_201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///VALUES (N&apos;Easy Pie Chart&apos;, N&apos;Lightweight plugin to render simple, animated and retina optimized pie charts.&apos;, N&apos;&lt;p&gt;Easy Pie Chart is the perfect solution when you need to display a single percentage value on a chart. In fact it&apos;&apos;s as simple as &lt;code&gt;{[easypie value:&apos;&apos;60&apos;&apos;]}{[endeasypie]}&lt;/code&gt;&lt;/p&gt;
+        ///&lt;p&gt;&lt;img src=&quot;https://rockrms.blob.core.w [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202001071827547_Rollup_0107_EasyPieChartShortcodeMigration {
+            get {
+                return ResourceManager.GetString("_202001071827547_Rollup_0107_EasyPieChartShortcodeMigration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF ( SELECT COUNT(*) FROM [LavaShortCode] WHERE [Guid] = &apos;E7AC1E9B-0200-49AF-967F-0A9D2DD0F968&apos; ) = 0
+        ///BEGIN
+        ///INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters],[Guid])
+        ///VALUES (N&apos;Sparkline Chart&apos;, N&apos;Generate small inline charts with just a single line of Lava.&apos;, N&apos;&lt;p&gt;Creating Sparklines with Lava is ridiculously easy with this shortcode. Basic examples for each type are shown below.&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202001071827547_Rollup_0107_SparklineShortcodeMigration {
+            get {
+                return ResourceManager.GetString("_202001071827547_Rollup_0107_SparklineShortcodeMigration", resourceCulture);
             }
         }
     }
