@@ -30,7 +30,8 @@ using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
+using Rock.Model;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -91,6 +92,8 @@ namespace RockWeb.Blocks.Cms
 
         private void Render()
         {
+            string content = null;
+
             try
             {
                 PageCache currentPage = PageCache.Get( RockPage.PageId );
@@ -150,13 +153,36 @@ namespace RockWeb.Blocks.Cms
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
 
+                // Add Page objects for each of the included pages.
+                var dataContext = new RockContext();
+
+                var includedPageProperty = new Dictionary<string, object>();
+
+                var includedPages = GetIncludePageList();
+
+                foreach ( var includedPage in includedPages )
+                {
+                    var includedPageLink = includedPage.Value.ToStringSafe();
+
+                    var page = GetPageFromLinkOrThrow( includedPageLink, dataContext );
+
+                    includedPageProperty.Add( includedPage.Key, page.GetMenuProperties( 0, CurrentPerson, dataContext ) );
+                }
+
+                pageProperties.Add( "IncludedPages", includedPageProperty.Values.ToList() );
                 var lavaTemplate = GetTemplate();
 
                 // Apply Enabled Lava Commands
                 var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
                 lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
 
-                string content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
+                content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
+
+                // Check for Lava rendering errors.
+                if ( lavaTemplate.Errors.Any() )
+                {
+                    throw lavaTemplate.Errors.First();
+                }
 
                 phContent.Controls.Clear();
                 phContent.Controls.Add( new LiteralControl( content ) );
@@ -165,17 +191,74 @@ namespace RockWeb.Blocks.Cms
             catch ( Exception ex )
             {
                 LogException( ex );
+
+                // Create a block showing the error and the attempted content render.
+                // Show the error first to ensure that it is visible, because the rendered content may disrupt subsequent output if it is malformed.
                 StringBuilder errorMessage = new StringBuilder();
                 errorMessage.Append( "<div class='alert alert-warning'>" );
-                errorMessage.Append( "An error has occurred while generating the page menu. Error details:" );
+                errorMessage.Append( "<h4>Warning</h4>" );
+                errorMessage.Append( "An error has occurred while generating the page menu. Error details:<br/>" );
                 errorMessage.Append( ex.Message );
-                errorMessage.Append( "</div>" );
+
+                if ( !string.IsNullOrWhiteSpace( content ) )
+                {
+                    errorMessage.Append( "<h4>Rendered Content</h4>" );
+                    errorMessage.Append( content );
+                    errorMessage.Append( "</div>" );
+                }
 
                 phContent.Controls.Add( new LiteralControl( errorMessage.ToString() ) );
             }
         }
 
         #region Methods
+
+        /// <summary>
+        /// Get a PageCache object that matches the provided link, or throw an exception if no match is found.
+        /// </summary>
+        /// <param name="includedPageLink"></param>
+        /// <param name="dataContext"></param>
+        /// <returns></returns>
+        private PageCache GetPageFromLinkOrThrow( string includedPageLink, RockContext dataContext )
+        {
+            PageCache page = null;
+
+            // Try to match a defined route.
+            var routeService = new PageRouteService( dataContext );
+
+            var routeName = includedPageLink.ToStringSafe().TrimStart( '~' ).TrimStart( '/' );
+
+            var pageRoute = routeService.Queryable().FirstOrDefault( r => r.Route.Equals( routeName, StringComparison.OrdinalIgnoreCase ) );
+
+            if ( pageRoute != null )
+            {
+                page = PageCache.Get( pageRoute.PageId );
+            }
+
+            if ( page == null )
+            {
+                // Try to match an entry in the Routing Table.
+                var pageUrl = RockPage.ResolveRockUrlIncludeRoot( includedPageLink );
+
+                var pageUri = new Uri( pageUrl, UriKind.Absolute );
+
+                var rockPageRef = new PageReference( pageUri, Page.Request.ApplicationPath );
+
+                if ( !rockPageRef.IsValid )
+                {
+                    throw new Exception( string.Format( "Page Reference \"{0}\" is invalid.", includedPageLink ) );
+                }
+
+                page = PageCache.Get( rockPageRef.PageId );
+            }
+
+            if ( page == null )
+            {
+                throw new Exception( string.Format( "Page Reference \"{0}\" is invalid.", includedPageLink ) );
+            }
+
+            return page;
+        }
 
         private string CacheKey()
         {

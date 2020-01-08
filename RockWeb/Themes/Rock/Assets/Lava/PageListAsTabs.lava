@@ -4,4 +4,20 @@
             <a href="{{ childPage.Url }}">{{ childPage.Title }}</a>
         </li>
     {% endfor %}
+
+    {% comment %}
+    **
+    ** Render blocks for included pages
+    **
+    {% endcomment %}
+    {% for childPage in IncludedPages %}
+    <li>
+      <a href="{{ childPage.Url }}" {% if="" childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif="" %}>
+        {% if childPage.IconCssClass != '' %}
+        <i class="{{ childPage.IconCssClass }}"></i>
+        {% endif %}
+        <h3>{{ childPage.Title }}</h3>
+      </a>
+    </li>
+    {% endfor %}
 </ul>
