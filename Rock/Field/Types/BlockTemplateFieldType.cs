@@ -194,10 +194,14 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( TEMPLATE_BLOCK_KEY ) )
             {
-                int blockTemplateDefinedValueId = 0;
-                if ( Int32.TryParse( configurationValues[TEMPLATE_BLOCK_KEY].Value, out blockTemplateDefinedValueId ) && blockTemplateDefinedValueId > 0 )
+                Guid blockTemplateDefinedValueGuid = Guid.Empty;
+                if ( Guid.TryParse( configurationValues[TEMPLATE_BLOCK_KEY].Value, out blockTemplateDefinedValueGuid ) && blockTemplateDefinedValueGuid != Guid.Empty )
                 {
-                    editControl.TemplateBlockValueId = blockTemplateDefinedValueId;
+                    var definedValue = DefinedValueCache.Get( blockTemplateDefinedValueGuid );
+                    if ( definedValue != null )
+                    {
+                        editControl.TemplateBlockValueId = definedValue.Id;
+                    }
                 }
             }
 
