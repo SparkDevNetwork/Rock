@@ -18,16 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Badge.Component
 {
@@ -44,14 +43,42 @@ namespace Rock.Badge.Component
         IncludeInactive = false,
         IsRequired = false,
         Order = 0 )]
-    class Assessment : BadgeComponent
+    public class Assessment : BadgeComponent
     {
         private class AttributeKeys
         {
             public const string AssessmentsToShow = "AssessmentsToShow";
         }
 
-        private const string UNTAKEN_BADGE_COLOR = "#DBDBDB";
+        private class AssessmentBadgeCssClasses
+        {
+            /// <summary>
+            /// The CSS class to be assigned for assessments that have been taken
+            /// </summary>
+            public const string Taken = "taken";
+
+            /// <summary>
+            /// The CSS class to be assigned for assessments that have been requested
+            /// </summary>
+            public const string Requested = "requested";
+
+            /// <summary>
+            /// The CSS class be assigned for assessments that have not been requested and are not completed.
+            /// </summary>
+            public const string NotRequested = "notrequested";
+
+            /// <summary>
+            /// The CSS class used to indicate which <i></i> holds the assessment icon
+            /// </summary>
+            public const string AssessmentIcon = "assessment-icon";
+
+            /// <summary>
+            /// Each assessment type in the badge should have a class indicating it's type.
+            /// The class will be named using this prefix and then the assessment title in all lower case
+            /// with no spaces. e.g. "Spiritual Gifts" will get the "assessment-spiritualgifts" CSS class
+            /// </summary>
+            public const string AssessmentTypePrefix = "assessment-";
+        }
 
         /// <summary>
         /// Determines of this badge component applies to the given type
@@ -63,6 +90,11 @@ namespace Rock.Badge.Component
             return type.IsNullOrWhiteSpace() || typeof( Person ).FullName == type;
         }
 
+        /// <summary>
+        /// Renders the specified writer.
+        /// </summary>
+        /// <param name="badge">The badge.</param>
+        /// <param name="writer">The writer.</param>
         public override void Render( BadgeCache badge, HtmlTextWriter writer )
         {
             if ( Person == null )
@@ -73,12 +105,12 @@ namespace Rock.Badge.Component
             var assessmentTypes = new List<AssessmentTypeCache>();
 
             // Create a list of assessments that should be included in the badge
-            if ( !String.IsNullOrEmpty( GetAttributeValue( badge, AttributeKeys.AssessmentsToShow ) ) )
+            if ( !string.IsNullOrEmpty( GetAttributeValue( badge, AttributeKeys.AssessmentsToShow ) ) )
             {
                 // Get from attribute if available
                 var assessmentTypesGuidString = GetAttributeValue( badge, AttributeKeys.AssessmentsToShow );
                 var assessmentTypeGuids = assessmentTypesGuidString.IsNullOrWhiteSpace() ? null : assessmentTypesGuidString.Split( new char[] { ',' } );
-                foreach( var assessmentGuid in assessmentTypeGuids )
+                foreach ( var assessmentGuid in assessmentTypeGuids )
                 {
                     assessmentTypes.Add( AssessmentTypeCache.Get( assessmentGuid ) );
                 }
@@ -92,11 +124,15 @@ namespace Rock.Badge.Component
             // Need a list of primitive types for assessmentTestsTaken linq
             var availableTypes = assessmentTypes.Select( t => t.Id ).ToList();
 
-            // Get a list of the assessment tests for the person where the latest requested of each type is complete and is allowed by the component configuration.
+            int personAliasId = Person.PrimaryAliasId.Value;
+
             var assessmentTestsTaken = new AssessmentService( new RockContext() )
-                .GetLatestAssessmentsForPerson( Person.Id )
-                .Where( a => a.Status == AssessmentRequestStatus.Complete )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a => a.PersonAliasId == personAliasId )
                 .Where( a => availableTypes.Contains( a.AssessmentTypeId ) )
+                .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
+                .Select( a => new PersonBadgeAssessment { AssessmentTypeId = a.AssessmentTypeId, RequestedDateTime = a.RequestedDateTime, Status = a.Status } )
                 .ToList();
 
             StringBuilder toolTipText = new StringBuilder();
@@ -118,7 +154,7 @@ namespace Rock.Badge.Component
                 var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={this.Person.GetPersonActionIdentifier( "Assessment" ) }" );
                 var assessmentTitle = assessmentType.Title;
                 var mergeFields = new Dictionary<string, object>();
-                var mergedBadgeSummaryLava = "Not taken";
+                var mergedBadgeSummaryLava = "Not requested";
 
                 switch ( assessmentType.Guid.ToString().ToUpper() )
                 {
@@ -141,23 +177,58 @@ namespace Rock.Badge.Component
                         break;
                 }
 
-                var assessmentTest = assessmentTestsTaken.Where( t => t.AssessmentTypeId == assessmentType.Id ).FirstOrDefault();
-                string badgeColor = assessmentTest != null ? assessmentType.BadgeColor : UNTAKEN_BADGE_COLOR;
+                string assessmentTypeClass = AssessmentBadgeCssClasses.AssessmentTypePrefix + assessmentTitle.RemoveSpaces().ToLower();
+                string assessmentStatusClass = AssessmentBadgeCssClasses.NotRequested;
+                PersonBadgeAssessment previouslyCompletedAssessmentTest = null;
 
-                badgeIcons.AppendLine( $@"<div class='badge'>" );
-                // If the latest request has been taken we want to link to it and provide a Lava merged summary
-                if ( assessmentTest != null )
+                // Get the status of the assessment
+                var assessmentTests = assessmentTestsTaken.Where( t => t.AssessmentTypeId == assessmentType.Id ).ToList();
+                PersonBadgeAssessment assessmentTest = null;
+                if ( assessmentTests.Count > 0)
                 {
-                    badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
-
-                    mergeFields.Add( "Person", Person );
-                    mergedBadgeSummaryLava = assessmentType.BadgeSummaryLava.ResolveMergeFields( mergeFields );
+                    assessmentTest = assessmentTests.First();
+                    assessmentStatusClass = assessmentTest.Status == AssessmentRequestStatus.Pending ? AssessmentBadgeCssClasses.Requested : AssessmentBadgeCssClasses.Taken;
                 }
 
+                if ( assessmentTests.Count > 1 )
+                {
+                    // If the most recent one is completed then it is already set as the test and we can move on, the initial query ordered them by RequestedDateTime. Otherwise check if there are previoulsy completed assessments.
+                    if ( assessmentTests[0].Status != AssessmentRequestStatus.Complete )
+                    {
+                        // If the most recent one is pending then check for a completed one prior, if found then we need to display the competed text and note that an the assessment has been requested. The link should go to the completed assessment.
+                        previouslyCompletedAssessmentTest = assessmentTests.Where( a => a.Status == AssessmentRequestStatus.Complete ).FirstOrDefault();
+                        if ( previouslyCompletedAssessmentTest != null )
+                        {
+                            // There is a new pending assessment and a previously completed assessment, display both classes
+                            assessmentStatusClass = $"{AssessmentBadgeCssClasses.Requested} {AssessmentBadgeCssClasses.Taken}";
+                        }
+                    }
+                }
+
+                badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+
+                // If there is a completed request we want to link to it and provide a Lava merged summary
+                if ( assessmentTest != null )
+                {
+                    if ( assessmentTest.Status == AssessmentRequestStatus.Complete || previouslyCompletedAssessmentTest != null )
+                    {
+                        badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
+
+                        mergeFields.Add( "Person", Person );
+                        mergedBadgeSummaryLava = assessmentType.BadgeSummaryLava.ResolveMergeFields( mergeFields );
+                    }
+
+                    if ( assessmentTest.Status == AssessmentRequestStatus.Pending && previouslyCompletedAssessmentTest == null )
+                    {
+                        // set the request string and requested datetime to the merged lava
+                        mergedBadgeSummaryLava = $"Requsted: {assessmentTest.RequestedDateTime.ToShortDateString()}";
+                    }
+                }
+                
                 badgeIcons.AppendLine( $@"
                         <span class='fa-stack'>
-                            <i style='color:{badgeColor};' class='fa fa-circle fa-stack-2x'></i>
-                            <i class='{assessmentType.IconCssClass} fa-stack-1x'></i>
+                            <i class='fa fa-circle fa-stack-2x'></i>
+                            <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
                         </span>" );
 
                 // Close the anchor for the linked assessment test
@@ -171,8 +242,8 @@ namespace Rock.Badge.Component
                 toolTipText.AppendLine( $@"
                     <p class='margin-b-sm'>
                         <span class='fa-stack'>
-                            <i style='color:{assessmentType.BadgeColor};' class='fa fa-circle fa-stack-2x'></i>
-                            <i style='font-size:15px; color:#ffffff;' class='{assessmentType.IconCssClass} fa-stack-1x'></i>
+                            <i class='fa fa-circle fa-stack-2x {assessmentTypeClass}'></i>
+                            <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
                         </span>
                         <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
                     </p>" );
@@ -195,6 +266,18 @@ namespace Rock.Badge.Component
                         $('.badge-id-{badge.Id}').children('.badge-grid').tooltip({{ sanitize: false }});
                     }});
                 </script>" );
+        }
+
+        /// <summary>
+        /// A private class just for the badge
+        /// </summary>
+        private class PersonBadgeAssessment
+        {
+            public int AssessmentTypeId { get; set; }
+
+            public DateTime? RequestedDateTime { get; set; }
+
+            public AssessmentRequestStatus Status { get; set; } 
         }
     }
 }
