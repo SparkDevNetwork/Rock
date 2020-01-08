@@ -137,21 +137,7 @@ namespace Rock.Model
 
         #endregion
 
-        /// <summary>
-        /// Method that will be called on an entity immediately before the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( state == EntityState.Deleted )
-            {
-                new RegistrationTemplatePlacementService( dbContext as RockContext ).DeleteRelatedEntities( this );
-            }
-
-            base.PreSaveChanges( dbContext, entry, state );
-        }
+       
     }
 
     #region Entity Configuration

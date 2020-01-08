@@ -17,6 +17,9 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
+        <Rock:RockDropDownList ID="ddlDebugGroupType" runat="server" Label="DEBUG: Set GroupTypeId parameter" AutoPostBack="true" OnSelectedIndexChanged="ddlDebugGroupType_SelectedIndexChanged" CssClass="input-width-xl" />
+        <Rock:NotificationBox ID="nbConfigurationError" runat="server" />
+
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-placementgroup">
 
             <%-- Panel Header --%>
@@ -47,6 +50,7 @@
 
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
+                        <Rock:HiddenFieldWithClass ID="hfPlacementGroupTypeId" runat="server" CssClass="js-placement-grouptype-id" />
 
                         <div class="row row-eq-height">
                             <div class="col-md-4 hidden-xs">
@@ -93,10 +97,10 @@
                                         <ItemTemplate>
 
                                             <asp:Panel ID="pnlPlacementGroup" runat="server" CssClass="placement-group js-placement-group">
-                                                <Rock:HiddenFieldWithClass ID="hfPlacementGroupid" runat="server" CssClass="js-placement-group-id" />
+                                                <Rock:HiddenFieldWithClass ID="hfPlacementGroupId" runat="server" CssClass="js-placement-group-id" />
                                                 <Rock:HiddenFieldWithClass ID="hfPlacementGroupCapacity" runat="server" CssClass="js-placement-group-capacity" />
 
-                                                <div class="panel panel-block">
+                                                <div class="panel panel-block panel-group">
                                                     <div class="panel-heading">
                                                         <h1 class="panel-title">
                                                             <asp:Literal ID="lGroupName" runat="server" />
@@ -105,23 +109,26 @@
                                                         <asp:Panel ID="pnlGroupStatusLabels" runat="server" CssClass="panel-labels">
                                                             ##TODO Group Status ##
                                                         </asp:Panel>
+                                                    </div>
 
-                                                        <asp:Repeater ID="rptPlacementGroupRole" runat="server">
+                                                    <div class="panel-body">
+
+                                                        <asp:Repeater ID="rptPlacementGroupRole" runat="server" OnItemDataBound="rptPlacementGroupRole_ItemDataBound" Visible="true">
                                                             <ItemTemplate>
-                                                                <div class="panel panel-block">
-                                                                    <div class="panel-heading">
-                                                                        <h1 class="panel-title">
-                                                                            <asp:Literal ID="lGroupRoleName" runat="server" />
-                                                                        </h1>
+                                                                <div class="panel-group-role">
+                                                                    <div class="panel panel-block panel-grouprole">
+                                                                        <div class="panel-heading">
+                                                                            <Rock:HiddenFieldWithClass ID="hfGroupTypeRoleId" runat="server" CssClass="js-grouptyperole-id" />
+                                                                            <h1 class="panel-title">
+                                                                                <asp:Literal ID="lGroupRoleName" runat="server" />
+                                                                            </h1>
 
-                                                                        <asp:Panel ID="pnlGroupRoleStatusLabels" runat="server" CssClass="panel-labels">
-                                                                            ##TODO Role Status##
-                                                                        </asp:Panel>
+                                                                            <asp:Panel ID="pnlGroupRoleStatusLabels" runat="server" CssClass="panel-labels">
+                                                                                ##TODO Role Status##
+                                                                                <div class="js-grouptyperole-statuslabels-container grouptyperole-statuslabels-container"></div>
+                                                                            </asp:Panel>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-
-                                                                <div class="panel-body">
-                                                                    <div class="group-group-role-placement-target-container js-group-group-role-placement-target-container dropzone"></div>
                                                                 </div>
                                                             </ItemTemplate>
                                                         </asp:Repeater>
