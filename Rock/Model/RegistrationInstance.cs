@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
@@ -334,6 +337,52 @@ namespace Rock.Model
             {
                 return RockEmailMessageRecipient.CreateAnonymous( contactEmail, mergeObjects );
             }
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            _postSaveRegistrationTemplatePlacementGroups = null;
+
+            if ( state == EntityState.Deleted )
+            {
+                new RegistrationInstanceService( dbContext as RockContext ).DeleteRelatedEntities( this );
+            }
+            else if ( state == EntityState.Added )
+            {
+                // if Adding a new RegistrationInstance, add placement groups from the Registration Template ( in PostSaveChanges, when we have a RegistrationInstance.Id )
+                var registrationTemplateService = new RegistrationTemplateService( dbContext as RockContext );
+                var registrationTemplate = registrationTemplateService.Get( this.RegistrationTemplateId );
+                _postSaveRegistrationTemplatePlacementGroups = registrationTemplateService.GetRegistrationTemplatePlacementGroups( registrationTemplate ).ToList();
+            }
+
+            base.PreSaveChanges( dbContext, entry, state );
+        }
+
+        /// <summary>
+        /// The post save registration template placement groups
+        /// </summary>
+        private List<Group> _postSaveRegistrationTemplatePlacementGroups;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            // if Adding a new RegistrationInstance, add placement groups from the Registration Template ( after saving, when we have a RegistrationInstance.Id )
+            if ( _postSaveRegistrationTemplatePlacementGroups != null )
+            {
+                var registrationInstanceService = new RegistrationInstanceService( dbContext as RockContext );
+                registrationInstanceService.SetRegistrationInstancePlacementGroups( this, _postSaveRegistrationTemplatePlacementGroups );
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>

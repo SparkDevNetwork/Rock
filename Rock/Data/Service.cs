@@ -595,7 +595,7 @@ namespace Rock.Data
         /// <summary>
         /// Deletes any related entities that reference the specified entity
         /// </summary>
-        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="entity">The entity.</param>
         public void DeleteRelatedEntities( T entity )
         {
             var relatedEntityService = new RelatedEntityService( this.Context as RockContext );
