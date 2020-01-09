@@ -136,14 +136,14 @@ namespace Rock.Model
     public static class RelatedEntityPurposeKey
     {
         /// <summary>
-        /// The group placement
+        /// The group placement for a Registration Instance
         /// </summary>
-        public const string GroupPlacement = "PLACEMENT";
+        public const string RegistrationInstanceGroupPlacement = "PLACEMENT";
 
         /// <summary>
-        /// The group placement template
+        /// The group placement for a Registration Template (shared for all of the RegistrationTemplate's Registration Instances)
         /// </summary>
-        public const string GroupPlacementTemplate = "PLACEMENT-TEMPLATE";
+        public const string RegistrationTemplateGroupPlacementTemplate = "PLACEMENT-TEMPLATE";
     }
 
     #region Entity Configuration

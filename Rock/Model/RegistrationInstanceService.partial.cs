@@ -15,7 +15,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetRegistrationInstancePlacementGroups( RegistrationInstance registrationInstance )
         {
-            return this.GetRelatedToSourceEntity<Group>( registrationInstance.Id, RelatedEntityPurposeKey.GroupPlacement );
+            return this.GetRelatedToSourceEntity<Group>( registrationInstance.Id, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement );
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Rock.Model
         /// <param name="groups">The groups.</param>
         public void SetRegistrationInstancePlacementGroups( RegistrationInstance registrationInstance, List<Group> groups )
         {
-            this.SetRelatedToSourceEntity( registrationInstance.Id, groups, RelatedEntityPurposeKey.GroupPlacement );
+            this.SetRelatedToSourceEntity( registrationInstance.Id, groups, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement );
         }
     }
 }

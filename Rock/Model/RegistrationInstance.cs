@@ -347,42 +347,12 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            _postSaveRegistrationTemplatePlacementGroups = null;
-
             if ( state == EntityState.Deleted )
             {
                 new RegistrationInstanceService( dbContext as RockContext ).DeleteRelatedEntities( this );
             }
-            else if ( state == EntityState.Added )
-            {
-                // if Adding a new RegistrationInstance, add placement groups from the Registration Template ( in PostSaveChanges, when we have a RegistrationInstance.Id )
-                var registrationTemplateService = new RegistrationTemplateService( dbContext as RockContext );
-                var registrationTemplate = registrationTemplateService.Get( this.RegistrationTemplateId );
-                _postSaveRegistrationTemplatePlacementGroups = registrationTemplateService.GetRegistrationTemplatePlacementGroups( registrationTemplate ).ToList();
-            }
 
             base.PreSaveChanges( dbContext, entry, state );
-        }
-
-        /// <summary>
-        /// The post save registration template placement groups
-        /// </summary>
-        private List<Group> _postSaveRegistrationTemplatePlacementGroups;
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            // if Adding a new RegistrationInstance, add placement groups from the Registration Template ( after saving, when we have a RegistrationInstance.Id )
-            if ( _postSaveRegistrationTemplatePlacementGroups != null )
-            {
-                var registrationInstanceService = new RegistrationInstanceService( dbContext as RockContext );
-                registrationInstanceService.SetRegistrationInstancePlacementGroups( this, _postSaveRegistrationTemplatePlacementGroups );
-            }
-
-            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>
@@ -397,7 +367,6 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration

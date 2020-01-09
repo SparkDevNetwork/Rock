@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PlacementGroup.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstance.PlacementGroup" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupPlacement.ascx.cs" Inherits="RockWeb.Blocks.Event.GroupPlacement" %>
 
 <style>
     .registrant-gender-boy {
@@ -17,10 +17,13 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
-        <Rock:RockDropDownList ID="ddlDebugGroupType" runat="server" Label="DEBUG: Set GroupTypeId parameter" AutoPostBack="true" OnSelectedIndexChanged="ddlDebugGroupType_SelectedIndexChanged" CssClass="input-width-xl" />
+        <Rock:ButtonGroup ID="bgRegistrationTemplatePlacement" runat="server" Label="Select Placement Type" AutoPostBack="true" OnSelectedIndexChanged="bgRegistrationTemplatePlacement_SelectedIndexChanged" />
         <Rock:NotificationBox ID="nbConfigurationError" runat="server" />
+        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
+        <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
+        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
 
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-placementgroup">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-group-placement">
 
             <%-- Panel Header --%>
             <div class="panel-heading">
@@ -42,15 +45,12 @@
                 </div>
             </div>
 
-
             <%-- Panel Body --%>
             <div class="panel-body">
                 <asp:Panel ID="pnlGroupPlacementContainer" runat="server">
                     <asp:Panel ID="pnlGroupPlacement" runat="server">
 
-                        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
-                        <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
-                        <Rock:HiddenFieldWithClass ID="hfPlacementGroupTypeId" runat="server" CssClass="js-placement-grouptype-id" />
+
 
                         <div class="row row-eq-height">
                             <div class="col-md-4 hidden-xs">
@@ -100,7 +100,7 @@
                                                 <Rock:HiddenFieldWithClass ID="hfPlacementGroupId" runat="server" CssClass="js-placement-group-id" />
                                                 <Rock:HiddenFieldWithClass ID="hfPlacementGroupCapacity" runat="server" CssClass="js-placement-group-capacity" />
 
-                                                <div class="panel panel-block panel-group">
+                                                <div class="panel panel-block placement-group">
                                                     <div class="panel-heading">
                                                         <h1 class="panel-title">
                                                             <asp:Literal ID="lGroupName" runat="server" />
@@ -115,10 +115,12 @@
 
                                                         <asp:Repeater ID="rptPlacementGroupRole" runat="server" OnItemDataBound="rptPlacementGroupRole_ItemDataBound" Visible="true">
                                                             <ItemTemplate>
-                                                                <div class="panel-group-role">
-                                                                    <div class="panel panel-block panel-grouprole">
+                                                                <asp:Panel ID="pnlGroupRoleMembers" runat="server" CssClass="group-role-members js-group-role-members">
+                                                                    <Rock:HiddenFieldWithClass ID="hfGroupTypeRoleId" runat="server" CssClass="js-grouptyperole-id" />
+
+                                                                    <div class="panel panel-block">
                                                                         <div class="panel-heading">
-                                                                            <Rock:HiddenFieldWithClass ID="hfGroupTypeRoleId" runat="server" CssClass="js-grouptyperole-id" />
+
                                                                             <h1 class="panel-title">
                                                                                 <asp:Literal ID="lGroupRoleName" runat="server" />
                                                                             </h1>
@@ -128,8 +130,11 @@
                                                                                 <div class="js-grouptyperole-statuslabels-container grouptyperole-statuslabels-container"></div>
                                                                             </asp:Panel>
                                                                         </div>
+                                                                        <div class="panel-body">
+                                                                            <div class="placement-target-container js-placement-target-container dropzone"></div>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
+                                                                </asp:Panel>
                                                             </ItemTemplate>
                                                         </asp:Repeater>
 
@@ -148,6 +153,59 @@
                 </asp:Panel>
             </div>
 
+        </asp:Panel>
+
+        <%-- Add Group Placement Dialog --%>
+        <asp:Panel ID="pnlAddPlacementGroup" runat="server">
+            <Rock:ModalDialog ID="mdAddPlacementGroup" runat="server" ValidationGroup="vgAddPlacementGroup" Title="Add Placement Group/Add Shared Placement Group" OnSaveClick="mdAddPlacementGroup_SaveClick">
+                <Content>
+                    <Rock:ButtonGroup ID="bgAddNewOrExistingPlacementGroup" runat="server" OnSelectedIndexChanged="bgAddNewOrExistingPlacementGroup_SelectedIndexChanged" AutoPostBack="true">
+                        <asp:ListItem Text="Add New Group" Value="new" />
+                        <asp:ListItem Text="Add Existing Group" Value="existing" />
+                    </Rock:ButtonGroup>
+                    <asp:Panel ID="pnlAddNewPlacementGroup" runat="server">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:GroupPicker ID="gpNewPlacementGroupParentGroup" runat="server" Label="Parent Group" ValidationGroup="vgAddPlacementGroup" />
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:DataTextBox ID="tbNewPlacementGroupName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" ValidationGroup="vgAddPlacementGroup" />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:CampusPicker ID="cpNewPlacementGroupCampus" runat="server" Label="Campus" ValidationGroup="vgAddPlacementGroup"/>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NumberBox ID="nbGroupCapacity" runat="server" Label="Group Capacity" NumberType="Integer" MinimumValue="0" ValidationGroup="vgAddPlacementGroup"/>
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <Rock:DataTextBox ID="tbNewPlacementGroupDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" ValidationGroup="vgAddPlacementGroup"/>
+                                <Rock:AttributeValuesContainer ID="avcNewPlacementGroupAttributeValues" runat="server" ValidationGroup="vgAddPlacementGroup"/>
+                            </div>
+                        </div>
+                    </asp:Panel>
+                    <asp:Panel runat="server" ID="pnlAddExistingPlacementGroup">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockDropDownList ID="ddlAddExistingPlacementGroup" runat="server" Label="Group" ValidationGroup="vgAddPlacementGroup"/>
+                            </div>
+                            <div class="col-md-6">
+                            </div>
+                        </div>
+                    </asp:Panel>
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
 
