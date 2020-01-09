@@ -30,14 +30,14 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Event
 {
-    [DisplayName( "Group Placement" )]
+    [DisplayName( "Registration Group Placement" )]
     [Category( "Event" )]
     [Description( "Block to manage group placement for Registration Instances." )]
 
     #region Block Attributes
 
     #endregion Block Attributes
-    public partial class GroupPlacement : RockBlock
+    public partial class RegistrationInstanceGroupPlacement : RockBlock
     {
 
         #region Attribute Keys

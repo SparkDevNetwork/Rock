@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupPlacement.ascx.cs" Inherits="RockWeb.Blocks.Event.GroupPlacement" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationInstanceGroupPlacement.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstanceGroupPlacement" %>
 
 <style>
     .registrant-gender-boy {
