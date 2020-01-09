@@ -102,6 +102,15 @@ namespace Rock.Jobs
 
             try
             {
+                databaseRowsCleanedUp.Add( "Orphan Interaction Session Cleanup", CleanupInteractionSessions( dataMap ) );
+            }
+            catch ( Exception ex )
+            {
+                rockCleanupExceptions.Add( new Exception( "Exception in CleanupInteractionSessions", ex ) );
+            }
+
+            try
+            {
                 databaseRowsCleanedUp.Add( "Audit Log", PurgeAuditLog( dataMap ) );
             }
             catch ( Exception ex )
@@ -822,6 +831,44 @@ WHERE ic.ChannelId = @channelId
 	AND ia.InteractionDateTime < @retentionCutoffDateTime
 ";
                         int rowsDeleted = interactionRockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ), new SqlParameter( "channelId", interactionChannel.Id ), new SqlParameter( "retentionCutoffDateTime", retentionCutoffDateTime ) );
+                        keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
+                    }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Cleans up Interaction Sessions which are no longer associated with an Interaction.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private int CleanupInteractionSessions( JobDataMap dataMap )
+        {
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+            int totalRowsDeleted = 0;
+
+            using ( var rockContext = new RockContext() )
+            {
+                bool keepDeleting = true;
+                while ( keepDeleting )
+                {
+                    var dbTransaction = rockContext.Database.BeginTransaction();
+                    try
+                    {
+                        string sqlCommand = @"
+                            DELETE TOP (@batchAmount)
+                            FROM ias
+                            FROM [InteractionSession] ias
+                            LEFT JOIN [Interaction] i ON ias.[Id] = i.[InteractionSessionId]
+                            WHERE i.[InteractionSessionId] IS NULL";
+
+                        int rowsDeleted = rockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ) );
                         keepDeleting = rowsDeleted > 0;
                         totalRowsDeleted += rowsDeleted;
                     }
