@@ -423,7 +423,7 @@ namespace RockWeb.Blocks.Finance
             CsvReader csvReader = new CsvReader( stringReader );
             csvReader.Configuration.HasHeaderRecord = false;
 
-            nmiToMyWellCustomerIdLookup = csvReader.GetRecords<CustomerVaultImportRecord>().ToDictionary( k => k.NMICustomerId, v => v.MyWellCustomerId );
+            nmiToMyWellCustomerIdLookup = csvReader.GetRecords<CustomerVaultImportRecord>().DistinctBy(a => a.NMICustomerId).ToDictionary( k => k.NMICustomerId, v => v.MyWellCustomerId );
 
             var financialGatewayService = new FinancialGatewayService( rockContext );
             var nmiFinancialGatewayID = ddlNMIGateway.SelectedValue.AsInteger();
@@ -475,7 +475,11 @@ namespace RockWeb.Blocks.Finance
                     migrateSavedAccountResult.NMICustomerId = nmiPersonSavedAccount.ReferenceNumber;
                 }
 
-                migrateSavedAccountResult.MyWellCustomerId = nmiToMyWellCustomerIdLookup.GetValueOrNull( migrateSavedAccountResult.NMICustomerId );
+                if ( migrateSavedAccountResult.NMICustomerId.IsNotNullOrWhiteSpace() )
+                {
+                    migrateSavedAccountResult.MyWellCustomerId = nmiToMyWellCustomerIdLookup.GetValueOrNull( migrateSavedAccountResult.NMICustomerId );
+                }
+
                 migrateSavedAccountResult.MigrationDateTime = RockDateTime.Now;
 
                 if ( migrateSavedAccountResult.NMICustomerId.IsNullOrWhiteSpace() )
