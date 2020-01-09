@@ -79,6 +79,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Old Interaction Cleanup", () => CleanupInteractions( dataMap ) );
 
+            RunCleanupTask( "Orphan Interaction Session Cleanup", () => CleanupInteractionSessions( dataMap ) );
+
             RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
             RunCleanupTask( "Clean Cached File Directory", () => CleanCachedFileDirectory( context, dataMap ) );
@@ -771,6 +773,45 @@ WHERE ic.ChannelId = @channelId
 
             return totalRowsDeleted;
         }
+
+        /// <summary>
+        /// Cleans up Interaction Sessions which are no longer associated with an Interaction.
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private int CleanupInteractionSessions( JobDataMap dataMap )
+        {
+            int? batchAmount = dataMap.GetString( "BatchCleanupAmount" ).AsIntegerOrNull() ?? 1000;
+            int totalRowsDeleted = 0;
+
+            using ( var rockContext = new RockContext() )
+            {
+                bool keepDeleting = true;
+                while ( keepDeleting )
+                {
+                    var dbTransaction = rockContext.Database.BeginTransaction();
+                    try
+                    {
+                        string sqlCommand = @"
+                            DELETE TOP (@batchAmount)
+                            FROM ias
+                            FROM [InteractionSession] ias
+                            LEFT JOIN [Interaction] i ON ias.[Id] = i.[InteractionSessionId]
+                            WHERE i.[InteractionSessionId] IS NULL";
+
+                        int rowsDeleted = rockContext.Database.ExecuteSqlCommand( sqlCommand, new SqlParameter( "batchAmount", batchAmount ) );
+                        keepDeleting = rowsDeleted > 0;
+                        totalRowsDeleted += rowsDeleted;
+                    }
+                    finally
+                    {
+                        dbTransaction.Commit();
+                    }
+                }
+            }
+
+            return totalRowsDeleted;
+        }
+
 
         /// <summary>
         /// Cleanups the orphaned attributes.
