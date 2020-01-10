@@ -40,6 +40,7 @@ using Rock.Security;
  * Additional Features:
  * - FE1) Added Ability to limit to events with registrations
  * - FE2) Added Ability to limit to the next recurrence of an event item
+ * - FE3) Added Ability to replace core filters with custom defined value pickers
  */
 
 namespace RockWeb.Plugins.com_bemaservices.Event
@@ -98,6 +99,30 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     /* BEMA.FE2.End */
+
+    /* BEMA.FE3.Start */
+    [BooleanField(
+        "Replace Core Filters with custom filters",
+        Key = AttributeKey.AreCoreFiltersReplacedWithCustomFilters,
+        DefaultValue = "False",
+        Category = "BEMA Additional Features" )]
+
+    [AttributeField( "Defined Type Filter Attribute",
+        Key = AttributeKey.DefinedTypeFilterAttribute,
+        EntityTypeGuid = "E37FB26F-03F6-48DA-8E96-F412616F5EE4",
+        Description = "If you want to further narrow down the results using a defined value attribute, set it here",
+        IsRequired = false,
+        Order = 4,
+        Category = "BEMA Additional Features" )]
+
+    [AttributeField( "Display Campus Boolean Attribute",
+        Key = AttributeKey.DisplayCampusBooleanAttribute,
+        EntityTypeGuid = "00096BED-9587-415E-8AD4-4E076AE8FBF0",
+        Description = "If you want to further narrow down the displayed campuses using a boolean attribute, set it here",
+        IsRequired = false,
+        Order = 4,
+        Category = "BEMA Additional Features" )]
+    /* BEMA.FE3.End */
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
         /* BEMA.Start */
@@ -106,6 +131,9 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             public const string IsLimitedToEventsWithRegistrations = "IsLimitedToEventsWithRegistrations";
             public const string IsLimitedToNextEventItemRecurrence = "IsLimitedToNextEventItemRecurrence";
+            public const string AreCoreFiltersReplacedWithCustomFilters = "AreCoreFiltersReplacedWithCustomFilters";
+            public const string DisplayCampusBooleanAttribute = "DisplayCampusBooleanAttribute";
+            public const string DefinedTypeFilterAttribute = "DefinedTypeFilterAttribute";
         }
 
         #endregion
@@ -412,6 +440,13 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) );
             }
 
+
+
+            /* BEMA.FE3.Start */
+            qry = FilterByCustomFilters( rockContext, qry, selectedCampusIdList );
+
+            /* BEMA.FE3.End */
+
             // Get the beginning and end dates
             var today = RockDateTime.Today;
             var filterStart = FilterStartDate.HasValue ? FilterStartDate.Value : today;
@@ -507,6 +542,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
         }
+
+
 
         /// <summary>
         /// Loads the drop downs.
@@ -657,13 +694,17 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             btnYear.Visible = howManyVisible > 1 && viewsVisible[3];
             btnAll.Visible = howManyVisible > 1 && viewsVisible[4];
 
+            /* BEMA.FE3.Start */
+            SetupCustomFilters();
+            /* BEMA.FE3.End */
+
             // Set filter visibility
             bool showFilter = pnlCalendar.Visible || rcwCampus.Visible || rcwCategory.Visible || drpDateRange.Visible;
             pnlFilters.Visible = showFilter;
             pnlList.CssClass = showFilter ? "col-md-9" : "col-md-12";
 
             return true;
-        }
+        }       
 
         /// <summary>
         /// Resets the calendar selection. The control is configured for day selection, but selection will be changed to the week or month if that is the viewmode being used
@@ -737,6 +778,139 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             nbMessage.NotificationBoxType = NotificationBoxType.Danger;
             nbMessage.Visible = true;
         }
+
+
+        /* BEMA.FE3.Start */
+        protected void ddlTopicPicker_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindData();
+        }
+
+        protected void ddlCatPicker_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindData();
+
+        }
+
+        protected void cpCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            BindData();
+
+        }
+         private void SetupCustomFilters()
+        {
+            var definedType1 = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
+            if ( definedType1 != null )
+            {
+                ddlCatPicker.DefinedTypeId = definedType1.Id;
+                ddlCatPicker.Items.Remove( ddlCatPicker.Items.FindByValue( "" ) );
+
+                ddlCatPicker.Items.Insert( 0, new ListItem( definedType1.Name, "" ) );
+                ddlCatPicker.DataBind();
+                ddlCatPicker.Visible = true;
+            }
+
+            var definedValueAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeFilterAttribute ).AsGuidOrNull();
+            if ( definedValueAttributeGuid.HasValue )
+            {
+                var definedValueAttribute = AttributeCache.Get( definedValueAttributeGuid.Value );
+                if ( definedValueAttribute != null )
+                {
+                    var qualifierValue = definedValueAttribute.QualifierValues.Where( q => q.Key == "definedtype" ).FirstOrDefault();
+                    var definedType2Id = qualifierValue.Value.Value.AsIntegerOrNull();
+                    if ( definedType2Id != null )
+                    {
+                        var definedType2 = DefinedTypeCache.Get( definedType2Id.Value );
+                        if ( definedType2 != null )
+                        {
+                            ddlTopicPicker.DefinedTypeId = definedType2.Id;
+                            ddlTopicPicker.Items.Remove( ddlTopicPicker.Items.FindByValue( "" ) );
+
+                            ddlTopicPicker.Items.Insert( 0, new ListItem( definedType2.Name, "" ) );
+                            ddlTopicPicker.DataBind();
+                            divDefinedValue.Visible = true;
+                            divAudience.AddCssClass( "col-md-4" );
+                            divAudience.RemoveCssClass( "col-md-6" );
+                            divCampus.AddCssClass( "col-md-4" );
+                            divCampus.RemoveCssClass( "col-md-6" );
+
+                        }
+                    }
+                }
+            }
+
+            cpCampus.Items.Remove( cpCampus.Items.FindByValue( "" ) );
+            cpCampus.Items.Insert( 0, new ListItem( "Campus", "" ) );
+            var campusAttributeGuid = GetAttributeValue( AttributeKey.DisplayCampusBooleanAttribute ).AsGuidOrNull();
+            if ( campusAttributeGuid.HasValue )
+            {
+                var campusAttribute = AttributeCache.Get( campusAttributeGuid.Value );
+                if ( campusAttribute != null )
+                {
+                    var campuses = CampusCache.All().Where( c => c.GetAttributeValue( campusAttribute.Key ).AsBoolean() ).ToList();
+                    cpCampus.Campuses = campuses;
+                }
+            }
+            cpCampus.DataBind();
+
+            pnlBemaFilters.Visible = GetAttributeValue( AttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
+            pnlFilters.Visible = !GetAttributeValue( AttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
+        }
+        private IQueryable<EventItemOccurrence> FilterByCustomFilters( RockContext rockContext, IQueryable<EventItemOccurrence> qry, List<int> selectedCampusIdList )
+        {
+            if ( divAudience.Visible )
+            {
+                var categoryId = ddlCatPicker.SelectedDefinedValueId;
+                if ( categoryId != null && categoryId != 0 )
+                {
+                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => c.DefinedValueId == categoryId ) );
+                }
+            }
+
+            if ( divCampus.Visible )
+            {
+                var campusId = cpCampus.SelectedCampusId;
+                if ( campusId.HasValue )
+                {
+                    qry = qry.Where( c => !c.CampusId.HasValue || selectedCampusIdList.Contains( c.CampusId.Value ) );
+                }
+            }
+
+            if ( divDefinedValue.Visible )
+            {
+                var definedValueId = ddlTopicPicker.SelectedDefinedValueId;
+                if ( definedValueId.HasValue && definedValueId != 0 )
+                {
+                    var definedValue = DefinedValueCache.Get( definedValueId.Value );
+                    if ( definedValue != null )
+                    {
+                        var definedValueGuid = definedValue.Guid.ToString();
+                        var definedValueAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeFilterAttribute ).AsGuidOrNull();
+                        if ( definedValueAttributeGuid.HasValue )
+                        {
+                            var definedValueAttribute = AttributeCache.Get( definedValueAttributeGuid.Value );
+                            if ( definedValueAttribute != null )
+                            {
+                                var entityIds = new AttributeValueService( rockContext ).Queryable().AsNoTracking()
+                                        .Where( av => av.AttributeId == definedValueAttribute.Id &&
+                                                     ( av.Value.Contains( definedValueGuid.ToUpper() ) || av.Value.Contains( definedValueGuid.ToLower() ) )
+                                                    )
+                                        .Select( av => av.EntityId )
+                                        .ToList();
+
+                                qry = qry.Where( c => c.EventItem.EventCalendarItems.Any( eci => entityIds.Contains( eci.Id ) ) );
+
+                            }
+                        }
+                    }
+
+                }
+            }
+
+            return qry;
+        }
+
+        /* BEMA.FE3.End */
 
 
         #endregion
