@@ -872,7 +872,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 var campusId = cpCampus.SelectedCampusId;
                 if ( campusId.HasValue )
                 {
-                    qry = qry.Where( c => !c.CampusId.HasValue || selectedCampusIdList.Contains( c.CampusId.Value ) );
+                    qry = qry.Where( c => !c.CampusId.HasValue || c.CampusId.Value == campusId );
                 }
             }
 
