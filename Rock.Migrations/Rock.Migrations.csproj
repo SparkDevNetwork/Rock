@@ -137,6 +137,10 @@
     <Compile Include="Migrations\202001081542541_Rollup_01081.Designer.cs">
       <DependentUpon>202001081542541_Rollup_01081.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202001101507227_AchievementPrerequisites.cs" />
+    <Compile Include="Migrations\202001101507227_AchievementPrerequisites.Designer.cs">
+      <DependentUpon>202001101507227_AchievementPrerequisites.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -1031,6 +1035,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202001081542541_Rollup_01081.resx">
       <DependentUpon>202001081542541_Rollup_01081.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001101507227_AchievementPrerequisites.resx">
+      <DependentUpon>202001101507227_AchievementPrerequisites.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
