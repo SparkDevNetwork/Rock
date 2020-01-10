@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Event
             {
                 var rockContext = new RockContext();
                 var registrationInstanceService = new RegistrationInstanceService( rockContext );
-                registrationInstanceService.SetRegistrationInstancePlacementGroups()
+                registrationInstanceService.AddRegistrationInstancePlacementGroups
             }
             else
             {
