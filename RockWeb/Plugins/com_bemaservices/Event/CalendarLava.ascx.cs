@@ -704,7 +704,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             pnlList.CssClass = showFilter ? "col-md-9" : "col-md-12";
 
             return true;
-        }       
+        }
 
         /// <summary>
         /// Resets the calendar selection. The control is configured for day selection, but selection will be changed to the week or month if that is the viewmode being used
@@ -797,7 +797,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             BindData();
 
         }
-         private void SetupCustomFilters()
+        private void SetupCustomFilters()
         {
             var definedType1 = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE.AsGuid() );
             if ( definedType1 != null )
@@ -808,6 +808,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 ddlCatPicker.Items.Insert( 0, new ListItem( definedType1.Name, "" ) );
                 ddlCatPicker.DataBind();
                 ddlCatPicker.Visible = true;
+            }
+            if ( PageParameter( "AudienceId" ).IsNotNullOrWhiteSpace() )
+            {
+                ddlCatPicker.SelectedDefinedValueId = PageParameter( "AudienceId" ).AsIntegerOrNull();
             }
 
             var definedValueAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeFilterAttribute ).AsGuidOrNull();
@@ -838,6 +842,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     }
                 }
             }
+            if ( PageParameter( "DefinedValueId" ).IsNotNullOrWhiteSpace() )
+            {
+                ddlTopicPicker.SelectedDefinedValueId = PageParameter( "DefinedValueId" ).AsIntegerOrNull();
+            }
 
             cpCampus.Items.Remove( cpCampus.Items.FindByValue( "" ) );
             cpCampus.Items.Insert( 0, new ListItem( "Campus", "" ) );
@@ -852,6 +860,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 }
             }
             cpCampus.DataBind();
+            if ( PageParameter( "CampusId" ).IsNotNullOrWhiteSpace() )
+            {
+                cpCampus.SelectedCampusId = PageParameter( "CampusId" ).AsIntegerOrNull();
+            }
 
             pnlBemaFilters.Visible = GetAttributeValue( AttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
             pnlFilters.Visible = !GetAttributeValue( AttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
