@@ -474,6 +474,9 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool EnableGroupTag { get; private set; }
 
+        [DataMember]
+        public bool AllowAnyChildGroupType { get; private set; }
+
         /// <summary>
         /// Gets or sets the roles.
         /// </summary>
@@ -749,6 +752,7 @@ namespace Rock.Web.Cache
             ScheduleConfirmationEmailOffsetDays = groupType.ScheduleConfirmationEmailOffsetDays;
             ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
             RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
+            AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
         }
 
         /// <summary>

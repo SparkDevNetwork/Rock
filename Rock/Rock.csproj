@@ -441,6 +441,7 @@
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
     <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
     <Compile Include="Data\ICampusFilterable.cs" />
+    <Compile Include="Data\RelatedEntityHelper.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\MetricFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
