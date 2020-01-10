@@ -22,6 +22,7 @@
         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
         <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
+        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementGroupTypeId" runat="server" CssClass="js-registration-template-placement-grouptype-id" />
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-group-placement">
 
@@ -160,13 +161,13 @@
             <Rock:ModalDialog ID="mdAddPlacementGroup" runat="server" ValidationGroup="vgAddPlacementGroup" Title="Add Placement Group/Add Shared Placement Group" OnSaveClick="mdAddPlacementGroup_SaveClick">
                 <Content>
                     <Rock:ButtonGroup ID="bgAddNewOrExistingPlacementGroup" runat="server" OnSelectedIndexChanged="bgAddNewOrExistingPlacementGroup_SelectedIndexChanged" AutoPostBack="true">
-                        <asp:ListItem Text="Add New Group" Value="new" />
-                        <asp:ListItem Text="Add Existing Group" Value="existing" />
+                        
                     </Rock:ButtonGroup>
                     <asp:Panel ID="pnlAddNewPlacementGroup" runat="server">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:GroupPicker ID="gpNewPlacementGroupParentGroup" runat="server" Label="Parent Group" ValidationGroup="vgAddPlacementGroup" />
+                                <Rock:NotificationBox ID="nbNewPlacementGroupParentGroupWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
+                                <Rock:GroupPicker ID="gpNewPlacementGroupParentGroup" runat="server" Label="Parent Group" ValidationGroup="vgAddPlacementGroup" OnSelectItem="gpNewPlacementGroupParentGroup_SelectItem" />
                             </div>
                             <div class="col-md-6">
                             </div>
@@ -198,7 +199,8 @@
                     <asp:Panel runat="server" ID="pnlAddExistingPlacementGroup">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlAddExistingPlacementGroup" runat="server" Label="Group" ValidationGroup="vgAddPlacementGroup"/>
+                                <Rock:NotificationBox ID="nbAddExistingPlacementGroupWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
+                                <Rock:GroupPicker ID="gpAddExistingPlacementGroup" runat="server" Label="Group" ValidationGroup="vgAddPlacementGroup"  OnSelectItem="gpAddExistingPlacementGroup_SelectItem"/>
                             </div>
                             <div class="col-md-6">
                             </div>

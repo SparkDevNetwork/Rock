@@ -349,7 +349,7 @@ namespace Rock.Model
         {
             if ( state == EntityState.Deleted )
             {
-                new RegistrationInstanceService( dbContext as RockContext ).DeleteRelatedEntities( this );
+                new RegistrationInstanceService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
             }
 
             base.PreSaveChanges( dbContext, entry, state );
