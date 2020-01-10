@@ -1782,6 +1782,14 @@ namespace Rock.Data
         public DbSet<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the streak type achievement type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The streak type achievement type prerequisites.
+        /// </value>
+        public DbSet<StreakTypeAchievementTypePrerequisite> StreakTypeAchievementTypePrerequisites { get; set; }
+
+        /// <summary>
         /// Gets or sets the StreakTypeExclusions.
         /// </summary>
         /// <value>
