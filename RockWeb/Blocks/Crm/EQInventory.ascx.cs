@@ -79,12 +79,6 @@ namespace Rockweb.Blocks.Crm
         IsRequired = true,
         DefaultIntegerValue = 7,
         Order = 4 )]
-
-    [BooleanField( "Allow Retakes",
-        Key = AttributeKeys.AllowRetakes,
-        Description = "If enabled, the person can retake the test after the minimum days passes.",
-        DefaultBooleanValue = true,
-        Order = 5 )]
     #endregion Block Attributes
     public partial class EQInventory : Rock.Web.UI.RockBlock
     {
@@ -252,7 +246,6 @@ namespace Rockweb.Blocks.Crm
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
             public const string ResultsMessage = "ResultsMessage";
-            public const string AllowRetakes = "AllowRetakes";
         }
 
         #endregion Attribute Keys
@@ -789,22 +782,19 @@ namespace Rockweb.Blocks.Crm
             pnlInstructions.Visible = false;
             pnlQuestion.Visible = false;
             pnlResult.Visible = true;
-            
+            btnRetakeTest.Visible = false;
+
             if ( isPrevious )
             {
                 ShowNotification( "A more recent assessment request has been made but has not been taken. Displaying the most recently completed test.", NotificationBoxType.Info );
             }
 
-            var allowRetakes = GetAttributeValue( AttributeKeys.AllowRetakes ).AsBoolean();
+            bool requiresRequest = assessment.AssessmentType.RequiresRequest;
             var minDays = assessment.AssessmentType.MinimumDaysToRetake;
 
-            if ( !_isQuerystringPersonKey && allowRetakes && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( minDays ) <= RockDateTime.Now )
+            if ( !_isQuerystringPersonKey && !requiresRequest && assessment.CompletedDateTime.HasValue && assessment.CompletedDateTime.Value.AddDays( minDays ) <= RockDateTime.Now )
             {
                 btnRetakeTest.Visible = true;
-            }
-            else
-            {
-                btnRetakeTest.Visible = false;
             }
 
             // Resolve the text field merge fields
