@@ -94,7 +94,7 @@ namespace Rockweb.Blocks.Crm
             public const string SetPageTitle = "SetPageTitle";
             public const string SetPageIcon = "SetPageIcon";
             public const string ResultsMessage = "ResultsMessage";
-            public const string NumberofQuestions = "NumberofQuestions";
+            public const string NumberOfQuestions = "NumberofQuestions";
         }
 
         #endregion Attribute Keys
