@@ -88,14 +88,29 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The allow role change
+            /// </summary>
             public const string AllowRoleChange = "AllowRoleChange";
 
+            /// <summary>
+            /// The allow member status change
+            /// </summary>
             public const string AllowMemberStatusChange = "AllowMemberStatusChange";
 
+            /// <summary>
+            /// The allow note edit
+            /// </summary>
             public const string AllowNoteEdit = "AllowNoteEdit";
 
+            /// <summary>
+            /// The attribute category
+            /// </summary>
             public const string AttributeCategory = "AttributeCategory";
 
+            /// <summary>
+            /// The member detail page
+            /// </summary>
             public const string MemberDetailPage = "MemberDetailsPage";
         }
 
@@ -104,19 +119,52 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         public static class PageParameterKeys
         {
+            /// <summary>
+            /// The group member identifier
+            /// </summary>
             public const string GroupMemberId = "GroupMemberId";
         }
 
         #region Attribute Properties
 
+        /// <summary>
+        /// Gets a value indicating whether [allow role change].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow role change]; otherwise, <c>false</c>.
+        /// </value>
         protected bool AllowRoleChange => GetAttributeValue( AttributeKeys.AllowRoleChange ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [allow member status change].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow member status change]; otherwise, <c>false</c>.
+        /// </value>
         protected bool AllowMemberStatusChange => GetAttributeValue( AttributeKeys.AllowMemberStatusChange ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [allow note edit].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow note edit]; otherwise, <c>false</c>.
+        /// </value>
         protected bool AllowNoteEdit => GetAttributeValue( AttributeKeys.AllowNoteEdit ).AsBoolean();
 
+        /// <summary>
+        /// Gets the attribute category.
+        /// </summary>
+        /// <value>
+        /// The attribute category.
+        /// </value>
         protected Guid? AttributeCategory => GetAttributeValue( AttributeKeys.AttributeCategory ).AsGuidOrNull();
 
+        /// <summary>
+        /// Gets the member detail page.
+        /// </summary>
+        /// <value>
+        /// The member detail page.
+        /// </value>
         protected Guid? MemberDetailPage => GetAttributeValue( AttributeKeys.MemberDetailPage ).AsGuidOrNull();
 
         #endregion
@@ -361,7 +409,6 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Gets the editable attributes.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         private List<AttributeCache> GetEditableAttributes( IHasAttributes entity )
         {
@@ -400,6 +447,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
             };
         }
 
+        /// <summary>
+        /// Gets the current configuration.
+        /// </summary>
+        /// <returns></returns>
         [BlockAction]
         [RockObsolete( "1.10.2" )]
         public object GetCurrentConfig()

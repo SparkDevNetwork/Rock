@@ -625,6 +625,7 @@ namespace Rock.Mobile
         /// <param name="value">The current value.</param>
         /// <param name="isRequired">if set to <c>true</c> [is required].</param>
         /// <param name="multiline">if set to <c>true</c> [multiline].</param>
+        /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
         public static string GetTextEditFieldXaml( string name, string label, string value, bool isRequired, bool multiline = false, int maxLength = 0 )
         {

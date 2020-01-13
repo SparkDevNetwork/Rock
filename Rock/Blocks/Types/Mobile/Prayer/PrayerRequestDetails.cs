@@ -190,8 +190,14 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </summary>
         public static class PageParameterKeys
         {
+            /// <summary>
+            /// The request identifier
+            /// </summary>
             public const string RequestId = "RequestId";
 
+            /// <summary>
+            /// The request
+            /// </summary>
             public const string Request = "Request";
         }
 
@@ -202,36 +208,84 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </summary>
         public static class AttributeKeys
         {
+            /// <summary>
+            /// The show category
+            /// </summary>
             public const string ShowCategory = "EnableCategory";
 
+            /// <summary>
+            /// The parent category
+            /// </summary>
             public const string ParentCategory = "ParentCategory";
 
+            /// <summary>
+            /// The default category
+            /// </summary>
             public const string DefaultCategory = "DefaultCategory";
 
+            /// <summary>
+            /// The enable automatic approve
+            /// </summary>
             public const string EnableAutoApprove = "EnableAutoApprove";
 
+            /// <summary>
+            /// The expires after days
+            /// </summary>
             public const string ExpiresAfterDays = "ExpiresAfterDays";
 
+            /// <summary>
+            /// The show urgent flag
+            /// </summary>
             public const string ShowUrgentFlag = "EnableUrgentFlag";
 
+            /// <summary>
+            /// The show public display flag
+            /// </summary>
             public const string ShowPublicDisplayFlag = "EnablePublicDisplayFlag";
 
+            /// <summary>
+            /// The default to public
+            /// </summary>
             public const string DefaultToPublic = "DefaultToPublic";
 
+            /// <summary>
+            /// The character limit
+            /// </summary>
             public const string CharacterLimit = "CharacterLimit";
 
+            /// <summary>
+            /// The show campus
+            /// </summary>
             public const string ShowCampus = "EnableCampus";
 
+            /// <summary>
+            /// The require campus
+            /// </summary>
             public const string RequireCampus = "RequireCampus";
 
+            /// <summary>
+            /// The require last name
+            /// </summary>
             public const string RequireLastName = "RequireLastName";
 
+            /// <summary>
+            /// The enable person matching
+            /// </summary>
             public const string EnablePersonMatching = "EnablePersonMatching";
 
+            /// <summary>
+            /// The completion action
+            /// </summary>
             public const string CompletionAction = "CompletionAction";
 
+            /// <summary>
+            /// The completion xaml
+            /// </summary>
             public const string CompletionXaml = "CompletionXaml";
 
+            /// <summary>
+            /// The workflow
+            /// </summary>
             public const string Workflow = "Workflow";
         }
 
@@ -240,10 +294,19 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </summary>
         public static class AttributeCategories
         {
+            /// <summary>
+            /// The category selection
+            /// </summary>
             public const string CategorySelection = "Category Selection";
 
+            /// <summary>
+            /// The features
+            /// </summary>
             public const string Features = "Features";
 
+            /// <summary>
+            /// The on save behavior
+            /// </summary>
             public const string OnSaveBehavior = "On Save Behavior";
         }
 
@@ -252,41 +315,140 @@ namespace Rock.Blocks.Types.Mobile.Prayer
         /// </summary>
         public static class AttributeDefaults
         {
+            /// <summary>
+            /// The completion xaml
+            /// </summary>
             public const string CompletionXaml = @"<Rock:NotificationBox NotificationType=""Success"">
     Thank you for allowing us to pray for you.
 </Rock:NotificationBox>";
         }
 
+        /// <summary>
+        /// Gets a value indicating whether [show category].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show category]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowCategory => GetAttributeValue( AttributeKeys.ShowCategory ).AsBoolean();
 
+        /// <summary>
+        /// Gets the parent category.
+        /// </summary>
+        /// <value>
+        /// The parent category.
+        /// </value>
         protected Guid? ParentCategory => GetAttributeValue( AttributeKeys.ParentCategory ).AsGuidOrNull();
 
+        /// <summary>
+        /// Gets the default category.
+        /// </summary>
+        /// <value>
+        /// The default category.
+        /// </value>
         protected Guid? DefaultCategory => GetAttributeValue( AttributeKeys.DefaultCategory ).AsGuidOrNull();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable automatic approve].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable automatic approve]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnableAutoApprove => GetAttributeValue( AttributeKeys.EnableAutoApprove ).AsBoolean();
 
+        /// <summary>
+        /// Gets the expires after days.
+        /// </summary>
+        /// <value>
+        /// The expires after days.
+        /// </value>
         protected int ExpiresAfterDays => GetAttributeValue( AttributeKeys.ExpiresAfterDays ).AsInteger();
 
+        /// <summary>
+        /// Gets a value indicating whether [show urgent flag].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show urgent flag]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowUrgentFlag => GetAttributeValue( AttributeKeys.ShowUrgentFlag ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [show public display flag].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show public display flag]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowPublicDisplayFlag => GetAttributeValue( AttributeKeys.ShowPublicDisplayFlag ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [default to public].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [default to public]; otherwise, <c>false</c>.
+        /// </value>
         protected bool DefaultToPublic => GetAttributeValue( AttributeKeys.DefaultToPublic ).AsBoolean();
 
+        /// <summary>
+        /// Gets the character limit.
+        /// </summary>
+        /// <value>
+        /// The character limit.
+        /// </value>
         protected int CharacterLimit => GetAttributeValue( AttributeKeys.CharacterLimit ).AsInteger();
 
+        /// <summary>
+        /// Gets a value indicating whether [show campus].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show campus]; otherwise, <c>false</c>.
+        /// </value>
         protected bool ShowCampus => GetAttributeValue( AttributeKeys.ShowCampus ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [require campus].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require campus]; otherwise, <c>false</c>.
+        /// </value>
         protected bool RequireCampus => GetAttributeValue( AttributeKeys.RequireCampus ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [require last name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [require last name]; otherwise, <c>false</c>.
+        /// </value>
         protected bool RequireLastName => GetAttributeValue( AttributeKeys.RequireLastName ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether [enable person matching].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable person matching]; otherwise, <c>false</c>.
+        /// </value>
         protected bool EnablePersonMatching => GetAttributeValue( AttributeKeys.EnablePersonMatching ).AsBoolean();
 
+        /// <summary>
+        /// Gets the completion action.
+        /// </summary>
+        /// <value>
+        /// The completion action.
+        /// </value>
         protected int CompletionAction => GetAttributeValue( AttributeKeys.CompletionAction ).AsInteger();
 
+        /// <summary>
+        /// Gets the completion xaml.
+        /// </summary>
+        /// <value>
+        /// The completion xaml.
+        /// </value>
         protected string CompletionXaml => GetAttributeValue( AttributeKeys.CompletionXaml );
 
+        /// <summary>
+        /// Gets the workflow.
+        /// </summary>
+        /// <value>
+        /// The workflow.
+        /// </value>
         protected Guid? Workflow => GetAttributeValue( AttributeKeys.Workflow ).AsGuidOrNull();
 
         #endregion
@@ -707,6 +869,10 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             };
         }
 
+        /// <summary>
+        /// Gets the current configuration.
+        /// </summary>
+        /// <returns></returns>
         [BlockAction]
         [RockObsolete( "1.10.2" )]
         public object GetCurrentConfig()

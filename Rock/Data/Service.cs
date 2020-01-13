@@ -577,13 +577,13 @@ namespace Rock.Data
         #region Related Entities
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities of the given entity type that (optionally) also have a matching purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities of the given entity type that (optionally) also have a matching purpose key.
         /// </summary>
         /// <param name="entityId">A <see cref="System.Int32"/> representing the entity identifier.</param>
         /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
         /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
         /// <returns>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities.
         /// </returns>
         public IQueryable<IEntity> GetRelatedEntities( int entityId, int relatedEntityTypeId, string purposeKey = "" )
         {
@@ -612,13 +612,13 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
         /// <param name="entityId">A <see cref="System.Int32"/> representing the source entity identifier.</param>
         /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
         /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
         /// <returns>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities.
         /// </returns>
         public IQueryable<IEntity> GetRelatedToSourceEntity( int entityId, int relatedEntityTypeId, string purposeKey = "" )
         {
@@ -632,13 +632,13 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> source entities (related to the given target entity) for the given entity type and (optionally) also have a matching purpose key.
         /// </summary>
         /// <param name="entityId">A <see cref="System.Int32"/> representing the target entity identifier.</param>
         /// <param name="relatedEntityTypeId">A <see cref="System.Int32"/> representing the related entity type identifier.</param>
         /// <param name="purposeKey">A <see cref="System.String"/> representing the purpose key.</param>
         /// <returns>
-        /// Returns a queryable collection of <see cref="Rock.Data.Entity"/> entities.
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity"/> entities.
         /// </returns>
         public IQueryable<IEntity> GetRelatedToTargetEntity( int entityId, int relatedEntityTypeId, string purposeKey = "" )
         {
