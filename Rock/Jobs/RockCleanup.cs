@@ -824,7 +824,7 @@ namespace Rock.Jobs
 
                         if ( !ignore )
                         {
-                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic ).First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic ).First( m => m.Name == nameof( CleanupOrphanedAttributeValuesForEntityType ));
 
                             var genericMethod = classMethod.MakeGenericMethod( entityType );
                             var result = genericMethod.Invoke( this, null ) as int?;
