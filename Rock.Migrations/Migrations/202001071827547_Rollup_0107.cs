@@ -33,6 +33,7 @@ namespace Rock.Migrations
             FixSubjectLineOnProfileChangeWorkflowEmail();
             SparklineShortcodeMigration();
             EasyPieChartShortcodeMigration();
+            StepBulkEntryBlockSettingUp();
         }
         
         /// <summary>
@@ -42,6 +43,15 @@ namespace Rock.Migrations
         {
 
             CodeGenMigrationsDown();
+        }
+
+        /// <summary>
+        /// Bulk entry block setting for step type list - Up.
+        /// </summary>
+        private void StepBulkEntryBlockSettingUp()
+        {
+            // Attrib Value for Block:Step Type List, Attribute:Bulk Entry Page: Step Program, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "B7DFAB79-858E-4D44-BD74-38B273BA1EBB", "A5791226-ABCC-4BBA-BDE9-CE605B8AC2DD", @"8224d858-04b3-4dcd-9c73-f9868df29c95" );
         }
 
         /// <summary>

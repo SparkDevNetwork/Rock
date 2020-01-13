@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Achievement;
 using Rock.Data;
@@ -190,6 +192,24 @@ namespace Rock.Web.Cache
         {
             get => AchievementEntityType != null ? AchievementContainer.GetComponent( AchievementEntityType.Name ) : null;
         }
+
+        /// <summary>
+        /// Gets the prerequisites.
+        /// </summary>
+        /// <value>
+        /// The prerequisites.
+        /// </value>
+        public List<StreakTypeAchievementTypePrerequisiteCache> Prerequisites
+            => StreakTypeAchievementTypePrerequisiteCache.All().Where( statp => statp.StreakTypeAchievementTypeId == Id ).ToList();
+
+        /// <summary>
+        /// Gets the prerequisite achievement types.
+        /// </summary>
+        /// <value>
+        /// The prerequisite achievement types.
+        /// </value>
+        public List<StreakTypeAchievementTypeCache> PrerequisiteAchievementTypes
+            => Prerequisites.Select( statp => statp.PrerequisiteStreakTypeAchievementType ).ToList();
 
         #endregion Related Cache Objects
 
