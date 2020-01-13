@@ -16,9 +16,11 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -28,7 +30,7 @@ namespace Rock.Model
     [RockDomain( "Streaks" )]
     [Table( "StreakTypeAchievementTypePrerequisite" )]
     [DataContract]
-    public partial class StreakTypeAchievementTypePrerequisite : Model<StreakTypeAchievementTypePrerequisite>
+    public partial class StreakTypeAchievementTypePrerequisite : Model<StreakTypeAchievementTypePrerequisite>, ICacheable
     {
         #region Entity Properties
 
@@ -63,6 +65,29 @@ namespace Rock.Model
         public virtual StreakTypeAchievementType PrerequisiteStreakTypeAchievementType { get; set; }
 
         #endregion Virtual Properties
+
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return StreakTypeAchievementTypePrerequisiteCache.Get( Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            StreakTypeAchievementTypePrerequisiteCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion ICacheable
 
         #region Overrides
 
