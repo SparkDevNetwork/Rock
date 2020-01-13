@@ -468,6 +468,7 @@
     <Compile Include="Model\CodeGenerated\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\CodeGenerated\RelatedEntityService.cs" />
     <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
+    <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationTemplatePlacement.cs" />
@@ -510,6 +511,7 @@
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypePrerequisiteCache.cs" />
     <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />

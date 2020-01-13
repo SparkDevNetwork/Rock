@@ -165,6 +165,7 @@
     <Compile Include="Controllers\CodeGenerated\StepWorkflowTriggersController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakAchievementAttemptsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypePrerequisitesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
