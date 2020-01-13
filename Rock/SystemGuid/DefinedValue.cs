@@ -21,6 +21,15 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Block Template
+
+        /// <summary>
+        /// The block template for the mobile group member list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
+
+        #endregion
+
         #region Campus
 
         /// <summary>
