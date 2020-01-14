@@ -332,9 +332,27 @@ namespace Rock.MyWell
         /// <returns></returns>
         public DateTime GetEarliestScheduledStartDate( FinancialGateway financialGateway )
         {
-            // MyWell Gateway requires that a subscription has to have a start date at least 24 after the current UTC Date
-            // This sometimes will make the minimum date 2 days from now if it is already currently tomorrow in UTC (for example after 5PM Arizona Time which is offset by -7 hours from UTC)
-            return DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Local ).AddDays( 1 ).ToUniversalTime().Date;
+            /* 2020-01-13 MDP
+              The MyWell Gateway requires that a subscription has to have a start date at least 1 day after the current UTC Date. This sometimes will
+              make the minimum date *2* days from now if it is already currently tomorrow in UTC. For example, Arizona Time is offset by -7 hours from UTC.
+              So after 5pm AZ time, it is the next day in UTC. Here is a specific example:
+              If a person is setting up a scheduled transaction on 2020-01-13 at 5:01PM, it will be 2020-01-14 12:01 AM in UTC. Since the first scheduled
+              date need to be at least 1 date after the current date (UTC), the earliest that we can start the schedule is 2020-01-15!
+            */
+
+            // get the current local datetime, and ensure that it is using the local timezone
+            var currentLocalDateTime = DateTime.SpecifyKind( RockDateTime.Now, DateTimeKind.Local );
+
+            // add a day since MyWell requires that the start date is at least 1 day in the future
+            var tomorrowLocalDateTime = currentLocalDateTime.AddDays( 1 );
+
+            // convert local "tomorrow date" to UTC date just in case it is a day after our local tomorrow date; (which would be true if after 5pm in AZ time)
+            var tomorrowUTCDateTime = tomorrowLocalDateTime.ToUniversalTime();
+
+            // we just want the Date portion (not time) since the Gateway determines the time of day that the actual transaction will occur,
+            var tomorrowUTCDate = tomorrowUTCDateTime.Date;
+
+            return tomorrowUTCDate;
         }
 
         #endregion IHostedGatewayComponent
@@ -862,7 +880,7 @@ namespace Rock.MyWell
         }
 
         /// <summary>
-        /// Searches the subscriptions.
+        /// Searches the subscriptions. Leave customerId null to search for all.
         /// (undocumented as of 4/15/2019) /recurring/subscription/search
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
@@ -1466,5 +1484,65 @@ namespace Rock.MyWell
         }
 
         #endregion GatewayComponent implementation
+
+        #region My Well Specific public methods
+
+        /// <summary>
+        /// Removes the emails.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public int RemoveEmails( FinancialGateway financialGateway, EventHandler<string> onProgress )
+        {
+            var emailRemoveCount = 0;
+            var progressCount = 0;
+            var subscriptionList = this.SearchCustomerSubscriptions( financialGateway, null )?.Data.ToList();
+            var gatewayUrl = this.GetGatewayUrl( financialGateway );
+            var apiKey = this.GetPrivateApiKey( financialGateway );
+            if ( subscriptionList == null )
+            {
+                throw new Exception( "Unexpected response from SearchCustomerSubscriptions " );
+            }
+
+            var customerIds = subscriptionList.Select( a => a.Customer?.Id ).Where( a => a != null ).ToList();
+            var progressTotal = customerIds.Count();
+            foreach ( var customerId in customerIds )
+            {
+                var customer = this.GetCustomer( gatewayUrl, apiKey, customerId );
+                if ( customer?.Data?.BillingAddress?.Email.IsNotNullOrWhiteSpace() == true )
+                {
+                    var billingAddressId = customer.Data.BillingAddress.Id;
+
+                    var customerBillingAddress = customer.Data.BillingAddress;
+                    customerBillingAddress.Email = "";
+
+                    var restClient = new RestClient( gatewayUrl );
+                    RestRequest restRequest = new RestRequest( $"api/customer/{customerId}/address/{billingAddressId}", Method.POST );
+                    restRequest.AddHeader( "Authorization", apiKey );
+
+                    restRequest.AddJsonBody( customerBillingAddress );
+
+                    var restResponse = restClient.Execute( restRequest );
+
+                    UpdateCustomerAddressResponse updateCustomerAddressResponse = ParseResponse<UpdateCustomerAddressResponse>( restResponse );
+                    if ( updateCustomerAddressResponse.IsSuccessStatus() == true )
+                    {
+                        emailRemoveCount++;
+                    }
+                }
+
+                progressCount++;
+
+                if ( progressTotal > 0 )
+                {
+                    var progressPercent = Math.Round( decimal.Divide(( progressCount * 100 ), progressTotal), 2 );
+                    onProgress?.Invoke( this, string.Format( $"Updated {emailRemoveCount} emails. {progressPercent}%" ) );
+                }
+            };
+
+            return emailRemoveCount;
+        }
+
+        #endregion
     }
 }

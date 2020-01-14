@@ -11,12 +11,9 @@ _ReSharper.*
 #*.Framework.XML
 
 #specific files
-RockJobSchedulerService.Xml
 web.[Cc]onnectionStrings.config
 desktop.ini
 Rock.XML
-pageviews.csv
-RockLogster.csv
 Quartz.xml
 StyleCop.Cache
 
@@ -30,6 +27,7 @@ RockWeb/App_Data/MobileAppBundles
 *.sln.GhostDoc.xml
 .vs/
 .localhistory/
+.vshistory/
 TestResults/
 
 Packages/*
