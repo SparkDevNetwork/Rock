@@ -30,6 +30,7 @@
             JOIN ContentChannelItemSlug ccis
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
             ORDER BY ccia.[Order]
         {% endsql %}
         
@@ -52,6 +53,7 @@
             JOIN ContentChannelItemSlug ccis
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
             ORDER BY cci.StartDateTime
         {% endsql %}
 
@@ -128,7 +130,7 @@
                         {% capture trimcopy %}{% endcapture %}
                         {% capture linkcolor %}{% endcapture %}
                         {% capture backgroundcolor %}{% endcapture %}
-                        {% capture linkurl %}{[ getPermalink cciid:'{{ child.Id }}' ]}{% endcapture %}
+                        {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ child.Id }}' ]}{% endcapture %}
                         {% capture linktext %}{% if childType contains "Sermon" or childType contains "Series" %}Watch{% else %}Read{% endif %} {{ childType | Singularize }}{% endcapture %}
                         
                         {[ card id:'{{ id }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}

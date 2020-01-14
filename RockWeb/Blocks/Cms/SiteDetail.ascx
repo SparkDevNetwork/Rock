@@ -33,7 +33,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
                                <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
@@ -67,16 +67,18 @@
                                     <Rock:ImageUploader ID="imgSiteIcon" runat="server" Help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices." Label="Site Icon" />
                                 </div>
                                 <div class="col-md-4 col-lg-3">
-                                    <Rock:ImageUploader ID="imgSiteLogo" runat="server" Help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing" 
+                                    <Rock:ImageUploader ID="imgSiteLogo" runat="server" Help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
                                         Label="Site Logo" />
                                 </div>
                             </div>
-                            
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 
                     <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attributes" CssClass="site-page-attribute-panel">
-                        <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" 
+                        <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info"
                             Text="Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes" />
                         <div class="grid">
                             <Rock:Grid ID="gPageAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Page Attribute">

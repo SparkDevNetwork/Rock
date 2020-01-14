@@ -4,7 +4,6 @@
 
 {% assign pagesize = pagesize | AsInteger %}
 
-
 <section>
     <div class="row">
     	{% for item in Items limit:pagesize offset:offset %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
@@ -19,7 +18,11 @@
             {% assign cciid = item.Id %}
     	    {% assign guid = item.Guid %}
     	    {% assign channelNameParts = item.ContentChannel.Name | Split:' - ' %}
-    	    {% assign type = channelNameParts[1] | Singularize %}
+			{% if item.ContentChannelId == 26 %}
+				{% capture type %}{{ item | Attribute:'Category' }} {{ channelNameParts[1] | Singularize }}{% endcapture %}
+			{% else %}
+    	    	{% assign type = channelNameParts[1] | Singularize %}
+			{% endif %}
     	    {% assign title = item.Title | Replace:"'","’" %}
             {% assign titlesize = "h4" %}
 			{% assign dates = item | Attribute:'Dates','RawValue' %}
@@ -38,8 +41,8 @@
     	    {% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
 			{% assign summary = item | Attribute:'Summary' %}
     	    {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% else %}{{ item.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% endif %}</p>{% endcapture %}
-    	    {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
-    	    {% capture linktext %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endcapture %}
+    	    {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
+    	    {% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endif %}{% endcapture %}
     	    {% capture trimcopy %}{% endcapture %}
 
 			{%- comment -%}Get number of parent items{%- endcomment -%}
@@ -61,7 +64,7 @@
 					{% for parentItem in parents %}
 						{% assign collectiontext = parentItem.Title %}
 						{% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{{ parentItem.PrimarySlug }}{% endcapture %}
-						{% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
+						{% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
 						{% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
 					{% endfor %}
 				{% endcontentchannelitem %}

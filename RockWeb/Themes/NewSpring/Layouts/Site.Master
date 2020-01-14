@@ -19,16 +19,16 @@
 
 <!--
 
-   ______                            __  _                ____                   __        __            
-  / ________  ____  ____  ___  _____/ /_(_____  ____ _   / __ \___  ____  ____  / ___     / /_____       
- / /   / __ \/ __ \/ __ \/ _ \/ ___/ __/ / __ \/ __ `/  / /_/ / _ \/ __ \/ __ \/ / _ \   / __/ __ \      
-/ /___/ /_/ / / / / / / /  __/ /__/ /_/ / / / / /_/ /  / ____/  __/ /_/ / /_/ / /  __/  / /_/ /_/ /      
-\____/\____/_/ /_/_/ /_/\___/\___/\__/_/_/ /_/\__, /  /_/    \___/\____/ .___/_/\___/   \__/\____/       
-       __                                    /_____   ______          /__       ____  __  __             
+   ______                            __  _                ____                   __        __
+  / ________  ____  ____  ___  _____/ /_(_____  ____ _   / __ \___  ____  ____  / ___     / /_____
+ / /   / __ \/ __ \/ __ \/ _ \/ ___/ __/ / __ \/ __ `/  / /_/ / _ \/ __ \/ __ \/ / _ \   / __/ __ \
+/ /___/ /_/ / / / / / / /  __/ /__/ /_/ / / / / /_/ /  / ____/  __/ /_/ / /_/ / /  __/  / /_/ /_/ /
+\____/\____/_/ /_/_/ /_/\___/\___/\__/_/_/ /_/\__, /  /_/    \___/\____/ .___/_/\___/   \__/\____/
+       __                                    /_____   ______          /__       ____  __  __
       / ___  _______  _______   ____ _____  ____/ /  / ________ ______/ /_     / __ \/ /_/ /_  ___  _____
  __  / / _ \/ ___/ / / / ___/  / __ `/ __ \/ __  /  / __/ / __ `/ ___/ __ \   / / / / __/ __ \/ _ \/ ___/
-/ /_/ /  __(__  / /_/ (__  )  / /_/ / / / / /_/ /  / /___/ /_/ / /__/ / / /  / /_/ / /_/ / / /  __/ /    
-\____/\___/____/\__,_/____/   \__,_/_/ /_/\__,_/  /_____/\__,_/\___/_/ /_/   \____/\__/_/ /_/\___/_/     
+/ /_/ /  __(__  / /_/ (__  )  / /_/ / / / / /_/ /  / /___/ /_/ / /__/ / / /  / /_/ / /_/ / / /  __/ /
+\____/\___/____/\__,_/____/   \__,_/_/ /_/\__,_/  /_____/\__,_/\___/_/ /_/   \____/\__/_/ /_/\___/_/
 
 -->
 
@@ -93,7 +93,7 @@
         <asp:ContentPlaceHolder ID="css" runat="server" />
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     </head>
-     
+
     <body runat="server" id="body">
 
         <form id="form1" runat="server">
@@ -112,7 +112,7 @@
             <div id="navigation">
                 <Rock:Lava ID="HideNav" runat="server">
                     {% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav'  %}
-                    
+
                     {% if hideNav == 'true' %}
                         <div class="hidden">
                     {% endif %}
@@ -123,7 +123,7 @@
 
                 <Rock:Lava ID="HideNavClose" runat="server">
                     {% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav'  %}
-                    
+
                     {% if hideNav == 'true' %}
                         </div>
                     {% endif %}
@@ -137,7 +137,7 @@
                         <div class="{% if CurrentPage.MenuDisplayChildPages == 'True' %}hidden-md hidden-lg{% endif %}">
                             {[ pageHeader title:'{{ 'Global' | Page:'Title' | Replace:"'","’" }}' ]}
                         </div>
-                    {% endif %}         
+                    {% endif %}
                 </Rock:Lava>
             </div>
 
@@ -151,7 +151,7 @@
             <div id="content" class="clearfix">
                 <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
                 <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-                <Rock:Zone Name="Footer" runat="server" />                
+                <Rock:Zone Name="Footer" runat="server" />
             </div>
 
             <Rock:Lava ID="PageConstrainedEnd" runat="server">
