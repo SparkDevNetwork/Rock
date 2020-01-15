@@ -870,7 +870,10 @@ namespace Rock.Model
                 return;
             }
 
-            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.Id );
+            // IMPORTANT: When dealing with Archived Groups or GroupMembers, we always need to get
+            // a query without the "filter" (AsNoFilter) that comes from the GroupConfiguration and/or
+            // GroupMemberConfiguration because otherwise the query will not include archived items.
+            var groupMemberQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.GroupId == this.Id );
 
             if ( newIsArchived )
             {
