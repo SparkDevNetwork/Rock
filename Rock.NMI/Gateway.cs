@@ -26,6 +26,7 @@ using System.Xml.Linq;
 using RestSharp;
 
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
@@ -676,7 +677,7 @@ namespace Rock.NMI
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            var financialGateway = transaction.FinancialGateway;
+            var financialGateway = new FinancialGatewayService( new RockContext() ).Get( transaction.FinancialGatewayId.Value );
 
             var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
             var restRequest = new RestRequest( Method.GET );
