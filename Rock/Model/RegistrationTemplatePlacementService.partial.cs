@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -42,6 +43,23 @@ namespace Rock.Model
         public void SetRegistrationTemplatePlacementPlacementGroups( RegistrationTemplatePlacement registrationTemplatePlacement, List<Group> groups )
         {
             this.RelatedEntities.SetRelatedToSourceEntity( registrationTemplatePlacement.Id, groups, RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate );
+        }
+
+        /// <summary>
+        /// Adds the registrationTemplatePlacement group. Returns false if the group is already a placement group for this registrationTemplatePlacement
+        /// </summary>
+        /// <param name="registrationTemplatePlacement">The registration template placement.</param>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public bool AddRegistrationTemplatePlacementPlacementGroup( RegistrationTemplatePlacement registrationTemplatePlacement, Group group )
+        {
+            if ( !this.RelatedEntities.RelatedToSourceEntityAlreadyExists( registrationTemplatePlacement.Id, group, RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate ) )
+            {
+                this.RelatedEntities.AddRelatedToSourceEntity( registrationTemplatePlacement.Id, group, RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate );
+                return true;
+            }
+
+            return false;
         }
     }
 }
