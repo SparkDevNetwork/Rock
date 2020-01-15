@@ -589,6 +589,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Structure Content Editor
+
+        /// <summary>
+        /// Default Structure Content Editor
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "31C63FB9-1365-4EEF-851D-8AB9A188A06C";
+
+        #endregion
+
         #region Map Styles
 
         /// <summary>
