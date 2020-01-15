@@ -118,7 +118,7 @@
             Sys.Application.add_load(function () {
                 enablePersonGridActions($('.js-checkbox-person-report'));
 
-                $('.js-checkbox-person-report').change(function () {
+                $('.js-checkbox-person-report').on('change', function () {
                     enablePersonGridActions($(this));
                 })
             });

@@ -199,7 +199,7 @@ namespace RockWeb.Blocks.Finance
         private void RegisterJavaScriptForGridActions()
         {
             string scriptFormat = @"
-                $('#{0}').change(function( e ){{
+                $('#{0}').on('change', function( e ){{
                     var count = $(""#{1} input[id$='_cbSelect_0']:checked"").length;
                     if (count == 0) {{
                         $('#{3}').val($ddl.val());
