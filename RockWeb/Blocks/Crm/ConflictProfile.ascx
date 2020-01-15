@@ -36,7 +36,7 @@
     /// and moves to next question.
     ///</summary>
     function initQuestionsValidation() {
-        $('.js-gift-questions input[type=radio]').change(function () {
+        $('.js-gift-questions input[type=radio]').on('change', function () {
             $(this).first().closest(".form-group").removeClass("has-error has-feedback").addClass("answered");
         });
     }

@@ -3143,7 +3143,7 @@ TransactionAccountDetails: [
 
         if ( typeof {21} != 'undefined' ) {{
             //// Toggle credit card display if saved card option is available
-            $('input[name=""{22}""]').change(function () {{
+            $('input[name=""{22}""]').on('change', function () {{
 
                 var radioDisplay = $('#{23}').css('display');
                 var selectedVal = $('input[name=""{22}""]:checked').val();
