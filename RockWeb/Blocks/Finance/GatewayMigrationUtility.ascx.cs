@@ -759,16 +759,10 @@ namespace RockWeb.Blocks.Finance
                             //////////// This cannot be undone!!
                             nmiGatewayComponent.CancelScheduledPayment( scheduledTransaction, out errorMessage );
 
-                            // update the scheduled transaction to point to the MyWell scheduled transaction
-                            using ( var updateRockContext = new RockContext() )
-                            {
-                                // Attach the person to the updateRockContext so that it'll be tracked/saved using updateRockContext
-                                updateRockContext.FinancialScheduledTransactions.Attach( scheduledTransaction );
-                                scheduledTransaction.TransactionCode = tempFinancialScheduledTransaction.TransactionCode;
-                                scheduledTransaction.GatewayScheduleId = tempFinancialScheduledTransaction.GatewayScheduleId;
-                                scheduledTransaction.FinancialGatewayId = tempFinancialScheduledTransaction.FinancialGatewayId;
-                                updateRockContext.SaveChanges();
-                            }
+                            scheduledTransaction.TransactionCode = tempFinancialScheduledTransaction.TransactionCode;
+                            scheduledTransaction.GatewayScheduleId = tempFinancialScheduledTransaction.GatewayScheduleId;
+                            scheduledTransaction.FinancialGatewayId = tempFinancialScheduledTransaction.FinancialGatewayId;
+                            rockContext.SaveChanges();
 
                             scheduledTransactionMigrationResult.DidMigrateSuccessfully = true;
 
