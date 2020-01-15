@@ -128,7 +128,7 @@
 
         <asp:Panel ID="pnlAttendees" runat="server" CssClass="panel panel-block">
             <script type="text/javascript">
-                $(document).ready(function () {
+                Sys.Application.add_load(function () {
                     $('.js-rsvp-paired-checkbox').click(function (e) {
                         if ($(this)[0].checked) {
                             var pairedCheckbox = $('#' + $(this).data('paired-checkbox'))[0];
@@ -149,18 +149,21 @@
                         </Rock:GridFilter>
                         <Rock:Grid ID="gAttendees" runat="server" ExportSource="ColumnOutput" OnRowDataBound="gAttendees_RowDataBound" DataKeyNames="PersonId">
                             <Columns>
-                                <Rock:RockBoundField DataField="FullName" HeaderText="Invitees" />
-                                <Rock:RockTemplateField HeaderText="Accept" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
+                                <Rock:RockBoundField DataField="FullName" HeaderText="Invitees" ExcelExportBehavior="AlwaysInclude" />
+                                <Rock:BoolField DataField="Accept" HeaderText="Accept" ExcelExportBehavior="IncludeIfVisible" Visible="false" />
+                                <Rock:BoolField DataField="Decline" HeaderText="Decline" ExcelExportBehavior="IncludeIfVisible" Visible="false" />
+                                <Rock:RockTemplateField HeaderText="Accept" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field" ExcelExportBehavior="NeverInclude">
                                     <ItemTemplate>
                                         <Rock:RockCheckBox ID="rcbAccept" runat="server" DisplayInline="true" Checked='<%# Eval("Accept") %>' Text="Accept" ToolTip='<%# (bool) Eval("Accept") ? "at " + Eval("RSVPDateTime") : ""  %>' CssClass="js-rsvp-paired-checkbox" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockTemplateField HeaderText="Decline" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
+                                <Rock:RockTemplateField HeaderText="Decline" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field" ExcelExportBehavior="NeverInclude">
                                     <ItemTemplate>
                                         <Rock:RockCheckBox ID="rcbDecline" runat="server" DisplayInline="true" Checked='<%# Eval("Decline") %>' Text="Decline" ToolTip='<%# (bool) Eval("Decline") ? "at " + Eval("RSVPDateTime") : ""  %>' CssClass="js-rsvp-paired-checkbox" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
-                                <Rock:RockTemplateField HeaderText="Decline Reason" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field">
+                                <Rock:RockLiteralField ID="lDeclineReason" HeaderText="Decline Reason" Visible="false" ExcelExportBehavior="IncludeIfVisible" />
+                                <Rock:RockTemplateField HeaderText="Decline Reason" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-select-field" ExcelExportBehavior="NeverInclude">
                                     <ItemTemplate>
                                         <Rock:DataDropDownList ID="rddlDeclineReason" runat="server" SourceTypeName="Rock.Model.DefinedValue" PropertyName="Value" DataTextField="Value" Label="" DataValueField="Id">
                                             <asp:ListItem Text="" Value="" />
