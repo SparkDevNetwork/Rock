@@ -5,15 +5,20 @@
     $(function () {
         var proxy = $.connection.rockMessageHub;
 
-        proxy.client.showProgress = function (name, message, results) {
+        proxy.client.showProgress = function (name, message, results, jsTarget) {
             if (name == '<%=this.SignalRNotificationKey %>') {
 
-                var $notificationBox = $('.js-migrate-scheduled-notification');
+                var $notificationBox = $(jsTarget);
 
                 $notificationBox.show();
 
                 $('.js-notification-text', $notificationBox).html(message);
-                $('.js-notification-details', $notificationBox).html('<pre>' + results + '</pre>');
+                if (results != '') {
+                    $('.js-notification-details', $notificationBox).html('<pre>' + results + '</pre>');
+                }
+                else {
+                    $('.js-notification-details', $notificationBox).html('');
+                }
             }
         }
 
@@ -40,6 +45,7 @@
     <Triggers>
         <asp:PostBackTrigger ControlID="btnDownloadSavedAccountsResultsJSON" />
         <asp:PostBackTrigger ControlID="btnDownloadScheduledTransactionsResultsJSON" />
+        <asp:PostBackTrigger ControlID="btnExportVaultTransferRequestFiles" />
     </Triggers>
     <ContentTemplate>
 
@@ -56,22 +62,24 @@
                     <div class="col-md-12">
                         <h3>Preparing for the NMI to My Well Migration</h3>
                         <p>
-                            To prepare for the migration, you'll need to contact My Well to get the process started. They will create two files that you'll use to import: a Vault import and a Scheduled Transaction import.
+                            To prepare for the migration, you'll need to <b>contact My Well to get the process started.</b>
+                            <br />
                             <br />
                             <b>You will need to carefully plan all these steps to prevent any NMI scheduled transactions or new NMI saved accounts from happening during this process:</b>
                             <br />
                         </p>
 
                         <ol>
-                            <li>Enable the MyWell Gateway on your system.</li>
-                            <li>Replace any Transaction Entry blocks and Scheduled Transaction Edit blocks with the "V2" versions of these blocks that you want to use the MyWell Gateway.
+                            <li>Make sure you have contacted My Well to do the Vault Transfer. If you want to limit which vault records are transfered, do the Export Vault Transfer Request files step below</li>
+                            <li>Enable the My Well Gateway on your system.</li>
+                            <li>Replace any Transaction Entry blocks and Scheduled Transaction Edit blocks with the "V2" versions of these blocks that you want to use the My Well Gateway.
                                 Registration will need to continue to use the NMI gateway, but people's saved accounts will no longer be available to choose from (they'll have to enter Credit Card information every time).</li>
                             <li>Disable saved account and scheduled transaction options on any remaining Transaction Entry blocks that use the NMI gateway.</li>
+                            <li>Get confirmation from My Well that VaultIds have been transferred from NMI to My Well</li>
                             <li>Run the 'Download Payments' job to get any NMI scheduled transactions that have occurred.</li>
-                            <li>Get freshly generated Import files from My Well.</li>
-                            <li>Run the migrations immediately after getting the import files.
+                            <li>Run the migration operations
                             <ul>
-                                <li>The two migration operations can be run in any order, and can safely be run multiple times. They are not dependent on each other.</li>
+                                <li>The migration operations can be run in any order, and can safely be run multiple times. They are not dependent on each other.</li>
                             </ul>
                             </li>
                             <li>Monitor scheduled transactions for the next couple of days to ensure that no new NMI scheduled transactions occur. If they do, refund any duplicate schedule transactions that might have happened to prevent people from getting double billed.</li>
@@ -81,6 +89,15 @@
 
                         <Rock:RockDropDownList ID="ddlNMIGateway" Label="NMI Gateway" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlNMIGateway_SelectedIndexChanged" />
                         <Rock:RockDropDownList ID="ddlMyWellGateway" Label="My Well Gateway" runat="server" />
+
+                        <h4>Vault Transfer Request Files</h4>
+                        <p>
+                            Use this to export a zip file that will contain the Ids that MyWell will use to limit which customer vault records are transferred. This will export vault IDs for any scheduled transactions or saved accounts that have been active or created within the selected date range.
+                        </p>
+                        <Rock:SlidingDateRangePicker ID="sdrDateRange" runat="server" DelimitedValues="Last|12|Month||" Help="Select the date range " />
+                        <div class="actions margin-b-md">
+                            <asp:LinkButton ID="btnExportVaultTransferRequestFiles" runat="server" CssClass="btn btn-primary" OnClick="btnExportVaultTransferRequestFiles_Click" Enabled="true" Text="Export Vault Transfer Request Files" />
+                        </div>
 
                         <Rock:RockControlWrapper ID="rcbNMIPersonFiles" runat="server" Label="Profiles" Help="Select the Profiles to migrate, or leave all un-selected to migrate all">
                             <Rock:Grid ID="gNMIPersonProfiles" runat="server" OnRowDataBound="gNMIPersonProfiles_RowDataBound" DataKeyNames="Id" AllowSorting="true" Label="People with NMI Profiles">
@@ -97,16 +114,13 @@
 
                         <h4>Saved Accounts</h4>
                         <p>
-                            This will migrate Saved Accounts from NMI to My Well. It does this by modifying each Saved Account to use the MyWell CustomerId instead of the NMI CustomerId (nothing in either gateway is modified)
-                            To start the migration, select the Vault Import file that was sent to you from My Well.
-                            Make sure the Vault Import file was generated <b>after</b> the last NMI Saved Account was saved.
+                            This will migrate Saved Accounts from NMI to My Well. It does this by modifying each Saved Account to use the My Well CustomerId instead of the NMI CustomerId (nothing in either gateway is modified).
                             Click the 'Migrate Saved Accounts' button to start.
                             It is safe to run this import more than once. It will only affect records that weren't successfully migrated previously.
                         </p>
 
-                        <Rock:FileUploader ID="fuCustomerVaultImportFile" runat="server" Label="Select Customer Vault Import File" IsBinaryFile="true" UploadAsTemporary="true" DisplayMode="DropZone" OnFileUploaded="fuCustomerVaultImportFile_FileUploaded" />
                         <div class="actions margin-b-md">
-                            <asp:LinkButton ID="btnMigrateSavedAccounts" runat="server" CssClass="btn btn-primary" OnClick="btnMigrateSavedAccounts_Click" Enabled="false">Migrate Saved Accounts</asp:LinkButton>
+                            <Rock:BootstrapButton ID="btnMigrateSavedAccounts" runat="server" CssClass="btn btn-primary" OnClick="btnMigrateSavedAccounts_Click" Enabled="true">Migrate Saved Accounts</Rock:BootstrapButton>
                         </div>
 
                         <asp:Panel ID="pnlMigrateSavedAccountsResults" runat="server">
@@ -115,26 +129,41 @@
                             <asp:LinkButton ID="btnDownloadSavedAccountsResultsJSON" runat="server" CssClass="btn btn-link" Text="Download Log" OnClick="btnDownloadSavedAccountsResultsJSON_Click" />
                         </asp:Panel>
 
-
                         <hr />
 
                         <h4>Scheduled Transactions</h4>
                         <p>
-                            This will migrate Schedule Transactions from NMI to My Well. <b>After each scheduled transaction is migrated to My Well, the NMI subscription will be deleted from the NMI gateway.</b> To start the migration, select the Schedule Transactions Import file that was sent to you from My Well.
-                            Make sure the Scheduled Import file was generated <b>after</b> the last NMI Scheduled Transaction was created.
-                            Click the 'Migrate Scheduled Transactions' button to start. Depending on the number of scheduled transactions on your system, this may take a few minutes.
+                            This will migrate Schedule Transactions from NMI to My Well. <b>After each scheduled transaction is migrated to My Well, the NMI subscription will be deleted from the NMI gateway.</b>
+                            First, click the 'Download NMI Payments' to get any recent NMI payments that haven't been downloaded to Rock yet.
+                            Then click the 'Migrate Scheduled Transactions' button to start. Depending on the number of scheduled transactions on your system, this may take a few minutes.
                             It is safe to run this import more than once. It will only affect records that weren't successfully migrated previously.
                         </p>
-                        <Rock:FileUploader ID="fuScheduleImportFile" runat="server" Label="Select Schedule Import File" IsBinaryFile="true" UploadAsTemporary="true" DisplayMode="DropZone" OnFileUploaded="fuScheduleImportFile_FileUploaded" />
+
+                        <Rock:NotificationBox ID="nbScheduledTransactionsDownloadPayments" runat="server" NotificationBoxType="Warning" />
+
                         <div class="actions margin-b-md">
-                            <Rock:NotificationBox ID="nbMigrationScheduledConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
-                            <asp:LinkButton ID="btnMigrateScheduledTransactions" runat="server" CssClass="btn btn-primary js-migrate-scheduled-transactions-button" OnClick="btnMigrateScheduledTransactions_Click" Enabled="false">Migrate Scheduled Transactions</asp:LinkButton>
+                            <Rock:BootstrapButton ID="btnMigrateScheduledTransactions" runat="server" CssClass="btn btn-primary margin-t-md js-migrate-scheduled-transactions-button" OnClick="btnMigrateScheduledTransactions_Click" Enabled="true">Migrate Scheduled Transactions</Rock:BootstrapButton>
                         </div>
                         <asp:Panel ID="pnlMigrateScheduledTransactionsResults" runat="server">
                             <Rock:NotificationBox ID="nbMigrateScheduledTransactionsResult" runat="server" CssClass="js-migrate-scheduled-notification" NotificationBoxType="Info" Visible="true" Dismissable="true" />
                             <asp:HiddenField ID="hfMigrateScheduledTransactionsResultFileURL" runat="server" />
+                            
                             <asp:LinkButton ID="btnDownloadScheduledTransactionsResultsJSON" runat="server" CssClass="btn btn-link js-migrate-scheduled-download-button" Text="Download Log" OnClick="btnDownloadScheduledTransactionsResultsJSON_Click" />
                         </asp:Panel>
+
+                        <hr />
+
+                        <h4>Cleanup Customer Vault</h4>
+                        <p>
+                            This will remove email addresses from all the customer vault records in My Well that have a subscription.
+                            Since Rock has already has customizable email notifications for gateway transactions, Rock doesn't include email addresses in the data that is sent to My Well.
+                            However the customer vault transfer does include email, so we want to delete those email addresses.
+                            NOTE: This needs to be down after the scheduled transactions are migrated to MyWell.
+                        </p>
+                        <div class="actions margin-b-md">
+                            <Rock:BootstrapButton ID="btnRemoveEmailAddresses" runat="server" CssClass="btn btn-primary " OnClick="btnRemoveEmailAddresses_Click" Enabled="true">Remove email addresses from Customer Vault</Rock:BootstrapButton>
+                            <Rock:NotificationBox ID="nbRemoveEmailAddressesResult" runat="server" CssClass="js-remove-emails-notification" NotificationBoxType="Info" Visible="true" Dismissable="true" />
+                        </div>
                     </div>
                 </div>
             </div>

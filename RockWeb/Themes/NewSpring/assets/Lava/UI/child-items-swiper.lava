@@ -7,7 +7,6 @@
     {% contentchannelitem id:'{{ cciid }}' iterator:'parentItems' %}
         {% for parentItem in parentItems %}
             {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
-
         {% endfor %}
     {% endcontentchannelitem %}
 
@@ -30,6 +29,9 @@
             JOIN ContentChannelItemSlug ccis
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            AND cci.Status = 2
+            AND cci.StartDateTime <= DATEADD(hh, -5, GETDATE())
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime IS NOT NULL AND cci.ExpireDateTime > DATEADD(hh, -5, GETDATE()))
             ORDER BY ccia.[Order]
         {% endsql %}
         
@@ -52,6 +54,9 @@
             JOIN ContentChannelItemSlug ccis
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            AND cci.Status = 2
+            AND cci.StartDateTime <= DATEADD(hh, -5, GETDATE())
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime IS NOT NULL AND cci.ExpireDateTime > DATEADD(hh, -5, GETDATE()))
             ORDER BY cci.StartDateTime
         {% endsql %}
 
