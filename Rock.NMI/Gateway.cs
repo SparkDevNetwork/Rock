@@ -18,12 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 using RestSharp;
@@ -31,8 +28,8 @@ using RestSharp;
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.NMI
 {
@@ -143,7 +140,7 @@ namespace Rock.NMI
         {
             return !isRepeating;
         }
-        
+
         /// <summary>
         /// Gets the financial transaction parameters that are passed to step 1
         /// </summary>
@@ -271,7 +268,7 @@ namespace Rock.NMI
             try
             {
                 var rootElement = GetRoot( financialGateway, "complete-action" );
-                rootElement.Add( new XElement( "token-id", resultQueryString.Substring(10) ) );
+                rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
                 var result = PostToGateway( financialGateway, xdoc );
 
@@ -293,7 +290,7 @@ namespace Rock.NMI
 
                     // write result error as an exception
                     ExceptionLogService.LogException( new Exception( $"Error processing NMI transaction. Result Code:  {result.GetValueOrNull( "result-code" )} ({resultCodeMessage}). Result text: {result.GetValueOrNull( "result-text" )}. Card Holder Name: {result.GetValueOrNull( "first-name" )} {result.GetValueOrNull( "last-name" )}. Amount: {result.GetValueOrNull( "total-amount" )}. Transaction id: {result.GetValueOrNull( "transaction-id" )}. Descriptor: {result.GetValueOrNull( "descriptor" )}. Order description: {result.GetValueOrNull( "order-description" )}." ) );
-                    
+
                     return null;
                 }
 
@@ -308,7 +305,7 @@ namespace Rock.NMI
                     // cc payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                     transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{result.GetValueOrNull( "billing_first-name" )} {result.GetValueOrNull( "billing_last-name" )}" );
-                    transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
+                    transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                     transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
@@ -323,12 +320,12 @@ namespace Rock.NMI
                 {
                     // ach payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
-                    transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
+                    transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                     transaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account-number" ).Masked( true );
                 }
 
-                transaction.AdditionalLavaFields = new Dictionary<string,object>();
-                foreach( var keyVal in result )
+                transaction.AdditionalLavaFields = new Dictionary<string, object>();
+                foreach ( var keyVal in result )
                 {
                     transaction.AdditionalLavaFields.Add( keyVal.Key, keyVal.Value );
                 }
@@ -363,7 +360,7 @@ namespace Rock.NMI
         {
             errorMessage = string.Empty;
 
-            if ( origTransaction != null && 
+            if ( origTransaction != null &&
                 !string.IsNullOrWhiteSpace( origTransaction.TransactionCode ) &&
                 origTransaction.FinancialGateway != null )
             {
@@ -535,7 +532,7 @@ namespace Rock.NMI
                 {
                     // cc payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                     scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
@@ -550,7 +547,7 @@ namespace Rock.NMI
                 {
                     // ach payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
-                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : (int?)null;
+                    scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                     scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" ).Masked( true );
                 }
 
@@ -667,7 +664,7 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool GetScheduledPaymentStatusSupported
         {
-            get { return false; }
+            get { return true; }
         }
 
         /// <summary>
@@ -678,9 +675,52 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
-            // NMI does not support getting the status of a scheduled transaction.
             errorMessage = string.Empty;
-            return true;
+            var financialGateway = transaction.FinancialGateway;
+
+            var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
+            var restRequest = new RestRequest( Method.GET );
+
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
+            restRequest.AddParameter( "report_type", "recurring" );
+            restRequest.AddParameter( "subscription_id", transaction.GatewayScheduleId );
+
+            var response = restClient.Execute( restRequest );
+            if ( response != null )
+            {
+                if ( response.StatusCode == HttpStatusCode.OK )
+                {
+                    var xdocResult = GetXmlResponse( response );
+                    var subscriptionNode = xdocResult.Root.Element( "subscription" );
+                    if ( subscriptionNode == null )
+                    {
+                        errorMessage = "unable to get subscription node";
+                        return false;
+                    }
+
+                    var subscription_id = subscriptionNode.Element( "subscription_id" )?.Value;
+
+                    if ( subscription_id == null )
+                    {
+                        errorMessage = "unable to determine subscription_id from response";
+                        return false;
+                    }
+                    else if ( subscription_id != transaction.GatewayScheduleId )
+                    {
+                        errorMessage = "subscription_id mismatch in response";
+                        return false;
+                    }
+
+                    transaction.NextPaymentDate = subscriptionNode.Element( "next_charge_date" )?.Value.AsDateTime();
+                    transaction.LastStatusUpdateDateTime = RockDateTime.Now;
+
+                    return true;
+                }
+            }
+
+            errorMessage = "Unexpected response";
+            return false;
         }
 
         /// <summary>
@@ -762,7 +802,7 @@ namespace Rock.NMI
                                             txnDateTime = actionDate.Value;
                                         }
 
-                                        if ( actionType == "settle")
+                                        if ( actionType == "settle" )
                                         {
                                             payment.IsSettled = true;
                                             payment.SettledGroupId = GetXElementValue( xAction, "processor_batch_id" ).Trim();
@@ -830,16 +870,11 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Gets the next payment date.
+        /// Gets the root.
         /// </summary>
-        /// <param name="scheduledTransaction">The transaction.</param>
-        /// <param name="lastTransactionDate">The last transaction date.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="elementName">Name of the element.</param>
         /// <returns></returns>
-        public override DateTime? GetNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
-        {
-            return CalculateNextPaymentDate( scheduledTransaction, lastTransactionDate );
-        }
-
         private XElement GetRoot( FinancialGateway financialGateway, string elementName )
         {
             XElement rootElement = new XElement( elementName,
@@ -858,7 +893,7 @@ namespace Rock.NMI
         {
             // If giving from a Business, FirstName will be blank
             // The Gateway might require a FirstName, so just put '-' if no FirstName was provided
-            if ( paymentInfo.FirstName.IsNullOrWhiteSpace())
+            if ( paymentInfo.FirstName.IsNullOrWhiteSpace() )
             {
                 paymentInfo.FirstName = "-";
             }
@@ -994,7 +1029,7 @@ namespace Rock.NMI
             {
                 return XDocument.Parse( response.Content );
             }
-            
+
             return null;
         }
 
@@ -1003,9 +1038,9 @@ namespace Rock.NMI
         /// </summary>
         /// <param name="result">The result.</param>
         /// <returns></returns>
-        private string GetResultCodeMessage(Dictionary<string, string> result)
+        private string GetResultCodeMessage( Dictionary<string, string> result )
         {
-            switch( result.GetValueOrNull( "result-code" ).AsInteger() )
+            switch ( result.GetValueOrNull( "result-code" ).AsInteger() )
             {
                 case 100:
                     {
@@ -1065,11 +1100,11 @@ namespace Rock.NMI
                 case 253: // fradulent card
                     {
                         // these are more sensitive declines so sanitize them a bit but provide a code for later lookup
-                        return string.Format("This card was declined (code: {0}).", result.GetValueOrNull( "result-code" ) );
+                        return string.Format( "This card was declined (code: {0}).", result.GetValueOrNull( "result-code" ) );
                     }
                 case 260:
                     {
-                        return string.Format("Declined with further instructions available. ({0})", result.GetValueOrNull( "result-text" ) );
+                        return string.Format( "Declined with further instructions available. ({0})", result.GetValueOrNull( "result-text" ) );
                     }
                 case 261:
                     {
