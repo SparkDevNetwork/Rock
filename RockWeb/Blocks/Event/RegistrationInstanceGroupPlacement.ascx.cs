@@ -308,10 +308,21 @@ namespace RockWeb.Blocks.Event
             //
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnAddPlacementGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddPlacementGroup_Click( object sender, EventArgs e )
         {
             bgAddNewOrExistingPlacementGroup.SetValue( AddPlacementGroupTab.AddNewGroup.ConvertToInt().ToString() );
             bgAddNewOrExistingPlacementGroup_SelectedIndexChanged( null, null );
+
+            var newGroup = new Group() { GroupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger() };
+
+            // set up Attribute Values Container
+            avcNewPlacementGroupAttributeValues.AddEditControls( newGroup );
+
             mdAddPlacementGroup.Show();
             // TODO
         }
@@ -403,6 +414,8 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        #region Add Placement Group
+
         /// <summary>
         /// Handles the SaveClick event of the mdAddPlacementGroup control.
         /// </summary>
@@ -440,15 +453,23 @@ namespace RockWeb.Blocks.Event
             {
                 placementGroup = new Group();
                 placementGroup.GroupTypeId = groupTypeId;
-                placementGroup.ParentGroupId = gpNewPlacementGroupParentGroup.SelectedValue.AsInteger();
+                placementGroup.ParentGroupId = gpNewPlacementGroupParentGroup.GroupId;
                 placementGroup.Name = tbNewPlacementGroupName.Text;
                 placementGroup.CampusId = cpNewPlacementGroupCampus.SelectedCampusId;
                 placementGroup.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
                 placementGroup.Description = tbNewPlacementGroupDescription.Text;
+                new GroupService( rockContext ).Add( placementGroup );
+                rockContext.SaveChanges();
+                avcNewPlacementGroupAttributeValues.GetEditValues( placementGroup );
+                placementGroup.SaveAttributeValues();
+
                 AddPlacementGroup( rockContext, placementGroup );
             }
 
+            rockContext.SaveChanges();
+
             mdAddPlacementGroup.Hide();
+            BindPlacementGroupsRepeater();
         }
 
         /// <summary>
@@ -462,29 +483,18 @@ namespace RockWeb.Blocks.Event
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
             var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
-            if ( placementGroup.Id == 0 )
-            {
-                new GroupService( rockContext ).Add( placementGroup );
-                rockContext.SaveChanges();
-            }
 
             if ( registrationInstanceId.HasValue )
             {
                 var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
                 // in RegistrationInstanceMode
                 registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup );
-
-                rockContext.SaveChanges();
             }
             else if ( registrationTemplatePlacementId.HasValue )
             {
                 var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
                 registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup );
-                rockContext.SaveChanges();
             }
-
-            mdAddPlacementGroup.Hide();
-            BindPlacementGroupsRepeater();
         }
 
         /// <summary>
@@ -575,5 +585,7 @@ namespace RockWeb.Blocks.Event
         {
             return selectedGroup.GroupTypeId == groupTypeId;
         }
+
+        #endregion Add Placement Group
     }
 }
