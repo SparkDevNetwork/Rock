@@ -762,6 +762,7 @@ namespace RockWeb.Blocks.Finance
                             scheduledTransaction.TransactionCode = tempFinancialScheduledTransaction.TransactionCode;
                             scheduledTransaction.GatewayScheduleId = tempFinancialScheduledTransaction.GatewayScheduleId;
                             scheduledTransaction.FinancialGatewayId = tempFinancialScheduledTransaction.FinancialGatewayId;
+                            scheduledTransaction.IsActive = tempFinancialScheduledTransaction.IsActive;
                             rockContext.SaveChanges();
 
                             scheduledTransactionMigrationResult.DidMigrateSuccessfully = true;
