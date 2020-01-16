@@ -5,12 +5,13 @@
         <h2 class="margin-b-none">{{ Event.Name }}</h2>
         <h4 class="text-primary margin-b-none">{{ EventItemOccurrence.Schedule.NextStartDateTime | Date:'MMMM d, yyyy | h:mm tt' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</h4>
         
-        {% assign EventItemOccurrence_LocationCampus = EventItemOccurrence | Attribute:'LocationCampus' %}
-        {% assign EventItemOccurrence_LocationAddress = EventItemOccurrence | Attribute:'LocationAddress' %}
+        {% assign EventItemOccurrence_Location = EventItemOccurrence.Location | Trim %}
+        {% assign EventItemOccurrence_LocationCampus = EventItemOccurrence | Attribute:'LocationCampus' | Trim %}
+        {% assign EventItemOccurrence_LocationAddress = EventItemOccurrence | Attribute:'LocationAddress' | Trim %}
 
-        {% if EventItemOccurrence.Location != '' or EventItemOccurrence_LocationCampus != '' or EventItemOccurrence_LocationAddress != '' %}
+        {% if EventItemOccurrence_Location != '' or EventItemOccurrence_LocationCampus != '' or EventItemOccurrence_LocationAddress != '' %}
             <h6>
-                {{ EventItemOccurrence.Location | WithFallback:'<br />','','append' }}
+                {{ EventItemOccurrence_Location | WithFallback:'<br />','','append' }}
                 {{ EventItemOccurrence_LocationCampus | WithFallback:'<br />','','append' }}
                 {{ EventItemOccurrence_LocationAddress }}
             </h6>
@@ -22,7 +23,7 @@
             </center>
         {% endif %}
 
-        <div>{{ Event.Description }}</div>
+        <div class="margin-t-lg">{{ Event.Description }}</div>
         <div>{{ EventItemOccurrence.Note }}</div>
 
         
