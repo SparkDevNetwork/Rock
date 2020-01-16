@@ -3002,7 +3002,7 @@ namespace Rock.Model
         /// <returns></returns>
         public void ExpungePerson( int personId )
         {
-            int? primaryPersonId = null;
+            int? anonymousPersonId = null;
 
             var rockContext = new RockContext();
             try
@@ -3019,62 +3019,62 @@ namespace Rock.Model
                     var personSearchKeyService = new PersonSearchKeyService( rockContext );
 
                     var anonymousPersonGuid = Guid.Parse( SystemGuid.Person.GIVER_ANONYMOUS );
-                    Person primaryPerson = personService.Get( anonymousPersonGuid );
+                    Person anonymousPerson = personService.Get( anonymousPersonGuid );
                     Person expungePerson = personService.Get( personId );
-                    if ( primaryPerson != null && expungePerson != null )
+                    if ( anonymousPerson != null && expungePerson != null )
                     {
-                        primaryPersonId = primaryPerson.Id;
+                        anonymousPersonId = anonymousPerson.Id;
 
                         // Write a history record about the merge
                         var changes = new History.HistoryChangeList();
                         changes.AddChange( History.HistoryVerb.Merge, History.HistoryChangeType.Record, string.Format( "{0} [ID: {1}]", expungePerson.FullName, expungePerson.Id ) );
 
-                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), primaryPerson.Id, changes );
+                        HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), anonymousPerson.Id, changes );
 
                         // Photo Id
-                        primaryPerson.PhotoId = GetSelectedValue( primaryPerson.PhotoId, expungePerson.PhotoId );
-                        primaryPerson.TitleValueId = GetSelectedValue( primaryPerson.TitleValueId, expungePerson.TitleValueId );
-                        primaryPerson.FirstName = GetSelectedValue( primaryPerson.FirstName, expungePerson.FirstName );
-                        primaryPerson.NickName = GetSelectedValue( primaryPerson.NickName, expungePerson.NickName );
-                        primaryPerson.MiddleName = GetSelectedValue( primaryPerson.MiddleName, expungePerson.MiddleName );
-                        primaryPerson.LastName = GetSelectedValue( primaryPerson.LastName, expungePerson.LastName );
-                        primaryPerson.SuffixValueId = GetSelectedValue( primaryPerson.SuffixValueId, expungePerson.SuffixValueId );
-                        primaryPerson.RecordTypeValueId = GetSelectedValue( primaryPerson.SuffixValueId, expungePerson.SuffixValueId );
-                        primaryPerson.RecordStatusValueId = GetSelectedValue( primaryPerson.RecordStatusValueId, expungePerson.RecordStatusValueId );
-                        primaryPerson.RecordStatusReasonValueId = GetSelectedValue( primaryPerson.RecordStatusReasonValueId, expungePerson.RecordStatusReasonValueId );
-                        primaryPerson.ConnectionStatusValueId = GetSelectedValue( primaryPerson.ConnectionStatusValueId, expungePerson.ConnectionStatusValueId );
-                        primaryPerson.Gender = primaryPerson.Gender != Gender.Unknown ? primaryPerson.Gender : expungePerson.Gender;
-                        primaryPerson.MaritalStatusValueId = GetSelectedValue( primaryPerson.MaritalStatusValueId, expungePerson.MaritalStatusValueId );
-                        if ( !primaryPerson.BirthDate.HasValue )
+                        anonymousPerson.PhotoId = GetSelectedValue( anonymousPerson.PhotoId, expungePerson.PhotoId );
+                        anonymousPerson.TitleValueId = GetSelectedValue( anonymousPerson.TitleValueId, expungePerson.TitleValueId );
+                        anonymousPerson.FirstName = GetSelectedValue( anonymousPerson.FirstName, expungePerson.FirstName );
+                        anonymousPerson.NickName = GetSelectedValue( anonymousPerson.NickName, expungePerson.NickName );
+                        anonymousPerson.MiddleName = GetSelectedValue( anonymousPerson.MiddleName, expungePerson.MiddleName );
+                        anonymousPerson.LastName = GetSelectedValue( anonymousPerson.LastName, expungePerson.LastName );
+                        anonymousPerson.SuffixValueId = GetSelectedValue( anonymousPerson.SuffixValueId, expungePerson.SuffixValueId );
+                        anonymousPerson.RecordTypeValueId = GetSelectedValue( anonymousPerson.SuffixValueId, expungePerson.SuffixValueId );
+                        anonymousPerson.RecordStatusValueId = GetSelectedValue( anonymousPerson.RecordStatusValueId, expungePerson.RecordStatusValueId );
+                        anonymousPerson.RecordStatusReasonValueId = GetSelectedValue( anonymousPerson.RecordStatusReasonValueId, expungePerson.RecordStatusReasonValueId );
+                        anonymousPerson.ConnectionStatusValueId = GetSelectedValue( anonymousPerson.ConnectionStatusValueId, expungePerson.ConnectionStatusValueId );
+                        anonymousPerson.Gender = anonymousPerson.Gender != Gender.Unknown ? anonymousPerson.Gender : expungePerson.Gender;
+                        anonymousPerson.MaritalStatusValueId = GetSelectedValue( anonymousPerson.MaritalStatusValueId, expungePerson.MaritalStatusValueId );
+                        if ( !anonymousPerson.BirthDate.HasValue )
                         {
-                            primaryPerson.SetBirthDate( expungePerson.BirthDate );
+                            anonymousPerson.SetBirthDate( expungePerson.BirthDate );
                         }
-                        primaryPerson.AnniversaryDate = primaryPerson.AnniversaryDate.HasValue ? primaryPerson.AnniversaryDate : expungePerson.AnniversaryDate;
-                        primaryPerson.GraduationYear = GetSelectedValue( primaryPerson.GraduationYear, expungePerson.GraduationYear );
-                        primaryPerson.Email = GetSelectedValue( primaryPerson.Email, expungePerson.Email );
-                        primaryPerson.EmailNote = GetSelectedValue( primaryPerson.EmailNote, expungePerson.EmailNote );
-                        primaryPerson.EmailPreference = primaryPerson.EmailPreference != EmailPreference.EmailAllowed ? primaryPerson.EmailPreference : expungePerson.EmailPreference;
-                        primaryPerson.InactiveReasonNote = GetSelectedValue( primaryPerson.InactiveReasonNote, expungePerson.InactiveReasonNote );
-                        primaryPerson.SystemNote = GetSelectedValue( primaryPerson.SystemNote, expungePerson.SystemNote );
-                        primaryPerson.ContributionFinancialAccountId = GetSelectedValue( primaryPerson.ContributionFinancialAccountId, expungePerson.ContributionFinancialAccountId );
+                        anonymousPerson.AnniversaryDate = anonymousPerson.AnniversaryDate.HasValue ? anonymousPerson.AnniversaryDate : expungePerson.AnniversaryDate;
+                        anonymousPerson.GraduationYear = GetSelectedValue( anonymousPerson.GraduationYear, expungePerson.GraduationYear );
+                        anonymousPerson.Email = GetSelectedValue( anonymousPerson.Email, expungePerson.Email );
+                        anonymousPerson.EmailNote = GetSelectedValue( anonymousPerson.EmailNote, expungePerson.EmailNote );
+                        anonymousPerson.EmailPreference = anonymousPerson.EmailPreference != EmailPreference.EmailAllowed ? anonymousPerson.EmailPreference : expungePerson.EmailPreference;
+                        anonymousPerson.InactiveReasonNote = GetSelectedValue( anonymousPerson.InactiveReasonNote, expungePerson.InactiveReasonNote );
+                        anonymousPerson.SystemNote = GetSelectedValue( anonymousPerson.SystemNote, expungePerson.SystemNote );
+                        anonymousPerson.ContributionFinancialAccountId = GetSelectedValue( anonymousPerson.ContributionFinancialAccountId, expungePerson.ContributionFinancialAccountId );
 
                         // Update phone numbers
                         var phoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() ).DefinedValues;
                         foreach ( var phoneType in phoneTypes )
                         {
-                            var primaryPersonphoneNumber = primaryPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
-                            if ( primaryPersonphoneNumber == null )
+                            var anonymousPersonPhoneNumber = anonymousPerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
+                            if ( anonymousPersonPhoneNumber == null )
                             {
                                 var expungePersonphoneNumber = expungePerson.PhoneNumbers.Where( p => p.NumberTypeValueId == phoneType.Id ).FirstOrDefault();
                                 // New phone doesn't match old
                                 if ( expungePersonphoneNumber != null )
                                 {
                                     // Old value didn't exist... create new phone record
-                                    primaryPersonphoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
-                                    primaryPerson.PhoneNumbers.Add( primaryPersonphoneNumber );
+                                    anonymousPersonPhoneNumber = new PhoneNumber { NumberTypeValueId = phoneType.Id };
+                                    anonymousPerson.PhoneNumbers.Add( anonymousPersonPhoneNumber );
 
                                     // Update phone number
-                                    primaryPersonphoneNumber.Number = expungePersonphoneNumber.Number;
+                                    anonymousPersonPhoneNumber.Number = expungePersonphoneNumber.Number;
                                 }
                             }
                         }
@@ -3083,7 +3083,7 @@ namespace Rock.Model
                         rockContext.SaveChanges();
 
                         // Update the attributes
-                        primaryPerson.LoadAttributes( rockContext );
+                        anonymousPerson.LoadAttributes( rockContext );
                         expungePerson.LoadAttributes( rockContext );
 
                         foreach ( var attribute in expungePerson.Attributes.OrderBy( a => a.Value.Order ) )
@@ -3091,25 +3091,25 @@ namespace Rock.Model
                             string value = expungePerson.GetAttributeValue( attribute.Key );
                             if ( value.IsNotNullOrWhiteSpace() )
                             {
-                                string primaryValue = primaryPerson.GetAttributeValue( attribute.Key );
+                                string primaryValue = anonymousPerson.GetAttributeValue( attribute.Key );
 
                                 if ( primaryValue.IsNullOrWhiteSpace() )
                                 {
-                                    Rock.Attribute.Helper.SaveAttributeValue( primaryPerson, attribute.Value, value, rockContext );
+                                    Rock.Attribute.Helper.SaveAttributeValue( anonymousPerson, attribute.Value, value, rockContext );
                                 }
                             }
                         }
 
                         // Update the family attributes
-                        var primaryFamily = primaryPerson.GetFamily( rockContext );
+                        var anonymousFamily = anonymousPerson.GetFamily( rockContext );
                         var expungePersonFamily = expungePerson.GetFamily( rockContext );
 
                         if ( expungePersonFamily != null && expungePersonFamily != null )
                         {
-                            primaryFamily.Name = GetSelectedValue( primaryFamily.Name, expungePersonFamily.Name );
-                            primaryFamily.CampusId = GetSelectedValue( primaryFamily.CampusId, expungePersonFamily.CampusId );
+                            anonymousFamily.Name = GetSelectedValue( anonymousFamily.Name, expungePersonFamily.Name );
+                            anonymousFamily.CampusId = GetSelectedValue( anonymousFamily.CampusId, expungePersonFamily.CampusId );
 
-                            primaryFamily.LoadAttributes( rockContext );
+                            anonymousFamily.LoadAttributes( rockContext );
                             expungePersonFamily.LoadAttributes( rockContext );
 
                             foreach ( var attribute in expungePersonFamily.Attributes.OrderBy( a => a.Value.Order ) )
@@ -3117,11 +3117,11 @@ namespace Rock.Model
                                 string value = expungePersonFamily.GetAttributeValue( attribute.Key );
                                 if ( value.IsNotNullOrWhiteSpace() )
                                 {
-                                    string primaryValue = primaryFamily.GetAttributeValue( attribute.Key );
+                                    string primaryValue = anonymousFamily.GetAttributeValue( attribute.Key );
 
                                     if ( primaryValue.IsNullOrWhiteSpace() )
                                     {
-                                        Rock.Attribute.Helper.SaveAttributeValue( primaryFamily, attribute.Value, value, rockContext );
+                                        Rock.Attribute.Helper.SaveAttributeValue( anonymousFamily, attribute.Value, value, rockContext );
                                     }
                                 }
                             }
@@ -3133,12 +3133,12 @@ namespace Rock.Model
                         if ( expungePerson.Email.IsNotNullOrWhiteSpace() )
                         {
                             var searchTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_EMAIL.AsGuid() );
-                            var personSearchKeys = primaryPerson.GetPersonSearchKeys( rockContext ).Where( a => a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == expungePerson.Email ).ToList();
-                            if ( !string.IsNullOrEmpty( expungePerson.Email ) && expungePerson.Email != primaryPerson.Email && !personSearchKeys.Any() )
+                            var personSearchKeys = anonymousPerson.GetPersonSearchKeys( rockContext ).Where( a => a.SearchTypeValueId == searchTypeValue.Id && a.SearchValue == expungePerson.Email ).ToList();
+                            if ( !string.IsNullOrEmpty( expungePerson.Email ) && expungePerson.Email != anonymousPerson.Email && !personSearchKeys.Any() )
                             {
                                 PersonSearchKey personSearchKey = new PersonSearchKey()
                                 {
-                                    PersonAliasId = primaryPerson.PrimaryAliasId.Value,
+                                    PersonAliasId = anonymousPerson.PrimaryAliasId.Value,
                                     SearchTypeValueId = searchTypeValue.Id,
                                     SearchValue = expungePerson.Email
                                 };
@@ -3156,7 +3156,7 @@ namespace Rock.Model
                             }
                         }
 
-                        // Delete the merged person's phone numbers (we've already updated the primary persons values)
+                        // Delete the merged person's phone numbers (we've already updated the anonymous person's values)
                         foreach ( var phoneNumber in phoneNumberService.GetByPersonId( expungePerson.Id ) )
                         {
                             phoneNumberService.Delete( phoneNumber );
@@ -3209,13 +3209,14 @@ namespace Rock.Model
                             }
                         }
 
+                        RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
                     }
                 } );
 
                 // Run merge proc to merge all associated data
                 var parms = new Dictionary<string, object>();
                 parms.Add( "OldId", personId );
-                parms.Add( "NewId", primaryPersonId.Value );
+                parms.Add( "NewId", anonymousPersonId.Value );
                 DbService.ExecuteCommand( "spCrm_PersonMerge", CommandType.StoredProcedure, parms );
             }
             catch ( Exception ex )
@@ -3225,21 +3226,35 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Removes any UserLogin records associated with the Anonymous Giver.
+        /// </summary>
+        private void RemoveAnonymousGiverUserLogins( UserLoginService userLoginService, RockContext rockContext )
+        {
+            var anonymousGiver = new PersonService( rockContext ).Get( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+
+            var logins = userLoginService.Queryable()
+                .Where( l => l.PersonId == anonymousGiver.Id );
+
+            userLoginService.DeleteRange( logins );
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
         /// Gets the selected value.
         /// </summary>
-        /// <param name="primaryPersonValue">Primary person value.</param>
+        /// <param name="anonymousPersonValue">Anonymous person value.</param>
         /// <param name="expungePersonValue">Expunge person value.</param>
         /// <returns></returns>
-        private T GetSelectedValue<T>( T primaryPersonValue, T expungePersonValue )
+        private T GetSelectedValue<T>( T anonymousPersonValue, T expungePersonValue )
         {
             var type = typeof( T );
-            if ( ( type == typeof( string ) && string.IsNullOrWhiteSpace( primaryPersonValue as string ) ) ||
-                 ( ( Nullable.GetUnderlyingType( type ) != null || type.IsClass ) && primaryPersonValue == null ) )
+            if ( ( type == typeof( string ) && string.IsNullOrWhiteSpace( anonymousPersonValue as string ) ) ||
+                 ( ( Nullable.GetUnderlyingType( type ) != null || type.IsClass ) && anonymousPersonValue == null ) )
             {
                 return expungePersonValue;
             }
 
-            return primaryPersonValue;
+            return anonymousPersonValue;
         }
 
         #endregion
