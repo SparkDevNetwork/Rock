@@ -69,6 +69,14 @@
             }
 
             Sys.Application.add_load(function () {
+                // If a primary person was selected before postback, set the checkbox icon.
+                var selectedPersonId = $('#<%=hfSelectedColumnPersonId.ClientID%>').val();
+                if (selectedPersonId != '') {
+                    jQuery('.js-header-checkbox-icon').removeClass('fa-check-square-o').addClass('fa-square-o');
+                    jQuery("div").find('[data-person-id=' + selectedPersonId + ']').children('.js-header-checkbox-icon')
+                        .removeClass('fa-square-o').addClass('fa-check-square-o');
+                }
+
                 syncPersonSelection();
 
                 $('.js-merge-header-summary').off('click').on('click', function (event) {
