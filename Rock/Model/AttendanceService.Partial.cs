@@ -661,9 +661,9 @@ namespace Rock.Model
                 && a.PersonAlias.Person.IsEmailActive );
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
+            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
             {
-                ScheduleConfirmationSystemEmailId = s.Key.Value,
+                ScheduleConfirmationSystemCommunicationId = s.Key.Value,
                 Attendances = s.ToList()
             } ).ToList();
 
@@ -673,7 +673,7 @@ namespace Rock.Model
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
-                var scheduleConfirmationSystemEmail = new SystemEmailService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemEmailId );
+                var scheduleConfirmationSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemCommunicationId );
 
                 var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
                 {
@@ -738,9 +738,9 @@ namespace Rock.Model
         {
             int emailsSent = 0;
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
+            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
             {
-                ScheduleReminderSystemEmailId = s.Key.Value,
+                ScheduleReminderSystemCommunicationId = s.Key.Value,
                 Attendances = s.ToList()
             } ).ToList();
 
@@ -748,7 +748,7 @@ namespace Rock.Model
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
-                var scheduleReminderSystemEmail = new SystemEmailService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemEmailId );
+                var scheduleReminderSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemCommunicationId );
 
                 var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
                 {

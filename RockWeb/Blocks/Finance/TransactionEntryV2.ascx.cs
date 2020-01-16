@@ -251,15 +251,16 @@ namespace RockWeb.Blocks.Finance
 
     #region Email Templates
 
-    [SystemEmailField( "Confirm Account Email Template",
+    [SystemCommunicationField(
+        "Confirm Account Email Template",
         Key = AttributeKey.ConfirmAccountEmailTemplate,
         Description = "The Email Template to use when confirming a new account",
         IsRequired = false,
-        DefaultValue = Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT,
+        DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
         Category = AttributeCategory.EmailTemplates,
         Order = 1 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Receipt Email",
         Key = AttributeKey.ReceiptEmail,
         Description = "The system email to use to send the receipt.",

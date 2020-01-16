@@ -332,6 +332,7 @@
     <Compile Include="Attribute\SelectFieldAttribute.cs" />
     <Compile Include="Attribute\PersistedDatasetFieldAttribute.cs" />
     <Compile Include="Attribute\StructureContentEditorFieldAttribute.cs" />
+    <Compile Include="Attribute\SystemCommunicationFieldAttribute.cs" />
     <Compile Include="Attribute\TextValueFilterFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
@@ -454,6 +455,7 @@
     <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\LavaItemList.cs" />
     <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
+    <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
@@ -479,6 +481,7 @@
     <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationTemplatePlacement.cs" />
     <Compile Include="Model\RelatedEntity.cs" />
@@ -495,6 +498,7 @@
     <Compile Include="Model\StreakTypeAchievementTypePrerequisite.cs" />
     <Compile Include="Model\StreakTypeAchievementTypeService.Partial.cs" />
     <Compile Include="Model\StreakTypeAchievementType.cs" />
+    <Compile Include="Model\SystemCommunication.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
     <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
@@ -506,6 +510,7 @@
     <Compile Include="Storage\AssetStorage\ApiClient\GoogleClient.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
     <Compile Include="SystemGuid\Person.cs" />
+    <Compile Include="SystemGuid\SystemCommunication.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
     <Compile Include="Transactions\RegisterControllersTransaction.cs" />
     <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
@@ -1412,7 +1417,7 @@
     <Compile Include="Model\CodeGenerated\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
-    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
+    <Compile Include="Model\SystemEmailService.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
     <Compile Include="Model\CodeGenerated\TagService.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />

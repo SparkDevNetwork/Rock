@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
     [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
-    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
+    [SystemCommunicationField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemCommunication.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
     [BooleanField( "Allow Sorting", "Should the block allow sorting the Member's list by First Name or Last Name?", true, "", 13 )]
     public partial class GroupAttendanceDetail : RockBlock
     {

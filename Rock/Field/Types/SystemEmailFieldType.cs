@@ -29,6 +29,8 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a system email. Stored as SystemEmail.Guid
     /// </summary>
+    [Obsolete( "Use SystemCommunicationFieldType instead." )]
+    [RockObsolete( "1.10" )]
     public class SystemEmailFieldType : FieldType
     {
 
