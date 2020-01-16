@@ -442,6 +442,14 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
+            if ( MergeDataIncludesAnonymousGiver() )
+            {
+                nbError.Heading = "Merge Error";
+                nbError.Text = string.Format( "<p>You can't merge the Anonymous Giver unless it is the primary selected person.</p>" );
+                nbError.Visible = true;
+                return;
+            }
+
             bool reconfirmRequired =
                 GetAttributeValue( AttributeKey.ResetLoginConfirmation ).AsBoolean() &&
                 MergeData.People.Select( p => p.Email ).Distinct().Count() > 1 &&
@@ -744,6 +752,14 @@ namespace RockWeb.Blocks.Crm
                                 }
                             }
                         }
+
+                        // If merging records into the Anonymous Giver record, remove any UserLogins.
+                        bool mergingWithAnonymousGiver = ( primaryPerson.Guid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+                        if ( mergingWithAnonymousGiver )
+                        {
+                            RemoveAnonymousGiverUserLogins( userLoginService, rockContext );
+                        }
+
 
                         // now that the Merge is complete, the EntitySet can be marked to be deleted by the RockCleanup job
                         var entitySetService = new EntitySetService( rockContext );
@@ -1280,6 +1296,31 @@ namespace RockWeb.Blocks.Crm
             return selectedPersonValues.ToArray();
         }
 
+        /// <summary>
+        /// Removes any UserLogin records associated with the Anonymous Giver.
+        /// </summary>
+        /// <param name="userLoginService">The <see cref="UserLoginService"/>.</param>
+        private void RemoveAnonymousGiverUserLogins( UserLoginService userLoginService, RockContext rockContext )
+        {
+            var personIds = MergeData.People.Select( a => a.Id ).ToList();
+
+            var logins = userLoginService.Queryable()
+                .Where( l => l.PersonId.HasValue && personIds.Contains( l.PersonId.Value ) );
+
+            userLoginService.DeleteRange( logins );
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Checks to see if one of the records being merged (other than the primary record) is the Anonymous Giver account.
+        /// </summary>
+        private bool MergeDataIncludesAnonymousGiver()
+        {
+            var mergePersonGuids = MergeData.People.Where( p => p.Id != MergeData.PrimaryPersonId ).Select( p => p.Guid );
+            return mergePersonGuids.Contains( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+        }
+
         #endregion
     }
 
@@ -1517,7 +1558,8 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            SetPrimary( people.OrderBy( p => p.CreatedDateTime ).Select( p => p.Id ).FirstOrDefault() );
+            var primaryPerson = people.OrderBy( p => p.CreatedDateTime ).FirstOrDefault();
+            SetPrimary( primaryPerson.Id, primaryPerson.Guid );
         }
 
         #endregion
@@ -1530,7 +1572,7 @@ namespace RockWeb.Blocks.Crm
         /// Sets the primary.
         /// </summary>
         /// <param name="primaryPersonId">The primary person identifier.</param>
-        public void SetPrimary( int primaryPersonId )
+        public void SetPrimary( int primaryPersonId, Guid primaryPersonGuid )
         {
             PrimaryPersonId = primaryPersonId;
 
@@ -1538,7 +1580,12 @@ namespace RockWeb.Blocks.Crm
             {
                 PersonPropertyValue value = null;
 
-                if ( personProperty.Values.Any( v => v.Value != null && v.Value != string.Empty ) )
+                // If the Primary Person Guid is the anonymous giver, always set that record value as default.
+                if ( primaryPersonGuid == Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() )
+                {
+                    value = personProperty.Values.Where( v => v.PersonId == primaryPersonId ).FirstOrDefault();
+                }
+                else if ( personProperty.Values.Any( v => v.Value != null && v.Value != string.Empty ) )
                 {
                     // Find primary person's non-blank value
                     value = personProperty.Values.Where( v => v.PersonId == primaryPersonId && v.Value != null && v.Value != string.Empty ).FirstOrDefault();
