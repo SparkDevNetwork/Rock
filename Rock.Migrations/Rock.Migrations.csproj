@@ -149,6 +149,10 @@
     <Compile Include="Migrations\202001141704032_PersonalDeviceUniqueId.Designer.cs">
       <DependentUpon>202001141704032_PersonalDeviceUniqueId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202001151521542_AddSystemCommunication.cs" />
+    <Compile Include="Migrations\202001151521542_AddSystemCommunication.Designer.cs">
+      <DependentUpon>202001151521542_AddSystemCommunication.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -1052,6 +1056,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202001141704032_PersonalDeviceUniqueId.resx">
       <DependentUpon>202001141704032_PersonalDeviceUniqueId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001151521542_AddSystemCommunication.resx">
+      <DependentUpon>202001151521542_AddSystemCommunication.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>

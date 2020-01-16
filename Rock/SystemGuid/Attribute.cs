@@ -424,6 +424,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string COMMUNICATION_ENTRY_DEFAULT_AS_BULK = "679E5FBB-AB03-4DE4-BB24-1C7CEFEACD3E";
 
+        /// <summary>
+        /// System Communication List/Detail Page configuration setting.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST_DETAIL_PAGE = "9880C186-F079-4113-99B6-EF53AB4FE92D";
+
         #endregion
 
         #region Communication List (group) attributes

@@ -33,7 +33,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Sends a birthday email
     /// </summary>
-    [SystemEmailField( "Birthday Email", required: true )]
+    [SystemCommunicationField( "Birthday Email", required: true )]
     [IntegerRangeField( "Age Range",
         @"The age range to include. For example, if you specify a range of 4-18, people will get the email on their 4th birthday and up till their 18th birthday. 
          Leave blank to include all ages. Note: If a person's birth year is blank, they will get an email regardless of the age range." )]
@@ -65,9 +65,9 @@ namespace Rock.Jobs
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             Guid? systemEmailGuid = dataMap.GetString( "BirthdayEmail" ).AsGuidOrNull();
 
-            SystemEmailService emailService = new SystemEmailService( rockContext );
+            var emailService = new SystemCommunicationService( rockContext );
 
-            SystemEmail systemEmail = null;
+            SystemCommunication systemEmail = null;
             if ( systemEmailGuid.HasValue )
             {
                 systemEmail = emailService.Get( systemEmailGuid.Value );
