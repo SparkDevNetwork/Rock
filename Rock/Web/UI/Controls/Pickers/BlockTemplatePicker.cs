@@ -509,7 +509,7 @@ namespace Rock.Web.UI.Controls
         private void RegisterClientScript()
         {
             string script = $@"
-      $('input[type=radio][name=template-id-{this.ID}]').change(function () {{
+      $('input[type=radio][name=template-id-{this.ID}]').on('change', function () {{
             $('#{_hfTemplateKey.ClientID}').val($(this).val());
         }});
 ";
