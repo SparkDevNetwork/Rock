@@ -470,6 +470,7 @@
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationInstanceService.partial.cs" />
+    <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
     <Compile Include="Model\RegistrationTemplatePlacement.cs" />
     <Compile Include="Model\RegistrationTemplatePlacementService.partial.cs" />
     <Compile Include="Model\RelatedEntity.cs" />

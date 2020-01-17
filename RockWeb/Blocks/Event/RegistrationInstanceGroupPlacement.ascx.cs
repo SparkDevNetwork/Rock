@@ -134,7 +134,6 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         protected void ShowDetails()
         {
-            hfRegistrationInstanceId.Value = this.PageParameter( PageParameterKey.RegistrationInstanceId );
             hfRegistrationTemplatePlacementId.Value = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId );
 
             var rockContext = new RockContext();
@@ -142,7 +141,17 @@ namespace RockWeb.Blocks.Event
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
 
-            var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            var registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            if ( registrationInstanceId.HasValue )
+            {
+                hfRegistrationInstanceId.Value = registrationInstanceId.ToJson();
+            }
+
+            // hfOptionsDataFilterId.Value =
+            hfOptionsDisplayedAttributeIds.Value = (new List<int>()).ToJson();
+            hfOptionsIncludeFees.Value = "true";
+            //hfRegistrationTemplateInstanceIds.Value = 
+
 
             if ( registrationInstanceId.HasValue )
             {
@@ -200,6 +209,12 @@ namespace RockWeb.Blocks.Event
 
             lGroupPlacementGroupTypeName.Text = groupType.GroupTerm.Pluralize();
             lAddPlacementGroupButtonText.Text = string.Format( " Add {0}", groupType.GroupTerm );
+
+            lRegistrationTemplateName.Text = string.Format( "<p>Registration Template: {0}</p>", registrationTemplatePlacement.RegistrationTemplate.Name );
+            if ( registrationInstanceId.HasValue )
+            {
+                lRegistrationInstanceName.Text = string.Format( "<p>Registration Instance: {0}</p>", new RegistrationInstanceService( rockContext ).GetSelect( registrationInstanceId.Value, s => s.Name ) );
+            }
 
             BindPlacementGroupsRepeater();
         }
@@ -322,9 +337,22 @@ namespace RockWeb.Blocks.Event
 
             // set up Attribute Values Container
             avcNewPlacementGroupAttributeValues.AddEditControls( newGroup );
+            
+            var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
+
+            if ( registrationInstanceId.HasValue )
+            {
+                // in Registration Instance Mode
+                mdAddPlacementGroup.Title = "Add Group";
+            }
+            else if ( registrationTemplatePlacementId.HasValue )
+            {
+                // in Registration Template Mode
+                mdAddPlacementGroup.Title = "Add Shared Group";
+            }
 
             mdAddPlacementGroup.Show();
-            // TODO
         }
 
         /// <summary>
