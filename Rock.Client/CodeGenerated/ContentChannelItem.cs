@@ -82,6 +82,9 @@ namespace Rock.Client
         public Rock.Client.Enums.ContentChannelItemStatus Status { get; set; }
 
         /// <summary />
+        public string StructuredContent { get; set; }
+
+        /// <summary />
         public string Title { get; set; }
 
         /// <summary>
@@ -132,6 +135,7 @@ namespace Rock.Client
             this.Priority = source.Priority;
             this.StartDateTime = source.StartDateTime;
             this.Status = source.Status;
+            this.StructuredContent = source.StructuredContent;
             this.Title = source.Title;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -27,18 +27,24 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for Device that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for SystemCommunication that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class DeviceEntity
+    public partial class SystemCommunicationEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public string Description { get; set; }
+        public string Bcc { get; set; }
 
         /// <summary />
-        public int DeviceTypeValueId { get; set; }
+        public string Body { get; set; }
+
+        /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
+        public string Cc { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -47,16 +53,16 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool HasCamera { get; set; }
+        public string From { get; set; }
 
         /// <summary />
-        public string IPAddress { get; set; }
+        public string FromName { get; set; }
 
         /// <summary />
-        public bool IsActive { get; set; } = true;
+        public bool? IsActive { get; set; }
 
         /// <summary />
-        public int? LocationId { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -64,16 +70,28 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        public string Name { get; set; }
+        public string PushMessage { get; set; }
 
         /// <summary />
-        public int? PrinterDeviceId { get; set; }
+        public string PushSound { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.PrintFrom PrintFrom { get; set; }
+        public string PushTitle { get; set; }
 
         /// <summary />
-        public Rock.Client.Enums.PrintTo PrintToOverride { get; set; }
+        public int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary />
+        public string SMSMessage { get; set; }
+
+        /// <summary />
+        public string Subject { get; set; }
+
+        /// <summary />
+        public string Title { get; set; }
+
+        /// <summary />
+        public string To { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -102,25 +120,31 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source Device object
+        /// Copies the base properties from a source SystemCommunication object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( Device source )
+        public void CopyPropertiesFrom( SystemCommunication source )
         {
             this.Id = source.Id;
-            this.Description = source.Description;
-            this.DeviceTypeValueId = source.DeviceTypeValueId;
+            this.Bcc = source.Bcc;
+            this.Body = source.Body;
+            this.CategoryId = source.CategoryId;
+            this.Cc = source.Cc;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.HasCamera = source.HasCamera;
-            this.IPAddress = source.IPAddress;
+            this.From = source.From;
+            this.FromName = source.FromName;
             this.IsActive = source.IsActive;
-            this.LocationId = source.LocationId;
+            this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
-            this.Name = source.Name;
-            this.PrinterDeviceId = source.PrinterDeviceId;
-            this.PrintFrom = source.PrintFrom;
-            this.PrintToOverride = source.PrintToOverride;
+            this.PushMessage = source.PushMessage;
+            this.PushSound = source.PushSound;
+            this.PushTitle = source.PushTitle;
+            this.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
+            this.SMSMessage = source.SMSMessage;
+            this.Subject = source.Subject;
+            this.Title = source.Title;
+            this.To = source.To;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -132,12 +156,15 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for Device that includes all the fields that are available for GETs. Use this for GETs (use DeviceEntity for POST/PUTs)
+    /// Client model for SystemCommunication that includes all the fields that are available for GETs. Use this for GETs (use SystemCommunicationEntity for POST/PUTs)
     /// </summary>
-    public partial class Device : DeviceEntity
+    public partial class SystemCommunication : SystemCommunicationEntity
     {
         /// <summary />
-        public DefinedValue DeviceType { get; set; }
+        public Category Category { get; set; }
+
+        /// <summary />
+        public DefinedValue SMSFromDefinedValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
