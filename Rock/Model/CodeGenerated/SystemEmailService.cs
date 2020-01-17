@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Device Service class
+    /// SystemEmail Service class
     /// </summary>
-    public partial class DeviceService : Service<Device>
+    public partial class SystemEmailService : Service<SystemEmail>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceService"/> class
+        /// Initializes a new instance of the <see cref="SystemEmailService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public DeviceService(RockContext context) : base(context)
+        public SystemEmailService(RockContext context) : base(context)
         {
         }
 
@@ -48,25 +48,43 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Device item, out string errorMessage )
+        public bool CanDelete( SystemEmail item, out string errorMessage )
         {
             errorMessage = string.Empty;
  
-            if ( new Service<Attendance>( Context ).Queryable().Any( a => a.DeviceId == item.Id ) )
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.ExitSystemEmailId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Attendance.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Device>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.WelcomeSystemEmailId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupSync.FriendlyTypeName );
                 return false;
             }  
  
-            if ( new Service<Location>( Context ).Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleConfirmationSystemEmailId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Location.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderSystemEmailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemEmailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.NotificationSystemEmailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
                 return false;
             }  
             return true;
@@ -76,48 +94,48 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class DeviceExtensionMethods
+    public static partial class SystemEmailExtensionMethods
     {
         /// <summary>
-        /// Clones this Device object to a new Device object
+        /// Clones this SystemEmail object to a new SystemEmail object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Device Clone( this Device source, bool deepCopy )
+        public static SystemEmail Clone( this SystemEmail source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Device;
+                return source.Clone() as SystemEmail;
             }
             else
             {
-                var target = new Device();
+                var target = new SystemEmail();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another Device object to this Device object
+        /// Copies the properties from another SystemEmail object to this SystemEmail object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this Device target, Device source )
+        public static void CopyPropertiesFrom( this SystemEmail target, SystemEmail source )
         {
             target.Id = source.Id;
-            target.Description = source.Description;
-            target.DeviceTypeValueId = source.DeviceTypeValueId;
+            target.Bcc = source.Bcc;
+            target.Body = source.Body;
+            target.CategoryId = source.CategoryId;
+            target.Cc = source.Cc;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.HasCamera = source.HasCamera;
-            target.IPAddress = source.IPAddress;
-            target.IsActive = source.IsActive;
-            target.LocationId = source.LocationId;
-            target.Name = source.Name;
-            target.PrinterDeviceId = source.PrinterDeviceId;
-            target.PrintFrom = source.PrintFrom;
-            target.PrintToOverride = source.PrintToOverride;
+            target.From = source.From;
+            target.FromName = source.FromName;
+            target.IsSystem = source.IsSystem;
+            target.Subject = source.Subject;
+            target.Title = source.Title;
+            target.To = source.To;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
