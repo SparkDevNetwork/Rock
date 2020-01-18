@@ -71,7 +71,7 @@
   }
 }
 
-.registrant {
+.registrant, .groupmember {
   display: block;
   padding: 6px 8px;
   margin-bottom: 12px;
@@ -94,15 +94,6 @@
     flex-shrink: 0;
 
     &::before {
-      display: block;
-      flex-shrink: 0;
-      width: 24px;
-      height: 24px;
-      margin-right: 7.5px;
-      content: " ";
-      background-color: #fff;
-      border: 1px solid #d8d8d8;
-      border-radius: 50%;
     }
   }
 
@@ -127,12 +118,12 @@
   &:hover {
     background: rgba(85,150,230,.1);
   }
-    
+
   .registrant-section:hover {
     outline-color: rgba(0, 0, 0, 0);
   }
 
-  .registrant-name {
+  .registrant-name, .groupmember-name {
     //display: block;
     margin-right: 20px;
     white-space: nowrap;
@@ -141,6 +132,24 @@
   .dropdown-menu {
     font-size: @font-size-small;
   }
+}
+
+.registrant[data-person-gender="1"] {
+  background-color: lightblue;
+  border-color: blue;
+  color: blue;
+}
+
+.registrant[data-person-gender="2"] {
+  background-color: lightpink;
+  border-color: deeppink;
+  color: deeppink;
+}
+
+.registrant[data-has-placement-error] {
+  background-color: @state-danger-bg;
+  border-color: @state-danger-border;
+  color: @state-danger-text;
 }
 
 .flex::before {
@@ -217,7 +226,7 @@
   }
 }
 
-.placement-target-container {
+.group-role-container {
   &:empty {
     outline: 2px dashed rgba(0, 0, 0, .1);
 
@@ -226,11 +235,11 @@
     }
   }
 
-  .registrant {
+  .groupmember {
     display: inline-block;
     margin-right: 8px;
 
-    .registrant-meta {
+    .groupmember-meta {
       display: none;
     }
   }
@@ -238,21 +247,6 @@
 
 .registrant-search {
   border-bottom: 1px solid @panel-default-border;
-}
-
-.registrant-lastattendeddate {
-  font-size: 80%;
-}
-
-.registrant-note {
-  display: -webkit-box;
-  max-height: 32px;
-  overflow: hidden;
-  font-size: 12px;
-  line-height: 16px;
-  text-overflow: ellipsis;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
 }
 
 /* registrant List */
@@ -274,26 +268,6 @@
   }
 }
 
-/* Group (Placement) */
-.placement-status {
-  .progress {
-    margin-bottom: 0;
-  }
-
-  .placement-status-progress {
-    float: left;
-    width: 100px;
-  }
-
-  .placement-status-light {
-    float: right;
-    width: 24px;
-    height: 24px;
-    margin-left: 8px;
-    border: 1px solid #d8d8d8;
-    border-radius: 50%;
-  }
-}
 
 /* MP: workaround for https://github.com/bevacqua/dragula/issues/421 */
 .gu-transit .container {
