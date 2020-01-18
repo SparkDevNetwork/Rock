@@ -1,19 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationInstanceGroupPlacement.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstanceGroupPlacement" %>
 
-<style>
-    .registrant-gender-male {
-        background-color: lightblue;
-        border-color: blue;
-        color: blue;
-    }
-
-    .registrant-gender-female {
-        background-color: lightpink;
-        border-color: deeppink;
-        color: deeppink;
-    }
-</style>
-
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <code>
@@ -54,19 +40,19 @@
                 <asp:Panel ID="pnlGroupPlacementContainer" runat="server">
                     <asp:Panel ID="pnlGroupPlacement" runat="server">
 
+                        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
+                        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateInstanceIds" runat="server" CssClass="js-registration-template-instance-id-list" />
+                        <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
+                        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
+                        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementGroupTypeId" runat="server" CssClass="js-registration-template-placement-grouptype-id" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsDataFilterId" runat="server" CssClass="js-options-datafilter-id" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedAttributeIds" runat="server" CssClass="js-options-displayed-attribute-ids" />
+
                         <div class="row row-eq-height">
                             <div class="col-md-4 hidden-xs">
 
                                 <div class="js-group-placement-registrant-list group-placement-registrant-list">
-
-                                    <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
-                                    <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateInstanceIds" runat="server" CssClass="js-registration-template-instance-id-list" />
-                                    <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
-                                    <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
-                                    <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementGroupTypeId" runat="server" CssClass="js-registration-template-placement-grouptype-id" />
-                                    <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
-                                    <Rock:HiddenFieldWithClass ID="hfOptionsDataFilterId" runat="server" CssClass="js-options-datafilter-id" />
-                                    <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedAttributeIds" runat="server" CssClass="js-options-displayed-attribute-ids" />
 
                                     <div class="js-registrant-template" style="display: none">
                                         <%-- template that groupPlacement.js uses to populate available registrants --%>
@@ -75,14 +61,12 @@
                                             <span class="registrant-name js-registrant-name"></span>
                                             <br />
                                             <span class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></span>
-                                            <dl>
-                                                <div class="registrant-attributes-container js-registrant-attributes-container">
-                                                </div>
-                                            </dl>
-                                            <dl>
-                                                <div class="registrant-fees-container js-registrant-fees-container">
-                                                </div>
-                                            </dl>
+
+                                            <div class="registrant-attributes-container js-registrant-attributes-container">
+                                            </div>
+
+                                            <div class="registrant-fees-container js-registrant-fees-container">
+                                            </div>
                                         </div>
                                     </div>
 
@@ -122,6 +106,30 @@
                             <div class="col-md-8">
                                 <%-- containers for each placement group (for example:bus) that registrants can be dragged into --%>
                                 <div class="placement-groups js-placement-groups">
+
+                                    <div class="js-group-member-template" style="display: none">
+                                        <%-- template that groupPlacement.js uses to populate group member divs --%>
+
+                                        <div class="js-group-member groupmember unselectable" data-person-gender="" data-groupmember-id="" data-person-id="">
+                                            <div class="flex">
+                                                <span class="groupmember-name js-groupmember-name"></span>
+                                                <div class="dropdown js-groupmember-actions hide-transit">
+                                                    <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <button type="button" class="dropdown-item btn-link js-remove-group-member">Remove</button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <br />
+                                                <dl>
+                                                    <div class="groupmember-attributes-container js-groupmember-attributes-container">
+                                                    </div>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <asp:Repeater ID="rptPlacementGroups" runat="server" OnItemDataBound="rptPlacementGroups_ItemDataBound">
                                         <ItemTemplate>
 

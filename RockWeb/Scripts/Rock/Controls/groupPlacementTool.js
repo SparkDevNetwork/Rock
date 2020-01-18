@@ -23,7 +23,9 @@
                 var $blockInstance = $control.closest('.block-instance')[0];
                 self.$groupPlacementTool = $control;
                 self.$registrantList = $('.js-group-placement-registrant-list', $control);
-                
+                self.$groupList = $('.js-placement-groups');
+                self.registrationTemplatePlacementId = $('.js-registration-template-placement-id', self.$groupPlacementTool).val()
+
                 // initialize dragula
                 var containers = [];
 
@@ -83,373 +85,281 @@
                             return;
                         }
 
-                        debugger
+                        var $draggedItem = $(el);
 
-                        if (target.classList.contains('js-group-placement-registrant-container')) {
-                            // deal with the group member that was dragged back into the registrants
-                            // TODO Delete from group, then refresh the group role container
+                        if ($draggedItem.attr('data-has-placement-error')) {
+                            // if a registrant got a placement error when dragged into group role, remove the dragged item
+                            $draggedItem.remove();
+                            return;
                         }
-                        else {
-                            // deal with the registrant that was dragged into a group's group role
-                            // TODO Add to group
 
-                            debugger
-                            
-                            var $groupRoleMembers = $(target).closest('.js-group-role-members');
-                            var $placementGroup = $groupRoleMembers.closest('.js-placement-group');
+                        if ($draggedItem.hasClass('js-group-member')) {
+                            // if a group member is dragged outside of its div, remove it from the assign placement
+                            self.removeGroupMember($draggedItem);
+                            $draggedItem.remove();
+                            return;
+                        }
 
-                            var groupTypeRoleId = $groupRoleMembers.find('.js-grouptyperole-id').val()
-                            var personId = $(el).attr('data-person-id');
-                            var groupId = $placementGroup.find('.js-placement-group-id').val();
+                        var $draggedRegistrant = $draggedItem;
 
-                            var groupMember = {
-                                IsSystem: false,
-                                GroupId: groupId,
-                                PersonId: personId,
-                                GroupRoleId: groupTypeRoleId,
-                                GroupMemberStatus: 1
-                            }
+                        var $groupRoleMembers = $(target).closest('.js-group-role-members');
+                        var $placementGroup = $groupRoleMembers.closest('.js-placement-group');
 
+                        var registrantId = $draggedRegistrant.attr('data-registrant-id');
+                        var groupId = $placementGroup.find('.js-placement-group-id').val();
+
+                        var groupTypeRoleId = $groupRoleMembers.find('.js-grouptyperole-id').val()
+                        var personId = $draggedRegistrant.attr('data-person-id');
+
+                        var groupMember = {
+                            IsSystem: false,
+                            GroupId: groupId,
+                            PersonId: personId,
+                            GroupRoleId: groupTypeRoleId,
+                            GroupMemberStatus: 1
+                        }
+
+                        var canPlaceRegistrantUrl = Rock.settings.get('baseUrl') + 'api/RegistrationTemplatePlacements/CanPlaceRegistrant';
+                        canPlaceRegistrantUrl += '?registrantId=' + registrantId + '&registrationTemplatePlacementId=' + self.registrationTemplatePlacementId + '&groupId=' + groupId;
+
+                        // first do a GET to CanPlaceRegistrant to see if the registrant is allowed to be placed into a placement group due to AllowMultiple rules
+                        $.ajax({
+                            method: "GET",
+                            url: canPlaceRegistrantUrl
+                        }).done(function () {
+
+                            // if CanPlaceRegistrant returns true, go ahead and add them to the group
                             var addGroupMemberUrl = Rock.settings.get('baseUrl') + 'api/GroupMembers';
-
-                            // add as pending (or confirmed if already confirmed) to target occurrence
                             $.ajax({
                                 method: "POST",
                                 url: addGroupMemberUrl,
                                 data: groupMember
-                            }).done(function (groupMemberId) {
-                                //todo?
-                            }).fail(function (a, b, c) {
-                                console.log('fail');
+                            }).done(function () {
+                                self.populateGroupRoleMembers($groupRoleMembers);
+                            }).fail(function (jqXHR) {
+                                $draggedItem.attr('data-has-placement-error', true);
+                                $draggedItem.attr('registrant-placement-error-message', jqXHR.responseJSON.Message);
+                                $draggedItem.addClass('alert alert-warning');
+                                $draggedItem.html(jqXHR.responseJSON.Message);
                             });
-                        }
-                        self.trimSourceContainer();
-                    });
 
-                this.trimSourceContainer();
-                this.initializeEventHandlers();
-
-                self.populateRegistrants(self.$registrantList);
-
-                self.populateAllScheduledOccurrences();
-            },
-            /** trims the source container if it just has whitespace, so that the :empty css selector works */
-            trimSourceContainer: function () {
-                // if js-scheduler-source-container just has whitespace in it, trim it so that the :empty css selector works
-                var $sourceContainer = $('.js-scheduler-source-container');
-                if (($.trim($sourceContainer.html()) == "")) {
-                    $sourceContainer.html("");
-                }
-            },
-            /** Removes the registrant and repopulates the UI */
-            removeResource: function ($scheduledResource, $occurrence) {
-                var self = this;
-
-                var attendanceId = $scheduledResource.attr('data-attendance-id');
-                var refreshAllOccurrences = $scheduledResource.data('occurrence-date-count') > 1;
-
-                // unschedule and repopulate ui
-                var scheduledPersonRemoveUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonRemove';
-
-                $.ajax({
-                    method: "PUT",
-                    url: scheduledPersonRemoveUrl + '?attendanceId=' + attendanceId
-                }).done(function (scheduledAttendance) {
-                    // after removing a registrant, repopulate the list of unscheduled registrants
-                    self.populateRegistrants(self.$registrantList);
-
-                    // after removing a registrant, repopulate the list of registrants for the occurrence
-                    // If there are multiple occurrences during the week for the selected schedule, repopulate all of them to make sure all that the schedule conflict warnings are accurate
-                    if (refreshAllOccurrences) {
-                        self.populateAllScheduledOccurrences();
-
-                    } else {
-                        self.populateScheduledOccurrence($occurrence);
-                    }
-                }).fail(function (a, b, c) {
-                    console.log('fail');
-                });
-            },
-            /** populates the scheduled (requested/scheduled) registrants for all the occurrence divs */
-            populateAllScheduledOccurrences: function () {
-                var self = this;
-                var occurrenceEls = $(".js-scheduled-occurrence", self.$groupPlacementTool).toArray();
-                $.each(occurrenceEls, function (i) {
-                    var $occurrence = $(occurrenceEls[i]);
-                    self.populateScheduledOccurrence($occurrence);
-                });
-            },
-            /** populates the scheduled (requested/scheduled) registrants for the occurrence div */
-            populateScheduledOccurrence: function ($occurrence) {
-                var getScheduledUrl = Rock.settings.get('baseUrl') + 'api/Attendances/GetAttendingSchedulerResources';
-                var attendanceOccurrenceId = $occurrence.find('.js-attendanceoccurrence-id').val();
-                var $schedulerTargetContainer = $occurrence.find('.js-scheduler-target-container');
-
-                var minimumCapacity = $occurrence.find('.js-minimum-capacity').val();
-                var desiredCapacity = $occurrence.find('.js-desired-capacity').val();
-                var maximumCapacity = $occurrence.find('.js-maximum-capacity').val();
-                var $schedulingStatusContainer = $occurrence.find('.js-scheduling-status');
-                var $autoschedulerWarning = $occurrence.find('.js-autoscheduler-warning');
-                var occurrenceDate = new Date($occurrence.find('.js-attendanceoccurrence-date').val()).getTime();
-                var hasLocation = $occurrence.data('has-location')
-
-                if (!desiredCapacity) {
-                    $autoschedulerWarning.show();
-                    $autoschedulerWarning.tooltip();
-                }
-                else {
-                    $autoschedulerWarning.hide();
-                }
-
-                var self = this;
-                $.get(getScheduledUrl + '?attendanceOccurrenceId=' + attendanceOccurrenceId, function (scheduledAttendanceItems) {
-                    $schedulerTargetContainer.html('');
-                    var totalPending = 0;
-                    var totalConfirmed = 0;
-                    var totalDeclined = 0;
-
-                    // hide the scheduled occurrence when it is empty if is the one that doesn't have a Location assigned
-                    if ($occurrence.data('has-location') == 0) {
-                        if (scheduledAttendanceItems.length == 0) {
-                            $occurrence.hide();
-                        } else {
-                            $occurrence.show();
-                        }
-                    }
-
-                    $.each(scheduledAttendanceItems, function (i) {
-                        var scheduledAttendanceItem = scheduledAttendanceItems[i];
-
-                        // add up status numbers
-                        if (scheduledAttendanceItem.ConfirmationStatus == 'confirmed') {
-                            totalConfirmed++;
-                        } else if (scheduledAttendanceItem.ConfirmationStatus == 'declined') {
-                            totalDeclined++;
-                        } else {
-                            totalPending++;
-                        }
-
-                        var $registrantDiv = $('.js-scheduled-registrant-template').find('.js-registrant').clone();
-                        $registrantDiv.data('occurrenceDate', occurrenceDate);
-                        $registrantDiv.data('hasLocation', hasLocation);
-                        self.populateResourceDiv($registrantDiv, scheduledAttendanceItem);
-                        $schedulerTargetContainer.append($registrantDiv);
-                    });
-
-                    var $statusLight = $schedulingStatusContainer.find('.js-scheduling-status-light');
-
-                    var totalPendingOrConfirmed = totalConfirmed + totalPending;
-
-                    if (minimumCapacity && (totalPendingOrConfirmed < minimumCapacity)) {
-                        $statusLight.attr('data-status', 'below-minimum');
-                    }
-                    else if (desiredCapacity && (totalPendingOrConfirmed < desiredCapacity)) {
-                        $statusLight.attr('data-status', 'below-desired');
-                    }
-                    else if (desiredCapacity && (totalPendingOrConfirmed >= desiredCapacity)) {
-                        $statusLight.attr('data-status', 'meets-desired');
-                    }
-                    else {
-                        // no capacities defined, so just hide it
-                        $statusLight.attr('data-status', 'none');
-                    }
-
-                    // set the progressbar max range to desired capacity if known
-                    var progressMax = desiredCapacity;
-                    var totalScheduled = (totalPending + totalConfirmed);
-                    if (!progressMax) {
-                        // desired capacity isn't known, so just have it act as a stacked bar based on the sum of pending,confirmed,declined
-                        progressMax = totalScheduled;
-                    }
-
-                    if (totalScheduled > desiredCapacity) {
-                        // more scheduled then desired, so base the progress bar on the total scheduled
-                        progressMax = totalScheduled;
-                    }
-
-                    var toolTipHtml = '<div>Confirmed: ' + totalConfirmed + '<br/>Pending: ' + totalPending + '<br/>Declined: ' + totalDeclined + '</div>';
-
-                    $schedulingStatusContainer.attr('data-original-title', toolTipHtml);
-                    $schedulingStatusContainer.tooltip({ html: true });
-
-                    var confirmedPercent = !progressMax || (totalConfirmed * 100 / progressMax);
-                    var pendingPercent = !progressMax || (totalPending * 100 / progressMax);
-                    var minimumPercent = !progressMax || (minimumCapacity * 100 / progressMax);
-                    var desiredPercent = !progressMax || (desiredCapacity * 100 / progressMax);
-
-                    var $progressMinimumIndicator = $schedulingStatusContainer.find('.js-minimum-indicator');
-                    var $progressDesiredIndicator = $schedulingStatusContainer.find('.js-desired-indicator');
-
-                    if (desiredCapacity && minimumCapacity && minimumCapacity > 0) {
-                        $progressMinimumIndicator
-                            .attr('data-minimum-value', minimumCapacity)
-                            .css({ 'margin-left': minimumPercent + '%' }).show();
-
-                        $progressDesiredIndicator
-                            .attr('data-desired-value', desiredCapacity)
-                            .css({ 'margin-left': desiredPercent + '%' }).show();
-                    }
-                    else {
-                        // if neither desired capacity or minimum is defined, showing a minimum indicator on progress bar really doesn't make sense.
-                        $progressMinimumIndicator.hide();
-                        $progressDesiredIndicator.hide();
-                    }
-
-                    var $progressConfirmed = $schedulingStatusContainer.find('.js-scheduling-progress-confirmed');
-                    $progressConfirmed.css({ 'width': confirmedPercent + '%' });
-                    $progressConfirmed.find('.js-progress-text-percent').val(confirmedPercent);
-
-                    var $progressPending = $schedulingStatusContainer.find('.js-scheduling-progress-pending');
-                    $progressPending.css({ 'width': pendingPercent + '%' });
-                    $progressPending.find('.js-progress-text-percent').val(pendingPercent);
-
-                });
-            },
-            /** populates the registrant list with available registrants */
-            populateRegistrants: function ($registrantList) {
-                var self = this;
-                var $registrantContainer = $('.js-group-placement-registrant-container', $registrantList);
-                var getGroupPlacementRegistrantsUrl = Rock.settings.get('baseUrl') + 'api/RegistrationRegistrants/GetGroupPlacementRegistrants';
-                var getGroupPlacementRegistrantsParameters = {
-                    RegistrationTemplateId: Number($('.js-registration-template-id', $registrantList).val()),
-                    RegistrationInstanceId: Number($('.js-registration-instance-id', $registrantList).val()),
-                    RegistrationTemplatePlacementId: $('.js-registration-template-placement-id', $registrantList).val(),
-                    IncludeFees: $('.js-options-include-fees', $registrantList).val(),
-                    DataFilterId: Number($('.js-options-datafilter-id', $registrantList).val()),
-                };
-
-                if ($('.js-registration-template-instance-id-list', $registrantList).val() != '') {
-                    getGroupPlacementRegistrantsParameters.RegistrationTemplateInstanceIds = JSON.parse($('.js-registration-template-instance-id-list', $registrantList).val());
-                }
-
-                if ($('.js-options-displayed-attribute-ids', $registrantList).val() != '') {
-                    getGroupPlacementRegistrantsParameters.DisplayedAttributeIds = JSON.parse($('.js-options-displayed-attribute-ids', $registrantList).val());
-                }
-
-                var $loadingNotification = $registrantList.find('.js-loading-notification');
-
-                $registrantContainer.html(' ');
-                $loadingNotification.fadeIn();
-
-                $.ajax({
-                    method: "POST",
-                    url: getGroupPlacementRegistrantsUrl,
-                    data: getGroupPlacementRegistrantsParameters
-                }).done(function (registrants) {
-                    var registrantContainerParent = $registrantContainer.parent();
-
-                    // temporarily detach $registrantContainer to speed up adding the registrantdivs
-                    $registrantContainer.detach();
-                    $registrantContainer.html('');
-                    var $registrantTemplate = $('.js-registrant-template').find('.js-registrant');
-                    for (var i = 0; i < registrants.length; i++) {
-                        var registrant = registrants[i];
-                        var $registrantDiv = $registrantTemplate.clone();
-                        self.populateRegistrantDiv($registrantDiv, registrant);
-                        $registrantContainer.append($registrantDiv);
-                    }
-
-                    registrantContainerParent.append($registrantContainer);
-
-                    setTimeout(function () {
-                        $loadingNotification.hide();
-                    }, 0)
-
-                }).fail(function (a, b, c) {
-                    console.log('fail:' + a.responseText);
-                    $loadingNotification.hide();
-                });
-
-            },
-            /**  populates the registrant element */
-            populateRegistrantDiv: function ($registrantDiv, registrant) {
-
-                $registrantDiv.attr('data-person-id', registrant.PersonId);
-                $registrantDiv.attr('data-person-gender', registrant.PersonGender);
-                $registrantDiv.attr('data-registrant-id', registrant.RegistrantId);
-
-                if (registrant.PersonGender == 2) {
-                    $registrantDiv.addClass('registrant-gender-female')
-                } else {
-                    $registrantDiv.addClass('registrant-gender-male')
-                }
-
-                $registrantDiv.find('.js-registrant-name').text(registrant.PersonName);
-                $registrantDiv.find('.js-registrant-registrationinstance-name').text(registrant.RegistrationInstanceName);
-                
-                var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
-                var $attributesDiv = $registrantDiv.find('.js-registrant-attributes-container');
-
-                for (var fee in registrant.Fees) {
-                    $feesDiv.append('<dt>' + fee + ' </dt><dd>' + registrant.Fees[fee] + '</dd>');
-                }
-
-                for (var displayedAttributeValue in registrant.DisplayedAttributeValues) {
-                    $attributesDiv.append('<dt>' + displayedAttributeValue + ' </dt><dd>' + registrant.DisplayedAttributeValues[displayedAttributeValue] + '</dd>');
-                }
+                        }).fail(function (jqXHR) {
+                            $draggedItem.attr('data-has-placement-error', true);
+                            $draggedItem.attr('registrant-placement-error-message', jqXHR.responseJSON.Message);
+                            $draggedItem.addClass('alert alert-warning');
+                            $draggedItem.html(jqXHR.responseJSON.Message);
+                        });
 
 
-            },
-            /**  */
-            initializeEventHandlers: function () {
-                var self = this;
 
-                self.$groupPlacementTool.on('click', '.js-markconfirmed, .js-markdeclined, .js-markpending, .js-resendconfirmation', function (a, b, c) {
-                    var $registrant = $(this).closest('.js-registrant');
-                    var attendanceId = $registrant.attr('data-attendance-id');
-                    var scheduledPersonUrl;
-                    if ($(this).hasClass('js-markconfirmed')) {
-                        scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonConfirm';
-                    }
-                    else if ($(this).hasClass('js-markdeclined')) {
-                        scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonDecline';
-                    }
-                    else if ($(this).hasClass('js-markpending')) {
-                        scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonPending';
-                    }
-                    else if ($(this).hasClass('js-resendconfirmation')) {
-                        scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonSendConfirmationEmail';
-                    }
-                    else {
-                        return;
-                    }
 
-                    $.ajax({
-                        method: "PUT",
-                        url: scheduledPersonUrl + '?attendanceId=' + attendanceId
-                    }).done(function () {
-                        // after updating a registrant, repopulate the list of registrants for this occurrence
-                        var $occurrence = $registrant.closest('.js-scheduled-occurrence');
-                        self.populateScheduledOccurrence($occurrence);
-                    }).fail(function (a, b, c) {
-                        console.log('fail');
-                    })
-                });
 
-                // add autoscroll capabilities during dragging
-                $(window).mousemove(function (e) {
-                    if (self.registrantListDrake.dragging) {
-                        // editor scrollbar
-                        // automatically scroll the editor (inner scrollbar) if the mouse gets within 10% of the top or 10% of the bottom while dragger
-                        var $editorScrollWindow = $(window);
-                        var editorScrollHeight = window.innerHeight;
-                        var editorScrollLevel = $editorScrollWindow.scrollTop()
-                        var editorMouseY = e.clientY;
-                        var editorMousePositionProportion = editorMouseY / editorScrollHeight;
-                        if (editorMousePositionProportion > .90) {
-                            editorScrollLevel += 20;
-                            $editorScrollWindow.scrollTop(editorScrollLevel);
-                        }
-                        else if (editorMousePositionProportion < .10 && editorScrollLevel != 0) {
-                            editorScrollLevel -= 20;
-                            $editorScrollWindow.scrollTop(editorScrollLevel);
-                        }
-                    }
-                });
+                self.trimSourceContainer();
+            });
 
+        this.trimSourceContainer();
+        this.initializeEventHandlers();
+
+        self.populateRegistrants(self.$registrantList);
+
+        self.populateAllGroupRoleMembers();
+    },
+        /** trims the source container if it just has whitespace, so that the :empty css selector works */
+        trimSourceContainer: function () {
+            // if js-scheduler-source-container just has whitespace in it, trim it so that the :empty css selector works
+            var $sourceContainer = $('.js-scheduler-source-container');
+            if (($.trim($sourceContainer.html()) == "")) {
+                $sourceContainer.html("");
             }
+        },
+    /** Removes the groupMember and repopulates the UI */
+    removeGroupMember: function ($groupMember) {
+        debugger
+        var self = this;
+
+        var groupMemberId = $groupMember.attr('data-groupmember-id');
+
+        var groupMembersURI = Rock.settings.get('baseUrl') + 'api/GroupMembers';
+
+        $.ajax({
+            method: "DELETE",
+            url: groupMembersURI + '/' + groupMemberId
+        }).done(function (deleteResult) {
+
+            var $groupRole = $groupMember.closest('.js-group-role-members')
+            self.populateGroupRoleMembers($groupRole);
+        }).fail(function (a, b, c) {
+            console.log('fail');
+        });
+    },
+    /** populates the placed registrants for all the occurrence group-role divs */
+    populateAllGroupRoleMembers: function () {
+        var self = this;
+        var groupRoleEls = $(".js-group-role-members", self.$groupPlacementTool).toArray();
+        $.each(groupRoleEls, function (i) {
+            var $groupRole = $(groupRoleEls[i]);
+            self.populateGroupRoleMembers($groupRole);
+        });
+    },
+    /** populates the group role members for the group role div */
+    populateGroupRoleMembers: function ($groupRole) {
+        var getGroupMembersUrl = Rock.settings.get('baseUrl') + 'api/GroupMembers';
+        var $placementGroup = $groupRole.closest('.js-placement-group');
+        var $groupRoleContainer = $groupRole.find('.js-group-role-container');
+
+        var groupId = $placementGroup.find('.js-placement-group-id').val();
+        var groupTypeRoleId = $groupRole.find('.js-grouptyperole-id').val();
+        var groupMemberFilter = '$filter='
+        groupMemberFilter += 'GroupId eq ' + groupId;
+        groupMemberFilter += ' and GroupRoleId eq ' + groupTypeRoleId;
+
+        var self = this;
+        $.get(getGroupMembersUrl + '?' + groupMemberFilter + '&$expand=Person', function (groupMembers) {
+            $groupRoleContainer.html('');
+
+            $.each(groupMembers, function (i) {
+                var groupMember = groupMembers[i];
+
+                var $groupMemberDiv = $('.js-group-member-template').find('.js-group-member').clone();
+                self.populateGroupRoleDiv($groupMemberDiv, groupMember);
+                $groupRoleContainer.append($groupMemberDiv);
+            });
+
+        });
+    },
+    populateGroupRoleDiv: function ($groupRoleDiv, groupMember) {
+        $groupRoleDiv.attr('data-groupmember-id', groupMember.Id);
+        $groupRoleDiv.attr('data-person-id', groupMember.Id);
+        $groupRoleDiv.attr('data-person-gender', groupMember.Person.Gender);
+        $groupRoleDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
+    },
+    /** populates the registrant list with available registrants */
+    populateRegistrants: function ($registrantList) {
+        var self = this;
+        var $registrantContainer = $('.js-group-placement-registrant-container', $registrantList);
+        var getGroupPlacementRegistrantsUrl = Rock.settings.get('baseUrl') + 'api/RegistrationRegistrants/GetGroupPlacementRegistrants';
+        var getGroupPlacementRegistrantsParameters = {
+            RegistrationTemplateId: Number($('.js-registration-template-id', self.$groupPlacementTool).val()),
+            RegistrationInstanceId: Number($('.js-registration-instance-id', self.$groupPlacementTool).val()),
+            RegistrationTemplatePlacementId: self.registrationTemplatePlacementId,
+            IncludeFees: $('.js-options-include-fees', self.$groupPlacementTool).val(),
+            DataFilterId: Number($('.js-options-datafilter-id', self.$groupPlacementTool).val()),
         };
 
-        return exports;
+        if ($('.js-registration-template-instance-id-list', self.$groupPlacementTool).val() != '') {
+            getGroupPlacementRegistrantsParameters.RegistrationTemplateInstanceIds = JSON.parse($('.js-registration-template-instance-id-list', self.$groupPlacementTool).val());
+        }
+
+        if ($('.js-options-displayed-attribute-ids', self.$groupPlacementTool).val() != '') {
+            getGroupPlacementRegistrantsParameters.DisplayedAttributeIds = JSON.parse($('.js-options-displayed-attribute-ids', self.$groupPlacementTool).val());
+        }
+
+        var $loadingNotification = self.$groupPlacementTool.find('.js-loading-notification');
+
+        $registrantContainer.html(' ');
+        $loadingNotification.fadeIn();
+
+        $.ajax({
+            method: "POST",
+            url: getGroupPlacementRegistrantsUrl,
+            data: getGroupPlacementRegistrantsParameters
+        }).done(function (registrants) {
+            var registrantContainerParent = $registrantContainer.parent();
+
+            // temporarily detach $registrantContainer to speed up adding the registrantdivs
+            $registrantContainer.detach();
+            $registrantContainer.html('');
+            var $registrantTemplate = $('.js-registrant-template').find('.js-registrant');
+            for (var i = 0; i < registrants.length; i++) {
+                var registrant = registrants[i];
+                var $registrantDiv = $registrantTemplate.clone();
+                self.populateRegistrantDiv($registrantDiv, registrant);
+                $registrantContainer.append($registrantDiv);
+            }
+
+            registrantContainerParent.append($registrantContainer);
+
+            setTimeout(function () {
+                $loadingNotification.hide();
+            }, 0)
+
+        }).fail(function (a, b, c) {
+            console.log('fail:' + a.responseText);
+            $loadingNotification.hide();
+        });
+
+    },
+    /**  populates the registrant element */
+    populateRegistrantDiv: function ($registrantDiv, registrant) {
+
+        $registrantDiv.attr('data-person-id', registrant.PersonId);
+        $registrantDiv.attr('data-person-gender', registrant.PersonGender);
+        $registrantDiv.attr('data-registrant-id', registrant.RegistrantId);
+
+        $registrantDiv.find('.js-registrant-name').text(registrant.PersonName);
+        $registrantDiv.find('.js-registrant-registrationinstance-name').text(registrant.RegistrationInstanceName);
+
+        var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
+        var $feesDl = $('<dl></dl>');
+        for (var fee in registrant.Fees) {
+            $feesDl.append('<dt>' + fee + ' </dt><dd>' + registrant.Fees[fee] + '</dd>');
+        }
+        $feesDiv.append($feesDl);
+
+        var $attributesDiv = $registrantDiv.find('.js-registrant-attributes-container');
+        var $attributesDl = $('<dl></dl>');
+        for (var displayedAttributeValue in registrant.DisplayedAttributeValues) {
+            $attributesDl.append('<dt>' + displayedAttributeValue + ' </dt><dd>' + registrant.DisplayedAttributeValues[displayedAttributeValue] + '</dd>');
+        }
+        $attributesDiv.append($attributesDl);
+    },
+    /**  */
+    initializeEventHandlers: function () {
+        var self = this;
+
+        self.$groupPlacementTool.on('click', '.js-remove-group-member, .js-unlink-group, .js-delete-group', function (a, b, c) {
+            debugger
+            var $groupMember = $(this).closest('.js-group-member');
+            var $placementGroup = $(this).closest('.js-placement-group');
+            if ($(this).hasClass('js-remove-group-member')) {
+                self.removeGroupMember($groupMember)
+            }
+            else if ($(this).hasClass('js-unlink-group')) {
+                //scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonDecline';
+            }
+            else if ($(this).hasClass('js-delete-group')) {
+                //scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonPending';
+            }
+            else {
+                return;
+            }
+
+        });
+
+        // add autoscroll capabilities during dragging
+        $(window).mousemove(function (e) {
+            if (self.registrantListDrake.dragging) {
+                // editor scrollbar
+                // automatically scroll the editor (inner scrollbar) if the mouse gets within 10% of the top or 10% of the bottom while dragging
+                var $editorScrollWindow = $(window);
+                var editorScrollHeight = window.innerHeight;
+                var editorScrollLevel = $editorScrollWindow.scrollTop()
+                var editorMouseY = e.clientY;
+                var editorMousePositionProportion = editorMouseY / editorScrollHeight;
+                if (editorMousePositionProportion > .90) {
+                    editorScrollLevel += 20;
+                    $editorScrollWindow.scrollTop(editorScrollLevel);
+                }
+                else if (editorMousePositionProportion < .10 && editorScrollLevel != 0) {
+                    editorScrollLevel -= 20;
+                    $editorScrollWindow.scrollTop(editorScrollLevel);
+                }
+            }
+        });
+
+    }
+};
+
+return exports;
     }());
 }(jQuery));
