@@ -454,6 +454,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Device Type Attributes
+
+        /// <summary>
+        /// The defined value attribute for storing if a device type supports cameras.
+        /// </summary>
+        public const string DEFINED_VALUE_DEVICE_TYPE_SUPPORTS_CAMERAS = "79D1D843-4641-458D-A20B-37E0D7B4AEBE";
+
+        #endregion
+
         #region Fundraising Attributes
 
         /// <summary>
