@@ -1491,7 +1491,9 @@ namespace Rock.MyWell
         /// Removes the emails.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="onProgress">The on progress.</param>
         /// <returns></returns>
+        /// <exception cref="System.Exception">Unexpected response from SearchCustomerSubscriptions</exception>
         public int RemoveEmails( FinancialGateway financialGateway, EventHandler<string> onProgress )
         {
             var emailRemoveCount = 0;

@@ -148,11 +148,11 @@ namespace RockWeb.Blocks.Core
             signatureDocumentTemplate.BinaryFileTypeId = bftpFileType.SelectedValueAsInt();
             signatureDocumentTemplate.ProviderEntityTypeId = cpProvider.SelectedEntityTypeId;
             signatureDocumentTemplate.ProviderTemplateKey = ddlTemplate.SelectedValue;
-            signatureDocumentTemplate.InviteSystemEmailId = ddlSystemEmail.SelectedValueAsInt();
+            signatureDocumentTemplate.InviteSystemCommunicationId = ddlSystemEmail.SelectedValueAsInt();
 
             if ( !signatureDocumentTemplate.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Core
             cpProvider.SetValue( signatureDocumentTemplate.ProviderEntityType != null ? signatureDocumentTemplate.ProviderEntityType.Guid.ToString().ToUpper() : string.Empty );
             SetTemplates();
             ddlTemplate.SetValue( signatureDocumentTemplate.ProviderTemplateKey );
-            ddlSystemEmail.SetValue( signatureDocumentTemplate.InviteSystemEmailId );
+            ddlSystemEmail.SetValue( signatureDocumentTemplate.InviteSystemCommunicationId );
         }
 
         /// <summary>
