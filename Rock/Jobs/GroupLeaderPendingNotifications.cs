@@ -192,6 +192,7 @@ namespace Rock.Jobs
                     foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && m.GroupId == group.Id && notifiedPersonIds.Contains( m.PersonId ) ) )
                     {
                         pendingGroupMember.IsNotified = true;
+                        pendingMembersCount ++;
                     }
 
                     rockContext.SaveChanges();
