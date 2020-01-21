@@ -41,7 +41,7 @@
                             <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
                                 <Rock:PersonProfileBadgeList ID="blStatus" runat="server" />
                             </asp:Panel>
-                            
+
                             <div class="row">
                                 <div class="col-md-6">
                                      <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
@@ -53,7 +53,7 @@
                                     <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
                                 </div>
                             </div>
-       
+
                         </div>
 
                         <div class="col-md-2 text-right">
@@ -227,7 +227,7 @@
 
         <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true" CssClass="clickable">
             <div class="grid">
-                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" 
+                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light"
                     RowItemText="Activity" OnRowDataBound="gConnectionRequestActivities_RowDataBound" OnRowSelected="gConnectionRequestActivities_Edit">
                     <Columns>
                         <Rock:RockBoundField DataField="Date" HeaderText="Date" />
@@ -277,7 +277,7 @@
                                         </div>
                                         <div class="col-md-8">
                                             <%# Eval("Description") %>
-                                            </br>                                                
+                                            <br/>
                                             <Rock:BootstrapButton ID="btnSearchSelect" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" Text="Select" CssClass="btn btn-default btn-sm" />
                                         </div>
                                     </div>
@@ -293,7 +293,7 @@
                 $(".js-transfer-connector").on("click", function (a) {
                     $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($(this).is('#<%=rbTransferSelectConnector.ClientID%>'));
                 });
-                
+
                 $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($('#<%=rbTransferSelectConnector.ClientID%>').is(":checked"));
             })
         </script>
