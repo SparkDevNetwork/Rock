@@ -88,13 +88,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
-            var script = string.Format(
-                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', step:'{3}', from: '{4}' }});",
-                this.ClientID,
-                this.MinValue ?? 0,
-                this.MaxValue ?? 100,
-                this.StepValue ?? 1,
-                this.SelectedValue ?? 0 );
+            string disable = ( !this.Enabled || this.ReadOnly ) ? "true" : "false";
+            var script = $@"Rock.controls.rangeSlider.initialize({{ controlId: '{ClientID}', min: '{MinValue ?? 0}', max: '{MaxValue ?? 100}', step:'{StepValue ?? 1}', from: '{SelectedValue ?? 0}', disable: {disable} }};";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "range_slider-" + this.ClientID, script, true );
         }

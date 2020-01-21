@@ -80,7 +80,7 @@ namespace Rock.Model
         /// The device unique identifier.
         /// </value>
         [DataMember]
-        [MaxLength( 20 )]
+        [MaxLength( 50 )]
         public string DeviceUniqueIdentifier { get; set; }
 
         /// <summary>

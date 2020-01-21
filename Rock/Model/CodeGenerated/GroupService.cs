@@ -204,6 +204,8 @@ namespace Rock.Model
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
             target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
+            target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
             target.ScheduleId = source.ScheduleId;
             target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;

@@ -2506,6 +2506,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<StreakTypeAchievementTypePrerequisite>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, StreakTypeAchievementTypePrerequisite.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<StreakTypeAchievementTypePrerequisite>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, StreakTypeAchievementTypePrerequisite.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<StreakTypeExclusion>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, StreakTypeExclusion.FriendlyTypeName );
@@ -2515,6 +2527,18 @@ namespace Rock.Model
             if ( new Service<StreakTypeExclusion>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, StreakTypeExclusion.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SystemCommunication>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemCommunication.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SystemCommunication>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemCommunication.FriendlyTypeName );
                 return false;
             }  
  
