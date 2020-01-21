@@ -79,24 +79,9 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Old Interaction Cleanup", () => CleanupInteractions( dataMap ) );
 
+            RunCleanupTask( "Orphan Interaction Session Cleanup", () => CleanupInteractionSessions( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Orphan Interaction Session Cleanup", CleanupInteractionSessions( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupInteractionSessions", ex ) );
-            }
-
-            try
-            {
-                databaseRowsCleanedUp.Add( "Audit Log", PurgeAuditLog( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in PurgeAuditLog", ex ) );
-            }
+            RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
             RunCleanupTask( "Clean Cached File Directory", () => CleanCachedFileDirectory( context, dataMap ) );
 
