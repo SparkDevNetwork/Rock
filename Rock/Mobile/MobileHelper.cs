@@ -25,6 +25,7 @@ using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.DownhillCss;
+using Rock.Mobile.JsonFields;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -702,5 +703,55 @@ namespace Rock.Mobile
         }
 
         #endregion
+
+        /// <summary>
+        /// Creates a lava template that constructs an array of JSON objects
+        /// that represent the specified properties and fields.
+        /// </summary>
+        /// <param name="properties">The properties.</param>
+        /// <param name="fields">The fields.</param>
+        /// <returns></returns>
+        public static string CreateItemLavaTemplate( Dictionary<string, string> properties, List<FieldSetting> fields )
+        {
+            var template = new StringBuilder();
+            template.AppendLine( "[" );
+            template.AppendLine( "    {%- for item in Items -%}" );
+            template.AppendLine( "    {" );
+
+            //
+            // Build the user-defined property fields.
+            //
+            if ( fields != null )
+            {
+                foreach ( var field in fields )
+                {
+                    template.AppendLine( $"        {{% jsonproperty name:'{field.Key}' format:'{field.FieldFormat}' %}}{field.Value}{{% endjsonproperty %}}," );
+                }
+            }
+
+            //
+            // Append the standard fields.
+            //
+            if ( properties != null )
+            {
+                foreach ( var kvp in properties )
+                {
+                    template.AppendLine( $"        \"{kvp.Key}\": {{{{ item.{kvp.Value} | ToJSON }}}}," );
+                }
+            }
+
+            //
+            // Remove the last property comma.
+            //
+            int lastComma = template.ToString().LastIndexOf( ',' );
+            template.Remove( lastComma, 1 );
+
+            template.Append( "    }" );
+            template.AppendLine( "{%- if forloop.last != true -%},{%- endif %}" );
+            template.AppendLine( "    {%- endfor -%}" );
+            template.AppendLine( "]" );
+
+            return template.ToString();
+        }
     }
 }

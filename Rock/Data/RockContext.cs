@@ -1803,7 +1803,17 @@ namespace Rock.Data
         /// <value>
         /// The system emails.
         /// </value>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use SystemCommunications instead." )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system emails.
+        /// </summary>
+        /// <value>
+        /// The system emails.
+        /// </value>
+        public DbSet<SystemCommunication> SystemCommunications { get; set; }
 
         /// <summary>
         /// Gets or sets the Tags.

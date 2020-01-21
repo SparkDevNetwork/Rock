@@ -29,6 +29,7 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Mobile.JsonFields;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -635,141 +636,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The custom settings title.
             /// </value>
             public override string CustomSettingsTitle => "Basic Settings";
-        }
-
-        #endregion
-
-        #region POCOs
-
-        /// <summary>
-        /// POCO to store the settings for the fields
-        /// </summary>
-        public class FieldSetting
-        {
-            /// <summary>
-            /// Creates an identifier based off the key. This is used for grid operations.
-            /// </summary>
-            /// <value>
-            /// The identifier.
-            /// </value>
-            public int Id
-            {
-                get
-                {
-                    return this.Key.GetHashCode();
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets the field key.
-            /// </summary>
-            /// <value>
-            /// The key.
-            /// </value>
-            public string Key { get; set; }
-
-            /// <summary>
-            /// Gets or sets the field value.
-            /// </summary>
-            /// <value>
-            /// The value.
-            /// </value>
-            public string Value { get; set; }
-
-            /// <summary>
-            /// Gets or sets the name of the property.
-            /// </summary>
-            /// <value>
-            /// The name of the property.
-            /// </value>
-            public string FieldName { get; set; }
-
-            /// <summary>
-            /// Gets or sets the field source.
-            /// </summary>
-            /// <value>
-            /// The field source.
-            /// </value>
-            public FieldSource FieldSource { get; set; }
-
-            /// <summary>
-            /// Gets or sets the attribute format.
-            /// </summary>
-            /// <value>
-            /// The attribute format.
-            /// </value>
-            public AttributeFormat AttributeFormat { get; set; }
-
-            /// <summary>
-            /// Gets or sets the field format.
-            /// </summary>
-            /// <value>
-            /// The field format.
-            /// </value>
-            public FieldFormat FieldFormat { get; set; }
-        }
-
-        /// <summary>
-        /// The source of the data for the field. The two types are properties on the item model and an attribute expression.
-        /// </summary>
-        public enum FieldSource
-        {
-            /// <summary>
-            /// The source comes from a model property.
-            /// </summary>
-            Property = 0,
-
-            /// <summary>
-            /// The source comes from an attribute defined on the model.
-            /// </summary>
-            Attribute = 1,
-
-            /// <summary>
-            /// The source comes from a custom lava expression.
-            /// </summary>
-            LavaExpression = 2
-        }
-
-        /// <summary>
-        /// The format to use for the attribute.
-        /// </summary>
-        public enum AttributeFormat
-        {
-            /// <summary>
-            /// The attribute's friendly value should be used.
-            /// </summary>
-            FriendlyValue = 0,
-
-            /// <summary>
-            /// The attribute's raw value should be used.
-            /// </summary>
-            RawValue = 1
-        }
-
-        /// <summary>
-        /// Determines the field's format. This will be used to properly format the Json sent to the client.
-        /// </summary>
-        public enum FieldFormat
-        {
-            /// <summary>
-            /// The value will be formatted as a string.
-            /// </summary>
-            String = 0,
-
-            /// <summary>
-            /// The value will be formatted as a number.
-            /// </summary>
-            Number = 1,
-
-            /// <summary>
-            /// The value will be formatted as a datetime.
-            /// </summary>
-            Date = 2,
-
-            /// <summary>
-            /// The value will be formatted as a boolean.
-            /// </summary>
-            Boolean = 3
         }
 
         #endregion

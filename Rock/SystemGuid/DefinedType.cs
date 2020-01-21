@@ -367,6 +367,11 @@ namespace Rock.SystemGuid
 		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
 
         /// <summary>
+        /// Guid for Structured Content Editor Tools
+        /// </summary>
+        public const string STRUCTURED_CONTENT_EDITOR_TOOLS = "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA";
+
+        /// <summary>
         /// Used to manage the workflows that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";

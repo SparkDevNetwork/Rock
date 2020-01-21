@@ -55,7 +55,11 @@ namespace RockWeb.Blocks.Event
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
     [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, Category = "", Order = 7,
+
+    [SystemCommunicationField( "Confirm Account Template",
+        Description = "Confirm Account Email Template",
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
+        Order = 7,
         Key = AttributeKey.ConfirmAccountTemplate )]
 
     [TextField( "Family Term",

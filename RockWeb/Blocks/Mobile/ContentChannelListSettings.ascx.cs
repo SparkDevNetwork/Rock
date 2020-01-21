@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Blocks.Types.Mobile.Cms;
 using Rock.Data;
+using Rock.Mobile.JsonFields;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web;
@@ -46,39 +47,10 @@ namespace RockWeb.Blocks.Mobile
     {
         #region Private members
 
-        List<PropertyInfoSummary>  _contentChannelProperties = null;
         private readonly string ITEM_TYPE_NAME = "Rock.Model.ContentChannelItem";
 
         #endregion
         
-        #region Properties
-
-        /// <summary>
-        /// Gets or sets the field settings.
-        /// </summary>
-        /// <value>
-        /// The field settings.
-        /// </value>
-        private List<ContentChannelItemList.FieldSetting> FieldSettings
-        {
-            get
-            {
-                if ( _fieldSettings == null )
-                {
-                    return new List<ContentChannelItemList.FieldSetting>();
-                }
-
-                return _fieldSettings;
-            }
-            set
-            {
-                _fieldSettings = value;
-            }
-        }
-        private List<ContentChannelItemList.FieldSetting> _fieldSettings = new List<ContentChannelItemList.FieldSetting>();
-
-        #endregion
-
         #region Base Method Overrides
 
         /// <summary>
@@ -88,12 +60,6 @@ namespace RockWeb.Blocks.Mobile
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            gIncludedAttributes.DataKeyNames = new string[] { "Key" };
-            gIncludedAttributes.Actions.AddClick += gIncludedAttributes_AddClick;
-            gIncludedAttributes.GridRebind += gIncludedAttributes_GridRebind;
-            gIncludedAttributes.ShowHeaderWhenEmpty = true;
-            gIncludedAttributes.Actions.ShowAdd = true;
         }
 
         /// <summary>
@@ -103,20 +69,6 @@ namespace RockWeb.Blocks.Mobile
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
-
-            var fieldSettingJson = ViewState["FieldSettings"].ToString();
-
-            if ( fieldSettingJson.IsNotNullOrWhiteSpace() )
-            {
-                _fieldSettings = JsonConvert.DeserializeObject<List<ContentChannelItemList.FieldSetting>>( fieldSettingJson );
-            }
-
-            var propertyInfoJson = ViewState["PropertyInfo"].ToString();
-
-            if ( propertyInfoJson.IsNotNullOrWhiteSpace() )
-            {
-                _contentChannelProperties = JsonConvert.DeserializeObject<List<PropertyInfoSummary>>( propertyInfoJson );
-            }
 
             var channelId = ViewState["ChannelId"] as int?;
 
@@ -139,8 +91,6 @@ namespace RockWeb.Blocks.Mobile
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["FieldSettings"] = this.FieldSettings.ToJson();
-            ViewState["PropertyInfo"] = _contentChannelProperties.ToJson();
             ViewState["DataViewFilter"] = ReportingHelper.GetFilterFromControls( phFilters ).ToJson();
             ViewState["ChannelId"] = ddlContentChannel.SelectedValueAsId();
 
@@ -149,208 +99,7 @@ namespace RockWeb.Blocks.Mobile
 
         #endregion
 
-        #region Grid Events
-
-        /// <summary>
-        /// Binds the field grid.
-        /// </summary>
-        private void BindFieldGrid()
-        {
-            gIncludedAttributes.DataSource = this.FieldSettings;
-            gIncludedAttributes.DataBind();
-        }
-
-        /// <summary>
-        /// Handles the GridRebind event of the gIncludedAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.GridRebindEventArgs"/> instance containing the event data.</param>
-        private void gIncludedAttributes_GridRebind( object sender, Rock.Web.UI.Controls.GridRebindEventArgs e )
-        {
-            BindFieldGrid();
-        }
-
-        /// <summary>
-        /// Handles the AddClick event of the gIncludedAttributes control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void gIncludedAttributes_AddClick( object sender, EventArgs e )
-        {
-            pnlDataEdit.Visible = true;
-            gIncludedAttributes.Visible = false;
-
-            // Clear fields
-            rblFieldSource.SetValue( ContentChannelItemList.FieldSource.Property.ConvertToInt().ToString() );
-            rblAttributeFormatType.SetValue( ContentChannelItemList.AttributeFormat.FriendlyValue.ConvertToInt().ToString() );
-            tbKey.Text = string.Empty;
-            hfOriginalKey.Value = "new_key";
-            rblAttributeFormatType.SetValue( ContentChannelItemList.AttributeFormat.FriendlyValue.ConvertToInt().ToString() );
-            rblFieldFormat.SetValue( ContentChannelItemList.FieldFormat.String.ConvertToInt().ToString() );
-            ceLavaExpression.Text = "{{ item | Attribute:'AttributeKey' }}";
-
-            SetPropertyTypePanels();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the gIncludedAttributesEdit control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gIncludedAttributesEdit_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            var settingKey = e.RowKeyValue.ToString();
-
-            var setting = this.FieldSettings.Where( s => s.Key == settingKey ).FirstOrDefault();
-
-            if ( setting == null )
-            {
-                return;
-            }
-
-            pnlDataEdit.Visible = true;
-            gIncludedAttributes.Visible = false;
-
-            // Set edit values
-            rblFieldSource.SetValue( setting.FieldSource.ConvertToInt().ToString() );
-            tbKey.Text = setting.Key;
-            hfOriginalKey.Value = setting.Key;
-            ceLavaExpression.Text = setting.Value;
-
-
-            if ( setting.FieldSource == ContentChannelItemList.FieldSource.Property )
-            {
-                ddlContentChannelProperties.SelectedValue = setting.FieldName;
-            }
-            else if (setting.FieldSource == ContentChannelItemList.FieldSource.Attribute )
-            {
-                rblAttributeFormatType.SetValue( setting.AttributeFormat.ConvertToInt().ToString() );
-            }
-            else
-            {
-                ceLavaExpression.Text = setting.Value;
-                rblAttributeFormatType.SetValue( setting.AttributeFormat.ConvertToInt().ToString() );
-                rblFieldFormat.SetValue( setting.FieldFormat.ConvertToInt().ToString() );
-            }
-
-            SetPropertyTypePanels();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the gIncludedAttributesDelete control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
-        protected void gIncludedAttributesDelete_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
-        {
-            var settingKey = e.RowKeyValue.ToString();
-
-            var setting = this.FieldSettings.Where( s => s.Key == settingKey ).FirstOrDefault();
-
-            _fieldSettings.Remove( setting );
-
-            BindFieldGrid();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbApply control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbApply_Click( object sender, EventArgs e )
-        {
-            pnlDataEdit.Visible = false;
-            gIncludedAttributes.Visible = true;
-
-            var settings = this.FieldSettings;
-
-            var setting = settings.Where( s => s.Key == hfOriginalKey.Value ).FirstOrDefault();
-
-
-            if ( setting == null )
-            {
-                setting = new ContentChannelItemList.FieldSetting();
-                settings.Add( setting );
-            }
-
-            setting.Key = tbKey.Text;
-            setting.FieldSource = rblFieldSource.SelectedValueAsEnum<ContentChannelItemList.FieldSource>();
-
-            if ( setting.FieldSource == ContentChannelItemList.FieldSource.Property )
-            {
-                var propertyName = ddlContentChannelProperties.SelectedValue;
-
-                setting.Value = string.Format( "{{{{ item.{0} }}}}", propertyName );
-                setting.FieldName = propertyName;
-                setting.Key = propertyName;
-
-                var property = _contentChannelProperties.Where( p => p.Name == propertyName).FirstOrDefault();
-
-                if ( property.Type.Contains( ".Int") )
-                {
-                    setting.FieldFormat = ContentChannelItemList.FieldFormat.Number;
-                }
-                else if (property.Type.Contains( "DateTime" ) )
-                {
-                    setting.FieldFormat = ContentChannelItemList.FieldFormat.Date;
-                }
-                else
-                {
-                    setting.FieldFormat = ContentChannelItemList.FieldFormat.String;
-                }
-            }
-            else if ( setting.FieldSource == ContentChannelItemList.FieldSource.Attribute )
-            {
-                var attributeKey = ddlContentChannelAttributes.SelectedValue;
-                var attributeFormatType = rblAttributeFormatType.SelectedValueAsEnum<ContentChannelItemList.AttributeFormat>();
-
-                setting.Key = attributeKey;
-
-                if ( attributeFormatType == ContentChannelItemList.AttributeFormat.FriendlyValue )
-                {
-                    setting.Value = string.Format( "{{{{ item | Attribute:'{0}' }}}}", attributeKey );
-                }
-                else
-                {
-                    setting.Value = string.Format( "{{{{ item | Attribute:'{0}','RawValue' }}}}", attributeKey );
-                }
-
-                setting.FieldFormat = ContentChannelItemList.FieldFormat.String;
-                setting.FieldName = attributeKey;
-                setting.AttributeFormat = attributeFormatType;
-            }
-            else
-            {
-                setting.FieldFormat = rblFieldFormat.SelectedValueAsEnum<ContentChannelItemList.FieldFormat>();
-                setting.FieldName = string.Empty;
-                setting.Value = ceLavaExpression.Text;
-            }
-
-            this.FieldSettings = settings;
-
-            BindFieldGrid();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbCancel_Click( object sender, EventArgs e )
-        {
-            pnlDataEdit.Visible = false;
-            gIncludedAttributes.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the rblFieldSource control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rblFieldSource_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            SetPropertyTypePanels();
-        }
+        #region Events
 
         /// <summary>
         /// Handles the SelectedIndexChanged event of the ddlContentChannel control.
@@ -455,10 +204,6 @@ namespace RockWeb.Blocks.Mobile
         /// </summary>
         private void SetupFormBindings()
         {
-            rblFieldSource.BindToEnum<ContentChannelItemList.FieldSource>();
-            rblAttributeFormatType.BindToEnum<ContentChannelItemList.AttributeFormat>();
-            rblFieldFormat.BindToEnum<ContentChannelItemList.FieldFormat>();
-
             var rockContext = new RockContext();
 
             var contentChannels = new ContentChannelService( rockContext ).Queryable().AsNoTracking()
@@ -474,19 +219,6 @@ namespace RockWeb.Blocks.Mobile
             ddlContentChannel.DataTextField = "Value";
             ddlContentChannel.DataValueField = "Id";
             ddlContentChannel.DataBind();
-
-            _contentChannelProperties = new List<PropertyInfoSummary>();
-
-            var contentChannelProperties = typeof( ContentChannelItem ).GetProperties().OrderBy( p => p.Name );
-            foreach ( var property in contentChannelProperties )
-            {
-                _contentChannelProperties.Add( new PropertyInfoSummary { Name = property.Name, Type = property.PropertyType.ToString() } );
-            }
-
-            ddlContentChannelProperties.DataSource = _contentChannelProperties;
-            ddlContentChannelProperties.DataValueField = "Name";
-            ddlContentChannelProperties.DataTextField = "Name";
-            ddlContentChannelProperties.DataBind();
 
             var directions = new Dictionary<string, string>
             {
@@ -699,43 +431,7 @@ namespace RockWeb.Blocks.Mobile
                 }
             }
 
-            var attributeItems = attributes
-                .Select( a => new
-                {
-                    a.Key,
-                    a.Name
-                } )
-                .ToList();
-
-            ddlContentChannelAttributes.DataSource = attributeItems;
-            ddlContentChannelAttributes.DataValueField = "Key";
-            ddlContentChannelAttributes.DataTextField = "Name";
-            ddlContentChannelAttributes.DataBind();
-        }
-
-        /// <summary>
-        /// Sets the property type panel's visibility to match the current selection.
-        /// </summary>
-        private void SetPropertyTypePanels()
-        {
-            var selectedItem = rblFieldSource.SelectedValueAsEnum<ContentChannelItemList.FieldSource>();
-
-            pnlAttributes.Visible = false;
-            pnlProperties.Visible = false;
-            pnlLavaExpression.Visible = false;
-
-            if ( selectedItem == ContentChannelItemList.FieldSource.Property )
-            {
-                pnlProperties.Visible = true;
-            }
-            else if ( selectedItem == ContentChannelItemList.FieldSource.Attribute )
-            {
-                pnlAttributes.Visible = true;
-            }
-            else
-            {
-                pnlLavaExpression.Visible = true;
-            }
+            jfBuilder.AvailableAttributes = attributes;
         }
 
         /// <summary>
@@ -817,9 +513,9 @@ namespace RockWeb.Blocks.Mobile
             var fieldSettings = attributeEntity.GetAttributeValue( AttributeKeys.FieldSettings );
             if ( fieldSettings.IsNotNullOrWhiteSpace() )
             {
-                this.FieldSettings = JsonConvert.DeserializeObject<List<ContentChannelItemList.FieldSetting>>( fieldSettings );
+                jfBuilder.FieldSettings = JsonConvert.DeserializeObject<List<FieldSetting>>( fieldSettings );
             }
-            BindFieldGrid();
+            jfBuilder.SourceType = typeof( Rock.Model.ContentChannelItem );
 
             ddlContentChannel.SelectedValue = attributeEntity.GetAttributeValue( AttributeKeys.ContentChannel );
             nbPageSize.Text = attributeEntity.GetAttributeValue( AttributeKeys.PageSize );
@@ -849,7 +545,7 @@ namespace RockWeb.Blocks.Mobile
         /// </remarks>
         public void WriteSettingsToEntity( IHasAttributes attributeEntity, RockContext rockContext )
         {
-            attributeEntity.SetAttributeValue( AttributeKeys.FieldSettings, this.FieldSettings.ToJson() );
+            attributeEntity.SetAttributeValue( AttributeKeys.FieldSettings, jfBuilder.FieldSettings.ToJson() );
             attributeEntity.SetAttributeValue( AttributeKeys.ContentChannel, ddlContentChannel.SelectedValue );
             attributeEntity.SetAttributeValue( AttributeKeys.PageSize, nbPageSize.Text );
             attributeEntity.SetAttributeValue( AttributeKeys.IncludeFollowing, cbIncludeFollowing.Checked.ToString() );
@@ -866,32 +562,6 @@ namespace RockWeb.Blocks.Mobile
             attributeEntity.SetAttributeValue( AttributeKeys.DetailPage, detailPage );
 
             attributeEntity.SetAttributeValue( AttributeKeys.FilterId, SaveDataViewFilter( rockContext ).Id.ToString() );
-        }
-
-        #endregion
-
-        #region POCOs
-
-        /// <summary>
-        /// POCO to model info about the properties of the content channel item model
-        /// </summary>
-        public class PropertyInfoSummary
-        {
-            /// <summary>
-            /// Gets or sets the name.
-            /// </summary>
-            /// <value>
-            /// The name.
-            /// </value>
-            public string Name { get; set; }
-
-            /// <summary>
-            /// Gets or sets the type.
-            /// </summary>
-            /// <value>
-            /// The type.
-            /// </value>
-            public string Type { get; set; }
         }
 
         #endregion
