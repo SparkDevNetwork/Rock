@@ -205,13 +205,17 @@ namespace Rock.Badge.Component
                     }
                 }
 
-                badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+                // Only set the color if the test has been taken.
+                string badgeColorHtml = string.Empty;
 
                 // If there is a completed request we want to link to it and provide a Lava merged summary
                 if ( assessmentTest != null )
                 {
                     if ( assessmentTest.Status == AssessmentRequestStatus.Complete || previouslyCompletedAssessmentTest != null )
                     {
+                        badgeColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};' " : string.Empty;
+
+                        badgeIcons.AppendLine( $@"<div {badgeColorHtml} class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
                         badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
 
                         mergeFields.Add( "Person", Person );
@@ -223,6 +227,10 @@ namespace Rock.Badge.Component
                         // set the request string and requested datetime to the merged lava
                         mergedBadgeSummaryLava = $"Requested: {assessmentTest.RequestedDateTime.ToShortDateString()}";
                     }
+                }
+                else
+                {
+                    badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
                 }
 
                 badgeIcons.AppendLine( $@"
@@ -239,9 +247,10 @@ namespace Rock.Badge.Component
 
                 badgeIcons.AppendLine( $@"</div>" );
 
+                string badgeToolTipColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};'" : string.Empty;
                 toolTipText.AppendLine( $@"
                     <p class='margin-b-sm'>
-                        <span class='{assessmentTypeClass}'>
+                        <span {badgeToolTipColorHtml} class='{assessmentTypeClass}'>
                             <span class='fa-stack'>
                                 <i class='fa fa-circle fa-stack-2x'></i>
                                 <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
