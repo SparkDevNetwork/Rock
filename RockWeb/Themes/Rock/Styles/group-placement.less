@@ -152,20 +152,6 @@
   color: @state-danger-text;
 }
 
-.flex::before {
-  .registrant[data-status="pending"] & {
-    background-color: @pending-icon-color;
-  }
-
-  .registrant[data-status="confirmed"] & {
-    background-color: @confirmed-icon-color;
-  }
-
-  .registrant[data-status="declined"] & {
-    background-color: @declined-icon-color;
-  }
-}
-
 
 .panel-groupplacement .registrant-area {
   height: 100%;
@@ -264,6 +250,42 @@
     &.has-note .flex {
       -ms-flex-direction: column !important;
       flex-direction: column !important;
+    }
+  }
+}
+
+.placement-status-labels {
+
+  .placement-capacity-label {
+    /*float: right;
+    width: 24px;
+    height: 24px;
+    margin-left: 8px;
+    border: 1px solid #d8d8d8;
+    border-radius: 50%;
+        */
+
+    &[data-status="over-capacity"] {
+      background-color: red;
+    }
+
+    &[data-status="at-capacity"] {
+      background-color: orange;
+    }
+
+    // if capacity is > 80%
+    &[data-status="near-capacity"] {
+      background-color: yellow;
+    }
+
+    // if capacity is <= 80%
+    &[data-status="under-capacity"] {
+      background-color: green;
+    }
+
+    // if group capacity is not defined
+    &[data-status="none"] {
+      display: none;
     }
   }
 }

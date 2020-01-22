@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -65,8 +66,41 @@ namespace RockWeb.Blocks.Event
         private static class UserPreferenceKey
         {
             // maybe JSON??
-            public const string PlacementConfigurationJSON = "PlacementConfigurationJSON";
+            public const string PlacementConfigurationJSON_RegistrantInstanceId = "PlacementConfigurationJSON_RegistrantInstanceId_{0}";
+
+            public const string PlacementConfigurationJSON_RegistrantTemplateId = "PlacementConfigurationJSON_RegistrantTemplateId_{0}";
         }
+
+        private class PlacementConfiguration
+        {
+            public PlacementConfiguration()
+            {
+                ShowRegistrationInstanceName = true;
+                IncludedRegistrationInstanceIds = new int[0];
+                DisplayedRegistrantAttributeIds = new int[0];
+                DisplayedGroupAttributeIds = new int[0];
+                DisplayedGroupMemberAttributeIds = new int[0];
+            }
+
+            public int? DisplayedCampusId { get; set; }
+
+            public bool ShowRegistrationInstanceName { get; set; }
+
+            public int[] IncludedRegistrationInstanceIds { get; set; }
+
+            public bool HighlightGenders { get; set; }
+
+            public bool ShowFees { get; set; }
+
+            public int[] DisplayedRegistrantAttributeIds { get; set; }
+
+            public int? RegistrantDataFilterId { get; set; }
+
+            public int[] DisplayedGroupAttributeIds { get; set; }
+
+            public int[] DisplayedGroupMemberAttributeIds { get; set; }
+        }
+
 
         #endregion PageParameterKeys
 
@@ -144,24 +178,31 @@ namespace RockWeb.Blocks.Event
             var registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
             if ( registrationInstanceId.HasValue )
             {
-                hfRegistrationInstanceId.Value = registrationInstanceId.ToJson();
+                hfRegistrationInstanceId.Value = registrationInstanceId.ToString();
             }
 
-            // hfOptionsDataFilterId.Value =
-            hfOptionsDisplayedAttributeIds.Value = (new List<int>()).ToJson();
-            hfOptionsIncludeFees.Value = "true";
-            //hfRegistrationTemplateInstanceIds.Value = 
-
-
+            int registrationTemplateId;
             if ( registrationInstanceId.HasValue )
             {
                 var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
-                hfRegistrationTemplateId.Value = registrationInstance.RegistrationTemplateId.ToString();
+                registrationTemplateId = registrationInstance.RegistrationTemplateId;
             }
             else
             {
-                hfRegistrationTemplateId.Value = this.PageParameter( PageParameterKey.RegistrationTemplateId );
+                registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsInteger();
             }
+
+            hfRegistrationTemplateId.Value = registrationTemplateId.ToString();
+
+            var placementConfiguration = GetPlacementConfiguration();
+
+            hfOptionsDataFilterId.Value = placementConfiguration.RegistrantDataFilterId.ToString();
+
+            hfOptionsDisplayedRegistrantAttributeIds.Value = placementConfiguration.DisplayedRegistrantAttributeIds.ToJson();
+            hfOptionsDisplayedGroupMemberAttributeKeys.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Key ).ToList().AsDelimited( "," );
+
+            hfOptionsIncludeFees.Value = placementConfiguration.ShowFees.ToTrueFalse().ToLower();
+            hfRegistrationTemplateInstanceIds.Value = placementConfiguration.IncludedRegistrationInstanceIds.ToJson();
 
             var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
 
@@ -198,14 +239,15 @@ namespace RockWeb.Blocks.Event
 
             if ( registrationTemplatePlacement.IconCssClass.IsNotNullOrWhiteSpace() )
             {
-                lGroupPlacementGroupTypeIconHtml.Text = string.Format( "<i class='{0}'></i>", registrationTemplatePlacement.IconCssClass );
-                lAddPlacementGroupButtonIconHtml.Text = string.Format( "<i class='{0}'></i>", registrationTemplatePlacement.IconCssClass );
+                _placementIconCssClass = registrationTemplatePlacement.IconCssClass;
             }
             else
             {
-                lGroupPlacementGroupTypeIconHtml.Text = string.Format( "<i class='{0}'></i>", groupType.IconCssClass );
-                lAddPlacementGroupButtonIconHtml.Text = string.Format( "<i class='{0}'></i>", groupType.IconCssClass );
+                _placementIconCssClass = groupType.IconCssClass;
             }
+
+            lGroupPlacementGroupTypeIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
+            lAddPlacementGroupButtonIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
 
             lGroupPlacementGroupTypeName.Text = groupType.GroupTerm.Pluralize();
             lAddPlacementGroupButtonText.Text = string.Format( " Add {0}", groupType.GroupTerm );
@@ -218,6 +260,34 @@ namespace RockWeb.Blocks.Event
 
             BindPlacementGroupsRepeater();
         }
+
+        /// <summary>
+        /// Gets the placement configuration.
+        /// </summary>
+        /// <returns></returns>
+        private PlacementConfiguration GetPlacementConfiguration()
+        {
+            if ( _placementConfiguration == null )
+            {
+                int? registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+                int registrationTemplateId = hfRegistrationTemplateId.Value.AsInteger();
+
+                string placementConfigurationJSON;
+                if ( registrationInstanceId.HasValue )
+                {
+                    placementConfigurationJSON = GetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantInstanceId, registrationInstanceId.Value ) );
+                }
+                else
+                {
+                    placementConfigurationJSON = GetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantTemplateId, registrationTemplateId ) );
+                }
+
+                _placementConfiguration = placementConfigurationJSON.FromJsonOrNull<PlacementConfiguration>() ?? new PlacementConfiguration();
+            }
+
+            return _placementConfiguration;
+        }
+        private PlacementConfiguration _placementConfiguration = null;
 
         /// <summary>
         /// Binds the drop downs.
@@ -337,7 +407,7 @@ namespace RockWeb.Blocks.Event
 
             // set up Attribute Values Container
             avcNewPlacementGroupAttributeValues.AddEditControls( newGroup );
-            
+
             var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
 
@@ -362,10 +432,81 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnConfiguration_Click( object sender, EventArgs e )
         {
+            var placementConfiguration = GetPlacementConfiguration();
             mdPlacementConfiguration.Show();
+            cpConfigurationCampusPicker.SelectedCampusId = placementConfiguration.DisplayedCampusId;
+            var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            var registrationTemplateId = hfRegistrationTemplateId.Value.AsInteger();
+
+            bool inTemplateMode = registrationInstanceId == null;
+            pwRegistrationTemplateConfiguration.Visible = inTemplateMode;
+
+            var rockContext = new RockContext();
+
+            if ( inTemplateMode )
+            {
+                cbShowRegistrationInstanceName.Checked = placementConfiguration.ShowRegistrationInstanceName;
+
+                cblRegistrationInstances.Items.Clear();
+                var registrationTemplateInstances = new RegistrationInstanceService( rockContext ).Queryable()
+                    .Where( a => a.RegistrationTemplateId == registrationTemplateId )
+                    .OrderBy( a => a.Name )
+                    .Select( a => new { a.Id, a.Name } ).ToList();
+
+                foreach ( var registrationTemplateInstance in registrationTemplateInstances )
+                {
+                    cblRegistrationInstances.Items.Add( new ListItem( registrationTemplateInstance.Name, registrationTemplateInstance.Id.ToString() ) );
+                }
+
+                cblRegistrationInstances.SetValues( placementConfiguration.IncludedRegistrationInstanceIds );
+            }
+
+            cbHighlightGenders.Checked = placementConfiguration.HighlightGenders;
+            cbShowFees.Checked = placementConfiguration.ShowFees;
+
+            cblDisplayedRegistrantAttributes.Items.Clear();
+
+
+            var registrantAttributes = new AttributeService( rockContext ).GetByEntityTypeId( EntityTypeCache.GetId<RegistrationRegistrant>() )
+                .Where( a =>
+                    a.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
+                    a.EntityTypeQualifierValue == registrationTemplateId.ToString() ).ToAttributeCacheList();
+
+            foreach( var registrantAttribute in registrantAttributes.OrderBy(a => a.Order).ThenBy(a => a.Name) )
+            {
+                cblDisplayedRegistrantAttributes.Items.Add( new ListItem( registrantAttribute.Name, registrantAttribute.Id.ToString() ) );
+            }
+
+            cblDisplayedRegistrantAttributes.SetValues( placementConfiguration.DisplayedRegistrantAttributeIds );
+
+            // TODO: DataFilter...
+
+            var fakeGroup = new Rock.Model.Group { GroupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger() };
+            Rock.Attribute.Helper.LoadAttributes( fakeGroup );
+
+            var groupAttributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
+            cblDisplayedGroupAttributes.Items.Clear();
+            foreach(var groupAttribute in groupAttributeList.OrderBy(a => a.Order).ThenBy(a => a.Name))
+            {
+                cblDisplayedGroupAttributes.Items.Add( new ListItem( groupAttribute.Name, groupAttribute.Id.ToString() ) );
+            }
+
+            cblDisplayedGroupAttributes.SetValues( placementConfiguration.DisplayedGroupAttributeIds );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdPlacementConfiguration control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdPlacementConfiguration_SaveClick( object sender, EventArgs e )
+        {
+            // TODO
+            mdPlacementConfiguration.Hide();
         }
 
         private List<GroupTypeRoleCache> _groupTypeRoles;
+        private string _placementIconCssClass;
 
         /// <summary>
         /// Handles the ItemDataBound event of the rptPlacementGroups control.
@@ -386,8 +527,22 @@ namespace RockWeb.Blocks.Event
             var hfPlacementGroupCapacity = e.Item.FindControl( "hfPlacementGroupCapacity" ) as HiddenFieldWithClass;
             hfPlacementGroupCapacity.Value = placementGroup.GroupCapacity.ToString();
 
+            var lGroupIconHtml = e.Item.FindControl( "lGroupIconHtml" ) as Literal;
+            lGroupIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
+
             var lGroupName = e.Item.FindControl( "lGroupName" ) as Literal;
             lGroupName.Text = placementGroup.Name;
+
+            var hlGroupCampus = e.Item.FindControl( "hlGroupCampus" ) as HighlightLabel;
+            if ( placementGroup.CampusId.HasValue )
+            {
+                hlGroupCampus.Text = CampusCache.Get( placementGroup.CampusId.Value ).Name;
+            }
+
+            var avcGroupAttributes = e.Item.FindControl( "avcGroupAttributes" ) as AttributeValuesContainer;
+            avcGroupAttributes.IncludedAttributes = GetPlacementConfiguration().DisplayedGroupAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
+            placementGroup.LoadAttributes();
+            avcGroupAttributes.AddDisplayControls( placementGroup );
 
             var rptPlacementGroupRole = e.Item.FindControl( "rptPlacementGroupRole" ) as Repeater;
             rptPlacementGroupRole.DataSource = _groupTypeRoles;
@@ -414,16 +569,7 @@ namespace RockWeb.Blocks.Event
             lGroupRoleName.Text = groupTypeRole.Name.Pluralize();
         }
 
-        /// <summary>
-        /// Handles the SaveClick event of the mdPlacementConfiguration control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void mdPlacementConfiguration_SaveClick( object sender, EventArgs e )
-        {
-            // TODO
-            mdPlacementConfiguration.Hide();
-        }
+
 
         #endregion
 
