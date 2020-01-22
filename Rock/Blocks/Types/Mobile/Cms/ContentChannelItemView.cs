@@ -159,17 +159,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
             };
         }
 
-        /// <summary>
-        /// Gets the current configuration.
-        /// </summary>
-        /// <returns></returns>
-        [BlockAction]
-        [RockObsolete( "1.10.2" )]
-        public object GetCurrentConfig()
-        {
-            return GetInitialContent();
-        }
-
         #endregion
 
         #region Methods
