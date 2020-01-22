@@ -42,12 +42,13 @@ namespace Rock.Jobs
 
     #region Job Attributes
 
-    [SystemEmailField( "System Email",
-        "The system email template to be used for the notifications.",
+    [SystemCommunicationField( "System Communication",
+        "The system communication template to be used for the notifications.",
         required: true,
-        order: 0,
-        key: AttributeKey.SystemEmail,
-        defaultSystemEmailGuid: SystemGuid.SystemEmail.PRAYER_REQUEST_COMMENTS_NOTIFICATION )]
+        Order = 0,
+        IsRequired = true,
+        Key = AttributeKey.SystemEmail,
+        DefaultSystemCommunicationGuid = SystemGuid.SystemCommunication.PRAYER_REQUEST_COMMENTS_NOTIFICATION )]
     [CategoryField( "Prayer Categories",
         "A category filter for the Prayer Requests to include. If not specified, all categories will be included.",
         EntityType = typeof( Rock.Model.PrayerRequest ),

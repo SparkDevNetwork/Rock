@@ -180,8 +180,8 @@ namespace Rock.Utility
                     continue;
                 }
 
-                // Take only the labels that match the selected person and label types (file guids).
-                checkinLabels = checkinLabels.Where( l => l.PersonId == personId && fileGuids.Contains( l.FileGuid ) ).ToList();
+                // Take only the labels that match the selected person (or if they are Family type labels) and file guids).
+                checkinLabels = checkinLabels.Where( l => ( l.PersonId == personId || l.LabelType == KioskLabelType.Family ) && fileGuids.Contains( l.FileGuid ) ).ToList();
 
                 // Override the printer by printing to the given printerAddress?
                 if ( !string.IsNullOrEmpty( printerAddress ) )
@@ -269,7 +269,7 @@ namespace Rock.Utility
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
                     navigator.notification.alert(
-                        'An error occurred while printing the labels.' + error[0],  // message
+                        'An error occurred while printing the labels. ' + error[0],  // message
                         alertDismissed,         // callback
                         'Error',            // title
                         'Ok'                  // buttonName
@@ -403,7 +403,7 @@ namespace Rock.Utility
                         continue;
                     }
 
-                    var fileGuids = checkinLabels.Where( l => l.PersonId == personId && !handledList.ContainsKey( l.FileGuid ) )
+                    var fileGuids = checkinLabels.Where( l => ( l.PersonId == personId || l.LabelType == KioskLabelType.Family ) && !handledList.ContainsKey( l.FileGuid ) )
                         .Select( l => l.FileGuid )
                         .ToList();
 

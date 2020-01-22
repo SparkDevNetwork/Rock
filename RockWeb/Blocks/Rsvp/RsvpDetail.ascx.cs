@@ -96,6 +96,7 @@ namespace RockWeb.Blocks.RSVP
             GetAvailableDeclineReasons();
 
             rFilter.ClearFilterClick += rFilter_ClearFilterClick;
+            gAttendees.GridRebind += gAttendees_GridRebind;
 
             if ( !Page.IsPostBack )
             {
@@ -210,32 +211,64 @@ namespace RockWeb.Blocks.RSVP
         }
 
         /// <summary>
+        /// Handles the GridRebind event of the gAttendees control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void gAttendees_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindAttendeeGridAndChart( e.IsExporting );
+        }
+
+        /// <summary>
         /// Handles the RowDataBound event of the gAttendees grid.
         /// </summary>
         protected void gAttendees_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                // Bind Decline Reason dropdown values.
-                RockDropDownList rddlDeclineReason = e.Row.FindControl( "rddlDeclineReason" ) as RockDropDownList;
-                rddlDeclineReason.DataSource = _availableDeclineReasons;
-                rddlDeclineReason.DataBind();
-
-                RockCheckBox rcbAccept = e.Row.FindControl( "rcbAccept" ) as RockCheckBox;
-                RockCheckBox rcbDecline = e.Row.FindControl( "rcbDecline" ) as RockCheckBox;
-                rcbAccept.InputAttributes.Add( "data-paired-checkbox", rcbDecline.ClientID );
-                rcbDecline.InputAttributes.Add( "data-paired-checkbox", rcbAccept.ClientID );
+                bool isExporting = false;
+                if ( e is RockGridViewRowEventArgs )
+                {
+                    isExporting = ( e as RockGridViewRowEventArgs ).IsExporting;
+                }
 
                 var rsvpData = ( RSVPAttendee ) e.Row.DataItem;
-                if ( rsvpData.DeclineReason.HasValue )
+                if ( !isExporting )
                 {
-                    try
+
+                    // Bind Decline Reason dropdown values.
+                    RockDropDownList rddlDeclineReason = e.Row.FindControl( "rddlDeclineReason" ) as RockDropDownList;
+                    rddlDeclineReason.DataSource = _availableDeclineReasons;
+                    rddlDeclineReason.DataBind();
+
+                    RockCheckBox rcbAccept = e.Row.FindControl( "rcbAccept" ) as RockCheckBox;
+                    RockCheckBox rcbDecline = e.Row.FindControl( "rcbDecline" ) as RockCheckBox;
+                    rcbAccept.InputAttributes.Add( "data-paired-checkbox", rcbDecline.ClientID );
+                    rcbDecline.InputAttributes.Add( "data-paired-checkbox", rcbAccept.ClientID );
+
+                    if ( rsvpData.DeclineReason.HasValue )
                     {
-                        rddlDeclineReason.SelectedValue = rsvpData.DeclineReason.ToString();
+                        try
+                        {
+                            rddlDeclineReason.SelectedValue = rsvpData.DeclineReason.ToString();
+                        }
+                        catch
+                        {
+                            // This call may fail if the decline reason has been removed (from the DefinedType or from the individual occurrence).  Ignored.
+                        }
                     }
-                    catch
+                }
+                else
+                {
+                    if ( rsvpData.DeclineReason.HasValue )
                     {
-                        // This call may fail if the decline reason has been removed (from the DefinedType or from the individual occurrence).  Ignored.
+                        var lDeclineReason = e.Row.FindControl( "lDeclineReason" ) as Literal;
+                        var declineReason = _availableDeclineReasons.FirstOrDefault( a => a.Id == rsvpData.DeclineReason.Value );
+                        if ( declineReason != null )
+                        {
+                            lDeclineReason.Text = declineReason.Value;
+                        }
                     }
                 }
             }
@@ -314,7 +347,7 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( UserPreferenceKey.Status, cblStatus.SelectedValue );
+            rFilter.SaveUserPreference( UserPreferenceKey.Status, cblStatus.SelectedValues.AsDelimited( ";" ) );
             BindAttendeeGridAndChart();
         }
 
@@ -626,7 +659,7 @@ namespace RockWeb.Blocks.RSVP
         /// <summary>
         /// Binds the grid and chart with attendee data.
         /// </summary>
-        private void BindAttendeeGridAndChart()
+        private void BindAttendeeGridAndChart( bool isExporting = false )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -647,6 +680,17 @@ namespace RockWeb.Blocks.RSVP
                         .First( c => c.HeaderText == "Decline Note" )
                         .Visible = occurrence.ShowDeclineReasons;
                 }
+
+                gAttendees.ColumnsOfType<BoolField>()
+                    .First( c => c.HeaderText == "Accept" )
+                    .Visible = isExporting;
+                gAttendees.ColumnsOfType<RockLiteralField>()
+                  .First( c => c.HeaderText == "Decline Reason" )
+                  .Visible = isExporting;
+                gAttendees.ColumnsOfType<BoolField>()
+                    .First( c => c.HeaderText == "Decline" )
+                    .Visible = isExporting;
+
 
                 var attendees = GetAttendees( rockContext );
                 int acceptCount = attendees.Where( a => a.Accept ).Count();

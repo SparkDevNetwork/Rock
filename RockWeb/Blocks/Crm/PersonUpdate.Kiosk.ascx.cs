@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Crm
         DefaultValue = DefaultValue.CompleteMessageLava,
         Order = 5 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Update Email",
         Key = AttributeKey.UpdateEmail,
         Description = "The system email to use to send the updated information.",
@@ -134,22 +134,21 @@ namespace RockWeb.Blocks.Crm
         private static class BlockAttributeDescription
         {
             public const string WorkflowType = @"The workflow type to launch when an update is made. The following attribute keys should be available on the workflow:
-                            <ul>
-                                <li>PersonId (Integer)</li>
-                                <li>FirstName (Text)</li>
-                                <li>LastName (Text)</li>
-                                <li>Email (Email)</li>
-                                <li>BirthDate (Date)</li>
-                                <li>StreetAddress (Text)</li>
-                                <li>City (Text)</li>
-                                <li>State (Text)</li>
-                                <li>PostalCode (Text)</li>
-                                <li>Country (Text - optional)</li>
-                                <li>HomePhone (Text)</li>
-                                <li>MobilePhone (Text)</li>
-                                <li>OtherUpdates (Memo)</li>
-                            </ul>";
-
+                <ul>
+                    <li>PersonId (Integer)</li>
+                    <li>FirstName (Text)</li>
+                    <li>LastName (Text)</li>
+                    <li>Email (Email)</li>
+                    <li>BirthDate (Date)</li>
+                    <li>StreetAddress (Text)</li>
+                    <li>City (Text)</li>
+                    <li>State (Text)</li>
+                    <li>PostalCode (Text)</li>
+                    <li>Country (Text - optional)</li>
+                    <li>HomePhone (Text)</li>
+                    <li>MobilePhone (Text)</li>
+                    <li>OtherUpdates (Memo)</li>
+                </ul>";
         }
 
         #endregion Attribute Keys and Values
@@ -438,8 +437,7 @@ namespace RockWeb.Blocks.Crm
             RockContext rockContext = new RockContext();
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.UpdateEmail ) ) )
             {
-                var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( AttributeKey.UpdateEmail ) ) );
-
+                var receiptEmail = new SystemCommunicationService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
                 if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhiteSpace() )
                 {
                     var errorMessages = new List<string>();

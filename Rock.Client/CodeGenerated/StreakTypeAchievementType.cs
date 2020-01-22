@@ -182,6 +182,12 @@ namespace Rock.Client
         public Category Category { get; set; }
 
         /// <summary />
+        public ICollection<StreakTypeAchievementTypePrerequisite> Dependencies { get; set; }
+
+        /// <summary />
+        public ICollection<StreakTypeAchievementTypePrerequisite> Prerequisites { get; set; }
+
+        /// <summary />
         public ICollection<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }
 
         /// <summary />

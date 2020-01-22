@@ -54,11 +54,11 @@ namespace Rock.Jobs
             DefaultValue = "60",
             Order = 1 )]
 
-    [SystemEmailField( "Assessment Reminder System Email",
+    [SystemCommunicationField( "Assessment Reminder System Email",
             Key = AttributeKeys.AssessmentSystemEmail,
             Description = "",
             IsRequired = true,
-            DefaultValue = Rock.SystemGuid.SystemEmail.ASSESSMENT_REQUEST,
+            DefaultValue = Rock.SystemGuid.SystemCommunication.ASSESSMENT_REQUEST,
             Order = 2 )]
 
     #endregion Job Attributes

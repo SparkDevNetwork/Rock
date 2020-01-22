@@ -370,6 +370,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// Calculates the next payment date based off of frequency and last transaction date.
+        /// Use this if the gateway doesn't support getting the next payment date from the gateway provider.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="lastTransactionDate">The last transaction date.</param>

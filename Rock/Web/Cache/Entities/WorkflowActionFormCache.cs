@@ -38,13 +38,35 @@ namespace Rock.Web.Cache
         private readonly object _obj = new object();
 
         /// <summary>
+        /// Gets or sets the notification communication email identifier.
+        /// </summary>
+        /// <value>
+        /// The notification system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? NotificationSystemCommunicationId { get; private set; }
+
+
+        /// <summary>
         /// Gets or sets the notification system email identifier.
         /// </summary>
         /// <value>
         /// The notification system email identifier.
         /// </value>
         [DataMember]
-        public int? NotificationSystemEmailId { get; private set; }
+        [Obsolete( "Use NotificationSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
+        public int? NotificationSystemEmailId {
+            get
+            {
+                return this.NotificationSystemCommunicationId;
+            }
+            private set
+            {
+                this.NotificationSystemCommunicationId = value;
+            }
+
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include actions in notification].
@@ -169,7 +191,7 @@ namespace Rock.Web.Cache
             var workflowActionForm = entity as WorkflowActionForm;
             if ( workflowActionForm == null ) return;
 
-            NotificationSystemEmailId = workflowActionForm.NotificationSystemEmailId;
+            NotificationSystemCommunicationId = workflowActionForm.NotificationSystemCommunicationId;
             IncludeActionsInNotification = workflowActionForm.IncludeActionsInNotification;
             Header = workflowActionForm.Header;
             Footer = workflowActionForm.Footer;

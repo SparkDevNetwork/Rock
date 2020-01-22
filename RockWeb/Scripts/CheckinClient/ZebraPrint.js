@@ -28,17 +28,25 @@ var ZebraPrintPlugin = {
         tagJson = JSON.stringify(labels);
         if (labels.length > 0) {
             // call plugins
-            if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {
-                console.log('Rock iPad Client');
+            if (RockCheckinNative) {
+                console.log('Printing with Rock Native Bridge');
+                RockCheckinNative.PrintLabels(tagJson)
+                    .then(function (result) {
+                        success(result);
+                    }, function (result) {
+                        fail([result.Error, result.CanReprint]);
+                    });
+            } else if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {
+                console.log('Printing with Rock iPad Client');
                 Cordova.exec(success, fail, "ZebraPrint", "printTags", [tagJson]);
             } else if (navigator.userAgent.match(/rockwinclient/)) {
-                console.log('Rock Windows Client 2.0');
+                console.log('Printing with Rock Windows Client 2.0');
                 eoWebBrowser.extInvoke("printLabels", [tagJson]);
             } else if (navigator.userAgent.match(/.NET CLR/)) {
-                console.log('Rock Windows Client 1.0');
+                console.log('Printing with Rock Windows Client 1.0');
                 window.external.PrintLabels(tagJson);
             } else {
-                console.log('Rock Windows Client 3.0');
+                console.log('Printing with Rock Windows Client 3.0');
                 window.external.PrintLabels(tagJson);
             }
         }

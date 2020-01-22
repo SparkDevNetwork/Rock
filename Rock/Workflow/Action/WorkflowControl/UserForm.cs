@@ -52,7 +52,7 @@ namespace Rock.Workflow.Action
             if ( !action.LastProcessedDateTime.HasValue &&
                 actionType != null &&
                 actionType.WorkflowForm != null &&
-                actionType.WorkflowForm.NotificationSystemEmailId.HasValue )
+                actionType.WorkflowForm.NotificationSystemCommunicationId.HasValue )
             {
                 if ( action.Activity != null && ( action.Activity.AssignedPersonAliasId.HasValue || action.Activity.AssignedGroupId.HasValue ) )
                 {
@@ -95,7 +95,7 @@ namespace Rock.Workflow.Action
                         WorkflowService workflowService = new WorkflowService( rockContext );
                         workflowService.PersistImmediately( action );
 
-                        var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
+                        var systemEmail = new SystemCommunicationService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemCommunicationId.Value );
                         if ( systemEmail != null )
                         {
                             var emailMessage = new RockEmailMessage( systemEmail );

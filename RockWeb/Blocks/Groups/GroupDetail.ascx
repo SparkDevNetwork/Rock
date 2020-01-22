@@ -117,6 +117,20 @@
                             </div>
                         </Rock:PanelWidget>
 
+                        <%-- RSVP Settings --%>
+                        <Rock:PanelWidget ID="wpRsvp" runat="server" Title="RSVP">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlRsvpReminderSystemCommunication" runat="server" Label="RSVP Reminder System Communication"
+                                        Help="The System Communication that should be sent to remind group members to RSVP for group events." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RangeSlider ID="rsRsvpReminderOffsetDays" runat="server" Label="RSVP Reminder Offset Days" MinValue="0" MaxValue="30" SelectedValue="1"
+                                        Help="The number of days prior to a group event occurrence to send the RSVP reminder." />
+                                </div>
+                            </div>
+                        </Rock:PanelWidget>
+
                         <Rock:PanelWidget ID="wpMeetingDetails" runat="server" Title="Meeting Details">
                             <div class="grid">
                                 <Rock:Grid ID="gGroupLocations" runat="server" AllowPaging="false"  DisplayType="Light" RowItemText="Location">
@@ -432,10 +446,10 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlWelcomeEmail" runat="server" Label="Welcome Email" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlWelcomeCommunication" runat="server" Label="Welcome Communication" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockDropDownList ID="ddlExitEmail" runat="server" Label="Exit Email" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
+                        <Rock:RockDropDownList ID="ddlExitCommunication" runat="server" Label="Exit Communication" ValidationGroup="GroupSyncSettings"></Rock:RockDropDownList>
                     </div>
                 </div>
                 <div class="row">

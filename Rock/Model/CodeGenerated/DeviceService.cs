@@ -110,6 +110,7 @@ namespace Rock.Model
             target.DeviceTypeValueId = source.DeviceTypeValueId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HasCamera = source.HasCamera;
             target.IPAddress = source.IPAddress;
             target.IsActive = source.IsActive;
             target.LocationId = source.LocationId;

@@ -576,6 +576,11 @@ namespace Rock.SystemGuid
         public const string SYSTEM_EMAIL = "08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF";
 
         /// <summary>
+        /// System Communication field type
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION = "72ED40C7-4D64-4D60-9411-4FFB2B9E833E";
+
+        /// <summary>
         /// Text field type
         /// </summary>
         public const string TEXT = "9C204CD0-1233-41C5-818A-C5DA439445AA";

@@ -662,7 +662,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTimUTC { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1837,7 +1837,14 @@ namespace Rock.MyWell
         /// <param name="customerId">The customer identifier.</param>
         public QueryCustomerSubscriptionsRequest( string customerId )
         {
-            CustomerIdSearch = new QuerySearchCustomerId( customerId );
+            if ( customerId.IsNullOrWhiteSpace() )
+            {
+                CustomerIdSearch = null;
+            }
+            else
+            {
+                CustomerIdSearch = new QuerySearchCustomerId( customerId );
+            }
         }
 
         /// <summary>

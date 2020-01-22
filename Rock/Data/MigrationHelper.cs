@@ -2717,7 +2717,10 @@ WHERE [Guid] = '{pageGuid}';";
         }
 
         /// <summary>
-        /// Adds the attribute qualifier.
+        /// Adds or updates the attribute qualifier.
+        /// IF an existing AttributeQualifier is found by guid Key and Value are updated.
+        /// If an existing AttributeQualifier is found by AttributeId and Key, Guid and Value are updated.
+        /// Any qualifier inserted or updated by this method will also set IsSystem to true.
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="key">The key.</param>
@@ -2725,31 +2728,28 @@ WHERE [Guid] = '{pageGuid}';";
         /// <param name="guid">The unique identifier.</param>
         public void AddAttributeQualifier( string attributeGuid, string key, string value, string guid )
         {
-            Migration.Sql( string.Format( @"
+            string sql = $@"
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
 
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
-
-                IF NOT EXISTS(Select * FROM [AttributeQualifier] WHERE [Guid] = '{3}')
+                IF NOT EXISTS(SELECT * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
                 BEGIN
-                    INSERT INTO [AttributeQualifier] (
-                        [IsSystem],[AttributeId],[Key],[Value],[Guid])
-                    VALUES(
-                        1,@AttributeId,'{1}','{2}','{3}')
+	                -- It's possible that the qualifier exists with a different GUID so also check for AttributeId and Key
+	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{key}')
+	                IF @guid IS NOT NULL
+	                BEGIN
+		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{value}' WHERE [Guid] = @guid
+	                END
+	                ELSE BEGIN
+		                INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+		                VALUES(1, @AttributeId, '{key}', '{value}', '{guid}')
+	                END
                 END
                 ELSE
                 BEGIN
-                    UPDATE [AttributeQualifier] SET
-                        [Key] = '{1}',
-                        [Value] = '{2}'
-                    WHERE [Guid] = '{3}'
-                END
-",
-                    attributeGuid, // {0}
-                    key, // {1}
-                    value, // {2}
-                    guid ) // {3}
-            );
+                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{key}', [Value] = '{value}' WHERE [Guid] = '{guid}'
+                END";
+
+            Migration.Sql( sql );
         }
 
         /// <summary>
