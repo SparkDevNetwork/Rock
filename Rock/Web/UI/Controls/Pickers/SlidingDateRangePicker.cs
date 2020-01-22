@@ -578,6 +578,8 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["EnabledSlidingDateRangeTypes"] = value;
+                EnsureChildControls();
+                PopulateDropDowns();
             }
         }
 
@@ -792,6 +794,20 @@ namespace Rock.Web.UI.Controls
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the selected date range.
+        /// </summary>
+        /// <value>
+        /// The selected date range.
+        /// </value>
+        public DateRange SelectedDateRange
+        {
+            get
+            {
+                return CalculateDateRangeFromDelimitedValues( this.DelimitedValues );
+            }
         }
 
         /// <summary>

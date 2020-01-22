@@ -530,15 +530,17 @@ namespace RockWeb.Blocks.Groups
 
             // RSVP
             groupType.EnableRSVP = cbGroupRSVPEnabled.Checked;
+            groupType.RSVPReminderSystemCommunicationId = ddlRsvpReminderSystemCommunication.SelectedValueAsInt();
+            groupType.RSVPReminderOffsetDays = rsRsvpReminderOffsetDays.SelectedValue;
 
             // Scheduling
             groupType.IsSchedulingEnabled = cbSchedulingEnabled.Checked;
-            groupType.ScheduleConfirmationSystemEmailId = ddlScheduleConfirmationSystemEmail.SelectedValue.AsIntegerOrNull();
+            groupType.ScheduleConfirmationSystemCommunicationId = ddlScheduleConfirmationSystemCommunication.SelectedValue.AsIntegerOrNull();
             groupType.RequiresReasonIfDeclineSchedule = cbRequiresReasonIfDeclineSchedule.Checked;
-            groupType.ScheduleConfirmationEmailOffsetDays = nbScheduleConfirmationEmailOffsetDays.Text.AsIntegerOrNull();
+            groupType.ScheduleConfirmationEmailOffsetDays = nbScheduleConfirmationOffsetDays.Text.AsIntegerOrNull();
             groupType.ScheduleCancellationWorkflowTypeId = wtpScheduleCancellationWorkflowType.SelectedValueAsId();
-            groupType.ScheduleReminderSystemEmailId = ddlScheduleReminderSystemEmail.SelectedValue.AsIntegerOrNull();
-            groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderEmailOffsetDays.Text.AsIntegerOrNull();
+            groupType.ScheduleReminderSystemCommunicationId = ddlScheduleReminderSystemCommunication.SelectedValue.AsIntegerOrNull();
+            groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderOffsetDays.Text.AsIntegerOrNull();
 
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
@@ -728,10 +730,10 @@ namespace RockWeb.Blocks.Groups
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
 
-                var systemEmailIdLookup = new SystemEmailService( new RockContext() ).Queryable().ToDictionary( k => k.Guid, v => v.Id );
+                var systemCommunicationIdLookup = new SystemCommunicationService( new RockContext() ).Queryable().ToDictionary( k => k.Guid, v => v.Id );
 
-                groupType.ScheduleConfirmationSystemEmailId = systemEmailIdLookup.GetValueOrNull( Rock.SystemGuid.SystemEmail.SCHEDULING_CONFIRMATION.AsGuid() );
-                groupType.ScheduleReminderSystemEmailId = systemEmailIdLookup.GetValueOrNull( Rock.SystemGuid.SystemEmail.SCHEDULING_REMAINDER.AsGuid() );
+                groupType.ScheduleConfirmationSystemCommunicationId = systemCommunicationIdLookup.GetValueOrNull( Rock.SystemGuid.SystemCommunication.SCHEDULING_CONFIRMATION.AsGuid() );
+                groupType.ScheduleReminderSystemCommunicationId = systemCommunicationIdLookup.GetValueOrNull( Rock.SystemGuid.SystemCommunication.SCHEDULING_REMINDER.AsGuid() );
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
@@ -890,17 +892,20 @@ namespace RockWeb.Blocks.Groups
             cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
 
             // RSVP
-            cbGroupRSVPEnabled.Checked = ( groupType.EnableRSVP == true );
+            ddlRsvpReminderSystemCommunication.SetValue( groupType.RSVPReminderSystemCommunicationId );
+            rsRsvpReminderOffsetDays.SelectedValue = groupType.RSVPReminderOffsetDays;
+
+            SetRsvpEnabledState( groupType.EnableRSVP );
 
             // Scheduling
             cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
 
-            ddlScheduleConfirmationSystemEmail.SetValue( groupType.ScheduleConfirmationSystemEmailId );
+            ddlScheduleConfirmationSystemCommunication.SetValue( groupType.ScheduleConfirmationSystemCommunicationId );
             cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
-            nbScheduleConfirmationEmailOffsetDays.Text = groupType.ScheduleConfirmationEmailOffsetDays.ToString();
+            nbScheduleConfirmationOffsetDays.Text = groupType.ScheduleConfirmationEmailOffsetDays.ToString();
             wtpScheduleCancellationWorkflowType.SetValue( groupType.ScheduleCancellationWorkflowTypeId );
-            ddlScheduleReminderSystemEmail.SetValue( groupType.ScheduleReminderSystemEmailId );
-            nbScheduleReminderEmailOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
+            ddlScheduleReminderSystemCommunication.SetValue( groupType.ScheduleReminderSystemCommunicationId );
+            nbScheduleReminderOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
@@ -1053,23 +1058,28 @@ namespace RockWeb.Blocks.Groups
                 ddlGroupStatusDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
 
-            ddlScheduleConfirmationSystemEmail.Items.Clear();
-            ddlScheduleConfirmationSystemEmail.Items.Add( new ListItem() );
-            ddlScheduleReminderSystemEmail.Items.Clear();
-            ddlScheduleReminderSystemEmail.Items.Add( new ListItem() );
+            // Initialize list and add empty value selection items.
+            ddlScheduleConfirmationSystemCommunication.Items.Clear();
+            ddlScheduleConfirmationSystemCommunication.Items.Add( new ListItem() );
+            ddlScheduleReminderSystemCommunication.Items.Clear();
+            ddlScheduleReminderSystemCommunication.Items.Add( new ListItem() );
+            ddlRsvpReminderSystemCommunication.Items.Clear();
+            ddlRsvpReminderSystemCommunication.Items.Add( new ListItem() );
 
-            var systemEmails = new SystemEmailService( new RockContext() ).Queryable().OrderBy( t => t.Title ).Select( a => new
+            // Add System Communication selection items.
+            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( t => t.Title ).Select( a => new
             {
                 a.Id,
                 a.Title
             } );
 
-            if ( systemEmails.Any() )
+            if ( systemCommunications.Any() )
             {
-                foreach ( var systemEmail in systemEmails )
+                foreach ( var systemCommunication in systemCommunications )
                 {
-                    ddlScheduleConfirmationSystemEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
-                    ddlScheduleReminderSystemEmail.Items.Add( new ListItem( systemEmail.Title, systemEmail.Id.ToString() ) );
+                    ddlScheduleConfirmationSystemCommunication.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Id.ToString() ) );
+                    ddlScheduleReminderSystemCommunication.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Id.ToString() ) );
+                    ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Id.ToString() ) );
                 }
             }
         }
@@ -2934,5 +2944,33 @@ namespace RockWeb.Blocks.Groups
         {
             cbRequireInactiveReason.Enabled = cbEnableInactiveReason.Checked;
         }
+
+        #region RSVP Controls
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbRsvp control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void cbRsvp_CheckedChanged( object sender, EventArgs e )
+        {
+            SetRsvpEnabledState( cbGroupRSVPEnabled.Checked );
+        }
+
+        /// <summary>
+        /// Set the enabled state of the RSVP controls.
+        /// </summary>
+        /// <param name="isEnabled"></param>
+        private void SetRsvpEnabledState( bool isEnabled )
+        {
+            if ( cbGroupRSVPEnabled.Checked != isEnabled )
+            {
+                cbGroupRSVPEnabled.Checked = isEnabled;
+            }
+
+            pnlRsvpSettings.Visible = isEnabled;
+        }
+
+        #endregion
     }
 }

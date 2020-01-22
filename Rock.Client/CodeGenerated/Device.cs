@@ -47,6 +47,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool HasCamera { get; set; }
+
+        /// <summary />
         public string IPAddress { get; set; }
 
         /// <summary />
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.DeviceTypeValueId = source.DeviceTypeValueId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HasCamera = source.HasCamera;
             this.IPAddress = source.IPAddress;
             this.IsActive = source.IsActive;
             this.LocationId = source.LocationId;

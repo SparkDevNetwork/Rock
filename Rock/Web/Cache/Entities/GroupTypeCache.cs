@@ -385,6 +385,24 @@ namespace Rock.Web.Cache
         public bool EnableRSVP { get; private set; }
 
         /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderOffsetDays { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether scheduling is enabled for groups of this type
         /// </summary>
         /// <value>
@@ -400,7 +418,18 @@ namespace Rock.Web.Cache
         /// The scheduled communication template identifier.
         /// </value>
         [DataMember]
+        [Obsolete( "Use ScheduleConfirmationSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
         public int? ScheduleConfirmationSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when a person is scheduled or when the schedule has been updated
+        /// </summary>
+        /// <value>
+        /// The scheduled communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleConfirmationSystemCommunicationId { get; private set; }
 
         /// <summary>
         /// Gets or sets the communication template to use when sending a schedule reminder
@@ -409,7 +438,18 @@ namespace Rock.Web.Cache
         /// The schedule reminder communication template identifier.
         /// </value>
         [DataMember]
+        [Obsolete( "Use ScheduleReminderSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
         public int? ScheduleReminderSystemEmailId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the communication template to use when sending a schedule reminder
+        /// </summary>
+        /// <value>
+        /// The schedule reminder communication template identifier.
+        /// </value>
+        [DataMember]
+        public int? ScheduleReminderSystemCommunicationId { get; private set; }
 
         /// <summary>
         /// Gets or sets the WorkflowType to execute when a person indicates they won't be able to attend at their scheduled time
@@ -742,13 +782,20 @@ namespace Rock.Web.Cache
             EnableGroupTag = groupType.EnableGroupTag;
             GroupStatusDefinedTypeId = groupType.GroupStatusDefinedTypeId;
             EnableRSVP = groupType.EnableRSVP;
+            RSVPReminderSystemCommunicationId = groupType.RSVPReminderSystemCommunicationId;
+            RSVPReminderOffsetDays = groupType.RSVPReminderOffsetDays;
             IsSchedulingEnabled = groupType.IsSchedulingEnabled;
-            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
-            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
+            ScheduleConfirmationSystemCommunicationId = groupType.ScheduleConfirmationSystemCommunicationId;
+            ScheduleReminderSystemCommunicationId = groupType.ScheduleReminderSystemCommunicationId;
             ScheduleCancellationWorkflowTypeId = groupType.ScheduleCancellationWorkflowTypeId;
             ScheduleConfirmationEmailOffsetDays = groupType.ScheduleConfirmationEmailOffsetDays;
             ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
             RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
+            ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

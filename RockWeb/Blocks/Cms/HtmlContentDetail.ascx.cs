@@ -103,7 +103,7 @@ namespace RockWeb.Blocks.Cms
 
     [TextField(
         "Context Name",
-        Description = "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.",
+        Description = "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share HTML values.",
         IsRequired = false,
         Order = 7,
         Key = AttributeKey.ContextName )]

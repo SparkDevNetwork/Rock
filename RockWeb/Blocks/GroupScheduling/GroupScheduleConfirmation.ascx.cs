@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.GroupScheduling
     [BooleanField( "Require Decline Note", "If checked, a custom note response will be required in order to save their decline status.", false, "", 6 )]
 
     [TextField( "Decline Note Title", "A custom title for the decline elaboration note.", false, "Please elaborate on why you cannot attend.", "", 7 )]
-    [SystemEmailField( "Scheduling Response Email", "The system email that will be used for sending responses back to the scheduler.", false, Rock.SystemGuid.SystemEmail.SCHEDULING_RESPONSE, "", 8, "SchedulingResponseEmail" )]
+    [SystemCommunicationField( "Scheduling Response Email", "The system email that will be used for sending responses back to the scheduler.", false, Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE, "", 8, "SchedulingResponseEmail" )]
     [ContextAware( typeof( Rock.Model.Person ) )]
 
     public partial class GroupScheduleConfirmation : Rock.Web.UI.RockBlock

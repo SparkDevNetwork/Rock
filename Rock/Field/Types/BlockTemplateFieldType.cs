@@ -16,11 +16,8 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
-using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -194,10 +191,14 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( TEMPLATE_BLOCK_KEY ) )
             {
-                int blockTemplateDefinedValueId = 0;
-                if ( Int32.TryParse( configurationValues[TEMPLATE_BLOCK_KEY].Value, out blockTemplateDefinedValueId ) && blockTemplateDefinedValueId > 0 )
+                Guid blockTemplateDefinedValueGuid = Guid.Empty;
+                if ( Guid.TryParse( configurationValues[TEMPLATE_BLOCK_KEY].Value, out blockTemplateDefinedValueGuid ) && blockTemplateDefinedValueGuid != Guid.Empty )
                 {
-                    editControl.TemplateBlockValueId = blockTemplateDefinedValueId;
+                    var definedValue = DefinedValueCache.Get( blockTemplateDefinedValueGuid );
+                    if ( definedValue != null )
+                    {
+                        editControl.TemplateBlockValueId = definedValue.Id;
+                    }
                 }
             }
 
@@ -265,5 +266,28 @@ namespace Rock.Field.Types
 
         #endregion
 
+        /// <summary>
+        /// Gets the template value from either the pre-defined template or the custom template content.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns>The content of the selected template.</returns>
+        public static string GetTemplateContent( string value )
+        {
+            var values = value.Split( new[] { '|' }, 2 );
+
+            if ( values.Length >= 1 )
+            {
+                if ( values[0].AsGuid() == _CustomGuid && values.Length >= 2 )
+                {
+                    return values[1];
+                }
+                else
+                {
+                    return DefinedValueCache.Get( values[0].AsGuid() )?.Description ?? string.Empty;
+                }
+            }
+
+            return string.Empty;
+        }
     }
 }

@@ -353,7 +353,7 @@
                                             OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"
                                             RepeatDirection="Horizontal" Required="true" />
                                         <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL"
-                                            Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>
+                                            Help="A custom URL to use for showing details of the calendar item (if the default item detail page should not be used)."/>
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:ImageUploader ID="imgupPhoto" runat="server" Label="Photo" />

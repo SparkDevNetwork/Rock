@@ -178,11 +178,19 @@ namespace Rock.Model
             target.Order = source.Order;
             target.RequiresInactiveReason = source.RequiresInactiveReason;
             target.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
+            target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
+            target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
             target.ScheduleCancellationWorkflowTypeId = source.ScheduleCancellationWorkflowTypeId;
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
+            target.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
+            #pragma warning disable 612, 618
             target.ScheduleConfirmationSystemEmailId = source.ScheduleConfirmationSystemEmailId;
+            #pragma warning restore 612, 618
             target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
+            target.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;
+            #pragma warning disable 612, 618
             target.ScheduleReminderSystemEmailId = source.ScheduleReminderSystemEmailId;
+            #pragma warning restore 612, 618
             target.SendAttendanceReminder = source.SendAttendanceReminder;
             target.ShowAdministrator = source.ShowAdministrator;
             target.ShowConnectionStatus = source.ShowConnectionStatus;

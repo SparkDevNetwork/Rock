@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
     /// System Email Templates
     /// </summary>
+    [Obsolete( "Use SystemCommunication instead." )]
+    [RockObsolete( "1.10" )]
     public static class SystemEmail
     {
         /// <summary>

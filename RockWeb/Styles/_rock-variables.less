@@ -160,6 +160,31 @@
 @panel-footer-color:          @panel-text; // The color text of the panel's footer.
 
 
+// Cards
+
+@enable-rounded: false;
+
+@card-spacer-y:                     1.25rem;
+@card-spacer-x:                     1.25rem;
+@card-title-spacer-y:               .75rem;
+@card-border-width:                 1px;
+@card-border-radius:                @panel-border-radius; // $border-radius
+@card-border-color:                 @panel-default-border;
+@card-inner-border-radius:          ~"calc(@{card-border-radius} - @{card-border-width})";
+@card-cap-padding-y:                .75rem;
+@card-cap-padding-x:                1.25rem;
+@card-cap-bg:                       rgba(0,0,0,.03);
+@card-cap-color:                    ~""; // LESS PORT: Sass version uses `null`
+@card-height:                       ~""; // LESS PORT: Sass version uses `null`
+@card-color:                        ~""; // LESS PORT: Sass version uses `null`
+@card-bg:                           @panel-bg;
+
+@card-img-overlay-padding:          1.25rem;
+
+@card-group-margin:                 @grid-gutter-width / 2;
+@card-deck-margin:                  @card-group-margin;
+
+
 // Grid
 @grid-border-color:           #ddd; // The border color of the grids cells.
 @grid-padding:                12px; // The default padding of the grid cells.

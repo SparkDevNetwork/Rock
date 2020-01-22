@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Reporting
     [CodeEditorField( "Query", "The query to execute. Note that if you are providing SQL you can add items from the query string using Lava like {{ QueryParmName }}.", CodeEditorMode.Sql, CodeEditorTheme.Rock, 400, false, "", "CustomSetting" )]
     [TextField( "Query Params", "Parameters to pass to query", false, "", "CustomSetting" )]
     [BooleanField( "Stored Procedure", "Is the query a stored procedure?", false, "CustomSetting" )]
-    [TextField( "Url Mask", "The Url to redirect to when a row is clicked", false, "", "CustomSetting" )]
+    [TextField( "Url Mask", "The URL to redirect to when a row is clicked", false, "", "CustomSetting" )]
     [BooleanField( "Show Columns", "Should the 'Columns' specified below be the only ones shown (vs. the only ones hidden)", false, "CustomSetting" )]
     [TextField( "Columns", "The columns to hide or show", false, "", "CustomSetting" )]
     [CodeEditorField( "Formatted Output", "Optional formatting to apply to the returned results.  If left blank, a grid will be displayed. Example: {% for row in rows %} {{ row.FirstName }}<br/> {% endfor %}",

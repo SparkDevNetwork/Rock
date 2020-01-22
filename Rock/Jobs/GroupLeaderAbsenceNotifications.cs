@@ -40,7 +40,7 @@ namespace Rock.Jobs
         IsRequired = true,
         Order = 0 )]
 
-    [SystemEmailField( "Notification Email",
+    [SystemCommunicationField( "Notification Email",
         Key = AttributeKey.NotificationEmail,
         IsRequired = true,
         Order = 1 )]
@@ -121,9 +121,9 @@ namespace Rock.Jobs
             int minimumAbsences = dataMap.GetString( AttributeKey.MinimumAbsences ).AsInteger();
 
             // get system email
-            SystemEmailService emailService = new SystemEmailService( rockContext );
+            var emailService = new SystemCommunicationService( rockContext );
 
-            SystemEmail systemEmail = null;
+            SystemCommunication systemEmail = null;
             if ( !systemEmailGuid.HasValue || systemEmailGuid == Guid.Empty )
             {
                 context.Result = "Job failed. Unable to find System Email";

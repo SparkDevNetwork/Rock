@@ -118,6 +118,8 @@ namespace Rock.Jobs
             // updates missing person aliases, metaphones, etc (doesn't delete any records)
             RunCleanupTask( "Person Cleanup", () => PersonCleanup( dataMap ) );
 
+            RunCleanupTask( "Remove UserLogins for Anonymous Giver", () => RemoveAnonymousGiverUserLogins() );
+
             RunCleanupTask( "Temporary Registration Cleanup", () => CleanUpTemporaryRegistrations() );
 
             RunCleanupTask( "Workflow Log Cleanup", () => CleanUpWorkflowLogs( dataMap ) );
@@ -323,6 +325,26 @@ namespace Rock.Jobs
             }
 
             return resultCount;
+        }
+
+        /// <summary>
+        /// Removes any UserLogin records associated with the Anonymous Giver.
+        /// </summary>
+        private int RemoveAnonymousGiverUserLogins()
+        {
+            var rockContext = new RockContext();
+            var userLoginService = new UserLoginService( rockContext );
+            var anonymousGiver = new PersonService( rockContext ).Get( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+
+            var logins = userLoginService.Queryable()
+                .Where( l => l.PersonId == anonymousGiver.Id );
+
+            int loginCount = logins.Count();
+
+            userLoginService.DeleteRange( logins );
+            rockContext.SaveChanges();
+
+            return loginCount;
         }
 
         /// <summary>
@@ -824,7 +846,7 @@ namespace Rock.Jobs
 
                         if ( !ignore )
                         {
-                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic ).First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic ).First( m => m.Name == nameof( CleanupOrphanedAttributeValuesForEntityType ));
 
                             var genericMethod = classMethod.MakeGenericMethod( entityType );
                             var result = genericMethod.Invoke( this, null ) as int?;
