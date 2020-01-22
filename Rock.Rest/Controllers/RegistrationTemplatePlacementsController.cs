@@ -37,15 +37,14 @@ namespace Rock.Rest.Controllers
     public partial class RegistrationTemplatePlacementsController
     {
         /// <summary>
-        /// Determines whether this instance [can place registrant] the specified registrant identifier.
+        /// Determines whether the specified registrant can be added to a placement group. If true, than the person an be added to the group (if the group itself allows it).
         /// </summary>
         /// <param name="registrantId">The registrant identifier.</param>
         /// <param name="registrationTemplatePlacementId">The registration template placement identifier.</param>
         /// <param name="groupId">The group identifier.</param>
         /// <returns>
-        ///   <c>true</c> if this instance [can place registrant] the specified registrant identifier; otherwise, <c>false</c>.
+        ///   <c>true</c> if this registrant can be added a placement group based on the RegistrationTemplatePlacement configuration<c>false</c>.
         /// </returns>
-        /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/RegistrationTemplatePlacements/CanPlaceRegistrant" )]
@@ -53,37 +52,74 @@ namespace Rock.Rest.Controllers
         {
             var rockContext = this.Service.Context as RockContext;
             RegistrationTemplatePlacementService registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
-            RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
 
             var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId );
+
+            // make sure the specified registrant, registrationTemplatePlacement, and group are found
+            if ( registrationTemplatePlacement == null )
+            {
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    $"Specified RegistrationTemplatePlacement not found." );
+            }
+
+            var group = new GroupService( rockContext ).Get( groupId );
+
+            if ( group == null )
+            {
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    $"Specified group not found." );
+            }
+
             var registrantInfo = new RegistrationRegistrantService( rockContext ).GetSelect( registrantId, s => new
             {
                 s.PersonAlias.Person,
                 s.Registration.RegistrationInstance
             } );
 
-            if ( registrantInfo == null || registrationTemplatePlacement == null )
+            if ( registrantInfo == null )
             {
-                throw new HttpResponseException( HttpStatusCode.NotFound );
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    $"Specified registrant not found." );
             }
 
+            if ( registrationTemplatePlacement.GroupTypeId != group.GroupTypeId )
+            {
+                return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    $"Specified group's group type does not match the group type of the registration placement." );
+            }
+
+            RegistrationInstanceService registrationInstanceService = new RegistrationInstanceService( rockContext );
+            var sharedGroupsQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement );
+            var instanceGroupsQuery = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrantInfo.RegistrationInstance ).Where( a => a.GroupTypeId == registrationTemplatePlacement.GroupTypeId );
+            var placementGroupsQuery = sharedGroupsQuery.Union( instanceGroupsQuery );
+
+            // make sure the specified group is one of the placement groups
+            if ( !placementGroupsQuery.Any( a => a.Id != groupId ) )
+            {
+                return ControllerContext.Request.CreateErrorResponse(
+                        HttpStatusCode.NotFound,
+                        $"{group.Name} is not a placement group for this registration template or instance." );
+            }
+
+            // If multiple placements are allowed, and there are no more things to check, we can return an OK
             if ( registrationTemplatePlacement.AllowMultiplePlacements )
             {
                 return new HttpResponseMessage( HttpStatusCode.OK );
             }
-
-            var sharedGroupsQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement );
-            var instanceGroups = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrantInfo.RegistrationInstance );
-
-            var personAlreadyInPlacementGroup = sharedGroupsQuery.Union( instanceGroups ).Where( a => a.Id != groupId ).Any( a => a.Members.Any( m => m.PersonId == registrantInfo.Person.Id ) );
-
-
-
-            if ( personAlreadyInPlacementGroup )
+            else
             {
-                return ControllerContext.Request.CreateErrorResponse(
-                    HttpStatusCode.BadRequest,
-                    $"{registrantInfo.Person} can not be in more than one {registrationTemplatePlacement.Name} group" );
+                var personAlreadyInPlacementGroup = placementGroupsQuery.Where( a => a.Id != groupId ).Any( a => a.Members.Any( m => m.PersonId == registrantInfo.Person.Id ) );
+
+                if ( personAlreadyInPlacementGroup )
+                {
+                    return ControllerContext.Request.CreateErrorResponse(
+                        HttpStatusCode.BadRequest,
+                        $"{registrantInfo.Person} can not be in more than one {registrationTemplatePlacement.Name} group" );
+                }
             }
 
             return new HttpResponseMessage( HttpStatusCode.OK );
