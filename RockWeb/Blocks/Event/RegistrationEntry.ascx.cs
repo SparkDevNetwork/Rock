@@ -3829,6 +3829,10 @@ namespace RockWeb.Blocks.Event
                 var registrant = RegistrationState.Registrants[CurrentRegistrantIndex];
                 if ( registrant.OnWaitList )
                 {
+                    if ( CurrentFormIndex >= RegistrationTemplate.Forms.Count )
+                    {
+                        return false;
+                    }
                     var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
                     return form.Fields.Any( f => !f.IsInternal && f.ShowOnWaitlist );
                 }
