@@ -25,6 +25,9 @@
                 self.$registrantList = $('.js-group-placement-registrant-list', $control);
                 self.$groupList = $('.js-placement-groups');
                 self.registrationTemplatePlacementId = $('.js-registration-template-placement-id', self.$groupPlacementTool).val()
+                self.showRegistrantInstanceName = $('.js-registration-template-show-instance-name', self.$groupPlacementTool).val();
+                self.showAllRegistrantDetails = false;
+                self.highlightGenders = $('.js-options-highlight-genders', self.$groupPlacementTool).val();
 
                 // initialize dragula
                 var containers = [];
@@ -220,6 +223,8 @@
                 groupMemberFilter += ' and GroupMemberStatus ne \'Inactive\' ';
 
                 var groupMemberAttributeKeys = $('.js-options-displayed-groupmember-attribute-keys', self.$groupPlacementTool).val();
+
+                // only show attributes if they are configured (none mean don't show)
                 if (groupMemberAttributeKeys) {
                     groupMemberFilter += '&loadAttributes=simple&attributeKeys=' + groupMemberAttributeKeys;
                 }
@@ -236,6 +241,7 @@
                     });
 
                     var groupCapacity = Number($('.js-placement-capacity', $placementGroup).val());
+                    
                     var $groupCapacityLabel = $('.js-placement-capacity-label', $placementGroup);
 
                     if (groupCapacity) {
@@ -257,6 +263,23 @@
                     } else {
                         $groupCapacityLabel.attr('data-status', 'none');
                     }
+
+                    var groupRoleMaxMembers = Number($('.js-grouptyperole-max-members', $groupRoleMembers).val());
+                    var $groupRoleMaxMembersLabel = $('.js-grouptyperole-max-members-label', $groupRoleMembers);
+                    if (groupRoleMaxMembers) {
+                        var groupRoleMemberCount = groupMembers.length;
+                        $groupRoleMaxMembersLabel.text(groupRoleMemberCount + '|' + groupRoleMaxMembers);
+                        if (groupRoleMemberCount > groupRoleMaxMembers) {
+                            $groupRoleMaxMembersLabel.attr('data-status', 'over-capacity');
+                        } else if (groupRoleMemberCount == groupRoleMaxMembers) {
+                            $groupRoleMaxMembersLabel.attr('data-status', 'at-capacity');
+                        } else {
+                            $groupRoleMaxMembersLabel.attr('data-status', 'under-capacity');
+                        }
+                    }
+                    else {
+                        $groupRoleMaxMembersLabel.attr('data-status', 'none');
+                    }
                 });
             },
             /**
@@ -269,15 +292,19 @@
                 $groupMemberDiv.attr('data-person-id', groupMember.Id);
                 $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
                 $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
-                if (groupMember.AttributeValues) {
+
+                // NOTE: AttributeValues are already filtered to the configured displayed attributes when doing the REST call
+                if (groupMember.AttributeValues && Object.keys(groupMember.AttributeValues).length > 0) {
                     var $attributesDiv = $('.js-groupmember-attributes-container', $groupMemberDiv);
                     var $attributesDl = $('<dl></dl>');
-
-                    for (var displayedAttributeValue in registrant.AttributeValues) {
-                        $attributesDl.append('<dt>' + displayedAttributeValue + ' </dt><dd>' + registrant.DisplayedAttributeValues[displayedAttributeValue] + '</dd>');
+                    for (var displayedAttribute in groupMember.Attributes) {
+                        $attributesDl.append('<dt>' + groupMember.Attributes[displayedAttribute].Name + ' </dt><dd>' + groupMember.AttributeValues[displayedAttribute].Value + '</dd>');
                     }
 
                     $attributesDiv.append($attributesDl);
+                }
+                else {
+                    $('.js-groupmember-details', $groupMemberDiv).hide();
                 }
             },
             /** populates the registrant list with available registrants */
@@ -339,26 +366,42 @@
             /**  populates the registrant element */
             populateRegistrantDiv: function ($registrantDiv, registrant) {
 
+                var self = this;
+
                 $registrantDiv.attr('data-person-id', registrant.PersonId);
-                $registrantDiv.attr('data-person-gender', registrant.PersonGender);
+                if (self.highlightGenders == 'true') {
+                    $registrantDiv.attr('data-person-gender', registrant.PersonGender);
+                }
                 $registrantDiv.attr('data-registrant-id', registrant.RegistrantId);
 
                 $registrantDiv.find('.js-registrant-name').text(registrant.PersonName);
-                $registrantDiv.find('.js-registrant-registrationinstance-name').text(registrant.RegistrationInstanceName);
 
-                var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
-                var $feesDl = $('<dl></dl>');
-                for (var fee in registrant.Fees) {
-                    $feesDl.append('<dt>' + fee + ' </dt><dd>' + registrant.Fees[fee] + '</dd>');
+                $registrantDiv.find('.js-registrant-details').hide();
+                
+                if (self.showRegistrantInstanceName == 'true') {
+                    $registrantDiv.find('.js-registrant-registrationinstance-name').text(registrant.RegistrationInstanceName);
+                } else {
+                    $registrantDiv.find('.js-registration-instance-name-container').hide();
                 }
-                $feesDiv.append($feesDl);
 
-                var $attributesDiv = $registrantDiv.find('.js-registrant-attributes-container');
-                var $attributesDl = $('<dl></dl>');
-                for (var displayedAttributeValue in registrant.DisplayedAttributeValues) {
-                    $attributesDl.append('<dt>' + displayedAttributeValue + ' </dt><dd>' + registrant.DisplayedAttributeValues[displayedAttributeValue] + '</dd>');
+                if (registrant.Fees && Object.keys(registrant.Fees).length > 0) {
+                    var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
+                    var $feesDl = $('<dl></dl>');
+                    for (var fee in registrant.Fees) {
+                        $feesDl.append('<dt>' + fee + ' </dt><dd>' + registrant.Fees[fee] + '</dd>');
+                    }
+                    $feesDiv.append($feesDl);
                 }
-                $attributesDiv.append($attributesDl);
+
+                // NOTE: AttributeValues are already filtered to the configured displayed attributes when doing the REST call
+                if (registrant.AttributeValues && Object.keys(registrant.AttributeValues).length > 0) {
+                    var $attributesDiv = $registrantDiv.find('.js-registrant-attributes-container');
+                    var $attributesDl = $('<dl></dl>');
+                    for (var displayedAttribute in registrant.Attributes) {
+                        $attributesDl.append('<dt>' + registrant.Attributes[displayedAttribute].Name + ' </dt><dd>' + registrant.AttributeValues[displayedAttribute].Value + '</dd>');
+                    }
+                    $attributesDiv.append($attributesDl);
+                }
             },
             /**  */
             initializeEventHandlers: function () {
@@ -381,6 +424,30 @@
                         return;
                     }
 
+                });
+                
+
+                $('.js-group-placement-registrant-list', self.$groupPlacementTool)
+                    .on('mouseenter', '.js-registrant', function () {
+                        
+                        $('.js-registrant-details', $(this)).stop().slideDown();
+                    })
+                    .on('mouseleave', '.js-registrant', function () {
+                        if (!self.showAllRegistrantDetails) {
+                            $('.js-registrant-details', $(this)).stop().slideUp();
+                        }
+                    });
+
+                $('.js-toggle-registrant-details', self.$groupPlacementTool).click(function () {
+                    self.showAllRegistrantDetails = !self.showAllRegistrantDetails;
+                    
+                    if (self.showAllRegistrantDetails) {
+                        $('i', this).removeClass('fa-angle-double-down').addClass('fa-angle-double-up');
+                        $('.js-registrant-details', self.$groupPlacementTool).stop().slideDown();
+                    } else {
+                        $('i', this).removeClass('fa-angle-double-up').addClass('fa-angle-double-down');
+                        $('.js-registrant-details', self.$groupPlacementTool).stop().slideUp();
+                    }
                 });
 
                 self.$groupPlacementTool.on('click', '.js-placement-group-toggle-visibility', function () {

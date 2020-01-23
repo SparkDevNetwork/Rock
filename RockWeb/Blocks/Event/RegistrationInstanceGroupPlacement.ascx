@@ -41,11 +41,14 @@
                     <asp:Panel ID="pnlGroupPlacement" runat="server">
 
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
+                        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateShowInstanceName" runat="server" CssClass="js-registration-template-show-instance-name" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateInstanceIds" runat="server" CssClass="js-registration-template-instance-id-list" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementGroupTypeId" runat="server" CssClass="js-registration-template-placement-grouptype-id" />
+
                         <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsHighlightGenders" runat="server" CssClass="js-options-highlight-genders" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDataFilterId" runat="server" CssClass="js-options-datafilter-id" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedRegistrantAttributeIds" runat="server" CssClass="js-options-displayed-registrant-attribute-ids" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeKeys" runat="server" CssClass="js-options-displayed-groupmember-attribute-keys" />
@@ -58,15 +61,25 @@
                                     <div class="js-registrant-template" style="display: none">
                                         <%-- template that groupPlacement.js uses to populate available registrants --%>
 
-                                        <div class="js-registrant registrant unselectable" data-person-gender="" data-registrant-id="" data-person-id="">
-                                            <span class="registrant-name js-registrant-name"></span>
-                                            <br />
-                                            <span class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></span>
+                                        <div class="js-registrant registrant unselectable clickable" data-person-gender="" data-registrant-id="" data-person-id="">
+                                            <div class="panel panel-block">
+                                                <div class="panel-heading">
+                                                    <div class="panel-title">
+                                                        <span class="registrant-name js-registrant-name"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="panel-body js-registrant-details hide-transit">
+                                                    <div class="registration-instance-name-container js-registration-instance-name-container form-group">
+                                                        <label class="control-label">Instance</label>
+                                                        <div class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></div>
+                                                    </div>
 
-                                            <div class="registrant-attributes-container js-registrant-attributes-container">
-                                            </div>
+                                                    <div class="registrant-attributes-container js-registrant-attributes-container">
+                                                    </div>
 
-                                            <div class="registrant-fees-container js-registrant-fees-container">
+                                                    <div class="registrant-fees-container js-registrant-fees-container">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -111,23 +124,30 @@
                                     <div class="js-group-member-template" style="display: none">
                                         <%-- template that groupPlacement.js uses to populate group member divs --%>
 
-                                        <div class="js-group-member groupmember unselectable" data-person-gender="" data-groupmember-id="" data-person-id="">
-                                            <div class="flex">
-                                                <span class="groupmember-name js-groupmember-name"></span>
-                                                <div class="dropdown js-groupmember-actions hide-transit">
-                                                    <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
-                                                    <ul class="dropdown-menu">
-                                                        <li>
-                                                            <button type="button" class="dropdown-item btn-link js-remove-group-member">Remove</button>
-                                                        </li>
-                                                    </ul>
+                                        <div class="js-group-member groupmember unselectable clickable" data-person-gender="" data-groupmember-id="" data-person-id="">
+                                            <div class="panel panel-block placement-group-member">
+                                                <div class="panel-heading">
+                                                    <div class="panel-title">
+                                                        <span class="groupmember-name js-groupmember-name"></span>
+                                                    </div>
+
+                                                    <div class="panel-labels">
+                                                        <div class="dropdown js-groupmember-actions hide-transit">
+                                                            <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
+                                                            <ul class="dropdown-menu">
+                                                                <li>
+                                                                    <button type="button" class="dropdown-item btn-link js-remove-group-member">Remove</button>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <br />
-                                                <dl>
+                                                <div class="panel-body js-groupmember-details hide-transit">
                                                     <div class="groupmember-attributes-container js-groupmember-attributes-container">
                                                     </div>
-                                                </dl>
+                                                </div>
                                             </div>
+
                                         </div>
                                     </div>
 
@@ -146,9 +166,19 @@
                                                         </h1>
 
                                                         <div class="panel-labels">
-                                                            <a class="btn btn-link btn-xs pull-right js-placement-group-toggle-visibility">
+                                                            <div class="dropdown js-groupmember-actions hide-transit pull-right">
+                                                                <div class="btn btn-link btn-overflow" type="button" data-toggle="dropdown">
+                                                                    <i class="fas fa-ellipsis-v"></i>
+                                                                </div>
+                                                                <ul class="dropdown-menu">
+                                                                    <li>
+                                                                        <button type="button" class="dropdown-item btn-link js-remove-group-member">Remove</button>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                            <div class="btn btn-link btn-xs pull-right js-placement-group-toggle-visibility">
                                                                 <i class="fa fa-chevron-down"></i>
-                                                            </a>
+                                                            </div>
                                                             <div class="placement-status-labels pull-right">
 
                                                                 <Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="" />
@@ -158,13 +188,14 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="panel-body js-group-details" style="display: none">
+                                                    <div class="panel-body js-group-details">
                                                         <Rock:AttributeValuesContainer ID="avcGroupAttributes" runat="server" />
 
                                                         <asp:Repeater ID="rptPlacementGroupRole" runat="server" OnItemDataBound="rptPlacementGroupRole_ItemDataBound" Visible="true">
                                                             <ItemTemplate>
                                                                 <asp:Panel ID="pnlGroupRoleMembers" runat="server" CssClass="group-role-members js-group-role-members">
                                                                     <Rock:HiddenFieldWithClass ID="hfGroupTypeRoleId" runat="server" CssClass="js-grouptyperole-id" />
+                                                                    <Rock:HiddenFieldWithClass ID="hfGroupTypeRoleMaxMembers" runat="server" CssClass="js-grouptyperole-max-members" />
 
                                                                     <div class="panel panel-block">
                                                                         <div class="panel-heading">
@@ -174,8 +205,9 @@
                                                                             </h1>
 
                                                                             <asp:Panel ID="pnlGroupRoleStatusLabels" runat="server" CssClass="panel-labels">
-                                                                                ##TODO Role Status##
-                                                                                <div class="js-grouptyperole-statuslabels-container grouptyperole-statuslabels-container"></div>
+                                                                                <div class="js-grouptyperole-statuslabels-container grouptyperole-status-labels">
+                                                                                    <span class="label label-custom grouptyperole-max-members-label js-grouptyperole-max-members-label" data-status="none">1:1</span>
+                                                                                </div>
                                                                             </asp:Panel>
                                                                         </div>
                                                                         <div class="panel-body">
@@ -286,7 +318,7 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <Rock:RockCheckBoxList ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" />
+                                <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" />
 
                                 <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
                                     ##TODO##
@@ -298,8 +330,8 @@
                     <Rock:PanelWidget ID="pwGroupConfiguration" runat="server" Title="Group Configuration">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockCheckBoxList ID="cblDisplayedGroupAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Attributes" />
-                                <Rock:RockCheckBoxList ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" />
+                                <Rock:RockListBox ID="cblDisplayedGroupAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Attributes" />
+                                <Rock:RockListBox ID="cblDisplayedGroupMemberAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Group Member Attributes" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbHideFullGroups" runat="server" Label="Hide Full Groups" Help="Enable this to hide placement groups that are at the group capacity." />
