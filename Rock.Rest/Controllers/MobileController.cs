@@ -104,7 +104,8 @@ namespace Rock.Rest.Controllers
                         DeviceUniqueIdentifier = deviceIdentifier,
                         PersonalDeviceTypeValueId = mobileDeviceTypeValueId,
                         PlatformValueId = deviceData.DevicePlatform.GetDevicePlatformValueId(),
-                        PersonAliasId = person?.PrimaryAliasId
+                        PersonAliasId = person?.PrimaryAliasId,
+                        NotificationsEnabled = true
                     };
 
                     personalDeviceService.Add( personalDevice );
@@ -115,6 +116,34 @@ namespace Rock.Rest.Controllers
             }
 
             return Ok( launchPacket );
+        }
+
+        /// <summary>
+        /// Updates the push notification registration token for a personal device.
+        /// </summary>
+        /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
+        /// <param name="registration">The registration token used to send push notifications.</param>
+        /// <returns></returns>
+        [Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
+        [HttpPut]
+        public IHttpActionResult UpdateDeviceRegistrationByGuid( Guid personalDeviceGuid, string registration )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var service = new PersonalDeviceService( rockContext );
+
+                // MAC address
+                var personalDevice = service.Get( personalDeviceGuid );
+                if ( personalDevice == null )
+                {
+                    return NotFound();
+                }
+
+                personalDevice.DeviceRegistrationId = registration;
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
         }
 
         /// <summary>
