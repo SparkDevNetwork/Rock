@@ -105,12 +105,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the displayed attribute values.
+        /// Gets the attributes.
         /// </summary>
         /// <value>
-        /// The displayed attribute values.
+        /// The attributes.
         /// </value>
-        public Dictionary<string, string> DisplayedAttributeValues
+        public Dictionary<string, AttributeCache> Attributes
         {
             get
             {
@@ -119,39 +119,52 @@ namespace Rock.Model
                     RegistrationRegistrant.LoadAttributes();
                 }
 
-                return RegistrationRegistrant.AttributeValues.Values.ToDictionary( k => k.AttributeName, v => v.ValueFormatted );
+                var displayedAttributeValues = RegistrationRegistrant
+                        .Attributes.Where( a => Options.DisplayedAttributeIds.Contains( a.Value.Id ) )
+                        .ToDictionary( k => k.Key, v => v.Value );
+
+                return displayedAttributeValues;
+            }
+        }
 
 
-                /*var displayedAttributeIds = this.Options.DisplayedAttributeIds ?? new int[0];
-
-                if ( !displayedAttributeIds.Any() )
-                {
-                    return new List<AttributeValueCache>();
-                }
-
-                var displayedAttributeList = displayedAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToList();
-
+        /// <summary>
+        /// Gets the displayed attribute values.
+        /// </summary>
+        /// <value>
+        /// The displayed attribute values.
+        /// </value>
+        public Dictionary<string, AttributeValueCache> AttributeValues
+        {
+            get
+            {
                 if ( RegistrationRegistrant.AttributeValues == null )
                 {
                     RegistrationRegistrant.LoadAttributes();
                 }
 
-                return displayedAttributeList.Select( v => RegistrationRegistrant.AttributeValues.GetValueOrNull( v.Key ) ).ToList();
-                */
+                var displayedAttributeValues = RegistrationRegistrant
+                    .AttributeValues.Where( a => Options.DisplayedAttributeIds.Contains( a.Value.AttributeId ) )
+                    .ToDictionary( k => k.Key, v => v.Value );
+
+                return displayedAttributeValues;
             }
         }
-
     }
 
     public class GetGroupPlacementRegistrantsParameters
     {
         public int RegistrationTemplateId { get; set; }
+
         public int[] RegistrationTemplateInstanceIds { get; set; }
 
         public int? RegistrationInstanceId { get; set; }
+
         public bool IncludeFees { get; set; }
+
         public int? DataViewFilterId { get; set; }
-        public int[] DisplayedAttributeIds { get; set; }
+
+        public int[] DisplayedAttributeIds { get; set; } = new int[0];
         //public int? RegistrationInstanceId { get; set; }
     }
 }

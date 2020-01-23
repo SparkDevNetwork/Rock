@@ -43,11 +43,6 @@ namespace RockWeb.Blocks.Event
 
         #region Attribute Keys
 
-        private static class AttributeKey
-        {
-            //public const string ShowEmailAddress = "ShowEmailAddress";
-        }
-
         #endregion Attribute Keys
 
         #region PageParameterKeys
@@ -65,9 +60,7 @@ namespace RockWeb.Blocks.Event
 
         private static class UserPreferenceKey
         {
-            // maybe JSON??
             public const string PlacementConfigurationJSON_RegistrantInstanceId = "PlacementConfigurationJSON_RegistrantInstanceId_{0}";
-
             public const string PlacementConfigurationJSON_RegistrantTemplateId = "PlacementConfigurationJSON_RegistrantTemplateId_{0}";
         }
 
@@ -99,6 +92,8 @@ namespace RockWeb.Blocks.Event
             public int[] DisplayedGroupAttributeIds { get; set; }
 
             public int[] DisplayedGroupMemberAttributeIds { get; set; }
+
+            public bool HideFullGroups { get; set; }
         }
 
 
@@ -202,7 +197,9 @@ namespace RockWeb.Blocks.Event
             hfOptionsDisplayedGroupMemberAttributeKeys.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Key ).ToList().AsDelimited( "," );
 
             hfOptionsIncludeFees.Value = placementConfiguration.ShowFees.ToTrueFalse().ToLower();
+            hfOptionsHighlightGenders.Value = placementConfiguration.HighlightGenders.ToTrueFalse().ToLower();
             hfRegistrationTemplateInstanceIds.Value = placementConfiguration.IncludedRegistrationInstanceIds.ToJson();
+            hfRegistrationTemplateShowInstanceName.Value = placementConfiguration.ShowRegistrationInstanceName.ToTrueFalse().ToLower();
 
             var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
 
@@ -288,6 +285,28 @@ namespace RockWeb.Blocks.Event
             return _placementConfiguration;
         }
         private PlacementConfiguration _placementConfiguration = null;
+
+        /// <summary>
+        /// Saves the placement configuration.
+        /// </summary>
+        /// <param name="placementConfiguration">The placement configuration.</param>
+        private void SavePlacementConfiguration( PlacementConfiguration placementConfiguration )
+        {
+            int? registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            int registrationTemplateId = hfRegistrationTemplateId.Value.AsInteger();
+
+            string placementConfigurationJSON = placementConfiguration.ToJson();
+            if ( registrationInstanceId.HasValue )
+            {
+                SetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantInstanceId, registrationInstanceId.Value ), placementConfigurationJSON );
+            }
+            else
+            {
+                SetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantTemplateId, registrationTemplateId ), placementConfigurationJSON );
+            }
+
+            ShowDetails();
+        }
 
         /// <summary>
         /// Binds the drop downs.
@@ -466,32 +485,42 @@ namespace RockWeb.Blocks.Event
 
             cblDisplayedRegistrantAttributes.Items.Clear();
 
-
             var registrantAttributes = new AttributeService( rockContext ).GetByEntityTypeId( EntityTypeCache.GetId<RegistrationRegistrant>() )
                 .Where( a =>
                     a.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
                     a.EntityTypeQualifierValue == registrationTemplateId.ToString() ).ToAttributeCacheList();
 
-            foreach( var registrantAttribute in registrantAttributes.OrderBy(a => a.Order).ThenBy(a => a.Name) )
+            foreach ( var registrantAttribute in registrantAttributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 cblDisplayedRegistrantAttributes.Items.Add( new ListItem( registrantAttribute.Name, registrantAttribute.Id.ToString() ) );
             }
 
             cblDisplayedRegistrantAttributes.SetValues( placementConfiguration.DisplayedRegistrantAttributeIds );
 
-            // TODO: DataFilter...
-
             var fakeGroup = new Rock.Model.Group { GroupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger() };
-            Rock.Attribute.Helper.LoadAttributes( fakeGroup );
+            fakeGroup.LoadAttributes();
 
             var groupAttributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
             cblDisplayedGroupAttributes.Items.Clear();
-            foreach(var groupAttribute in groupAttributeList.OrderBy(a => a.Order).ThenBy(a => a.Name))
+            foreach ( var groupAttribute in groupAttributeList.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 cblDisplayedGroupAttributes.Items.Add( new ListItem( groupAttribute.Name, groupAttribute.Id.ToString() ) );
             }
 
             cblDisplayedGroupAttributes.SetValues( placementConfiguration.DisplayedGroupAttributeIds );
+
+            var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
+            fakeGroupMember.LoadAttributes();
+            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            cblDisplayedGroupMemberAttributes.Items.Clear();
+            foreach ( var groupMemberAttribute in groupMemberAttributeList.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            {
+                cblDisplayedGroupMemberAttributes.Items.Add( new ListItem( groupMemberAttribute.Name, groupMemberAttribute.Id.ToString() ) );
+            }
+
+            cblDisplayedGroupMemberAttributes.SetValues( placementConfiguration.DisplayedGroupMemberAttributeIds );
+
+            cbHideFullGroups.Checked = placementConfiguration.HideFullGroups;
         }
 
         /// <summary>
@@ -501,7 +530,19 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdPlacementConfiguration_SaveClick( object sender, EventArgs e )
         {
-            // TODO
+            var placementConfiguration = new PlacementConfiguration();
+            placementConfiguration.DisplayedCampusId = cpConfigurationCampusPicker.SelectedCampusId;
+            placementConfiguration.ShowRegistrationInstanceName = cbShowRegistrationInstanceName.Checked;
+            placementConfiguration.IncludedRegistrationInstanceIds = cblRegistrationInstances.SelectedValues.AsIntegerList().ToArray();
+            placementConfiguration.HighlightGenders = cbHighlightGenders.Checked;
+            placementConfiguration.ShowFees = cbShowFees.Checked;
+            placementConfiguration.DisplayedRegistrantAttributeIds = cblDisplayedRegistrantAttributes.SelectedValues.AsIntegerList().ToArray();
+            //   placementConfiguration.RegistrantDataFilterId = todo
+            placementConfiguration.DisplayedGroupAttributeIds = cblDisplayedGroupAttributes.SelectedValues.AsIntegerList().ToArray();
+            placementConfiguration.HideFullGroups = cbHideFullGroups.Checked;
+            placementConfiguration.DisplayedGroupMemberAttributeIds = cblDisplayedGroupMemberAttributes.SelectedValues.AsIntegerList().ToArray();
+            SavePlacementConfiguration( placementConfiguration );
+
             mdPlacementConfiguration.Hide();
         }
 
@@ -540,6 +581,7 @@ namespace RockWeb.Blocks.Event
             }
 
             var avcGroupAttributes = e.Item.FindControl( "avcGroupAttributes" ) as AttributeValuesContainer;
+            avcGroupAttributes.ShowCategoryLabel = false;
             avcGroupAttributes.IncludedAttributes = GetPlacementConfiguration().DisplayedGroupAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
             placementGroup.LoadAttributes();
             avcGroupAttributes.AddDisplayControls( placementGroup );
@@ -565,11 +607,12 @@ namespace RockWeb.Blocks.Event
             var hfGroupTypeRoleId = e.Item.FindControl( "hfGroupTypeRoleId" ) as HiddenFieldWithClass;
             hfGroupTypeRoleId.Value = groupTypeRole.Id.ToString();
 
+            var hfGroupTypeRoleMaxMembers = e.Item.FindControl( "hfGroupTypeRoleMaxMembers" ) as HiddenFieldWithClass;
+            hfGroupTypeRoleMaxMembers.Value = groupTypeRole.MaxCount.ToString();
+
             var lGroupRoleName = e.Item.FindControl( "lGroupRoleName" ) as Literal;
             lGroupRoleName.Text = groupTypeRole.Name.Pluralize();
         }
-
-
 
         #endregion
 

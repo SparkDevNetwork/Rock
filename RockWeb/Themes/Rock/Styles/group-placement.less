@@ -33,16 +33,6 @@
     max-height: ~"calc(100vh - 100px)";
   }
 
-  .panel-body {
-    position: relative;
-    display: -ms-flexbox !important;
-    display: flex !important;
-    flex: 0 1 auto !important;
-    -ms-flex-direction: column !important;
-    flex-direction: column !important;
-    overflow: hidden;
-  }
-
   .scroll-list {
     flex-shrink: 1 !important;
     flex-grow: 1 !important;
@@ -71,36 +61,7 @@
   }
 }
 
-.registrant, .groupmember {
-  display: block;
-  padding: 6px 8px;
-  margin-bottom: 12px;
-  font-family: @font-family-sans-serif;
-  color: @btn-default-color;
-  cursor: move;
-  cursor: -webkit-grab;
-  cursor: grab;
-  background-color: @btn-default-bg;
-  border: 1px solid @btn-default-border;
-  border-radius: 4px;
-  box-shadow: 0 1px 0 hsl(228, 7%, 83%);
-
-  .flex {
-    display: -ms-flexbox !important;
-    display: flex !important;
-    -ms-flex-direction: row !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap;
-    flex-shrink: 0;
-
-    &::before {
-    }
-  }
-
-  .registrant-meta {
-    margin-left: auto;
-  }
-
+.registrant, .groupmember, .placement-group {
   .btn {
     height: 16px;
     padding: 0;
@@ -113,10 +74,6 @@
       color: #767676;
       outline: none;
     }
-  }
-
-  &:hover {
-    background: rgba(85,150,230,.1);
   }
 
   .registrant-section:hover {
@@ -135,15 +92,32 @@
 }
 
 .registrant[data-person-gender="1"] {
-  background-color: lightblue;
-  border-color: blue;
-  color: blue;
+  .panel {
+      .panel-heading, .panel-body {
+          background-color: lightblue;
+          color: blue;
+          border-color: blue;
+      }
+
+    border-color: blue;
+  }
 }
 
 .registrant[data-person-gender="2"] {
-  background-color: lightpink;
-  border-color: deeppink;
-  color: deeppink;
+  .panel {
+      .panel-heading, .panel-body {
+          .panel-title {
+              font-size:medium;
+          }
+          background-color: lightpink;
+          color: deeppink;
+          border-color: deeppink;
+      }
+
+      
+    
+    border-color: deeppink;
+  }
 }
 
 .registrant[data-has-placement-error] {
@@ -161,11 +135,6 @@
   > .row {
     height: 100%;
   }
-}
-
-.panel-groupplacement > .panel-body {
-  padding-top: 0;
-  padding-bottom: 0;
 }
 
 .dropzone {
@@ -204,7 +173,6 @@
 }
 
 .group-role-members .panel-body {
-  padding: 0;
 
   > .dropzone {
     min-height: 82px;
@@ -254,9 +222,9 @@
   }
 }
 
-.placement-status-labels {
+.placement-status-labels, .grouptyperole-status-labels {
 
-  .placement-capacity-label {
+  .placement-capacity-label, .grouptyperole-max-members-label {
     /*float: right;
     width: 24px;
     height: 24px;
@@ -264,7 +232,6 @@
     border: 1px solid #d8d8d8;
     border-radius: 50%;
         */
-
     &[data-status="over-capacity"] {
       background-color: red;
     }
@@ -272,17 +239,14 @@
     &[data-status="at-capacity"] {
       background-color: orange;
     }
-
     // if capacity is > 80%
     &[data-status="near-capacity"] {
       background-color: yellow;
     }
-
     // if capacity is <= 80%
     &[data-status="under-capacity"] {
       background-color: green;
     }
-
     // if group capacity is not defined
     &[data-status="none"] {
       display: none;
@@ -302,7 +266,7 @@
   overflow-y: auto;
 }
 
-.placement-target-container .registrant.gu-transit,
+.group-role-container .registrant.gu-transit,
 .registrant.gu-mirror {
   max-height: 38px;
 
