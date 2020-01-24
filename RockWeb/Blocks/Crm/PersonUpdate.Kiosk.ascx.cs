@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Crm
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [MemoField( "Update Message", "Message to show on the profile form. Leaving this blank will hide the message.", false, "Please provide only the information that needs to be updated.", "", 9 )]
     [CodeEditorField("Complete Message Lava", "Message to display when complete.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, @"<div class='alert alert-success'>We have received your updated information. Thank you for helping us keep your information current.</div>", "", 10)]
-    [SystemEmailField( "Update Email", "The system email to use to send the updated information.", false, "", "", 11 )]
+    [SystemCommunicationField( "Update Email", "The system email to use to send the updated information.", false, "", "", 11 )]
     [WorkflowTypeField("Workflow Type", @"The workflow type to launch when an update is made. The following attribute keys should be available on the workflow:
                             <ul>
                                 <li>PersonId (Integer)</li>
@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Crm
             RockContext rockContext = new RockContext();
             if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "UpdateEmail" ) ) )
             {
-                var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
+                var receiptEmail = new SystemCommunicationService( rockContext ).Get( new Guid( GetAttributeValue( "UpdateEmail" ) ) );
 
                 if ( receiptEmail != null && receiptEmail.To.IsNotNullOrWhiteSpace() )
                 {

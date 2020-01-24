@@ -33,6 +33,9 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for editing a system email
     /// </summary>
+    [Obsolete( "Use SystemCommunicationDetail instead." )]
+    [RockObsolete( "1.10" )]
+
     [DisplayName( "System Email Detail" )]
     [Category( "Communication" )]
     [Description( "Allows the administration of a system email." )]

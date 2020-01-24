@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptrSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            switch( e.CommandName )
+            switch ( e.CommandName )
             {
                 case "Campus":
                     _selectedCampusId = e.CommandArgument.ToString().AsIntegerOrNull();
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Reporting
                         var hfMetricIId = item.FindControl( "hfMetricId" ) as HiddenField;
                         var nbMetricValue = item.FindControl( "nbMetricValue" ) as NumberBox;
 
-                        if ( hfMetricIId != null && nbMetricValue != null  )
+                        if ( hfMetricIId != null && nbMetricValue != null )
                         {
                             int metricId = hfMetricIId.ValueAsInt();
                             var metric = new MetricService( rockContext ).Get( metricId );
@@ -441,11 +441,23 @@ namespace RockWeb.Blocks.Reporting
             bddlService.Items.Clear();
 
             // Load Campuses
-            foreach ( var campus in GetCampuses() )
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+            var campuses = GetCampuses();
+
+            bool isCampusInvalid = false;
+            if ( campusId.HasValue && !campuses.Any( a => a.Id == campusId.Value ) )
+            {
+                isCampusInvalid = true;
+                nbWarning.Visible = true;
+                nbWarning.Text = "The campus associated with request is not valid.";
+            }
+
+            foreach ( var campus in campuses.Where( a => !campusId.HasValue || isCampusInvalid || a.Id == campusId.Value ) )
             {
                 bddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
             }
-            bddlCampus.SetValue( _selectedCampusId.Value );
+
+            bddlCampus.SetValue( _selectedCampusId );
 
             // Load Weeks
             var weeksBack = GetAttributeValue( AttributeKey.WeeksBack ).AsInteger();
@@ -454,14 +466,14 @@ namespace RockWeb.Blocks.Reporting
             {
                 bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             }
-            bddlWeekend.SetValue( _selectedWeekend.Value.ToString( "o" ) );
+            bddlWeekend.SetValue( _selectedWeekend.HasValue ? _selectedWeekend.Value.ToString( "o" ) : null );
 
             // Load service times
-            foreach( var service in GetServices() )
+            foreach ( var service in GetServices() )
             {
                 bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
             }
-            bddlService.SetValue( _selectedServiceId.Value );
+            bddlService.SetValue( _selectedServiceId );
         }
 
         /// <summary>
@@ -596,7 +608,7 @@ namespace RockWeb.Blocks.Reporting
                             {
                                 serviceMetric.Value = metricValue.YValue;
 
-                                if ( !string.IsNullOrWhiteSpace ( metricValue.Note) &&
+                                if ( !string.IsNullOrWhiteSpace( metricValue.Note ) &&
                                     !notes.Contains( metricValue.Note ) )
                                 {
                                     notes.Add( metricValue.Note );

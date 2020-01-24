@@ -47,6 +47,11 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public int? InviteSystemCommunicationId { get; set; }
+
+        /// <summary />
+        // Made Obsolete in Rock "1.10"
+        [Obsolete( "Use InviteSystemCommunicationId instead.", false )]
         public int? InviteSystemEmailId { get; set; }
 
         /// <summary>
@@ -100,7 +105,10 @@ namespace Rock.Client
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
+            #pragma warning disable 612, 618
             this.InviteSystemEmailId = source.InviteSystemEmailId;
+            #pragma warning restore 612, 618
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.ProviderEntityTypeId = source.ProviderEntityTypeId;
@@ -124,7 +132,7 @@ namespace Rock.Client
         public BinaryFileType BinaryFileType { get; set; }
 
         /// <summary />
-        public SystemEmail InviteSystemEmail { get; set; }
+        public SystemCommunication InviteSystemCommunication { get; set; }
 
         /// <summary />
         public EntityType ProviderEntityType { get; set; }

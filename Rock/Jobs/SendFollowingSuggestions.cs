@@ -34,7 +34,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Calculates, saves, and notifies followers of all the active following suggestions
     /// </summary>
-    [SystemEmailField( "Following Suggestion Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
+    [SystemCommunicationField( "Following Suggestion Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following suggestions", true, order: 1 )]
     [DisallowConcurrentExecution]
     public class SendFollowingSuggestions : IJob

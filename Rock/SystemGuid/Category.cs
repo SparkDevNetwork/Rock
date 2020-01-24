@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -184,7 +186,19 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The System Email Workflow Category guid
         /// </summary>
+        [Obsolete( "Use SYSTEM_COMMUNICATION_WORKFLOW instead." )]
+        [RockObsolete("1.10")]
         public const string SYSTEM_EMAIL_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
+
+        /// <summary>
+        /// The System Communication Workflow Category guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
+
+        /// <summary>
+        /// The System Communication RSVP Confirmation Category guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_RSVP_CONFIRMATION = "19024818-E456-4642-8858-F50C8B6DB5ED";
 
         #endregion
 

@@ -168,13 +168,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
             };
         }
 
-        [BlockAction]
-        [RockObsolete( "1.10.2" )]
-        public object GetCurrentConfig()
-        {
-            return GetInitialContent();
-        }
-
         /// <summary>
         /// Gets the dynamic XAML content that should be rendered based upon the request.
         /// </summary>

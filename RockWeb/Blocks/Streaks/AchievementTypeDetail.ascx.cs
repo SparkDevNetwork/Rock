@@ -540,6 +540,53 @@ namespace RockWeb.Blocks.Streaks
                 achievementType.AchievementStepStatusId = null;
             }
 
+            // Upsert Prerequisites
+            var prerequisiteService = new StreakTypeAchievementTypePrerequisiteService( rockContext );
+            var selectedPrerequisiteAchievementTypeIds = cblPrerequsities.SelectedValuesAsInt;
+
+            // Remove existing prerequisites that are not selected
+            var removePrerequisiteAchievementTypes = achievementType.Prerequisites
+                .Where( statp => !selectedPrerequisiteAchievementTypeIds.Contains( statp.PrerequisiteStreakTypeAchievementTypeId ) ).ToList();
+
+            foreach ( var prerequisite in removePrerequisiteAchievementTypes )
+            {
+                achievementType.Prerequisites.Remove( prerequisite );
+                prerequisiteService.Delete( prerequisite );
+            }
+
+            // Add selected achievement types prerequisites that are not existing
+            var addPrerequisiteAchievementTypeIds = selectedPrerequisiteAchievementTypeIds
+                .Where( statId => !achievementType.Prerequisites.Any( statp => statp.PrerequisiteStreakTypeAchievementTypeId == statId ) );
+
+            foreach ( var prerequisiteAchievementTypeId in addPrerequisiteAchievementTypeIds )
+            {
+                achievementType.Prerequisites.Add( new StreakTypeAchievementTypePrerequisite
+                {
+                    StreakTypeAchievementTypeId = achievementType.Id,
+                    PrerequisiteStreakTypeAchievementTypeId = prerequisiteAchievementTypeId
+                } );
+            }
+
+            // Validate Prerequisites.
+            // This is necessary because other Achievement Types may have been modified after this record edit was started.
+            if ( !isNew )
+            {
+                var achievementTypeCache = GetAchievementTypeCache();
+                var eligibleAchievementTypes = StreakTypeAchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
+
+                foreach ( var prerequisite in achievementType.Prerequisites )
+                {
+                    if ( !eligibleAchievementTypes.Any( stat => stat.Id == prerequisite.PrerequisiteStreakTypeAchievementTypeId ) )
+                    {
+                        cvCustomValidator.IsValid = false;
+                        cvCustomValidator.ErrorMessage = string.Format(
+                            "This achievement type cannot have prerequisite \"{0}\" because it would create a circular dependency.",
+                            prerequisite.PrerequisiteStreakTypeAchievementType.Name );
+                        return;
+                    }
+                }
+            }
+
             if ( !achievementType.IsValid )
             {
                 // Controls will render the error messages
@@ -669,6 +716,7 @@ namespace RockWeb.Blocks.Streaks
 
             SyncOverAchievementAndMaxControls();
             RenderComponentAttributeControls();
+            SyncPrerequisiteList();
         }
 
         /// <summary>
@@ -704,6 +752,7 @@ namespace RockWeb.Blocks.Streaks
             SyncStepControls();
             SyncOverAchievementAndMaxControls();
             RenderComponentAttributeControls();
+            SyncPrerequisiteList();
         }
 
         /// <summary>
@@ -766,6 +815,29 @@ namespace RockWeb.Blocks.Streaks
                 var style = categoryCache.HighlightColor.IsNullOrWhiteSpace() ? string.Empty : string.Format( "style='background-color: {0};'", categoryCache.HighlightColor );
                 var text = string.Format( "<i class='{0}'></i> {1}", categoryCache.IconCssClass, categoryCache.Name );
                 lCategory.Text = string.Format( "<span class='label label-default' {0}>{1}</span>", style, text );
+            }
+        }
+
+        /// <summary>
+        /// Loads the prerequisite list.
+        /// </summary>
+        private void SyncPrerequisiteList()
+        {
+            var streakTypeCache = GetStreakTypeCache();
+            var achievementTypeCache = GetAchievementTypeCache();
+            var isNew = IsAddMode();
+
+            var eligiblePrerequisites = isNew ?
+                StreakTypeAchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( streakTypeCache ) :
+                StreakTypeAchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
+
+            cblPrerequsities.DataSource = eligiblePrerequisites;
+            cblPrerequsities.DataBind();
+            cblPrerequsities.Visible = eligiblePrerequisites.Any();
+
+            if ( !isNew )
+            {
+                cblPrerequsities.SetValues( achievementTypeCache.Prerequisites.Select( statp => statp.PrerequisiteStreakTypeAchievementTypeId ) );
             }
         }
 
@@ -835,7 +907,7 @@ namespace RockWeb.Blocks.Streaks
                 if ( achievementTypeId.HasValue && achievementTypeId.Value > 0 )
                 {
                     var achievementTypeService = GetAchievementTypeService();
-                    _achievementType = achievementTypeService.Queryable( "AchievementEntityType" )
+                    _achievementType = achievementTypeService.Queryable( "AchievementEntityType, Prerequisites" )
                         .FirstOrDefault( stat => stat.Id == achievementTypeId.Value );
                 }
             }

@@ -53,13 +53,13 @@ namespace Rock.Jobs
         DefaultValue = "Online Giving",
         Order = 2 )]
 
-    [SystemEmailField( "Receipt Email",
+    [SystemCommunicationField( "Receipt Email",
         Key = AttributeKey.ReceiptEmail,
         Description = "The system email to use to send the receipts.",
         IsRequired = false,
         Order = 3 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Failed Payment Email",
         Key = AttributeKey.FailedPaymentEmail,
         Description = "The system email to use to send a notice about a scheduled payment that failed.",
