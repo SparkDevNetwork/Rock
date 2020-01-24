@@ -489,12 +489,12 @@ onChange: function() {{
             return html.ToString();
         }
 
-        public class Root
+        private class Root
         {
             public List<Block> blocks { get; set; }
         }
 
-        public class Data
+        private class Data
         {
             public string level { get; set; }
             public string text { get; set; }
@@ -504,7 +504,7 @@ onChange: function() {{
             public string url { get; set; }
         }
 
-        public class Block
+        private class Block
         {
             public string type { get; set; }
             public Data data { get; set; }

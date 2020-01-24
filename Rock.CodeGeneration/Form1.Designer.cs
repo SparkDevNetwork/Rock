@@ -30,14 +30,12 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.btnLoad = new System.Windows.Forms.Button();
             this.btnGenerate = new System.Windows.Forms.Button();
             this.cblModels = new System.Windows.Forms.CheckedListBox();
             this.cbSelectAll = new System.Windows.Forms.CheckBox();
             this.fbdServiceOutput = new System.Windows.Forms.FolderBrowserDialog();
             this.cbRest = new System.Windows.Forms.CheckBox();
             this.cbService = new System.Windows.Forms.CheckBox();
-            this.ofdAssembly = new System.Windows.Forms.OpenFileDialog();
             this.fbdRestOutput = new System.Windows.Forms.FolderBrowserDialog();
             this.cbClient = new System.Windows.Forms.CheckBox();
             this.lblAssemblyPath = new System.Windows.Forms.Label();
@@ -48,29 +46,20 @@
             this.tbClientFolder = new System.Windows.Forms.TextBox();
             this.fdbRockClient = new System.Windows.Forms.FolderBrowserDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.lblAssemblyDateTime = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.lblDatabase = new System.Windows.Forms.Label();
             this.tbDatabaseFolder = new System.Windows.Forms.TextBox();
             this.cbDatabaseProcs = new System.Windows.Forms.CheckBox();
             this.tbResults = new System.Windows.Forms.TextBox();
             this.cbGenerateObsoleteExport = new System.Windows.Forms.CheckBox();
+            this.lblAssemblyDateTime = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
-            // 
-            // btnLoad
-            // 
-            this.btnLoad.Location = new System.Drawing.Point(13, 12);
-            this.btnLoad.Name = "btnLoad";
-            this.btnLoad.Size = new System.Drawing.Size(75, 23);
-            this.btnLoad.TabIndex = 1;
-            this.btnLoad.Text = "Load";
-            this.btnLoad.UseVisualStyleBackColor = true;
-            this.btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
             // 
             // btnGenerate
             // 
             this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnGenerate.Location = new System.Drawing.Point(14, 448);
+            this.btnGenerate.Location = new System.Drawing.Point(12, 468);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 2;
@@ -84,16 +73,16 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.cblModels.FormattingEnabled = true;
-            this.cblModels.Location = new System.Drawing.Point(15, 70);
+            this.cblModels.Location = new System.Drawing.Point(12, 104);
             this.cblModels.Name = "cblModels";
-            this.cblModels.Size = new System.Drawing.Size(570, 260);
+            this.cblModels.Size = new System.Drawing.Size(570, 228);
             this.cblModels.TabIndex = 3;
             // 
             // cbSelectAll
             // 
             this.cbSelectAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbSelectAll.AutoSize = true;
-            this.cbSelectAll.Location = new System.Drawing.Point(516, 19);
+            this.cbSelectAll.Location = new System.Drawing.Point(516, 80);
             this.cbSelectAll.Name = "cbSelectAll";
             this.cbSelectAll.Size = new System.Drawing.Size(69, 17);
             this.cbSelectAll.TabIndex = 4;
@@ -114,7 +103,7 @@
             this.cbRest.AutoSize = true;
             this.cbRest.Checked = true;
             this.cbRest.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbRest.Location = new System.Drawing.Point(15, 367);
+            this.cbRest.Location = new System.Drawing.Point(12, 364);
             this.cbRest.Name = "cbRest";
             this.cbRest.Size = new System.Drawing.Size(48, 17);
             this.cbRest.TabIndex = 6;
@@ -127,17 +116,12 @@
             this.cbService.AutoSize = true;
             this.cbService.Checked = true;
             this.cbService.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbService.Location = new System.Drawing.Point(15, 340);
+            this.cbService.Location = new System.Drawing.Point(12, 340);
             this.cbService.Name = "cbService";
             this.cbService.Size = new System.Drawing.Size(61, 17);
             this.cbService.TabIndex = 7;
             this.cbService.Text = "Service";
             this.cbService.UseVisualStyleBackColor = true;
-            // 
-            // ofdAssembly
-            // 
-            this.ofdAssembly.FileName = "openFileDialog1";
-            this.ofdAssembly.Title = "Assembly";
             // 
             // fbdRestOutput
             // 
@@ -152,7 +136,7 @@
             this.cbClient.AutoSize = true;
             this.cbClient.Checked = true;
             this.cbClient.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbClient.Location = new System.Drawing.Point(15, 394);
+            this.cbClient.Location = new System.Drawing.Point(12, 388);
             this.cbClient.Name = "cbClient";
             this.cbClient.Size = new System.Drawing.Size(53, 17);
             this.cbClient.TabIndex = 8;
@@ -162,7 +146,7 @@
             // lblAssemblyPath
             // 
             this.lblAssemblyPath.AutoSize = true;
-            this.lblAssemblyPath.Location = new System.Drawing.Point(66, 38);
+            this.lblAssemblyPath.Location = new System.Drawing.Point(16, 28);
             this.lblAssemblyPath.Name = "lblAssemblyPath";
             this.lblAssemblyPath.Size = new System.Drawing.Size(31, 13);
             this.lblAssemblyPath.TabIndex = 9;
@@ -171,16 +155,17 @@
             // lblAssembly
             // 
             this.lblAssembly.AutoSize = true;
-            this.lblAssembly.Location = new System.Drawing.Point(12, 38);
+            this.lblAssembly.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAssembly.Location = new System.Drawing.Point(12, 12);
             this.lblAssembly.Name = "lblAssembly";
-            this.lblAssembly.Size = new System.Drawing.Size(56, 13);
+            this.lblAssembly.Size = new System.Drawing.Size(62, 13);
             this.lblAssembly.TabIndex = 10;
-            this.lblAssembly.Text = "Assembly:";
+            this.lblAssembly.Text = "Assembly";
             // 
             // progressBar1
             // 
             this.progressBar1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressBar1.Location = new System.Drawing.Point(375, 452);
+            this.progressBar1.Location = new System.Drawing.Point(368, 472);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(212, 23);
             this.progressBar1.TabIndex = 11;
@@ -190,7 +175,7 @@
             // 
             this.tbServiceFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbServiceFolder.Location = new System.Drawing.Point(122, 338);
+            this.tbServiceFolder.Location = new System.Drawing.Point(116, 340);
             this.tbServiceFolder.Name = "tbServiceFolder";
             this.tbServiceFolder.Size = new System.Drawing.Size(465, 21);
             this.tbServiceFolder.TabIndex = 12;
@@ -200,7 +185,7 @@
             // 
             this.tbRestFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbRestFolder.Location = new System.Drawing.Point(122, 365);
+            this.tbRestFolder.Location = new System.Drawing.Point(116, 364);
             this.tbRestFolder.Name = "tbRestFolder";
             this.tbRestFolder.Size = new System.Drawing.Size(465, 21);
             this.tbRestFolder.TabIndex = 13;
@@ -210,7 +195,7 @@
             // 
             this.tbClientFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbClientFolder.Location = new System.Drawing.Point(122, 392);
+            this.tbClientFolder.Location = new System.Drawing.Point(116, 388);
             this.tbClientFolder.Name = "tbClientFolder";
             this.tbClientFolder.Size = new System.Drawing.Size(465, 21);
             this.tbClientFolder.TabIndex = 14;
@@ -222,29 +207,20 @@
             this.fdbRockClient.RootFolder = System.Environment.SpecialFolder.MyComputer;
             this.fdbRockClient.ShowNewFolderButton = false;
             // 
-            // lblAssemblyDateTime
-            // 
-            this.lblAssemblyDateTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblAssemblyDateTime.Location = new System.Drawing.Point(402, 38);
-            this.lblAssemblyDateTime.Name = "lblAssemblyDateTime";
-            this.lblAssemblyDateTime.Size = new System.Drawing.Size(183, 13);
-            this.lblAssemblyDateTime.TabIndex = 15;
-            this.lblAssemblyDateTime.Text = "unknown";
-            this.lblAssemblyDateTime.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 54);
+            this.label1.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.Location = new System.Drawing.Point(12, 64);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(57, 13);
+            this.label1.Size = new System.Drawing.Size(61, 13);
             this.label1.TabIndex = 16;
-            this.label1.Text = "Database:";
+            this.label1.Text = "Database";
             // 
             // lblDatabase
             // 
             this.lblDatabase.AutoSize = true;
-            this.lblDatabase.Location = new System.Drawing.Point(66, 54);
+            this.lblDatabase.Location = new System.Drawing.Point(16, 80);
             this.lblDatabase.Name = "lblDatabase";
             this.lblDatabase.Size = new System.Drawing.Size(31, 13);
             this.lblDatabase.TabIndex = 17;
@@ -254,7 +230,7 @@
             // 
             this.tbDatabaseFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbDatabaseFolder.Location = new System.Drawing.Point(122, 419);
+            this.tbDatabaseFolder.Location = new System.Drawing.Point(116, 412);
             this.tbDatabaseFolder.Name = "tbDatabaseFolder";
             this.tbDatabaseFolder.Size = new System.Drawing.Size(465, 21);
             this.tbDatabaseFolder.TabIndex = 19;
@@ -265,7 +241,7 @@
             this.cbDatabaseProcs.AutoSize = true;
             this.cbDatabaseProcs.Checked = true;
             this.cbDatabaseProcs.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbDatabaseProcs.Location = new System.Drawing.Point(15, 421);
+            this.cbDatabaseProcs.Location = new System.Drawing.Point(12, 412);
             this.cbDatabaseProcs.Name = "cbDatabaseProcs";
             this.cbDatabaseProcs.Size = new System.Drawing.Size(101, 17);
             this.cbDatabaseProcs.TabIndex = 18;
@@ -277,29 +253,50 @@
             this.tbResults.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tbResults.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbResults.Location = new System.Drawing.Point(11, 504);
+            this.tbResults.Location = new System.Drawing.Point(11, 524);
             this.tbResults.Multiline = true;
             this.tbResults.Name = "tbResults";
             this.tbResults.ReadOnly = true;
             this.tbResults.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.tbResults.Size = new System.Drawing.Size(574, 199);
+            this.tbResults.Size = new System.Drawing.Size(574, 179);
             this.tbResults.TabIndex = 20;
             // 
             // cbGenerateObsoleteExport
             // 
+            this.cbGenerateObsoleteExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbGenerateObsoleteExport.AutoSize = true;
-            this.cbGenerateObsoleteExport.Location = new System.Drawing.Point(11, 481);
+            this.cbGenerateObsoleteExport.Location = new System.Drawing.Point(12, 440);
             this.cbGenerateObsoleteExport.Name = "cbGenerateObsoleteExport";
             this.cbGenerateObsoleteExport.Size = new System.Drawing.Size(105, 17);
             this.cbGenerateObsoleteExport.TabIndex = 21;
             this.cbGenerateObsoleteExport.Text = "Report Obsolete";
             this.cbGenerateObsoleteExport.UseVisualStyleBackColor = true;
             // 
+            // lblAssemblyDateTime
+            // 
+            this.lblAssemblyDateTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblAssemblyDateTime.Location = new System.Drawing.Point(16, 44);
+            this.lblAssemblyDateTime.Name = "lblAssemblyDateTime";
+            this.lblAssemblyDateTime.Size = new System.Drawing.Size(102, 13);
+            this.lblAssemblyDateTime.TabIndex = 15;
+            this.lblAssemblyDateTime.Text = "unknown";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(12, 504);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(60, 13);
+            this.label2.TabIndex = 22;
+            this.label2.Text = "Warnings";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(597, 729);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.cbGenerateObsoleteExport);
             this.Controls.Add(this.tbResults);
             this.Controls.Add(this.tbDatabaseFolder);
@@ -319,27 +316,24 @@
             this.Controls.Add(this.cbSelectAll);
             this.Controls.Add(this.cblModels);
             this.Controls.Add(this.btnGenerate);
-            this.Controls.Add(this.btnLoad);
             this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(320, 240);
             this.Name = "Form1";
             this.Text = "Rock Code Generator";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Button btnLoad;
         private System.Windows.Forms.Button btnGenerate;
         private System.Windows.Forms.CheckedListBox cblModels;
         private System.Windows.Forms.CheckBox cbSelectAll;
         private System.Windows.Forms.FolderBrowserDialog fbdServiceOutput;
         private System.Windows.Forms.CheckBox cbRest;
         private System.Windows.Forms.CheckBox cbService;
-		private System.Windows.Forms.OpenFileDialog ofdAssembly;
         private System.Windows.Forms.FolderBrowserDialog fbdRestOutput;
         private System.Windows.Forms.CheckBox cbClient;
         private System.Windows.Forms.Label lblAssemblyPath;
@@ -350,13 +344,14 @@
         private System.Windows.Forms.TextBox tbClientFolder;
         private System.Windows.Forms.FolderBrowserDialog fdbRockClient;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.Label lblAssemblyDateTime;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label lblDatabase;
         private System.Windows.Forms.TextBox tbDatabaseFolder;
         private System.Windows.Forms.CheckBox cbDatabaseProcs;
         private System.Windows.Forms.TextBox tbResults;
         private System.Windows.Forms.CheckBox cbGenerateObsoleteExport;
+        private System.Windows.Forms.Label lblAssemblyDateTime;
+        private System.Windows.Forms.Label label2;
     }
 }
 

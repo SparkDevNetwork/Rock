@@ -2541,18 +2541,22 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemCommunication.FriendlyTypeName );
                 return false;
             }  
- 
+
+            #pragma warning disable 612, 618 // SystemEmail is obsolete, but we still need this code generated 
             if ( new Service<SystemEmail>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemEmail.FriendlyTypeName );
                 return false;
             }  
- 
+            #pragma warning restore 612, 618
+
+            #pragma warning disable 612, 618 // SystemEmail is obsolete, but we still need this code generated 
             if ( new Service<SystemEmail>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SystemEmail.FriendlyTypeName );
                 return false;
             }  
+            #pragma warning restore 612, 618
  
             if ( new Service<Tag>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
