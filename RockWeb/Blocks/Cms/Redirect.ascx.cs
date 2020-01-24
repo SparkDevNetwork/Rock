@@ -88,16 +88,16 @@ namespace RockWeb.Blocks.Cms
         {
             RefreshContent();
         }
-        
+
         private void RefreshContent()
         {
             string url = GetAttributeValue( AttributeKey.Url );
             int redirectOption = GetAttributeValue( AttributeKey.RedirectWhen ).AsInteger();
-            
+
 
             if ( !string.IsNullOrEmpty( url ) )
             {
-                // if always redirect 
+                // if always redirect
                 if (redirectOption == 1 )
                 {
                     RedirectToUrl( url );
@@ -128,11 +128,11 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 return;
-                
+
             }
             else
             {
-                nbAlert.Text = "Missing Url value for redirect!";
+                nbAlert.Text = "Missing URL value for redirect!";
             }
         }
 
