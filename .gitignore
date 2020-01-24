@@ -29,6 +29,7 @@ RockWeb/App_Data/MobileAppBundles
 /scaffolding.config
 *.sln.GhostDoc.xml
 .vs/
+.vshistory/
 .localhistory/
 TestResults/
 
