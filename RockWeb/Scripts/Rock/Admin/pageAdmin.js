@@ -4,16 +4,16 @@ Sys.Application.add_load(function () {
         $(window).on('keydown', function (event) {
             if (event.altKey) {
                 if (event.keyCode == 80) {
-                    //'alt-p' page config
+                    //'Alt-P' page config
                     window.location = $('.js-page-properties').attr('href');
                 } else if (event.keyCode == 66) {
-                    // alt-b block config
+                    // Alt-B block config
                     window.location = $('.js-block-config').attr('href');
-                } else if (event.keyCode == 78) {
-                    // alt-n child pages
+                } else if (event.keyCode == 76) {
+                    // Alt-L child pages
                     window.location = $('.js-page-child-pages').attr('href');
                 } else if (event.keyCode == 90) {
-                    // alt-z page zones
+                    // Alt-Z page zones
                     window.location = $('.js-page-zones').attr('href');
                 }
             }
