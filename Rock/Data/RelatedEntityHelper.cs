@@ -60,7 +60,14 @@ namespace Rock.Data
             relatedEntityService.DeleteRange( relatedEntityRecords );
         }
 
-        public bool AddRelatedToSourceEntity<TT>( int entityId, TT relatedEntity, string purposeKey ) where TT : IEntity
+        /// <summary>
+        /// Adds a relationship between the relatedEntity and the entity
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="relatedEntity">The related entity.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        public void AddRelatedToSourceEntity<TT>( int entityId, TT relatedEntity, string purposeKey ) where TT : IEntity
         {
             var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
             var sourceEntityTypeId = EntityTypeCache.GetId<T>();
@@ -76,11 +83,28 @@ namespace Rock.Data
             var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
 
             relatedEntityService.Add( relatedEntityRecord );
-            return true;
         }
 
         /// <summary>
-        /// Relateds to source entity already exists.
+        /// Deletes (deletes relationship) the relationship between the relatedEntity and the entity
+        /// </summary>
+        /// <typeparam name="TT">The type of the t.</typeparam>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="relatedEntity">The related entity.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        public void DeleteRelatedToSourceEntity<TT>( int entityId, TT relatedEntity, string purposeKey ) where TT : IEntity
+        {
+            var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
+            var sourceEntityTypeId = EntityTypeCache.GetId<T>();
+            
+            var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
+            var relatedEntityRecords = relatedEntityService.GetRelatedEntityRecordsToSource( entityId, sourceEntityTypeId.Value, relatedEntityTypeId.Value, purposeKey );
+
+            relatedEntityService.DeleteRange( relatedEntityRecords );
+        }
+
+        /// <summary>
+        /// Determines if relationship to the source entity already exists.
         /// </summary>
         /// <typeparam name="TT">The type of the t.</typeparam>
         /// <param name="entityId">The entity identifier.</param>

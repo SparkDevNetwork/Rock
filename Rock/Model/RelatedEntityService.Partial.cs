@@ -45,19 +45,7 @@ namespace Rock.Model
             EntityTypeCache relatedEntityTypeCache = EntityTypeCache.Get( relatedEntityTypeId );
             if ( relatedEntityTypeCache.AssemblyName != null )
             {
-                var query = Queryable()
-                        .Where( a => a.SourceEntityTypeId == sourceEntityTypeId
-                            && a.SourceEntityId == sourceEntityId
-                            && a.TargetEntityTypeId == relatedEntityTypeId );
-
-                if ( purposeKey.IsNullOrWhiteSpace() )
-                {
-                    query = query.Where( a => string.IsNullOrEmpty( a.PurposeKey ) );
-                }
-                else
-                {
-                    query = query.Where( a => a.PurposeKey == purposeKey );
-                }
+                IQueryable<RelatedEntity> query = GetRelatedEntityRecordsToSource( sourceEntityId, sourceEntityTypeId, relatedEntityTypeId, purposeKey );
 
                 var rockContext = this.Context as RockContext;
                 Type relatedEntityType = relatedEntityTypeCache.GetEntityType();
@@ -78,6 +66,33 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns a queryable collection of <see cref="Rock.Data.IEntity" /> target entities (related to the given source entity) for the given entity type and (optionally) also have a matching purpose key.
+        /// </summary>
+        /// <param name="sourceEntityId">The source entity identifier.</param>
+        /// <param name="sourceEntityTypeId">The source entity type identifier.</param>
+        /// <param name="relatedEntityTypeId">The related entity type identifier.</param>
+        /// <param name="purposeKey">The purpose key.</param>
+        /// <returns></returns>
+        public IQueryable<RelatedEntity> GetRelatedEntityRecordsToSource( int sourceEntityId, int sourceEntityTypeId, int relatedEntityTypeId, string purposeKey )
+        {
+            var query = Queryable()
+                                    .Where( a => a.SourceEntityTypeId == sourceEntityTypeId
+                                        && a.SourceEntityId == sourceEntityId
+                                        && a.TargetEntityTypeId == relatedEntityTypeId );
+
+            if ( purposeKey.IsNullOrWhiteSpace() )
+            {
+                query = query.Where( a => string.IsNullOrEmpty( a.PurposeKey ) );
+            }
+            else
+            {
+                query = query.Where( a => a.PurposeKey == purposeKey );
+            }
+
+            return query;
         }
 
         /// <summary>

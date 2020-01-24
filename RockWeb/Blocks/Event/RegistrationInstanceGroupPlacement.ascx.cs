@@ -24,7 +24,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -49,9 +48,11 @@ namespace RockWeb.Blocks.Event
 
         private static class PageParameterKey
         {
+            public const string RegistrantId = "RegistrantId";
             public const string RegistrationInstanceId = "RegistrationInstanceId";
             public const string RegistrationTemplateId = "RegistrationTemplateId";
             public const string RegistrationTemplatePlacementId = "RegistrationTemplatePlacementId";
+            public const string PromptForTemplatePlacement = "PromptForTemplatePlacement";
         }
 
         #endregion PageParameterKeys
@@ -163,28 +164,30 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         protected void ShowDetails()
         {
-            hfRegistrationTemplatePlacementId.Value = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId );
+            int? registrationTemplatePlacementId = this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsIntegerOrNull();
 
             var rockContext = new RockContext();
 
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
 
-            var registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            int? registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+
+            // in case a specific registrant is specified
+            int? registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull();
+
+            if ( registrantId.HasValue )
+            {
+                hfRegistrantId.Value = registrantId.ToString();
+                registrationInstanceId = new RegistrationRegistrantService( rockContext ).GetSelect( registrantId.Value, s => s.Registration.RegistrationInstanceId );
+            }
+
             if ( registrationInstanceId.HasValue )
             {
                 hfRegistrationInstanceId.Value = registrationInstanceId.ToString();
-            }
-
-            int registrationTemplateId;
-            if ( registrationInstanceId.HasValue )
-            {
                 var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
                 registrationTemplateId = registrationInstance.RegistrationTemplateId;
-            }
-            else
-            {
-                registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsInteger();
             }
 
             hfRegistrationTemplateId.Value = registrationTemplateId.ToString();
@@ -196,24 +199,63 @@ namespace RockWeb.Blocks.Event
             hfOptionsDisplayedRegistrantAttributeIds.Value = placementConfiguration.DisplayedRegistrantAttributeIds.ToJson();
             hfOptionsDisplayedGroupMemberAttributeKeys.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Key ).ToList().AsDelimited( "," );
 
-            hfOptionsIncludeFees.Value = placementConfiguration.ShowFees.ToTrueFalse().ToLower();
-            hfOptionsHighlightGenders.Value = placementConfiguration.HighlightGenders.ToTrueFalse().ToLower();
+            hfOptionsIncludeFees.Value = placementConfiguration.ShowFees.ToJavaScriptValue();
+            hfOptionsHighlightGenders.Value = placementConfiguration.HighlightGenders.ToJavaScriptValue();
+            hfOptionsHideFullGroups.Value = placementConfiguration.HideFullGroups.ToJavaScriptValue();
             hfRegistrationTemplateInstanceIds.Value = placementConfiguration.IncludedRegistrationInstanceIds.ToJson();
-            hfRegistrationTemplateShowInstanceName.Value = placementConfiguration.ShowRegistrationInstanceName.ToTrueFalse().ToLower();
+            hfRegistrationTemplateShowInstanceName.Value = placementConfiguration.ShowRegistrationInstanceName.ToJavaScriptValue();
 
-            var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
+            hfRegistrationTemplatePlacementId.Value = registrationTemplatePlacementId.ToString();
 
             RegistrationTemplatePlacement registrationTemplatePlacement = null;
             int? registrationTemplatePlacementGroupTypeId = null;
             if ( registrationTemplatePlacementId.HasValue )
             {
                 registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( registrationTemplatePlacementId.Value );
-                registrationTemplatePlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
 
-                hfRegistrationTemplatePlacementGroupTypeId.Value = registrationTemplatePlacementGroupTypeId.ToString();
+                if ( registrationTemplatePlacement.RegistrationTemplateId != registrationTemplateId )
+                {
+                    // if the registration template placement is for a different registration template, don't use it
+                    registrationTemplatePlacement = null;
+                    registrationTemplatePlacementId = null;
+                }
+                else
+                {
+                    registrationTemplatePlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
+                    hfRegistrationTemplatePlacementGroupTypeId.Value = registrationTemplatePlacementGroupTypeId.ToString();
+                }
             }
 
-            BindDropDowns( registrationTemplatePlacementId );
+            BindDropDowns();
+
+            // if a registrationTemplatePlacement wasn't specified (or wasn't specified initially), show the prompt
+            bgRegistrationTemplatePlacement.Visible = ( registrationTemplatePlacement == null ) || this.PageParameter( PageParameterKey.PromptForTemplatePlacement ).AsBoolean();
+
+            if ( registrationTemplatePlacement != null )
+            {
+                bgRegistrationTemplatePlacement.SetValue( registrationTemplatePlacement );
+            }
+            else
+            {
+                if ( bgRegistrationTemplatePlacement.Items.Count == 0 )
+                {
+                    bgRegistrationTemplatePlacement.Visible = false;
+                    nbConfigurationError.Text = "No Placement Types available for this registration template.";
+                    nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                    nbConfigurationError.Visible = true;
+                    pnlView.Visible = false;
+                    return;
+                }
+
+
+                bgRegistrationTemplatePlacement.SelectedIndex = 0;
+                var defaultRegistrationTemplatePlacementId = bgRegistrationTemplatePlacement.SelectedValue.AsIntegerOrNull();
+                if ( defaultRegistrationTemplatePlacementId.HasValue )
+                {
+                    ReloadPageWithRegistrationTemplatePlacementId( bgRegistrationTemplatePlacement.SelectedValue.AsInteger() );
+                    return;
+                }
+            }
 
             if ( registrationTemplatePlacement == null )
             {
@@ -222,6 +264,7 @@ namespace RockWeb.Blocks.Event
                     nbConfigurationError.Text = "Invalid Registration Template Placement Specified";
                     nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     nbConfigurationError.Visible = true;
+                    pnlView.Visible = false;
                 }
                 else
                 {
@@ -311,28 +354,17 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Binds the drop downs.
         /// </summary>
-        /// <param name="registrationTemplatePlacementId">The registration template placement identifier.</param>
-        private void BindDropDowns( int? registrationTemplatePlacementId )
+        private void BindDropDowns()
         {
             var registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
 
             var rockContext = new RockContext();
             var registrationTemplateService = new RegistrationTemplateService( rockContext );
-            var registrationTemplatePlacements = registrationTemplateService.Get( registrationTemplateId.Value ).Placements.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            var registrationTemplatePlacements = registrationTemplateService.GetSelect( registrationTemplateId.Value, s => s.Placements ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
             bgRegistrationTemplatePlacement.Items.Clear();
             foreach ( var registrationTemplatePlacementItem in registrationTemplatePlacements )
             {
                 bgRegistrationTemplatePlacement.Items.Add( new ListItem( registrationTemplatePlacementItem.Name, registrationTemplatePlacementItem.Id.ToString() ) );
-            }
-
-            if ( registrationTemplatePlacementId.HasValue )
-            {
-                bgRegistrationTemplatePlacement.SetValue( registrationTemplatePlacementId.Value );
-            }
-            else
-            {
-                bgRegistrationTemplatePlacement.SelectedIndex = 0;
-                bgRegistrationTemplatePlacement_SelectedIndexChanged( null, null );
             }
 
             bgAddNewOrExistingPlacementGroup.Items.Clear();
@@ -372,12 +404,21 @@ namespace RockWeb.Blocks.Event
                 registrationInstanceList = registrationInstanceService.Queryable().Where( a => a.RegistrationTemplateId == registrationTemplateId.Value ).OrderBy( a => a.Name ).ToList();
             }
 
+            var displayedCampusId = GetPlacementConfiguration().DisplayedCampusId;
+
             var registrationInstancePlacementGroupList = new List<Group>();
             if ( registrationInstanceList != null && registrationTemplatePlacement != null )
             {
                 foreach ( var registrationInstance in registrationInstanceList )
                 {
-                    var placementGroups = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstance ).Where( a => a.GroupTypeId == groupType.Id ).ToList();
+                    var placementGroupsQry = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstance ).Where( a => a.GroupTypeId == groupType.Id );
+                    if ( displayedCampusId.HasValue )
+                    {
+                        placementGroupsQry = placementGroupsQry.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId.Value );
+                    }
+
+
+                    var placementGroups = placementGroupsQry.ToList();
                     foreach ( var placementGroup in placementGroups )
                     {
                         registrationInstancePlacementGroupList.Add( placementGroup, true );
@@ -385,7 +426,13 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            var registrationTemplatePlacementGroupList = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement );
+            var registrationTemplatePlacementGroupQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement );
+            if ( displayedCampusId.HasValue )
+            {
+                registrationTemplatePlacementGroupQuery = registrationTemplatePlacementGroupQuery.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId );
+            }
+
+            var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery.ToList();
             var placementGroupList = new List<Group>();
             placementGroupList.AddRange( registrationTemplatePlacementGroupList );
             placementGroupList.AddRange( registrationInstancePlacementGroupList );
@@ -393,6 +440,8 @@ namespace RockWeb.Blocks.Event
             // A placement group could be associated with both the instance and the template. So, we'll make sure the same group isn't listed more than once
             placementGroupList = placementGroupList.DistinctBy( a => a.Id ).ToList();
             placementGroupList = placementGroupList.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+
+            var groupMemberService = new GroupMemberService( rockContext );
 
             rptPlacementGroups.DataSource = placementGroupList;
             rptPlacementGroups.DataBind();
@@ -419,13 +468,24 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddPlacementGroup_Click( object sender, EventArgs e )
         {
-            bgAddNewOrExistingPlacementGroup.SetValue( AddPlacementGroupTab.AddNewGroup.ConvertToInt().ToString() );
-            bgAddNewOrExistingPlacementGroup_SelectedIndexChanged( null, null );
-
             var newGroup = new Group() { GroupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger() };
 
             // set up Attribute Values Container
             avcNewPlacementGroupAttributeValues.AddEditControls( newGroup );
+
+            if ( !newGroup.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+            {
+                // if they can't add groups of this type, only show the Add to Existing group option
+                bgAddNewOrExistingPlacementGroup.Visible = false;
+                bgAddNewOrExistingPlacementGroup.SetValue( AddPlacementGroupTab.AddExistingGroup.ConvertToInt().ToString() );
+                pnlAddNewPlacementGroup.Visible = false;
+            }
+            else
+            {
+                bgAddNewOrExistingPlacementGroup.SetValue( AddPlacementGroupTab.AddNewGroup.ConvertToInt().ToString() );
+            }
+
+            bgAddNewOrExistingPlacementGroup_SelectedIndexChanged( null, null );
 
             var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
@@ -440,6 +500,8 @@ namespace RockWeb.Blocks.Event
                 // in Registration Template Mode
                 mdAddPlacementGroup.Title = "Add Shared Group";
             }
+
+            nbNotAllowedToAddGroup.Visible = false;
 
             mdAddPlacementGroup.Show();
         }
@@ -623,12 +685,22 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void bgRegistrationTemplatePlacement_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var additionalQueryParameters = new Dictionary<string, string>();
             if ( bgRegistrationTemplatePlacement.SelectedValue.AsInteger() > 0 )
             {
-                additionalQueryParameters.Add( PageParameterKey.RegistrationTemplatePlacementId, bgRegistrationTemplatePlacement.SelectedValue );
-                NavigateToCurrentPageReference( additionalQueryParameters );
+                ReloadPageWithRegistrationTemplatePlacementId( bgRegistrationTemplatePlacement.SelectedValue.AsInteger() );
             }
+        }
+
+        /// <summary>
+        /// Reloads the page with registration template placement identifier parameter
+        /// </summary>
+        /// <param name="registrationTemplatePlacementId">The registration template placement identifier.</param>
+        private void ReloadPageWithRegistrationTemplatePlacementId( int registrationTemplatePlacementId )
+        {
+            var additionalQueryParameters = new Dictionary<string, string>();
+            additionalQueryParameters.Add( PageParameterKey.RegistrationTemplatePlacementId, registrationTemplatePlacementId.ToString() );
+            additionalQueryParameters.Add( PageParameterKey.PromptForTemplatePlacement, true.ToString() );
+            NavigateToCurrentPageReference( additionalQueryParameters );
         }
 
         #region Add Placement Group
@@ -659,7 +731,6 @@ namespace RockWeb.Blocks.Event
 
                 if ( groupTypeId != placementGroup.GroupTypeId )
                 {
-                    // TODO
                     nbAddExistingPlacementGroupWarning.Text = "Invalid Group Type";
                     return;
                 }
@@ -670,12 +741,25 @@ namespace RockWeb.Blocks.Event
             {
                 placementGroup = new Group();
                 placementGroup.GroupTypeId = groupTypeId;
-                placementGroup.ParentGroupId = gpNewPlacementGroupParentGroup.GroupId;
+
+                var groupService = new GroupService( rockContext );
+                if ( gpNewPlacementGroupParentGroup.GroupId.HasValue )
+                {
+                    placementGroup.ParentGroupId = gpNewPlacementGroupParentGroup.GroupId;
+                    placementGroup.ParentGroup = groupService.Get( placementGroup.ParentGroupId.Value );
+                }
+
                 placementGroup.Name = tbNewPlacementGroupName.Text;
                 placementGroup.CampusId = cpNewPlacementGroupCampus.SelectedCampusId;
                 placementGroup.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
                 placementGroup.Description = tbNewPlacementGroupDescription.Text;
-                new GroupService( rockContext ).Add( placementGroup );
+
+                if ( !placementGroup.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    nbNotAllowedToAddGroup.Visible = true;
+                    return;
+                }
+
                 rockContext.SaveChanges();
                 avcNewPlacementGroupAttributeValues.GetEditValues( placementGroup );
                 placementGroup.SaveAttributeValues();

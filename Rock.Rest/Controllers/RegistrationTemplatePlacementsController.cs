@@ -125,5 +125,62 @@ namespace Rock.Rest.Controllers
             return new HttpResponseMessage( HttpStatusCode.OK );
 
         }
+
+        /// <summary>
+        /// Detaches the placement group.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="registrationTemplatePlacementId">The registration template placement identifier.</param>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpDelete]
+        [System.Web.Http.Route( "api/RegistrationTemplatePlacements/DetachPlacementGroup" )]
+        public virtual HttpResponseMessage DetachPlacementGroup( int groupId, int registrationTemplatePlacementId, int? registrationInstanceId = null )
+        {
+            // since we are doing a delete, create a new RockContext instead of this.Service.Context so that ProxyCreation, etc works
+            var rockContext = new RockContext();
+            var group = new GroupService( rockContext ).Get( groupId );
+
+            if ( group == null )
+            {
+                return ControllerContext.Request.CreateErrorResponse(
+                HttpStatusCode.NotFound,
+                $"Specified group not found." );
+            }
+            
+            if ( registrationInstanceId.HasValue )
+            {
+                var registrationInstanceService = new RegistrationInstanceService( rockContext );
+                var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+
+                if ( registrationInstance == null )
+                {
+                    return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    $"Specified registration instance not found." );
+                }
+
+                registrationInstanceService.DeleteRegistrationInstancePlacementGroup( registrationInstance, group );
+            }
+            else
+            {
+                var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
+                var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId );
+
+                if ( registrationTemplatePlacement == null )
+                {
+                    return ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.NotFound,
+                    $"Specified registration template placement not found." );
+                }
+
+                registrationTemplatePlacementService.DeleteRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, group );
+            }
+
+            rockContext.SaveChanges();
+
+            return new HttpResponseMessage( HttpStatusCode.OK );
+        }
     }
 }
