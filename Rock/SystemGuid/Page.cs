@@ -1532,13 +1532,29 @@ namespace Rock.SystemGuid
         /// Gets the System Email Details page guid
         /// ParentPage: System Emails
         /// </summary>
+        [Obsolete( "Use SYSTEM_COMMUNICATION_DETAIL instead." )]
+        [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAIL_DETAILS = "588C72A8-7DEC-405F-BA4A-FE64F87CB817";
 
         /// <summary>
         /// Gets the System Emails page guid
         /// ParentPage: Communications
         /// </summary>
+        [Obsolete( "Use SYSTEM_COMMUNICATION_LIST instead." )]
+        [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAILS = "89B7A631-EA6F-4DA3-9380-04EE67B63E9E";
+
+        /// <summary>
+        /// Gets the System Communications page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST = "14D8F894-F70F-44F7-9F0C-2545F87256FF";
+
+        /// <summary>
+        /// Gets the System Communications page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_DETAIL = "2FE2D59E-2737-49C8-AF1B-4366A8371A8E";
 
         /// <summary>
         /// Gets the System Information page guid

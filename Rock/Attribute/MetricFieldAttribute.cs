@@ -30,7 +30,6 @@ namespace Rock.Attribute
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="defaultValue">The default value.</param>
-        /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>

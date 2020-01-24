@@ -454,9 +454,9 @@ namespace Rock.Lava
             try
             {
                 RockContext rockContext = new RockContext();
-                SystemEmailService systemEmailService = new SystemEmailService( rockContext );
+                var systemEmailService = new SystemCommunicationService( rockContext );
 
-                foreach ( SystemEmail systemEmail in systemEmailService.Queryable().ToList() )
+                foreach ( var systemEmail in systemEmailService.Queryable().ToList() )
                 {
                     // don't change if modified
                     if ( systemEmail.ModifiedDateTime != null )

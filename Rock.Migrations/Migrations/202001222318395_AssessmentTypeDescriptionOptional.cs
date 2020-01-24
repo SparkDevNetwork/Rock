@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -13,33 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-namespace Rock.Plugin.HotFixes
+//
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// This needs to be a hotfix migration because a traditional migration can be run in the package manager console
-    /// can run the traditional migrations while Rock is not running.
+    ///
     /// </summary>
-    /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 99, "1.10.2" )]
-    class RefreshRestControllerMethods : Migration
+    public partial class AssessmentTypeDescriptionOptional : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            // Directly running the RegisterControllers method fails because the API discovery library
-            // cannot see any controllers for some reason. Queuing this to run allows Rock to run it
-            // when it is ready.
-            new Transactions.RegisterControllersTransaction().Enqueue();
+            AlterColumn("dbo.AssessmentType", "Description", c => c.String(maxLength: 100));
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
+            AlterColumn("dbo.AssessmentType", "Description", c => c.String(nullable: false, maxLength: 100));
         }
     }
 }

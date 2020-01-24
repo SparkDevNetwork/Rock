@@ -51,6 +51,15 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Order = 6 )]
 
+    [CustomDropdownListField(
+        "iPad Camera Barcode Configuration",
+        "desc",
+        "Off,Available,Always On,Passive",
+        Key = AttributeKey.CameraBarcodeConfiguration,
+        IsRequired = true,
+        DefaultValue = "Available",
+        Order = 7 )]
+
     [TextField(
         "Not Active Title",
         Key = AttributeKey.NotActiveTitle,
@@ -146,6 +155,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             public const string FamilySelectPage = "FamilySelectPage";
             public const string ScheduledLocationsPage = "ScheduledLocationsPage";
+            public const string CameraBarcodeConfiguration = "CameraBarcodeConfiguration";
             public const string NotActiveTitle = "NotActiveTitle";
             public const string NotActiveCaption = "NotActiveCaption";
             public const string NotActiveYetTitle = "NotActiveYetTitle";
@@ -410,6 +420,21 @@ namespace RockWeb.Blocks.CheckIn
                 var qryParams = Request.QueryString.AllKeys.ToDictionary( k => k, k => this.Request.QueryString[k] );
                 qryParams.AddOrReplace( PageParameterKey.IsActive, isActive.ToString() );
                 NavigateToCurrentPage( qryParams );
+            }
+
+            //
+            // Show the camera button if it is enabled and the device supports it.
+            //
+            var cameraOption = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration );
+            if ( pnlActive.Visible && cameraOption != "Off" && CurrentCheckInState.Kiosk.Device.HasCamera )
+            {
+                pnlCameraButtonContainer.Visible = true;
+                hfCameraMode.Value = cameraOption;
+            }
+            else
+            {
+                pnlCameraButtonContainer.Visible = false;
+                hfCameraMode.Value = "Off";
             }
         }
 

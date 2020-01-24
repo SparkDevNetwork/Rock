@@ -77,6 +77,8 @@
                                         Help="When this device needs to print, where should the printing be initiated from?  Either the server running Rock, or from the actual client device? " />
                                 </div>
                             </asp:Panel>
+
+                            <Rock:RockCheckBox ID="cbHasCamera" runat="server" Label="Has Camera" Help="Determines if the device has a camera. This is currently only used for reading barcodes on iPads." />
                         </div>
                     </div>
 

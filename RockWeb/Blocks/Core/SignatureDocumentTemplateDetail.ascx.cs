@@ -45,8 +45,8 @@ namespace RockWeb.Blocks.Core
 
     [BinaryFileTypeField( "Default File Type", "The default file type to use when creating new documents.", false, 
         Rock.SystemGuid.BinaryFiletype.SIGNED_DOCUMENT_FILE_TYPE, "", 0 )]
-    [BinaryFileTypeField( "Default Invite Email", "The default system email to use when creating new document types.", false,
-        Rock.SystemGuid.SystemEmail.DIGITAL_SIGNATURE_INVITE, "", 1 )]
+    [SystemCommunicationField( "Default Invite Email", "The default system email to use when creating new document types.", false,
+        Rock.SystemGuid.SystemCommunication.DIGITAL_SIGNATURE_INVITE, "", 1 )]
     public partial class SignatureDocumentTemplateDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Core
             ddlSystemEmail.Items.Clear();
             using ( var rockContext = new RockContext()  )
             {
-                foreach( var systemEmail in new SystemEmailService( rockContext )
+                foreach( var systemEmail in new SystemCommunicationService( rockContext )
                     .Queryable().AsNoTracking()
                     .OrderBy( e => e.Title ) 
                     .Select( e => new
@@ -377,11 +377,11 @@ namespace RockWeb.Blocks.Core
                     Guid? inviteEmailGuid = GetAttributeValue( "DefaultInviteEmail" ).AsGuidOrNull();
                     if ( inviteEmailGuid.HasValue )
                     {
-                        var systemEmail = new SystemEmailService( rockContext ).Get( inviteEmailGuid.Value );
+                        var systemEmail = new SystemCommunicationService( rockContext ).Get( inviteEmailGuid.Value );
                         if ( systemEmail != null )
                         {
-                            signatureDocumentTemplate.InviteSystemEmail = systemEmail;
-                            signatureDocumentTemplate.InviteSystemEmailId = systemEmail.Id;
+                            signatureDocumentTemplate.InviteSystemCommunication = systemEmail;
+                            signatureDocumentTemplate.InviteSystemCommunicationId = systemEmail.Id;
                         }
                     }
 
