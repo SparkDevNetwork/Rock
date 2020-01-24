@@ -53,6 +53,13 @@ namespace Rock.Model
                 }
             }
 
+            if ( options.RegistrantId.HasValue )
+            {
+                registrationRegistrantServiceQuery = registrationRegistrantServiceQuery.Where( a => a.Id == options.RegistrantId.Value );
+            }
+
+            registrationRegistrantServiceQuery = registrationRegistrantServiceQuery.OrderBy( a => a.LastName ).ThenBy( a => a.NickName );
+
             var groupPlacementRegistrantList = registrationRegistrantServiceQuery.ToList()
                 .Select( r => new GroupPlacementRegistrant( r, options ) )
                 .ToList();
@@ -67,6 +74,7 @@ namespace Rock.Model
     public class GroupPlacementRegistrant
     {
         private RegistrationRegistrant RegistrationRegistrant { get; set; }
+
         private GetGroupPlacementRegistrantsParameters Options { get; set; }
 
         public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, GetGroupPlacementRegistrantsParameters options )
@@ -160,11 +168,12 @@ namespace Rock.Model
 
         public int? RegistrationInstanceId { get; set; }
 
+        public int? RegistrantId { get; set; }
+
         public bool IncludeFees { get; set; }
 
         public int? DataViewFilterId { get; set; }
 
         public int[] DisplayedAttributeIds { get; set; } = new int[0];
-        //public int? RegistrationInstanceId { get; set; }
     }
 }

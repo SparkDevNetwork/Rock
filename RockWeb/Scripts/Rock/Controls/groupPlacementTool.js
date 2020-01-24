@@ -5,6 +5,10 @@
 
     /** JS helper for the groupPlacement block */
     Rock.controls.groupPlacementTool = (function () {
+        /// <summary>
+        /// s this instance.
+        /// </summary>
+        /// <returns></returns>
         var exports = {
             /** initializes the JavasSript for the groupPlacement tool */
             initialize: function (options) {
@@ -24,10 +28,19 @@
                 self.$groupPlacementTool = $control;
                 self.$registrantList = $('.js-group-placement-registrant-list', $control);
                 self.$groupList = $('.js-placement-groups');
-                self.registrationTemplatePlacementId = $('.js-registration-template-placement-id', self.$groupPlacementTool).val()
-                self.showRegistrantInstanceName = $('.js-registration-template-show-instance-name', self.$groupPlacementTool).val();
+                self.registrationTemplatePlacementId = parseInt($('.js-registration-template-placement-id', self.$groupPlacementTool).val()) || null;
+                self.registrationInstanceId = parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null;
+
+                self.showRegistrantInstanceName = $('.js-registration-template-show-instance-name', self.$groupPlacementTool).val() == 'true';
+
+                if (self.registrationInstanceId) {
+                    // if group placement is in specific instance mode, then never show instance name in the registrant details
+                    self.showRegistrantInstanceName = false;
+                }
+
                 self.showAllRegistrantDetails = false;
-                self.highlightGenders = $('.js-options-highlight-genders', self.$groupPlacementTool).val();
+                self.highlightGenders = $('.js-options-highlight-genders', self.$groupPlacementTool).val() == 'true';
+                self.hideFullGroups = $('.js-options-hide-full-groups', self.$groupPlacementTool).val() == 'true';
 
                 // initialize dragula
                 var containers = [];
@@ -150,17 +163,11 @@
                             }).done(function () {
                                 self.populateGroupRoleMembers($groupRoleMembers);
                             }).fail(function (jqXHR) {
-                                $draggedItem.attr('data-has-placement-error', true);
-                                $draggedItem.attr('registrant-placement-error-message', jqXHR.responseJSON.Message);
-                                $draggedItem.addClass('alert alert-warning js-registrant-placement-error-message');
-                                $draggedItem.html(jqXHR.responseJSON.Message);
+                                self.showPlaceRegistrantError($groupRoleMembers, jqXHR, $draggedRegistrant);
                             });
 
                         }).fail(function (jqXHR) {
-                            $draggedItem.attr('data-has-placement-error', true);
-                            $draggedItem.attr('registrant-placement-error-message', jqXHR.responseJSON.Message);
-                            $draggedItem.addClass('alert alert-warning');
-                            $draggedItem.html(jqXHR.responseJSON.Message);
+                            self.showPlaceRegistrantError($groupRoleMembers, jqXHR, $draggedRegistrant);
                         });
 
                         self.trimSourceContainer();
@@ -211,6 +218,9 @@
             populateGroupRoleMembers: function ($groupRoleMembers) {
                 var self = this;
 
+                // hide any alerts that are showing
+                $('.js-alert', self.$groupPlacementTool).hide();
+
                 var getGroupMembersUrl = Rock.settings.get('baseUrl') + 'api/GroupMembers';
                 var $placementGroup = $groupRoleMembers.closest('.js-placement-group');
                 var $groupRoleContainer = $groupRoleMembers.find('.js-group-role-container');
@@ -240,8 +250,8 @@
                         $groupRoleContainer.append($groupMemberDiv);
                     });
 
-                    var groupCapacity = Number($('.js-placement-capacity', $placementGroup).val());
-                    
+                    var groupCapacity = parseInt($('.js-placement-capacity', $placementGroup).val()) || null;
+
                     var $groupCapacityLabel = $('.js-placement-capacity-label', $placementGroup);
 
                     if (groupCapacity) {
@@ -260,11 +270,16 @@
                             $groupCapacityLabel.attr('data-status', 'under-capacity');
                         }
 
+                        if (self.hideFullGroups && groupMemberCount >= groupCapacity) {
+                            var $group = $groupRoleContainer.closest('.js-placement-group');
+                            $group.hide();
+                        }
+
                     } else {
                         $groupCapacityLabel.attr('data-status', 'none');
                     }
 
-                    var groupRoleMaxMembers = Number($('.js-grouptyperole-max-members', $groupRoleMembers).val());
+                    var groupRoleMaxMembers = parseInt($('.js-grouptyperole-max-members', $groupRoleMembers).val()) || null;
                     var $groupRoleMaxMembersLabel = $('.js-grouptyperole-max-members-label', $groupRoleMembers);
                     if (groupRoleMaxMembers) {
                         var groupRoleMemberCount = groupMembers.length;
@@ -313,11 +328,12 @@
                 var $registrantContainer = $('.js-group-placement-registrant-container', $registrantList);
                 var getGroupPlacementRegistrantsUrl = Rock.settings.get('baseUrl') + 'api/RegistrationRegistrants/GetGroupPlacementRegistrants';
                 var getGroupPlacementRegistrantsParameters = {
-                    RegistrationTemplateId: Number($('.js-registration-template-id', self.$groupPlacementTool).val()),
-                    RegistrationInstanceId: Number($('.js-registration-instance-id', self.$groupPlacementTool).val()),
+                    RegistrantId: parseInt($('.js-registrant-id', self.$groupPlacementTool).val()) || null,
+                    RegistrationTemplateId: parseInt($('.js-registration-template-id', self.$groupPlacementTool).val()) || null,
+                    RegistrationInstanceId: parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null,
                     RegistrationTemplatePlacementId: self.registrationTemplatePlacementId,
                     IncludeFees: $('.js-options-include-fees', self.$groupPlacementTool).val(),
-                    DataFilterId: Number($('.js-options-datafilter-id', self.$groupPlacementTool).val()),
+                    DataFilterId: parseInt($('.js-options-datafilter-id', self.$groupPlacementTool).val()) || null,
                 };
 
                 if ($('.js-registration-template-instance-id-list', self.$groupPlacementTool).val() != '') {
@@ -357,7 +373,7 @@
                         $loadingNotification.hide();
                     }, 0)
 
-                }).fail(function (a, b, c) {
+                }).fail(function (a) {
                     console.log('fail:' + a.responseText);
                     $loadingNotification.hide();
                 });
@@ -369,7 +385,7 @@
                 var self = this;
 
                 $registrantDiv.attr('data-person-id', registrant.PersonId);
-                if (self.highlightGenders == 'true') {
+                if (self.highlightGenders) {
                     $registrantDiv.attr('data-person-gender', registrant.PersonGender);
                 }
                 $registrantDiv.attr('data-registrant-id', registrant.RegistrantId);
@@ -377,8 +393,8 @@
                 $registrantDiv.find('.js-registrant-name').text(registrant.PersonName);
 
                 $registrantDiv.find('.js-registrant-details').hide();
-                
-                if (self.showRegistrantInstanceName == 'true') {
+
+                if (self.showRegistrantInstanceName) {
                     $registrantDiv.find('.js-registrant-registrationinstance-name').text(registrant.RegistrationInstanceName);
                 } else {
                     $registrantDiv.find('.js-registration-instance-name-container').hide();
@@ -403,44 +419,129 @@
                     $attributesDiv.append($attributesDl);
                 }
             },
+            showPlaceRegistrantError: function ($groupRoleMembers, jqXHR, $draggedRegistrant) {
+                $draggedRegistrant.remove();
+
+                var self = this;
+                var $placeRegistrantError = $('.js-placement-place-registrant-error', $groupRoleMembers);
+                // hide any other alerts that are showing
+                $('.js-alert', self.$groupPlacementTool).not($placeRegistrantError).hide();
+                $placeRegistrantError.find('.js-placement-place-registrant-error-text').text(jqXHR.responseJSON.Message ?? jqXHR.responseText);
+                $placeRegistrantError.show();
+            },
             /**  */
             initializeEventHandlers: function () {
                 var self = this;
 
-                self.$groupPlacementTool.on('click', '.js-remove-group-member, .js-unlink-group, .js-delete-group', function () {
+                self.$groupPlacementTool.on('click', '.js-remove-group-member, .js-detach-placement-group, .js-delete-group', function () {
                     var $groupMember = $(this).closest('.js-group-member');
                     var $groupRoleMembers = $groupMember.closest('.js-group-role-members');
 
                     if ($(this).hasClass('js-remove-group-member')) {
                         self.removeGroupMember($groupMember, $groupRoleMembers);
                     }
-                    else if ($(this).hasClass('js-unlink-group')) {
-                        //scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonDecline';
+                    else if ($(this).hasClass('js-detach-placement-group')) {
+                        var $group = $(this).closest('.js-placement-group');
+                        var groupId = $group.find('.js-placement-group-id').val();
+                        var registrationInstanceId = parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null;
+
+                        Rock.dialogs.confirm('Are you sure you want to detach this placement group?', function () {
+                            var detachPlacementGroupUrl = Rock.settings.get('baseUrl') + 'api/RegistrationTemplatePlacements/DetachPlacementGroup';
+                            detachPlacementGroupUrl += '?groupId=' + groupId;
+                            detachPlacementGroupUrl += '&registrationTemplatePlacementId=' + self.registrationTemplatePlacementId;
+                            if (registrationInstanceId) {
+                                detachPlacementGroupUrl += '&registrationInstanceId=' + registrationInstanceId;
+                            };
+
+                            $.ajax({
+                                method: "DELETE",
+                                url: detachPlacementGroupUrl
+                            }).done(function () {
+                                $group.hide();
+                            }).fail(function (jqXHR) {
+                                debugger
+                                var $groupAlert = $('.js-placement-group-error', $group);
+                                $groupAlert.find('.js-placement-group-error-text').text('Unable to detach group: ' + (jqXHR.responseJSON.Message ?? jqXHR.responseText));
+                                $groupAlert.show();
+                            });
+                        });
                     }
                     else if ($(this).hasClass('js-delete-group')) {
-                        //scheduledPersonUrl = Rock.settings.get('baseUrl') + 'api/Attendances/ScheduledPersonPending';
+                        var $group = $(this).closest('.js-placement-group');
+                        var groupId = $group.find('.js-placement-group-id').val();
+                        Rock.dialogs.confirm('Are you sure you want to delete this group?', function () {
+                            debugger
+                            var deleteGroupUrl = Rock.settings.get('baseUrl') + 'api/Groups?Id=' + groupId;
+                            $.ajax({
+                                method: "DELETE",
+                                url: deleteGroupUrl
+                            }).done(function () {
+                                $group.hide();
+                            }).fail(function (jqXHR) {
+                                var $groupAlert = $('.js-placement-group-error', $group);
+                                $groupAlert.find('.js-placement-group-error-text').text('Unable to delete group: ' + (jqXHR.responseJSON.Message ?? jqXHR.responseText))
+                                $groupAlert.show();
+                            });
+                        });
                     }
                     else {
                         return;
                     }
-
                 });
-                
+
+                // filter the search list when stuff is typed in the search box
+                $('.js-registrant-search', self.$groupPlacementTool).on('keyup', function () {
+                    var value = $(this).find('input').val().toLowerCase().trim();
+                    $(".js-group-placement-registrant-container .js-registrant").filter(function () {
+                        if (value == '') {
+                            // show everybody
+                            $(this).toggle(true);
+                        }
+                        else {
+
+                            var registrantName = $(this).find('.js-registrant-name').text();
+                            var registrantNameSplit = registrantName.split(' ');
+                            var anyMatch = false;
+
+                            // if the first or lastname starts with the searchstring, show the person
+                            $.each(registrantNameSplit, function (nindex) {
+                                if (registrantNameSplit[nindex].toLowerCase().indexOf(value) == 0) {
+                                    anyMatch = true;
+                                }
+                            })
+
+                            // if first or last didn't match, see if fullname starts with the search value
+                            if (!anyMatch) {
+                                if (registrantName.toLowerCase().indexOf(value) == 0) {
+                                    anyMatch = true;
+                                }
+                            }
+
+                            $(this).toggle(anyMatch);
+                        }
+                    });
+                });
+
 
                 $('.js-group-placement-registrant-list', self.$groupPlacementTool)
                     .on('mouseenter', '.js-registrant', function () {
-                        
                         $('.js-registrant-details', $(this)).stop().slideDown();
                     })
                     .on('mouseleave', '.js-registrant', function () {
+                        // if the toggle for show all registrant details is active, just leave it open
                         if (!self.showAllRegistrantDetails) {
                             $('.js-registrant-details', $(this)).stop().slideUp();
                         }
                     });
 
+                $('.js-hide-alert', self.$groupPlacementTool).click(function () {
+                    // default bootstrap alert deletes the div, but we want to reuse it so just hide instead
+                    $(this).closest('.js-alert').hide();
+                });
+
                 $('.js-toggle-registrant-details', self.$groupPlacementTool).click(function () {
                     self.showAllRegistrantDetails = !self.showAllRegistrantDetails;
-                    
+
                     if (self.showAllRegistrantDetails) {
                         $('i', this).removeClass('fa-angle-double-down').addClass('fa-angle-double-up');
                         $('.js-registrant-details', self.$groupPlacementTool).stop().slideDown();
@@ -484,3 +585,5 @@
         return exports;
     }());
 }(jQuery));
+
+

@@ -44,11 +44,13 @@
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateShowInstanceName" runat="server" CssClass="js-registration-template-show-instance-name" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateInstanceIds" runat="server" CssClass="js-registration-template-instance-id-list" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
+                        <Rock:HiddenFieldWithClass ID="hfRegistrantId" runat="server" CssClass="js-registrant-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementGroupTypeId" runat="server" CssClass="js-registration-template-placement-grouptype-id" />
 
                         <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHighlightGenders" runat="server" CssClass="js-options-highlight-genders" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsHideFullGroups" runat="server" CssClass="js-options-hide-full-groups" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDataFilterId" runat="server" CssClass="js-options-datafilter-id" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedRegistrantAttributeIds" runat="server" CssClass="js-options-displayed-registrant-attribute-ids" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeKeys" runat="server" CssClass="js-options-displayed-groupmember-attribute-keys" />
@@ -62,6 +64,7 @@
                                         <%-- template that groupPlacement.js uses to populate available registrants --%>
 
                                         <div class="js-registrant registrant unselectable clickable" data-person-gender="" data-registrant-id="" data-person-id="">
+
                                             <div class="panel panel-block">
                                                 <div class="panel-heading">
                                                     <div class="panel-title">
@@ -159,6 +162,10 @@
                                                 <Rock:HiddenFieldWithClass ID="hfPlacementGroupCapacity" runat="server" CssClass="js-placement-capacity" />
 
                                                 <div class="panel panel-block placement-group">
+                                                    <div class="alert alert-danger js-alert js-placement-group-error" style="display: none">
+                                                        <span class="js-placement-group-error-text"></span>
+                                                        <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                                    </div>
                                                     <div class="panel-heading">
                                                         <h1 class="panel-title">
                                                             <asp:Literal ID="lGroupIconHtml" runat="server" />
@@ -167,12 +174,13 @@
 
                                                         <div class="panel-labels">
                                                             <div class="dropdown js-groupmember-actions hide-transit pull-right">
-                                                                <div class="btn btn-link btn-overflow" type="button" data-toggle="dropdown">
+                                                                <div class="btn btn-link btn-overflow" data-toggle="dropdown">
                                                                     <i class="fas fa-ellipsis-v"></i>
                                                                 </div>
                                                                 <ul class="dropdown-menu">
                                                                     <li>
-                                                                        <button type="button" class="dropdown-item btn-link js-remove-group-member">Remove</button>
+                                                                        <button type="button" class="dropdown-item btn-link js-detach-placement-group">Detach from Placement</button>
+                                                                        <button type="button" class="dropdown-item btn-link js-delete-group">Delete Permanently</button>
                                                                     </li>
                                                                 </ul>
                                                             </div>
@@ -180,7 +188,6 @@
                                                                 <i class="fa fa-chevron-down"></i>
                                                             </div>
                                                             <div class="placement-status-labels pull-right">
-
                                                                 <Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="" />
                                                                 <span class="label label-custom placement-capacity-label js-placement-capacity-label" data-status="none"></span>
                                                             </div>
@@ -198,6 +205,7 @@
                                                                     <Rock:HiddenFieldWithClass ID="hfGroupTypeRoleMaxMembers" runat="server" CssClass="js-grouptyperole-max-members" />
 
                                                                     <div class="panel panel-block">
+
                                                                         <div class="panel-heading">
 
                                                                             <h1 class="panel-title">
@@ -209,6 +217,10 @@
                                                                                     <span class="label label-custom grouptyperole-max-members-label js-grouptyperole-max-members-label" data-status="none">1:1</span>
                                                                                 </div>
                                                                             </asp:Panel>
+                                                                        </div>
+                                                                        <div class="alert alert-danger js-alert js-placement-place-registrant-error" style="display: none">
+                                                                            <span class="js-placement-place-registrant-error-text"></span>
+                                                                            <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
                                                                         </div>
                                                                         <div class="panel-body">
                                                                             <div class="js-group-role-container group-role-container dropzone"></div>
@@ -239,6 +251,9 @@
         <asp:Panel ID="pnlAddPlacementGroup" runat="server">
             <Rock:ModalDialog ID="mdAddPlacementGroup" runat="server" ValidationGroup="vgAddPlacementGroup" Title="Add Placement Group/Add Shared Placement Group" OnSaveClick="mdAddPlacementGroup_SaveClick">
                 <Content>
+                    <Rock:NotificationBox ID="nbNotAllowedToAddGroup" runat="server" NotificationBoxType="Danger" Visible="false"
+                        Text="You are not authorized to save group with the selected group type and/or parent group." />
+
                     <Rock:ButtonGroup ID="bgAddNewOrExistingPlacementGroup" runat="server" OnSelectedIndexChanged="bgAddNewOrExistingPlacementGroup_SelectedIndexChanged" AutoPostBack="true">
                     </Rock:ButtonGroup>
                     <asp:Panel ID="pnlAddNewPlacementGroup" runat="server">

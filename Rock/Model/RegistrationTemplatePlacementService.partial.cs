@@ -61,5 +61,22 @@ namespace Rock.Model
 
             return false;
         }
+
+        /// <summary>
+        /// Deletes the registration template placement placement group.
+        /// </summary>
+        /// <param name="registrationTemplatePlacement">The registration template placement.</param>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public bool DeleteRegistrationTemplatePlacementPlacementGroup( RegistrationTemplatePlacement registrationTemplatePlacement, Group group )
+        {
+            if ( this.RelatedEntities.RelatedToSourceEntityAlreadyExists( registrationTemplatePlacement.Id, group, RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate ) )
+            {
+                this.RelatedEntities.DeleteRelatedToSourceEntity( registrationTemplatePlacement.Id, group, RelatedEntityPurposeKey.RegistrationTemplateGroupPlacementTemplate );
+                return true;
+            }
+
+            return false;
+        }
     }
 }

@@ -60,5 +60,18 @@ namespace Rock.Model
 
             return false;
         }
+
+        /// <summary>
+        /// Deletes (detaches) the registration instance placement group.
+        /// </summary>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="group">The group.</param>
+        public void DeleteRegistrationInstancePlacementGroup( RegistrationInstance registrationInstance, Group group )
+        {
+            if ( this.RelatedEntities.RelatedToSourceEntityAlreadyExists( registrationInstance.Id, group, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement ) )
+            {
+                this.RelatedEntities.DeleteRelatedToSourceEntity( registrationInstance.Id, group, RelatedEntityPurposeKey.RegistrationInstanceGroupPlacement );
+            }
+        }
     }
 }
