@@ -25,13 +25,29 @@
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
                                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                                <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" AutoPostBack="true" EnhanceForLongLists="true" />
+                                <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" AutoPostBack="true" EnhanceForLongLists="true" Required="true" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
-                                <Rock:NumberBox ID="nbPersistedScheduleIntervalMinutes" runat="server" NumberType="Integer" Required="false" Label="Persisted Schedule Interval" MinimumValue="1" MaxLength="9" CssClass="input-width-sm"
-                                    Help="To persist this dataview, enter how often this dataview should be persisted (in minutes). A persisted dataview can improve performance by writing the filtered results to the database, especially for complex dataviews. Leave this blank to not persist this dataview." />
+
+                                <%-- Persistence Schedule Settings --%>
+                                <asp:UpdatePanel runat="server" UpdateMode="Conditional">
+                                    <ContentTemplate>
+                                        <h5>Speed Settings</h5>
+                                        <Rock:RockCheckBox ID="cbPersistDataView" runat="server" Label="Persist Data View" AutoPostBack="true" OnCheckedChanged="cbPersistDataView_CheckedChanged"
+                                            Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed." />
+                                        <asp:Panel runat="server" ID="pnlSpeedSettings">
+                                            <Rock:RangeSlider ID="rsPersistedScheduleInterval" runat="server" Label="Persistence Interval" MaxValue="24" MinValue="1" SelectedValue="12" />
+                                            <Rock:ButtonGroup ID="bgPersistedScheduleUnit" runat="server" CssClass="pull-right margin-b-md" UnselectedItemClass="btn btn-xs btn-default" SelectedItemClass="btn btn-xs btn-primary" AutoPostBack="true" OnSelectedIndexChanged="bgPersistedScheduleUnit_SelectedIndexChanged">
+                                                <asp:ListItem Text="Mins" Value="1" />
+                                                <asp:ListItem Text="Hours" Value="2" Selected="True" />
+                                                <asp:ListItem Text="Days" Value="3" />
+                                            </Rock:ButtonGroup>
+                                        </asp:Panel>
+                                    </ContentTemplate>
+                                </asp:UpdatePanel>
+
                             </div>
                         </div>
 

@@ -46,9 +46,30 @@ namespace RockWeb.Plugin.com_bemadev.Connection
     [LinkedPage( "Workflow Detail Page", "Page used to display details about a workflow.", order: 1 )]
     [LinkedPage( "Workflow Entry Page", "Page used to launch a new workflow of the selected type.", order: 2 )]
     [LinkedPage( "Group Detail Page", "Page used to display group details.", order: 3 )]
-    [PersonBadgesField( "Badges", "The person badges to display in this block.", false, "", "", 0 )]
+    [BadgesField(
+        "Badges",
+        Description = "The badges to display in this block.",
+        IsRequired = false,
+        Order = 4,
+        Key = AttributeKeys.Badges)]
     public partial class LCBCConnectionRequestDetail : PersonBlock, IDetailBlock
     {
+    
+        #region Attribute Keys
+
+        private static class AttributeKeys
+        {
+            public const string PersonProfilePage = "PersonProfilePage";
+            public const string WorkflowDetailPage = "WorkflowDetailPage";
+            public const string WorkflowEntryPage = "WorkflowEntryPage";
+            public const string GroupDetailPage = "GroupDetailPage";
+            public const string SmsLinkPage = "SmsLinkPage";
+            public const string Badges = "Badges";
+            public const string LavaBadgeBar = "LavaBadgeBar";
+            public const string LavaHeadingTemplate = "LavaHeadingTemplate";
+        }
+
+        #endregion Attribute Keys
 
         #region Fields
 
@@ -126,7 +147,7 @@ namespace RockWeb.Plugin.com_bemadev.Connection
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.AddConfigurationUpdateTrigger( upDetail );
 
-            string badgeList = GetAttributeValue( "Badges" );
+            string badgeList = GetAttributeValue(AttributeKeys.Badges);
             if ( !string.IsNullOrWhiteSpace( badgeList ) )
             {
                 pnlBadges.Visible = true;
@@ -135,10 +156,10 @@ namespace RockWeb.Plugin.com_bemadev.Connection
                     Guid guid = badgeGuid.AsGuid();
                     if ( guid != Guid.Empty )
                     {
-                        var personBadge = PersonBadgeCache.Get( guid );
-                        if ( personBadge != null )
+                        var badgeTypes = BadgeCache.Get(guid);
+                        if ( badgeTypes != null )
                         {
-                            blStatus.PersonBadges.Add( personBadge );
+                            blStatus.BadgeTypes.Add( badgeTypes );
                         }
                     }
                 }

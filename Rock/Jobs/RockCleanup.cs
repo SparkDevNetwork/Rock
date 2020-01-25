@@ -26,7 +26,6 @@ using Quartz;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -57,6 +56,10 @@ namespace Rock.Jobs
         {
         }
 
+        private Dictionary<string, int> _databaseRowsCleanedUp = new Dictionary<string, int>();
+        List<Exception> _rockCleanupExceptions = new List<Exception>();
+        private IJobExecutionContext jobContext;
+
         /// <summary>
         /// Job that executes routine Rock cleanup tasks
         /// Called by the <see cref="IScheduler" /> when a
@@ -66,196 +69,97 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         public virtual void Execute( IJobExecutionContext context )
         {
-            // get the job map
-            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            jobContext = context;
 
-            List<Exception> rockCleanupExceptions = new List<Exception>();
+            JobDataMap dataMap = jobContext.JobDetail.JobDataMap;
 
-            Dictionary<string, int> databaseRowsCleanedUp = new Dictionary<string, int>();
+            RunCleanupTask( "Purge Exception Log", () => this.PurgeExceptionLog( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Exception Log", PurgeExceptionLog( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in PurgeExceptionLog", ex ) );
-            }
+            RunCleanupTask( "Expired Entity Set", () => CleanupExpiredEntitySets( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Expired Entity Set", CleanupExpiredEntitySets( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupExpiredEntitySets", ex ) );
-            }
+            RunCleanupTask( "Old Interaction Cleanup", () => CleanupInteractions( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Old Interaction", CleanupInteractions( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupInteractions", ex ) );
-            }
+            RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Audit Log", PurgeAuditLog( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in PurgeAuditLog", ex ) );
-            }
+            RunCleanupTask( "Clean Cached File Directory", () => CleanCachedFileDirectory( context, dataMap ) );
 
-            try
-            {
-                CleanCachedFileDirectory( context, dataMap );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanCachedFileDirectory", ex ) );
-            }
+            RunCleanupTask( "Cleanup Temporary Binary Files", () => CleanupTemporaryBinaryFiles() );
 
-            try
-            {
-                CleanupTemporaryBinaryFiles();
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupTemporaryBinaryFiles", ex ) );
-            }
+            // updates missing person aliases, metaphones, etc (doesn't delete any records)
+            RunCleanupTask( "Person Cleanup", () => PersonCleanup( dataMap ) );
 
-            try
-            {
-                // updates missing person aliases, metaphones, etc (doesn't delete any records)
-                PersonCleanup( dataMap );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in PersonCleanup", ex ) );
-            }
+            RunCleanupTask( "Temporary Registration Cleanup", () => CleanUpTemporaryRegistrations() );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Temporary Registration", CleanUpTemporaryRegistrations() );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpTemporaryRegistrations", ex ) );
-            }
+            RunCleanupTask( "Workflow Cleanup", () => CleanUpWorkflows( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Workflow", CleanUpWorkflows( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflows", ex ) );
-            }
+            RunCleanupTask( "Workflow Log Cleanup", () => CleanUpWorkflowLogs( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Workflow Log", CleanUpWorkflowLogs( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanUpWorkflowLogs", ex ) );
-            }
+            RunCleanupTask( "Orphaned Attribute Value Cleanup", () => CleanupOrphanedAttributes( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Orphaned Attribute Value", CleanupOrphanedAttributes( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupOrphanedAttributes", ex ) );
-            }
+            RunCleanupTask( "Transient Communication Cleanup", () => CleanupTransientCommunications( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Transient Communication", CleanupTransientCommunications( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupTransientCommunications", ex ) );
-            }
+            RunCleanupTask( "Missing Financial Transaction Currency Cleanup", () => CleanupFinancialTransactionNullCurrency( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Missing Financial Transaction Currency", CleanupFinancialTransactionNullCurrency( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupFinancialTransactionNullCurrency", ex ) );
-            }
+            RunCleanupTask( "Person Token Cleanup", () => CleanupPersonTokens( dataMap ) );
 
-            try
-            {
-                databaseRowsCleanedUp.Add( "Person Token", CleanupPersonTokens( dataMap ) );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupPersonTokens", ex ) );
-            }
+            // Reduce the job history to max size
+            RunCleanupTask( "Job History Cleanup", () => CleanupJobHistory() );
 
-            try
-            {
-                // Reduce the job history to max size
-                CleanupJobHistory();
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in CleanupJobHistory", ex ) );
-            }
+            // Search for and delete group memberships duplicates (same person, group, and role)
+            RunCleanupTask( "Group Membership Cleanup", () => GroupMembershipCleanup() );
 
-            try
-            {
-                // Search for and delete group memberships duplicates (same person, group, and role)
-                var rowsDeleted = GroupMembershipCleanup();
-                databaseRowsCleanedUp.Add( "Group Membership", rowsDeleted );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in GroupMembershipCleanup", ex ) );
-            }
+            RunCleanupTask( "Attendance Data (old label data) Cleanup", () => AttendanceDataCleanup( dataMap ) );
 
-            try
-            {
-                var rowsDeleted = AttendanceDataCleanup( dataMap );
-                databaseRowsCleanedUp.Add( "Attendance Data (old label data)", rowsDeleted );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in AttendanceDataCleanup", ex ) );
-            }
+            // Search for locations with no country and assign USA or Canada if it match any of the country's states
+            RunCleanupTask( "Location Cleanup", () => LocationCleanup( dataMap ) );
 
-            try
-            {
-                // Search for locations with no country and assign USA or Canada if it match any of the country's states
-                LocationCleanup( dataMap );
-            }
-            catch ( Exception ex )
-            {
-                rockCleanupExceptions.Add( new Exception( "Exception in LocationCleanup", ex ) );
-            }
+            // Does any cleanup on AttributeValue, such as making sure as ValueAsNumeric column has the correct value
+            RunCleanupTask( "Attribute Value Cleanup", () => AttributeValueCleanup( dataMap ) );
+
+            RunCleanupTask( "Duplicate Streak Enrollments Cleanup", () => MergeStreaks() );
+
+            RunCleanupTask( "Streak Denormalized Data Refreshes", () => RefreshStreaksDenormalizedData() );
+
+            RunCleanupTask( "Calendar EffectiveStart and EffectiveEnd dates Cleanup", () => EnsureScheduleEffectiveStartEndDates() );
+
+            RunCleanupTask( "Nameless person for SMS Responses Cleanup", () => EnsureNamelessPersonForSMSResponses() );
+
+            RunCleanupTask( "Match nameless person records", () => MatchNamelessPersonToRegularPerson() );
 
             // ***********************
             //  Final count and report
             // ***********************
-            if ( databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
+            if ( _databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
             {
-                context.Result = string.Format( "Rock Cleanup cleaned up {0}", databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
+                context.Result = string.Format( "Processed {0}", _databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
             }
             else
             {
                 context.Result = "Rock Cleanup completed";
             }
 
-            if ( rockCleanupExceptions.Count > 0 )
+            if ( _rockCleanupExceptions.Count > 0 )
             {
-                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
+                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", _rockCleanupExceptions );
+            }
+        }
+
+        /// <summary>
+        /// Runs the cleanup task.
+        /// </summary>
+        /// <param name="cleanupTitle">The cleanup title.</param>
+        /// <param name="cleanupMethod">The cleanup method.</param>
+        private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
+        {
+            try
+            {
+                jobContext.UpdateLastStatusMessage( $"Running {cleanupTitle}" );
+                var cleanupRowsAffected = cleanupMethod();
+                _databaseRowsCleanedUp.Add( cleanupTitle, cleanupRowsAffected );
+            }
+            catch ( Exception ex )
+            {
+                _rockCleanupExceptions.Add( new Exception( $"Exception occurred in {cleanupTitle}", ex ) );
             }
         }
 
@@ -263,8 +167,9 @@ namespace Rock.Jobs
         /// Does cleanup of Person Aliases and Metaphones
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private void PersonCleanup( JobDataMap dataMap )
+        private int PersonCleanup( JobDataMap dataMap )
         {
+            int resultCount = 0;
             // Add any missing person aliases
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
@@ -276,12 +181,13 @@ namespace Rock.Jobs
                     .Take( 300 ) )
                 {
                     person.Aliases.Add( new PersonAlias { AliasPersonId = person.Id, AliasPersonGuid = person.Guid } );
+                    resultCount++;
                 }
 
                 personRockContext.SaveChanges();
             }
 
-            AddMissingAlternateIds();
+            resultCount += AddMissingAlternateIds();
 
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
@@ -316,6 +222,7 @@ namespace Rock.Jobs
                         metaphone.Metaphone2 = mp2;
 
                         metaphones.Add( metaphone );
+                        resultCount++;
                     }
 
                     personRockContext.SaveChanges( disablePrePostProcessing: true );
@@ -328,13 +235,15 @@ namespace Rock.Jobs
             {
                 personRockContext.Database.CommandTimeout = commandTimeout;
                 int primaryFamilyUpdates = PersonService.UpdatePrimaryFamilyAll( personRockContext );
+                resultCount += primaryFamilyUpdates;
             }
 
             // Ensures the GivingLeaderId is correct for all person records in the database
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
                 personRockContext.Database.CommandTimeout = commandTimeout;
-                int primaryFamilyUpdates = PersonService.UpdateGivingLeaderIdAll( personRockContext );
+                int givingLeaderUpdates = PersonService.UpdateGivingLeaderIdAll( personRockContext );
+                resultCount += givingLeaderUpdates;
             }
 
             // update any updated or incorrect age classifications on persons
@@ -342,6 +251,7 @@ namespace Rock.Jobs
             {
                 personRockContext.Database.CommandTimeout = commandTimeout;
                 int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
+                resultCount += ageClassificationUpdates;
             }
 
             // update the BirthDate with a computed value
@@ -352,10 +262,10 @@ namespace Rock.Jobs
 
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
+            resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
 
             // Implied Relationship Group
-            AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
+            resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
 
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = new Rock.Data.RockContext() )
@@ -374,6 +284,8 @@ namespace Rock.Jobs
                     IsActive = false
                 } );
             }
+
+            return resultCount;
         }
 
         /// <summary>
@@ -381,8 +293,9 @@ namespace Rock.Jobs
         /// to avoid any possible memory issues. Processes about 150k records
         /// in 52 seconds.
         /// </summary>
-        private static void AddMissingAlternateIds()
+        private static int AddMissingAlternateIds()
         {
+            int resultCount = 0;
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
                 var personService = new PersonService( personRockContext );
@@ -431,7 +344,11 @@ namespace Rock.Jobs
                     // Now add them in one bulk insert.
                     personRockContext.BulkInsert( itemsToInsert );
                 }
+
+                resultCount += itemsToInsert.Count;
             }
+
+            return resultCount;
         }
 
         /// <summary>
@@ -440,8 +357,9 @@ namespace Rock.Jobs
         /// <param name="relationshipGroupType">Type of the relationship group.</param>
         /// <param name="ownerRoleGuid">The owner role unique identifier.</param>
         /// <param name="commandTimeout">The command timeout.</param>
-        private static void AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid, int commandTimeout )
+        private static int AddMissingRelationshipGroups( GroupTypeCache relationshipGroupType, Guid ownerRoleGuid, int commandTimeout )
         {
+            int resultCount = 0;
             if ( relationshipGroupType != null )
             {
                 var ownerRoleId = relationshipGroupType.Roles
@@ -491,19 +409,23 @@ namespace Rock.Jobs
                         }
 
                         rockContext.BulkInsert( groupMembersToInsert );
+                        resultCount += groupGroupMembersToInsert.Count();
                     }
                 }
             }
+
+            return resultCount;
         }
 
         /// <summary>
         /// Cleanups the temporary binary files.
         /// </summary>
-        private void CleanupTemporaryBinaryFiles()
+        private int CleanupTemporaryBinaryFiles()
         {
             var binaryFileRockContext = new Rock.Data.RockContext();
             // clean out any temporary binary files
             BinaryFileService binaryFileService = new BinaryFileService( binaryFileRockContext );
+            int resultCount = 0;
             foreach ( var binaryFile in binaryFileService.Queryable().Where( bf => bf.IsTemporary == true ).ToList() )
             {
                 if ( binaryFile.ModifiedDateTime < RockDateTime.Now.AddDays( -1 ) )
@@ -511,11 +433,14 @@ namespace Rock.Jobs
                     string errorMessage;
                     if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
                     {
+                        resultCount++;
                         binaryFileService.Delete( binaryFile );
                         binaryFileRockContext.SaveChanges();
                     }
                 }
             }
+
+            return resultCount;
         }
 
         /// <summary>
@@ -650,10 +575,12 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="dataMap">The data map.</param>
-        private void CleanCachedFileDirectory( IJobExecutionContext context, JobDataMap dataMap )
+        private int CleanCachedFileDirectory( IJobExecutionContext context, JobDataMap dataMap )
         {
             string cacheDirectoryPath = dataMap.GetString( "BaseCacheDirectory" );
             int? cacheExpirationDays = dataMap.GetString( "DaysKeepCachedFiles" ).AsIntegerOrNull();
+
+            int resultCount = 0;
             if ( cacheExpirationDays.HasValue )
             {
                 DateTime cacheExpirationDate = RockDateTime.Now.Add( new TimeSpan( cacheExpirationDays.Value * -1, 0, 0, 0 ) );
@@ -669,9 +596,11 @@ namespace Rock.Jobs
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) && cacheExpirationDate <= RockDateTime.Now )
                 {
                     // Clean cache directory
-                    CleanCacheDirectory( cacheDirectoryPath, cacheExpirationDate );
+                    resultCount += CleanCacheDirectory( cacheDirectoryPath, cacheExpirationDate );
                 }
             }
+
+            return resultCount;
         }
 
         /// <summary>
@@ -1010,13 +939,15 @@ WHERE ExpireDateTime IS NOT NULL
         /// </summary>
         /// <param name="directoryPath">The directory path.</param>
         /// <param name="expirationDate">The file expiration date. Files older than this date will be deleted</param>
-        private void CleanCacheDirectory( string directoryPath, DateTime expirationDate )
+        private int CleanCacheDirectory( string directoryPath, DateTime expirationDate )
         {
+            int resultCount = 0;
+
             // verify that the directory exists
             if ( !Directory.Exists( directoryPath ) )
             {
                 // if directory doesn't exist return
-                return;
+                return 0;
             }
 
             // loop through each file in the directory
@@ -1027,6 +958,7 @@ WHERE ExpireDateTime IS NOT NULL
                 if ( adjustedFileDateTime < expirationDate )
                 {
                     // delete the file
+                    resultCount++;
                     DeleteFile( filePath, false );
                 }
             }
@@ -1038,7 +970,7 @@ WHERE ExpireDateTime IS NOT NULL
                 if ( ( File.GetAttributes( subDirectory ) & FileAttributes.ReparsePoint ) != FileAttributes.ReparsePoint )
                 {
                     // clean the directory
-                    CleanCacheDirectory( subDirectory, expirationDate );
+                    resultCount += CleanCacheDirectory( subDirectory, expirationDate );
                 }
             }
 
@@ -1052,6 +984,8 @@ WHERE ExpireDateTime IS NOT NULL
                 // delete the directory
                 DeleteDirectory( directoryPath, false );
             }
+
+            return resultCount;
         }
 
         /// <summary>
@@ -1113,13 +1047,15 @@ WHERE ExpireDateTime IS NOT NULL
         /// <summary>
         /// Cleanups the job history
         /// </summary>
-        private void CleanupJobHistory()
+        private int CleanupJobHistory()
         {
             using ( RockContext rockContext = new RockContext() )
             {
                 ServiceJobHistoryService serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
                 serviceJobHistoryService.DeleteMoreThanMax();
             }
+
+            return 0;
         }
 
         /// <summary>
@@ -1176,12 +1112,57 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
         }
 
         /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="dataMap">The data map.</param>
+        private int AttributeValueCleanup( JobDataMap dataMap )
+        {
+            int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsIntegerOrNull() ?? 900;
+
+            AttributeValueCleanup( commandTimeout );
+
+            return 0;
+        }
+
+
+        /// <summary>
+        /// Does cleanup of Attribute Values
+        /// </summary>
+        /// <param name="commandTimeout">The command timeout.</param>
+        internal static void AttributeValueCleanup( int commandTimeout )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                // Ensure AttributeValue.ValueAsNumeric is in sync with AttributeValue.Value, just in case Value got updated without also updating ValueAsNumeric
+                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.ExecuteSqlCommand( @"
+UPDATE AttributeValue
+SET ValueAsNumeric = CASE 
+		WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END
+where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
+			THEN CASE 
+					WHEN isnumeric([value]) = (1)
+						AND NOT [value] LIKE '%[^-0-9.]%'
+						THEN TRY_CAST([value] AS [decimal](18, 2))
+					END
+		END), 0)
+" );
+            }
+        }
+
+        /// <summary>
         /// Does cleanup of Locations
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private void LocationCleanup( JobDataMap dataMap )
+        private int LocationCleanup( JobDataMap dataMap )
         {
-            // Add any missing person aliases
+            int resultCount = 0;
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
@@ -1205,6 +1186,7 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
                         var state = stateNameList[location.State];
                         if ( state.Count() == 1 )
                         {
+                            resultCount++;
                             location.State = state.First().State;
                             location.Country = state.First().Country.ToStringSafe();
                         }
@@ -1232,6 +1214,7 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
                         var state = stateList[location.State];
                         if ( state.Count() == 1 )
                         {
+                            resultCount++;
                             location.State = state.First().State;
                             location.Country = state.First().Country.ToStringSafe();
                         }
@@ -1240,6 +1223,8 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
 
                 rockContext.SaveChanges();
             }
+
+            return resultCount;
         }
 
         /// <summary>
@@ -1283,5 +1268,192 @@ WHERE a.[CreatedDateTime] <= @olderThanDate
             // Return the count of memberships deleted
             return groupMemberIds.Count();
         }
+
+        /// <summary>
+        /// Merges the streaks.
+        /// </summary>
+        /// <returns></returns>
+        private int MergeStreaks()
+        {
+            var recordsDeleted = 0;
+
+            var rockContext = new RockContext();
+            var streakService = new StreakService( rockContext );
+            var attemptService = new StreakAchievementAttemptService( rockContext );
+            var duplicateGroups = streakService.Queryable()
+                .GroupBy( s => new { s.PersonAlias.PersonId, s.StreakTypeId } )
+                .Where( g => g.Count() > 1 )
+                .ToList();
+
+            foreach ( var duplicateGroup in duplicateGroups )
+            {
+                var recordToKeep = duplicateGroup.OrderByDescending( s => s.ModifiedDateTime ).First();
+                var recordsToDelete = duplicateGroup.Where( s => s.Id != recordToKeep.Id );
+
+                recordToKeep.InactiveDateTime = duplicateGroup.Min( s => s.InactiveDateTime );
+                recordToKeep.EnrollmentDate = duplicateGroup.Min( s => s.EnrollmentDate );
+
+                var engagementMaps = duplicateGroup.Select( s => s.EngagementMap ?? new byte[0] ).ToArray();
+                recordToKeep.EngagementMap = StreakTypeService.GetAggregateMap( engagementMaps );
+
+                var exclusionMaps = duplicateGroup.Select( s => s.ExclusionMap ?? new byte[0] ).ToArray();
+                recordToKeep.ExclusionMap = StreakTypeService.GetAggregateMap( exclusionMaps );
+
+                var recordsToDeleteIds = recordsToDelete.Select( s => s.Id ).ToList();
+                var attempts = attemptService.Queryable().Where( saa => recordsToDeleteIds.Contains( saa.StreakId ) ).ToList();
+                attempts.ForEach( saa => saa.StreakId = recordToKeep.Id );
+
+                streakService.DeleteRange( recordsToDelete );
+                rockContext.SaveChanges( true );
+                recordsDeleted += recordsToDelete.Count();
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Refreshes the streaks denormalized data.
+        /// </summary>
+        /// <returns></returns>
+        private int RefreshStreaksDenormalizedData()
+        {
+            var recordsUpdated = 0;
+
+            foreach ( var streakTypeCache in StreakTypeCache.All().Where( st => st.IsActive ) )
+            {
+                recordsUpdated += StreakTypeService.HandlePostSaveChanges( streakTypeCache.Id );
+            }
+
+            return recordsUpdated;
+        }
+
+        /// <summary>
+        /// Ensures the schedule effective start end dates.
+        /// </summary>
+        /// <returns></returns>
+        private int EnsureScheduleEffectiveStartEndDates()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+                var scheduleList = scheduleService.Queryable().ToList();
+                foreach ( var schedule in scheduleList )
+                {
+                    if ( schedule.EnsureEffectiveStartEndDates() )
+                    {
+                        rowsUpdated++;
+                    }
+                }
+
+                if ( rowsUpdated > 0 )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Ensures the nameless person for SMS responses that have a NULL fromPersonAliasId
+        /// </summary>
+        /// <returns></returns>
+        private int EnsureNamelessPersonForSMSResponses()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                var communicationResponseService = new CommunicationResponseService( rockContext );
+                var personService = new PersonService( rockContext );
+
+                var nullPersonCommunicationReponseQry = communicationResponseService.Queryable().Where( a => !a.FromPersonAliasId.HasValue && !string.IsNullOrEmpty( a.MessageKey ) );
+                var messageKeysWithoutFromPersonList = nullPersonCommunicationReponseQry.Select( a => a.MessageKey ).Distinct().ToList();
+                foreach ( var messageKey in messageKeysWithoutFromPersonList )
+                {
+                    var fromPerson = personService.GetPersonFromMobilePhoneNumber( messageKey, true );
+
+                    var communicationsResponsesToUpdate = nullPersonCommunicationReponseQry.Where( a => a.MessageKey == messageKey );
+                    var fromPersonAliasId = fromPerson.PrimaryAliasId;
+                    rowsUpdated += rockContext.BulkUpdate( communicationsResponsesToUpdate, a => new CommunicationResponse { FromPersonAliasId = fromPersonAliasId } );
+                }
+            }
+
+            return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Matches the nameless person to regular person.
+        /// </summary>
+        /// <returns></returns>
+        private int MatchNamelessPersonToRegularPerson()
+        {
+            int rowsUpdated = 0;
+            using ( var rockContext = new RockContext() )
+            {
+                var personService = new PersonService( rockContext );
+                var phoneNumberService = new PhoneNumberService( rockContext );
+
+                var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+                int numberTypeMobileValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+                var namelessPersonPhoneNumberQry = phoneNumberService.Queryable()
+                    .Where( pn => pn.Person.RecordTypeValueId == namelessPersonRecordTypeId )
+                    .AsNoTracking();
+
+                var personPhoneNumberQry = phoneNumberService.Queryable()
+                    .Where( a => a.Person.RecordTypeValueId != namelessPersonRecordTypeId );
+
+
+                // match nameless person records to regular person records by comparing phone numbers.
+                // order so that the non-nameless person phones with an SMS number with messaging enabled are listed first
+                // then sort by the oldest person record in case there are multiple people with the same number
+                var matchedPhoneNumbersJoinQry = namelessPersonPhoneNumberQry.Join( personPhoneNumberQry,
+                    np => np.Number,
+                    pp => pp.Number,
+                    ( np, pp ) => new
+                    {
+                        NamelessPersonPhoneNumber = np,
+                        PersonPhoneNumber = pp
+                    } )
+                    .Where( j => j.PersonPhoneNumber.CountryCode == j.NamelessPersonPhoneNumber.CountryCode || string.IsNullOrEmpty( j.PersonPhoneNumber.CountryCode ) )
+                    .OrderByDescending( j => j.PersonPhoneNumber.IsMessagingEnabled )
+                    .ThenByDescending( j => j.PersonPhoneNumber.NumberTypeValueId == numberTypeMobileValueId )
+                    .ThenByDescending( j => j.PersonPhoneNumber.Person.RecordTypeValueId != namelessPersonRecordTypeId )
+                    .ThenBy( j => j.PersonPhoneNumber.PersonId );
+
+                var matchedPhoneNumberList = matchedPhoneNumbersJoinQry
+                    //.Include( a => a.NamelessPersonPhoneNumber.Person )
+                    //.Include( a => a.PersonPhoneNumber.Person )
+                    .ToList();
+
+                HashSet<int> mergedNamelessPersonIds = new HashSet<int>();
+
+
+                foreach ( var matchedPhoneNumber in matchedPhoneNumberList.ToList() )
+                {
+                    var namelessPersonId = matchedPhoneNumber.NamelessPersonPhoneNumber.PersonId;
+                    if ( !mergedNamelessPersonIds.Contains( namelessPersonId ) )
+                    {
+                        var existingPersonId = matchedPhoneNumber.PersonPhoneNumber.PersonId;
+                        using ( var mergeContext = new RockContext() )
+                        {
+                            var mergePersonService = new PersonService( mergeContext );
+                            var namelessPerson = mergePersonService.Get( namelessPersonId );
+                            var existingPerson = mergePersonService.Get( existingPersonId );
+                            mergePersonService.MergeNamelessPersonToExistingPerson( namelessPerson, existingPerson );
+                            mergeContext.SaveChanges();
+                            mergedNamelessPersonIds.Add( namelessPersonId );
+                            rowsUpdated++;
+                        }
+                    }
+                }
+            }
+
+
+            return rowsUpdated;
+        }
+
     }
 }

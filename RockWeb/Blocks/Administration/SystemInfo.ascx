@@ -131,8 +131,6 @@
             <asp:Literal ID="lCacheOverview" runat="server"></asp:Literal>
         </div>
 
-        <asp:Literal ID="lFalseCacheHits" runat="server"></asp:Literal>
-
         <p><a id="show-cache-objects" href="#">Show Cache Statistics</a></p>
         <div id="cache-objects" style="display:none">
             <p><asp:Literal ID="lCacheObjects" runat="server"></asp:Literal></p>

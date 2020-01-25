@@ -153,7 +153,19 @@ namespace RockWeb.Blocks.Administration
         {
             int? scheduledJobId = PageParameter( "ScheduledJobId" ).AsIntegerOrNull();
 
-            var jobHistoryService = new ServiceJobHistoryService( new RockContext() );
+            if ( scheduledJobId == null )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+
+            ServiceJobService jobService = new ServiceJobService( rockContext );
+
+            var job = jobService.Get( scheduledJobId.Value );
+            lJobName.Text = job.Name;
+
+            var jobHistoryService = new ServiceJobHistoryService( rockContext );
             SortProperty sortProperty = gScheduledJobHistory.SortProperty;
 
             var qry = jobHistoryService.GetServiceJobHistory( scheduledJobId );

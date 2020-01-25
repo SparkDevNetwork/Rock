@@ -42,8 +42,7 @@ namespace RockWeb.Blocks.Core
     [NoteTypeField( "Note Type", "Set Note Type to limit this block to a specific note type", false, order: 1 )]
 
     // Context Aware will limit the Watcher Option to the Person or Group context (when a new watch is added)
-    [ContextAware( typeof( Rock.Model.Person ) )]
-    [ContextAware( typeof( Rock.Model.Group ) )]
+    [ContextAware( typeof( Rock.Model.Group ), typeof( Rock.Model.Person ) )]
     public partial class NoteWatchDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods

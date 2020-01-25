@@ -36,7 +36,11 @@
                             <asp:Literal ID="lblMainDetails" runat="server" />
                         </div>
                     </div>
-
+                    <div>
+                        <div class="col-md-12">
+                            <Rock:AttributeValuesContainer ID="avcDisplayAttributes" runat="server" />
+                        </div>
+                    </div>
                 </div>
 
                 <div id="pnlEditDetails" runat="server">
@@ -66,7 +70,7 @@
                                 <Rock:RockControlWrapper ID="rcGroupTypes" runat="server" Label="Child Group Types"
                                     Help="The types of child groups that can be added to groups of this type. This is used to define the group hierarchy. To allow an unlimited hierarchy add this type as an allowed child group type.">
                                     <div class="grid">
-                                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type">
+                                        <Rock:Grid ID="gChildGroupTypes" runat="server" DisplayType="Light" ShowHeader="false" RowItemText="Group Type" HideDeleteButtonForIsSystem="false">
                                             <Columns>
                                                 <Rock:RockBoundField DataField="Name" />
                                                 <Rock:DeleteField OnClick="gChildGroupTypes_Delete" />
@@ -138,6 +142,10 @@
                                         <Rock:RockCheckBox ID="cbEnableGroupTag" runat="server" Label="Enable Group Tag"
                                             Help="Determines if groups of this type should be allowed to manage tags." />
 
+                                    </div>
+                                    <div class="col-md-12">
+                                        <Rock:RockCheckBox ID="cbGroupRSVPEnabled" runat="server" Label="Group RSVP Enabled" Text="Yes"
+                                            Help="This option will allow group RSVP." />
                                     </div>
                         </div>
                             </div>
@@ -341,6 +349,7 @@
                                 </Columns>
                             </Rock:Grid>
                         </div>
+                        <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" />
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpGroupTypeGroupRequirements" runat="server" Title="Group Requirements">
@@ -390,7 +399,7 @@
                                     Help="The term to use for members in groups of this group type." />
                                 <Rock:DataTextBox ID="tbAdministratorTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="AdministratorTerm" Required="true"
                                     Help="This setting allows you to customize the term used for the administrator of the group." />
-                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass"
+                                <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"
                                     Help="The Font Awesome icon class to use when displaying groups of this group type." />
                                 <Rock:ColorPicker ID="cpGroupTypeColor" runat="server" Label="Group Type Color"
                                     Help="The color used to visually distinguish groups on lists." />

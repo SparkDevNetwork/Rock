@@ -89,29 +89,7 @@ namespace RockWeb.Blocks.Administration
             ScriptManager scriptManager = ScriptManager.GetCurrent( Page );
             scriptManager.RegisterPostBackControl( btnDumpDiagnostics );
         }
-
-        protected override void OnPreRender( EventArgs e )
-        {
-            if ( Context.Items.Contains( "Cache_Hits" ) )
-            {
-                var cacheHits = Context.Items["Cache_Hits"] as System.Collections.Generic.Dictionary<string, bool>;
-                if ( cacheHits != null )
-                {
-                    var misses = cacheHits.Where( c => !c.Value );
-                    if ( misses.Any() )
-                    {
-                        lFalseCacheHits.Text = string.Format( "<p><strong>Cache Misses:</strong><br /> {0}</p>",
-                            misses.Select( c => c.Key )
-                                .OrderBy( c => c )
-                                .ToList()
-                                .AsDelimited( "<br />" ) );
-                    }
-                }
-            }
-            
-            base.OnPreRender( e );
-        }
-
+        
         #endregion
 
         #region Events
@@ -252,6 +230,10 @@ namespace RockWeb.Blocks.Administration
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Gets the cache information (From Re-dis Cache Statistics)
+        /// </summary>
+        /// <returns></returns>
         private string GetCacheInfo()
         {
             StringBuilder sb = new StringBuilder();

@@ -215,7 +215,7 @@ namespace Rock.Jobs
                                             mergeFields.Add( "Group", sync.Group );
                                             mergeFields.Add( "Person", person );
                                             var emailMessage = new RockEmailMessage( sync.ExitSystemEmail );
-                                            emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                             var emailErrors = new List<string>();
                                             emailMessage.Send( out emailErrors );
                                             errors.AddRange( emailErrors );
@@ -351,7 +351,7 @@ namespace Rock.Jobs
                                             mergeFields.Add( "NewPassword", newPassword );
                                             mergeFields.Add( "CreateLogin", createLogin );
                                             var emailMessage = new RockEmailMessage( sync.WelcomeSystemEmail );
-                                            emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                             var emailErrors = new List<string>();
                                             emailMessage.Send( out emailErrors );
                                             errors.AddRange( emailErrors );
