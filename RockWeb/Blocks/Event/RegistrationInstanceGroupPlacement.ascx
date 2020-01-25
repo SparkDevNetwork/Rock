@@ -96,7 +96,7 @@
                                             </h1>
 
                                             <div class="panel-labels">
-                                                <div class="js-toggle-registrant-details btn btn-xs btn-default">
+                                                <div class="js-toggle-registrant-details toggle-registrant-details btn btn-xs btn-default">
                                                     <i class="fa fa-angle-double-down"></i>
                                                 </div>
                                             </div>
@@ -173,8 +173,8 @@
                                                         </h1>
 
                                                         <div class="panel-labels">
-                                                            <div class="dropdown js-groupmember-actions hide-transit pull-right">
-                                                                <div class="btn btn-link btn-overflow" data-toggle="dropdown">
+                                                            <div class="dropdown js-group-actions hide-transit pull-right">
+                                                                <div class="btn btn-link btn-overflow btn-xs" data-toggle="dropdown">
                                                                     <i class="fas fa-ellipsis-v"></i>
                                                                 </div>
                                                                 <ul class="dropdown-menu">
@@ -184,12 +184,12 @@
                                                                     </li>
                                                                 </ul>
                                                             </div>
-                                                            <div class="btn btn-link btn-xs pull-right js-placement-group-toggle-visibility">
+                                                            <div class="btn btn-default btn-xs pull-right js-placement-group-toggle-visibility placement-group-toggle-visibility">
                                                                 <i class="fa fa-chevron-down"></i>
                                                             </div>
                                                             <div class="placement-status-labels pull-right">
-                                                                <Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="" />
-                                                                <span class="label label-custom placement-capacity-label js-placement-capacity-label" data-status="none"></span>
+                                                                <Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="margin-r-sm" />
+                                                                <span class="label label-custom placement-capacity-label js-placement-capacity-label margin-r-sm" data-status="none"></span>
                                                             </div>
 
                                                         </div>

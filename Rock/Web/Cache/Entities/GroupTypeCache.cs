@@ -514,6 +514,12 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool EnableGroupTag { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether [allow any child group type].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow any child group type]; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool AllowAnyChildGroupType { get; private set; }
 
