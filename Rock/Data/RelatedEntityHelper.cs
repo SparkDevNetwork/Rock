@@ -22,10 +22,18 @@ using Z.EntityFramework.Plus;
 
 namespace Rock.Data
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public sealed class RelatedEntityHelper<T> where T: Rock.Data.Entity<T>, new()
     {
         private Service<T> Service { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RelatedEntityHelper{T}"/> class.
+        /// </summary>
+        /// <param name="service">The service.</param>
         public RelatedEntityHelper( Service<T> service )
         {
             Service = service;
