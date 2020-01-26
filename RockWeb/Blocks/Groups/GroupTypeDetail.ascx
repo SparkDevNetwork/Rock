@@ -174,7 +174,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <Rock:RangeSlider ID="rsRsvpReminderOffsetDays" runat="server" Label="RSVP Reminder Offset Days" MinValue="0" MaxValue="30" SelectedValue="1"
-                                                Help="The number of days prior to a group event occurrence to send the RSVP reminder." />
+                                                Help="The number of days prior to a group event occurrence to send the RSVP reminder.  Set this value to 0 if you prefer to set this on the individual group." />
                                         </div>
                                     </div>
                                 </asp:Panel>
