@@ -43,10 +43,12 @@
 
             <div class="panel-body">
                 <asp:Panel ID="pnlDetails" runat="server">
-
                     <div class="row">
                         <div class="col-md-8 col-sm-6">
                             <div class="row">
+                                <div class="col-sm-12">
+                                    <Rock:RockLiteral ID="lOccurrenceName" runat="server" Label="Name" />
+                                </div>
                                 <div class="col-sm-12">
                                     <Rock:RockLiteral ID="lOccurrenceDate" runat="server" Label="Date" />
                                 </div>
@@ -73,6 +75,9 @@
 
                         <Rock:NotificationBox ID="nbEditConflict" runat="server" NotificationBoxType="Danger" Text="Unable to edit occurrence because another occurrence already exists on the same date, with the same location and schedule" Visible="false" />
                         <div class="row">
+                            <div class="col-sm-12">
+                                <Rock:RockTextBox ID="tbOccurrenceName" runat="server" Label="Name" />
+                            </div>
                             <div class="col-sm-6">
                                 <Rock:DatePicker ID="dpOccurrenceDate" runat="server" Label="Date" Required="true" />
                             </div>
