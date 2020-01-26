@@ -811,14 +811,25 @@ namespace RockWeb.Blocks.Groups
             // Save RSVP settings.
             if ( group.GroupType.EnableRSVP )
             {
-                if ( group.GroupType.RSVPReminderSystemCommunicationId.HasValue )
+                // Offset Days
+                if ( group.GroupType.RSVPReminderOffsetDays.HasValue )
                 {
                     group.RSVPReminderOffsetDays = null;
+                }
+                else
+                {
+                    // Group Type setting takes precedence over Group setting.
+                    group.RSVPReminderOffsetDays = rsRsvpReminderOffsetDays.SelectedValue;
+                }
+
+                // Reminder
+                if ( group.GroupType.RSVPReminderSystemCommunicationId.HasValue )
+                {
                     group.RSVPReminderSystemCommunicationId = null;
                 }
                 else
-                { 
-                    group.RSVPReminderOffsetDays = rsRsvpReminderOffsetDays.SelectedValue;
+                {
+                    // Group Type setting takes precedence over Group setting.
                     group.RSVPReminderSystemCommunicationId = ddlRsvpReminderSystemCommunication.SelectedValueAsInt();
                 }
             }
@@ -1909,7 +1920,8 @@ namespace RockWeb.Blocks.Groups
             bool showRsvp = false;
             int? offsetDays = 0;
             int? reminderSystemCommunicationId = null;
-            bool isReadOnly = true;
+            bool isReadOnly_Offset = true;
+            bool isReadOnly_Reminder = true;
 
             if ( groupType != null )
             {
@@ -1917,30 +1929,33 @@ namespace RockWeb.Blocks.Groups
 
                 if ( showRsvp )
                 {
-                    // If a specific RSVP Communication Template has been assigned for this Group Type, the RSVP settings for Groups of this type are read-only.
-                    isReadOnly = groupType.RSVPReminderSystemCommunicationId.HasValue;
+                    // Assign default values.
+                    rsRsvpReminderOffsetDays.Enabled = false;
+                    ddlRsvpReminderSystemCommunication.Enabled = false;
+                    offsetDays = groupType.RSVPReminderOffsetDays;
+                    reminderSystemCommunicationId = groupType.RSVPReminderSystemCommunicationId;
 
-                    if ( isReadOnly || group == null )
+                    // If a specific RSVP Communication Template has been assigned for this Group Type, the RSVP settings for
+                    // Groups of this type are read-only.
+                    isReadOnly_Offset = groupType.RSVPReminderOffsetDays.HasValue;
+                    isReadOnly_Reminder = groupType.RSVPReminderSystemCommunicationId.HasValue;
+
+                    if ( !isReadOnly_Offset )
                     {
-                        // Get the RSVP Communication settings from the Group Type.
-                        offsetDays = groupType.RSVPReminderOffsetDays;
-                        reminderSystemCommunicationId = groupType.RSVPReminderSystemCommunicationId;
+                        rsRsvpReminderOffsetDays.Enabled = true;
+                        offsetDays = ( group != null ) ? group.RSVPReminderOffsetDays : 0;
                     }
-                    else
+
+                    if ( !isReadOnly_Reminder )
                     {
-                        // Get the RSVP Communication settings from the Group.
-                        offsetDays = group.RSVPReminderOffsetDays;
-                        reminderSystemCommunicationId = group.RSVPReminderSystemCommunicationId;
+                        ddlRsvpReminderSystemCommunication.Enabled = true;
+                        reminderSystemCommunicationId = ( group != null ) ? group.RSVPReminderSystemCommunicationId : null;
                     }
                 }
             }
 
             wpRsvp.Visible = showRsvp;
-
             rsRsvpReminderOffsetDays.SelectedValue = offsetDays.GetValueOrDefault( 0 );
-            rsRsvpReminderOffsetDays.Enabled = !isReadOnly;
-
-            ddlRsvpReminderSystemCommunication.Enabled = !isReadOnly;
             ddlRsvpReminderSystemCommunication.SetValue( reminderSystemCommunicationId );
         }
 
@@ -2246,8 +2261,10 @@ namespace RockWeb.Blocks.Groups
 
             var communicationService = new SystemCommunicationService( rockContext );
 
-            var systemCommunications = communicationService.Queryable()
+            var rsvpReminderCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SYSTEM_COMMUNICATION_RSVP_CONFIRMATION.AsGuid() );
+            var rsvpReminderCommunications = communicationService.Queryable()
                 .AsNoTracking()
+                .Where( c => c.CategoryId == rsvpReminderCategoryId )
                 .OrderBy( t => t.Title )
                 .Select( a => new
                 {
@@ -2255,9 +2272,9 @@ namespace RockWeb.Blocks.Groups
                     a.Title
                 } );
 
-            foreach ( var systemCommunication in systemCommunications )
+            foreach ( var rsvpReminder in rsvpReminderCommunications )
             {
-                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Id.ToString() ) );
+                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem(rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
             }
 
             ddlAttendanceRecordRequiredForCheckIn.BindToEnum<AttendanceRecordRequiredForCheckIn>();

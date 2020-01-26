@@ -531,7 +531,14 @@ namespace RockWeb.Blocks.Groups
             // RSVP
             groupType.EnableRSVP = cbGroupRSVPEnabled.Checked;
             groupType.RSVPReminderSystemCommunicationId = ddlRsvpReminderSystemCommunication.SelectedValueAsInt();
-            groupType.RSVPReminderOffsetDays = rsRsvpReminderOffsetDays.SelectedValue;
+            if ( rsRsvpReminderOffsetDays.SelectedValue == null || rsRsvpReminderOffsetDays.SelectedValue == 0 )
+            {
+                groupType.RSVPReminderOffsetDays = null;
+            }
+            else
+            {
+                groupType.RSVPReminderOffsetDays = rsRsvpReminderOffsetDays.SelectedValue;
+            }
 
             // Scheduling
             groupType.IsSchedulingEnabled = cbSchedulingEnabled.Checked;
@@ -1066,22 +1073,39 @@ namespace RockWeb.Blocks.Groups
             ddlRsvpReminderSystemCommunication.Items.Clear();
             ddlRsvpReminderSystemCommunication.Items.Add( new ListItem() );
 
-            // Add System Communication selection items.
-            var systemCommunications = new SystemCommunicationService( new RockContext() ).Queryable().OrderBy( t => t.Title ).Select( a => new
-            {
-                a.Id,
-                a.Title
-            } );
+            // Get a list of System Communications - these are used for Group Scheduling and RSVP Reminders.
+            var systemCommunications = new SystemCommunicationService( new RockContext() )
+                .Queryable()
+                .OrderBy( t => t.Title )
+                .ToList();
 
-            if ( systemCommunications.Any() )
-            {
-                foreach ( var systemCommunication in systemCommunications )
+            // Group Scheduling System Communications.
+            var scheduleReminderCommunications = systemCommunications
+                .Select( a => new
                 {
-                    ddlScheduleConfirmationSystemCommunication.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Id.ToString() ) );
-                    ddlScheduleReminderSystemCommunication.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Id.ToString() ) );
-                    ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Id.ToString() ) );
+                    a.Id,
+                    a.Title
+                } );
+
+            if ( scheduleReminderCommunications.Any() )
+            {
+                foreach ( var scheduleReminder in scheduleReminderCommunications )
+                {
+                    ddlScheduleConfirmationSystemCommunication.Items.Add( new ListItem(scheduleReminder.Title, scheduleReminder.Id.ToString() ) );
+                    ddlScheduleReminderSystemCommunication.Items.Add( new ListItem(scheduleReminder.Title, scheduleReminder.Id.ToString() ) );
                 }
             }
+
+            // RSVP Reminder System Communications.
+            var rsvpReminderCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SYSTEM_COMMUNICATION_RSVP_CONFIRMATION.AsGuid() );
+            var rsvpReminderCommunications = systemCommunications
+                .Where( c => c.CategoryId == rsvpReminderCategoryId );
+
+            foreach ( var rsvpReminder in rsvpReminderCommunications )
+            {
+                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
+            }
+
         }
 
         /// <summary>
