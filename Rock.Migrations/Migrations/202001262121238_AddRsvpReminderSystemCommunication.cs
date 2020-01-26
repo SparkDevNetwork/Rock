@@ -37,7 +37,7 @@ namespace Rock.Migrations
 
 <p>Hi {{  Person.NickName  }}!</p>
 
-<p>This is just a reminder that you have RSVPed for {{ Occurrence.Name }} on {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}.</p>
+<p>This is just a reminder that you have RSVP'd for {{ Occurrence.Name }} on {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}.</p>
 
 <p>Thanks!</p>
 
