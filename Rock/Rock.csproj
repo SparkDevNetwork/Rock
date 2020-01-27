@@ -520,6 +520,8 @@
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
+    <Compile Include="Storage\Common\GoogleCloudStorage.cs" />
+    <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="SystemGuid\SystemCommunication.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
