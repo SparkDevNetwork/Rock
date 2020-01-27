@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    ///
+    /// Control that can be used to select a template to use in a block
     /// </summary>
     [ToolboxData( "<{0}:BlockTemplatePicker runat=server></{0}:BlockTemplatePicker>" )]
     public class BlockTemplatePicker : CompositeControl, IRockControl
