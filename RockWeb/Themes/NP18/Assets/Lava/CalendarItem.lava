@@ -1,9 +1,8 @@
-
 <div class="row">
     <div class="col-sm-7">
 
         <h2 class="margin-b-none">{{ Event.Name }}</h2>
-        <h4 class="text-primary margin-b-none">{{ EventItemOccurrence.Schedule.NextStartDateTime | Date:'MMMM d, yyyy | h:mm tt' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</h4>
+        <h4 class="text-primary margin-b-none">{% assign nextDate = EventItemOccurrence.Schedule.NextStartDateTime %}{% if nextDate == null %}{% assign nextDate = EventItemOccurrence.Schedule.EffectiveEndDate %}{% endif %}{{ nextDate | Date:'MMMM d, yyyy | h:mm tt' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}</h4>
         
         {% assign EventItemOccurrence_Location = EventItemOccurrence.Location | Trim %}
         {% assign EventItemOccurrence_LocationCampus = EventItemOccurrence | Attribute:'LocationCampus' | Trim %}
@@ -54,6 +53,17 @@
                     </li>
                 {% endfor %}
             </ul>
+        {% else %}
+            {% if EventItemOccurrence.Schedule.EffectiveEndDate %}
+                <p>
+                    <strong>Date</strong><br />
+                    {{ EventItemOccurrence.Schedule.EffectiveEndDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' | Remove:':00' | Replace:'AM','a.m.' | Replace:'PM','p.m.' }}
+                </p>
+            {% else %}
+                <div class="alert alert-info">
+                    This is a past event. Please see our <a href="/calendar">calendar</a> for current events.
+                </div>
+            {% endif %}
         {% endif %}
 
 
