@@ -24,7 +24,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field Type to select a single (or null) Entity filtered by a selected Entity Type
+    /// Stored as EntityType.Guid|EntityId
     /// </summary>
     public class EntityFieldType : FieldType
     {
