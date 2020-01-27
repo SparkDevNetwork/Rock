@@ -161,6 +161,14 @@
     <Compile Include="Migrations\202001212012085_Rollup_0121.Designer.cs">
       <DependentUpon>202001212012085_Rollup_0121.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202001222318395_AssessmentTypeDescriptionOptional.cs" />
+    <Compile Include="Migrations\202001222318395_AssessmentTypeDescriptionOptional.Designer.cs">
+      <DependentUpon>202001222318395_AssessmentTypeDescriptionOptional.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001262121238_AddRsvpReminderSystemCommunication.cs" />
+    <Compile Include="Migrations\202001262121238_AddRsvpReminderSystemCommunication.Designer.cs">
+      <DependentUpon>202001262121238_AddRsvpReminderSystemCommunication.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -1073,6 +1081,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202001212012085_Rollup_0121.resx">
       <DependentUpon>202001212012085_Rollup_0121.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001222318395_AssessmentTypeDescriptionOptional.resx">
+      <DependentUpon>202001222318395_AssessmentTypeDescriptionOptional.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001262121238_AddRsvpReminderSystemCommunication.resx">
+      <DependentUpon>202001262121238_AddRsvpReminderSystemCommunication.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>

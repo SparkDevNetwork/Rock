@@ -767,6 +767,46 @@
   }
 }
 
+.badge-assessment {
+
+  &.assessment-conflicttheme {
+    color: #E15759;
+  }
+
+  &.assessment-disc {
+    color: #4E79A7;
+  }
+
+  &.assessment-spiritualgifts {
+    color: #8CD17D
+  }
+
+  &.assessment-motivators {
+    color: #F28E2B;
+  }
+
+  &.assessment-eqselfaware {
+    color: #499894;
+  }
+
+  // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
+  &.not-requested {
+    color: @ui-4 !important;
+  }
+
+  &.requested {
+    color: @ui-5 !important;
+  }
+
+  .fa-stack-1x {
+    color: #fff;
+  }
+
+  .fa-stack-2x {
+    color: currentColor;
+  }
+}
+
 @-webkit-keyframes bar-grow {
   0% {
     height: 0;

@@ -38,7 +38,7 @@ namespace Rock.Badge.Component
     [ExportMetadata( "ComponentName", "Assessment Badge" )]
 
     [AssessmentTypesField( "Assessments To Show",
-        Description = "Select the assesements that should be displayed in the badge. If none are selected then all assessments will be shown.",
+        Description = "Select the assessments that should be displayed in the badge. If none are selected then all assessments will be shown.",
         Key = AttributeKeys.AssessmentsToShow,
         IncludeInactive = false,
         IsRequired = false,
@@ -65,7 +65,7 @@ namespace Rock.Badge.Component
             /// <summary>
             /// The CSS class be assigned for assessments that have not been requested and are not completed.
             /// </summary>
-            public const string NotRequested = "notrequested";
+            public const string NotRequested = "not-requested";
 
             /// <summary>
             /// The CSS class used to indicate which <i></i> holds the assessment icon
@@ -77,7 +77,7 @@ namespace Rock.Badge.Component
             /// The class will be named using this prefix and then the assessment title in all lower case
             /// with no spaces. e.g. "Spiritual Gifts" will get the "assessment-spiritualgifts" CSS class
             /// </summary>
-            public const string AssessmentTypePrefix = "assessment-";
+            public const string AssessmentTypePrefix = "badge-assessment assessment-";
         }
 
         /// <summary>
@@ -205,13 +205,17 @@ namespace Rock.Badge.Component
                     }
                 }
 
-                badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+                // Only set the color if the test has been taken.
+                string badgeColorHtml = string.Empty;
 
                 // If there is a completed request we want to link to it and provide a Lava merged summary
                 if ( assessmentTest != null )
                 {
                     if ( assessmentTest.Status == AssessmentRequestStatus.Complete || previouslyCompletedAssessmentTest != null )
                     {
+                        badgeColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};' " : string.Empty;
+
+                        badgeIcons.AppendLine( $@"<div {badgeColorHtml} class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
                         badgeIcons.AppendLine( $@"<a href='{resultsPageUrl}' target='_blank'>" );
 
                         mergeFields.Add( "Person", Person );
@@ -221,10 +225,14 @@ namespace Rock.Badge.Component
                     if ( assessmentTest.Status == AssessmentRequestStatus.Pending && previouslyCompletedAssessmentTest == null )
                     {
                         // set the request string and requested datetime to the merged lava
-                        mergedBadgeSummaryLava = $"Requsted: {assessmentTest.RequestedDateTime.ToShortDateString()}";
+                        mergedBadgeSummaryLava = $"Requested: {assessmentTest.RequestedDateTime.ToShortDateString()}";
                     }
                 }
-                
+                else
+                {
+                    badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+                }
+
                 badgeIcons.AppendLine( $@"
                         <span class='fa-stack'>
                             <i class='fa fa-circle fa-stack-2x'></i>
@@ -239,11 +247,14 @@ namespace Rock.Badge.Component
 
                 badgeIcons.AppendLine( $@"</div>" );
 
+                string badgeToolTipColorHtml = assessmentType.BadgeColor.IsNotNullOrWhiteSpace() ? $"style='color:{assessmentType.BadgeColor};'" : string.Empty;
                 toolTipText.AppendLine( $@"
                     <p class='margin-b-sm'>
-                        <span class='fa-stack'>
-                            <i class='fa fa-circle fa-stack-2x {assessmentTypeClass}'></i>
-                            <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
+                        <span {badgeToolTipColorHtml} class='{assessmentTypeClass}'>
+                            <span class='fa-stack'>
+                                <i class='fa fa-circle fa-stack-2x'></i>
+                                <i class='{assessmentType.IconCssClass} fa-stack-1x {AssessmentBadgeCssClasses.AssessmentIcon}'></i>
+                            </span>
                         </span>
                         <strong>{assessmentTitle}:</strong> {mergedBadgeSummaryLava}
                     </p>" );
@@ -277,7 +288,7 @@ namespace Rock.Badge.Component
 
             public DateTime? RequestedDateTime { get; set; }
 
-            public AssessmentRequestStatus Status { get; set; } 
+            public AssessmentRequestStatus Status { get; set; }
         }
     }
 }

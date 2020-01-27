@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rockweb.Blocks.Crm
 {
     /// <summary>
-    /// Lists all avalable assesments for the individual.
+    /// Lists all available assessments for the individual.
     /// </summary>
     [DisplayName( "Assessment List" )]
     [Category( "CRM" )]
@@ -198,7 +198,7 @@ namespace Rockweb.Blocks.Crm
             AssessmentTypeService assessmentTypeService = new AssessmentTypeService( rockContext );
             var allAssessmentsOfEachType = assessmentTypeService.Queryable().AsNoTracking()
                 .Where( x => x.IsActive == true )
-                .Select( t => new AssessmentTypeListItem 
+                .Select( t => new AssessmentTypeListItem
                 {
                     Title = t.Title,
                     AssessmentPath = t.AssessmentPath,
@@ -219,14 +219,14 @@ namespace Rockweb.Blocks.Crm
                             .OrderByDescending( x => x.RequestedDate )
                             .ThenByDescending( x => x.CompletedDate )
                             .FirstOrDefault(),
-                    
+
                     }
                 )
                 // order by requested then by pending, completed, then by available to take
                 .OrderByDescending( x => x.LastRequestObject.Status )
                 .ThenBy( x => x.LastRequestObject )
                 .ToList();
-            
+
             // Checks current request types to use against the settings
             bool areThereAnyPendingRequests = false;
             bool areThereAnyRequests = false;
@@ -275,11 +275,11 @@ namespace Rockweb.Blocks.Crm
                 else
                 {
                     // ...Otherwise show any allowed, requested or completed requests.
-                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assinged if it was not taken. So use date instead of status for completed.
+                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assigned if it was not taken. So use date instead of status for completed.
                     var onlyAllowedRequestedOrCompleted = allAssessmentsOfEachType
                         .Where( x => x.RequiresRequest != true
                             || ( x.LastRequestObject != null && x.LastRequestObject.Status == AssessmentRequestStatus.Pending )
-                            || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null ) 
+                            || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null )
                         );
 
                     mergeFields.Add( "AssessmentTypes", onlyAllowedRequestedOrCompleted );
@@ -288,7 +288,7 @@ namespace Rockweb.Blocks.Crm
                 lAssessments.Text = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
             }
         }
-        
+
         public class LastAssessmentTaken : DotLiquid.Drop
         {
             public DateTime? RequestedDate { get; set; }
