@@ -10,17 +10,17 @@
         {% unless forloop.first %}
             </div>
         {% endunless %}
-        <h2 class="group-title">{{ memberCampusName | Escape }}</h2>
-        <div class='block-grid-sm-3 block-grid-md-4' id="stafflist">
+        <h3 class="group-title">{{ memberCampusName | Escape }}</h3>
+        <div class="grid-responsive-4 margin-b-xl">
         {% assign lastCampus = memberCampusName %}
     {% endif %}
 
-	<div class='block-grid-item staff-member'>
-	    <a href="{% assign ContentChannelItemId = member.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'ContentChannelItemId' ]}" title="{{ member.Title | Escape }}">
-            <img src="{{ memberPerson | Attribute:'StaffPhoto','Url' }}" class="img-responsive" />
+	<div class='text-center'>
+	    <a class="staff-img img-read-more" href="{% assign ContentChannelItemId = member.Id %}{[ FormatLink url:'{{ LinkedPages.DetailPage }}' keys:'ContentChannelItemId' ]}" title="{{ member.Title | Escape }}">
+            <img src="{{ memberPerson | Attribute:'StaffPhoto','Url' }}" />
         </a>
-	    <h2 class='member-name'>{{ memberPerson.FullName | Escape }}</h2>
-	    <p class='member-title'>{{ memberPerson | Attribute:'StaffPosition' | Escape }}</p>
+	    <h5 class='margin-t-lg margin-b-sm'>{{ memberPerson.FullName | Escape }}</h5>
+	    <p>{{ memberPerson | Attribute:'StaffPosition' | Escape }}</p>
 	</div>
             
     {% if forloop.last %}

@@ -1,0 +1,622 @@
+
+<style>
+.pre {
+    display: block;
+    padding: 10.5px;
+    margin: 0 0 11px;
+    font-size: 15px;
+    line-height: 1.428571429;
+    color: #404040;
+    word-break: break-all;
+    word-wrap: break-word;
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    white-space: pre;
+    font-family: monospace;
+}
+</style>
+
+
+<h2 id="typography">Typography</h2>
+
+
+<h4 id="typography-text">Text</h4>
+
+<h6>Raw Text</h6>
+{[ ExampleHtml ]}Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras sed vulputate libero, eu maximus ex. Aliquam nec consequat sapien. Vivamus cursus fermentum metus. Sed hendrerit, justo quis vulputate ultricies, mauris dolor suscipit ipsum, eu tempus leo dui eget turpis. Fusce et augue diam. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. {[ endExampleHtml ]}
+
+<h6>Paragraphs</h6>
+{[ ExampleHtml ]}
+#||<p>||#Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras sed vulputate libero, eu maximus ex. Aliquam nec consequat sapien. Vivamus cursus fermentum metus.#||</p>||#
+#||<p>||#Sed hendrerit, justo quis vulputate ultricies, mauris dolor suscipit ipsum, eu tempus leo dui eget turpis. Fusce et augue diam. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.#||</p>||# {[ endExampleHtml ]}
+
+<h6>Line Breaks</h6>
+{[ ExampleHtml ]}Lorem ipsum dolor sit amet,#||<br>||#consectetur adipiscing elit.#||<br>||#Cras sed vulputate libero, eu maximus ex.{[ endExampleHtml ]}
+
+
+<h4 id="typography-headings">Headings</h4>
+
+<h6>Level 1</h6>
+{[ ExampleHtml ]}<h1>Hello There!</h1>{[ endExampleHtml ]}
+
+<h6>Level 2</h6>
+{[ ExampleHtml ]}<h2>Hello There!</h2>{[ endExampleHtml ]}
+
+<h6>Level 3</h6>
+{[ ExampleHtml ]}<h3>Hello There!</h3>{[ endExampleHtml ]}
+
+<h6>Level 4</h6>
+{[ ExampleHtml ]}<h4>Hello There!</h4>{[ endExampleHtml ]}
+
+<h6>Level 5</h6>
+{[ ExampleHtml ]}<h5>Hello There!</h5>{[ endExampleHtml ]}
+
+<h6>Level 6</h6>
+{[ ExampleHtml ]}<h6>Hello There!</h6>{[ endExampleHtml ]}
+
+
+<h4 id="typography-formatting">Formatting</h4>
+
+<h6>Highlighted</h6>
+{[ ExampleHtml ]}<mark>Hello There!</mark>{[ endExampleHtml ]}
+
+<h6>Strikethrough</h6>
+{[ ExampleHtml ]}<s>Hello There!</s>{[ endExampleHtml ]}
+
+<h6>Underline</h6>
+{[ ExampleHtml ]}<u>Hello There!</u>{[ endExampleHtml ]}
+
+<h6>Bold</h6>
+{[ ExampleHtml ]}<b>Hello There!</b>{[ endExampleHtml ]}
+
+<h6>Italics</h6>
+{[ ExampleHtml ]}<i>Hello There!</i>{[ endExampleHtml ]}
+
+<h6>Superscript</h6>
+{[ ExampleHtml ]}Hello <sup>There!</sup>{[ endExampleHtml ]}
+
+<h6>Subscript</h6>
+{[ ExampleHtml ]}Hello <sub>There!</sub>{[ endExampleHtml ]}
+
+
+<h4 id="typography-qoutes">Quotes</h4>
+
+<h6>Basic</h6>
+{[ ExampleHtml ]}<blockquote>
+    <p>Y'all Ok?</p>
+</blockquote>{[ endExampleHtml ]}
+
+<h6>With Source</h6>
+{[ ExampleHtml ]}<blockquote>
+    <p>Y'all Ok?</p>
+    #||<footer>Dwight Mason</footer>||#
+</blockquote>{[ endExampleHtml ]}
+
+
+<h4 id="typography-qoutes">Lists</h4>
+
+<h6>Bulleted List</h6>
+{[ ExampleHtml ]}<ul>
+    <li>Thing One</li>
+    <li>Thing Two</li>
+</ul>{[ endExampleHtml ]}
+
+<h6>Numbered List</h6>
+{[ ExampleHtml ]}<ol>
+    <li>Thing One</li>
+    <li>Thing Two</li>
+</ol>{[ endExampleHtml ]}
+
+<h6>Lists inside Lists!</h6>
+{[ ExampleHtml ]}<ol>
+    <li>Thing One</li>
+    <li>
+        Thing Two
+        <ul>
+            <li>Part One</li>
+            <li>Part Two</li>
+        </ul>
+    </li>
+    <li>Thing Three</li>
+</ol>{[ endExampleHtml ]}
+
+<h4>Links, Images, and Embeds</h4>
+
+<h6>Links</h6>
+{[ ExampleHtml ]}<a href="https://newpointe.org">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Images</h6>
+{[ ExampleHtml ]}<img src="https://i.picsum.photos/id/237/300/300.jpg">{[ endExampleHtml ]}
+
+
+<h2 id="buttons">Buttons</h2>
+
+<h4 id="button-themes">Themes</h4>
+
+<h6>Primary</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-primary||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Primary (Solid)</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-primary-solid||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Default</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-default||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Default (Outlined)</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-outline-default||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Success</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-success||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Success (Outlined)</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-outline-success||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Info</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-info||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Info (Outlined)</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-outline-info||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Warning</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-warning||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Warning (Outlined)</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-outline-warning||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Danger</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-danger||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Danger (Solid)</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-danger-solid||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Link</h6>
+{[ ExampleHtml ]}<a class="btn #||btn-link||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Hero Image</h6>
+{[ ExampleHtml wrapperstyle:'background-color:#ccc;border:1px dashed #666;padding:1em;' ]}
+    <a class="btn #||btn-outline-white||#">Click Me</a>
+{[ endExampleHtml ]}
+
+<h6>Inverted</h6>
+{[ ExampleHtml wrapperstyle:'background-color:#ccc;border:1px dashed #666;padding:1em;' ]}
+    <a class="btn #||btn-inverted||#">Click Me</a>
+{[ endExampleHtml ]}
+
+
+<h4 id="button-sizes">Sizes</h4>
+
+<h6>Extra Small</h6>
+{[ ExampleHtml ]}<a class="btn btn-primary #||btn-xs||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Small</h6>
+{[ ExampleHtml ]}<a class="btn btn-primary #||btn-sm||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Normal</h6>
+{[ ExampleHtml ]}<a class="btn btn-primary">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Large</h6>
+{[ ExampleHtml ]}<a class="btn btn-primary #||btn-lg||#">Click Me</a>{[ endExampleHtml ]}
+
+
+<h4 id="button-addons">Add-ons</h4>
+
+<h6>Left Arrow</h6>
+{[ ExampleHtml ]}<a class="btn btn-primary #||point-left||#">Click Me</a>{[ endExampleHtml ]}
+
+<h6>Right Arrow</h6>
+{[ ExampleHtml ]}<a class="btn btn-primary #||point-right||#">Click Me</a>{[ endExampleHtml ]}
+
+
+
+
+<h2>Cards</h2>
+
+
+<h4>Themes</h4>
+
+<h6>Normal</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    <div class="card-body">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+<h6>NewPointe Green</h6>
+{[ ExampleHtml ]}
+<div class="card #||card-primary||#">
+    <div class="card-body">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+
+<h4>Padding</h4>
+
+<h6>Small</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    <div class="card-body #||padding-sm||#">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+<h6>Normal</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    <div class="card-body">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+<h6>Large</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    <div class="card-body #||padding-lg||#">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+<h6>Extra Large</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    <div class="card-body #||padding-xl||#">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+
+<h4>Add-ons</h4>
+
+<h6>Images</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    #||<img class="card-img" src="https://newpointe.blob.core.windows.net/newpointe-webassets/images/24a639a07fa24b1da7fd7ce40b6abdea_PointeBlank-gray.jpg" />||#
+    <div class="card-body">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+<h6>Subtitles</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    <div class="card-body">
+        #||<h6 class="subtitle">Pointe Blank with Dwight Mason</h6>||#
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+    </div>
+</div>
+{[ endExampleHtml ]}
+
+<h6>Links</h6>
+{[ ExampleHtml ]}
+<div class="card">
+    <div class="card-body">
+        <h4>Card Title</h4>
+        <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+        </p>
+        #||<a class="card-link">Read More</a>||#
+    </div>
+</div>
+{[ endExampleHtml ]}<h2>Utilities</h2>
+
+
+<h4>Padding</h4>
+
+<h6>None</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-none||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Small</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-sm||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Medium</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-md||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-lg||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Extra Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-xl||#">Hello World</div>{[ endExampleHtml ]}
+
+
+<h4>Padding (Top)</h4>
+
+<h6>None</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-t-none||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Small</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-t-sm||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Medium</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-t-md||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-t-lg||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Extra Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-t-xl||#">Hello World</div>{[ endExampleHtml ]}
+
+
+<h4>Padding (Left)</h4>
+
+<h6>None</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-l-none||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Small</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-l-sm||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Medium</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-l-md||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-l-lg||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Extra Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-l-xl||#">Hello World</div>{[ endExampleHtml ]}
+
+
+<h4>Padding (Bottom)</h4>
+
+<h6>None</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-b-none||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Small</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-b-sm||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Medium</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-b-md||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-b-lg||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Extra Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-b-xl||#">Hello World</div>{[ endExampleHtml ]}
+
+
+<h4>Padding (Vertical)</h4>
+
+<h6>None</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-v-none||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Small</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-v-sm||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Medium</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-v-md||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-v-lg||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Extra Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-v-xl||#">Hello World</div>{[ endExampleHtml ]}
+
+
+<h4>Padding (Horizontal)</h4>
+
+<h6>None</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-h-none||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Small</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-h-sm||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Medium</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-h-md||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-h-lg||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Extra Large</h6>
+
+{[ ExampleHtml wrapperstyle:'border:1px solid #666; padding:0;' ]}<div class="#||padding-h-xl||#">Hello World</div>{[ endExampleHtml ]}
+
+{% capture stripedwrapper %}
+    border:1px dashed #666;
+    padding:1em;
+    background: repeating-linear-gradient( 45deg, #eee, #eee 10px, #ddd 10px, #ddd 20px );
+    min-height: 50px;
+{% endcapture %}
+{% assign stripedwrapper = stripedwrapper | Encode %}
+
+<h4>Background Color</h4>
+
+<h6>Primary</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-primary||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Secondary</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-secondary||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Success</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-success||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Danger</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-danger||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Warning</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-warning||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Info</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-info||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Light</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-light||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Dark</h6>
+
+{[ ExampleHtml ]}<div class="#||bg-dark||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>White</h6>
+
+{[ ExampleHtml wrapperstyle:'{{ stripedwrapper }}' ]}<div class="#||bg-white||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Transparent</h6>
+
+{[ ExampleHtml wrapperstyle:'{{ stripedwrapper }}' ]}<div class="#||bg-transparent||#">Hello World</div>{[ endExampleHtml ]}
+
+<h6>Frosted (Slightly transparent)</h6>
+
+{[ ExampleHtml wrapperstyle:'{{ stripedwrapper }}' ]}<div class="#||bg-frosted||#">Hello World</div>{[ endExampleHtml ]}
+
+
+<h2>Components</h2>
+
+<h4>Notification Bar</h4>
+
+{[ ExampleHtml ]}<div class="notification-bar">This is an important notification! Click <a href="#" >here</a> for more info.</div>{[ endExampleHtml ]}
+
+<h4>Navbar</h4>
+
+{[ ExampleHtml ]}<nav class="navbar">Hello</nav>{[ endExampleHtml ]}
+
+<h4>Navbar - Navigation Menu</h4>
+
+{[ ExampleHtml ]}<ul class="navbar-nav" aria-label="Main Navigation">
+    <li class="nav-item">Thing 1</li>
+    <li class="nav-item">Thing 2</li>
+    <li class="nav-item">Thing 3</li>
+    <li class="nav-item">Thing 4</li>
+</ul>{[ endExampleHtml ]}
+
+<h4>Navbar - Navigation Link</h4>
+
+{[ ExampleHtml ]}<a class="nav-link" href="#">Thing 1</a>{[ endExampleHtml ]}
+
+<h4>Navbar - Dropdown</h4>
+
+{[ ExampleHtml ]}<div class="nav-dropdown">
+    <a class="nav-dropdown-toggle" href="#" data-toggle="dropdown">New Here? <span class="nav-caret" aria-hidden="true"></span></a>
+    <div class="nav-dropdown-content">
+        Content
+    </div>
+</div>{[ endExampleHtml ]}
+
+<h4>Navbar - Section List</h4>
+
+{[ ExampleHtml ]}<ul class="nav-sectionlist">
+    <li class="nav-sectionlist-item nav-section">
+        <div class="nav-section-header">Header 2</div>
+        <div class="nav-section-content">Content</div>
+    </li>
+    <li class="nav-sectionlist-item nav-section">
+        <div class="nav-section-header">Header 2</div>
+        <div class="nav-section-content">Content</div>
+    </li>
+</ul>{[ endExampleHtml ]}
+
+
+<h4>Navbar - Page List</h4>
+
+{[ ExampleHtml ]}<ul class="nav-pagelist">
+    <li class="nav-pagelist-item">
+        <a class="nav-pagelist-link" href="#">Thing 1</a>
+    </li>
+    <li class="nav-pagelist-item">
+        <a class="nav-pagelist-link" href="#">Thing 2</a>
+    </li>
+    <li class="nav-pagelist-item">
+        <a class="nav-pagelist-link" href="#">Thing 3</a>
+    </li>
+    <li class="nav-pagelist-item">
+        <a class="nav-pagelist-link" href="#">Thing 4</a>
+    </li>
+</ul>{[ endExampleHtml ]}
+
+<h4>Navbar - Quick Links</h4>
+
+{[ ExampleHtml ]}<ul class="navbar-quicklinks" aria-label="Quick Links">
+    <li class="navbar-quicklink-item">
+        <a class="navbar-quicklink-link" href="#">
+            <div class="navbar-quicklink-label">
+                <span class="navbar-quicklink-label-text">Link 1</span>
+                <i class="navbar-quicklink-icon fa fa-bacon"></i>
+            </div>
+        </a>
+    </li>
+    <li class="navbar-quicklink-item">
+        <a class="navbar-quicklink-link" href="#">
+            <div class="navbar-quicklink-label">
+                <span class="navbar-quicklink-label-text">Link 2</span>
+                <i class="navbar-quicklink-icon fa fa-egg"></i>
+            </div>
+        </a>
+    </li>
+    <li class="navbar-quicklink-item">
+        <a class="navbar-quicklink-link" href="#">
+            <div class="navbar-quicklink-label">
+                <span class="navbar-quicklink-label-text">Link 3</span>
+                <i class="navbar-quicklink-icon fa fa-mug-hot"></i>
+            </div>
+        </a>
+    </li>
+</ul>{[ endExampleHtml ]}
+
+<h4>App Banner</h4>
+
+{[ ExampleHtml ]}<a class="app-banner" href="#">Download the app!</a>{[ endExampleHtml ]}

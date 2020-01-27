@@ -5,9 +5,9 @@
 @import "../../../Styles/_rock-core.less";
 @import "../../../Styles/_store.less";
 @import "../../../Styles/_rock-variables.less";
-@import "_variables.less";
-@import "_variable-overrides.less";
-@import "_print.less";
+@import "_variables";
+@import "_variable-overrides";
+@import "_print";
 
 /*
     Rock Theme Styles
@@ -37,15 +37,6 @@ body {
 
 // 2. Bootstrap Overides
 // -------------------------
-h1, .h1,
-h2, .h2,
-h3, .h3,
-h4, .h4,
-h5, .h5,
-h6, .h6 {
-    margin-top: @line-height-computed / 2;
-    margin-bottom: @line-height-computed;
-}
 
 .label {
     display: inline-block;
@@ -125,7 +116,6 @@ body > form > main {
     position: fixed;
     top: 0;
     width: 100%;
-    line-height: 0; // IE needs this. Not sure why.
     z-index: 1045; // The nav menu should be above everything except modal dialogs
 }
 
@@ -156,17 +146,6 @@ body > form > main {
     bottom: 0;
     overflow: auto;
 }
-
-
-@import "partials/_app-banner.less";
-@import "partials/_social-icons.less";
-@import "partials/_notificationbar.less";
-@import "partials/_navbar.less";
-@import "partials/_navbar-nav.less";
-@import "partials/_navbar-quicklinks.less";
-@import "partials/_nav-dropdown.less";
-@import "partials/_nav-pagelist.less";
-@import "partials/_nav-sectionlist.less";
 
 
 
@@ -219,13 +198,6 @@ body.zone-highlight {
     }
 }
 
-@import "partials/_group-finder.less";
-@import "partials/components/_cards.less";
-@import "partials/components/_buttons.less";
-@import "partials/components/_modals.less";
-@import "partials/_grid.less";
-@import "partials/_helpers.less";
-
 a:focus {
     outline: none !important;
 }
@@ -234,52 +206,6 @@ img {
     max-width: 100%;
     height: auto;
 }
-
-blockquote {
-    font-style: italic;
-    border: none;
-    color: @gray-darker;
-    font-size: 1rem;
-
-    &.pullquote {
-        .font(36, bold);
-        color: @brand-primary;
-        border: solid 3px fade(@gray-lighter,40%);
-        padding: 30px 40px;
-        margin-top: 1.5em;
-        margin-bottom: 1.5em;
-
-        @media (min-width: @screen-sm) {
-            margin-left: -12%;
-            margin-right: -12%;
-        }
-
-        @media (min-width: @screen-md) {
-            margin-left: -18%;
-            margin-right: -18%;
-        }
-
-        @media (min-width: @screen-xl) {
-            padding: 45px 65px;
-        }
-    }
-}
-
-p, div {
-    &.caption {
-        .font(20,300);
-        font-style: italic;
-        border-bottom: solid 1px @gray-lighter;
-        padding-bottom: 1em;
-        margin-top: 1em;
-        margin-bottom: 1.75em;
-    }
-}
-
-p, ul, ol, blockquote {
-    margin-bottom: 1.5em;
-}
-
 
 .list-icons {
     list-style-type: none;
@@ -331,7 +257,6 @@ p, ul, ol, blockquote {
 
             .panel-title {
                 font-size: 20px;
-                .font(24,900);
                 margin: 0;
                 color: @brand-primary;
                 text-transform: uppercase;
@@ -373,31 +298,6 @@ p, ul, ol, blockquote {
                 margin: 0 0 5px;
             }
         }
-    }
-}
-
-.readmore a,
-a.readmore {
-    text-transform: uppercase;
-    display: inline-block;
-    position: relative;
-    padding-right: 15px;
-
-    @media (min-width: @screen-sm) {
-        padding-right: 15px;
-    }
-
-    @media (min-width: @screen-xl) {
-        padding-right: 20px;
-    }
-
-    &:after {
-        .np-icon();
-        content: @np-caret;
-        position: absolute;
-        top: 50%;
-        right: 0;
-        transform: translateY(-50%);
     }
 }
 
@@ -460,12 +360,28 @@ a.backlink {
     }
 }
 
-@import "../Assets/Icons/variables.less";
+@import "../Assets/Icons/variables";
 
-@import "partials/_header.less";
-@import "partials/_page.less";
-@import "partials/_blog.less";
-@import "partials/_events.less";
-@import "partials/_sermons.less";
-@import "partials/_staff.less";
-@import "partials/_footer.less";
+@import "partials/_app-banner";
+@import "partials/_blog";
+@import "partials/_buttons";
+@import "partials/_cards";
+@import "partials/_events";
+@import "partials/_footer";
+@import "partials/_grid";
+@import "partials/_group-finder";
+@import "partials/_header";
+@import "partials/_helpers";
+@import "partials/_modals";
+@import "partials/_nav-dropdown";
+@import "partials/_nav-pagelist";
+@import "partials/_nav-sectionlist";
+@import "partials/_navbar-nav";
+@import "partials/_navbar-quicklinks";
+@import "partials/_navbar";
+@import "partials/_notification-bar";
+@import "partials/_page";
+@import "partials/_sermons";
+@import "partials/_social-icons";
+@import "partials/_staff";
+@import "partials/_typography";

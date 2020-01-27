@@ -16,17 +16,15 @@
     {% endif %}
 
     <a href="{{ DetailPageUrl | Escape }}" title='Back to "Our Team"' class="backlink"><i class="np-icon np-close"></i></a>
-	<div class="col-sm-5">
+	<div class="col-sm-4 padding-lg">
         
-        {% assign photoGuid = itemPerson | Attribute:'StaffPhoto','RawValue' %}
-        {% if photoGuid != '' %}
-        <div class="headshot">
-		    <img alt="{{ itemPerson.FullName | Escape }}" src="{{ '~' | ResolveRockUrl }}GetImage.ashx?Guid={{ photoGuid }}" class="title-image img-responsive" />
-	    </div>
+        {% assign photoUrl = itemPerson | Attribute:'StaffPhoto','Url' %}
+        {% if photoUrl != '' %}
+		    <img class="staff-img" alt="{{ itemPerson.FullName | Escape }}" src="{{ photoUrl }}" />
 	    {% endif %}
         
 	</div>
-	<div class="col-sm-6">
+	<div class="col-sm-8 padding-lg">
 		<div class="member-info">
 
             <h2>{{ itemPerson.FullName | Escape }}</h2>
