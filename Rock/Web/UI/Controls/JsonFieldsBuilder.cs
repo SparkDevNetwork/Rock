@@ -265,7 +265,7 @@ namespace Rock.Web.UI.Controls
             get => _fieldSettings;
             set
             {
-                _fieldSettings = value;
+                _fieldSettings = value ?? new List<FieldSetting>();
 
                 EnsureChildControls();
                 BindFieldGrid();

@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.ServiceModel.Channels;
 using System.Web.Http;
@@ -38,16 +40,17 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the launch packet.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="deviceIdentifier">The unique device identifier for this device.</param>
+        /// <returns>An action result.</returns>
         [Route( "api/mobile/GetLaunchPacket" )]
         [HttpGet]
         [Authenticate]
-        public object GetLaunchPacket()
+        public IHttpActionResult GetLaunchPacket( string deviceIdentifier = null )
         {
-            var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var site = MobileHelper.GetCurrentApplicationSite();
             var additionalSettings = site?.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
-            var person = GetPerson();
+            var rockContext = new Rock.Data.RockContext();
+            var person = GetPerson( rockContext );
             var deviceData = Request.GetHeader( "X-Rock-DeviceData" ).FromJsonOrNull<DeviceData>();
 
             if ( additionalSettings == null || !additionalSettings.LastDeploymentDate.HasValue )
@@ -55,7 +58,7 @@ namespace Rock.Rest.Controllers
                 return NotFound();
             }
 
-            var launchPacket = new LaunchPackage
+            var launchPacket = new LaunchPacket
             {
                 LatestVersionId = ( int ) ( additionalSettings.LastDeploymentDate.Value.ToJavascriptMilliseconds() / 1000 ),
                 IsSiteAdministrator = site.IsAuthorized( Authorization.EDIT, person )
@@ -82,18 +85,77 @@ namespace Rock.Rest.Controllers
                 launchPacket.CurrentPerson.AuthToken = MobileHelper.GetAuthenticationToken( principal.Identity.Name );
             }
 
-            return launchPacket;
+            //
+            // Get or create the personal device.
+            //
+            if ( deviceIdentifier.IsNotNullOrWhiteSpace() )
+            {
+                var mobileDeviceTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSONAL_DEVICE_TYPE_MOBILE ).Id;
+                var personalDeviceService = new PersonalDeviceService( rockContext );
+                var personalDevice = personalDeviceService.Queryable()
+                    .AsNoTracking()
+                    .Where( a => a.DeviceUniqueIdentifier == deviceIdentifier && a.PersonalDeviceTypeValueId == mobileDeviceTypeValueId )
+                    .FirstOrDefault();
+
+                if ( personalDevice == null )
+                {
+                    personalDevice = new PersonalDevice
+                    {
+                        DeviceUniqueIdentifier = deviceIdentifier,
+                        PersonalDeviceTypeValueId = mobileDeviceTypeValueId,
+                        PlatformValueId = deviceData.DevicePlatform.GetDevicePlatformValueId(),
+                        PersonAliasId = person?.PrimaryAliasId,
+                        NotificationsEnabled = true
+                    };
+
+                    personalDeviceService.Add( personalDevice );
+                    rockContext.SaveChanges();
+                }
+
+                launchPacket.PersonalDeviceGuid = personalDevice.Guid;
+            }
+
+            return Ok( launchPacket );
+        }
+
+        /// <summary>
+        /// Updates the push notification registration token for a personal device.
+        /// </summary>
+        /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
+        /// <param name="registration">The registration token used to send push notifications.</param>
+        /// <returns></returns>
+        [Route( "api/mobile/UpdateDeviceRegistrationByGuid/{personalDeviceGuid}" )]
+        [HttpPut]
+        public IHttpActionResult UpdateDeviceRegistrationByGuid( Guid personalDeviceGuid, string registration )
+        {
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var service = new PersonalDeviceService( rockContext );
+
+                // MAC address
+                var personalDevice = service.Get( personalDeviceGuid );
+                if ( personalDevice == null )
+                {
+                    return NotFound();
+                }
+
+                personalDevice.DeviceRegistrationId = registration;
+                rockContext.SaveChanges();
+
+                return Ok();
+            }
         }
 
         /// <summary>
         /// Posts the interactions that have been queued up by the mobile client.
         /// </summary>
         /// <param name="sessions">The sessions.</param>
-        /// <returns></returns>
+        /// <param name="personalDeviceGuid">The unique identifier of the device sending the interaction data.</param>
+        /// <returns>An HTTP status code indicating the result.</returns>
         [Route( "api/mobile/Interactions" )]
         [HttpPost]
         [Authenticate]
-        public IHttpActionResult PostInteractions( [FromBody] List<MobileInteractionSession> sessions )
+        public IHttpActionResult PostInteractions( [FromBody] List<MobileInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
             var person = GetPerson();
             var ipAddress = System.Web.HttpContext.Current?.Request?.UserHostAddress;
@@ -114,6 +176,15 @@ namespace Rock.Rest.Controllers
                 if ( MobileHelper.GetCurrentApplicationSite() == null )
                 {
                     return StatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
+                //
+                // Get the personal device identifier if they provided it's unique identifier.
+                //
+                int? personalDeviceId = null;
+                if ( personalDeviceGuid.HasValue )
+                {
+                    personalDeviceId = new PersonalDeviceService( rockContext ).GetId( personalDeviceGuid.Value );
                 }
 
                 rockContext.WrapTransaction( () =>
@@ -231,6 +302,7 @@ namespace Rock.Rest.Controllers
                                     mobileSession.Guid );
 
                                 interaction.Guid = mobileInteraction.Guid;
+                                interaction.PersonalDeviceId = personalDeviceId;
                                 interactionService.Add( interaction );
                                 rockContext.SaveChanges();
                             }
@@ -246,10 +318,11 @@ namespace Rock.Rest.Controllers
         /// Performs a login from a mobile application.
         /// </summary>
         /// <param name="loginParameters">The login parameters to use during authentication.</param>
+        /// <param name="personalDeviceGuid">The personal device unique identifier being used to log the person in.</param>
         /// <returns>A MobilePerson object if the login was successful.</returns>
         [Route( "api/mobile/Login" )]
         [HttpPost]
-        public IHttpActionResult Login( [FromBody] LoginParameters loginParameters )
+        public IHttpActionResult Login( [FromBody] LoginParameters loginParameters, Guid? personalDeviceGuid = null )
         {
             var authController = new AuthController();
             var site = MobileHelper.GetCurrentApplicationSite();
@@ -268,13 +341,27 @@ namespace Rock.Rest.Controllers
             //
             // Find the user and translate to a mobile person.
             //
-            var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
-            var userLogin = userLoginService.GetByUserName( loginParameters.Username );
-            var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
+            using ( var rockContext = new Rock.Data.RockContext() )
+            {
+                var userLoginService = new UserLoginService( rockContext );
+                var userLogin = userLoginService.GetByUserName( loginParameters.Username );
 
-            mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );
+                if ( personalDeviceGuid.HasValue )
+                {
+                    var personalDevice = new PersonalDeviceService( rockContext ).Get( personalDeviceGuid.Value );
 
-            return Ok( mobilePerson );
+                    if ( personalDevice != null && personalDevice.PersonAliasId != userLogin.Person.PrimaryAliasId )
+                    {
+                        personalDevice.PersonAliasId = userLogin.Person.PrimaryAliasId;
+                        rockContext.SaveChanges();
+                    }
+                }
+
+                var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, site );
+                mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( loginParameters.Username );
+
+                return Ok( mobilePerson );
+            }
         }
     }
 }
