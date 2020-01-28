@@ -45,6 +45,7 @@
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateInstanceIds" runat="server" CssClass="js-registration-template-instance-id-list" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationInstanceId" runat="server" CssClass="js-registration-instance-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrantId" runat="server" CssClass="js-registrant-id" />
+                        <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementAllowMultiplePlacements" runat="server" CssClass="js-registration-template-placement-allow-multiple-placements" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementGroupTypeId" runat="server" CssClass="js-registration-template-placement-grouptype-id" />
 
@@ -249,7 +250,7 @@
 
         <%-- Add Group Placement Dialog --%>
         <asp:Panel ID="pnlAddPlacementGroup" runat="server">
-            <Rock:ModalDialog ID="mdAddPlacementGroup" runat="server" ValidationGroup="vgAddPlacementGroup" Title="Add Placement Group/Add Shared Placement Group" OnSaveClick="mdAddPlacementGroup_SaveClick">
+            <Rock:ModalDialog ID="mdAddPlacementGroup" runat="server" ValidationGroup="vgAddPlacementGroup" CssClass="js-add-placement-group-modal" Title="Add Placement Group/Add Shared Placement Group" OnSaveClick="mdAddPlacementGroup_SaveClick">
                 <Content>
                     <Rock:NotificationBox ID="nbNotAllowedToAddGroup" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="You are not authorized to save group with the selected group type and/or parent group." />
@@ -306,7 +307,7 @@
 
         <%-- Placement Configuration (User preferences) --%>
         <asp:Panel ID="pnlConfiguration" runat="server">
-            <Rock:ModalDialog ID="mdPlacementConfiguration" runat="server" Title="Placement Configuration" OnSaveClick="mdPlacementConfiguration_SaveClick">
+            <Rock:ModalDialog ID="mdPlacementConfiguration" runat="server" Title="Placement Configuration" CssClass=".js-configuration-modal" OnSaveClick="mdPlacementConfiguration_SaveClick">
                 <Content>
                     <Rock:CampusPicker ID="cpConfigurationCampusPicker" runat="server" Label="Campus Filter" />
 

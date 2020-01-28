@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,20 +24,20 @@ namespace Rock.Model
             var rockContext = this.Context as RockContext;
 
             var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
-            var registrationRegistrantServiceQuery = registrationRegistrantService.Queryable();
+            var registrationRegistrantQuery = registrationRegistrantService.Queryable();
 
-            registrationRegistrantServiceQuery = registrationRegistrantServiceQuery
+            registrationRegistrantQuery = registrationRegistrantQuery
                 .Where( a => a.Registration.RegistrationInstance.RegistrationTemplateId == options.RegistrationTemplateId );
 
-            if ( options.RegistrationInstanceId.HasValue && options.RegistrationInstanceId > 0 )
+            if ( options.RegistrationInstanceId.HasValue )
             {
-                registrationRegistrantServiceQuery = registrationRegistrantServiceQuery.Where( a => a.Registration.RegistrationInstanceId == options.RegistrationInstanceId.Value );
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Registration.RegistrationInstanceId == options.RegistrationInstanceId.Value );
             }
             else
             {
                 if ( options.RegistrationTemplateInstanceIds?.Any() == true )
                 {
-                    registrationRegistrantServiceQuery = registrationRegistrantServiceQuery.Where( a => options.RegistrationTemplateInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
+                    registrationRegistrantQuery = registrationRegistrantQuery.Where( a => options.RegistrationTemplateInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
                 }
             }
 
@@ -48,22 +49,98 @@ namespace Rock.Model
                 var expression = dataFilter.GetExpression( typeof( RegistrationRegistrant ), registrationRegistrantService, registrationRegistrantService.ParameterExpression, errorMessages );
                 if ( expression != null )
                 {
-                    registrationRegistrantServiceQuery = registrationRegistrantServiceQuery.Where( registrationRegistrantService.ParameterExpression, expression );
+                    registrationRegistrantQuery = registrationRegistrantQuery.Where( registrationRegistrantService.ParameterExpression, expression );
                 }
             }
 
             if ( options.RegistrantId.HasValue )
             {
-                registrationRegistrantServiceQuery = registrationRegistrantServiceQuery.Where( a => a.Id == options.RegistrantId.Value );
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == options.RegistrantId.Value );
             }
 
-            registrationRegistrantServiceQuery = registrationRegistrantServiceQuery.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.NickName );
+            var registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
 
-            var groupPlacementRegistrantList = registrationRegistrantServiceQuery.ToList()
-                .Select( r => new GroupPlacementRegistrant( r, options ) )
+            registrationRegistrantQuery = registrationRegistrantQuery.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.NickName );
+
+            var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
+            var registrationInstanceService = new RegistrationInstanceService( rockContext );
+
+            // get a queryable of PersonIds for the registration template shared groups so we can determine if the registrant has been placed
+            var registrationTemplatePlacementGroupsPersonIdQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement ).SelectMany( a => a.Members ).Select( a => a.PersonId );
+
+
+            // and also get a queryable of PersonIds for the registration instance placement groups so we can determine if the registrant has been placed 
+            IQueryable<InstancePlacementGroupPersonId> allInstancesPlacementGroupInfoQuery = null;
+
+            if ( options.RegistrationInstanceId.HasValue )
+            {
+                allInstancesPlacementGroupInfoQuery =
+                    registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstanceService.Get( options.RegistrationInstanceId.Value ) )
+                        .Where( a => a.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
+                        .SelectMany( a => a.Members ).Select( a => a.PersonId )
+                        .Select( s => new InstancePlacementGroupPersonId
+                        {
+                            PersonId = s,
+                            RegistrationInstanceId = options.RegistrationInstanceId.Value
+                        } );
+            }
+            else
+            {
+                if ( options.RegistrationTemplateInstanceIds?.Any() == true )
+                {
+                    foreach ( var registrationInstanceId in options.RegistrationTemplateInstanceIds )
+                    {
+                        var instancePlacementGroupInfoQuery = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstanceService.Get( registrationInstanceId ) )
+                        .Where( a => a.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
+                        .SelectMany( a => a.Members ).Select( a => a.PersonId )
+                        .Select( s => new InstancePlacementGroupPersonId
+                        {
+                            PersonId = s,
+                            RegistrationInstanceId = registrationInstanceId
+                        } );
+
+                        if ( allInstancesPlacementGroupInfoQuery == null )
+                        {
+                            allInstancesPlacementGroupInfoQuery = instancePlacementGroupInfoQuery;
+                        }
+                        else
+                        {
+                            allInstancesPlacementGroupInfoQuery = allInstancesPlacementGroupInfoQuery.Union( instancePlacementGroupInfoQuery );
+                        }
+                    }
+                }
+            }
+
+            if ( allInstancesPlacementGroupInfoQuery == null )
+            {
+                return null;
+            }
+
+            // select in a way to avoid lazy loading
+            var registrationRegistrantPlacementQuery = registrationRegistrantQuery.Select( r => new
+            {
+                Registrant = r,
+                r.PersonAlias.Person,
+                RegistrationInstanceName = r.Registration.RegistrationInstance.Name,
+                // marked as AlreadyPlacedInGroup if the Registrant is a member of any of the registrant template placement group or the registration instance placement groups
+                AlreadyPlacedInGroup =
+                    registrationTemplatePlacementGroupsPersonIdQuery.Contains( r.PersonAlias.PersonId )
+                    || allInstancesPlacementGroupInfoQuery.Any( x => x.RegistrationInstanceId == r.Registration.RegistrationInstanceId && x.PersonId == r.PersonAlias.PersonId )
+            } );
+
+            var registrationRegistrantPlacementList = registrationRegistrantPlacementQuery.AsNoTracking().ToList();
+
+            var groupPlacementRegistrantList = registrationRegistrantPlacementList
+                .Select( x => new GroupPlacementRegistrant( x.Registrant, x.Person, x.AlreadyPlacedInGroup, x.RegistrationInstanceName, options ) )
                 .ToList();
 
-            return groupPlacementRegistrantList;
+            return groupPlacementRegistrantList.ToList();
+        }
+
+        private class InstancePlacementGroupPersonId
+        {
+            public int PersonId { get; set; }
+            public int RegistrationInstanceId { get; set; }
         }
     }
 
@@ -89,13 +166,27 @@ namespace Rock.Model
         private GetGroupPlacementRegistrantsParameters Options { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GroupPlacementRegistrant"/> class.
+        /// Gets or sets the person.
+        /// </summary>
+        /// <value>
+        /// The person.
+        /// </value>
+        private Person Person { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupPlacementRegistrant" /> class.
         /// </summary>
         /// <param name="registrationRegistrant">The registration registrant.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="alreadyPlacedInGroup">if set to <c>true</c> [already placed in group].</param>
+        /// <param name="registrationInstanceName"></param>
         /// <param name="options">The options.</param>
-        public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, GetGroupPlacementRegistrantsParameters options )
+        public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, Person person, bool alreadyPlacedInGroup, string registrationInstanceName, GetGroupPlacementRegistrantsParameters options )
         {
             this.RegistrationRegistrant = registrationRegistrant;
+            this.Person = person;
+            this.AlreadyPlacedInGroup = alreadyPlacedInGroup;
+            this.RegistrationInstanceName = registrationInstanceName;
             this.Options = options;
         }
 
@@ -105,7 +196,7 @@ namespace Rock.Model
         /// <value>
         /// The person identifier.
         /// </value>
-        public int PersonId => RegistrationRegistrant.Person.Id;
+        public int PersonId => this.Person.Id;
 
         /// <summary>
         /// Gets the name of the person.
@@ -113,7 +204,7 @@ namespace Rock.Model
         /// <value>
         /// The name of the person.
         /// </value>
-        public string PersonName => RegistrationRegistrant.Person.FullName;
+        public string PersonName => this.Person.FullName;
 
         /// <summary>
         /// Gets the person gender.
@@ -121,7 +212,7 @@ namespace Rock.Model
         /// <value>
         /// The person gender.
         /// </value>
-        public Gender PersonGender => RegistrationRegistrant.Person.Gender;
+        public Gender PersonGender => this.Person.Gender;
 
         /// <summary>
         /// Gets the registrant identifier.
@@ -137,7 +228,15 @@ namespace Rock.Model
         /// <value>
         /// The name of the registration instance.
         /// </value>
-        public string RegistrationInstanceName => RegistrationRegistrant.Registration.RegistrationInstance.Name;
+        public string RegistrationInstanceName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [already placed in group].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [already placed in group]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AlreadyPlacedInGroup { get; private set; }
 
         /// <summary>
         /// Gets the fees.
@@ -174,6 +273,12 @@ namespace Rock.Model
         {
             get
             {
+                if ( !Options.DisplayedAttributeIds.Any() )
+                {
+                    // don't spend time loading attributes if there aren't any to be displayed
+                    return null;
+                }
+
                 if ( RegistrationRegistrant.AttributeValues == null )
                 {
                     RegistrationRegistrant.LoadAttributes();
@@ -198,6 +303,12 @@ namespace Rock.Model
         {
             get
             {
+                if ( !Options.DisplayedAttributeIds.Any() )
+                {
+                    // don't spend time loading attributes if there aren't any to be displayed
+                    return null;
+                }
+
                 if ( RegistrationRegistrant.AttributeValues == null )
                 {
                     RegistrationRegistrant.LoadAttributes();
@@ -232,6 +343,14 @@ namespace Rock.Model
         /// The registration template instance ids.
         /// </value>
         public int[] RegistrationTemplateInstanceIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration template placement identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template placement identifier.
+        /// </value>
+        public int RegistrationTemplatePlacementId { get; set; }
 
         /// <summary>
         /// Gets or sets the registration instance identifier.

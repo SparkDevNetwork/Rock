@@ -2684,7 +2684,7 @@ The logged-in person's information will be used to complete the registrar inform
                 .ToList();
 
             gtpGroupType.GroupTypes = groupTypeList;
-            gtpPlacementConfigurationGroupType.GroupTypes = groupTypeList;
+            gtpPlacementConfigurationGroupTypeEdit.GroupTypes = groupTypeList;
 
             ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>();
             rblRegistrantsInSameFamily.BindToEnum<RegistrantsSameFamily>();
@@ -3713,14 +3713,15 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPlacementConfigurations_AddClick( object sender, EventArgs e )
         {
-            gPlacementConfigurationsAddEdit( Guid.NewGuid() );
+            gPlacementConfigurationsAddEdit( Guid.NewGuid(), true );
         }
 
         /// <summary>
         /// gs the placement configurations add edit.
         /// </summary>
         /// <param name="registrationPlacementConfigurationGuid">The registration placement configuration unique identifier.</param>
-        private void gPlacementConfigurationsAddEdit( Guid registrationPlacementConfigurationGuid )
+        /// <param name="addingNewPlacementConfiguration">if set to <c>true</c> [adding new placement configuration].</param>
+        private void gPlacementConfigurationsAddEdit( Guid registrationPlacementConfigurationGuid, bool addingNewPlacementConfiguration )
         {
             hfRegistrationPlacementConfigurationGuid.Value = registrationPlacementConfigurationGuid.ToString();
 
@@ -3730,9 +3731,19 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationTemplatePlacement = new RegistrationTemplatePlacement();
                 registrationTemplatePlacement.Guid = registrationPlacementConfigurationGuid;
             }
-
+            
             tbPlacementConfigurationName.Text = registrationTemplatePlacement.Name;
-            gtpPlacementConfigurationGroupType.SetValue( registrationTemplatePlacement.GroupTypeId );
+            gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId = registrationTemplatePlacement.GroupTypeId;
+
+            var groupType = GroupTypeCache.Get( registrationTemplatePlacement.GroupTypeId );
+            if ( groupType != null )
+            {
+                lPlacementConfigurationGroupTypeReadOnly.Text = groupType.Name;
+            }
+
+            gtpPlacementConfigurationGroupTypeEdit.Visible = addingNewPlacementConfiguration;
+            lPlacementConfigurationGroupTypeReadOnly.Visible = !addingNewPlacementConfiguration;
+
             cbPlacementConfigurationAllowMultiple.Checked = registrationTemplatePlacement.AllowMultiplePlacements;
             tbPlacementConfigurationIconCssClass.Text = registrationTemplatePlacement.IconCssClass;
 
@@ -3752,7 +3763,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPlacementConfigurations_EditClick( object sender, RowEventArgs e )
         {
-            gPlacementConfigurationsAddEdit( ( Guid ) e.RowKeyValue );
+            gPlacementConfigurationsAddEdit( ( Guid ) e.RowKeyValue, false );
         }
 
         /// <summary>
@@ -3789,7 +3800,7 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             registrationTemplatePlacement.Name = tbPlacementConfigurationName.Text;
-            registrationTemplatePlacement.GroupTypeId = gtpPlacementConfigurationGroupType.SelectedGroupTypeId.Value;
+            registrationTemplatePlacement.GroupTypeId = gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.Value;
             registrationTemplatePlacement.IconCssClass = tbPlacementConfigurationIconCssClass.Text;
             registrationTemplatePlacement.AllowMultiplePlacements = cbPlacementConfigurationAllowMultiple.Checked;
             RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( registrationTemplatePlacement.Guid, hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList() );
@@ -3805,7 +3816,6 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPlacementConfigurationSharedGroups_AddClick( object sender, EventArgs e )
         {
-            LoadAddSharedPlacementGroupsDropDown( gtpPlacementConfigurationGroupType.SelectedGroupTypeId );
             pnlPlacementConfigurationAddSharedGroup.Visible = true;
         }
 
@@ -3834,10 +3844,35 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPlacementConfigurationAddSharedGroup_Click( object sender, EventArgs e )
         {
+            nbAddPlacementGroupWarning.Visible = false;
             var sharedGroupIds = hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList();
-            var selectedGroupId = ddlPlacementConfigurationAddSharedGroup.SelectedValue.AsIntegerOrNull();
+            var selectedGroupId = gpPlacementConfigurationAddSharedGroup.GroupId;
             if ( selectedGroupId.HasValue )
             {
+
+                GroupTypeCache groupType = null;
+                if ( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.HasValue )
+                {
+                    groupType = GroupTypeCache.Get( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.Value );
+                }
+
+                if ( groupType == null )
+                {
+                    nbAddPlacementGroupWarning.Text = "Please select a group type before adding a group";
+                    nbAddPlacementGroupWarning.Visible = true;
+                    return;
+                }
+
+                var placementGroup = new GroupService( new RockContext() ).Get( selectedGroupId.Value );
+
+                if ( groupType.Id != placementGroup.GroupTypeId )
+                {
+                    nbAddPlacementGroupWarning.Visible = true;
+                    nbAddPlacementGroupWarning.Text = "Group must have group type of " + groupType.Name + ".";
+                    return;
+                }
+
+
                 if ( !sharedGroupIds.Contains( selectedGroupId.Value ) )
                 {
                     sharedGroupIds.Add( selectedGroupId.Value );
@@ -3845,7 +3880,20 @@ The logged-in person's information will be used to complete the registrar inform
                 }
             }
 
+            pnlPlacementConfigurationAddSharedGroup.Visible = false;
+
             BindPlacementConfigurationSharedGroups( sharedGroupIds );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPlacementConfigurationAddSharedGroupCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnPlacementConfigurationAddSharedGroupCancel_Click( object sender, EventArgs e )
+        {
+            
+            pnlPlacementConfigurationAddSharedGroup.Visible = false;
         }
 
         /// <summary>
@@ -3860,35 +3908,6 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion
 
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the gtpPlacementConfigurationGroupType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gtpPlacementConfigurationGroupType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            LoadAddSharedPlacementGroupsDropDown( gtpPlacementConfigurationGroupType.SelectedGroupTypeId );
-        }
-
-        /// <summary>
-        /// Loads the add shared placement groups drop down.
-        /// </summary>
-        /// <param name="groupTypeId">The group type identifier.</param>
-        private void LoadAddSharedPlacementGroupsDropDown( int? groupTypeId )
-        {
-            ddlPlacementConfigurationAddSharedGroup.Items.Clear();
-            if ( groupTypeId.HasValue )
-            {
-                var groupList = new GroupService( new RockContext() ).Queryable()
-                                    .Where( a => a.GroupTypeId == groupTypeId.Value )
-                                    .OrderBy( a => a.Name )
-                                    .ToList();
-
-                foreach ( var group in groupList )
-                {
-                    ddlPlacementConfigurationAddSharedGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
-                }
-            }
-        }
+        
     }
 }

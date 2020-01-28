@@ -249,9 +249,9 @@
                         </Rock:Grid>
                     </Rock:PanelWidget>
 
-                    <%-- Placement Configuration --%>
+                    <%-- Placement Configuration Grid --%>
                     <Rock:PanelWidget ID="pwPlacementConfiguration" runat="server" Title="Placement Configuration">
-                        <Rock:Grid ID="gPlacementConfigurations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Placement Configuration" OnRowDataBound="gPlacementConfigurations_RowDataBound" >
+                        <Rock:Grid ID="gPlacementConfigurations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Placement Configuration" OnRowDataBound="gPlacementConfigurations_RowDataBound">
                             <Columns>
                                 <Rock:ReorderField />
                                 <Rock:RockLiteralField ID="lPlacementName" HeaderText="Placement Name" />
@@ -530,18 +530,19 @@
         <Rock:ModalDialog ID="dlgPlacementConfiguration" runat="server" Title="Placement Configuration" OnSaveClick="dlgPlacementConfiguration_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="PlacementConfiguration">
             <Content>
                 <asp:HiddenField ID="hfRegistrationPlacementConfigurationGuid" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryPlacementConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="PlacementConfiguration" />
+                <asp:ValidationSummary ID="vsPlacementConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="PlacementConfiguration" />
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockTextBox ID="tbPlacementConfigurationName" runat="server" Label="Name" Required="true" MaxLength="100" ValidationGroup="PlacementConfiguration"/>
+                        <Rock:RockTextBox ID="tbPlacementConfigurationName" runat="server" Label="Name" Required="true" MaxLength="100" ValidationGroup="PlacementConfiguration" />
                     </div>
                     <div class="col-md-6">
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:GroupTypePicker ID="gtpPlacementConfigurationGroupType" runat="server" Label="Group Type" Help="The group type to limit placement groups by." ValidationGroup="PlacementConfiguration" Required="true" AutoPostBack="true" OnSelectedIndexChanged="gtpPlacementConfigurationGroupType_SelectedIndexChanged" />
+                        <Rock:GroupTypePicker ID="gtpPlacementConfigurationGroupTypeEdit" runat="server" Label="Group Type" Help="The group type to limit placement groups by." ValidationGroup="PlacementConfiguration" Required="true" />
+                        <Rock:RockLiteral ID="lPlacementConfigurationGroupTypeReadOnly" runat="server" Label="Group Type" />
                         <Rock:RockCheckBox ID="cbPlacementConfigurationAllowMultiple" runat="server" Label="Allow Multiple" Help="Determines if a registrant can be in more than one group for this placement." />
                     </div>
                     <div class="col-md-6">
@@ -563,8 +564,10 @@
                         </div>
                         <div class="col-md-6">
                             <asp:Panel ID="pnlPlacementConfigurationAddSharedGroup" runat="server" Visible="false">
-                                <Rock:RockDropDownList ID="ddlPlacementConfigurationAddSharedGroup" runat="server" Label="Group" />
-                                <asp:LinkButton ID="btnPlacementConfigurationAddSharedGroup" runat="server" CssClass="btn btn-sm btn-primary" Text="Add" OnClick="btnPlacementConfigurationAddSharedGroup_Click" />
+                                <Rock:NotificationBox ID="nbAddPlacementGroupWarning" runat="server" NotificationBoxType="Warning" />
+                                <Rock:GroupPicker ID="gpPlacementConfigurationAddSharedGroup" runat="server" Label="Add Group" />
+                                <asp:LinkButton ID="btnPlacementConfigurationAddSharedGroup" runat="server" CssClass="btn btn-xs btn-primary" Text="Add" OnClick="btnPlacementConfigurationAddSharedGroup_Click" />
+                                <asp:LinkButton ID="btnPlacementConfigurationAddSharedGroupCancel" runat="server" CssClass="btn btn-xs btn-link" Text="Cancel" OnClick="btnPlacementConfigurationAddSharedGroupCancel_Click" />
                             </asp:Panel>
                         </div>
                     </div>
