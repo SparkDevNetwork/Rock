@@ -29,7 +29,13 @@
                 self.$registrantList = $('.js-group-placement-registrant-list', $control);
                 self.$groupList = $('.js-placement-groups');
                 self.registrationTemplatePlacementId = parseInt($('.js-registration-template-placement-id', self.$groupPlacementTool).val()) || null;
+                self.allowMultiplePlacements = $('.js-registration-template-placement-allow-multiple-placements', self.$groupPlacementTool).val() == 'true';
                 self.registrationInstanceId = parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null;
+
+                if (self.registrationTemplatePlacementId == null) {
+                    // if registrationTemplatePlacementId wasn't selected yet, return
+                    return;
+                }
 
                 self.showRegistrantInstanceName = $('.js-registration-template-show-instance-name', self.$groupPlacementTool).val() == 'true';
 
@@ -303,10 +309,17 @@
              * @param {any} groupMember
              */
             populateGroupMember: function ($groupMemberDiv, groupMember) {
+                var self = this;
                 $groupMemberDiv.attr('data-groupmember-id', groupMember.Id);
-                $groupMemberDiv.attr('data-person-id', groupMember.Id);
+                $groupMemberDiv.attr('data-person-id', groupMember.PersonId);
                 $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
                 $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
+
+                if (self.allowMultiplePlacements == false) {
+                    debugger
+                    var $registrantsToHide = self.$registrantList.find('[data-person-id=' + groupMember.PersonId + ']');
+                    $registrantsToHide.hide();
+                }
 
                 // NOTE: AttributeValues are already filtered to the configured displayed attributes when doing the REST call
                 if (groupMember.AttributeValues && Object.keys(groupMember.AttributeValues).length > 0) {
@@ -400,6 +413,12 @@
                     $registrantDiv.find('.js-registration-instance-name-container').hide();
                 }
 
+                // if multiple placements aren't allowed, and this registrant(person) is already in one of the placement groups, then hide the div
+                // If the person is removed from a placement group, then we can show again
+                if (self.allowMultiplePlacements == false && registrant.AlreadyPlacedInGroup) {
+                    $registrantDiv.hide();
+                }
+
                 if (registrant.Fees && Object.keys(registrant.Fees).length > 0) {
                     var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
                     var $feesDl = $('<dl></dl>');
@@ -459,7 +478,6 @@
                             }).done(function () {
                                 $group.hide();
                             }).fail(function (jqXHR) {
-                                debugger
                                 var $groupAlert = $('.js-placement-group-error', $group);
                                 $groupAlert.find('.js-placement-group-error-text').text('Unable to detach group: ' + (jqXHR.responseJSON.Message ?? jqXHR.responseText));
                                 $groupAlert.show();
@@ -470,7 +488,6 @@
                         var $group = $(this).closest('.js-placement-group');
                         var groupId = $group.find('.js-placement-group-id').val();
                         Rock.dialogs.confirm('Are you sure you want to delete this group?', function () {
-                            debugger
                             var deleteGroupUrl = Rock.settings.get('baseUrl') + 'api/Groups?Id=' + groupId;
                             $.ajax({
                                 method: "DELETE",

@@ -223,6 +223,7 @@ namespace RockWeb.Blocks.Event
                 {
                     registrationTemplatePlacementGroupTypeId = registrationTemplatePlacement.GroupTypeId;
                     hfRegistrationTemplatePlacementGroupTypeId.Value = registrationTemplatePlacementGroupTypeId.ToString();
+                    hfRegistrationTemplatePlacementAllowMultiplePlacements.Value = registrationTemplatePlacement.AllowMultiplePlacements.ToJavaScriptValue();
                 }
             }
 
@@ -416,7 +417,6 @@ namespace RockWeb.Blocks.Event
                     {
                         placementGroupsQry = placementGroupsQry.Where( a => !a.CampusId.HasValue || a.CampusId == displayedCampusId.Value );
                     }
-
 
                     var placementGroups = placementGroupsQry.ToList();
                     foreach ( var placementGroup in placementGroups )
@@ -729,9 +729,11 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
+                var groupType = GroupTypeCache.Get( groupTypeId );
+
                 if ( groupTypeId != placementGroup.GroupTypeId )
                 {
-                    nbAddExistingPlacementGroupWarning.Text = "Invalid Group Type";
+                    nbAddExistingPlacementGroupWarning.Text = "Group must have a group type of " + groupType.Name + ".";
                     return;
                 }
 
