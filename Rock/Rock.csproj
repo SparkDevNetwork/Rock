@@ -1988,12 +1988,16 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\DefinedValueEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAdd.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddSingleSelect.cs" />
     <Compile Include="Web\UI\Controls\JsonFieldsBuilder.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AssessmentTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BlockTemplatePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddMultipleSelect.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MetricItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypeAchievementTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypePicker.cs" />
