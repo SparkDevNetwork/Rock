@@ -180,6 +180,8 @@ namespace Rock.Communication.Transport
                 message.IsBodyHtml = true;
                 message.Priority = MailPriority.Normal;
 
+                var cssInliningEnabled = emailMessage.CssInliningEnabled;
+
                 using ( var smtpClient = GetSmtpClient() )
                 {
                     foreach( var messageRecipient in rockMessage.GetRecipients() )
@@ -222,11 +224,21 @@ namespace Rock.Communication.Transport
                             // Subject
                             string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, messageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
 
+                            message.Subject = subject.Left( 998 );
+
                             // Body
                             string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, messageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
                             body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
-                            message.Subject = subject.Left(998);
+                            if ( !string.IsNullOrWhiteSpace( body ) )
+                            {
+                                if ( cssInliningEnabled )
+                                {
+                                    // Move styles inline to ensure compatibility with a wider range of email clients.
+                                    body = body.ConvertHtmlStylesToInlineAttributes();
+                                }
+                            }
+
                             message.Body = body;
 
                             var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
