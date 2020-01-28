@@ -663,7 +663,7 @@ namespace RockWeb.Blocks.Streaks
             }
             else
             {
-                descriptionList.Add( "Attendance Structure", "Any Rock Attendance" );
+                descriptionList.Add( "Attendance Structure", "None" );
             }
 
             lStreakTypeDescription.Text = descriptionList.Html;
@@ -687,7 +687,7 @@ namespace RockWeb.Blocks.Streaks
         private void BindDropDownLists()
         {
             BindDropDownListToEnum( typeof( StreakOccurrenceFrequency ), ddlFrequencyOccurrence, false );
-            BindDropDownListToEnum( typeof( StreakStructureType ), ddlStructureType, true, "Any Rock Attendance" );
+            BindDropDownListToEnum( typeof( StreakStructureType ), ddlStructureType, true, "None" );
         }
 
         /// <summary>
@@ -739,6 +739,8 @@ namespace RockWeb.Blocks.Streaks
 
             switch ( selectedStructureType.Value )
             {
+                case StreakStructureType.AnyAttendance:
+                    return null;
                 case StreakStructureType.CheckInConfig:
                 case StreakStructureType.GroupType:
                     return gtpStructureGroupTypePicker.SelectedGroupTypeId;
@@ -797,6 +799,8 @@ namespace RockWeb.Blocks.Streaks
 
             switch ( selectedStructureType.Value )
             {
+                case StreakStructureType.AnyAttendance:
+                    break;
                 case StreakStructureType.CheckInConfig:
                     RenderCheckinConfigControl( structureEntityId );
                     break;

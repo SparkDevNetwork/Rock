@@ -177,6 +177,10 @@
     <Compile Include="Migrations\202001281308486_AddSystemCommunicationBodyFields.Designer.cs">
       <DependentUpon>202001281308486_AddSystemCommunicationBodyFields.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202001282009028_AdjustStreakStructureTypes.cs" />
+    <Compile Include="Migrations\202001282009028_AdjustStreakStructureTypes.Designer.cs">
+      <DependentUpon>202001282009028_AdjustStreakStructureTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -1101,6 +1105,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202001281308486_AddSystemCommunicationBodyFields.resx">
       <DependentUpon>202001281308486_AddSystemCommunicationBodyFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001282009028_AdjustStreakStructureTypes.resx">
+      <DependentUpon>202001282009028_AdjustStreakStructureTypes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>

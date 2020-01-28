@@ -238,7 +238,9 @@ namespace Rock.Model
             }
 
             // If the structure information is not complete, it is not possible to get locations
-            if ( !streakTypeCache.StructureEntityId.HasValue || !streakTypeCache.StructureType.HasValue )
+            if ( !streakTypeCache.StructureEntityId.HasValue ||
+                !streakTypeCache.StructureType.HasValue ||
+                streakTypeCache.StructureType == StreakStructureType.AnyAttendance )
             {
                 return defaultReturnValue;
             }
@@ -278,7 +280,9 @@ namespace Rock.Model
             }
 
             // If the structure information is not complete, it is not possible to get locations
-            if ( !streakTypeCache.StructureEntityId.HasValue || !streakTypeCache.StructureType.HasValue )
+            if ( !streakTypeCache.StructureEntityId.HasValue ||
+                !streakTypeCache.StructureType.HasValue ||
+                streakTypeCache.StructureType == StreakStructureType.AnyAttendance )
             {
                 return defaultReturnValue;
             }
@@ -345,7 +349,9 @@ namespace Rock.Model
                 .Where( ao => ao.DidNotOccur != true );
 
             // If the structure information is set, then limit the occurrences by the matching groups
-            if ( streakType.StructureType.HasValue && streakType.StructureEntityId.HasValue )
+            if ( streakType.StructureType.HasValue &&
+                streakType.StructureEntityId.HasValue &&
+                streakType.StructureType != StreakStructureType.AnyAttendance )
             {
                 var groupQuery = GetGroupsQuery( rockContext, streakType.StructureType.Value, streakType.StructureEntityId.Value );
                 occurrenceQuery = occurrenceQuery.Where( ao => groupQuery.Any( g => g.Id == ao.GroupId ) );
@@ -531,7 +537,9 @@ namespace Rock.Model
                 a.Occurrence.OccurrenceDate >= minDate );
 
             // If the structure information is set, then limit the attendances by the matching groups
-            if ( streakType.StructureType.HasValue && streakType.StructureEntityId.HasValue )
+            if ( streakType.StructureType.HasValue &&
+                streakType.StructureEntityId.HasValue &&
+                streakType.StructureType != StreakStructureType.AnyAttendance )
             {
                 var groupQuery = GetGroupsQuery( rockContext, streakType.StructureType.Value, streakType.StructureEntityId.Value );
                 attendanceQuery = attendanceQuery.Where( a => groupQuery.Any( g => g.Id == a.Occurrence.GroupId ) );
@@ -1246,15 +1254,16 @@ namespace Rock.Model
 
             // Loop through each active streak types that has attendance enabled and mark engagement for it if the person
             // is enrolled or the streak type does not require enrollment
-            var matchesStreakTypes = StreakTypeCache.All().Where( s =>
+            var matchedStreakTypes = StreakTypeCache.All().Where( s =>
                 s.IsActive &&
+                s.StructureType.HasValue &&
                 s.EnableAttendance &&
                 (
                     !s.RequiresEnrollment ||
                     enrolledInStreakTypeIds.Contains( s.Id )
                 ) &&
                 (
-                    !s.StructureType.HasValue ||
+                    s.StructureType == StreakStructureType.AnyAttendance ||
                     (
                         s.StructureEntityId.HasValue &&
                         (
@@ -1266,7 +1275,7 @@ namespace Rock.Model
                     )
                 ) );
 
-            foreach ( var streakType in matchesStreakTypes )
+            foreach ( var streakType in matchedStreakTypes )
             {
                 MarkEngagement( streakType, personId, out errorMessage, occurrence.OccurrenceDate, addOrUpdateAttendanceRecord: false );
             }
@@ -1363,6 +1372,8 @@ namespace Rock.Model
 
             switch ( structureType )
             {
+                case StreakStructureType.AnyAttendance:
+                    return "Any Attendance";
                 case StreakStructureType.GroupType:
                 case StreakStructureType.CheckInConfig:
                     var groupTypeService = new GroupTypeService( rockContext );
@@ -1946,6 +1957,11 @@ namespace Rock.Model
         /// <exception cref="NotImplementedException"></exception>
         private static IQueryable<Group> GetGroupsQuery( RockContext rockContext, StreakStructureType structureType, int structureEntityId )
         {
+            if ( structureType == StreakStructureType.AnyAttendance )
+            {
+                return new List<Group>() as IQueryable<Group>;
+            }
+
             var groupService = new GroupService( rockContext );
 
             var query = groupService.Queryable()
