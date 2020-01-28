@@ -332,17 +332,28 @@ namespace Rock.Jobs
         /// </summary>
         private int RemoveAnonymousGiverUserLogins()
         {
-            var rockContext = new RockContext();
-            var userLoginService = new UserLoginService( rockContext );
-            var anonymousGiver = new PersonService( rockContext ).Get( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+            int loginCount = 0;
 
-            var logins = userLoginService.Queryable()
-                .Where( l => l.PersonId == anonymousGiver.Id );
+            using ( var rockContext = new RockContext() )
+            {
+                var userLoginService = new UserLoginService( rockContext );
+                var anonymousGiver = new PersonService( rockContext ).Get( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
 
-            int loginCount = logins.Count();
+                if ( anonymousGiver == null )
+                {
+                    return 0;
+                }
 
-            userLoginService.DeleteRange( logins );
-            rockContext.SaveChanges();
+                var logins = userLoginService.Queryable().Where( l => l.PersonId == anonymousGiver.Id ).ToList();
+
+                loginCount = logins.Count();
+
+                if ( loginCount > 0 )
+                {
+                    userLoginService.DeleteRange( logins );
+                    rockContext.SaveChanges();
+                }
+            }
 
             return loginCount;
         }
