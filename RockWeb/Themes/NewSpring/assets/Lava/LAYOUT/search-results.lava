@@ -2,6 +2,9 @@
     
 </div>
 
+{% comment %}Set search engine id to use from site attribute value{% endcomment %}
+{% assign gcseid = CurrentPage.Layout.Site | Attribute:'GoogleCustomSearchEngineId' %}
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -121,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var Http = new XMLHttpRequest();
 
         // Define request url
-        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ "Global" | Attribute:"GoogleCustomSearchEngineID" }}&num=9&q=' + query + startIndex;
+        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ gcseid }}&num=9&q=' + query + startIndex;
         
         // Open request
         Http.open("GET", requestUrl);
