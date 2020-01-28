@@ -85,6 +85,10 @@ namespace RockWeb.Blocks.Communication
 
                 ShowEdit( communicationIdentifier.AsInteger() );
             }
+            else
+            {
+                CreateDynamicLavaValueControls();
+            }
         }
 
         /// <summary>
@@ -177,6 +181,8 @@ namespace RockWeb.Blocks.Communication
             emailTemplate.Bcc = tbBcc.Text;
             emailTemplate.Subject = tbSubject.Text;
             emailTemplate.Body = ceEmailTemplate.Text;
+            emailTemplate.LavaFields = kvlMergeFields.Value.AsDictionaryOrNull();
+            emailTemplate.CssInliningEnabled = cbCssInliningEnabled.Checked;
 
             emailTemplate.SMSFromDefinedValueId = dvpSMSFrom.SelectedValue.AsIntegerOrNull();
             emailTemplate.SMSMessage = tbSMSTextMessage.Text;
@@ -248,6 +254,12 @@ namespace RockWeb.Blocks.Communication
                 tbBcc.Text = emailTemplate.Bcc;
                 tbSubject.Text = emailTemplate.Subject;
                 ceEmailTemplate.Text = emailTemplate.Body;
+
+                kvlMergeFields.Value = emailTemplate.LavaFields.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+
+                hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( emailTemplate.Cc ) || !string.IsNullOrEmpty( emailTemplate.Bcc ) ).ToTrueFalse().ToLower();
+
+                cbCssInliningEnabled.Checked = emailTemplate.CssInliningEnabled;
 
                 showMessagePreview = true;
             }
