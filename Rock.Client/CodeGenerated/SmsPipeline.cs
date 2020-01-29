@@ -27,15 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for SmsAction that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for SmsPipeline that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class SmsActionEntity
+    public partial class SmsPipelineEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public bool ContinueAfterProcessing { get; set; }
+        public string Description { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -53,15 +53,6 @@ namespace Rock.Client
 
         /// <summary />
         public string Name { get; set; }
-
-        /// <summary />
-        public int Order { get; set; }
-
-        /// <summary />
-        public int SmsActionComponentEntityTypeId { get; set; }
-
-        /// <summary />
-        public int SmsPipelineId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -90,21 +81,18 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source SmsAction object
+        /// Copies the base properties from a source SmsPipeline object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( SmsAction source )
+        public void CopyPropertiesFrom( SmsPipeline source )
         {
             this.Id = source.Id;
-            this.ContinueAfterProcessing = source.ContinueAfterProcessing;
+            this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
-            this.Order = source.Order;
-            this.SmsActionComponentEntityTypeId = source.SmsActionComponentEntityTypeId;
-            this.SmsPipelineId = source.SmsPipelineId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -116,12 +104,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for SmsAction that includes all the fields that are available for GETs. Use this for GETs (use SmsActionEntity for POST/PUTs)
+    /// Client model for SmsPipeline that includes all the fields that are available for GETs. Use this for GETs (use SmsPipelineEntity for POST/PUTs)
     /// </summary>
-    public partial class SmsAction : SmsActionEntity
+    public partial class SmsPipeline : SmsPipelineEntity
     {
         /// <summary />
-        public SmsPipeline SmsPipeline { get; set; }
+        public ICollection<SmsAction> SmsActions { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -28,15 +28,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// SmsAction Service class
+    /// SmsPipeline Service class
     /// </summary>
-    public partial class SmsActionService : Service<SmsAction>
+    public partial class SmsPipelineService : Service<SmsPipeline>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SmsActionService"/> class
+        /// Initializes a new instance of the <see cref="SmsPipelineService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public SmsActionService(RockContext context) : base(context)
+        public SmsPipelineService(RockContext context) : base(context)
         {
         }
 
@@ -48,7 +48,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( SmsAction item, out string errorMessage )
+        public bool CanDelete( SmsPipeline item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -58,44 +58,41 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class SmsActionExtensionMethods
+    public static partial class SmsPipelineExtensionMethods
     {
         /// <summary>
-        /// Clones this SmsAction object to a new SmsAction object
+        /// Clones this SmsPipeline object to a new SmsPipeline object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static SmsAction Clone( this SmsAction source, bool deepCopy )
+        public static SmsPipeline Clone( this SmsPipeline source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as SmsAction;
+                return source.Clone() as SmsPipeline;
             }
             else
             {
-                var target = new SmsAction();
+                var target = new SmsPipeline();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Copies the properties from another SmsAction object to this SmsAction object
+        /// Copies the properties from another SmsPipeline object to this SmsPipeline object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this SmsAction target, SmsAction source )
+        public static void CopyPropertiesFrom( this SmsPipeline target, SmsPipeline source )
         {
             target.Id = source.Id;
-            target.ContinueAfterProcessing = source.ContinueAfterProcessing;
+            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
-            target.Order = source.Order;
-            target.SmsActionComponentEntityTypeId = source.SmsActionComponentEntityTypeId;
-            target.SmsPipelineId = source.SmsPipelineId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -1126,6 +1126,14 @@ namespace Rock.Data
         public DbSet<SmsAction> SmsActions { get; set; }
 
         /// <summary>
+        /// Gets or sets the SMS pipeline.
+        /// </summary>
+        /// <value>
+        /// The SMS pipelines.
+        /// </value>
+        public DbSet<SmsPipeline> SmsPipelines { get; set; }
+
+        /// <summary>
         /// Gets or sets the Interactions.
         /// </summary>
         /// <value>
