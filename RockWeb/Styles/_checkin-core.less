@@ -40,6 +40,13 @@ select.form-control {
   border-radius: 4px;
 }
 
+// Fix to allow SVGs inside of buttons.
+.btn svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+}
+
 h1,
 h2,
 h3 {
@@ -81,6 +88,11 @@ h1 {
       content: normal;
     }
   }
+}
+
+.btn-barcode {
+  margin-top: 40px;
+  min-width: 216px;
 }
 
 .btn-checkin-change {
