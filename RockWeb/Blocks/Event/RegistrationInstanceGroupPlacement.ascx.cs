@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -39,7 +39,6 @@ namespace RockWeb.Blocks.Event
     #endregion Block Attributes
     public partial class RegistrationInstanceGroupPlacement : RockBlock
     {
-
         #region Attribute Keys
 
         #endregion Attribute Keys
@@ -65,6 +64,19 @@ namespace RockWeb.Blocks.Event
             public const string PlacementConfigurationJSON_RegistrantTemplateId = "PlacementConfigurationJSON_RegistrantTemplateId_{0}";
         }
 
+        #endregion UserPreferenceKeys
+
+        #region ViewStateKeys
+
+        private static class ViewStateKey
+        {
+            public const string DataFilterJSON = "DataFilterJSON";
+        }
+
+        #endregion ViewStateKeys
+
+        #region Classes
+
         private class PlacementConfiguration
         {
             public PlacementConfiguration()
@@ -76,11 +88,25 @@ namespace RockWeb.Blocks.Event
                 DisplayedGroupMemberAttributeIds = new int[0];
             }
 
-            public int? DisplayedCampusId { get; set; }
-
+            /// <summary>
+            /// Gets or sets a value indicating whether [show registration instance name].
+            /// Note this setting only applies when in Template Mode
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [show registration instance name]; otherwise, <c>false</c>.
+            /// </value>
             public bool ShowRegistrationInstanceName { get; set; }
 
+            /// <summary>
+            /// Gets or sets the included registration instance ids.
+            /// Note this setting only applies when in Template Mode
+            /// </summary>
+            /// <value>
+            /// The included registration instance ids.
+            /// </value>
             public int[] IncludedRegistrationInstanceIds { get; set; }
+
+            public int? DisplayedCampusId { get; set; }
 
             public bool HighlightGenders { get; set; }
 
@@ -97,8 +123,7 @@ namespace RockWeb.Blocks.Event
             public bool HideFullGroups { get; set; }
         }
 
-
-        #endregion PageParameterKeys
+        #endregion Classes
 
         #region Helper classes
 
@@ -110,20 +135,7 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
-        #region Fields
-
-
-        #endregion
-
-        #region Properties
-
-        // used for public / protected properties
-
-        #endregion
-
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -187,7 +199,31 @@ namespace RockWeb.Blocks.Event
             {
                 hfRegistrationInstanceId.Value = registrationInstanceId.ToString();
                 var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
-                registrationTemplateId = registrationInstance.RegistrationTemplateId;
+                if ( registrationInstance != null )
+                {
+                    registrationTemplateId = registrationInstance.RegistrationTemplateId;
+                }
+            }
+
+            // make sure a valid RegistrationTemplate specified (or determined from RegistrationInstanceId )
+            RegistrationTemplate registrationTemplate;
+
+            if ( registrationTemplateId.HasValue )
+            {
+                registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
+            }
+            else
+            {
+                registrationTemplate = null;
+            }
+
+            if ( registrationTemplate == null )
+            {
+                nbConfigurationError.Text = "Invalid Registration Template";
+                nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbConfigurationError.Visible = true;
+                pnlView.Visible = false;
+                return;
             }
 
             hfRegistrationTemplateId.Value = registrationTemplateId.ToString();
@@ -248,7 +284,6 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-
                 bgRegistrationTemplatePlacement.SelectedIndex = 0;
                 var defaultRegistrationTemplatePlacementId = bgRegistrationTemplatePlacement.SelectedValue.AsIntegerOrNull();
                 if ( defaultRegistrationTemplatePlacementId.HasValue )
@@ -269,7 +304,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    // TODO: Prompt for
+                    // Prompt for registrationTemplatePlacement
                     bgRegistrationTemplatePlacement.Visible = true;
                 }
 
@@ -278,14 +313,7 @@ namespace RockWeb.Blocks.Event
 
             var groupType = GroupTypeCache.Get( registrationTemplatePlacementGroupTypeId.Value );
 
-            if ( registrationTemplatePlacement.IconCssClass.IsNotNullOrWhiteSpace() )
-            {
-                _placementIconCssClass = registrationTemplatePlacement.IconCssClass;
-            }
-            else
-            {
-                _placementIconCssClass = groupType.IconCssClass;
-            }
+            _placementIconCssClass = registrationTemplatePlacement.GetIconCssClass();
 
             lGroupPlacementGroupTypeIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
             lAddPlacementGroupButtonIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
@@ -328,6 +356,7 @@ namespace RockWeb.Blocks.Event
 
             return _placementConfiguration;
         }
+
         private PlacementConfiguration _placementConfiguration = null;
 
         /// <summary>
@@ -365,12 +394,18 @@ namespace RockWeb.Blocks.Event
             bgRegistrationTemplatePlacement.Items.Clear();
             foreach ( var registrationTemplatePlacementItem in registrationTemplatePlacements )
             {
-                bgRegistrationTemplatePlacement.Items.Add( new ListItem( registrationTemplatePlacementItem.Name, registrationTemplatePlacementItem.Id.ToString() ) );
+                bgRegistrationTemplatePlacement.Items.Add(
+                    new ListItem(
+                        string.Format( "<i class='{0}'></i> {1}", registrationTemplatePlacementItem.GetIconCssClass(), registrationTemplatePlacementItem.Name ),
+                        registrationTemplatePlacementItem.Id.ToString() ) );
             }
 
             bgAddNewOrExistingPlacementGroup.Items.Clear();
             bgAddNewOrExistingPlacementGroup.BindToEnum<AddPlacementGroupTab>();
         }
+
+        private Dictionary<int, List<int>> _placementGroupIdRegistrationInstanceIds;
+        private List<int> _registrationTemplatePlacementGroupIds;
 
         /// <summary>
         /// Binds the placement groups repeater.
@@ -408,6 +443,7 @@ namespace RockWeb.Blocks.Event
             var displayedCampusId = GetPlacementConfiguration().DisplayedCampusId;
 
             var registrationInstancePlacementGroupList = new List<Group>();
+            _placementGroupIdRegistrationInstanceIds = new Dictionary<int, List<int>>();
             if ( registrationInstanceList != null && registrationTemplatePlacement != null )
             {
                 foreach ( var registrationInstance in registrationInstanceList )
@@ -419,9 +455,14 @@ namespace RockWeb.Blocks.Event
                     }
 
                     var placementGroups = placementGroupsQry.ToList();
+
                     foreach ( var placementGroup in placementGroups )
                     {
                         registrationInstancePlacementGroupList.Add( placementGroup, true );
+
+                        var instanceIds = _placementGroupIdRegistrationInstanceIds.GetValueOrDefault( placementGroup.Id, new List<int>() );
+                        instanceIds.Add( registrationInstance.Id );
+                        _placementGroupIdRegistrationInstanceIds[placementGroup.Id] = instanceIds;
                     }
                 }
             }
@@ -433,6 +474,7 @@ namespace RockWeb.Blocks.Event
             }
 
             var registrationTemplatePlacementGroupList = registrationTemplatePlacementGroupQuery.ToList();
+            _registrationTemplatePlacementGroupIds = registrationTemplatePlacementGroupList.Select( a => a.Id ).ToList();
             var placementGroupList = new List<Group>();
             placementGroupList.AddRange( registrationTemplatePlacementGroupList );
             placementGroupList.AddRange( registrationInstancePlacementGroupList );
@@ -458,7 +500,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            //
+            // do nothing
         }
 
         /// <summary>
@@ -514,6 +556,7 @@ namespace RockWeb.Blocks.Event
         protected void btnConfiguration_Click( object sender, EventArgs e )
         {
             var placementConfiguration = GetPlacementConfiguration();
+
             mdPlacementConfiguration.Show();
             cpConfigurationCampusPicker.SelectedCampusId = placementConfiguration.DisplayedCampusId;
             var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
@@ -523,6 +566,22 @@ namespace RockWeb.Blocks.Event
             pwRegistrationTemplateConfiguration.Visible = inTemplateMode;
 
             var rockContext = new RockContext();
+
+            DataViewFilter dataViewFilter = null;
+
+            if ( placementConfiguration.RegistrantDataFilterId.HasValue )
+            {
+                dataViewFilter = new DataViewFilterService( rockContext ).Get( placementConfiguration.RegistrantDataFilterId.Value );
+            }
+
+            if ( dataViewFilter == null || dataViewFilter.ExpressionType == FilterExpressionType.Filter )
+            {
+                dataViewFilter = new DataViewFilter();
+                dataViewFilter.Guid = new Guid();
+                dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
+            }
+
+            CreateFilterControl( dataViewFilter, true, rockContext );
 
             if ( inTemplateMode )
             {
@@ -581,7 +640,6 @@ namespace RockWeb.Blocks.Event
             }
 
             cblDisplayedGroupMemberAttributes.SetValues( placementConfiguration.DisplayedGroupMemberAttributeIds );
-
             cbHideFullGroups.Checked = placementConfiguration.HideFullGroups;
         }
 
@@ -592,14 +650,46 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdPlacementConfiguration_SaveClick( object sender, EventArgs e )
         {
-            var placementConfiguration = new PlacementConfiguration();
+            var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+
+            // update Guids since we are creating a new dataFilter and children and deleting the old one
+            SetNewDataFilterGuids( dataViewFilter );
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !dataViewFilter.IsValid )
+            {
+                // Controls will render the error messages                    
+                return;
+            }
+
+            var rockContext = new RockContext();
+            DataViewFilterService dataViewFilterService = new DataViewFilterService( rockContext );
+
+            var placementConfiguration = GetPlacementConfiguration() ?? new PlacementConfiguration();
+
+            int? dataViewFilterId = placementConfiguration.RegistrantDataFilterId;
+            if ( dataViewFilterId.HasValue )
+            {
+                var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
+                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+            }
+
+            dataViewFilterService.Add( dataViewFilter );
+
+            rockContext.SaveChanges();
+            
             placementConfiguration.DisplayedCampusId = cpConfigurationCampusPicker.SelectedCampusId;
             placementConfiguration.ShowRegistrationInstanceName = cbShowRegistrationInstanceName.Checked;
             placementConfiguration.IncludedRegistrationInstanceIds = cblRegistrationInstances.SelectedValues.AsIntegerList().ToArray();
             placementConfiguration.HighlightGenders = cbHighlightGenders.Checked;
             placementConfiguration.ShowFees = cbShowFees.Checked;
             placementConfiguration.DisplayedRegistrantAttributeIds = cblDisplayedRegistrantAttributes.SelectedValues.AsIntegerList().ToArray();
-            //   placementConfiguration.RegistrantDataFilterId = todo
+
+            placementConfiguration.RegistrantDataFilterId = dataViewFilter.Id;
             placementConfiguration.DisplayedGroupAttributeIds = cblDisplayedGroupAttributes.SelectedValues.AsIntegerList().ToArray();
             placementConfiguration.HideFullGroups = cbHideFullGroups.Checked;
             placementConfiguration.DisplayedGroupMemberAttributeIds = cblDisplayedGroupMemberAttributes.SelectedValues.AsIntegerList().ToArray();
@@ -640,6 +730,23 @@ namespace RockWeb.Blocks.Event
             if ( placementGroup.CampusId.HasValue )
             {
                 hlGroupCampus.Text = CampusCache.Get( placementGroup.CampusId.Value ).Name;
+                hlGroupCampus.Visible = true;
+            }
+
+            var hlInstanceName = e.Item.FindControl( "hlInstanceName" ) as HighlightLabel;
+            var hlRegistrationTemplatePlacementName = e.Item.FindControl( "hlRegistrationTemplatePlacementName" ) as HighlightLabel;
+
+            var groupRegistrationInstanceIds = _placementGroupIdRegistrationInstanceIds.GetValueOrDefault( placementGroup.Id, new List<int>() );
+            if ( groupRegistrationInstanceIds.Any() )
+            {
+                hlInstanceName.Text = new RegistrationInstanceService( new RockContext() ).GetByIds( groupRegistrationInstanceIds ).Select( a => a.Name ).ToList().AsDelimited( ",", "and" );
+                hlInstanceName.Visible = true;
+            }
+
+            if ( _registrationTemplatePlacementGroupIds.Contains( placementGroup.Id ) )
+            {
+                hlRegistrationTemplatePlacementName.Text = "Shared";
+                hlRegistrationTemplatePlacementName.Visible = true;
             }
 
             var avcGroupAttributes = e.Item.FindControl( "avcGroupAttributes" ) as AttributeValuesContainer;
@@ -736,8 +843,6 @@ namespace RockWeb.Blocks.Event
                     nbAddExistingPlacementGroupWarning.Text = "Group must have a group type of " + groupType.Name + ".";
                     return;
                 }
-
-                AddPlacementGroup( rockContext, placementGroup );
             }
             else
             {
@@ -765,23 +870,8 @@ namespace RockWeb.Blocks.Event
                 rockContext.SaveChanges();
                 avcNewPlacementGroupAttributeValues.GetEditValues( placementGroup );
                 placementGroup.SaveAttributeValues();
-
-                AddPlacementGroup( rockContext, placementGroup );
             }
 
-            rockContext.SaveChanges();
-
-            mdAddPlacementGroup.Hide();
-            BindPlacementGroupsRepeater();
-        }
-
-        /// <summary>
-        /// Adds the placement group.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="placementGroup">The placement group.</param>
-        private void AddPlacementGroup( RockContext rockContext, Group placementGroup )
-        {
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
             var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
@@ -790,6 +880,7 @@ namespace RockWeb.Blocks.Event
             if ( registrationInstanceId.HasValue )
             {
                 var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+
                 // in RegistrationInstanceMode
                 registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup );
             }
@@ -798,6 +889,11 @@ namespace RockWeb.Blocks.Event
                 var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
                 registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup );
             }
+
+            rockContext.SaveChanges();
+
+            mdAddPlacementGroup.Hide();
+            BindPlacementGroupsRepeater();
         }
 
         /// <summary>
@@ -822,7 +918,6 @@ namespace RockWeb.Blocks.Event
             var selectedParentGroup = new GroupService( new RockContext() ).Get( gpNewPlacementGroupParentGroup.SelectedValue.AsInteger() );
             if ( !IsValidParentGroup( selectedParentGroup, groupTypeId ) )
             {
-
                 var groupType = GroupTypeCache.Get( groupTypeId );
                 nbNewPlacementGroupParentGroupWarning.Text = string.Format( "The selected parent group doesn't allow adding {0} child groups", groupType );
                 nbNewPlacementGroupParentGroupWarning.Visible = true;
@@ -865,7 +960,6 @@ namespace RockWeb.Blocks.Event
             var selectedGroup = new GroupService( new RockContext() ).Get( gpAddExistingPlacementGroup.SelectedValue.AsInteger() );
             if ( !IsValidExistingGroup( selectedGroup, groupTypeId ) )
             {
-
                 var groupType = GroupTypeCache.Get( groupTypeId );
                 nbAddExistingPlacementGroupWarning.Text = string.Format( "The selected group must be a {0} group", groupType );
                 nbAddExistingPlacementGroupWarning.Visible = true;
@@ -890,5 +984,233 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Add Placement Group
+
+        #region Registrant Filter
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            var dataViewFilter = DataViewFilter.FromJson( ViewState[ViewStateKey.DataFilterJSON].ToString() );
+
+            if ( dataViewFilter != null )
+            {
+                CreateFilterControl( dataViewFilter, false, new RockContext() );
+            }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns <see langword="null" />.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            var dataViewFilterJson = ReportingHelper.GetFilterFromControls( phFilters ).ToJson();
+            ViewState[ViewStateKey.DataFilterJSON] = dataViewFilterJson;
+
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Handles the AddFilterClick event of the groupControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void groupControl_AddFilterClick( object sender, EventArgs e )
+        {
+            FilterGroup groupControl = sender as FilterGroup;
+            FilterField filterField = new FilterField();
+            Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
+            if ( channelGuid.HasValue )
+            {
+                var contentChannel = ContentChannelCache.Get( channelGuid.Value );
+                if ( contentChannel != null )
+                {
+                    filterField.Entity = new ContentChannelItem
+                    {
+                        ContentChannelId = contentChannel.Id,
+                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
+                    };
+                }
+            }
+
+            filterField.DataViewFilterGuid = Guid.NewGuid();
+            groupControl.Controls.Add( filterField );
+            filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
+
+            // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
+            filterField.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
+            filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
+            filterField.Expanded = true;
+
+            filterField.DeleteClick += filterControl_DeleteClick;
+        }
+
+        /// <summary>
+        /// Handles the AddGroupClick event of the groupControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void groupControl_AddGroupClick( object sender, EventArgs e )
+        {
+            FilterGroup groupControl = sender as FilterGroup;
+            FilterGroup childGroupControl = new FilterGroup();
+            childGroupControl.DataViewFilterGuid = Guid.NewGuid();
+            groupControl.Controls.Add( childGroupControl );
+            childGroupControl.ID = string.Format( "fg_{0}", childGroupControl.DataViewFilterGuid.ToString( "N" ) );
+            childGroupControl.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
+            childGroupControl.FilterType = FilterExpressionType.GroupAll;
+
+            childGroupControl.AddFilterClick += groupControl_AddFilterClick;
+            childGroupControl.AddGroupClick += groupControl_AddGroupClick;
+            childGroupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the filterControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void filterControl_DeleteClick( object sender, EventArgs e )
+        {
+            FilterField fieldControl = sender as FilterField;
+            fieldControl.Parent.Controls.Remove( fieldControl );
+        }
+
+        /// <summary>
+        /// Handles the DeleteGroupClick event of the groupControl control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void groupControl_DeleteGroupClick( object sender, EventArgs e )
+        {
+            FilterGroup groupControl = sender as FilterGroup;
+            groupControl.Parent.Controls.Remove( groupControl );
+        }
+
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// <param name="channel">The channel.</param>
+        /// <param name="filter">The filter.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void CreateFilterControl( DataViewFilter filter, bool setSelection, RockContext rockContext )
+        {
+            phFilters.Controls.Clear();
+            if ( filter != null )
+            {
+                CreateFilterControl( phFilters, filter, setSelection, rockContext );
+            }
+        }
+
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="filter">The filter.</param>
+        /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="contentChannel">The content channel.</param>
+        private void CreateFilterControl( Control parentControl, DataViewFilter filter, bool setSelection, RockContext rockContext )
+        {
+            try
+            {
+                if ( filter.ExpressionType == FilterExpressionType.Filter )
+                {
+                    var filterControl = new FilterField();
+
+                    parentControl.Controls.Add( filterControl );
+                    filterControl.DataViewFilterGuid = filter.Guid;
+                    filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
+
+                    // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
+                    filterControl.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
+                    filterControl.FilteredEntityTypeName = typeof( Rock.Model.RegistrationRegistrant ).FullName;
+
+                    if ( filter.EntityTypeId.HasValue )
+                    {
+                        var entityTypeCache = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext );
+                        if ( entityTypeCache != null )
+                        {
+                            filterControl.FilterEntityTypeName = entityTypeCache.Name;
+                        }
+                    }
+
+                    filterControl.Expanded = filter.Expanded;
+                    if ( setSelection )
+                    {
+                        try
+                        {
+                            filterControl.SetSelection( filter.Selection );
+                        }
+                        catch ( Exception ex )
+                        {
+                            this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
+                        }
+                    }
+
+                    filterControl.DeleteClick += filterControl_DeleteClick;
+                }
+                else
+                {
+                    var groupControl = new FilterGroup();
+                    parentControl.Controls.Add( groupControl );
+                    groupControl.DataViewFilterGuid = filter.Guid;
+                    groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString( "N" ) );
+                    groupControl.FilteredEntityTypeName = typeof( Rock.Model.RegistrationRegistrant ).FullName;
+                    groupControl.IsDeleteEnabled = parentControl is FilterGroup;
+                    if ( setSelection )
+                    {
+                        groupControl.FilterType = filter.ExpressionType;
+                    }
+
+                    groupControl.AddFilterClick += groupControl_AddFilterClick;
+                    groupControl.AddGroupClick += groupControl_AddGroupClick;
+                    groupControl.DeleteGroupClick += groupControl_DeleteGroupClick;
+                    foreach ( var childFilter in filter.ChildFilters )
+                    {
+                        CreateFilterControl( groupControl, childFilter, setSelection, rockContext );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                this.LogException( new Exception( "Exception creating FilterControl for DataViewFilter: " + filter.Guid, ex ) );
+            }
+        }
+
+        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
+        {
+            if ( dataViewFilter != null )
+            {
+                dataViewFilter.Guid = Guid.NewGuid();
+                foreach ( var childFilter in dataViewFilter.ChildFilters )
+                {
+                    SetNewDataFilterGuids( childFilter );
+                }
+            }
+        }
+
+        private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
+        {
+            if ( dataViewFilter != null )
+            {
+                foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
+                {
+                    DeleteDataViewFilter( childFilter, service );
+                }
+
+                service.Delete( dataViewFilter );
+            }
+        }
+
+        #endregion Registrant Filter
     }
 }

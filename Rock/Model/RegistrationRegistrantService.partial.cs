@@ -46,7 +46,7 @@ namespace Rock.Model
                 var dataFilter = new DataViewFilterService( new RockContext() ).Get( options.DataViewFilterId.Value );
                 List<string> errorMessages = new List<string>();
 
-                var expression = dataFilter.GetExpression( typeof( RegistrationRegistrant ), registrationRegistrantService, registrationRegistrantService.ParameterExpression, errorMessages );
+                var expression = dataFilter?.GetExpression( typeof( RegistrationRegistrant ), registrationRegistrantService, registrationRegistrantService.ParameterExpression, errorMessages );
                 if ( expression != null )
                 {
                     registrationRegistrantQuery = registrationRegistrantQuery.Where( registrationRegistrantService.ParameterExpression, expression );
@@ -67,7 +67,6 @@ namespace Rock.Model
 
             // get a queryable of PersonIds for the registration template shared groups so we can determine if the registrant has been placed
             var registrationTemplatePlacementGroupsPersonIdQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement ).SelectMany( a => a.Members ).Select( a => a.PersonId );
-
 
             // and also get a queryable of PersonIds for the registration instance placement groups so we can determine if the registrant has been placed 
             IQueryable<InstancePlacementGroupPersonId> allInstancesPlacementGroupInfoQuery = null;
@@ -122,6 +121,7 @@ namespace Rock.Model
                 Registrant = r,
                 r.PersonAlias.Person,
                 RegistrationInstanceName = r.Registration.RegistrationInstance.Name,
+
                 // marked as AlreadyPlacedInGroup if the Registrant is a member of any of the registrant template placement group or the registration instance placement groups
                 AlreadyPlacedInGroup =
                     registrationTemplatePlacementGroupsPersonIdQuery.Contains( r.PersonAlias.PersonId )
