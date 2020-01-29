@@ -26,7 +26,7 @@ namespace Rock.Data
     /// 
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public sealed class RelatedEntityHelper<T> where T: Rock.Data.Entity<T>, new()
+    public sealed class RelatedEntityHelper<T> where T : Rock.Data.Entity<T>, new()
     {
         private Service<T> Service { get; set; }
 
@@ -104,7 +104,7 @@ namespace Rock.Data
         {
             var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
             var sourceEntityTypeId = EntityTypeCache.GetId<T>();
-            
+
             var relatedEntityService = new Rock.Model.RelatedEntityService( this.Context as RockContext );
             var relatedEntityRecords = relatedEntityService.GetRelatedEntityRecordsToSource( entityId, sourceEntityTypeId.Value, relatedEntityTypeId.Value, purposeKey );
 
@@ -121,6 +121,11 @@ namespace Rock.Data
         /// <returns></returns>
         public bool RelatedToSourceEntityAlreadyExists<TT>( int entityId, TT relatedEntity, string purposeKey ) where TT : IEntity
         {
+            if ( entityId == 0 || relatedEntity.Id == 0 )
+            {
+                return false;
+            }
+
             var relatedEntityTypeId = EntityTypeCache.GetId<TT>();
             var sourceEntityTypeId = EntityTypeCache.GetId<T>();
 

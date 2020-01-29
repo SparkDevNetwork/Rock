@@ -7,7 +7,7 @@
             <asp:Literal ID="lRegistrationInstanceName" runat="server" />
         </code>
 
-        <Rock:ButtonGroup ID="bgRegistrationTemplatePlacement" runat="server" Label="Select Placement Type" AutoPostBack="true" OnSelectedIndexChanged="bgRegistrationTemplatePlacement_SelectedIndexChanged" />
+        <Rock:ButtonGroup ID="bgRegistrationTemplatePlacement" runat="server" Label="Select Placement Type" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="bgRegistrationTemplatePlacement_SelectedIndexChanged" />
 
 
         <Rock:NotificationBox ID="nbConfigurationError" runat="server" />
@@ -21,7 +21,7 @@
                     <asp:Literal ID="lGroupPlacementGroupTypeIconHtml" runat="server">
                         <i class="fa fa-star"></i>
                     </asp:Literal>
-                    <asp:Literal ID="lGroupPlacementGroupTypeName" Text="###GroupType.Term###.Pluralized()" runat="server" />
+                    <asp:Literal ID="lGroupPlacementGroupTypeName" Text="Group Type ..." runat="server" />
                 </h1>
 
                 <div class="panel-labels">
@@ -29,7 +29,7 @@
                         <asp:Literal ID="lAddPlacementGroupButtonIconHtml" runat="server">
                             <i class="fa fa-star"></i>
                         </asp:Literal>
-                        <asp:Literal ID="lAddPlacementGroupButtonText" Text="Add (###GroupType.Term Name###)" runat="server" />
+                        <asp:Literal ID="lAddPlacementGroupButtonText" Text="Add ..." runat="server" />
                     </asp:LinkButton>
                     <asp:LinkButton ID="btnConfiguration" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnConfiguration_Click"><i class="fa fa-gear"></i></asp:LinkButton>
                 </div>
@@ -72,7 +72,7 @@
                                                         <span class="registrant-name js-registrant-name"></span>
                                                     </div>
                                                 </div>
-                                                <div class="panel-body js-registrant-details hide-transit">
+                                                <div class="panel-body registrant-details js-registrant-details hide-transit">
                                                     <div class="registration-instance-name-container js-registration-instance-name-container form-group">
                                                         <label class="control-label">Instance</label>
                                                         <div class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></div>
@@ -164,8 +164,8 @@
 
                                                 <div class="panel panel-block placement-group">
                                                     <div class="alert alert-danger js-alert js-placement-group-error" style="display: none">
-                                                        <span class="js-placement-group-error-text"></span>
                                                         <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                                        <span class="js-placement-group-error-text"></span>
                                                     </div>
                                                     <div class="panel-heading">
                                                         <h1 class="panel-title">
@@ -189,7 +189,9 @@
                                                                 <i class="fa fa-chevron-down"></i>
                                                             </div>
                                                             <div class="placement-status-labels pull-right">
-                                                                <Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="margin-r-sm" />
+                                                                <Rock:HighlightLabel runat="server" LabelType="Info" ID="hlInstanceName" Visible="false" />
+                                                                <Rock:HighlightLabel runat="server" LabelType="Default" ID="hlRegistrationTemplatePlacementName" Visible="false" />
+                                                                <Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="margin-r-sm" Visible="false" />
                                                                 <span class="label label-custom placement-capacity-label js-placement-capacity-label margin-r-sm" data-status="none"></span>
                                                             </div>
 
@@ -220,8 +222,8 @@
                                                                             </asp:Panel>
                                                                         </div>
                                                                         <div class="alert alert-danger js-alert js-placement-place-registrant-error" style="display: none">
-                                                                            <span class="js-placement-place-registrant-error-text"></span>
                                                                             <button type="button" class="close js-hide-alert" aria-hidden="true"><i class="fa fa-times"></i></button>
+                                                                            <span class="js-placement-place-registrant-error-text"></span>
                                                                         </div>
                                                                         <div class="panel-body">
                                                                             <div class="js-group-role-container group-role-container dropzone"></div>
@@ -255,8 +257,7 @@
                     <Rock:NotificationBox ID="nbNotAllowedToAddGroup" runat="server" NotificationBoxType="Danger" Visible="false"
                         Text="You are not authorized to save group with the selected group type and/or parent group." />
 
-                    <Rock:ButtonGroup ID="bgAddNewOrExistingPlacementGroup" runat="server" OnSelectedIndexChanged="bgAddNewOrExistingPlacementGroup_SelectedIndexChanged" AutoPostBack="true">
-                    </Rock:ButtonGroup>
+                    <Rock:ButtonGroup ID="bgAddNewOrExistingPlacementGroup" runat="server" CssClass="margin-b-sm" OnSelectedIndexChanged="bgAddNewOrExistingPlacementGroup_SelectedIndexChanged" AutoPostBack="true" />
                     <asp:Panel ID="pnlAddNewPlacementGroup" runat="server">
                         <div class="row">
                             <div class="col-md-6">
@@ -337,7 +338,7 @@
                                 <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" />
 
                                 <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
-                                    ##TODO##
+                                    <Rock:DynamicPlaceholder ID="phFilters" runat="server" />
                                 </Rock:RockControlWrapper>
                             </div>
                         </div>

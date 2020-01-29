@@ -175,38 +175,48 @@
                         }).fail(function (jqXHR) {
                             self.showPlaceRegistrantError($groupRoleMembers, jqXHR, $draggedRegistrant);
                         });
-
-                        self.trimSourceContainer();
                     });
 
-                this.trimSourceContainer();
                 this.initializeEventHandlers();
 
                 self.populateRegistrants(self.$registrantList);
 
                 self.populateAllGroupRoleMembers();
             },
-            /** trims the source container if it just has whitespace, so that the :empty css selector works */
-            trimSourceContainer: function () {
-                // if js-group-placement-registrant-container just has whitespace in it, trim it so that the :empty css selector works
+            /** checks to see if there are any visible registrants, and shows a message if there aren't */
+            checkVisibleRegistrants: function () {
+                var self = this;
+
+                var $noRegistrantsDiv = $('.js-no-registrants-div', self.$groupPlacementTool)
                 var $sourceContainer = $('.js-group-placement-registrant-container ');
-                if (($.trim($sourceContainer.html()) == "")) {
-                    $sourceContainer.html("");
+                if ($sourceContainer.height() == 0) {
+                    if ($noRegistrantsDiv.length == 0) {
+                        var $noRegistrantsDiv = $('<div class="js-no-registrants-div no-registrants-div"></div>')
+                        $noRegistrantsDiv.appendTo($sourceContainer)
+                    }
+                }
+                else {
+                    $noRegistrantsDiv.remove();
                 }
             },
             /** Removes the groupMember and repopulates the UI */
             removeGroupMember: function ($groupMember, $groupRoleMembers) {
                 var self = this;
-
                 var groupMemberId = $groupMember.attr('data-groupmember-id');
-
                 var groupMembersURI = Rock.settings.get('baseUrl') + 'api/GroupMembers';
+                var personId = $groupMember.attr('data-person-id');
 
                 $.ajax({
                     method: "DELETE",
                     url: groupMembersURI + '/' + groupMemberId
                 }).done(function (deleteResult) {
+                    // if the group member has been removed from the group, and the registrant is hidden due to 'allow multiple placements=false', we can show it again since they are no longer in a group
+                    var $registrantsToShow = self.$registrantList.find('[data-person-id=' + personId + ']');
+
+                    $registrantsToShow.show();
+
                     self.populateGroupRoleMembers($groupRoleMembers);
+                    self.checkVisibleRegistrants();
                 }).fail(function (a, b, c) {
                     console.log('fail');
                 });
@@ -255,6 +265,8 @@
                         self.populateGroupMember($groupMemberDiv, groupMember);
                         $groupRoleContainer.append($groupMemberDiv);
                     });
+
+                    self.checkVisibleRegistrants();
 
                     var groupCapacity = parseInt($('.js-placement-capacity', $placementGroup).val()) || null;
 
@@ -316,7 +328,7 @@
                 $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
 
                 if (self.allowMultiplePlacements == false) {
-                    debugger
+                    // hide any registrants (person) that are already placed
                     var $registrantsToHide = self.$registrantList.find('[data-person-id=' + groupMember.PersonId + ']');
                     $registrantsToHide.hide();
                 }
@@ -382,6 +394,8 @@
 
                     registrantContainerParent.append($registrantContainer);
 
+                    self.checkVisibleRegistrants();
+
                     setTimeout(function () {
                         $loadingNotification.hide();
                     }, 0)
@@ -405,12 +419,12 @@
 
                 $registrantDiv.find('.js-registrant-name').text(registrant.PersonName);
 
-                $registrantDiv.find('.js-registrant-details').hide();
+                // note that instead of using hide() on elements that shouldn't shown, use remove() instead to reduce the amount of html, and to help detect if the details should show when toggled
 
                 if (self.showRegistrantInstanceName) {
                     $registrantDiv.find('.js-registrant-registrationinstance-name').text(registrant.RegistrationInstanceName);
                 } else {
-                    $registrantDiv.find('.js-registration-instance-name-container').hide();
+                    $registrantDiv.find('.js-registration-instance-name-container').remove();
                 }
 
                 // if multiple placements aren't allowed, and this registrant(person) is already in one of the placement groups, then hide the div
@@ -419,30 +433,43 @@
                     $registrantDiv.hide();
                 }
 
+                var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
+
                 if (registrant.Fees && Object.keys(registrant.Fees).length > 0) {
-                    var $feesDiv = $registrantDiv.find('.js-registrant-fees-container');
+
                     var $feesDl = $('<dl></dl>');
                     for (var fee in registrant.Fees) {
                         $feesDl.append('<dt>' + fee + ' </dt><dd>' + registrant.Fees[fee] + '</dd>');
                     }
                     $feesDiv.append($feesDl);
                 }
+                else {
+                    $feesDiv.remove();
+                }
+
+                var $attributesDiv = $registrantDiv.find('.js-registrant-attributes-container');
 
                 // NOTE: AttributeValues are already filtered to the configured displayed attributes when doing the REST call
                 if (registrant.AttributeValues && Object.keys(registrant.AttributeValues).length > 0) {
-                    var $attributesDiv = $registrantDiv.find('.js-registrant-attributes-container');
                     var $attributesDl = $('<dl></dl>');
                     for (var displayedAttribute in registrant.Attributes) {
                         $attributesDl.append('<dt>' + registrant.Attributes[displayedAttribute].Name + ' </dt><dd>' + registrant.AttributeValues[displayedAttribute].Value + '</dd>');
                     }
                     $attributesDiv.append($attributesDl);
                 }
+                else {
+                    $attributesDiv.remove();
+                }
+
+                // start with the details panel hidden until a hover or toggle makes them visible
+                $registrantDiv.find('.js-registrant-details').hide();
             },
             showPlaceRegistrantError: function ($groupRoleMembers, jqXHR, $draggedRegistrant) {
                 $draggedRegistrant.remove();
 
                 var self = this;
                 var $placeRegistrantError = $('.js-placement-place-registrant-error', $groupRoleMembers);
+
                 // hide any other alerts that are showing
                 $('.js-alert', self.$groupPlacementTool).not($placeRegistrantError).hide();
                 $placeRegistrantError.find('.js-placement-place-registrant-error-text').text(jqXHR.responseJSON.Message ?? jqXHR.responseText);
@@ -542,7 +569,10 @@
 
                 $('.js-group-placement-registrant-list', self.$groupPlacementTool)
                     .on('mouseenter', '.js-registrant', function () {
-                        $('.js-registrant-details', $(this)).stop().slideDown();
+                        var $details = $('.js-registrant-details', $(this));
+                        if ($details.text().trim().length != '') {
+                            $details.stop().slideDown();
+                        }
                     })
                     .on('mouseleave', '.js-registrant', function () {
                         // if the toggle for show all registrant details is active, just leave it open
@@ -561,7 +591,12 @@
 
                     if (self.showAllRegistrantDetails) {
                         $('i', this).removeClass('fa-angle-double-down').addClass('fa-angle-double-up');
-                        $('.js-registrant-details', self.$groupPlacementTool).stop().slideDown();
+                        $('.js-registrant-details').each(function (i, el) {
+                            var $details = $(el)
+                            if ($details.text().trim().length != '') {
+                                $details.stop().slideDown();
+                            }
+                        });
                     } else {
                         $('i', this).removeClass('fa-angle-double-up').addClass('fa-angle-double-down');
                         $('.js-registrant-details', self.$groupPlacementTool).stop().slideUp();

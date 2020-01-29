@@ -49,21 +49,22 @@ namespace Rock.Model
         public int SourceEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> of the source.
+        /// Gets or sets the EntityId of the <see cref="Rock.Model.EntityType" /> of the source.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
+        /// The source entity identifier.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Range( 1, int.MaxValue, ErrorMessage = "SourceEntityId must be greater than zero" )]
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 2 )]
         public int SourceEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of target entity.
+        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType" /> of target entity.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the target entity.
+        /// The target entity type identifier.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -71,12 +72,13 @@ namespace Rock.Model
         public int TargetEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId of the <see cref="Rock.Model.EntityType"/> of the target.
+        /// Gets or sets the EntityId of the <see cref="Rock.Model.EntityType" /> of the target.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
+        /// The target entity identifier.
         /// </value>
         [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "TargetEntityId must be greater than zero" )]
         [DataMember( IsRequired = true )]
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 4 )]
         public int TargetEntityId { get; set; }
