@@ -185,6 +185,10 @@
     <Compile Include="Migrations\202001292041297_AddCommunicationPreferenceToGroupMember.Designer.cs">
       <DependentUpon>202001292041297_AddCommunicationPreferenceToGroupMember.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202001300154408_UpdateSystemCommunicationReferences.cs" />
+    <Compile Include="Migrations\202001300154408_UpdateSystemCommunicationReferences.Designer.cs">
+      <DependentUpon>202001300154408_UpdateSystemCommunicationReferences.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -1115,6 +1119,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202001292041297_AddCommunicationPreferenceToGroupMember.resx">
       <DependentUpon>202001292041297_AddCommunicationPreferenceToGroupMember.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001300154408_UpdateSystemCommunicationReferences.resx">
+      <DependentUpon>202001300154408_UpdateSystemCommunicationReferences.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
