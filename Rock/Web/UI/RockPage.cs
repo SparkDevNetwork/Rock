@@ -669,9 +669,26 @@ namespace Rock.Web.UI
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>( scriptManager_Navigate );
 
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebForms.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebForms.js" });
+			_scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebUIValidation.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebUIValidation.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "MenuStandards.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/MenuStandards.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "Focus.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/Focus.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "GridView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/GridView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "DetailsView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/DetailsView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "TreeView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/TreeView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebParts.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebParts.js" });
+
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
-            _scriptManager.Scripts.Add( new ScriptReference( "~/Bundles/WebFormsJs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/WebFormsJs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
@@ -2708,7 +2725,7 @@ Sys.Application.add_load(function () {
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
                         {
                             if ( attributeKey.ToLower() != "content" ) // ignore content attribute.
-                            { 
+                            {
                                 if ( existingMeta.Attributes[attributeKey] == null ||
                                     existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
                                 {
@@ -2914,7 +2931,7 @@ Sys.Application.add_load(function () {
         public static void AddScriptLink( Page page, string path, bool fingerprint = true )
         {
             var scriptManager = ScriptManager.GetCurrent( page );
-             
+
             if ( fingerprint )
             {
                 path = Fingerprint.Tag( page.ResolveUrl( path ) );

@@ -34,7 +34,9 @@ public class BundleConfig
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" ).Include(
             "~/Scripts/jquery-3.4.1.min.js" ) );
 
-        bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/WebFormsJs" ).Include(
+            "~/Scripts/WebForms/MsAjax/MicrosoftAjax.js",
+            "~/Scripts/WebForms/MsAjax/MicrosoftAjaxWebForms.js",
             "~/Scripts/WebForms/WebForms.js",
             "~/Scripts/WebForms/WebUIValidation.js",
             "~/Scripts/WebForms/MenuStandards.js",
