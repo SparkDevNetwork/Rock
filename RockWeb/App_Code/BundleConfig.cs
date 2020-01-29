@@ -32,8 +32,7 @@ public class BundleConfig
         bundles.ResetAll();
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockJQueryLatest" ).Include(
-            "~/Scripts/jquery-3.4.1.min.js",
-            "~/Scripts/jquery-migrate-3.1.0.min.js" ) );
+            "~/Scripts/jquery-3.4.1.min.js" ) );
 
         bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
             "~/Scripts/WebForms/WebForms.js",
