@@ -212,6 +212,27 @@ namespace Rock.Model
         [DataMember]
         public int? ScheduleReminderEmailOffsetDays { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communication preference.
+        /// </summary>
+        /// <value>
+        /// The communication preference.
+        /// </value>
+        [DataMember]
+        public CommunicationType CommunicationPreference { get; set; }
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupMember"/> class.
+        /// </summary>
+        public GroupMember()
+            : base()
+        {
+            CommunicationPreference = CommunicationType.Email;
+        }
+
         #endregion
 
         #region Virtual Properties
