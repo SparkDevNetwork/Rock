@@ -233,6 +233,10 @@
     <Compile Include="Migrations\201911141852532_EntityDocuments.Designer.cs">
       <DependentUpon>201911141852532_EntityDocuments.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202001231750363_AddedSmsPipelineAndUpdatedSmsAction.cs" />
+    <Compile Include="Migrations\202001231750363_AddedSmsPipelineAndUpdatedSmsAction.Designer.cs">
+      <DependentUpon>202001231750363_AddedSmsPipelineAndUpdatedSmsAction.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -967,6 +971,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201911141852532_EntityDocuments.resx">
       <DependentUpon>201911141852532_EntityDocuments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001231750363_AddedSmsPipelineAndUpdatedSmsAction.resx">
+      <DependentUpon>202001231750363_AddedSmsPipelineAndUpdatedSmsAction.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>

@@ -73,6 +73,8 @@ namespace Rock.Web.Cache
         /// </value>
         public bool ContinueAfterProcessing { get; set; }
 
+        public int SmsPipelineId { get; set; }
+
         /// <summary>
         /// Gets the field.
         /// </summary>
@@ -122,6 +124,7 @@ namespace Rock.Web.Cache
             Order = smsAction.Order;
             SmsActionComponentEntityTypeId = smsAction.SmsActionComponentEntityTypeId;
             ContinueAfterProcessing = smsAction.ContinueAfterProcessing;
+            SmsPipelineId = smsAction.SmsPipelineId;
         }
 
         /// <summary>

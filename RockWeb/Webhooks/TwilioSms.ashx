@@ -34,18 +34,18 @@ using Rock.Web.Cache;
 /// </summary>
 public class TwilioSmsAsync : IHttpAsyncHandler
 {
-    public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
+    public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, Object extraData )
     {
-        TwilioSmsResponseAsync twilioAsync = new TwilioSmsResponseAsync(cb, context, extraData);
+        TwilioSmsResponseAsync twilioAsync = new TwilioSmsResponseAsync( cb, context, extraData );
         twilioAsync.StartAsyncWork();
         return twilioAsync;
     }
 
-    public void EndProcessRequest(IAsyncResult result)
+    public void EndProcessRequest( IAsyncResult result )
     {
     }
 
-    public void ProcessRequest(HttpContext context)
+    public void ProcessRequest( HttpContext context )
     {
         throw new InvalidOperationException();
     }
@@ -202,12 +202,13 @@ class TwilioSmsResponseAsync : IAsyncResult
             {
                 message.FromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
-                var outcomes = SmsActionService.ProcessIncomingMessage( message );
+                var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
+                var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
-                var twilioMessage = new Twilio.TwiML.Message();
 
                 if ( smsResponse != null )
                 {
+                    var twilioMessage = new Twilio.TwiML.Message();
                     if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
                     {
                         twilioMessage.Body( smsResponse.Message );
@@ -220,12 +221,12 @@ class TwilioSmsResponseAsync : IAsyncResult
                             twilioMessage.Media( binaryFile.Url );
                         }
                     }
+
+                    var messagingResponse = new Twilio.TwiML.MessagingResponse();
+                    messagingResponse.Message( twilioMessage );
+
+                    response.Write( messagingResponse.ToString() );
                 }
-
-                var messagingResponse = new Twilio.TwiML.MessagingResponse();
-                messagingResponse.Message( twilioMessage );
-
-                response.Write( messagingResponse.ToString() );
             }
         }
     }
