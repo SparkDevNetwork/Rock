@@ -22,7 +22,6 @@ Sys.Application.add_load(function () {
         if ($('.checkin-scroll-panel').length) {
             bodyScroll = new IScroll('.checkin-scroll-panel',
                 {
-                    scrollbars: true,
                     mouseWheel: true,
                     interactiveScrollbars: true,
                     shrinkScrollbars: 'scale',
@@ -37,11 +36,9 @@ Sys.Application.add_load(function () {
 });
 
 function resizeBody() {
-    var headerHeight = $('.checkin-header').outerHeight(true);
     var footerHeight = $('.checkin-footer').outerHeight(true);
     var bodyWidth = $('.checkin-body').width();
+    var bodyPosition = $('.checkin-body').position();
 
-    $('.checkin-scroll-panel').css('top', headerHeight);
-    $('.checkin-scroll-panel').css('bottom', footerHeight);
-    $('.checkin-scroll-panel').css('width', bodyWidth);
+    $('.checkin-scroll-panel').css('top', bodyPosition.top).css('bottom', footerHeight).css('width', bodyWidth);
 }
