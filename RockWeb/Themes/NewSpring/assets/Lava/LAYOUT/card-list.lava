@@ -6,7 +6,7 @@
 <section>
     <div class="row">
     	{% for item in Items limit:pagesize offset:offset %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
-		
+
 			{% contentchannel id:'{{ item.ContentChannelId }}' iterator:'channels' %}
 				{% for channel in channels %}
 					{% assign showDate = channel | Attribute:'IsDateVisible' %}
@@ -37,7 +37,7 @@
 					{% endif %}
 				{% endif %}
 			{% endcapture %}
-    	    
+
 			{% if ratio != empty %}
 				{% capture imageKey %}Image{{ ratio | Capitalize }}{% endcapture %}
 				{% assign imageurl = item | Attribute:imageKey,'Url' %}
@@ -51,7 +51,7 @@
 			{% assign summary = item | Attribute:'Summary' %}
     	    {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% else %}{{ item.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% endif %}</p>{% endcapture %}
     	    {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
-			
+
     	    {% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endif %}{% endcapture %}
     	    {% capture trimcopy %}{% endcapture %}
 
@@ -82,11 +82,11 @@
         	    {% assign collectiontext = '' %}
         	    {% assign collectionurl = '' %}
     	    {% endif %}
-    	    
+
             {[ card guid:'{{ guid }}' cciid:'{{ cciid }}' id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
-    	    
+
     	</div>{% endfor -%}
-    	
+
     </div>
 </section>
 

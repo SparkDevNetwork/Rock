@@ -1,28 +1,19 @@
 {% if cciid and cciid != empty %}
 
     {% comment %}
-        Determine how we're sorting child items based on the parent channel's (channel of the cciid that was passed in) ManuallyOrdered property.
-    {% endcomment %}
-
-    {% contentchannelitem id:'{{ cciid }}' iterator:'parentItems' %}
-        {% for parentItem in parentItems %}
-            {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
-
-        {% endfor %}
-    {% endcontentchannelitem %}
-
-    {% comment %}
         Set current item slug so we can determine what the active slide should be
     {% endcomment %}
     {% assign currentSlug = 'Global' | Page:'Path' | Split:'/' | Last %}
 
-    {% if sort == 'Order' %}
+    {% comment %}
+        Determine how we're sorting child items based on the parent channel's (channel of the cciid that was passed in) ManuallyOrdered property.
+    {% endcomment %}
+    {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
 
-        {% comment %}
-            If we're sorting by Order, we've got to start from the ContentChannelItemAssociation table since that's where the Order property is stored.
-        {% endcomment %}
+    {% sql %}
+        {% if sort == 'Order' %}
 
-        {% sql %}
+            /* If we're sorting by Order, we've got to start from the ContentChannelItemAssociation table since that's where the Order property is stored. */
             SELECT ROW_NUMBER() OVER (ORDER BY ccia.[Order]) - 1 'Index', cci.Id, ccis.Slug
             FROM ContentChannelItemAssociation ccia
             JOIN ContentChannelItem cci
@@ -32,20 +23,10 @@
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
             {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
             ORDER BY ccia.[Order]
-        {% endsql %}
-        
-        {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
 
-    {% else %}
+        {% else %}
 
-        {% comment %}
-            If we're sorting by StartDateTime, we can go straight to the ContentChannelItem table since that property is with the other item properties/attributes we need.
-        {% endcomment %}
-
-        {% comment %}
-            Setup array of child content channel item ids ( by default they are`)
-        {% endcomment %}
-        {% sql %}
+            /* If we're sorting by StartDateTime, we can go straight to the ContentChannelItem table since that property is with the other item properties/attributes we need. */
             SELECT ROW_NUMBER() OVER (ORDER BY cci.StartDateTime) - 1 'Index', cci.Id, ccis.Slug
             FROM ContentChannelItemAssociation ccia
             JOIN ContentChannelItem cci
@@ -55,11 +36,11 @@
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
             {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
             ORDER BY cci.StartDateTime
-        {% endsql %}
+            
+        {% endif %}
+    {% endsql %}
 
-        {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
-
-    {% endif %}
+    {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
 
     {% comment %}
         Now that we've setup our array of child item ids, we'll loop through them and get the content channel item that corresponds to each Id and generate our swiper element.
