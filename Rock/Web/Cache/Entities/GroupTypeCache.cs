@@ -516,6 +516,7 @@ namespace Rock.Web.Cache
 
         /// <summary>
         /// Gets a value indicating whether [allow any child group type].
+        /// Use this along with <seealso cref="ChildGroupTypes"/> to determine if a child group can have a parent group of this group type
         /// </summary>
         /// <value>
         ///   <c>true</c> if [allow any child group type]; otherwise, <c>false</c>.
@@ -601,7 +602,8 @@ namespace Rock.Web.Cache
         private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
-        /// Gets the child group types.
+        /// Gets the group types that are allowed for child groups.
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to determine if a child group can have a parent group of this group type
         /// </summary>
         /// <value>
         /// The child group types.
