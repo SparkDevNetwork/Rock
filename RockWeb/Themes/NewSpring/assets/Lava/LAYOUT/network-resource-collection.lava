@@ -55,7 +55,7 @@
                 <p class="push-half-bottom">{{ attribute.Summary }}</p>
                 <p>
                 {% if CurrentPerson and CurrentPerson != empty %}
-                    <a href="/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ Item.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" }}: {{ attribute.Title | EscapeDataString }}&ResourceSummary={{ attribute.Summary | EscapeDataString }}&ResourceUrl={{ attribute.File }}" class="btn btn-primary" target="_blank">Download Now</a>
+                    <a href="/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ Item.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }}: {{ attribute.Title | Replace:"'","’" | EscapeDataString }}&ResourceSummary={{ attribute.Summary | Replace:"'","’" | EscapeDataString }}&ResourceUrl={% if attribute.Link != empty %}{{ attribute.Link }}{% else %}{{ attribute.File }}{% endif %}" class="btn btn-primary" target="_blank">Download Now</a>
                 {% else %}
                     <a href="/sign-in?returnurl={{ currentUrl }}" class="btn btn-primary">Sign In to Download</a>
                 {% endif %}
@@ -123,18 +123,38 @@
                         {% endif %}
                     {% endcapture %}
                     {% assign imageurl = imageurl | Trim %}
+                    {% assign childVideosString = child | Attribute:'Videos' %}
+                    {% assign childVideosObject = childVideosString | FromJSON %}
                     {% assign childDownloadsString = child | Attribute:'Downloads' %}
                     {% assign childDownloadsObject = childDownloadsString | FromJSON %}
 
                     {% capture content %}
+                        {% for video in childVideosObject.Attributes %}
+                            {% assign videoId = video.Video %}
+                            <span class="display-inline-block width-full push-half-bottom">{{ video.Title }}
+
+                                {% if CurrentPerson and CurrentPerson != empty %}
+                                    <span class="wistia_embed wistia_async_{{ videoId }} popover=true popoverContent=link clickable text-center pull-right" style="display:inline; position:relative">
+                                        <a href="#" class="btn btn-xs btn-primary">Play Video</a>
+                                    </span>
+
+                                    <script src="https://fast.wistia.com/embed/medias/{{ videoId }}.jsonp" async></script>
+                                    <script src="https://fast.wistia.com/assets/external/E-v1.js" async=""></script>
+
+                                {% else %}
+                                    <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
+                                {% endif %}
+
+                            </span>
+                        {% endfor %}
                         {% for resource in childDownloadsObject.Attributes %}
 
-                            {% capture downloadlink %}/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ child.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" }} - {{ child.Title }}&ResourceSummary={{ resource.Title | EscapeDataString }}&ResourceUrl={{ resource.File }}{% endcapture %}
+                            {% capture downloadlink %}/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ child.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }} - {{ child.Title | EscapeDataString }}&ResourceSummary={{ resource.Title | EscapeDataString }}&ResourceUrl={% if resource.Link != empty %}{{ resource.Link }}{% else %}{{ resource.File }}{% endif %}{% endcapture %}
 
                             <span class="display-inline-block width-full {% if forloop.last != true %}push-half-bottom{% endif %}">{{ resource.Title }}
 
                                 {% if CurrentPerson and CurrentPerson != empty %}
-                                    <a href="#" class="pull-right btn btn-xs btn-primary" target="_blank">Download</a>
+                                    <a href="{{ downloadlink }}" class="pull-right btn btn-xs btn-primary" target="_blank">Download</a>
                                 {% else %}
                                     <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
                                 {% endif %}
