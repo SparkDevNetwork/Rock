@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -705,7 +705,8 @@ namespace Rock.Model
 
             if ( !_isDeleted )
             {
-                StreakTypeService.HandleAttendanceRecord( this );
+                // The data context save operation doesn't need to wait for this to complete
+                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this ) );
             }
 
             base.PostSaveChanges( dbContext );
