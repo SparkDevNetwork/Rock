@@ -169,6 +169,26 @@
     <Compile Include="Migrations\202001262121238_AddRsvpReminderSystemCommunication.Designer.cs">
       <DependentUpon>202001262121238_AddRsvpReminderSystemCommunication.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202001272059313_UpdateEntityTypeSingleValueFieldTypes.cs" />
+    <Compile Include="Migrations\202001272059313_UpdateEntityTypeSingleValueFieldTypes.Designer.cs">
+      <DependentUpon>202001272059313_UpdateEntityTypeSingleValueFieldTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001281308486_AddSystemCommunicationBodyFields.cs" />
+    <Compile Include="Migrations\202001281308486_AddSystemCommunicationBodyFields.Designer.cs">
+      <DependentUpon>202001281308486_AddSystemCommunicationBodyFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001282009028_AdjustStreakStructureTypes.cs" />
+    <Compile Include="Migrations\202001282009028_AdjustStreakStructureTypes.Designer.cs">
+      <DependentUpon>202001282009028_AdjustStreakStructureTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001292041297_AddCommunicationPreferenceToGroupMember.cs" />
+    <Compile Include="Migrations\202001292041297_AddCommunicationPreferenceToGroupMember.Designer.cs">
+      <DependentUpon>202001292041297_AddCommunicationPreferenceToGroupMember.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202001300154408_UpdateSystemCommunicationReferences.cs" />
+    <Compile Include="Migrations\202001300154408_UpdateSystemCommunicationReferences.Designer.cs">
+      <DependentUpon>202001300154408_UpdateSystemCommunicationReferences.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.Designer.cs">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
@@ -1087,6 +1107,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202001262121238_AddRsvpReminderSystemCommunication.resx">
       <DependentUpon>202001262121238_AddRsvpReminderSystemCommunication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001272059313_UpdateEntityTypeSingleValueFieldTypes.resx">
+      <DependentUpon>202001272059313_UpdateEntityTypeSingleValueFieldTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001281308486_AddSystemCommunicationBodyFields.resx">
+      <DependentUpon>202001281308486_AddSystemCommunicationBodyFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001282009028_AdjustStreakStructureTypes.resx">
+      <DependentUpon>202001282009028_AdjustStreakStructureTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001292041297_AddCommunicationPreferenceToGroupMember.resx">
+      <DependentUpon>202001292041297_AddCommunicationPreferenceToGroupMember.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202001300154408_UpdateSystemCommunicationReferences.resx">
+      <DependentUpon>202001300154408_UpdateSystemCommunicationReferences.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.1\201911080046206_Rollup_1107.resx">
       <DependentUpon>201911080046206_Rollup_1107.cs</DependentUpon>
