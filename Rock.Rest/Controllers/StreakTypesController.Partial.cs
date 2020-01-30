@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -79,17 +80,9 @@ namespace Rock.Rest.Controllers
         public OccurrenceEngagement[] GetRecentEngagement( int streakTypeId, [FromUri]int? personId = null, [FromUri] int? unitCount = 24 )
         {
             // If not specified, use the current person id
-            var rockContext = Service.Context as RockContext;
-
             if ( !personId.HasValue )
             {
-                personId = GetPerson( rockContext )?.Id;
-
-                if ( !personId.HasValue )
-                {
-                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The personId for the current user did not resolve" );
-                    throw new HttpResponseException( errorResponse );
-                }
+                personId = GetCurrentPersonId();
             }
 
             return GetRecentEngagement( streakTypeId, personId.Value, unitCount ?? 24 );
@@ -122,13 +115,7 @@ namespace Rock.Rest.Controllers
 
             if ( !personId.HasValue )
             {
-                personId = GetPerson( rockContext )?.Id;
-
-                if ( !personId.HasValue )
-                {
-                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The personId for the current user did not resolve" );
-                    throw new HttpResponseException( errorResponse );
-                }
+                personId = GetCurrentPersonId();
             }
 
             // Create the enrollment
@@ -268,14 +255,7 @@ namespace Rock.Rest.Controllers
             // If not specified, use the current person id
             if ( !personId.HasValue )
             {
-                var rockContext = Service.Context as RockContext;
-                personId = GetPerson( rockContext )?.Id;
-
-                if ( !personId.HasValue )
-                {
-                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The personId for the current user did not resolve" );
-                    throw new HttpResponseException( errorResponse );
-                }
+                personId = GetCurrentPersonId();
             }
 
             // Return a list of the results (one for each id)
@@ -345,13 +325,7 @@ namespace Rock.Rest.Controllers
 
             if ( !personId.HasValue )
             {
-                personId = GetPerson( rockContext )?.Id;
-
-                if ( !personId.HasValue )
-                {
-                    var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The personId for the current user did not resolve" );
-                    throw new HttpResponseException( errorResponse );
-                }
+                personId = GetCurrentPersonId();
             }
 
             // Get the data from the service
@@ -369,5 +343,122 @@ namespace Rock.Rest.Controllers
             rockContext.SaveChanges();
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
         }
+
+        /// <summary>
+        /// Notes that the person has engaged through interaction. This will update the occurrence map and also add an
+        /// interaction record (if enabled).
+        /// </summary>
+        /// <param name="streakTypeId"></param>
+        /// <param name="personId">Defaults to the current person</param>
+        /// <param name="dateOfEngagement">Defaults to now</param>
+        /// <param name="interactionPostModel">Optional data used to create an interaction record if enabled in the streak type</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/StreakTypes/MarkInteractionEngagement/{streakTypeId}" )]
+        public virtual HttpResponseMessage MarkInteractionEngagement( int streakTypeId, [FromBody]InteractionPostModel interactionPostModel,
+            [FromUri]int? personId = null, [FromUri]DateTime? dateOfEngagement = null )
+        {
+            var rockContext = Service.Context as RockContext;
+
+            // If not specified, use the current person id
+            if ( !personId.HasValue )
+            {
+                personId = GetCurrentPersonId();
+            }
+
+            // Wrap the logic so that we can reuse the MarkEngagement method, but rollback everything if an error occurs
+            // while adding the interaction
+            rockContext.WrapTransaction( () =>
+            {
+                // Add the engagement to the streak
+                MarkEngagement( streakTypeId, personId, dateOfEngagement );
+
+                // If data was supplied, add an interaction
+                if ( interactionPostModel != null )
+                {
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var personAliasId = personAliasService.Queryable().AsNoTracking()
+                        .Where( pa => pa.PersonId == personId )
+                        .Select( pa => pa.Id )
+                        .FirstOrDefault();
+
+                    if ( personAliasId == default )
+                    {
+                        var errorMessage = $"The person alias id for person {personId} did not resolve";
+                        var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
+                        throw new HttpResponseException( errorResponse );
+                    }
+
+                    var interactionService = new InteractionService( rockContext );
+
+                    interactionService.AddInteraction(
+                        interactionPostModel.InteractionComponentId,
+                        interactionPostModel.EntityId,
+                        interactionPostModel.Operation,
+                        interactionPostModel.InteractionData,
+                        personAliasId,
+                        dateOfEngagement ?? RockDateTime.Now,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null );
+                }
+
+                rockContext.SaveChanges();
+            } );
+
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+        }
+
+        /// <summary>
+        /// Gets the current person identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetCurrentPersonId()
+        {
+            var rockContext = Service.Context as RockContext;
+            var personId = GetPerson( rockContext )?.Id;
+
+            if ( !personId.HasValue )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person id for the current user did not resolve" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            return personId.Value;
+        }
+    }
+
+    /// <summary>
+    /// Data needed to create an interaction via <see cref="StreakTypesController.MarkInteractionEngagement" />
+    /// </summary>
+    public class InteractionPostModel
+    {
+        /// <summary>
+        /// Gets or sets the operation.
+        /// </summary>
+        public string Operation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionComponent"/> Component that is associated with this Interaction.
+        /// </summary>
+        public int InteractionComponentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// For example:
+        ///  if this is a Page View:
+        ///     Interaction.EntityId is the Page.Id of the page that was viewed
+        ///  if this is a Communication Recipient activity:
+        ///     Interaction.EntityId is the CommunicationRecipient.Id that did the click or open
+        /// </summary>
+        public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction data.
+        /// </summary>
+        public string InteractionData { get; set; }
     }
 }
