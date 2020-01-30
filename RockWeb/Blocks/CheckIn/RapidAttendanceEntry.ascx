@@ -3,71 +3,336 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
+        <script type="text/javascript">
+            Sys.Application.add_load(function () {
+                $('.js-attendance-item').find('input').change(function () {
+                    $('#<%= hfAttendanceDirty.ClientID %>').val('true')
+                });
 
-        <asp:Panel ID="pnlEntry" runat="server" CssClass="panel panel-block">
-            <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-calendar-check-o"></i> Rapid Attendance</h1>
-                <div class="pull-right">
-                    <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Info" Text="Current Attendance: 0" />
+                $('.js-person-item').find('input').change(function () {
+                    $('#<%= hfPersonDirty.ClientID %>').val('true')
+                });
+
+                $('.js-person-item').find('textarea').blur(function () {
+                    $('#<%= hfPersonDirty.ClientID %>').val('true')
+                });
+
+                $('.js-main-event').click(function () {
+                    if (isDirty()) {
+                        return false;
+                    }
+                });
+
+                 $('.js-person-event').click(function () {
+                    if (isContactItemDirty()) {
+                        return false;
+                    }
+                });
+            });
+
+            function isDirty() {
+                if ($('#<%= hfAttendanceDirty.ClientID %>').val() == 'true' || $('#<%= hfPersonDirty.ClientID %>').val() == 'true') {
+                    if (confirm('You have not saved your changes. Are you sure you want to continue?')) {
+                        return false;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            function isContactItemDirty() {
+                if ($('#<%= hfPersonDirty.ClientID %>').val() == 'true') {
+                    if (confirm('You have not saved your changes. Are you sure you want to continue?')) {
+                        return false;
+                    }
+                    return true;
+                }
+                return false;
+            }
+            
+        </script>
+
+        <asp:Panel ID="pnlStart" runat="server" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-user-friends"></i> Contact Entry</h1>
                 </div>
-            </div>
-
-            <div class="panel-body">
-                <div class="row">
-                    <asp:Panel ID="pnlGroupPicker" runat="server" CssClass="col-md-4">
-                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" Required="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true" />
+                <div class="panel-body">
+                    <Rock:GroupPicker ID="gpGroups" runat="server" Label="Group" Visible="false" Required="true" OnSelectItem="ddlGroup_SelectedIndexChanged" ValidationGroup="AttendanceSetting" />
+                    <asp:Panel ID="pnlGroupPicker" runat="server">
+                        <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" Visible="false" Required="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true" ValidationGroup="AttendanceSetting" />
                     </asp:Panel>
-
-                    <asp:Panel ID="pnlLocationPicker" runat="server" CssClass="col-md-4">
-                        <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Location" Required="true" OnSelectedIndexChanged="ddlLocation_SelectedIndexChanged" AutoPostBack="true" />
+                    <asp:Panel ID="pnlLocationPicker" runat="server">
+                        <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Location" Required="true" OnSelectedIndexChanged="ddlLocation_SelectedIndexChanged" AutoPostBack="true" ValidationGroup="AttendanceSetting" />
                     </asp:Panel>
-
-                    <asp:Panel ID="pnlSchedulePicker" runat="server" CssClass="col-md-4">
-                        <Rock:RockDropDownList ID="ddlSchedule" runat="server" Label="Schedule" Required="true" OnSelectedIndexChanged="ddlSchedule_SelectedIndexChanged" AutoPostBack="true" />
+                    <asp:Panel ID="pnlSchedulePicker" runat="server">
+                        <Rock:RockDropDownList ID="ddlSchedule" runat="server" Label="Schedule" Required="true" ValidationGroup="AttendanceSetting" />
                     </asp:Panel>
-                </div>
-
-                <Rock:DatePicker ID="dpAttendanceDate" runat="server" Required="true" Label="Attendance Date" Help="The date to use when recording the person as having attended." OnTextChanged="dpAttendanceDate_TextChanged" AutoPostBack="true" />
-
-                <hr />
-
-                <div class="row">
-                    <div class="col-md-4">
-                        <Rock:PersonPicker ID="ppAttendee" runat="server" Label="Attendee" Required="true" CssClass="js-attendee" OnSelectPerson="ppAttendee_SelectPerson" />
-                        <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-primary" AccessKey="s" Text="Save" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnSaveActivate" runat="server" CssClass="btn btn-default pull-right" AccessKey="a" Text="Activate & Save" OnClick="btnSave_Click" Visible="false" />
-                    </div>
-
-                    <div class="col-md-8">
-                        <Rock:NotificationBox ID="nbInactivePerson" runat="server" NotificationBoxType="Warning" Text="This person record is currently inactive." Visible="false" />
-                        <Rock:NotificationBox ID="nbAttended" runat="server" NotificationBoxType="Success" Text="" />
+                    <Rock:DatePicker ID="dpAttendanceDate" runat="server" Required="true" Label="Attendance Date" ValidationGroup="AttendanceSetting" />
+                    <div class="actions">
+                        <Rock:BootstrapButton ID="lbStart" runat="server" Text="Start" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbStart_Click" ValidationGroup="AttendanceSetting" />
                     </div>
                 </div>
             </div>
         </asp:Panel>
-
-        <div class="row">
-            <div class="col-md-12">
-                <div class="pull-right padding-r-sm">
-                    <asp:CheckBox ID="cbShowCurrent" runat="server" OnCheckedChanged="cbShowCurrent_CheckedChanged" Text="Show Current Attendees" AutoPostBack="true" />
+        <asp:Panel ID="pnlMainPanel" runat="server" Visible="false">
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-user-friends"></i> Contact Entry</h1>
+                    <div class="panel-labels">
+                        <Rock:HighlightLabel ID="hlAttendance" runat="server" LabelType="Info" />
+                        <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Success" />
+                    </div>
+                    <asp:LinkButton ID="lbSetting" runat="server" CssClass="btn btn-default margin-l-sm btn-xs" OnClick="lbSetting_Click" CausesValidation="false"><i class="fa fa-cog"></i></asp:LinkButton>
                 </div>
-            </div>
-        </div>
+                <div class="panel-body">
+                    <asp:HiddenField ID="hfPersonGuid" runat="server" />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <Rock:RockControlWrapper ID="rcwSearch" runat="server" Label="Search" CssClass="well">
+                                <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="input-width-md pull-left" />
+                                <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary margin-l-sm js-main-event" Text="Go" OnClick="btnGo_Click" />
+                            </Rock:RockControlWrapper>
+                            <div class="clearfix">
+                                <ul class="list-group">
+                                    <asp:Repeater ID="rptResults" runat="server" OnItemCommand="rptResults_ItemCommand">
+                                        <ItemTemplate>
+                                            <li class="margin-b-sm list-group-item <%# (bool)Eval("IsActive") ? "" :"is-inactive" %> <%# SelectedPersonId.HasValue && (int)Eval("Id") == SelectedPersonId.Value ? "active" :"" %>">
+                                                <asp:LinkButton ID="lbPerson" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" CssClass="js-main-event">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <b><%# Eval("Name") %></b> <%# Eval("Age") %>
+                                                     <% if ( IsAttendanceEnabled )
+                                                         { %>   <i class="fa <%# (bool)Eval("IsAttended") ? "fa-circle" :"fa-circle-o" %> pull-right" style="color:green;" aria-hidden="true"></i> <% } %>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ? Eval("FamilyMemberNames").ToString() +"<br/>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "Campus: "+ Eval("CampusName").ToString() +"<br/>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("Email")) ? Eval("Email").ToString() +"<br/>" :"" %>
+                                                        <%# Eval("Address") != null ? Eval("Address.FormattedAddress").ToString() +"<br/>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("Mobile")) ? "M:"+Eval("Mobile").ToString() +"<br/>" :"" %>
 
-        <asp:Panel ID="pnlCurrentAttendees" runat="server" CssClass="panel panel-block">
-            <div class="panel-heading">
-                <h1 class="panel-title">Current Attendees</h1>
-            </div>
+                                                    </div>
+                                                </div>
+                                                </asp:LinkButton>
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
+                                <div class="actions">
+                                    <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-default btn-block js-main-event" OnClick="lbAddFamily_Click"><i class="fa fa-users"></i> Add Family</asp:LinkButton>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <header class="well">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="pull-left">
+                                            <asp:Literal ID="lFamilyDetail" runat="server" />
+                                        </div>
+                                        <div class="pull-right">
+                                            <asp:LinkButton ID="lbEditFamily" runat="server" CssClass="btn btn-xs btn-square btn-default js-main-event" CausesValidation="false" OnClick="lbEditFamily_Click"> <i title="Edit Family" class="fa fa-pencil"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-xs btn-square btn-default js-main-event" CausesValidation="false" OnClick="lbAddMember_Click"> <i title="Add Member" class="fa fa-user-plus"></i></asp:LinkButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </header>
+                            <asp:Panel ID="pnlMainEntry" runat="server" Visible="false">
+                                <Rock:RockControlWrapper ID="rcwAttendance" runat="server">
+                                    <asp:HiddenField ID="hfAttendanceDirty" runat="server" Value="false" />
+                                    <Rock:RockCheckBoxList ID="rcbAttendance" runat="server" Label="Attendance" RepeatDirection="Horizontal" CssClass="js-attendance-item" />
+                                    <Rock:BootstrapButton ID="lbSaveAttendance" CssClass="btn btn-primary" runat="server" DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving" CompletedText="Saved" CompletedDuration="3" OnClick="lbSaveAttendance_Click" Text="Save Attendance" />
+                                </Rock:RockControlWrapper>
+                                <hr />
+                                <ul class="nav nav-tabs">
+                                    <asp:Repeater ID="rptPersons" runat="server" OnItemDataBound="rptPersons_ItemDataBound" OnItemCommand="rptPersons_ItemCommand">
+                                        <ItemTemplate>
+                                            <li class="<%# ((Guid)Eval("Guid")).ToString() == hfPersonGuid.Value ? "active" :"" %>">
+                                                <asp:LinkButton ID="lbSelectedPerson" runat="server" CommandArgument='<%# Eval("Guid") %>' CommandName="Display" CssClass="padding-b-xl js-person-event">
+                                                    <div class="photo-round photo-round-sm pull-left" id="divPersonImage" runat="server"></div>
+                                                    <div class="pull-left margin-l-sm">
+                                                        <%#Eval("NickName") %>
+                                                    </div>
+                                                </asp:LinkButton>
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
+                                <div class="row padding-t-md">
+                                    <div class="col-md-12">
+                                        <asp:Literal ID="lPersonDetail" runat="server" />
+                                    </div>
+                                </div>
+                                <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right js-main-event" CausesValidation="false" OnClick="lbEditPerson_Click"> <i title="Edit Person" class="fa fa-pencil"></i></asp:LinkButton>
+                                <asp:HiddenField ID="hfPersonDirty" runat="server" Value="false" />
+                                <Rock:RockCheckBoxList ID="rcbWorkFlowTypes" runat="server" RepeatDirection="Horizontal" RepeatColumns="2" CssClass="js-person-item" />
+                                <Rock:RockControlWrapper ID="rcwNotes" runat="server">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <Rock:RockDropDownList ID="ddlNoteType" runat="server" CssClass="input-width-xl pull-right" OnSelectedIndexChanged="ddlNoteType_SelectedIndexChanged" AutoPostBack="true"/>
+                                        </div>
+                                    </div>
+                                    <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="3" CssClass="js-person-item" />
+                                </Rock:RockControlWrapper>
+                                <asp:Panel ID="pnlPrayerRequest" runat="server">
+                                    <br />
+                                    <Rock:RockTextBox ID="tbPrayerRequest" runat="server"  Label="Prayer Request" TextMode="MultiLine" Rows="3" CssClass="js-person-item" />
+                                    <div class="row">
+                                        <asp:Panel runat="server" ID="pnlIsUrgent" CssClass="col-md-4">
+                                            <Rock:RockCheckBox ID="cbIsUrgent" Text="Urgent" runat="server" />
+                                        </asp:Panel>
+                                        <asp:Panel runat="server" ID="pnlIsPublic" CssClass="col-md-4">
+                                            <Rock:RockCheckBox ID="cbIsPublic" Text="Public" runat="server" />
+                                        </asp:Panel>
+                                        <div class="col-md-4">
+                                            <Rock:ButtonDropDownList ID="bddlCategory" runat="server" Label="Prayer Category"></Rock:ButtonDropDownList>
+                                        </div>
+                                    </div>
+                                </asp:Panel>
+                                <div class="actions margin-t-md">
+                                    <Rock:BootstrapButton ID="bbtnSaveContactItems" CssClass="btn btn-primary" runat="server" AccessKey="s" ToolTip="Alt+s" DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                                    CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" Text="Save Contact Items" OnClick="bbtnSaveContactItems_Click" />
+                                </div>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlEditFamily" runat="server" Visible="false">
+                                <fieldset>
+                                    <h4>Family Edit</h4>
+                                    <div class="clearfix">
+                                        <div class="pull-left margin-b-md">
+                                            <asp:Literal ID="lPreviousAddress" runat="server" />
+                                        </div>
+                                        <div class="pull-right">
+                                            <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
+                                        </div>
+                                    </div>
 
-            <div class="panel-body">
-                <div class="grid grid-panel">
-                    <Rock:Grid ID="gAttendees" runat="server" DataKeyNames="Id">
-                        <Columns>
-                            <asp:BoundField DataField="PersonAlias.Person.FullNameReversed" HeaderText="Name" />
-                            <asp:BoundField DataField="CreatedByPersonName" HeaderText="Entered By" />
-                            <Rock:DeleteField OnClick="gAttendeesDelete_Click"></Rock:DeleteField>
-                        </Columns>
-                    </Rock:Grid>
+                                    <asp:HiddenField ID="hfStreet1" runat="server" />
+                                    <asp:HiddenField ID="hfStreet2" runat="server" />
+                                    <asp:HiddenField ID="hfCity" runat="server" />
+                                    <asp:HiddenField ID="hfState" runat="server" />
+                                    <asp:HiddenField ID="hfPostalCode" runat="server" />
+                                    <asp:HiddenField ID="hfCountry" runat="server" />
+
+                                    <Rock:AddressControl ID="acAddress" runat="server" RequiredErrorMessage="Your Address is Required" ValidationGroup="vgEditFamily" />
+
+                                    <div class="margin-b-md row">
+                                        <div class="col-md-4">
+                                            <Rock:RockCheckBox ID="cbIsMailingAddress" runat="server" Text="This is my mailing address" Checked="true" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:RockCheckBox ID="cbIsPhysicalAddress" runat="server" Text="This is my physical address" Checked="true" />
+                                        </div>
+                                    </div>
+
+                                    <Rock:AttributeValuesContainer ID="avcFamilyAttributes" runat="server" ValidationGroup="vgEditFamily" />
+                                </fieldset>
+                                <%-- Edit Family Buttons --%>
+                                <div class="actions">
+                                    <asp:LinkButton ID="lbSaveFamily" runat="server" CssClass="btn btn-primary" Text="Save" CausesValidation="true" ValidationGroup="vgEditFamily" OnClick="lbSaveFamily_Click" />
+                                    <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click">Cancel</asp:LinkButton>
+                                </div>
+                        </asp:Panel>
+                        <asp:Panel ID="pnlEditMember" runat="server" Visible="false">
+                            <Rock:RockRadioButtonList ID="rblRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="rblRole_SelectedIndexChanged" ValidationGroup="vgEditMember" />
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" ValidationGroup="vgEditMember" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" ValidationGroup="vgEditMember" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" ValidationGroup="vgEditMember" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" ValidationGroup="vgEditMember" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender" FormGroupCssClass="gender-picker" Required="true" ValidationGroup="vgEditMember">
+                                        <asp:ListItem Text="Male" Value="Male" />
+                                        <asp:ListItem Text="Female" Value="Female" />
+                                        <asp:ListItem Text="Unknown" Value="Unknown" />
+                                    </Rock:RockRadioButtonList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:DefinedValuePicker ID="dvpMaritalStatus" runat="server" Label="Marital Status" Visible="false" Required="false" ValidationGroup="vgEditMember" />
+                                    <Rock:GradePicker ID="gpGradePicker" runat="server" Label="Grade" UseAbbreviation="true" UseGradeOffsetAsValue="true" Visible="false" ValidationGroup="vgEditMember" />
+                                </div>
+                            </div>
+                            <hr />
+                            <asp:Panel ID="pnlPersonAttributes" runat="server">
+                                <h4>
+                                    <asp:Literal ID="lPersonAttributeTitle" runat="server" />
+                                </h4>
+                                <Rock:AttributeValuesContainer ID="avcPersonAttributes" runat="server" ValidationGroup="vgEditMember" ShowCategoryLabel="false" />
+                                <hr />
+                            </asp:Panel>
+                            <h4>Contact Information</h4>
+                            <asp:Panel ID="pnlPhoneNumbers" runat="server">
+                                <div class="form-horizontal">
+                                    <asp:Repeater ID="rContactInfo" runat="server">
+                                        <ItemTemplate>
+                                            <div id="divPhoneNumberContainer" runat="server" class="form-group">
+                                                <div class="control-label col-md-1"><%# Eval("NumberTypeValue.Value")  %></div>
+                                                <div class="controls col-md-11">
+                                                    <div class="row">
+                                                        <div class="col-md-7">
+                                                            <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
+                                                            <Rock:PhoneNumberBox ID="pnbPhone" runat="server" CountryCode='<%# Eval("CountryCode")  %>' Number='<%# Eval("NumberFormatted")  %>' />
+                                                        </div>
+                                                        <div class="col-md-5">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <asp:CheckBox ID="cbSms" runat="server" Text="SMS" Checked='<%# (bool)Eval("IsMessagingEnabled") %>' CssClass="js-sms-number" />
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <asp:CheckBox ID="cbUnlisted" runat="server" Text="Unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </asp:Panel>
+                            <asp:Panel ID="pnlEmail" runat="server">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group emailgroup">
+                                            <div class="form-row">
+                                                <div class="col-sm-6">
+                                                    <Rock:EmailBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                                                </div>
+                                                <div class="col-sm-3 form-align">
+                                                    <Rock:RockCheckBox ID="cbIsEmailActive" runat="server" Text="Email Is Active" DisplayInline="true" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference" ValidationGroup="vgEditMember">
+                                                <asp:ListItem Text="Email" Value="1" />
+                                                <asp:ListItem Text="SMS" Value="2" />
+                                            </Rock:RockRadioButtonList>
+                                        </div>
+                                    </div>
+                                </div>
+                            </asp:Panel>
+                            <div class="actions">
+                                <asp:LinkButton ID="lbSaveMember" runat="server" CssClass="btn btn-primary" Text="Save" CausesValidation="true" ValidationGroup="vgEditMember" OnClick="lbSaveMember_Click" />
+                                <asp:LinkButton ID="lbCancelMember" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click">Cancel</asp:LinkButton>
+                            </div>
+                        </asp:Panel>
+                        </div>
+                    </div>
                 </div>
             </div>
         </asp:Panel>
