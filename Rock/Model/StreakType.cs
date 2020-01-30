@@ -222,7 +222,22 @@ namespace Rock.Model
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance specified by a check-in configuration.
         /// </summary>
-        CheckInConfig = 4
+        CheckInConfig = 4,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions in a certain channel.
+        /// </summary>
+        InteractionChannel = 5,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions in a certain component.
+        /// </summary>
+        InteractionComponent = 6,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions over a certain.
+        /// </summary>
+        InteractionMedium = 7
     }
 
     /// <summary>

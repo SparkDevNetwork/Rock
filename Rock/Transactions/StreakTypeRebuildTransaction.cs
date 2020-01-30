@@ -56,7 +56,7 @@ namespace Rock.Transactions
         public void Execute()
         {
             ReportProgress( 0 );
-            StreakTypeService.RebuildStreakTypeFromAttendance( Progress, StreakTypeId, out var errorMessage );
+            StreakTypeService.RebuildStreakType( Progress, StreakTypeId, out var errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
