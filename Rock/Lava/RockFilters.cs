@@ -2261,8 +2261,6 @@ namespace Rock.Lava
                         }
                     }
 
-
-
                     // Otherwise return the formatted value
                     return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );
                 }
