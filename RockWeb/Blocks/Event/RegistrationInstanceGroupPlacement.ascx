@@ -48,6 +48,8 @@
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementAllowMultiplePlacements" runat="server" CssClass="js-registration-template-placement-allow-multiple-placements" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementId" runat="server" CssClass="js-registration-template-placement-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplatePlacementGroupTypeId" runat="server" CssClass="js-registration-template-placement-grouptype-id" />
+                        <Rock:HiddenFieldWithClass ID="hfGroupDetailUrl" runat="server" CssClass="js-group-detail-url" />
+                        <Rock:HiddenFieldWithClass ID="hfGroupMemberDetailUrl" runat="server" CssClass="js-group-member-detail-url" />
 
                         <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHighlightGenders" runat="server" CssClass="js-options-highlight-genders" />
@@ -140,7 +142,8 @@
                                                             <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
                                                             <ul class="dropdown-menu">
                                                                 <li>
-                                                                    <button type="button" class="dropdown-item btn-link js-remove-group-member">Remove</button>
+                                                                    <a class="dropdown-item button btn-link js-remove-group-member">Remove</a>
+                                                                    <a class="dropdown-item button btn-link js-edit-group-member">Edit</a>
                                                                 </li>
                                                             </ul>
                                                         </div>
@@ -180,8 +183,9 @@
                                                                 </div>
                                                                 <ul class="dropdown-menu">
                                                                     <li>
-                                                                        <button type="button" class="dropdown-item btn-link js-detach-placement-group">Detach from Placement</button>
-                                                                        <button type="button" class="dropdown-item btn-link js-delete-group">Delete Permanently</button>
+                                                                        <a class="dropdown-item button btn-link js-detach-placement-group">Detach from Placement</a>
+                                                                        <a class="dropdown-item button btn-link js-delete-group">Delete Permanently</a>
+                                                                        <a class="dropdown-item button btn-link js-edit-group">Edit Group</a>
                                                                     </li>
                                                                 </ul>
                                                             </div>

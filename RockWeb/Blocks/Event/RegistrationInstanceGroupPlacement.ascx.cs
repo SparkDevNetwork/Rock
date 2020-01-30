@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -36,10 +37,30 @@ namespace RockWeb.Blocks.Event
 
     #region Block Attributes
 
+    [LinkedPage(
+        "Group Detail Page",
+        Key = AttributeKey.GroupDetailPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
+        Order = 0
+        )]
+
+    [LinkedPage(
+        "Group Member Detail Page",
+        Key = AttributeKey.GroupMemberDetailPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_MEMBER_DETAIL_GROUP_VIEWER,
+        Order = 1
+        )]
+
     #endregion Block Attributes
     public partial class RegistrationInstanceGroupPlacement : RockBlock
     {
         #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string GroupDetailPage = "GroupDetailPage";
+            public const string GroupMemberDetailPage = "GroupMemberDetailPage";
+        }
 
         #endregion Attribute Keys
 
@@ -77,16 +98,31 @@ namespace RockWeb.Blocks.Event
 
         #region Classes
 
+        /// <summary>
+        /// 
+        /// </summary>
         private class PlacementConfiguration
         {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PlacementConfiguration"/> class.
+            /// </summary>
             public PlacementConfiguration()
             {
                 ShowRegistrationInstanceName = true;
+                ExpandRegistrantDetails = false;
                 IncludedRegistrationInstanceIds = new int[0];
                 DisplayedRegistrantAttributeIds = new int[0];
                 DisplayedGroupAttributeIds = new int[0];
                 DisplayedGroupMemberAttributeIds = new int[0];
             }
+
+            /// <summary>
+            /// Whether the all Registrant Details should be expanded (from the 
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [expand registrant details]; otherwise, <c>false</c>.
+            /// </value>
+            public bool ExpandRegistrantDetails { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating whether [show registration instance name].
@@ -106,20 +142,68 @@ namespace RockWeb.Blocks.Event
             /// </value>
             public int[] IncludedRegistrationInstanceIds { get; set; }
 
+            /// <summary>
+            /// Gets or sets the displayed campus identifier.
+            /// </summary>
+            /// <value>
+            /// The displayed campus identifier.
+            /// </value>
             public int? DisplayedCampusId { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [highlight genders].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [highlight genders]; otherwise, <c>false</c>.
+            /// </value>
             public bool HighlightGenders { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [show fees].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [show fees]; otherwise, <c>false</c>.
+            /// </value>
             public bool ShowFees { get; set; }
 
+            /// <summary>
+            /// Gets or sets the displayed registrant attribute ids.
+            /// </summary>
+            /// <value>
+            /// The displayed registrant attribute ids.
+            /// </value>
             public int[] DisplayedRegistrantAttributeIds { get; set; }
 
+            /// <summary>
+            /// Gets or sets the registrant data filter identifier.
+            /// </summary>
+            /// <value>
+            /// The registrant data filter identifier.
+            /// </value>
             public int? RegistrantDataFilterId { get; set; }
 
+            /// <summary>
+            /// Gets or sets the displayed group attribute ids.
+            /// </summary>
+            /// <value>
+            /// The displayed group attribute ids.
+            /// </value>
             public int[] DisplayedGroupAttributeIds { get; set; }
 
+            /// <summary>
+            /// Gets or sets the displayed group member attribute ids.
+            /// </summary>
+            /// <value>
+            /// The displayed group member attribute ids.
+            /// </value>
             public int[] DisplayedGroupMemberAttributeIds { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating whether [hide full groups].
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [hide full groups]; otherwise, <c>false</c>.
+            /// </value>
             public bool HideFullGroups { get; set; }
         }
 
@@ -328,6 +412,9 @@ namespace RockWeb.Blocks.Event
             }
 
             BindPlacementGroupsRepeater();
+
+            hfGroupDetailUrl.Value = this.LinkedPageUrl( AttributeKey.GroupDetailPage );
+            hfGroupMemberDetailUrl.Value = this.LinkedPageUrl( AttributeKey.GroupMemberDetailPage );
         }
 
         /// <summary>
@@ -681,7 +768,7 @@ namespace RockWeb.Blocks.Event
             dataViewFilterService.Add( dataViewFilter );
 
             rockContext.SaveChanges();
-            
+
             placementConfiguration.DisplayedCampusId = cpConfigurationCampusPicker.SelectedCampusId;
             placementConfiguration.ShowRegistrationInstanceName = cbShowRegistrationInstanceName.Checked;
             placementConfiguration.IncludedRegistrationInstanceIds = cblRegistrationInstances.SelectedValues.AsIntegerList().ToArray();
@@ -1186,6 +1273,10 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Sets the new data filter guids.
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
         private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
         {
             if ( dataViewFilter != null )
@@ -1198,6 +1289,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Deletes the data view filter.
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        /// <param name="service">The service.</param>
         private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
         {
             if ( dataViewFilter != null )

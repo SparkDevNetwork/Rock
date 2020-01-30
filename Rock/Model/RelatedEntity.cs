@@ -14,15 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -78,7 +74,7 @@ namespace Rock.Model
         /// The target entity identifier.
         /// </value>
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "TargetEntityId must be greater than zero" )]
+        [Range( 1, int.MaxValue, ErrorMessage = "TargetEntityId must be greater than zero" )]
         [DataMember( IsRequired = true )]
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 4 )]
         public int TargetEntityId { get; set; }
