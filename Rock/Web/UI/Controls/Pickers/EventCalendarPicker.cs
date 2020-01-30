@@ -22,7 +22,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select an event calendar
     /// </summary>
     public class EventCalendarPicker : RockDropDownList
     {

@@ -194,9 +194,9 @@ namespace Rockweb.Blocks.Crm
 {% for motivatorThemeScore in MotivatorThemeScores %}
     <p>
         <b>{{ motivatorThemeScore.DefinedValue.Value }}</b>
-        </br>
+        <br>
         {{ motivatorThemeScore.DefinedValue.Description }}
-        </br>
+        <br>
         {{ motivatorThemeScore.DefinedValue | Attribute:'Summary' }}
     </p>
 {% endfor %}

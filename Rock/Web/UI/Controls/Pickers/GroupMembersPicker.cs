@@ -17,7 +17,7 @@
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select multiple group members from a particular pre-configured group
     /// </summary>
     public class GroupMembersPicker : RockCheckBoxList, IGroupMemberPicker
     {
