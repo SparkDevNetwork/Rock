@@ -153,6 +153,7 @@ namespace Rock.Workflow.Action
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         private PersonAlias GetPrimaryPersonAlias( Person person, RockContext rockContext, List<string> errorMessages )
         {
