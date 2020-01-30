@@ -31,6 +31,25 @@
                 self.registrationTemplatePlacementId = parseInt($('.js-registration-template-placement-id', self.$groupPlacementTool).val()) || null;
                 self.allowMultiplePlacements = $('.js-registration-template-placement-allow-multiple-placements', self.$groupPlacementTool).val() == 'true';
                 self.registrationInstanceId = parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null;
+                self.groupMemberDetailUrl = $('.js-group-member-detail-url', self.$groupPlacementTool).val();
+                self.groupDetailUrl = $('.js-group-detail-url', self.$groupPlacementTool).val();
+                self.$groupMemberTemplate = $('.js-group-member-template', self.$groupPlacementTool).find('.js-group-member');
+
+                if (self.groupDetailUrl == '') {
+                    // no url, so remove the Edit button(s)
+                    $('.js-edit-group', self.$groupPlacementTool).remove();
+                } else {
+                    $('.js-edit-group', self.$groupPlacementTool).each(function (i, e) {
+                        var groupId = $(e).closest('.js-placement-group').find('.js-placement-group-id').val();
+                        $(e).attr('href', self.groupDetailUrl + '?GroupId=' + groupId);
+                    });
+                }
+
+                if (self.groupMemberDetailUrl == '') {
+                    // no group member url, so remove the edit button from the registrationTemplatePlacementId
+
+                    $('.js-edit-group-member', self.$groupPlacementTool).remove();
+                }
 
                 if (self.registrationTemplatePlacementId == null) {
                     // if registrationTemplatePlacementId wasn't selected yet, return
@@ -261,7 +280,7 @@
                     $.each(groupMembers, function (i) {
                         var groupMember = groupMembers[i];
 
-                        var $groupMemberDiv = $('.js-group-member-template').find('.js-group-member').clone();
+                        var $groupMemberDiv = self.$groupMemberTemplate.clone();
                         self.populateGroupMember($groupMemberDiv, groupMember);
                         $groupRoleContainer.append($groupMemberDiv);
                     });
@@ -326,6 +345,10 @@
                 $groupMemberDiv.attr('data-person-id', groupMember.PersonId);
                 $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
                 $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
+                var $editGroupMemberButton = $groupMemberDiv.find('.js-edit-group-member');
+                if ($editGroupMemberButton.length) {
+                    $editGroupMemberButton.attr('href', self.groupMemberDetailUrl + '?GroupMemberId=' + groupMember.Id);
+                }
 
                 if (self.allowMultiplePlacements == false) {
                     // hide any registrants (person) that are already placed
