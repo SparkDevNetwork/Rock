@@ -1,3 +1,8 @@
+input[type=text] {
+  /* Remove First */
+  -webkit-appearance: none;
+}
+
 .form-control {
   color: var(--input-color);
   background: var(--input-bg);
@@ -67,12 +72,11 @@ textarea,
   box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
   transition: background-color .15s ease-in-out, color .15s ease-in-out;
 
-  &:focus,
-  &.focus,
   &:hover {
-    color: @btn-default-active-color;
-    background-color: @btn-default-active-bg;
-    background-color: var(--btn-default-active-bg);
+    color: @btn-default-color;
+    color: var(--btn-default-color);
+    background-color: @btn-default-bg !important;
+    background-color: var(--btn-default-bg) !important;
     border-color: @btn-default-active-bg;
     border-color: var(--btn-default-active-bg);
   }
@@ -84,8 +88,8 @@ textarea,
   &:active:focus {
     color: @btn-default-active-color;
     color: var(--btn-default-active-color);
-    background-color: @btn-default-active-bg;
-    background-color: var(--btn-default-active-bg);
+    background-color: @btn-default-active-bg !important;
+    background-color: var(--btn-default-active-bg) !important;
     background-image: none;
     border-color: @btn-default-active-bg;
     border-color: var(--btn-default-active-bg);
