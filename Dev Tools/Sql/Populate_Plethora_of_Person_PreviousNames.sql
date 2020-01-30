@@ -3703,7 +3703,7 @@ BEGIN
     WHILE @personCounter < @maxPerson
     BEGIN
         -- get a random person's personalias
-		SET @randRow = ( SELECT ROUND(rand() * @totalRows, 0) )
+		SET @randRow = ( SELECT CEILING((rand() + .000001) * @totalRows) )
 		SET @personAliasId = ( SELECT Id FROM #randomSampleTable WHERE RowNum = @randRow )
 
         -- get a random lastname
@@ -3755,3 +3755,4 @@ END
 
 
 
+-- select * from [PersonPreviousName] delete from personpreviousname
