@@ -1589,7 +1589,7 @@ namespace RockWeb.Blocks.Connection
                     contactList.Add( emailTag );
                 }
 
-                lContactInfo.Text = contactList.AsDelimited( "</br>" );
+                lContactInfo.Text = contactList.AsDelimited( "<br>" );
             }
             else
             {
@@ -1865,7 +1865,7 @@ namespace RockWeb.Blocks.Connection
                 // Build list of groups
                 var groups = new List<Group>();
 
-                // First add any groups specifically configured for the opportunity 
+                // First add any groups specifically configured for the opportunity
                 var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
                 if ( opportunityGroupIds.Any() )
                 {
@@ -2342,7 +2342,7 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionRequest != null &&
                     connectionRequest.ConnectionOpportunity != null )
                 {
-                    // Parse the attribute filters 
+                    // Parse the attribute filters
                     SearchAttributes = new List<AttributeCache>();
 
                     int entityTypeId = new ConnectionOpportunity().TypeId;
