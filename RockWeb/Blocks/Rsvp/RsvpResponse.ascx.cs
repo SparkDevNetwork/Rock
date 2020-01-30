@@ -1111,7 +1111,6 @@ $(document).ready(function () {
 
         #endregion
 
-
         protected void rptrValues_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var dataItem = e.Item.DataItem as OccurrenceDataItem;
