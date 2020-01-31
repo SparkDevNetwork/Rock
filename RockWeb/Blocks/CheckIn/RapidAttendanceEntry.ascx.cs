@@ -2277,7 +2277,7 @@ namespace RockWeb.Blocks.CheckIn
             /// <value>
             /// The family member names.
             /// </value>
-            public string FamilyMemberNames { get { return FamilyMembers.Count > 1 ? FamilyMembers.Select( a => a.NickName ).ToList().AsDelimited( " , ", " & " ) : ""; } }
+            public string FamilyMemberNames { get { return FamilyMembers.Count > 1 ? FamilyMembers.Select( a => a.NickName ).ToList().AsDelimited( ", ", " & " ) : ""; } }
 
             /// <summary>
             /// Gets or sets the address.

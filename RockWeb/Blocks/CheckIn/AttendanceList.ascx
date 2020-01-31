@@ -26,7 +26,7 @@
                             <Rock:BoolField DataField="DidAttend" HeaderText="Attended" SortExpression="DidAttend" />
                             <Rock:RockBoundField DataField="Note" HeaderText="Note" HtmlEncode="false" SortExpression="Note"/>
                             <asp:BoundField DataField="CreatedByPersonName" HeaderText="Entered By" />
-                            <Rock:DateTimeField DataField="CreatedOn" HeaderText="Entered On" SortExpression="CreatedOn" />
+                            <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Entered On" SortExpression="CreatedDateTime" />
                             <Rock:DeleteField OnClick="gAttendeesDelete_Click"></Rock:DeleteField>
                         </Columns>
                     </Rock:Grid>
