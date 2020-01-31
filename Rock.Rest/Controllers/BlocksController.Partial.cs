@@ -94,7 +94,7 @@ namespace Rock.Rest.Controllers
             if ( model.IsValid )
             {
                 model.Order = ( (BlockService)Service ).GetMaxOrder( model );
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
             else
@@ -187,10 +187,7 @@ namespace Rock.Rest.Controllers
                 // Get the authenticated person and make sure it's cached.
                 //
                 var person = GetPerson();
-                if ( !HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    HttpContext.Current.Items.Add( "CurrentPerson", person );
-                }
+                HttpContext.Current.Items.AddOrReplace( "CurrentPerson", person );
 
                 //
                 // Ensure the user has access to both the page and block.
