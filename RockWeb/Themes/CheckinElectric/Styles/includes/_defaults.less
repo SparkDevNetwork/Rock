@@ -27,6 +27,26 @@ body {
   display: none;
 }
 
+.checkin-search-actions a {
+  display: block;
+  padding: 20px 30px;
+  svg {
+    margin: 0 auto;
+  }
+
+  @media (min-width: @screen-xs-min) {
+    display: inline-block;
+    padding: 20px 150px;
+    svg {
+      margin: inherit;
+    }
+  }
+
+  @media (min-width: @screen-sm-min) {
+    padding: 20px 200px;
+  }
+}
+
 .checkin-search-body {
   max-width: 100%;
 }
@@ -56,7 +76,7 @@ body {
     @scroller-gutters: 15px;
     margin: 0 -15px;
     .scroller {
-      padding: 0 (@scrollbar-width+ @scroller-gutters) 0 @scroller-gutters;
+      padding: 0 @scroller-gutters;
     }
 
     .iScrollVerticalScrollbar,
@@ -68,6 +88,12 @@ body {
 
 .modal-header {
   border-bottom: 1px solid #000;
+}
+
+@media (min-width: @screen-xs-min) {
+  .btn-block + .btn-block {
+    margin-top: 14px;
+  }
 }
 
 // Required Mixins

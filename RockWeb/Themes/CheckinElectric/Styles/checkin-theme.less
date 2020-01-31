@@ -63,7 +63,26 @@ html {
   margin-bottom: 10px;
 }
 
+// .checkin-search-body.search-phone,
+// input.checkin-phone-entry {
+//   width: 275px;
+// }
+
 .tenkey {
+  @media (min-width: @screen-sm-min) {
+    .btn {
+      margin: 7px 11px;
+    }
+
+    .btn:first-of-type {
+      margin-left: 0;
+    }
+
+    .btn:last-of-type {
+      margin-right: 0;
+    }
+  }
+
   .btn.digit {
     line-height: 1.2;
   }
@@ -110,6 +129,7 @@ html {
   @media (min-width: @screen-sm-min) {
     padding: 32px 0 0 3px;
     margin: 0 0 8px;
+    text-align: center;
   }
 
   @media (min-width: @screen-md-min) {
@@ -213,13 +233,27 @@ html {
 
 
 // Checkin Body Label and Edit Family Link Adjustment
-.checkin-body-container > label,
 .checkin-body-container > .btn-link,
+.checkin-body-container > label,
 .checkin-time-select > label.control-label {
   font-size: 14px;
 
   @media (min-width: @screen-sm-min) {
     font-size: @font-size-base;
+  }
+}
+
+@media (min-width: @screen-sm-min) {
+  .checkin-body-container > label,
+  .checkin-time-select > label.control-label {
+    display: block;
+    text-align: center;
+  }
+
+  .checkin-body-container > .btn-link {
+    position: absolute;
+    top: 0;
+    right: (@scrollbar-width+ @scroller-gutters);
   }
 }
 
@@ -248,8 +282,26 @@ html {
   }
 }
 
+.photo-container {
+  @media (max-width: @screen-xs-min + 1) {
+    flex-shrink: 1;
+    width: auto;
+    margin-right: 10px;
+  }
+}
+
 .name-container {
   flex: 1 1 auto;
+  text-align: left;
+
+  @media (min-width: @screen-xs-min) {
+    position: absolute;
+    right: 0;
+    left: 0;
+    width: 100%;
+    padding-left: @scrollbar-width !important;
+    text-align: center;
+  }
 }
 
 // Override Service Time Selects
@@ -272,12 +324,11 @@ html {
     display: block;
     float: none;
     width: 100%;
-    padding: 18px 4px;
+    padding: 18px 4px !important;
     border-radius: 100px !important;
     box-shadow: none;
     -webkit-transition: var(--btn-transition);
     transition: var(--btn-transition);
-
   }
 
   i {
