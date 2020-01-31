@@ -47,23 +47,24 @@ namespace Rock.Model
             {
                 registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Registration.RegistrationInstanceId == options.RegistrationInstanceId.Value );
             }
-            else
+            else if ( options.RegistrationTemplateInstanceIds?.Any() == true )
             {
-                if ( options.RegistrationTemplateInstanceIds?.Any() == true )
-                {
-                    registrationRegistrantQuery = registrationRegistrantQuery.Where( a => options.RegistrationTemplateInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
-                }
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => options.RegistrationTemplateInstanceIds.Contains( a.Registration.RegistrationInstanceId ) );
             }
 
-            if ( options.DataViewFilterId.HasValue )
+            if ( options.RegistrantPersonDataViewFilterId.HasValue )
             {
-                var dataFilter = new DataViewFilterService( new RockContext() ).Get( options.DataViewFilterId.Value );
+                var dataFilter = new DataViewFilterService( rockContext ).Get( options.RegistrantPersonDataViewFilterId.Value );
                 List<string> errorMessages = new List<string>();
 
-                var expression = dataFilter?.GetExpression( typeof( RegistrationRegistrant ), registrationRegistrantService, registrationRegistrantService.ParameterExpression, errorMessages );
-                if ( expression != null )
+                var personService = new PersonService( rockContext );
+                var paramExpression = personService.ParameterExpression;
+
+                var personWhereExpression = dataFilter?.GetExpression( typeof( Person ), personService, paramExpression, errorMessages );
+                if ( personWhereExpression != null )
                 {
-                    registrationRegistrantQuery = registrationRegistrantQuery.Where( registrationRegistrantService.ParameterExpression, expression );
+                    var personIdQry = personService.Queryable().Where( paramExpression, personWhereExpression, null ).Select( x => x.Id );
+                    registrationRegistrantQuery = registrationRegistrantQuery.Where( a => personIdQry.Contains( a.PersonAlias.PersonId ) );
                 }
             }
 
@@ -97,29 +98,26 @@ namespace Rock.Model
                             RegistrationInstanceId = options.RegistrationInstanceId.Value
                         } );
             }
-            else
+            else if ( options.RegistrationTemplateInstanceIds?.Any() == true )
             {
-                if ( options.RegistrationTemplateInstanceIds?.Any() == true )
+                foreach ( var registrationInstanceId in options.RegistrationTemplateInstanceIds )
                 {
-                    foreach ( var registrationInstanceId in options.RegistrationTemplateInstanceIds )
+                    var instancePlacementGroupInfoQuery = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstanceService.Get( registrationInstanceId ) )
+                    .Where( a => a.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
+                    .SelectMany( a => a.Members ).Select( a => a.PersonId )
+                    .Select( s => new InstancePlacementGroupPersonId
                     {
-                        var instancePlacementGroupInfoQuery = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstanceService.Get( registrationInstanceId ) )
-                        .Where( a => a.GroupTypeId == registrationTemplatePlacement.GroupTypeId )
-                        .SelectMany( a => a.Members ).Select( a => a.PersonId )
-                        .Select( s => new InstancePlacementGroupPersonId
-                        {
-                            PersonId = s,
-                            RegistrationInstanceId = registrationInstanceId
-                        } );
+                        PersonId = s,
+                        RegistrationInstanceId = registrationInstanceId
+                    } );
 
-                        if ( allInstancesPlacementGroupInfoQuery == null )
-                        {
-                            allInstancesPlacementGroupInfoQuery = instancePlacementGroupInfoQuery;
-                        }
-                        else
-                        {
-                            allInstancesPlacementGroupInfoQuery = allInstancesPlacementGroupInfoQuery.Union( instancePlacementGroupInfoQuery );
-                        }
+                    if ( allInstancesPlacementGroupInfoQuery == null )
+                    {
+                        allInstancesPlacementGroupInfoQuery = instancePlacementGroupInfoQuery;
+                    }
+                    else
+                    {
+                        allInstancesPlacementGroupInfoQuery = allInstancesPlacementGroupInfoQuery.Union( instancePlacementGroupInfoQuery );
                     }
                 }
             }
@@ -411,7 +409,7 @@ namespace Rock.Model
         /// <value>
         /// The data view filter identifier.
         /// </value>
-        public int? DataViewFilterId { get; set; }
+        public int? RegistrantPersonDataViewFilterId { get; set; }
 
         /// <summary>
         /// Gets or sets the displayed attribute ids.

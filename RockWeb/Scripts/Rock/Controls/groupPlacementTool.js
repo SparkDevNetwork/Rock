@@ -34,6 +34,8 @@
                 self.groupMemberDetailUrl = $('.js-group-member-detail-url', self.$groupPlacementTool).val();
                 self.groupDetailUrl = $('.js-group-detail-url', self.$groupPlacementTool).val();
                 self.$groupMemberTemplate = $('.js-group-member-template', self.$groupPlacementTool).find('.js-group-member');
+                self.$toggleRegistrantDetails = $('.js-toggle-registrant-details', self.$groupPlacementTool);
+                self.blockId = $('.js-block-id', self.$groupPlacementTool).val();
 
                 if (self.groupDetailUrl == '') {
                     // no url, so remove the Edit button(s)
@@ -198,7 +200,14 @@
 
                 this.initializeEventHandlers();
 
-                self.populateRegistrants(self.$registrantList);
+                var getBlockUserPreferenceUrl = Rock.settings.get('baseUrl') + 'api/People/GetBlockUserPreference?blockId=' + self.blockId + '&userPreferenceKey=expandRegistrantDetails';
+
+                $.ajax({
+                    method: "GET",
+                    url: getBlockUserPreferenceUrl
+                }).done(function (expandDetails) {
+                    self.populateRegistrants(self.$registrantList, expandDetails == 'true');
+                });
 
                 self.populateAllGroupRoleMembers();
             },
@@ -371,7 +380,7 @@
                 }
             },
             /** populates the registrant list with available registrants */
-            populateRegistrants: function ($registrantList) {
+            populateRegistrants: function ($registrantList, expandDetails) {
                 var self = this;
                 var $registrantContainer = $('.js-group-placement-registrant-container', $registrantList);
                 var getGroupPlacementRegistrantsUrl = Rock.settings.get('baseUrl') + 'api/RegistrationRegistrants/GetGroupPlacementRegistrants';
@@ -381,7 +390,7 @@
                     RegistrationInstanceId: parseInt($('.js-registration-instance-id', self.$groupPlacementTool).val()) || null,
                     RegistrationTemplatePlacementId: self.registrationTemplatePlacementId,
                     IncludeFees: $('.js-options-include-fees', self.$groupPlacementTool).val(),
-                    DataFilterId: parseInt($('.js-options-datafilter-id', self.$groupPlacementTool).val()) || null,
+                    RegistrantPersonDataViewFilterId: parseInt($('.js-options-registrant-person-dataviewfilter-id', self.$groupPlacementTool).val()) || null,
                 };
 
                 if ($('.js-registration-template-instance-id-list', self.$groupPlacementTool).val() != '') {
@@ -418,6 +427,8 @@
                     registrantContainerParent.append($registrantContainer);
 
                     self.checkVisibleRegistrants();
+
+                    self.expandOrHideRegistrantDetails(expandDetails);
 
                     setTimeout(function () {
                         $loadingNotification.hide();
@@ -497,6 +508,34 @@
                 $('.js-alert', self.$groupPlacementTool).not($placeRegistrantError).hide();
                 $placeRegistrantError.find('.js-placement-place-registrant-error-text').text(jqXHR.responseJSON.Message ?? jqXHR.responseText);
                 $placeRegistrantError.show();
+            },
+            /**
+             * expand's or hides the details of all the registrant divs
+             */
+            expandOrHideRegistrantDetails: function (expand) {
+                var self = this;
+                self.showAllRegistrantDetails = expand;
+
+                var setBlockUserPreferenceUrl = Rock.settings.get('baseUrl') + 'api/People/SetBlockUserPreference?blockId=' + self.blockId + '&userPreferenceKey=expandRegistrantDetails&value=' + expand;
+
+                $.ajax({
+                    method: "POST",
+                    url: setBlockUserPreferenceUrl
+                });
+
+                if (expand) {
+                    $('i', self.$toggleRegistrantDetails).removeClass('fa-angle-double-down').addClass('fa-angle-double-up');
+                    $('.js-registrant-details').each(function (i, el) {
+                        var $details = $(el);
+                        if ($details.text().trim().length != '') {
+                            $details.stop().slideDown();
+                        }
+                    });
+                }
+                else {
+                    $('i', self.$toggleRegistrantDetails).removeClass('fa-angle-double-up').addClass('fa-angle-double-down');
+                    $('.js-registrant-details', self.$groupPlacementTool).stop().slideUp();
+                }
             },
             /**  */
             initializeEventHandlers: function () {
@@ -610,20 +649,8 @@
                 });
 
                 $('.js-toggle-registrant-details', self.$groupPlacementTool).click(function () {
-                    self.showAllRegistrantDetails = !self.showAllRegistrantDetails;
-
-                    if (self.showAllRegistrantDetails) {
-                        $('i', this).removeClass('fa-angle-double-down').addClass('fa-angle-double-up');
-                        $('.js-registrant-details').each(function (i, el) {
-                            var $details = $(el)
-                            if ($details.text().trim().length != '') {
-                                $details.stop().slideDown();
-                            }
-                        });
-                    } else {
-                        $('i', this).removeClass('fa-angle-double-up').addClass('fa-angle-double-down');
-                        $('.js-registrant-details', self.$groupPlacementTool).stop().slideUp();
-                    }
+                    var expand = !self.showAllRegistrantDetails;
+                    self.expandOrHideRegistrantDetails(expand);
                 });
 
                 self.$groupPlacementTool.on('click', '.js-placement-group-toggle-visibility', function () {
@@ -660,5 +687,3 @@
         return exports;
     }());
 }(jQuery));
-
-

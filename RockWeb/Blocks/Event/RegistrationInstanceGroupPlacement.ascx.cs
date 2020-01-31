@@ -175,12 +175,12 @@ namespace RockWeb.Blocks.Event
             public int[] DisplayedRegistrantAttributeIds { get; set; }
 
             /// <summary>
-            /// Gets or sets the registrant data filter identifier.
+            /// Gets or sets the registrant data view filter (Person DataViewFilter)
             /// </summary>
             /// <value>
-            /// The registrant data filter identifier.
+            /// The registrant data view filter identifier.
             /// </value>
-            public int? RegistrantDataFilterId { get; set; }
+            public int? RegistrantPersonDataViewFilterId { get; set; }
 
             /// <summary>
             /// Gets or sets the displayed group attribute ids.
@@ -311,10 +311,11 @@ namespace RockWeb.Blocks.Event
             }
 
             hfRegistrationTemplateId.Value = registrationTemplateId.ToString();
+            hfBlockId.Value = this.BlockId.ToString();
 
             var placementConfiguration = GetPlacementConfiguration();
 
-            hfOptionsDataFilterId.Value = placementConfiguration.RegistrantDataFilterId.ToString();
+            hfOptionsRegistrantPersonDataViewFilterId.Value = placementConfiguration.RegistrantPersonDataViewFilterId.ToString();
 
             hfOptionsDisplayedRegistrantAttributeIds.Value = placementConfiguration.DisplayedRegistrantAttributeIds.ToJson();
             hfOptionsDisplayedGroupMemberAttributeKeys.Value = placementConfiguration.DisplayedGroupMemberAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).Select( a => a.Key ).ToList().AsDelimited( "," );
@@ -656,9 +657,9 @@ namespace RockWeb.Blocks.Event
 
             DataViewFilter dataViewFilter = null;
 
-            if ( placementConfiguration.RegistrantDataFilterId.HasValue )
+            if ( placementConfiguration.RegistrantPersonDataViewFilterId.HasValue )
             {
-                dataViewFilter = new DataViewFilterService( rockContext ).Get( placementConfiguration.RegistrantDataFilterId.Value );
+                dataViewFilter = new DataViewFilterService( rockContext ).Get( placementConfiguration.RegistrantPersonDataViewFilterId.Value );
             }
 
             if ( dataViewFilter == null || dataViewFilter.ExpressionType == FilterExpressionType.Filter )
@@ -758,7 +759,7 @@ namespace RockWeb.Blocks.Event
 
             var placementConfiguration = GetPlacementConfiguration() ?? new PlacementConfiguration();
 
-            int? dataViewFilterId = placementConfiguration.RegistrantDataFilterId;
+            int? dataViewFilterId = placementConfiguration.RegistrantPersonDataViewFilterId;
             if ( dataViewFilterId.HasValue )
             {
                 var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
@@ -776,7 +777,7 @@ namespace RockWeb.Blocks.Event
             placementConfiguration.ShowFees = cbShowFees.Checked;
             placementConfiguration.DisplayedRegistrantAttributeIds = cblDisplayedRegistrantAttributes.SelectedValues.AsIntegerList().ToArray();
 
-            placementConfiguration.RegistrantDataFilterId = dataViewFilter.Id;
+            placementConfiguration.RegistrantPersonDataViewFilterId = dataViewFilter.Id;
             placementConfiguration.DisplayedGroupAttributeIds = cblDisplayedGroupAttributes.SelectedValues.AsIntegerList().ToArray();
             placementConfiguration.HideFullGroups = cbHideFullGroups.Checked;
             placementConfiguration.DisplayedGroupMemberAttributeIds = cblDisplayedGroupMemberAttributes.SelectedValues.AsIntegerList().ToArray();
@@ -1113,26 +1114,11 @@ namespace RockWeb.Blocks.Event
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
-            Guid? channelGuid = GetAttributeValue( "Channel" ).AsGuidOrNull();
-            if ( channelGuid.HasValue )
-            {
-                var contentChannel = ContentChannelCache.Get( channelGuid.Value );
-                if ( contentChannel != null )
-                {
-                    filterField.Entity = new ContentChannelItem
-                    {
-                        ContentChannelId = contentChannel.Id,
-                        ContentChannelTypeId = contentChannel.ContentChannelTypeId
-                    };
-                }
-            }
 
             filterField.DataViewFilterGuid = Guid.NewGuid();
             groupControl.Controls.Add( filterField );
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
 
-            // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
-            filterField.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
 
@@ -1184,7 +1170,6 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Creates the filter control.
         /// </summary>
-        /// <param name="channel">The channel.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         /// <param name="rockContext">The rock context.</param>
@@ -1204,7 +1189,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="filter">The filter.</param>
         /// <param name="setSelection">if set to <c>true</c> [set selection].</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="contentChannel">The content channel.</param>
         private void CreateFilterControl( Control parentControl, DataViewFilter filter, bool setSelection, RockContext rockContext )
         {
             try
@@ -1217,9 +1201,7 @@ namespace RockWeb.Blocks.Event
                     filterControl.DataViewFilterGuid = filter.Guid;
                     filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
 
-                    // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
-                    filterControl.ExcludedFilterTypes = new string[] { typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ).FullName };
-                    filterControl.FilteredEntityTypeName = typeof( Rock.Model.RegistrationRegistrant ).FullName;
+                    filterControl.FilteredEntityTypeName = typeof( Person ).FullName;
 
                     if ( filter.EntityTypeId.HasValue )
                     {
@@ -1251,7 +1233,7 @@ namespace RockWeb.Blocks.Event
                     parentControl.Controls.Add( groupControl );
                     groupControl.DataViewFilterGuid = filter.Guid;
                     groupControl.ID = string.Format( "fg_{0}", groupControl.DataViewFilterGuid.ToString( "N" ) );
-                    groupControl.FilteredEntityTypeName = typeof( Rock.Model.RegistrationRegistrant ).FullName;
+                    groupControl.FilteredEntityTypeName = typeof( Person ).FullName;
                     groupControl.IsDeleteEnabled = parentControl is FilterGroup;
                     if ( setSelection )
                     {
