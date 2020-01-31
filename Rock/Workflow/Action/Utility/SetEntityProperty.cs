@@ -175,6 +175,12 @@ namespace Rock.Workflow.Action
             {
                 return null;
             }
+            
+            if ( underType.IsEnum )
+            {
+                return string.IsNullOrWhiteSpace( theObject ) ? null : Enum.Parse( underType, theObject, true );
+            }
+
             return Convert.ChangeType( theObject, underType );
         }
     }
