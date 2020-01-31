@@ -1202,7 +1202,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return string.Format( "block-{0}-", this.BlockId );
+                return PersonService.GetBlockUserPreferenceKeyPrefix( this.BlockId );
             }
         }
 
