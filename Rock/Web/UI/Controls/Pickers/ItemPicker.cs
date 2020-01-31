@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Base control that can be used to build treeview pickers
     /// </summary>
     public abstract class ItemPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {

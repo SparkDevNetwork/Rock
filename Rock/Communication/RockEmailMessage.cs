@@ -117,6 +117,14 @@ namespace Rock.Communication
         /// </value>
         public List<Attachment> EmailAttachments { get; set; } = new List<Attachment>();
 
+        /// <summary>
+        /// Gets or sets a value indicating whether CSS styles should be inlined in the message body to ensure compatibility with older HTML rendering engines.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if CSS style inlining is enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool CssInliningEnabled { get; set; }
+
         #region Constructors
 
         /// <summary>
@@ -189,6 +197,7 @@ namespace Rock.Communication
             this.BCCEmails = systemCommunication.Bcc.SplitDelimitedValues().ToList();
             this.Subject = systemCommunication.Subject;
             this.Message = systemCommunication.Body;
+            this.CssInliningEnabled = systemCommunication.CssInliningEnabled;
         }
 
         #endregion

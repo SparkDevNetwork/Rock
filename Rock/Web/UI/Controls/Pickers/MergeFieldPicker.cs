@@ -28,7 +28,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a merge field
     /// </summary>
     public class MergeFieldPicker : ItemPicker
     {

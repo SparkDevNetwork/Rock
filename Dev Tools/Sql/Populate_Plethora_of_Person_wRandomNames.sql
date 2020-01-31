@@ -12335,6 +12335,11 @@ BEGIN
 
 			SELECT @genderInt = floor(rand() * 2) + 1
 
+            SELECT TOP 1 @firstName = #firstNames.FirstName
+                FROM #firstNames WITH (NOLOCK)
+                WHERE #firstNames.number >= ROUND(rand() * @firstNameCount, 0)
+                AND gender = @genderInt
+
 			INSERT INTO [Person] (
 				[IsSystem]
 				,[FirstName]
@@ -12358,8 +12363,8 @@ BEGIN
 				)
 			VALUES (
 				0
-				,concat('Kid',@kidCounter)
-				,concat('Kid',@kidCounter)
+				,@firstName
+				,@firstName
 				,@lastName
 				,@day
 				,@month

@@ -28,7 +28,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a page
     /// </summary>
     public class PagePicker : ItemPicker
     {
