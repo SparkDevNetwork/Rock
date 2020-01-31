@@ -40,6 +40,7 @@
                 <asp:Panel ID="pnlGroupPlacementContainer" runat="server">
                     <asp:Panel ID="pnlGroupPlacement" runat="server">
 
+                        <Rock:HiddenFieldWithClass ID="hfBlockId" runat="server" CssClass="js-block-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateId" runat="server" CssClass="js-registration-template-id" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateShowInstanceName" runat="server" CssClass="js-registration-template-show-instance-name" />
                         <Rock:HiddenFieldWithClass ID="hfRegistrationTemplateInstanceIds" runat="server" CssClass="js-registration-template-instance-id-list" />
@@ -54,7 +55,7 @@
                         <Rock:HiddenFieldWithClass ID="hfOptionsIncludeFees" runat="server" CssClass="js-options-include-fees" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHighlightGenders" runat="server" CssClass="js-options-highlight-genders" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsHideFullGroups" runat="server" CssClass="js-options-hide-full-groups" />
-                        <Rock:HiddenFieldWithClass ID="hfOptionsDataFilterId" runat="server" CssClass="js-options-datafilter-id" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsRegistrantPersonDataViewFilterId" runat="server" CssClass="js-options-registrant-person-dataviewfilter-id" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedRegistrantAttributeIds" runat="server" CssClass="js-options-displayed-registrant-attribute-ids" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeKeys" runat="server" CssClass="js-options-displayed-groupmember-attribute-keys" />
 
@@ -190,7 +191,7 @@
                                                                 </ul>
                                                             </div>
                                                             <div class="btn btn-default btn-xs pull-right js-placement-group-toggle-visibility placement-group-toggle-visibility">
-                                                                <i class="fa fa-chevron-down"></i>
+                                                                <i class="fa fa-chevron-up"></i>
                                                             </div>
                                                             <div class="placement-status-labels pull-right">
                                                                 <Rock:HighlightLabel runat="server" LabelType="Info" ID="hlInstanceName" Visible="false" />
