@@ -1409,7 +1409,7 @@ namespace Rock.Model
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                ExceptionLogService.LogException( $"Error while handling interaction record statically: {errorMessage}" );
+                ExceptionLogService.LogException( $"Error while handling interaction record for streaks: {errorMessage}" );
             }
             else
             {
@@ -1430,7 +1430,7 @@ namespace Rock.Model
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                ExceptionLogService.LogException( $"Error while handling attendance record statically: {errorMessage}" );
+                ExceptionLogService.LogException( $"Error while handling attendance record for streaks: {errorMessage}" );
             }
             else
             {
