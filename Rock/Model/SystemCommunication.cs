@@ -14,11 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Model
@@ -146,6 +147,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Body { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether CSS styles should be inlined in the message body to ensure compatibility with oldere HTML rendering engines.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if CSS style inlining is enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CssInliningEnabled { get; set; } = true;
+
         #region SMS Properties
 
         /// <summary>
@@ -165,6 +175,26 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? SMSFromDefinedValueId { get; set; }
+
+        /// <summary>
+        /// The internal storage for <see cref="CommunicationTemplate.LavaFields"/>
+        /// </summary>
+        /// <value>
+        /// The lava fields json
+        /// </value>
+        [DataMember]
+        public string LavaFieldsJson
+        {
+            get
+            {
+                return LavaFields.ToJson( Formatting.None );
+            }
+
+            set
+            {
+                LavaFields = value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            }
+        }
 
         #endregion
 
@@ -222,6 +252,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue SMSFromDefinedValue { get; set; }
+
+        /// <summary>
+        /// A Dictionary of Key,DefaultValue for Lava MergeFields that can be used when processing Lava in the SystemCommunication.
+        /// By convention, a Key with a 'Color' suffix will indicate that the Value is selected using a ColorPicker - otherwise, it is just text.
+        /// </summary>
+        /// <value>
+        /// The merge fields.
+        /// </value>
+        [DataMember]
+        public virtual Dictionary<string, string> LavaFields { get; set; } = new Dictionary<string, string>();
 
         #endregion
 

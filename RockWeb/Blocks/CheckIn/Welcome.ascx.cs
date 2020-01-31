@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.CheckIn
 
     [CustomDropdownListField(
         "iPad Camera Barcode Configuration",
-        "desc",
+        "Specifies if a camera on the device should be used for barcode scanning.",
         "Off,Available,Always On,Passive",
         Key = AttributeKey.CameraBarcodeConfiguration,
         IsRequired = true,

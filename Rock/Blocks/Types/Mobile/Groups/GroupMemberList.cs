@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Mobile;
@@ -31,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Types.Mobile.Groups
 {
     /// <summary>
-    /// Displays a page to allow the user to mark attendance for a group.
+    /// Displays a page to allow the user to view a list of members in a group.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
@@ -43,7 +44,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     #region Block Attributes
 
     [LinkedPage( "Group Member Detail Page",
-        Description = "The page to that will display the group member details when selecting a member.",
+        Description = "The page that will display the group member details when selecting a member.",
         IsRequired = false,
         Key = AttributeKeys.GroupMemberDetailPage,
         Order = 0 )]

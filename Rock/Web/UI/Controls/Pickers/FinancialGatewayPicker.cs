@@ -27,7 +27,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a financial gateway
     /// </summary>
     public class FinancialGatewayPicker : RockDropDownList
     {

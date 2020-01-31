@@ -40,6 +40,14 @@ select.form-control {
   border-radius: 4px;
 }
 
+// Fix to allow SVGs inside of buttons.
+.btn svg {
+  display: block;
+  width: auto;
+  height: 1em;
+  fill: currentColor;
+}
+
 h1,
 h2,
 h3 {
@@ -83,6 +91,10 @@ h1 {
   }
 }
 
+.btn-barcode {
+  margin-top: 40px;
+}
+
 .btn-checkin-change {
   .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
   display: -ms-flexbox;
@@ -100,6 +112,7 @@ h1 {
   display: flex;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
+  width: 100%;
   margin-bottom: 20px;
 
   .btn-checkin-select {
@@ -237,11 +250,15 @@ body {
   padding: 0 0 @padding-base-vertical 0;
 }
 
-.checkin-search-actions a {
-  padding: 20px 48px;
-  font-size: 48px;
-  font-weight: @checkin-button-text-weight;
-  line-height: 48px;
+.checkin-search-actions{
+  text-align: center;
+  a {
+    max-width: 100%;
+    padding: 20px 200px;
+    font-size: 48px;
+    font-weight: @checkin-button-text-weight;
+    line-height: 48px;
+  }
 }
 
 .checkin-start {
