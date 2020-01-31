@@ -62,7 +62,7 @@ namespace Rock.Data
         public virtual List<string> ErrorMessages { get; set; }
 
         /// <summary>
-        /// Gets a LINQ expression parameter.
+        /// Returns a new instance of a LINQ expression parameter for this service.
         /// </summary>
         /// <value>
         /// The parameter expression.
