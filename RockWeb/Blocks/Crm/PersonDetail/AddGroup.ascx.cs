@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -680,7 +681,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     }
 
                                     var personDetailUrl = LinkedPageUrl( "PersonDetailPage", queryParams );
-                                    if ( !string.IsNullOrWhiteSpace( personDetailUrl ) )
+
+                                    if ( PageParameter( "ReturnUrl" ).IsNotNullOrWhiteSpace() )
+                                    {
+                                        string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
+
+                                        string queryString = string.Empty;
+                                        if ( redirectUrl.Contains( "?" ) )
+                                        {
+                                            queryString = redirectUrl.Split( '?' ).Last();
+                                        }
+                                        // this gets all the query string key value pairs and replace the existing key if any with new value.
+                                        var newQueryString = HttpUtility.ParseQueryString( queryString );
+                                        newQueryString.Set( "PersonId", GroupMembers[0].Person.Id.ToString() );
+                                        newQueryString.Set( "GroupId", groupId.ToString() );
+
+                                        Response.Redirect( redirectUrl.Split( '?' ).First() + "?" + newQueryString );
+                                        Context.ApplicationInstance.CompleteRequest();
+                                    }
+                                    else if ( !string.IsNullOrWhiteSpace( personDetailUrl ) )
                                     {
                                         NavigateToLinkedPage( "PersonDetailPage", queryParams );
                                     }

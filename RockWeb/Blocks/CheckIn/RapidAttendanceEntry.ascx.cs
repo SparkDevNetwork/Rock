@@ -576,7 +576,9 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamily_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.AddFamilyPage );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "ReturnUrl", Server.UrlEncode( Request.RawUrl ) );
+            NavigateToLinkedPage( AttributeKey.AddFamilyPage, queryParams );
         }
 
         /// <summary>
