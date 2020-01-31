@@ -313,6 +313,20 @@ namespace Rock.Rest.Controllers
         public virtual HttpResponseMessage MarkEngagement( int streakTypeId, [FromUri]int? personId = null,
             [FromUri]DateTime? dateOfEngagement = null, [FromUri]int? groupId = null, [FromUri]int? locationId = null, [FromUri]int? scheduleId = null )
         {
+            /* 1/31/2020 BJW
+             *
+             * Originally, streaks were set-up to be driven by attendance only, which is where this method with all the optional
+             * parameters was introduced. At the date of this note, we are adding support to use interactions to drive streak data. Because generating
+             * an interaction requires a distinct set of arguments from generating an attendance, and because those arguments could become
+             * large when considering the InteractionData field, we opted to use a [FromBody] argument object. Then for standardization sake,
+             * we opted to transform the attendance mark engagement method to also use a [FromBody] argument object.
+             *
+             * In v13, the schedule and group id params should be removed but not actually the whole method. We are giving a long obsolete
+             * warning period since this is an API endpoint that developers won't get a compiler warning about.
+             *
+             * Task: https://app.asana.com/0/1120115219297347/1159048461540337/f
+             */
+
             // Make sure the streak type exists
             var streakTypeCache = StreakTypeCache.Get( streakTypeId );
 
