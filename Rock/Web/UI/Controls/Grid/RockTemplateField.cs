@@ -124,7 +124,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                ViewState["OnRowSelectedEnabled"] = true;
+                ViewState["OnRowSelectedEnabled"] = value;
             }
         }
     }
