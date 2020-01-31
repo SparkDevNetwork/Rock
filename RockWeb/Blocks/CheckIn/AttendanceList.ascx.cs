@@ -37,9 +37,59 @@ namespace RockWeb.Blocks.Checkin
     [DisplayName( "Attendance List" )]
     [Category( "Checkin" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
-
     public partial class AttendanceList : RockBlock, ICustomGridColumns
     {
+
+        #region UserPreferenceKeys
+
+        /// <summary>
+        /// Keys to use for UserPreferences
+        /// </summary>
+        protected static class UserPreferenceKey
+        {
+            /// <summary>
+            /// The attended
+            /// </summary>
+            public const string Attended = "Attended";
+
+            /// <summary>
+            /// The entered by
+            /// </summary>
+            public const string EnteredBy = "Entered By";
+        }
+
+        #endregion UserPreferanceKeys
+
+        #region PageParameterKeys
+
+        /// <summary>
+        /// A defined list of page parameter keys used by this block.
+        /// </summary>
+        protected static class PageParameterKey
+        {
+            /// <summary>
+            /// The schedule identifier
+            /// </summary>
+            public const string ScheduleId = "ScheduleId";
+
+            /// <summary>
+            /// The location identifier
+            /// </summary>
+            public const string LocationId = "LocationId";
+
+            /// <summary>
+            /// The group identifier
+            /// </summary>
+            public const string GroupId = "GroupId";
+
+            /// <summary>
+            /// The attendance date
+            /// </summary>
+            public const string AttendanceDate = "AttendanceDate";
+        }
+
+        #endregion PageParameterKeys
+
         #region Control Methods
 
         /// <summary>
@@ -68,12 +118,20 @@ namespace RockWeb.Blocks.Checkin
             {
                 bool valid = true;
 
+                if ( PageParameter( PageParameterKey.AttendanceDate ).IsNullOrWhiteSpace() ||
+                    PageParameter( PageParameterKey.ScheduleId ).IsNullOrWhiteSpace() ||
+                    PageParameter( PageParameterKey.GroupId ).IsNullOrWhiteSpace() ||
+                    PageParameter( PageParameterKey.LocationId ).IsNullOrWhiteSpace() )
+                {
+                    valid = false;
+                }
+
                 if ( valid )
                 {
-                    var attendanceDate =  PageParameter( "AttendanceDate" ).AsDateTime();
                     rFilter.Visible = true;
                     gAttendees.Visible = true;
                     BindFilter();
+                    BindGrid();
                 }
                 else
                 {
@@ -115,6 +173,8 @@ namespace RockWeb.Blocks.Checkin
             {
                 Rock.CheckIn.KioskLocationAttendance.Remove( attendance.Occurrence.LocationId.Value );
             }
+
+            BindGrid();
 
         }
 
@@ -172,12 +232,17 @@ namespace RockWeb.Blocks.Checkin
         /// <exception cref="System.NotImplementedException"></exception>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Entered By", ppEnteredBy.SelectedValue.ToString() );
-            rFilter.SaveUserPreference( "Attended", ddlDidAttend.SelectedValue );
+            rFilter.SaveUserPreference( UserPreferenceKey.EnteredBy, ppEnteredBy.SelectedValue.ToString() );
+            rFilter.SaveUserPreference( UserPreferenceKey.Attended, ddlDidAttend.SelectedValue );
 
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
             rFilter.DeleteUserPreferences();
@@ -193,6 +258,15 @@ namespace RockWeb.Blocks.Checkin
         /// </summary>
         private void BindFilter()
         {
+            int? enteredById = rFilter.GetUserPreference( UserPreferenceKey.EnteredBy ).AsIntegerOrNull();
+            if ( enteredById.HasValue )
+            {
+                var person = new PersonService( new RockContext() ).Get( enteredById.Value );
+                ppEnteredBy.SetValue( person );
+            }
+
+            string filterValue = rFilter.GetUserPreference( UserPreferenceKey.Attended );
+            ddlDidAttend.SetValue( filterValue );
         }
 
         /// <summary>
@@ -202,49 +276,55 @@ namespace RockWeb.Blocks.Checkin
         {
             var rockContext = new RockContext();
             var attendanceService = new AttendanceService( rockContext );
-            var qryAttendance = attendanceService.Queryable();
+            IEnumerable<Attendance> attendance = new List<Attendance>();
 
-            int? didAttend = ddlDidAttend.SelectedValueAsInt( false );
-            if ( didAttend.HasValue )
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            var scheduleId = PageParameter( PageParameterKey.ScheduleId ).AsIntegerOrNull();
+            var locationId = PageParameter( PageParameterKey.LocationId ).AsIntegerOrNull();
+            var attendanceDate = PageParameter( PageParameterKey.AttendanceDate ).AsDateTime();
+
+            if ( groupId.HasValue && scheduleId.HasValue && locationId.HasValue && attendanceDate.HasValue )
             {
-                if ( didAttend.Value == 1 )
+                var groupLocation = new GroupLocationService( rockContext ).Get( locationId.Value );
+
+                //
+                // Check for existing attendance records.
+                //
+                var attendanceQry = attendanceService.Queryable()
+                    .Where( a =>
+                        a.Occurrence.GroupId == groupId.Value &&
+                        a.Occurrence.OccurrenceDate == attendanceDate.Value &&
+                        a.Occurrence.LocationId == groupLocation.LocationId &&
+                        a.Occurrence.ScheduleId == scheduleId );
+
+                // Filter by DidAttend
+                int? didAttend = ddlDidAttend.SelectedValueAsInt( false );
+                if ( didAttend.HasValue )
                 {
-                    qryAttendance = qryAttendance.Where( a => a.DidAttend == true );
+                    if ( didAttend.Value == 1 )
+                    {
+                        attendanceQry = attendanceQry.Where( a => a.DidAttend == true );
+                    }
+                    else
+                    {
+                        attendanceQry = attendanceQry.Where( a => a.DidAttend == false );
+                    }
                 }
-                else
+
+                // Filter by Entered By
+                int? personId = ppEnteredBy.SelectedValue;
+                if ( personId.HasValue )
                 {
-                    qryAttendance = qryAttendance.Where( a => a.DidAttend == false );
+                    attendanceQry = attendanceQry.Where( a => a.CreatedByPersonAliasId.HasValue && a.CreatedByPersonAlias.PersonId == personId.Value );
                 }
-            }
 
-            var qry = qryAttendance
-                .Select( a => new
-                {
-                    LocationId = a.Occurrence.LocationId,
-                    LocationName = a.Occurrence.Location != null ? a.Occurrence.Location.Name : string.Empty,
-                    CampusId = a.CampusId,
-                    CampusName = a.Campus != null ? a.Campus.Name : string.Empty,
-                    ScheduleName = a.Occurrence.Schedule != null ? a.Occurrence.Schedule.Name : string.Empty,
-                    Person = a.PersonAlias.Person,
-                    GroupName = a.Occurrence.Group != null ? a.Occurrence.Group.Name : string.Empty,
-                    GroupTypeId = a.Occurrence.Group != null ? a.Occurrence.Group.GroupTypeId : ( int? ) null,
-                    StartDateTime = a.StartDateTime,
-                    EndDateTime = a.EndDateTime,
-                    DidAttend = a.DidAttend
-                } );
-
-            SortProperty sortProperty = gAttendees.SortProperty;
-            if ( sortProperty != null )
-            {
-                qry = qry.Sort( sortProperty );
-            }
-            else
-            {
-                qry = qry.OrderByDescending( p => p.StartDateTime );
+                attendance = attendanceQry
+                    .OrderBy( a => a.PersonAlias.Person.LastName )
+                    .ThenBy( a => a.PersonAlias.Person.FirstName );
             }
 
             gAttendees.EntityTypeId = EntityTypeCache.Get<Attendance>().Id;
-            gAttendees.DataSource = qry.ToList();
+            gAttendees.DataSource = attendance.ToList();
             gAttendees.DataBind();
         }
 
