@@ -1,5 +1,4 @@
 input[type=text] {
-  /* Remove First */
   -webkit-appearance: none;
 }
 
@@ -27,7 +26,8 @@ select.form-control {
   appearance: none;
 }
 
-input.namesearch {
+input.namesearch,
+input.checkin-phone-entry {
   max-width: 100%;
 }
 
@@ -68,8 +68,8 @@ textarea,
   border-width: 3px;
   border-radius: 100px;
   outline: none;
-  -webkit-box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,.1), 0 2px 4px -1px rgba(0,0,0,.06);
+  -webkit-box-shadow: none;
+  box-shadow: none;
   transition: background-color .15s ease-in-out, color .15s ease-in-out;
 
   &:hover {
@@ -128,7 +128,7 @@ textarea,
   color: var(--btn-checkinselect-color) !important;
   background-color: @btn-default-bg;
   background-color: var(--btn-checkinselect-bg);
-  border: 1px solid @btn-default-border;
+  border: 3px solid @btn-default-border;
 
   @media (min-width: @screen-xs-min) {
     padding: 8px 4px;
@@ -148,8 +148,8 @@ textarea,
   &.active:hover {
     & when not (@enable-highlight) {
       color: @btn-select-active-color !important;
-      background-color: @btn-select-active-bg;
-      border-color: @btn-select-active-bg;
+      background-color: @btn-select-active-bg !important;
+      border-color: @btn-select-active-bg !important;
       box-shadow: none;
     }
 

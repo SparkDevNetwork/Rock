@@ -9,15 +9,15 @@
 @brand-primary: #14AAF4; // Primary brand color, used on buttons. #color
 @text-color:    #1a202c; // The text color #color
 @link-color:    #1a202c; // The link color #color
-@checkin-footer-background: #F7FAFC; // Color of the footer shown on non-search pages. #color
+@checkin-footer-background: #f1f1f1; // Color of the footer shown on non-search pages. #color
 
 // Dark Mode *show in editor* *advanced options*
 //// Enabling Dark Mode {Dark mode is currently unavailable in the Windows Check-in app. Dark mode can be enabled on iOS via Display & Brightness settings.}
 @dark-logo-image-url: ""; // Alternate dark mode logo image URL should be a URL, to a image. Will be resized to be 16px tall.
-@dark-background-color:      #000; // The page's background color in dark mode. #color
+@dark-background-color:      #2d2d2d; // The page's background color in dark mode. #color
 @dark-text-color:    #fff; // The text color in dark mode. #color
 @dark-link-color:    #fff; // The link color in dark mode. #color
-@dark-checkin-footer-background: #2D3748; // Color of the footer shown on non-search pages in dark mode. #color
+@dark-checkin-footer-background: #1c1c1c; // Color of the footer shown on non-search pages in dark mode. #color
 
 // Typography *show in editor* *advanced options*
 @font-family-base:     "Inter", sans-serif; // The primary font to use for the site (note- custom fonts must be registered in the CSS overrides section)
@@ -33,10 +33,10 @@
 @btn-primary-border:   @brand-primary; // The primary button border color #color
 //--
 @btn-default-bg: #fff; // The default button background color #color
-@btn-default-color:     #2D3748; // The default button text color #color
-@btn-default-border:   #CBD5E0; // The default button border color #color
+@btn-default-color:     #1a202c; // The default button text color #color
+@btn-default-border:   #d5d5d5; // The default button border color #color
 
-@btn-default-active-bg: #2D3748; // #color
+@btn-default-active-bg: #1a202c; // #color
 @btn-default-active-color: #fff; // #color
 //--
 @btn-action-bg:    #23353d; // The action button background color #color
@@ -57,11 +57,12 @@
 
 // Assorted Settings
 @enable-highlight: false;
+@checkin-keypad-width: 295px;
 @font-size-h1: 30px;
 @headings-font-weight:    700;
 
 @input-color:                 #000;                          // The text color of inputs.
-@input-border:                #CBD5E0;                    // The border color of inputs.
+@input-border:                #d5d5d5;                    // The border color of inputs.
 @input-border-focus:          #333;
 @input-focus-rgba:            rgba(77, 144, 254,0.4);
 @input-focus-box-shadow:      ~"0 0 0 2px @{input-focus-rgba}";
@@ -83,7 +84,7 @@
 @custom-select-disabled-bg:         @input-bg-disabled;
 @custom-select-bg-size:             8px 10px; // In pixels because image dimensions
 @custom-select-indicator-color:     #000;
-@custom-select-indicator:           %(~'url("data:image/svg+xml,%s%s%s")', "%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='", replace("@{custom-select-indicator-color}", "#", "%23"), "' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
+@custom-select-indicator:           %(~'url("data:image/svg+xml,%s%s%s")', "%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='", "%23000", "' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
 @custom-select-background:          ~"@{custom-select-indicator} no-repeat right @{custom-select-padding-x} center/@{custom-select-bg-size}"; // Used so we can have multiple background elements (e.g., arrow and feedback icon)
 
 
