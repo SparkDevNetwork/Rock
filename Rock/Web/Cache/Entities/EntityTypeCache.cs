@@ -450,7 +450,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the id.
+        /// Gets an EntityTypeId based on the specified type name.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
