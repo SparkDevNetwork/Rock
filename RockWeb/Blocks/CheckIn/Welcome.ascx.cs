@@ -123,13 +123,22 @@ namespace RockWeb.Blocks.CheckIn
         Order = 13 )]
 
     [TextField(
+        "Scan Button Text",
+        Key = AttributeKey.ScanButtonText,
+        Description = "The text to display on the scan barcode button. Defaults to a pretty barcode SVG if left blank.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "Text",
+        Order = 14 )]
+
+    [TextField(
         "No Option Caption",
         Key = AttributeKey.NoOptionCaption,
         Description = "The text to display when there are not any families found matching a scanned identifier (barcode, etc).",
         IsRequired = false,
         DefaultValue = "Sorry, there were not any families found with the selected identifier.",
         Category = "Text",
-        Order = 14 )]
+        Order = 15 )]
 
     [BooleanField(
         "Allow Opening and Closing Rooms",
@@ -149,6 +158,8 @@ namespace RockWeb.Blocks.CheckIn
 
     public partial class Welcome : CheckInBlock
     {
+        private readonly string _defaultScanButtonText = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 426 340.8\"><path d=\"M74 0H11A11 11 0 000 11v62a11 11 0 0010 11 11 11 0 0011-10V21h52a11 11 0 0011-10A11 11 0 0074 0zm-1 320H21v-52a11 11 0 00-10-11 11 11 0 00-11 11v63a11 11 0 0011 10h63a11 11 0 0010-11 11 11 0 00-11-10zM416 0h-63a11 11 0 00-11 10 11 11 0 0011 11h52v52a11 11 0 0010 11 11 11 0 0011-10V11a11 11 0 00-10-11zm-11 268v52h-52a11 11 0 00-11 10 11 11 0 0011 11h63a11 11 0 0010-10v-63a11 11 0 00-11-11 11 11 0 00-10 11zM64 76v189a11 11 0 0010 10 11 11 0 0011-10V76a11 11 0 00-11-11 11 11 0 00-10 11zm53-12h21a11 11 0 0111 11v191a11 11 0 01-11 11h-21a11 11 0 01-11-11V75a11 11 0 0111-11zm54 12v189a11 11 0 0010 10 11 11 0 0011-10V76a11 11 0 00-11-11 11 11 0 00-10 11zm53-12h21a11 11 0 0111 11v191a11 11 0 01-11 11h-21a11 11 0 01-11-11V75a11 11 0 0111-11zm53 11v191a11 11 0 0010 11 11 11 0 0011-11V75a11 11 0 00-11-11 11 11 0 00-10 11zm53-11h21a11 11 0 0111 11v191a11 11 0 01-11 11h-21a11 11 0 01-11-11V75a11 11 0 0111-11z\"/></svg>";
+
         #region Attribute Keys
 
         private static class AttributeKey
@@ -163,6 +174,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string ClosedTitle = "ClosedTitle";
             public const string ClosedCaption = "ClosedCaption";
             public const string CheckinButtonText = "CheckinButtonText";
+            public const string ScanButtonText = "ScanButtonText";
             public const string NoOptionCaption = "NoOptionCaption";
             public const string AllowOpeningAndClosingRooms = "AllowOpeningAndClosingRooms";
             public const string AllowLabelReprinting = "AllowLabelReprinting";
@@ -242,20 +254,7 @@ namespace RockWeb.Blocks.CheckIn
                         lClosedTitle.Text = GetAttributeValue( AttributeKey.ClosedTitle );
                         lClosedCaption.Text = GetAttributeValue( AttributeKey.ClosedCaption );
 
-                        string checkinButtonText = GetAttributeValue( AttributeKey.CheckinButtonText ).IfEmpty( "Start" );
-
-                        var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
-                        mergeFields.Add( AttributeKey.CheckinButtonText, checkinButtonText );
-                        mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
-                        mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
-
-                        if ( LocalDeviceConfig.CurrentGroupTypeIds != null )
-                        {
-                            var checkInAreas = LocalDeviceConfig.CurrentGroupTypeIds.Select( a => GroupTypeCache.Get( a ) );
-                            mergeFields.Add( "CheckinAreas", checkInAreas );
-                        }
-
-                        lStartButtonHtml.Text = CurrentCheckInState.CheckInType.StartLavaTemplate.ResolveMergeFields( mergeFields );
+                        RefreshStartButton();
                     }
                 }
             }
@@ -421,21 +420,47 @@ namespace RockWeb.Blocks.CheckIn
                 qryParams.AddOrReplace( PageParameterKey.IsActive, isActive.ToString() );
                 NavigateToCurrentPage( qryParams );
             }
+        }
+
+        /// <summary>
+        /// Refreshes the start button content.
+        /// </summary>
+        private void RefreshStartButton()
+        {
+            string checkinButtonText = GetAttributeValue( AttributeKey.CheckinButtonText ).IfEmpty( "Start" );
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( AttributeKey.CheckinButtonText, checkinButtonText );
+            mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
+            mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
+
+            if ( LocalDeviceConfig.CurrentGroupTypeIds != null )
+            {
+                var checkInAreas = LocalDeviceConfig.CurrentGroupTypeIds.Select( a => GroupTypeCache.Get( a ) );
+                mergeFields.Add( "CheckinAreas", checkInAreas );
+            }
 
             //
-            // Show the camera button if it is enabled and the device supports it.
+            // Include the camera button if it is enabled and the device supports it.
             //
             var cameraOption = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration );
             if ( pnlActive.Visible && cameraOption != "Off" && CurrentCheckInState.Kiosk.Device.HasCamera )
             {
-                pnlCameraButtonContainer.Visible = true;
-                hfCameraMode.Value = cameraOption;
+                var scanButtonText = GetAttributeValue( AttributeKey.ScanButtonText );
+                if ( scanButtonText.IsNullOrWhiteSpace() )
+                {
+                    scanButtonText = _defaultScanButtonText;
+                }
+
+                mergeFields.Add( "BarcodeScanEnabled", true );
+                mergeFields.Add( "BarcodeScanButtonText", scanButtonText );
             }
             else
             {
-                pnlCameraButtonContainer.Visible = false;
-                hfCameraMode.Value = "Off";
+                mergeFields.Add( "BarcodeScanEnabled", false );
             }
+
+            lStartButtonHtml.Text = CurrentCheckInState.CheckInType.StartLavaTemplate.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>
