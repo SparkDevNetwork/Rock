@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.CheckIn
         AllowMultiple = true,
         Category = "Individual",
         Order = 2,
-        IsRequired = true,
+        IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE
         )]
     [AttributeField(
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.CheckIn
         Description = "The types of phone numbers to display / edit.",
         Category = "Individual",
         Order = 5,
-        IsRequired = true,
+        IsRequired = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE
         )]
     [AttributeField(
