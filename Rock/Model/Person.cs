@@ -1645,21 +1645,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         private History.HistoryChangeList HistoryChanges { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether the system is allowed to send email to this person.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the system is allowed to send email to this person; otherwise, <c>false</c>.
-        /// </value>
-        [NotMapped]
-        public virtual bool AllowedToSendEmail
-        {
-            get
-            {
-                return Email.IsNotNullOrWhiteSpace() && IsEmailActive && EmailPreference != EmailPreference.DoNotEmail;
-            }
-        }
         #endregion
 
         #region Methods
@@ -2327,6 +2312,22 @@ namespace Rock.Model
             return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 
+        /// <summary>
+        /// Determines whether this Person can receive emails.
+        /// </summary>
+        /// <param name="isBulk">if set to <c>true</c> this method will validate that this Person can receive bulk emails.</param>
+        /// <returns>
+        ///   <c>true</c> if this Person can receive emails; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanReceiveEmail(bool isBulk = true)
+        {
+            var userAllowsBulk = EmailPreference != EmailPreference.NoMassEmails;
+
+            return Email.IsNotNullOrWhiteSpace()
+                    && IsEmailActive
+                    && EmailPreference != EmailPreference.DoNotEmail
+                    && (!isBulk || userAllowsBulk);
+        }
         #endregion
 
         #region Static Helper Methods
