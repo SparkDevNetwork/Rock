@@ -501,7 +501,6 @@
 
             Sys.Application.add_load(function () {
                 function setIsActiveControls(activeCheckbox) {
-                    debugger
                     var $inactiveLabel = $(activeCheckbox).closest(".js-group-panel").find('.js-inactivegroup-label');
                     if ($(activeCheckbox).is(':checked')) {
                         $inactiveLabel.hide();
