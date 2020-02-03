@@ -436,7 +436,17 @@ function() {
                 }
                 else if ( comparisonType == ComparisonType.EqualTo )
                 {
-                    financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.TotalAmount == amount );
+                    if ( amount == 0.00M )
+                    {
+                        // NOTE: If we want to list people that gave $0.00 (they didn't giving anything)
+                        // EXCLUDE people that gave any amount
+                        financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.AnyAmount );
+                        excludePersonsWithTransactions = true;
+                    }
+                    else
+                    {
+                        financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.TotalAmount == amount );
+                    }
                 }
                 else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
                 {
@@ -491,7 +501,17 @@ function() {
                 }
                 else if ( comparisonType == ComparisonType.EqualTo )
                 {
-                    financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.TotalAmount == amount );
+                    if ( amount == 0.00M )
+                    {
+                        // NOTE: If we want to list people that gave $0.00 (they didn't giving anything)
+                        // EXCLUDE people that gave any amount
+                        financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.AnyAmount );
+                        excludePersonsWithTransactions = true;
+                    }
+                    else
+                    {
+                        financialTransactionGivingAmountQry = financialTransactionGivingAmountQry.Where( xx => xx.TotalAmount == amount );
+                    }
                 }
                 else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
                 {

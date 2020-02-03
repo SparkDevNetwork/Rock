@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -415,8 +416,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     Id = c.Id,
                     CommunicationType = c.CommunicationType,
-                    // Subject = string.IsNullOrEmpty( c.Subject ) ? c.Name : c.Subject,
-                    Subject = string.IsNullOrEmpty( c.Name ) ? ( string.IsNullOrEmpty( c.Subject ) ? c.PushTitle : c.Subject ) : c.Name,
+                    Subject = string.IsNullOrEmpty( c.Subject ) ? ( string.IsNullOrEmpty( c.PushTitle ) ? c.Name : c.PushTitle ) : c.Subject,
                     CreatedDateTime = c.CreatedDateTime,
                     SendDateTime = c.SendDateTime ?? c.FutureSendDateTime,
                     SendDateTimePrefix = c.SendDateTime == null && c.FutureSendDateTime != null ? "<span class='label label-info'>Future</span>&nbsp;" : "",
@@ -471,7 +471,7 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
-        protected class CommunicationItem : DotLiquid.Drop
+        protected class CommunicationItem : RockDynamic
         {
             public int Id { get; set; }
             public CommunicationType CommunicationType { get; set; }

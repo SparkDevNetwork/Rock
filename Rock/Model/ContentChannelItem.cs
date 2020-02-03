@@ -81,6 +81,15 @@ namespace Rock.Model
         public string Content { get; set; }
 
         /// <summary>
+        /// Gets or sets the structured content.
+        /// </summary>
+        /// <value>
+        /// The structured content.
+        /// </value>
+        [DataMember]
+        public string StructuredContent { get; set; }
+
+        /// <summary>
         /// Gets or sets the priority of this ContentItem. The lower the number, the higher the priority.
         /// </summary>
         /// <value>

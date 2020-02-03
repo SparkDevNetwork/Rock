@@ -1,5 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
-
 <Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Text="The information provided is not valid or you are not authorized to view this content." Visible="false" />
 
 <asp:UpdatePanel ID="upDetail" runat="server">
@@ -39,17 +38,17 @@
                         <div class="col-md-10">
                             <div class="row">
                                 <div class="col-md-9">
-                                    <h3><asp:Literal ID="lTitle" runat="server" /></h3>
+                                    <h3 class="margin-t-none"><asp:Literal ID="lTitle" runat="server" /></h3>
                                 </div>
                                 <div class="col-md-3 text-right">
                                     <asp:HyperLink ID="lbProfilePage" runat="server" CssClass="btn btn-default btn-xs"><i class="fa fa-user"></i> Profile</asp:HyperLink>
                                 </div>
                             </div>
-                            
+
                             <asp:Panel runat="server" CssClass="margin-b-sm" ID="pnlBadges">
                                 <Rock:BadgeListControl ID="blStatus" runat="server" />
                             </asp:Panel>
-                            
+
                             <div class="row">
                                 <div class="col-md-6">
                                     <Rock:RockLiteral ID="lContactInfo" runat="server" Label="Contact Info" />
@@ -61,9 +60,9 @@
                                     <Rock:DynamicPlaceHolder ID="phGroupMemberAttributesView" runat="server" />
                                 </div>
                             </div>
-       
+
                         </div>
-                        
+
                     </div>
 
                     <div class="row">
@@ -73,7 +72,7 @@
                     </div>
                     <asp:Literal ID="lBadgeBar" runat="server" />
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" DisplayAsTabs="true"/>
                         </div>
                     </div>
@@ -156,7 +155,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" DisplayAsTabs="true"/>
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server"/>
                         </div>
                     </div>
 
@@ -181,7 +180,7 @@
                     <div class="row">
                         <div class="col-md-6">
 
-                            <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="New Opportunity">
+                            <Rock:RockControlWrapper ID="rcwTransferOpportunity" runat="server" Label="Opportunity">
                                 <div class="row">
                                     <div class="col-md-8">
                                         <Rock:RockDropDownList ID="ddlTransferOpportunity" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlTransferOpportunity_SelectedIndexChanged" EnhanceForLongLists="true" />
@@ -244,7 +243,7 @@
 
         <Rock:PanelWidget ID="wpConnectionRequestActivities" runat="server" Title="Activities" Expanded="true" CssClass="clickable">
             <div class="grid">
-                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light" 
+                <Rock:Grid ID="gConnectionRequestActivities" runat="server" AllowPaging="false" DisplayType="Light"
                     RowItemText="Activity" OnRowDataBound="gConnectionRequestActivities_RowDataBound" OnRowSelected="gConnectionRequestActivities_Edit">
                     <Columns>
                         <Rock:RockBoundField DataField="Date" HeaderText="Date" />
@@ -311,7 +310,7 @@
                 $(".js-transfer-connector").on("click", function (a) {
                     $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($(this).is('#<%=rbTransferSelectConnector.ClientID%>'));
                 });
-                
+
                 $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($('#<%=rbTransferSelectConnector.ClientID%>').is(":checked"));
             })
         </script>

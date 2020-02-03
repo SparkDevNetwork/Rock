@@ -159,7 +159,7 @@
             var $noteContainer = $(this).closest('.js-notecontainer');
 
             var $currentNote = $(this).closest('.js-note');
-            var $childNotesContainer = $currentNote.find('.js-childnotes:first');
+            var $childNotesContainer = $currentNote.find('.js-childnotes').first();
             $childNotesContainer.slideToggle(function (x) {
 
                 // get a list of noteIds that have their child items visible, so that we can maintain that expansion after a postback

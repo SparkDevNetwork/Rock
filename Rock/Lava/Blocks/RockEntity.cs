@@ -77,26 +77,26 @@ namespace Rock.Lava.Blocks
 
             bool hasFilter = false;
 
+            var modelName = string.Empty;
+
             // get a service for the entity based off it's friendly name
-            var entityTypes = EntityTypeCache.All();
-
-            var model = string.Empty;
-
             if ( _entityName == "business" )
             {
-                model = "Rock.Model.Person";
+                modelName = "Rock.Model.Person";
             }
             else
             {
-                model = "Rock.Model." + _entityName;
+                modelName = "Rock.Model." + _entityName;
             }
 
-            // Check first to see if this is a core model
-            var entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+            // Check first to see if this is a core model. use the createIfNotFound = false option
+            var entityTypeCache = EntityTypeCache.Get( modelName, false );
 
-            // If not, look for first plug-in model that has same friendly name
             if ( entityTypeCache == null )
             {
+                var entityTypes = EntityTypeCache.All();
+
+                // If not, look for first plug-in model that has same friendly name
                 entityTypeCache = entityTypes
                     .Where( e =>
                         e.IsEntity &&
@@ -105,13 +105,13 @@ namespace Rock.Lava.Blocks
                         e.FriendlyName.RemoveSpaces().ToLower() == _entityName )
                     .OrderBy( e => e.Id )
                     .FirstOrDefault();
-            }
 
-            // If still null check to see if this was a duplicate class and full class name was used as entity name
-            if ( entityTypeCache == null )
-            {
-                model = _entityName.Replace( '_', '.' );
-                entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, model, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                // If still null check to see if this was a duplicate class and full class name was used as entity name
+                if ( entityTypeCache == null )
+                {
+                    modelName = _entityName.Replace( '_', '.' );
+                    entityTypeCache = entityTypes.Where( e => String.Equals( e.Name, modelName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
+                }
             }
 
             if ( entityTypeCache != null )
@@ -208,7 +208,9 @@ namespace Rock.Lava.Blocks
                     }
 
                     // Make the query from the expression
+                    // Note: Use GetNoTracking to help improve performance
                     MethodInfo getMethod = serviceInstance.GetType().GetMethod( "GetNoTracking", new Type[] { typeof( ParameterExpression ), typeof( Expression ), typeof( Rock.Web.UI.Controls.SortProperty ), typeof( int? ) } );
+
                     if ( getMethod != null )
                     {
                         // get a listing of ids and build it into the query expression
@@ -249,7 +251,7 @@ namespace Rock.Lava.Blocks
                         }
 
                         // if there was a dynamic expression add it now
-                        if ( parms.Any( p => p.Key == "expression" ) ) 
+                        if ( parms.Any( p => p.Key == "expression" ) )
                         {
                             queryResult = queryResult.Where( parms["expression"] );
                             hasFilter = true;
@@ -335,6 +337,9 @@ namespace Rock.Lava.Blocks
                         // reassemble the queryable with the sort expressions
                         queryResult = queryResult.Provider.CreateQuery( queryResultExpression ) as IQueryable<IEntity>;
 
+                        // limit, default to 1000
+                        var recordLimit = ( parms.GetValueOrNull( "limit" ) ?? "1000" ).AsInteger();
+
                         if ( parms.GetValueOrNull( "count" ).AsBoolean() )
                         {
                             int countResult = queryResult.Count();
@@ -356,6 +361,11 @@ namespace Rock.Lava.Blocks
                                     if ( itemSecured == null || itemSecured.IsAuthorized( Authorization.VIEW, person ) )
                                     {
                                         itemsSecured.Add( item );
+                                        if ( itemsSecured.Count >= recordLimit )
+                                        {
+                                            // if we have already met the recordlimit, we don't have to check IsAuthorized anymore since no more records will be included
+                                            break;
+                                        }
                                     }
                                 }
 
@@ -368,15 +378,7 @@ namespace Rock.Lava.Blocks
                                 queryResult = queryResult.Skip( parms["offset"].AsInteger() );
                             }
 
-                            // limit, default to 1000
-                            if ( parms.Any( p => p.Key == "limit" ) )
-                            {
-                                queryResult = queryResult.Take( parms["limit"].AsInteger() );
-                            }
-                            else
-                            {
-                                queryResult = queryResult.Take( 1000 );
-                            }
+                            queryResult = queryResult.Take( recordLimit );
 
                             var resultList = queryResult.ToList();
 

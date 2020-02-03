@@ -20,8 +20,8 @@
                                 $followingDiv.removeClass('following');
 
                                 // update the tooltip (if one was configured)
-                                if ($followingDiv.attr("data-original-title")) {
-                                    $followingDiv.attr("data-original-title", 'Click to follow');
+                                if ($followingDiv.attr('data-original-title')) {
+                                    $followingDiv.attr('data-original-title', 'Click to follow');
                                 }
                             },
                         });
@@ -43,8 +43,8 @@
                                     $followingDiv.addClass('following');
 
                                     // update the tooltip (if one was configured)
-                                    if ($followingDiv.attr("data-original-title")) {
-                                        $followingDiv.attr("data-original-title", 'Currently following');
+                                    if ($followingDiv.attr('data-original-title')) {
+                                        $followingDiv.attr('data-original-title', 'Currently following');
                                     }
                                 }
                             }

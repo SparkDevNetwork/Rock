@@ -8,8 +8,8 @@
                 newValue += '|';
             }
 
-            var keyValue = $(this).children('.key-value-key:first').val();
-            var valueValue = $(this).children('.key-value-value:first').val();
+            var keyValue = $(this).children('.key-value-key').first().val();
+            var valueValue = $(this).children('.key-value-value').first().val();
 
             // if the key or value have any magic chars ('^' or '|' or ','' ), URI encode each magic char using encodeURIComponent so that commas also get encoded
             var keyValueDelimiters = ['^', '|', ','];
@@ -25,7 +25,7 @@
 
             newValue += keyValue + '^' + valueValue;
         });
-        $span.children('input:first').val(newValue);
+        $span.children('input').first().val(newValue);
     }
 
     Sys.Application.add_load(function () {

@@ -452,6 +452,14 @@ namespace RockWeb.Blocks.Cms
 
                 site.PageHeaderContent = cePageHeaderContent.Text;
 
+                avcAttributes.GetEditValues( site );
+                // only save if everything saves:
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    site.SaveAttributeValues();
+                } );
+
                 int? existingIconId = null;
                 if ( site.FavIconBinaryFileId != imgSiteIcon.BinaryFileId )
                 {
@@ -924,6 +932,9 @@ namespace RockWeb.Blocks.Cms
             BindPageAttributesGrid();
 
             SetControlsVisiblity();
+
+            site.LoadAttributes();
+            avcAttributes.AddEditControls( site, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>

@@ -24,6 +24,8 @@
 
         <Rock:HiddenFieldWithClass ID="hfLocalDeviceConfiguration" runat="server" CssClass="js-local-device-configuration" />
 
+        <Rock:HiddenFieldWithClass ID="hfCameraMode" runat="server" CssClass="js-camera-mode" />
+
         <script>
 
             Sys.WebForms.PageRequestManager.getInstance().add_pageLoading(function () {
@@ -199,6 +201,34 @@
                     window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
                 });
 
+                // Install function the host-app can call to pass the scanned barcode.
+                window.PerformScannedCodeSearch = function (code) {
+                    if (!swipeProcessing) {
+                        $('#hfSearchEntry').val(code);
+                        swipeProcessing = true;
+                        console.log('processing');
+                        window.location = "javascript:__doPostBack('hfSearchEntry', 'Wedge_Entry')";
+                    }
+                }
+
+                // handle click of scan button
+                $('.js-camera-button-container .js-camera-button').on('click', function (a) {
+                    a.preventDefault();
+                    if (window.RockCheckinNative) {
+                        // Reset the swipe processing as it may have failed silently.
+                        swipeProcessing = false;
+                        window.RockCheckinNative.StartCamera(false);
+                    }
+                });
+
+                // auto-show or auto-enable camera if configured to do so.
+                if ($('.js-camera-mode').val() === 'Always On') {
+                    window.RockCheckinNative.StartCamera(false);
+                }
+                else if ($('.js-camera-mode').val() === 'Passive') {
+                    window.RockCheckinNative.StartCamera(true);
+                }
+
                 if ($('.js-manager-login').length) {
                     $('.tenkey a.digit').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
@@ -305,6 +335,13 @@
                         <div class="js-start-button-container">
                             <asp:Literal ID="lStartButtonHtml" runat="server" />
                         </div>
+                        <asp:Panel ID="pnlCameraButtonContainer" runat="server" class="js-camera-button-container">
+                            <div class='checkin-search-actions checkin-camera'>
+                                <a class='btn btn-primary btn-checkin js-camera-button'>
+                                    <span>Scan Barcode</span>
+                                </a>
+                            </div>
+                        </asp:Panel>
                     </div>
                 </div>
             </div>

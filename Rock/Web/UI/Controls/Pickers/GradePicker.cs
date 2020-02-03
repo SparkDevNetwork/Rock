@@ -23,7 +23,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class GradePicker : RockDropDownList
     {
@@ -123,7 +123,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the maximum grade offset for grades that are defined 
+        /// Gets the maximum grade offset for grades that are defined
         /// For example, 12 (Kindergarten) would be the max grade offset (or whatever the lowest grade level is)
         /// </summary>
         /// <value>
@@ -152,16 +152,16 @@ namespace Rock.Web.UI.Controls
             int gradeOffsetRefactor = ( RockDateTime.Now < gradeTransitionDate ) ? 0 : 1;
 
             string gradeSelectionScript = $@"
-    $('#{this.ClientID}').change(function(){{
+    $('#{this.ClientID}').on('change', function(){{
         var selectedGradeOffsetValue = $(this).val();
         if ( selectedGradeOffsetValue == '') {{
             $('#{ypGraduationYear.ClientID}').val('');
         }} else {{
             $('#{ypGraduationYear.ClientID}').val( {gradeTransitionDate.Year} + ( {gradeOffsetRefactor} + parseInt( selectedGradeOffsetValue ) ) );
-        }} 
+        }}
     }});
 
-    $('#{1}').change(function(){{
+    $('#{1}').on('change', function(){{
         var selectedYearValue = $(this).val();
         if (selectedYearValue == '') {{
             $('#{this.ClientID}').val('');
@@ -244,7 +244,7 @@ namespace Rock.Web.UI.Controls
                     {
                         this.SetValue( value.Guid );
                     }
-                        
+
                 }
                 else
                 {

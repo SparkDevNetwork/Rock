@@ -21,6 +21,15 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Block Template
+
+        /// <summary>
+        /// The block template for the mobile group member list.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
+
+        #endregion
+
         #region Campus
 
         /// <summary>
@@ -358,6 +367,11 @@ namespace Rock.SystemGuid
         public const string TRANSACTION_FREQUENCY_TWICEMONTHLY = "791C863D-2600-445B-98F8-3E5B66A3DEC4";
 
         /// <summary>
+        /// A Frequency of First and Fifteenth
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH = "C752403C-0F88-45CD-B574-069355C01D77";
+
+        /// <summary>
         /// Monthly
         /// </summary>
         public const string TRANSACTION_FREQUENCY_MONTHLY = "1400753C-A0F9-4A45-8A1D-81C98450BD1F";
@@ -572,6 +586,15 @@ namespace Rock.SystemGuid
         /// Android platform
         /// </summary>       
         public const string PERSONAL_DEVICE_PLATFORM_ANDROID = "63464BB8-83E2-4914-B922-5075311758F9";
+
+        #endregion
+
+        #region Structure Content Editor
+
+        /// <summary>
+        /// Default Structure Content Editor
+        /// </summary>
+        public const string STRUCTURE_CONTENT_EDITOR_DEFAULT = "31C63FB9-1365-4EEF-851D-8AB9A188A06C";
 
         #endregion
 

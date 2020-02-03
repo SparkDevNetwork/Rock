@@ -22,8 +22,6 @@ using System.Text;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
-using Rock.Chart;
-using Rock.Constants;
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Model;
@@ -41,12 +39,15 @@ namespace RockWeb.Blocks.Crm
 
     [LinkedPage(
         "Person Detail Page",
-        Key = AttributeKey.DetailPage,
+        Key = AttributeKey.PersonDetailPage,
         Category = AttributeCategory.LinkedPages,
         Order = 0 )]
 
     #endregion
 
+    /// <summary>
+    /// Shows changes of Connection Status for people within a specific period.
+    /// </summary>
     public partial class ConnectionStatusChangeReport : RockBlock
     {
         #region Attribute Keys
@@ -56,7 +57,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private static class AttributeKey
         {
-            public const string DetailPage = "PersonDetailPage";
+            public const string PersonDetailPage = "PersonDetailPage";
         }
 
         #endregion
@@ -92,6 +93,7 @@ namespace RockWeb.Blocks.Crm
         #region Constants
 
         private const string _urlValuesListDelimiter = ",";
+        private const int _MaxRecords = 100000;
 
         #endregion
 
@@ -107,8 +109,12 @@ namespace RockWeb.Blocks.Crm
 
         #endregion
 
-        #region Control Methods
+        #region Base Control Methods
 
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
         protected override void LoadViewState( object savedState )
         {
             base.LoadViewState( savedState );
@@ -118,6 +124,10 @@ namespace RockWeb.Blocks.Crm
             _changeEvents = ViewState["Changes"] as List<StatusChangeViewModel>;
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -126,11 +136,13 @@ namespace RockWeb.Blocks.Crm
 
             this.ListPanelControl = pnlResults;
 
-            //this.InitializeBlockNotifications();
-
             this.InitializeGrid();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -160,6 +172,12 @@ namespace RockWeb.Blocks.Crm
             BuildPage( dataContext, settings );
         }
 
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
         protected override object SaveViewState()
         {
             ViewState["Report"] = _report;
@@ -172,6 +190,11 @@ namespace RockWeb.Blocks.Crm
 
         #region Events
 
+        /// <summary>
+        /// Handles the Click event of the lbApplyFilter button.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbApplyFilter_Click( object sender, EventArgs e )
         {
             var settings = this.GetReportSettingsFromPage();
@@ -180,7 +203,6 @@ namespace RockWeb.Blocks.Crm
 
             this.NavigateToCurrentPage( queryParams );
         }
-
 
         #endregion
 
@@ -231,7 +253,7 @@ namespace RockWeb.Blocks.Crm
 
             // Period.
             if ( settings.ReportPeriod.Range != TimePeriodRangeSpecifier.Current
-                 && settings.ReportPeriod.TimeUnit != TimePeriodUnitSpecifier.Year )
+                 || settings.ReportPeriod.TimeUnit != TimePeriodUnitSpecifier.Year )
             {
                 // Only set the period parameter if it is not the default setting.
                 queryParams.Add( PageParameterKey.Period, settings.ReportPeriod.ToDelimitedString( _urlValuesListDelimiter ) );
@@ -300,6 +322,22 @@ namespace RockWeb.Blocks.Crm
                 // If this is an initial page load, run the Report.
                 // Otherwise, it will be loaded from ViewState.
                 this.LoadReport();
+
+                var eventCount = _changeEvents.Count();
+
+                if ( _changeEvents != null
+                     && eventCount > _MaxRecords )
+                {
+                    _changeEvents.Clear();
+
+                    nbNotice.NotificationBoxType = NotificationBoxType.Danger;
+                    nbNotice.Title = "Report Failed.";
+                    nbNotice.Text = string.Format( "The result set is too large ({0:#,###} records). Retry the report with a more restrictive filter.", eventCount );
+
+                    nbNotice.Visible = true;
+
+                    _showResults = false;
+                }
             }
 
             pnlResults.Visible = _showResults;
@@ -398,10 +436,13 @@ namespace RockWeb.Blocks.Crm
             var modelsAdded = GetChangeEventViewModels( report.ChangeEvents );
 
             _changeEvents.AddRange( modelsAdded );
-
-            BindReport();
         }
 
+        /// <summary>
+        /// Create the view models for the status change list.
+        /// </summary>
+        /// <param name="personList"></param>
+        /// <returns></returns>
         private List<StatusChangeViewModel> GetChangeEventViewModels( List<ConnectionStatusChangeEventInfo> personList )
         {
             var vmList = new List<StatusChangeViewModel>();
@@ -420,7 +461,22 @@ namespace RockWeb.Blocks.Crm
 
                 vm.DateChanged = info.EventDate;
 
-                vm.PhotoUrl = Person.GetPersonPhotoUrl( info.PersonId );
+                /*
+                 * Calculate the Age Classification here to prevent the database query that will otherwise be made when the PhotoUrl is retrieved.
+                */
+                AgeClassification ageClassification;
+
+                if ( info.Age.HasValue
+                     && info.Age.Value < 18 )
+                {
+                    ageClassification = AgeClassification.Child;
+                }
+                else
+                {
+                    ageClassification = AgeClassification.Adult;
+                }
+
+                vm.PhotoUrl = Person.GetPersonPhotoUrl( info.PersonId, info.PhotoId, info.Age, info.Gender, info.RecordTypeValueGuid, ageClassification );
 
                 vm.OriginalStatus = info.OldConnectionStatusName;
                 vm.UpdatedStatus = info.NewConnectionStatusName;
@@ -433,6 +489,9 @@ namespace RockWeb.Blocks.Crm
             return vmList;
         }
 
+        /// <summary>
+        /// Bind the report data source to the page controls.
+        /// </summary>
         private void BindReport()
         {
             bool showReport = ( _report != null );
@@ -451,11 +510,19 @@ namespace RockWeb.Blocks.Crm
             RockPage.AddScriptLink( ResolveRockUrl( "~/Scripts/jquery.lazyload.min.js" ) );
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gChanges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         void gChanges_GridRebind( object sender, EventArgs e )
         {
             BindMembershipChangesGrid();
         }
 
+        /// <summary>
+        /// Bind the data source to the membership changes grid control.
+        /// </summary>
         private void BindMembershipChangesGrid()
         {
             var sortProperty = gChanges.SortProperty;
@@ -484,6 +551,11 @@ namespace RockWeb.Blocks.Crm
             gChanges.DataBind();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gChanges control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         void gChanges_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType != DataControlRowType.DataRow )
@@ -520,52 +592,11 @@ namespace RockWeb.Blocks.Crm
             lPerson.Text = sbPersonDetails.ToString();
         }
 
-        private void AddSummaryItem( List<SummaryData> result, DateTime dateTime, string seriesName, decimal? value )
-        {
-            var summaryItem = new SummaryData()
-            {
-                DateTimeStamp = dateTime.ToJavascriptMilliseconds(),
-                DateTime = dateTime,
-                SeriesName = seriesName,
-                YValue = value
-            };
-
-            result.Add( summaryItem );
-        }
-
         /// <summary>
-        /// Gets the chart style.
+        /// Handles the Click event of the lnkSettings button.
         /// </summary>
-        /// <value>
-        /// The chart style.
-        /// </value>
-        private ChartStyle ChartStyle
-        {
-            get
-            {
-                Guid? chartStyleDefinedValueGuid = this.GetAttributeValue( "ChartStyle" ).AsGuidOrNull();
-                if ( chartStyleDefinedValueGuid.HasValue )
-                {
-                    var rockContext = new Rock.Data.RockContext();
-                    var definedValue = new DefinedValueService( rockContext ).Get( chartStyleDefinedValueGuid.Value );
-                    if ( definedValue != null )
-                    {
-                        try
-                        {
-                            definedValue.LoadAttributes( rockContext );
-                            return ChartStyle.CreateFromJson( definedValue.Value, definedValue.GetAttributeValue( "ChartStyle" ) );
-                        }
-                        catch
-                        {
-                            // intentionally ignore and default to basic style
-                        }
-                    }
-                }
-
-                return new ChartStyle();
-            }
-        }
-
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lnkSettings_OnServerClick( object sender, EventArgs e )
         {
             _report = null;
@@ -578,6 +609,11 @@ namespace RockWeb.Blocks.Crm
             this.NavigateToCurrentPage( queryParams );
         }
 
+        /// <summary>
+        /// Handles the OnRowSelected event of the lnkSettings button.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gEvents_OnRowSelected( object sender, RowEventArgs e )
         {
             var membership = _changeEvents.FirstOrDefault( x => x.Id == e.RowKeyId );
@@ -587,7 +623,7 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
-            NavigateToLinkedPage( "PersonDetailPage", "PersonId", membership.PersonId );
+            NavigateToLinkedPage( AttributeKey.PersonDetailPage, "PersonId", membership.PersonId );
         }
 
         #endregion
@@ -601,42 +637,10 @@ namespace RockWeb.Blocks.Crm
         #region Private Variables
 
         private RockContext _dataContext = null;
-        //private bool _blockContextIsValid = false;
-        //private ReorderField _reorderColumn = null;
-        //private DeleteField _deleteColumn = null;
-        //private SecurityField _securityColumn = null;
-        //private string _blockTitle = "Entity List";
-        //private EntityTypeCache _entityType = null;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Determines if list items flagged as system-protected are prevented from deletion.
-        /// If set to True, objects provided as the data source for the list must implement an IsSystem property.
-        /// </summary>
-        //public bool PreventSystemItemDelete { get; set; }
-
-        /// <summary>
-        /// Show a delete action for items in the list?
-        /// </summary>
-        //public bool ShowItemDelete { get; set; }
-
-        /// <summary>
-        /// Show a security action for items in the list?
-        /// </summary>
-        //public bool ShowItemSecurity { get; set; }
-
-        /// <summary>
-        /// Show an add action for the list?
-        /// </summary>
-        //public bool ShowItemAdd { get; set; }
-
-        /// <summary>
-        /// Show reorder handles for items in the list?
-        /// </summary>
-        //public bool ShowItemReorder { get; set; }
 
         /// <summary>
         /// Write handled block-level exception notifications to the Rock exception log?
@@ -689,156 +693,6 @@ namespace RockWeb.Blocks.Crm
             return _dataContext;
         }
 
-        //#region Block Notifications and Alerts
-
-        ///// <summary>
-        ///// Set up the mechanism for showing block-level notification messages.
-        ///// </summary>
-        //private void InitializeBlockNotifications()
-        //{
-        //    // If a notification control has not been provided, find the first one in the block.
-        //    if ( StatusNotificationControl == null )
-        //    {
-        //        StatusNotificationControl = this.ControlsOfTypeRecursive<NotificationBox>().FirstOrDefault();
-        //    }
-
-        //    if ( StatusNotificationControl == null )
-        //    {
-        //        throw new Exception( "NotificationControl not found." );
-        //    }
-
-        //    if ( ListPanelControl == null )
-        //    {
-        //        throw new ArgumentNullException( "ListPanel control not found." );
-        //    }
-
-        //    // Verify that the notification control is not a child of the detail container.
-        //    // This would cause the notification to be hidden when the content is disallowed.
-        //    var invalidParent = StatusNotificationControl.FindFirstParentWhere( x => x.ID == ListPanelControl.ID );
-
-        //    if ( invalidParent != null )
-        //    {
-        //        throw new Exception( "NotificationControl cannot be a child of DetailContainerControl." );
-        //    }
-
-        //    // Set the initial state of the controls.
-        //    ResetBlockNotification();
-        //}
-
-        ///// <summary>
-        ///// Show a notification message for the block.
-        ///// </summary>
-        ///// <param name="notificationControl"></param>
-        ///// <param name="message"></param>
-        ///// <param name="notificationType"></param>
-        //private void ShowNotification( string message, NotificationBoxType notificationType = NotificationBoxType.Info, bool hideBlockContent = false )
-        //{
-        //    StatusNotificationControl.Text = message;
-        //    StatusNotificationControl.NotificationBoxType = notificationType;
-
-        //    StatusNotificationControl.Visible = true;
-        //    ListPanelControl.Visible = !hideBlockContent;
-        //}
-
-        ///// <summary>
-        ///// Reset the notification message for the block.
-        ///// </summary>
-        //private void ResetBlockNotification()
-        //{
-        //    StatusNotificationControl.Visible = false;
-        //    ListPanelControl.Visible = true;
-        //}
-
-        ///// <summary>
-        ///// Show a block-level error notification.
-        ///// </summary>
-        ///// <param name="message"></param>
-        //private void ShowNotificationError( string message )
-        //{
-        //    ShowNotification( message, NotificationBoxType.Danger );
-        //}
-
-        ///// <summary>
-        ///// Show a block-level exception notification. 
-        ///// </summary>
-        ///// <param name="ex"></param>
-        ///// <param name="writeToLog"></param>
-        //private void ShowNotificationException( Exception ex )
-        //{
-        //    ShowNotification( ex.Message, NotificationBoxType.Danger );
-
-        //    if ( this.LogExceptionNotifications )
-        //    {
-        //        LogException( ex );
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Show a block-level success notification. 
-        ///// </summary>
-        ///// <param name="ex"></param>
-        ///// <param name="writeToLog"></param>
-        //private void ShowNotificationSuccess( string message )
-        //{
-        //    ShowNotification( message, NotificationBoxType.Success );
-        //}
-
-        ///// <summary>
-        ///// Show a fatal error that prevents the block content from being displayed.
-        ///// </summary>
-        ///// <param name="message"></param>
-        //private void ShowNotificationFatalError( string message )
-        //{
-        //    ShowNotification( message, NotificationBoxType.Danger, true );
-        //}
-
-        ///// <summary>
-        ///// Show a fatal error indicating that the user does not have permision to access this content.
-        ///// </summary>
-        //private void ShowNotificationViewUnauthorized()
-        //{
-        //    ShowNotification( "Sorry, you are not authorized to view this content.", NotificationBoxType.Danger, true );
-        //}
-
-        ///// <summary>
-        ///// Show a fatal error indicating that there is no content available in this block for the current context settings.
-        ///// </summary>
-        //private void ShowNotificationEmptyContent()
-        //{
-        //    ShowNotification( "There is no content to show in this context.", NotificationBoxType.Info, true );
-        //}
-
-        ///// <summary>
-        ///// Show a notification that edit mode is not allowed.
-        ///// </summary>
-        ///// <param name="itemFriendlyName"></param>
-        //private void ShowNotificationEditModeDisallowed()
-        //{
-        //    ShowNotification( EditModeMessage.ReadOnlyEditActionNotAllowed( _entityType.FriendlyName ), NotificationBoxType.Info, false );
-        //}
-
-        ///// <summary>
-        ///// Show an alert message that requires user acknowledgement to continue.
-        ///// </summary>
-        ///// <param name="message"></param>
-        ///// <param name="alertType"></param>
-        //private void ShowAlert( string message, ModalAlertType alertType )
-        //{
-        //    ModalAlertControl.Show( message, alertType );
-        //}
-
-        ///// <summary>
-        ///// Show an informational alert message that requires user acknowledgement to continue.
-        ///// </summary>
-        ///// <param name="message"></param>
-        ///// <param name="alertType"></param>
-        //private void ShowAlert( string message )
-        //{
-        //    ModalAlertControl.Show( message, ModalAlertType.Information );
-        //}
-
-        //#endregion
-
         #endregion
 
         #region Support Classes
@@ -850,7 +704,6 @@ namespace RockWeb.Blocks.Crm
         public class StatusChangeViewModel
         {
             public int Id { get; set; }
-
             public int PersonId { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
@@ -860,7 +713,6 @@ namespace RockWeb.Blocks.Crm
             public string PhotoUrl { get; set; }
             public bool IsActive { get; set; }
             public bool IsDeceased { get; set; }
-
             public DateTime? DateChanged { get; set; }
             public string ChangedBy { get; set; }
 
@@ -871,7 +723,7 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// A model containing the data needed for presenting the CampusMembershipActivityReport page.
+        /// A model containing the data needed for presenting the ConnectionStatusChangeReport page.
         /// </summary>
         [Serializable]
         public class ReportDataViewModel

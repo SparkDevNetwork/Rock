@@ -6,7 +6,7 @@
     Rock.controls.fullScreen = (function () {
         var exports = {
             initialize: function (options) {
-                $(".js-fullscreen-trigger").on('click', function(e) {
+                $('.js-fullscreen-trigger').on('click', function (e) {
                     e.preventDefault();
                     var elem = $(this).closest('.block-instance')[0] || document.documentElement
                     Rock.controls.fullScreen.toggleFullscreen(elem);

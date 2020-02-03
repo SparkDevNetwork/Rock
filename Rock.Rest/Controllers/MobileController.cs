@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.ServiceModel.Channels;
 using System.Web.Http;
 
+using Rock.Common.Mobile;
+using Rock.Common.Mobile.Enums;
 using Rock.Mobile;
-using Rock.Mobile.Common;
-using Rock.Mobile.Common.Enums;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;

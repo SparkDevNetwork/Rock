@@ -174,6 +174,7 @@ namespace RockWeb.Blocks.Core
                 device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
                 device.PrintFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
                 device.IsActive = cbIsActive.Checked;
+                device.HasCamera = cbHasCamera.Checked;
 
                 if ( device.Location == null )
                 {
@@ -263,6 +264,7 @@ namespace RockWeb.Blocks.Core
             }
 
             SetPrinterSettingsVisibility();
+            SetCameraVisibility();
             UpdateControlsForDeviceType( device );
         }
 
@@ -402,9 +404,11 @@ namespace RockWeb.Blocks.Core
             ddlPrintTo.SetValue( device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( device.PrinterDeviceId );
             ddlPrintFrom.SetValue( device.PrintFrom.ConvertToInt().ToString() );
+            cbHasCamera.Checked = device.HasCamera;
 
             SetPrinterVisibility();
             SetPrinterSettingsVisibility();
+            SetCameraVisibility();
 
             Guid? orgLocGuid = GlobalAttributesCache.Get().GetValue( "OrganizationAddress" ).AsGuidOrNull();
             if ( orgLocGuid.HasValue )
@@ -557,6 +561,17 @@ namespace RockWeb.Blocks.Core
         {
             var printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), ddlPrintTo.SelectedValue );
             ddlPrinter.Visible = printTo != PrintTo.Location;
+        }
+
+        /// <summary>
+        /// Decide if the camera settings section should be hidden.
+        /// </summary>
+        private void SetCameraVisibility()
+        {
+            var deviceTypeValueId = dvpDeviceType.SelectedValue.AsInteger();
+            var deviceType = DefinedValueCache.Get( deviceTypeValueId );
+
+            cbHasCamera.Visible = deviceType != null && deviceType.GetAttributeValue( "core_SupportsCameras" ).AsBoolean();
         }
 
         /// <summary>
