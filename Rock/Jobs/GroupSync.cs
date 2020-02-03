@@ -320,7 +320,7 @@ namespace Rock.Jobs
                                     if ( sync.WelcomeSystemCommunication != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( personId );
-                                        if ( person.Email.IsNotNullOrWhiteSpace() )
+                                        if ( person.AllowedToSendEmail )
                                         {
                                             // If the group is configured to add a user account for anyone added to the group, and person does not yet have an
                                             // account, add one for them.
@@ -344,20 +344,17 @@ namespace Rock.Jobs
                                                     requirePasswordReset );
                                             }
 
-                                            if ( person.AllowedToSendEmail )
-                                            {
-                                                // Send the welcome email
-                                                var mergeFields = new Dictionary<string, object>();
-                                                mergeFields.Add( "Group", sync.Group );
-                                                mergeFields.Add( "Person", person );
-                                                mergeFields.Add( "NewPassword", newPassword );
-                                                mergeFields.Add( "CreateLogin", createLogin );
-                                                var emailMessage = new RockEmailMessage( sync.WelcomeSystemCommunication );
-                                                emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                                                var emailErrors = new List<string>();
-                                                emailMessage.Send( out emailErrors );
-                                                errors.AddRange( emailErrors );
-                                            }
+                                            // Send the welcome email
+                                            var mergeFields = new Dictionary<string, object>();
+                                            mergeFields.Add( "Group", sync.Group );
+                                            mergeFields.Add( "Person", person );
+                                            mergeFields.Add( "NewPassword", newPassword );
+                                            mergeFields.Add( "CreateLogin", createLogin );
+                                            var emailMessage = new RockEmailMessage( sync.WelcomeSystemCommunication );
+                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
+                                            var emailErrors = new List<string>();
+                                            emailMessage.Send( out emailErrors );
+                                            errors.AddRange( emailErrors );
                                         }
                                     }
                                 }
