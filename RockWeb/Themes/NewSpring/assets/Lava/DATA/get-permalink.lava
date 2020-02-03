@@ -1,0 +1,48 @@
+{%- comment -%}Determine if this item's channel has a primary parent channel{%- endcomment -%}
+{% capture permalink %}
+{% sql %}
+    SELECT pcc.Id
+    FROM Attribute a
+    JOIN AttributeValue av
+    ON a.Id = av.AttributeId
+    JOIN ContentChannel cc
+    ON av.EntityId = cc.Id
+    JOIN ContentChannelItem cci
+    ON cci.ContentChannelId = cc.Id
+    JOIN ContentChannel pcc
+    ON av.Value = pcc.Guid
+    WHERE a.[Key] = 'PrimaryParentChannel'
+    AND a.EntityTypeId = 209
+    AND cci.Id = {{ cciid }}
+{% endsql %}{% capture pccid %}{% for result in results %}{{ result.Id }}{% endfor %}{% endcapture %}
+{% if pccid and pccid != empty %}
+    {%- comment -%}Item has a primary parent channel{%- endcomment -%}
+    {% sql %}
+        SELECT cc.ChannelUrl + '/' + pccis.Slug + '/' + ccis.Slug 'permalink'
+        FROM ContentChannelItem cci
+        JOIN ContentChannel cc
+        ON cci.ContentChannelId = cc.Id
+        JOIN ContentChannelItemSlug ccis
+        ON cci.Id = ccis.ContentChannelItemId
+        JOIN ContentChannelItemAssociation ccia
+        ON ccia.ChildContentChannelItemId = cci.Id
+        JOIN ContentChannelItem pcci
+        ON ccia.ContentChannelItemId = pcci.Id
+        JOIN ContentChannelItemSlug pccis
+        ON pccis.ContentChannelItemId = pcci.Id
+        WHERE cci.Id = {{ cciid }}
+        AND pcci.ContentChannelId = {{ pccid }}
+    {% endsql %}{% for result in results %}{{ result.permalink }}{% endfor %}
+{% else %}
+    {%- comment -%}Item has no primary parent channel{%- endcomment -%}
+    {% sql %}
+        SELECT cc.ChannelUrl + '/' + ccis.Slug 'permalink'
+        FROM ContentChannelItem cci
+        JOIN ContentChannel cc
+        ON cci.ContentChannelId = cc.Id
+        JOIN ContentChannelItemSlug ccis
+        ON cci.Id = ccis.ContentChannelItemId
+        WHERE cci.Id = {{ cciid }}
+    {% endsql %}{% for result in results %}{{ result.permalink }}{% endfor %}
+{% endif %}
+{% endcapture %}{{ permalink | Trim }}

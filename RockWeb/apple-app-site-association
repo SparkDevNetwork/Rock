@@ -1,0 +1,33 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "7TM8C6252Z.cc.newspring.newspringapp",
+        "paths": [
+          "/articles/*",
+          "/devotionals/*",
+		      "/devotionals/*/*",
+          "/stories/*",
+          "/sermons/*",
+          "/sermons/*/*",
+          "/news/*",
+          "/staff/news/*"
+        ]
+      },
+      {
+        "appID": "7TM8C6252Z.com.subsplashstudio31.NewSpring-Church",
+        "paths": [
+          "/articles/*",
+          "/devotionals/*",
+		      "/devotionals/*/*",
+          "/stories/*",
+          "/sermons/*",
+          "/sermons/*/*",
+          "/news/*",
+          "/staff/news/*"
+        ]
+      }
+    ]
+  },
+}

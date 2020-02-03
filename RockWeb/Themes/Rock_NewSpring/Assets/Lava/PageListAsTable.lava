@@ -1,0 +1,48 @@
+<style>
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
+    
+    table tr td {
+        padding: 8px 12px;
+    }
+    
+    table tr th {
+        padding: 12px;
+    }
+</style>
+
+<div class="panel panel-default list clearfix">
+    <div class="panel-body hard">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered flush">
+                
+                <tr>
+                    <th width="30%">Title</th>
+                    <th>Description</th>
+                    <th width="12%">Action</th>
+                </tr>
+
+                {% for childPage in Page.Pages %}
+                    <tr>
+                        <td>
+                            <a href="{{ childPage.Id }}" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
+                                {% if childPage.IconCssClass != '' %}
+                                    <i class="{{ childPage.IconCssClass }} fa-lg fa-fw"></i>
+                                {% endif %}
+                                <strong>{{ childPage.Title }}</strong>
+                            </a>
+                        </td>
+                        <td>
+                            {{ childPage.Description }}
+                        </td>
+                        <td>
+                            <a href="{{ childPage.Id }}" class="btn btn-primary btn-block btn-sm">View Report</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+
+            </table>
+        </div>
+    </div>
+</div>

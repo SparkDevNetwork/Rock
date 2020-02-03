@@ -1,0 +1,37 @@
+<ul class="nav-primary sans-serif strong text-decoration-none hard flush">
+	<li>
+		<a href="/" class="nav-logo">
+			<img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="nav-icon  nav-logo-regular"> 
+			<span>{{ 'Global' | Attribute:'OrganizationName' }}</span>
+		</a>
+	</li><span class="pull-right xs-pull-none"><li>
+		<a href="#" data-toggle="modal" data-target="#navigation-modal" title="Menu"><i class="fas fa-fw fa-lg fa-bars"></i></a>
+	</li><li>
+		<a href="/locations" title="Locations"><i class="fas fa-fw fa-lg fa-map-marker-alt"></i></a>
+	</li><li>
+		<a href="/search" title="Search"><i class="fas fa-fw fa-lg fa-search"></i></a>
+	</li><li>
+		{% assign personPhoto = CurrentPerson.PhotoUrl %}
+		{% if CurrentPerson != null %}
+			<a href="/account" title="My Profile">
+				{% if personPhoto != null %}
+					<div class="position-relative display-inline-block nav-icon circular background-cover" style="top: 12px; width: 35px; height: 35px; background-image:url('{{ personPhoto }}'); border: 2px solid rgba(255,255,255,1);"></div>
+				{% else %}
+					<i class="fas fa-fw fa-lg fa-user-circle"></i>
+				{% endif %}
+			</a>
+		{% else %}
+			<a href="/sign-in" title="Sign In">
+				<i class="fas fa-fw fa-lg fa-user-circle"></i>
+			</a>
+		{% endif %}
+	</li></span>
+</ul>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+	$('#search-trigger').click(function() {
+		$('#search-modal-input').focus();
+	});
+});
+</script>
