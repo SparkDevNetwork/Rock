@@ -313,7 +313,7 @@ namespace Rock.Model
         /// The giver identifier.
         /// </value>
         [DataMember]
-        [Index("IX_GivingId")]
+        [Index( "IX_GivingId" )]
         public string GivingId
         {
             get
@@ -1646,6 +1646,20 @@ namespace Rock.Model
         [NotMapped]
         private History.HistoryChangeList HistoryChanges { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether the system is allowed to send email to this person.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the system is allowed to send email to this person; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        public virtual bool AllowedToSendEmail
+        {
+            get
+            {
+                return Email.IsNotNullOrWhiteSpace() && IsEmailActive && EmailPreference != EmailPreference.DoNotEmail;
+            }
+        }
         #endregion
 
         #region Methods
@@ -2015,9 +2029,9 @@ namespace Rock.Model
             // ensure person has a PersonAlias/PrimaryAlias
             if ( entry.State != EntityState.Deleted )
             {
-                if (!this.Aliases.Any() || !this.Aliases.Any(a => a.AliasPersonId == this.Id))
+                if ( !this.Aliases.Any() || !this.Aliases.Any( a => a.AliasPersonId == this.Id ) )
                 {
-                    this.Aliases.Add(new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() });
+                    this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
                 }
             }
 

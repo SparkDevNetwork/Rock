@@ -208,7 +208,7 @@ namespace Rock.Jobs
                                     if ( sync.ExitSystemCommunication != null )
                                     {
                                         var person = new PersonService( groupMemberContext ).Get( targetPerson.PersonId );
-                                        if ( person.Email.IsNotNullOrWhiteSpace() )
+                                        if ( person.AllowedToSendEmail )
                                         {
                                             // Send the exit email
                                             var mergeFields = new Dictionary<string, object>();
@@ -344,17 +344,20 @@ namespace Rock.Jobs
                                                     requirePasswordReset );
                                             }
 
-                                            // Send the welcome email
-                                            var mergeFields = new Dictionary<string, object>();
-                                            mergeFields.Add( "Group", sync.Group );
-                                            mergeFields.Add( "Person", person );
-                                            mergeFields.Add( "NewPassword", newPassword );
-                                            mergeFields.Add( "CreateLogin", createLogin );
-                                            var emailMessage = new RockEmailMessage( sync.WelcomeSystemCommunication );
-                                            emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
-                                            var emailErrors = new List<string>();
-                                            emailMessage.Send( out emailErrors );
-                                            errors.AddRange( emailErrors );
+                                            if ( person.AllowedToSendEmail )
+                                            {
+                                                // Send the welcome email
+                                                var mergeFields = new Dictionary<string, object>();
+                                                mergeFields.Add( "Group", sync.Group );
+                                                mergeFields.Add( "Person", person );
+                                                mergeFields.Add( "NewPassword", newPassword );
+                                                mergeFields.Add( "CreateLogin", createLogin );
+                                                var emailMessage = new RockEmailMessage( sync.WelcomeSystemCommunication );
+                                                emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
+                                                var emailErrors = new List<string>();
+                                                emailMessage.Send( out emailErrors );
+                                                errors.AddRange( emailErrors );
+                                            }
                                         }
                                     }
                                 }
