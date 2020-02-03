@@ -15,7 +15,7 @@
                 var street1 = $addressControl.find('.js-street1').val();
                 var city = $addressControl.find('.js-city').val();
                 var state = $addressControl.find('.js-state').val();
-                
+
                 var required = $addressControl.attr('data-required') == 'true';
                 var itemLabelText = $addressControl.attr('data-itemlabel');
 
@@ -25,7 +25,7 @@
                     // if required, then make sure that the date range has a start and/or end date (can't both be blank)
                     if (street1.length == 0 || city.length == 0 || state.length == 0) {
                         isValid = false;
-                        validator.errormessage = itemLabelText + " is required";
+                        validator.errormessage = itemLabelText + ' is required';
                     }
                 }
 

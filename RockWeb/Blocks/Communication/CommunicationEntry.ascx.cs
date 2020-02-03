@@ -95,11 +95,11 @@ namespace RockWeb.Blocks.Communication
         Description = "Should the attachment uploader be shown for email communications.",
         DefaultBooleanValue = true,
         Order = 8 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
-        Name = "Allowed SMS Numbers",
+    [DefinedValueField( "Allowed SMS Numbers",
         Key = AttributeKey.AllowedSMSNumbers,
-        Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included). ",
+        Description = "Set the allowed FROM numbers to appear when in SMS mode (if none are selected all numbers will be included).",
         IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.COMMUNICATION_SMS_FROM,
         AllowMultiple = true,
         Order = 9 )]
     [BooleanField( "Simple Communications Are Bulk",

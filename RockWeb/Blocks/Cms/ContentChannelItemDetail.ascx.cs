@@ -44,11 +44,56 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Displays the details for a content channel item.")]
 
-    [LinkedPage( "Event Occurrence Page", order: 0, required: false )]
-    [BooleanField( "Show Delete Button", "Shows a delete button for the current item.", false, order: 1 )]
-    [ContentChannelField("Content Channel", "If set the block will ignore content channel query parameters", false)]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Event Occurrence Page",
+        Order = 0,
+        IsRequired = false,
+        Key = AttributeKey.EventOccurrencePage )]
+    [BooleanField(
+        "Show Delete Button",
+        Description = "Shows a delete button for the current item.",
+        DefaultBooleanValue = false,
+        Order = 1,
+        Key = AttributeKey.ShowDeleteButton )]
+    [ContentChannelField(
+        "Content Channel",
+        Description = "If set the block will ignore content channel query parameters",
+        IsRequired = false,
+        Key = AttributeKey.ContentChannel )]
+
+    #endregion Block Attributes
     public partial class ContentChannelItemDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string EventOccurrencePage = "EventOccurrencePage";
+            public const string ShowDeleteButton = "ShowDeleteButton";
+            public const string ContentChannel = "ContentChannel";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string ContentItemId = "contentItemId";
+            public const string ContentChannelId = "contentChannelId";
+            public const string EventItemOccurrenceId = "EventItemOccurrenceId";
+            public const string EventCalendarId = "EventCalendarId";
+            public const string EventItemId = "EventItemId";
+            public const string Hierarchy = "Hierarchy";
+        }
+
+        #endregion
+
         #region Fields
 
         private string _pendingCss = "btn-default";
@@ -200,14 +245,14 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                if (string.IsNullOrWhiteSpace(GetAttributeValue("ContentChannel")))
+                if (string.IsNullOrWhiteSpace(GetAttributeValue( AttributeKey.ContentChannel )))
                 {
-                    ShowDetail(PageParameter("contentItemId").AsInteger(), PageParameter("contentChannelId").AsIntegerOrNull());
+                    ShowDetail(PageParameter( PageParameterKey.ContentItemId ).AsInteger(), PageParameter( PageParameterKey.ContentChannelId ).AsIntegerOrNull());
                 }
                 else
                 {
-                    var contentChannel = GetAttributeValue("ContentChannel").AsGuid();
-                    ShowDetail(PageParameter("contentItemId").AsInteger(), new ContentChannelService(new RockContext()).Get(GetAttributeValue("ContentChannel").AsGuid()).Id);
+                    var contentChannel = GetAttributeValue( AttributeKey.ContentChannel ).AsGuid();
+                    ShowDetail( PageParameter( PageParameterKey.ContentItemId ).AsInteger(), new ContentChannelService( new RockContext() ).Get( GetAttributeValue( AttributeKey.ContentChannel ).AsGuid() ).Id );
                 }
             }
             else
@@ -233,7 +278,7 @@ namespace RockWeb.Blocks.Cms
             var breadCrumbs = new List<BreadCrumb>();
 
             var itemIds = GetNavHierarchy().AsIntegerList();
-            int? itemId = PageParameter( pageReference, "contentItemId" ).AsIntegerOrNull();
+            int? itemId = PageParameter( pageReference, PageParameterKey.ContentItemId ).AsIntegerOrNull();
             if ( itemId != null )
             {
                 itemIds.Add( itemId.Value );
@@ -355,7 +400,7 @@ namespace RockWeb.Blocks.Cms
                         taglTags.SaveTagValues( CurrentPersonAlias );
                     }
 
-                    int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
+                    int? eventItemOccurrenceId = PageParameter( PageParameterKey.EventItemOccurrenceId ).AsIntegerOrNull();
                     if ( eventItemOccurrenceId.HasValue )
                     {
                         var occurrenceChannelItemService = new EventItemOccurrenceChannelItemService( rockContext );
@@ -846,7 +891,7 @@ namespace RockWeb.Blocks.Cms
                 pnlEditDetails.Visible = true;
 
                 // show/hide the delete button
-                lbDelete.Visible = GetAttributeValue( "ShowDeleteButton" ).AsBoolean() && contentItem.Id != 0;
+                lbDelete.Visible = GetAttributeValue( AttributeKey.ShowDeleteButton ).AsBoolean() && contentItem.Id != 0;
 
                 hfId.Value = contentItem.Id.ToString();
                 hfChannelId.Value = contentItem.ContentChannelId.ToString();
@@ -963,7 +1008,7 @@ namespace RockWeb.Blocks.Cms
                     .Select( o => o.EventItemOccurrence ) )
                 {
                     var qryParams = new Dictionary<string, string> { { "EventItemOccurrenceId", occurrence.Id.ToString() } };
-                    string url = LinkedPageUrl( "EventOccurrencePage", qryParams );
+                    string url = LinkedPageUrl( AttributeKey.EventOccurrencePage, qryParams );
                     var hlOccurrence = new HighlightLabel();
                     hlOccurrence.LabelType = LabelType.Info;
                     hlOccurrence.ID = string.Format( "hlOccurrence_{0}", occurrence.Id );
@@ -1064,11 +1109,11 @@ namespace RockWeb.Blocks.Cms
         {
             var qryParams = new Dictionary<string, string>();
 
-            int? eventItemOccurrenceId = PageParameter( "EventItemOccurrenceId" ).AsIntegerOrNull();
+            int? eventItemOccurrenceId = PageParameter( PageParameterKey.EventItemOccurrenceId ).AsIntegerOrNull();
             if ( eventItemOccurrenceId.HasValue )
             {
-                qryParams.Add( "EventCalendarId", PageParameter( "EventCalendarId" ) );
-                qryParams.Add( "EventItemId", PageParameter( "EventItemId" ) );
+                qryParams.Add( "EventCalendarId", PageParameter( PageParameterKey.EventCalendarId ) );
+                qryParams.Add( "EventItemId", PageParameter( PageParameterKey.EventItemId ) );
                 qryParams.Add( "EventItemOccurrenceId", eventItemOccurrenceId.Value.ToString() );
                 qryParams.Add( "ContentChannelId", hfChannelId.Value );
                 NavigateToParentPage( qryParams );
@@ -1288,7 +1333,7 @@ namespace RockWeb.Blocks.Cms
 
         private List<string> GetNavHierarchy()
         {
-            var qryParam = PageParameter( "Hierarchy" );
+            var qryParam = PageParameter( PageParameterKey.Hierarchy );
             if ( !string.IsNullOrWhiteSpace( qryParam ) )
             {
                 return qryParam.SplitDelimitedValues( false ).ToList();

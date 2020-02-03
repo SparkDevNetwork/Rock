@@ -1113,7 +1113,7 @@ namespace RockWeb
 
                             if ( recipients.Any() )
                             {
-                                var message = new RockEmailMessage( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
+                                var message = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
                                 message.SetRecipients( recipients );
                                 message.Send();
                             }
@@ -1174,26 +1174,7 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-
-                while ( RockQueue.TransactionQueue.Count != 0 )
-                {
-                    ITransaction transaction;
-                    if ( RockQueue.TransactionQueue.TryDequeue( out transaction ) )
-                    {
-                        if ( transaction != null )
-                        {
-                            try
-                            {
-                                transaction.Execute();
-                            }
-                            catch ( Exception ex )
-                            {
-                                LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
-                            }
-                        }
-                    }
-                }
-
+                RockQueue.Drain( ( ex ) => LogError( ex, null ) );
                 Global.QueueInUse = false;
             }
         }

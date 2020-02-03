@@ -114,7 +114,7 @@ namespace Rock.Model
         {
             var query = Queryable();
 
-            if ( entityTypeId.HasValue )
+            if ( entityTypeId.HasValue && entityTypeId != 0 )
             {
                 query = query.Where( t => t.EntityTypeId == entityTypeId );
             }

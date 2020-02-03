@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -28,6 +29,9 @@ namespace Rock.Model
     /// </summary>
     [RockDomain( "Communication" )]
     [Table( "SystemEmail" )]
+    [Obsolete( "Use SystemCommunication instead." )]
+    [RockObsolete( "1.10" )]
+
     [DataContract]
     public partial class SystemEmail : Model<SystemEmail>
     {
@@ -52,7 +56,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Title of the EmailTemplate 
         /// </summary>
@@ -63,7 +67,7 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Title { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the From email address.
         /// </summary>
@@ -105,7 +109,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Cc { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the email addresses that should be sent a BCC or blind carbon copy of an email using this template. If there is not a predetermined distribution list; this property 
         /// can remain empty.
@@ -116,7 +120,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Bcc { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the subject of an email that uses this template.
         /// </summary>
@@ -127,7 +131,7 @@ namespace Rock.Model
         [MaxLength( 1000 )]
         [DataMember( IsRequired = true )]
         public string Subject { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Body template that is used for emails that use this template.
         /// </summary>
@@ -150,7 +154,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category Category { get; set; }
-        
+
         #endregion
 
         #region Methods
@@ -167,14 +171,16 @@ namespace Rock.Model
         }
 
         #endregion
-
     }
 
     #region Entity Configuration
-        
+
     /// <summary>
     /// Email Template Configuration class.
     /// </summary>
+
+    [Obsolete( "Use SystemCommunication instead." )]
+    [RockObsolete( "1.10" )]
     public partial class SystemEmailConfiguration : EntityTypeConfiguration<SystemEmail>
     {
         /// <summary>
@@ -187,5 +193,4 @@ namespace Rock.Model
     }
 
     #endregion
-
 }

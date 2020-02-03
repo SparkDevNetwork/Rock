@@ -1,5 +1,3 @@
-{{ lava | Debug }}
-
 <div class="scheduledtransaction-summary">
   <strong>{{ ScheduledTransaction.PersonName }}</strong><br/>
   {{ ScheduledTransaction.ScheduledAmount | FormatAsCurrency }} on

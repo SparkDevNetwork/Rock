@@ -69,20 +69,22 @@ h1 {
   .row {
     display: -ms-flexbox;
     display: flex;
+    -ms-flex-align: center;
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
-    -ms-flex-align: center;
     align-items: center;
     margin-right: 0;
     margin-left: 0;
+
+    &::before,
+    &::after {
+      content: normal;
+    }
   }
 }
 
 .btn-checkin-change {
   .button-variant(@btn-change-color; @btn-change-bg; @btn-change-border);
-}
-
-.btn-checkin-change {
   display: -ms-flexbox;
   display: flex;
   -ms-flex-align: center;
@@ -246,6 +248,12 @@ body {
   margin-top: 25%;
   text-align: center;
 }
+
+.checkin-camera {
+  margin-top: 24px;
+  text-align: center;
+}
+
 
 // checkin footer
 

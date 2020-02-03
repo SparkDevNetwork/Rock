@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Transactions;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -154,7 +155,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void InitializeActionButtons()
         {
-            btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in a job and may take several minutes to complete.');";
+            btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in separate process and may take several minutes to complete.');";
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Enrollments and Exclusions will also be deleted!');", StreakType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( StreakType ) ).Id;
         }
@@ -172,6 +173,16 @@ namespace RockWeb.Blocks.Streaks
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFrequencyOccurrence control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlFrequencyOccurrence_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncFrequencyControls();
+        }
 
         /// <summary>
         /// Button to go to the map editor page
@@ -355,20 +366,42 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
-            var job = new ServiceJobService( rockContext ).Get( Rock.SystemGuid.ServiceJob.REBUILD_STREAK.AsGuid() );
+            new StreakTypeRebuildTransaction( streakType.Id ).Enqueue();
+            ShowBlockSuccess( nbEditModeMessage, "The streak type rebuild has been started." );
+            btnRebuild.Enabled = false;
+        }
 
-            if ( job == null )
+        /// <summary>
+        /// Synchronizes the rebuild status.
+        /// </summary>
+        private void SyncRebuildStatus()
+        {
+            if ( RockQueue.IsExecuting<StreakTypeRebuildTransaction>() )
             {
-                ShowBlockError( nbEditModeMessage, "The streak type rebuild job could not be found." );
+                var progress = RockQueue.CurrentlyExecutingTransactionProgress;
+
+                if ( progress.HasValue )
+                {
+                    ShowBlockNotification( nbEditModeMessage, string.Format(
+                        "A streak type rebuild is running and is {0}% complete. Please check back later.",
+                        progress.Value ));
+                }
+                else
+                {
+                    ShowBlockNotification( nbEditModeMessage, "A streak type rebuild is currently running. Please check back later." );
+                }
+
+                btnRebuild.Enabled = false;
             }
-
-            var jobData = new Dictionary<string, string> {
-                { Rock.Jobs.RebuildStreakMaps.DataMapKey.StreakTypeId, streakType.Id.ToString() }
-            };
-
-            var transaction = new Rock.Transactions.RunJobNowTransaction( job.Id, jobData );
-            System.Threading.Tasks.Task.Run( () => transaction.Execute() );
-            ShowBlockSuccess( nbEditModeMessage, "The streak type rebuild has been started. Check the Rock Jobs page for the status." );
+            else if ( RockQueue.IsInQueue<StreakTypeRebuildTransaction>() )
+            {
+                ShowBlockNotification( nbEditModeMessage, "A streak type rebuild is currently queued. Please check back later." );
+                btnRebuild.Enabled = false;
+            }
+            else
+            {
+                btnRebuild.Enabled = true;
+            }
         }
 
         /// <summary>
@@ -426,16 +459,25 @@ namespace RockWeb.Blocks.Streaks
                 streakType.OccurrenceFrequency = frequencySelected;
 
                 var selectedDate = rdpStartDate.SelectedDate ?? RockDateTime.Today;
-                streakType.StartDate = isDaily ? selectedDate : selectedDate.SundayDate();                
+                streakType.StartDate = isDaily ? selectedDate : selectedDate.SundayDate();
             }
 
             streakType.Name = tbName.Text;
             streakType.IsActive = cbActive.Checked;
             streakType.Description = tbDescription.Text;
             streakType.EnableAttendance = cbEnableAttendance.Checked;
-            streakType.RequiresEnrollment = cbRequireEnrollment.Checked;            
-            streakType.StructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );            
+            streakType.RequiresEnrollment = cbRequireEnrollment.Checked;
+            streakType.StructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );
             streakType.StructureEntityId = GetStructureEntityIdSelected();
+
+            if ( streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                streakType.FirstDayOfWeek = null;
+            }
+            else
+            {
+                streakType.FirstDayOfWeek = dowPicker.SelectedDayOfWeek;
+            }
 
             if ( !streakType.IsValid )
             {
@@ -542,9 +584,11 @@ namespace RockWeb.Blocks.Streaks
             cbRequireEnrollment.Checked = streakType.RequiresEnrollment;
             rdpStartDate.SelectedDate = streakType.StartDate;
             ddlFrequencyOccurrence.SelectedValue = streakType.OccurrenceFrequency.ToString();
+            dowPicker.SelectedDayOfWeek = streakType.FirstDayOfWeek;
             ddlStructureType.SelectedValue = structureType.HasValue ? structureType.Value.ToString() : string.Empty;
 
             RenderAttendanceStructureControls();
+            SyncFrequencyControls();
         }
 
         /// <summary>
@@ -568,6 +612,8 @@ namespace RockWeb.Blocks.Streaks
 
             lReadOnlyTitle.Text = ActionTitle.Add( StreakType.FriendlyTypeName ).FormatAsHtmlTitle();
             hlInactive.Visible = false;
+
+            SyncFrequencyControls();
         }
 
         /// <summary>
@@ -631,6 +677,8 @@ namespace RockWeb.Blocks.Streaks
             SetLinkVisibility( btnAchievements, AttributeKey.AchievementsPage );
             SetLinkVisibility( btnExclusions, AttributeKey.ExclusionsPage );
             SetLinkVisibility( btnMapEditor, AttributeKey.MapEditorPage );
+
+            SyncRebuildStatus();
         }
 
         /// <summary>
@@ -700,6 +748,23 @@ namespace RockWeb.Blocks.Streaks
                     return dvpStructureGroupTypePurposePicker.SelectedDefinedValueId;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
+            }
+        }
+
+        /// <summary>
+        /// Synchronizes the frequency controls.
+        /// </summary>
+        private void SyncFrequencyControls()
+        {
+            var frequencySelected = GetEnumSelected<StreakOccurrenceFrequency>( ddlFrequencyOccurrence ) ?? StreakOccurrenceFrequency.Daily;
+
+            if ( frequencySelected == StreakOccurrenceFrequency.Daily )
+            {
+                dowPicker.Visible = false;
+            }
+            else
+            {
+                dowPicker.Visible = true;
             }
         }
 

@@ -835,6 +835,14 @@ namespace RockWeb.Blocks.Event
                     personAliasId = Registration.PersonAliasId;
                 }
 
+                if ( RegistrationTemplateState.FinancialGateway == null )
+                {
+                    nbPaymentError.Heading = "Error Processing Payment";
+                    nbPaymentError.Text = "A Financial Gateway must be set on the Registration Template.";
+                    nbPaymentError.Visible = true;
+                    return;
+                }
+
                 try
                 {
                     var rockContext = new RockContext();
@@ -870,7 +878,6 @@ namespace RockWeb.Blocks.Event
                     nbPaymentError.Heading = "Error Processing Payment";
                     nbPaymentError.Text = ex.Message;
                     nbPaymentError.Visible = true;
-
                 }
             }
             else

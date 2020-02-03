@@ -40,6 +40,3 @@
         return exports;
     }());
 }(jQuery));
-
-
-

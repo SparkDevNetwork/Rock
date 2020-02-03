@@ -48,15 +48,67 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Used for updating information about several individuals at once." )]
 
-    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected persons." )]
-    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected persons." )]
+    [SecurityAction( SecurityActionKey.EditConnectionStatus, "The roles and/or users that can edit the connection status for the selected persons." )]
+    [SecurityAction( SecurityActionKey.EditRecordStatus, "The roles and/or users that can edit the record status for the selected persons." )]
 
-    [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
-    [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1 )]
-    [WorkflowTypeField( "Workflow Types", "The workflows to make available for bulk updating.", true, false, "", "", 2 )]
-    [IntegerField( "Task Count", "The number of concurrent tasks to use when performing updates. If left blank then it will be determined automatically.", false, 0, "", 3 )]
+    [AttributeCategoryField(
+        "Attribute Categories",
+        Key = AttributeKey.AttributeCategories,
+        Description = "The person attribute categories to display and allow bulk updating",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.Person",
+        IsRequired = false,
+        Order = 0 )]
+
+    [IntegerField(
+        "Display Count",
+        Key = AttributeKey.DisplayCount,
+        Description = "The initial number of individuals to display prior to expanding list",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 1 )]
+
+    [WorkflowTypeField(
+        "Workflow Types",
+        Key = AttributeKey.WorkflowTypes,
+        Description = "The workflows to make available for bulk updating.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 2 )]
+
+    [IntegerField(
+        "Task Count",
+        Key = AttributeKey.TaskCount,
+        Description = "The number of concurrent tasks to use when performing updates. If left blank then it will be determined automatically.",
+        DefaultIntegerValue = 0,
+        IsRequired = false,
+        Order = 3 )]
+
     public partial class BulkUpdate : RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string AttributeCategories = "AttributeCategories";
+            public const string DisplayCount = "DisplayCount";
+            public const string WorkflowTypes = "WorkflowTypes";
+            public const string TaskCount = "TaskCount";
+        }
+        #endregion Attribute Keys
+
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditConnectionStatus = "EditConnectionStatus";
+            public const string EditRecordStatus = "EditRecordStatus";
+        }
+
+        #endregion
+
         #region Fields
 
         DateTime _gradeTransitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
@@ -98,14 +150,14 @@ namespace RockWeb.Blocks.Crm
             dvpInactiveReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
             dvpReviewReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ).Id;
 
-            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditConnectionStatus );
             dvpConnectionStatus.Visible = _canEditConnectionStatus;
 
-            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditRecordStatus );
             dvpRecordStatus.Visible = _canEditRecordStatus;
 
             rlbWorkFlowType.Items.Clear();
-            var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
+            var guidList = GetAttributeValue( AttributeKey.WorkflowTypes ).SplitDelimitedValues().AsGuidList();
             using ( var rockContext = new RockContext() )
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
@@ -294,7 +346,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                AttributeCategories = GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues().AsGuidList();
+                AttributeCategories = GetAttributeValue( AttributeKey.AttributeCategories ).SplitDelimitedValues().AsGuidList();
                 cpCampus.Campuses = CampusCache.All();
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
@@ -809,7 +861,7 @@ namespace RockWeb.Blocks.Crm
 
                 var task = new Task( () =>
                 {
-                    int taskCount = GetAttributeValue( "TaskCount" ).AsInteger();
+                    int taskCount = GetAttributeValue( AttributeKey.TaskCount ).AsInteger();
                     int totalCount = individuals.Count;
                     int processedCount = 0;
                     var workers = new List<Task>();
@@ -977,7 +1029,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            AttributeCategories = GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues().AsGuidList();
+            AttributeCategories = GetAttributeValue( AttributeKey.AttributeCategories ).SplitDelimitedValues().AsGuidList();
             phAttributesCol1.Controls.Clear();
             phAttributesCol2.Controls.Clear();
             BuildAttributes( new RockContext(), true );
@@ -1697,7 +1749,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !ShowAllIndividuals )
             {
-                int.TryParse( GetAttributeValue( "DisplayCount" ), out displayCount );
+                int.TryParse( GetAttributeValue( AttributeKey.DisplayCount ), out displayCount );
             }
 
             if ( displayCount > 0 && displayCount < Individuals.Count )

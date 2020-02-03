@@ -33,9 +33,41 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Page Map" )]
     [Category( "CMS" )]
     [Description( "Displays a page map in a tree view." )]
-    [LinkedPage( "Root Page", "Select the root page to use as a starting point for the tree view. Leaving empty will build a tree of all pages.", false )]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Root Page",
+        Description = "Select the root page to use as a starting point for the tree view. Leaving empty will build a tree of all pages.",
+        IsRequired = false,
+        Key = AttributeKey.RootPage)]
+
+    #endregion Block Attributes
     public partial class PageMap : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string RootPage = "RootPage";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string PageSearch = "pageSearch";
+            public const string Page = "Page";
+        }
+
+        #endregion
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -61,10 +93,10 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                string pageSearch = this.PageParameter( "pageSearch" );
+                string pageSearch = this.PageParameter( PageParameterKey.PageSearch  );
 
                 // NOTE: using "Page" instead of "PageId" since PageId is already parameter of the current page
-                int? selectedPageId = this.PageParameter( "Page" ).AsIntegerOrNull();
+                int? selectedPageId = this.PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
                 if ( !string.IsNullOrWhiteSpace( pageSearch ) )
                 {
                     foreach ( Page page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
@@ -107,7 +139,7 @@ namespace RockWeb.Blocks.Cms
 
             var rootPagesQry = pageService.Queryable().AsNoTracking();
 
-            string rootPage = GetAttributeValue( "RootPage" );
+            string rootPage = GetAttributeValue( AttributeKey.RootPage );
             if ( !string.IsNullOrEmpty( rootPage ) )
             {
                 Guid pageGuid = rootPage.AsGuid();
@@ -129,6 +161,10 @@ namespace RockWeb.Blocks.Cms
 
             lPages.Text = sb.ToString();
         }
+
+        #endregion Base Control Methods
+
+        #region Events
 
         /// <summary>
         /// Adds the page nodes.
@@ -179,7 +215,7 @@ namespace RockWeb.Blocks.Cms
         protected void lbAddPageRoot_Click( object sender, EventArgs e )
         {
             // if a rootPage is set, set that as the parentCategory when they select "add top-level"
-            var rootPage = new PageService( new RockContext() ).Get( this.GetAttributeValue( "RootPage" ).AsGuid() );
+            var rootPage = new PageService( new RockContext() ).Get( this.GetAttributeValue(  AttributeKey.RootPage ).AsGuid() );
             int parentPageId = rootPage != null ? rootPage.Id : 0;
 
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
@@ -201,7 +237,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddPageChild_Click( object sender, EventArgs e )
         {
-            int? selectedPageId = this.PageParameter( "Page" ).AsIntegerOrNull();
+            int? selectedPageId = this.PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
 
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
             qryParams.Add( "Page", 0.ToString() );
@@ -214,5 +250,7 @@ namespace RockWeb.Blocks.Cms
 
             NavigateToPage( this.RockPage.Guid, qryParams );
         }
+
+        #endregion Events
     }
 }

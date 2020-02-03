@@ -116,7 +116,7 @@
                     async: false
                 }).responseText;
 
-                var resultObject = jQuery.parseJSON(result);
+                var resultObject = JSON.parse(result);
 
                 return resultObject.PickerItemDetailsHtml;
 
