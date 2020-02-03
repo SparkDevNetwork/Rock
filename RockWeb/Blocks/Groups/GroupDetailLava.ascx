@@ -4,17 +4,21 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlGroupView" runat="server">
+            <div class="communication-preference pull-right" runat="server" id="dCommunicationsPreference">
+                <span>Your communication preference:&nbsp;</span><Rock:Toggle ID="tglCommunicationPreference" CssClass="pull-right" runat="server" OnText="SMS" OffText="Email" ButtonSizeCssClass="btn-xs" OnCssClass="btn-info" OffCssClass="btn-info" OnCheckedChanged="tglCommunicationPreference_CheckedChanged" />
+            </div>
+
             <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
             <asp:Literal ID="lDebug" runat="server"></asp:Literal>
         </asp:Panel>
-        
+
         <asp:Panel ID="pnlGroupEdit" runat="server" Visible="false">
-            
+
             <asp:Literal ID="lGroupEditPreHtml" runat="server" />
 
             <asp:ValidationSummary ID="vsGroupEdit" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-            
+
             <div class="row">
                 <div class="col-md-6">
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
@@ -88,9 +92,9 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlEditGroupMember" runat="server" Visible="false">
-            
+
             <asp:Literal ID="lGroupMemberEditPreHtml" runat="server" />
-            
+
             <asp:ValidationSummary ID="vsEditGroupMember" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
             <asp:CustomValidator ID="cvEditGroupMember" runat="server" Display="None" />
             <Rock:NotificationBox ID="nbGroupMemberErrorMessage" runat="server" NotificationBoxType="Danger" />
@@ -108,9 +112,15 @@
                 <asp:Panel ID="pnlGroupMemberRole" runat="server" CssClass="col-md-6">
                     <Rock:RockDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" Label="Role" Required="true" />
                 </asp:Panel>
-                <asp:Panel ID="pnlGroupMemberAttributes" runat="server" CssClass="col-md-6">
-                    <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
-                </asp:Panel>
+                <div class="col-md-6">
+                    <Rock:RockRadioButtonList ID="rblCommunicationPreference" runat="server" RepeatDirection="Horizontal" Label="Communication Preference">
+                        <asp:ListItem Text="Email" Value="1" />
+                        <asp:ListItem Text="SMS" Value="2" />
+                    </Rock:RockRadioButtonList>
+                    <asp:Panel ID="pnlGroupMemberAttributes" runat="server">
+                        <Rock:DynamicPlaceHolder ID="phGroupMemberAttributes" runat="server" />
+                    </asp:Panel>
+                </div>
             </div>
 
             <div class="actions">
