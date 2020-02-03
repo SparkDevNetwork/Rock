@@ -358,6 +358,7 @@ namespace RockWeb.Blocks.Groups
                 groupMember.GroupRoleId = role.Id;
                 groupMember.Note = tbNote.Text;
                 groupMember.GroupMemberStatus = rblStatus.SelectedValueAsEnum<GroupMemberStatus>();
+                groupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
 
                 if ( cbIsNotified.Visible )
                 {
@@ -736,6 +737,8 @@ namespace RockWeb.Blocks.Groups
             rblStatus.SetValue( ( int ) groupMember.GroupMemberStatus );
             rblStatus.Enabled = !readOnly;
             rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
+
+            rblCommunicationPreference.SetValue( groupMember.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
 
             var registrations = new RegistrationRegistrantService( rockContext )
                 .Queryable().AsNoTracking()

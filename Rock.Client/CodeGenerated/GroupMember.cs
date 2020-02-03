@@ -41,6 +41,9 @@ namespace Rock.Client
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.CommunicationType CommunicationPreference { get; set; } = Rock.Client.Enums.CommunicationType.Email;
+
+        /// <summary />
         public DateTime? DateTimeAdded { get; set; }
 
         /// <summary />
@@ -131,6 +134,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             this.ArchivedDateTime = source.ArchivedDateTime;
+            this.CommunicationPreference = source.CommunicationPreference;
             this.DateTimeAdded = source.DateTimeAdded;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
