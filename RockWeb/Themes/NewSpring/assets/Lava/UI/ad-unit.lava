@@ -119,7 +119,7 @@
 </section>
 
 {% if trimcopy == 'Yes' %}
-    {% if length > 200 %}
+    {% if length > 140 %}
     <div class="modal fade" id="{{ modalid }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
