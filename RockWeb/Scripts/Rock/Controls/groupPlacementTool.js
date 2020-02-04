@@ -411,29 +411,32 @@
                     url: getGroupPlacementRegistrantsUrl,
                     data: getGroupPlacementRegistrantsParameters
                 }).done(function (registrants) {
-                    var registrantContainerParent = $registrantContainer.parent();
+                    if ( registrants !== null ) {
+                        var registrantContainerParent = $registrantContainer.parent();
 
-                    // temporarily detach $registrantContainer to speed up adding the registrantdivs
-                    $registrantContainer.detach();
-                    $registrantContainer.html('');
-                    var $registrantTemplate = $('.js-registrant-template').find('.js-registrant');
-                    for (var i = 0; i < registrants.length; i++) {
-                        var registrant = registrants[i];
-                        var $registrantDiv = $registrantTemplate.clone();
-                        self.populateRegistrantDiv($registrantDiv, registrant);
-                        $registrantContainer.append($registrantDiv);
+                        // temporarily detach $registrantContainer to speed up adding the registrantdivs
+                        $registrantContainer.detach();
+                        $registrantContainer.html('');
+                        var $registrantTemplate = $('.js-registrant-template').find('.js-registrant');
+
+                        for (var i = 0; i < registrants.length; i++) {
+                            var registrant = registrants[i];
+                            var $registrantDiv = $registrantTemplate.clone();
+                            self.populateRegistrantDiv($registrantDiv, registrant);
+                            $registrantContainer.append($registrantDiv);
+                        }
+
+
+                        registrantContainerParent.append($registrantContainer);
+
+                        self.checkVisibleRegistrants();
+
+                        self.expandOrHideRegistrantDetails(expandDetails);
                     }
-
-                    registrantContainerParent.append($registrantContainer);
-
-                    self.checkVisibleRegistrants();
-
-                    self.expandOrHideRegistrantDetails(expandDetails);
 
                     setTimeout(function () {
                         $loadingNotification.hide();
                     }, 0)
-
                 }).fail(function (a) {
                     console.log('fail:' + a.responseText);
                     $loadingNotification.hide();
@@ -506,7 +509,7 @@
 
                 // hide any other alerts that are showing
                 $('.js-alert', self.$groupPlacementTool).not($placeRegistrantError).hide();
-                $placeRegistrantError.find('.js-placement-place-registrant-error-text').text(jqXHR.responseJSON.Message ?? jqXHR.responseText);
+                $placeRegistrantError.find('.js-placement-place-registrant-error-text').text((jqXhr.responseJSON && jqXhr.responseJSON.message || jqXhr.responseText));
                 $placeRegistrantError.show();
             },
             /**
@@ -568,7 +571,7 @@
                                 $group.hide();
                             }).fail(function (jqXHR) {
                                 var $groupAlert = $('.js-placement-group-error', $group);
-                                $groupAlert.find('.js-placement-group-error-text').text('Unable to detach group: ' + (jqXHR.responseJSON.Message ?? jqXHR.responseText));
+                                $groupAlert.find('.js-placement-group-error-text').text('Unable to detach group: '  + (jqXhr.responseJSON && jqXhr.responseJSON.message || jqXhr.responseText));
                                 $groupAlert.show();
                             });
                         });
@@ -585,7 +588,7 @@
                                 $group.hide();
                             }).fail(function (jqXHR) {
                                 var $groupAlert = $('.js-placement-group-error', $group);
-                                $groupAlert.find('.js-placement-group-error-text').text('Unable to delete group: ' + (jqXHR.responseJSON.Message ?? jqXHR.responseText))
+                                $groupAlert.find('.js-placement-group-error-text').text('Unable to delete group: '  + (jqXhr.responseJSON && jqXhr.responseJSON.message || jqXhr.responseText))
                                 $groupAlert.show();
                             });
                         });
