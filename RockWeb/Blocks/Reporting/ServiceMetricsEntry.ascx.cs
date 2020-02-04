@@ -457,7 +457,7 @@ namespace RockWeb.Blocks.Reporting
                 bddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
             }
 
-            bddlCampus.SetValue( _selectedCampusId.Value );
+            bddlCampus.SetValue( _selectedCampusId );
 
             // Load Weeks
             var weeksBack = GetAttributeValue( AttributeKey.WeeksBack ).AsInteger();
@@ -466,14 +466,14 @@ namespace RockWeb.Blocks.Reporting
             {
                 bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             }
-            bddlWeekend.SetValue( _selectedWeekend.Value.ToString( "o" ) );
+            bddlWeekend.SetValue( _selectedWeekend.HasValue ? _selectedWeekend.Value.ToString( "o" ) : null );
 
             // Load service times
             foreach ( var service in GetServices() )
             {
                 bddlService.Items.Add( new ListItem( service.Name, service.Id.ToString() ) );
             }
-            bddlService.SetValue( _selectedServiceId.Value );
+            bddlService.SetValue( _selectedServiceId );
         }
 
         /// <summary>

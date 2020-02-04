@@ -51,6 +51,42 @@ namespace Rock.Model
         public bool CanDelete( SystemCommunication item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.ExitSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupSync.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupSync>( Context ).Queryable().Any( a => a.WelcomeSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupSync.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleConfirmationSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<WorkflowActionForm>( Context ).Queryable().Any( a => a.NotificationSystemCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, WorkflowActionForm.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -92,12 +128,14 @@ namespace Rock.Model
             target.Body = source.Body;
             target.CategoryId = source.CategoryId;
             target.Cc = source.Cc;
+            target.CssInliningEnabled = source.CssInliningEnabled;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.From = source.From;
             target.FromName = source.FromName;
             target.IsActive = source.IsActive;
             target.IsSystem = source.IsSystem;
+            target.LavaFieldsJson = source.LavaFieldsJson;
             target.PushMessage = source.PushMessage;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;

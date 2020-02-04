@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Cms
     [Description( "Block to display a specific content channel item." )]
 
     #region Block Attributes
-   
+
     [LavaCommandsField(
         "Enabled Lava Commands",
         Description = "The Lava commands that should be enabled for this content channel item block.",
@@ -1042,7 +1042,7 @@ Guid - ContentChannelItem Guid
                 mergeObject = contentChannelItem;
             }
 
-            // use Lava to get the Attribute value formatted for the MetaValue, and specify the Url param in case the Attribute supports rendering the value as a Url (for example, Image)
+            // use Lava to get the Attribute value formatted for the MetaValue, and specify the URL param in case the Attribute supports rendering the value as a URL (for example, Image)
             string metaTemplate = string.Format( "{{{{ mergeObject | Attribute:'{0}':'Url' }}}}", attributeKey );
 
             string resolvedValue = metaTemplate.ResolveMergeFields( new Dictionary<string, object> { { "mergeObject", mergeObject } } );

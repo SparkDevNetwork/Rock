@@ -193,7 +193,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The System Communication Workflow Category guid
         /// </summary>
-        public const string SYSTEM_COMMUNICATION_WORKFLOW = "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12";
+        public const string SYSTEM_COMMUNICATION_WORKFLOW = "D8EC958D-ADD5-48FC-B539-CB919F5C9D32";
 
         /// <summary>
         /// The System Communication RSVP Confirmation Category guid

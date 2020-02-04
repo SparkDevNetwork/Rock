@@ -34,60 +34,40 @@ namespace Rock.CodeGeneration
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Handles the Click event of the btnLoad control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void btnLoad_Click( object sender, EventArgs e )
+        private void Form1_Load( object sender, EventArgs e )
         {
-            if ( !Directory.Exists( lblAssemblyPath.Text ) || lblAssemblyPath.Text == string.Empty )
+            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+            lblAssemblyPath.Text = fi.FullName;
+            lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
+            Cursor = Cursors.WaitCursor;
+
+            cblModels.Items.Clear();
+
+            string assemblyFileName = fi.FullName;
+
+            lblAssemblyPath.Text = assemblyFileName;
+
+            toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
+
+            var assembly = Assembly.LoadFrom( assemblyFileName );
+
+            foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
             {
-                rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
-                FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
-                lblAssemblyPath.Text = fi.FullName;
-            }
-
-            ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
-            ofdAssembly.Filter = "dll files (*.dll)|*.dll";
-            ofdAssembly.FileName = "Rock.dll";
-            ofdAssembly.RestoreDirectory = true;
-
-            if ( ofdAssembly.ShowDialog() == DialogResult.OK )
-            {
-                Cursor = Cursors.WaitCursor;
-
-                cblModels.Items.Clear();
-
-                foreach ( var file in ofdAssembly.FileNames )
+                if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract && type.GetCustomAttribute<NotMappedAttribute>() == null )
                 {
-                    FileInfo fi = new FileInfo( file );
-                    if ( fi.Exists )
+                    if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
                     {
-                        lblAssemblyPath.Text = file;
-                        lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
-                        toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
-
-                        var assembly = Assembly.LoadFrom( file );
-
-                        foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
-                        {
-                            if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract && type.GetCustomAttribute<NotMappedAttribute>() == null )
-                            {
-                                if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
-                                {
-                                    cblModels.Items.Add( type );
-                                }
-                            }
-                        }
+                        cblModels.Items.Add( type );
                     }
                 }
-
-                CheckAllItems( true );
-                cbSelectAll.Checked = true;
-
-                Cursor = Cursors.Default;
             }
+
+            CheckAllItems( true );
+            cbSelectAll.Checked = true;
+
+            Cursor = Cursors.Default;
+
 
             var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
 
@@ -691,7 +671,7 @@ order by [parentTable], [columnName]
                 if ( item.IsPartOfPrimaryKey || item.Ignore )
                 {
                     canDeleteMiddle += string.Format(
-@"            
+        @"            
             // ignoring {0},{1} 
 ", item.Table, item.Column );
                     continue;
@@ -721,20 +701,32 @@ order by [parentTable], [columnName]
                 }
 
 
-                canDeleteMiddle += string.Format(
-@" 
-            if ( new Service<{0}>( Context ).Queryable().Any( a => a.{1} == item.Id ) )
+                // #pragma warning disable 612, 618
+                var entityTypes = cblModels.Items.Cast<Type>().ToList();
+
+                var parentTableType = entityTypes.Where( a => a.GetCustomAttribute<TableAttribute>()?.Name == parentTable || a.Name == parentTable ).FirstOrDefault();
+                var obsolete = parentTableType?.GetCustomAttribute<ObsoleteAttribute>();
+
+                if ( obsolete != null && obsolete.IsError == false )
+                {
+                    canDeleteMiddle += $@"
+            #pragma warning disable 612, 618 // {parentTableType.Name} is obsolete, but we still need this code generated";
+                }
+
+                canDeleteMiddle +=
+        $@" 
+            if ( new Service<{parentTable}>( Context ).Queryable().Any( a => a.{columnName} == item.Id ) )
             {{
-                errorMessage = string.Format( ""This {{0}} {3} {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName{4} );
+                errorMessage = string.Format( ""This {{0}} {relationShipText} {{1}}."", {type.Name}.FriendlyTypeName, {parentTable}.FriendlyTypeName{pluralizeCode} );
                 return false;
             }}  
-",
-                    parentTable,
-                    columnName,
-                    type.Name,
-                    relationShipText,
-                    pluralizeCode
-                    );
+";
+
+                if ( obsolete != null && obsolete.IsError == false )
+                {
+                    canDeleteMiddle += @"            #pragma warning restore 612, 618
+";
+                }
             }
 
 
@@ -774,6 +766,9 @@ order by [parentTable], [columnName]
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
             string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
 
+            var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
+            var rockObsolete = type.GetCustomAttribute<RockObsolete>();
+
             var sb = new StringBuilder();
 
             sb.AppendLine( "//------------------------------------------------------------------------------" );
@@ -808,6 +803,17 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    /// <summary>" );
             sb.AppendLine( $"    /// {pluralizedName} REST API" );
             sb.AppendLine( "    /// </summary>" );
+
+            if ( obsolete != null && obsolete.IsError == false)
+            {
+                if ( rockObsolete != null )
+                {
+                    sb.AppendLine( $"    [RockObsolete( \"{rockObsolete.Version}\" )]" );
+                }
+
+                sb.AppendLine( $"    [System.Obsolete( \"{obsolete.Message}\" )]" );
+            }
+
             sb.AppendLine( $"    public partial class {pluralizedName}Controller : Rock.Rest.ApiController<{type.Namespace}.{type.Name}>" );
             sb.AppendLine( "    {" );
             sb.AppendLine( "        /// <summary>" );
@@ -1124,8 +1130,7 @@ order by [parentTable], [columnName]
         }
 
         /// <summary>
-        /// Writes the rock client system unique identifier files.
-        /// </summary>
+        /// Writes the rock client system unique identifier files.      /// </summary>
         /// <param name="rootFolder">The root folder.</param>
         private void WriteRockClientSystemGuidFiles( string rootFolder )
         {
@@ -1386,7 +1391,7 @@ order by [parentTable], [columnName]
             }
 
             sb.AppendFormat(
-@"        /// <summary>
+        @"        /// <summary>
         /// Copies the base properties from a source {0} object
         /// </summary>
         /// <param name=""source"">The source.</param>
@@ -1512,6 +1517,8 @@ order by [parentTable], [columnName]
                 tbClientFolder.Text = fdbRockClient.SelectedPath;
             }
         }
+
+
     }
 
     public static class HelperExtensions

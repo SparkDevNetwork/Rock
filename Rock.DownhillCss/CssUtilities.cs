@@ -33,7 +33,7 @@ namespace Rock.DownhillCss
         // each. The values below are roughly mapped from the Bootstrap 4 values.
         private static decimal[] spacingValues = { 0, .25m, .5m, 1, 2, 3 };
 
-        // TODO: Consider that Tailwind.css has a lot more of these {0,.25,.5,.75,1,1.25,1.5,2,2.5,3,4,5,6,8,10,12,14,16} 
+        // TODO: Consider that Tailwind.css has a lot more of these {0,.25,.5,.75,1,1.25,1.5,2,2.5,3,4,5,6,8,10,12,14,16}
         // https://tailwindcss.com/docs/customizing-spacing#default-spacing-scale
 
 
@@ -494,8 +494,8 @@ namespace Rock.DownhillCss
             for ( int i = 0; i < spacingValueCount; i++ )
             {
                 frameworkCss.AppendLine( $".py-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( $"    margin-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
+                frameworkCss.AppendLine( $"    padding-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
+                frameworkCss.AppendLine( $"    padding-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
                 frameworkCss.AppendLine( "}" );
             }
         }
@@ -721,11 +721,11 @@ namespace Rock.DownhillCss
 }
 
 .invisible {
-    visibility: hidden; 
+    visibility: hidden;
 }
 
 .collapse {
-    visibility: collapse; 
+    visibility: collapse;
 }
 
 /* Text Named Sizes */

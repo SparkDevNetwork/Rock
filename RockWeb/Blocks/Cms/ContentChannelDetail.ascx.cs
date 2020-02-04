@@ -37,7 +37,7 @@ using Rock.UniversalSearch;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName("Content Channel Detail")]
     [Category("CMS")]
@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Cms
             gItemAttributes.GridReorder += gItemAttributes_GridReorder;
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannel ) ).Id;
-            
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -243,8 +243,8 @@ namespace RockWeb.Blocks.Cms
             if ( contentChannelId != 0 )
             {
                 channel = GetContentChannel( hfId.ValueAsInt() );
-                if (channel != null && 
-                    channel.ContentChannelTypeId.ToString() != ddlChannelType.SelectedValue && 
+                if (channel != null &&
+                    channel.ContentChannelTypeId.ToString() != ddlChannelType.SelectedValue &&
                     channel.Items.Any() )
                 {
                     maContentChannelWarning.Show( "Changing the content type will result in all of this channel's items losing any data that is specific to the original content type!", ModalAlertType.Warning );
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Cms
         {
             tbRootImageDirectory.Visible = ddlContentControlType.SelectedValueAsEnumOrNull<ContentControlType>() == ContentControlType.HtmlEditor;
         }
-        
+
         /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
@@ -301,7 +301,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
 
             int contentChannelId = hfId.Value.AsInteger();
-             
+
             if ( contentChannelId == 0 )
             {
                 contentChannel = new ContentChannel { Id = 0 };
@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !Page.IsValid || !contentChannel.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
@@ -361,9 +361,9 @@ namespace RockWeb.Blocks.Cms
 
                     foreach( var item in new ContentChannelItemService( rockContext )
                         .Queryable()
-                        .Where( i => 
+                        .Where( i =>
                             i.ContentChannelId == contentChannel.Id &&
-                            i.ContentChannelTypeId != contentChannel.ContentChannelTypeId 
+                            i.ContentChannelTypeId != contentChannel.ContentChannelTypeId
                         ))
                     {
                         item.ContentChannelTypeId = contentChannel.ContentChannelTypeId;
@@ -458,7 +458,7 @@ namespace RockWeb.Blocks.Cms
                 edtItemAttributes.ActionTitle = ActionTitle.Edit( tbName.Text + " Item Attribute" );
             }
 
-        
+
             List<string> reservedKeys = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
             reservedKeys.AddRange( ItemInheritedKey );
             edtItemAttributes.ReservedKeyNames = reservedKeys;
@@ -686,8 +686,8 @@ namespace RockWeb.Blocks.Cms
 
                 if ( contentChannel.EnableRss )
                 {
-                    descriptionListLeft.Add( "Channel Url", contentChannel.ChannelUrl );
-                    descriptionListRight.Add( "Item Url", contentChannel.ItemUrl );
+                    descriptionListLeft.Add( "Channel URL", contentChannel.ChannelUrl );
+                    descriptionListRight.Add( "Item URL", contentChannel.ItemUrl );
                 }
 
                 contentChannel.LoadAttributes();
@@ -757,7 +757,7 @@ namespace RockWeb.Blocks.Cms
 
                 UpdateControlsForContentChannelType( contentChannel );
 
-                // load attribute data 
+                // load attribute data
                 ItemAttributesState = new List<Attribute>();
                 AttributeService attributeService = new AttributeService( new RockContext() );
 
@@ -770,7 +770,7 @@ namespace RockWeb.Blocks.Cms
                     .ToList()
                     .ForEach( a => ItemAttributesState.Add( a ) );
 
-                // Set order 
+                // Set order
                 int newOrder = 0;
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
 

@@ -278,7 +278,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The placeholder text
         /// </value>
-        public string Placeholder
+        public virtual string Placeholder
         {
             get { return ViewState["Placeholder"] as string ?? string.Empty; }
             set { ViewState["Placeholder"] = value; }

@@ -22,7 +22,8 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select multiple lava commands
+    /// <para>Commands are displayed as a series of checkboxes</para>
     /// </summary>
     public class LavaCommandsPicker : RockCheckBoxList
     {
