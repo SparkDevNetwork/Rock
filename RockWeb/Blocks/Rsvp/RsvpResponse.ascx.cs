@@ -456,9 +456,9 @@ $(document).ready(function () {
         }
 
         /// <summary>
-        /// Calculates the display title for an AttendanceOccurrence.
+        /// Calculates the display title for an <see cref="AttendanceOccurrence"/>.
         /// </summary>
-        /// <param name="occurrence">The AttendanceOccurrence</param>
+        /// <param name="occurrence">The <see cref="AttendanceOccurrence"/>.</param>
         private string GetOccurrenceTitle( AttendanceOccurrence occurrence )
         {
             bool hasTitle = ( !string.IsNullOrWhiteSpace( occurrence.Name ) );

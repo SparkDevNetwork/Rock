@@ -28,8 +28,8 @@ namespace Rock.Migrations
     {
         #region Reminder Values
         private const string RsvpReminderGuid = "6F48C40C-92E9-4B11-ADCB-59F474A8B4B2";
-        private const string RsvpReminderSubject = "RSVP Reminder for {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}";
-        private const string RsvpReminderSmsMessage = "This is just a reminder from {{ 'Global' | Attribute:'OrganizationName' }} that you have RSVP'd for {{ Occurrence.Name }} on {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}.";
+        private const string RsvpReminderSubject = "RSVP Reminder for {{ OccurrenceTitle }} on {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}";
+        private const string RsvpReminderSmsMessage = "This is a reminder from {{ 'Global' | Attribute:'OrganizationName' }} that you have RSVP'd for {{ OccurrenceTitle }} on {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}.";
         private const string RsvpReminderBody = @"
 {{ 'Global' | Attribute:'EmailHeader' }}
 
@@ -37,7 +37,7 @@ namespace Rock.Migrations
 
 <p>Hi {{  Person.NickName  }}!</p>
 
-<p>This is just a reminder that you have RSVP'd for {{ Occurrence.Name }} on {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}.</p>
+<p>This is a reminder that you have RSVP'd for {{ OccurrenceTitle }} on {{ Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}.</p>
 
 <p>Thanks!</p>
 
