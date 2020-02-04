@@ -313,7 +313,7 @@ namespace Rock.Model
         /// The giver identifier.
         /// </value>
         [DataMember]
-        [Index("IX_GivingId")]
+        [Index( "IX_GivingId" )]
         public string GivingId
         {
             get
@@ -1645,7 +1645,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         private History.HistoryChangeList HistoryChanges { get; set; }
-
         #endregion
 
         #region Methods
@@ -2015,9 +2014,9 @@ namespace Rock.Model
             // ensure person has a PersonAlias/PrimaryAlias
             if ( entry.State != EntityState.Deleted )
             {
-                if (!this.Aliases.Any() || !this.Aliases.Any(a => a.AliasPersonId == this.Id))
+                if ( !this.Aliases.Any() || !this.Aliases.Any( a => a.AliasPersonId == this.Id ) )
                 {
-                    this.Aliases.Add(new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() });
+                    this.Aliases.Add( new PersonAlias { AliasPerson = this, AliasPersonGuid = this.Guid, Guid = Guid.NewGuid() } );
                 }
             }
 
@@ -2313,6 +2312,22 @@ namespace Rock.Model
             return PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 
+        /// <summary>
+        /// Determines whether this Person can receive emails.
+        /// </summary>
+        /// <param name="isBulk">if set to <c>true</c> this method will validate that this Person can receive bulk emails.</param>
+        /// <returns>
+        ///   <c>true</c> if this Person can receive emails; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanReceiveEmail(bool isBulk = true)
+        {
+            var userAllowsBulk = EmailPreference != EmailPreference.NoMassEmails;
+
+            return Email.IsNotNullOrWhiteSpace()
+                    && IsEmailActive
+                    && EmailPreference != EmailPreference.DoNotEmail
+                    && (!isBulk || userAllowsBulk);
+        }
         #endregion
 
         #region Static Helper Methods
