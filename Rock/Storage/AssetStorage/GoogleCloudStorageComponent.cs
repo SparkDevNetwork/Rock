@@ -20,14 +20,11 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
-using System.Net;
-using Google;
-using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Storage.V1;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
-
+using Rock.Storage.Common;
 using GoogleObject = Google.Apis.Storage.v1.Data.Object;
 
 namespace Rock.Storage.AssetStorage
@@ -258,42 +255,11 @@ namespace Rock.Storage.AssetStorage
         public override bool DeleteAsset( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             var bucketName = GetBucketName( assetStorageProvider );
-            var objectsToDelete = new List<GoogleObject>();
+            var accountKeyJson = GetServiceAccountKeyJson( assetStorageProvider );
+            var isFolder = asset.Type == AssetType.Folder;
 
-            using ( var client = GetStorageClient( assetStorageProvider ) )
-            {
-                if ( asset.Type == AssetType.Folder )
-                {
-                    // To delete a folder from Google, delete everything inside as well
-                    var objectsInDirectory = GetObjectsFromGoogle( assetStorageProvider, asset.Key, null, true );
-                    objectsToDelete.AddRange( objectsInDirectory );
-                }
-
-                // Get the whole object so that the Generation property is set and the object is permanently deleted
-                try
-                {
-                    var folderObject = client.GetObject( bucketName, asset.Key );
-                    objectsToDelete.Add( folderObject );
-                }
-                catch ( GoogleApiException e )
-                {
-                    if ( e.HttpStatusCode == HttpStatusCode.NotFound )
-                    {
-                        // Sometimes there is no folder object, just files nested within
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
-                foreach ( var objectToDelete in objectsToDelete )
-                {
-                    client.DeleteObject( objectToDelete );
-                }
-
-                return true;
-            }
+            GoogleCloudStorage.DeleteObject( bucketName, accountKeyJson, isFolder, asset.Key );
+            return true;
         }
 
         /// <summary>
@@ -476,9 +442,7 @@ namespace Rock.Storage.AssetStorage
         private StorageClient GetStorageClient( AssetStorageProvider assetStorageProvider )
         {
             var accountKeyJson = GetServiceAccountKeyJson( assetStorageProvider );
-            var googleCredential = GoogleCredential.FromJson( accountKeyJson );
-            var storageClient = StorageClient.Create( googleCredential );
-            return storageClient;
+            return GoogleCloudStorage.GetStorageClient( accountKeyJson );
         }
 
         /// <summary>
@@ -552,56 +516,10 @@ namespace Rock.Storage.AssetStorage
         private List<GoogleObject> GetObjectsFromGoogle( AssetStorageProvider assetStorageProvider, string directory, AssetType? assetTypeToList, bool allowRecursion )
         {
             var bucketName = GetBucketName( assetStorageProvider );
-            var delimiter = assetTypeToList == AssetType.File ? "/" : string.Empty;
+            var accountKeyJson = GetServiceAccountKeyJson( assetStorageProvider );
 
-            // The initial depth is for the things inside the directory, which means it's the depth of the directory plus 1
-            var initialDepth = GetKeyDepth( directory ) + 1;
-
-            // If the directory is root "/" then Google won't return anything
-            if ( directory == "/" )
-            {
-                directory = string.Empty;
-            }
-
-            using ( var client = GetStorageClient( assetStorageProvider ) )
-            {
-                // Get the objects from Google and transform them into assets
-                var response = client.ListObjects( bucketName, directory, new ListObjectsOptions
-                {
-                    Delimiter = delimiter
-                } );
-
-                var objects = response.ToList();
-
-                if ( assetTypeToList == AssetType.Folder )
-                {
-                    // Depending on how the folder was created, it may not have an actual object, just objects nested inside.
-                    // That means we have to infer the existence of folders based on the paths of the objects within.
-                    objects.ForEach( o =>
-                    {
-                        if ( !o.Name.EndsWith( "/" ) )
-                        {
-                            var indexOfLastSlash = o.Name.LastIndexOf( '/' );
-                            o.Name = o.Name.Remove( indexOfLastSlash + 1 );
-                        }
-                    } );
-
-                    objects = objects.GroupBy( o => o.Name ).Select( g => g.First() ).ToList();
-                    objects.RemoveAll( o => !o.Name.EndsWith( "/" ) );
-                }
-
-                // If recursion is not allowed, then remove objects that are beyond the initial depth
-                if ( !allowRecursion )
-                {
-                    objects.RemoveAll( o => GetKeyDepth( o.Name ) > initialDepth );
-                }
-
-                // Google includes the root directory of the listing request, but Rock does not expect to get "self" in the list
-                directory = directory.EndsWith( "/" ) ? directory : $"{directory}/";
-                objects.RemoveAll( o => o.Name == directory );
-
-                return objects;
-            }
+            return GoogleCloudStorage.GetObjectsFromGoogle( bucketName, accountKeyJson, directory, assetTypeToList == AssetType.File,
+                assetTypeToList == AssetType.Folder, allowRecursion );
         }
 
         /// <summary>
@@ -616,30 +534,6 @@ namespace Rock.Storage.AssetStorage
         {
             var objects = GetObjectsFromGoogle( assetStorageProvider, directory, assetTypeToList, allowRecursion );
             return objects.Select( o => TranslateGoogleObjectToRockAsset( assetStorageProvider, o ) ).ToList();
-        }
-
-        /// <summary>
-        /// Gets the key depth. For example a/b/c/d.txt would have a depth of 3.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        private int GetKeyDepth( string key )
-        {
-            if ( key.IsNullOrWhiteSpace() )
-            {
-                return 0;
-            }
-
-            key = key.Trim();
-
-            // Remove the last character because folders like "a/b/" are actually at depth 1 and sibling to files like "a/1.txt"
-            if ( key.EndsWith( "/" ) )
-            {
-                key.Substring( 0, key.Trim().Length - 1 );
-            }
-
-            var depth = key.Count( c => c == '/' );
-            return depth;
         }
 
         /// <summary>

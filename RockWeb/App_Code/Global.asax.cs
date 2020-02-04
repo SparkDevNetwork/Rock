@@ -471,7 +471,7 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            Context.Items.AddOrReplace( "Request_Start_Time", RockDateTime.Now );
         }
 
         /// <summary>

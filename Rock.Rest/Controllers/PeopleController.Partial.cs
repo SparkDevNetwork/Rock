@@ -442,13 +442,13 @@ namespace Rock.Rest.Controllers
                     string.Join( ",", person.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
 
             var rockContext = ( Rock.Data.RockContext ) Service.Context;
 
-            var matchPerson = new PersonService( rockContext ).FindPerson( new PersonService.PersonMatchQuery( person.FirstName, person.LastName, person.Email, null, person.Gender, person.BirthDate, person.SuffixValueId ), false);
+            var matchPerson = new PersonService( rockContext ).FindPerson( new PersonService.PersonMatchQuery( person.FirstName, person.LastName, person.Email, null, person.Gender, person.BirthDate, person.SuffixValueId ), false );
 
-            if (matchPerson != null)
+            if ( matchPerson != null )
             {
                 return ControllerContext.Request.CreateResponse( HttpStatusCode.OK, matchPerson.Id );
             }
@@ -481,7 +481,7 @@ namespace Rock.Rest.Controllers
                     string.Join( ",", person.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
 
             PersonService.AddPersonToFamily( person, person.Id == 0, familyId, groupRoleId, ( Rock.Data.RockContext ) Service.Context );
 
@@ -503,7 +503,7 @@ namespace Rock.Rest.Controllers
         {
             SetProxyCreation( true );
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
             var person = this.Get( personId );
             CheckCanEdit( person );
 
@@ -611,6 +611,68 @@ namespace Rock.Rest.Controllers
             }
         }
 
+        /// <summary>
+        /// Saves the currently logged in <see cref="Rock.Model.Person">person's</see> user preference.
+        /// Note: If the user preference is for a specific block, use ~/api/People/SetBlockUserPreference instead.
+        /// </summary>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <param name="value">The value.</param>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/SetUserPreference" )]
+        [HttpPost]
+        public void SetUserPreference( string userPreferenceKey, string value )
+        {
+            var currentPerson = GetPerson();
+            PersonService.SaveUserPreference( currentPerson, userPreferenceKey, value );
+        }
+
+        /// <summary>
+        /// Saves the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <param name="value">The value.</param>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/SetBlockUserPreference" )]
+        [HttpPost]
+        public void SetBlockUserPreference( int blockId, string userPreferenceKey, string value )
+        {
+            var currentPerson = GetPerson();
+            PersonService.SaveUserPreference( currentPerson, PersonService.GetBlockUserPreferenceKeyPrefix( blockId ) + userPreferenceKey, value );
+        }
+
+        /// <summary>
+        /// Gets the currently logged in <see cref="Rock.Model.Person">person's</see> user preference.
+        /// Note: If the user preference is for a specific block, use ~/api/People/GetBlockUserPreference instead.
+        /// </summary>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/GetUserPreference" )]
+        [HttpGet]
+        public string GetUserPreference( string userPreferenceKey )
+        {
+           var currentPerson = GetPerson();
+           var userPreferenceValue = PersonService.GetUserPreference( currentPerson, userPreferenceKey );
+            return userPreferenceValue;
+        }
+
+        /// <summary>
+        /// Gets the currently logged in <see cref="Rock.Model.Person">person's</see> user preference for the specified block
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="userPreferenceKey">The user preference key.</param>
+        /// <returns></returns>
+        [Authenticate]
+        [System.Web.Http.Route( "api/People/GetBlockUserPreference" )]
+        [HttpGet]
+        public string GetBlockUserPreference( int blockId, string userPreferenceKey  )
+        {
+            var currentPerson = GetPerson();
+            var userPreferenceValue = PersonService.GetUserPreference( currentPerson, PersonService.GetBlockUserPreferenceKeyPrefix( blockId ) + userPreferenceKey );
+            return userPreferenceValue;
+        }
+
         #endregion
 
         #region Search
@@ -689,17 +751,17 @@ namespace Rock.Rest.Controllers
 
                     return new PersonSearchResult
                     {
-                    Id = a.Id,
-                    Name = sortbyFullNameReversed
+                        Id = a.Id,
+                        Name = sortbyFullNameReversed
                     ? Person.FormatFullNameReversed( a.LastName, a.NickName, a.SuffixValueId, a.RecordTypeValueId )
                     : Person.FormatFullName( a.NickName, a.LastName, a.SuffixValueId, a.RecordTypeValueId ),
-                    IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
-                    IsDeceased = a.IsDeceased,
-                    RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Get( a.RecordStatusValueId.Value ).Value : string.Empty,
-                    Age = Person.GetAge( a.BirthDate ) ?? -1,
-                    FormattedAge = a.FormatAge(),
-                    SpouseNickName = spouse?.NickName,
-                    SpouseName = spouse != null ?
+                        IsActive = a.RecordStatusValueId.HasValue && a.RecordStatusValueId == activeRecordStatusValueId,
+                        IsDeceased = a.IsDeceased,
+                        RecordStatus = a.RecordStatusValueId.HasValue ? DefinedValueCache.Get( a.RecordStatusValueId.Value ).Value : string.Empty,
+                        Age = Person.GetAge( a.BirthDate ) ?? -1,
+                        FormattedAge = a.FormatAge(),
+                        SpouseNickName = spouse?.NickName,
+                        SpouseName = spouse != null ?
                         Person.FormatFullName( spouse.NickName, spouse.LastName, spouse.SuffixValueId ) :
                         null
                     };

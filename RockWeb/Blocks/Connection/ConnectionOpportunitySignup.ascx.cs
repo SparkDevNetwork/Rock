@@ -389,9 +389,9 @@ namespace RockWeb.Blocks.Connection
 
                 if ( registrant != null )
                 {
-                    tbFirstName.Text = registrant.FirstName.EncodeHtml();
-                    tbLastName.Text = registrant.LastName.EncodeHtml();
-                    tbEmail.Text = registrant.Email.EncodeHtml();
+                    tbFirstName.Text = registrant.FirstName;
+                    tbLastName.Text = registrant.LastName;
+                    tbEmail.Text = registrant.Email;
 
                     if ( pnHome.Visible && _homePhone != null )
                     {

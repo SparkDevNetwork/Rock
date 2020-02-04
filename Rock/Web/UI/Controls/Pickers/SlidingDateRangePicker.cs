@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a sliding date range
     /// </summary>
     public class SlidingDateRangePicker : CompositeControl, IRockControlAdditionalRendering, IRockChangeHandlerControl
     {

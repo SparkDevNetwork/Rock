@@ -1,3 +1,27 @@
+// if the admin footer is rendered, watch for alt keypresses for page config, block config, etc
+Sys.Application.add_load(function () {
+    if ($('.js-cms-admin-footer').length) {
+        $(window).on('keydown', function (event) {
+            if (event.altKey) {
+                if (event.keyCode == 80) {
+                    //'Alt-P' page config
+                    window.location = $('.js-page-properties').attr('href');
+                } else if (event.keyCode == 66) {
+                    // Alt-B block config
+                    window.location = $('.js-block-config').attr('href');
+                } else if (event.keyCode == 76) {
+                    // Alt-L child pages
+                    window.location = $('.js-page-child-pages').attr('href');
+                } else if (event.keyCode == 90) {
+                    // Alt-Z page zones
+                    window.location = $('.js-page-zones').attr('href');
+                }
+            }
+        });
+    }
+});
+
+
 (function ($) {
     'use strict';
     window.Rock = window.Rock || {};
@@ -25,23 +49,22 @@
                         var blockLocation = $('#block-move-Location :checked').val()
 
                         // Set the appropriate parent value (site, layout or page)
-                        switch (blockLocation)
-                        {
-                          case "Site":
-                            getData.SiteId = Rock.settings.get('siteId');
-                            getData.LayoutId = null;
-                            getData.PageId = null;
-                            break;
-                          case "Layout":
-                            getData.SiteId = null;
-                            getData.LayoutId = Rock.settings.get('layoutId');
-                            getData.PageId = null;
-                            break;
-                          case "Page":
-                            getData.SiteId = null;
-                            getData.LayoutId = null;
-                            getData.PageId = Rock.settings.get('pageId');
-                            break;
+                        switch (blockLocation) {
+                            case "Site":
+                                getData.SiteId = Rock.settings.get('siteId');
+                                getData.LayoutId = null;
+                                getData.PageId = null;
+                                break;
+                            case "Layout":
+                                getData.SiteId = null;
+                                getData.LayoutId = Rock.settings.get('layoutId');
+                                getData.PageId = null;
+                                break;
+                            case "Page":
+                                getData.SiteId = null;
+                                getData.LayoutId = null;
+                                getData.PageId = Rock.settings.get('pageId');
+                                break;
                         }
 
                         // Save the updated block instance
@@ -112,9 +135,9 @@
                 $('a.block-delete').off('click').on('click', function (a, b, c) {
                     var blockId = $(this).attr('href');
 
-                    Rock.dialogs.confirm('Are you sure you want to delete this block?', function(result) {
+                    Rock.dialogs.confirm('Are you sure you want to delete this block?', function (result) {
 
-                        if (result)   {
+                        if (result) {
 
                             // delete the block instance
                             $.ajax({

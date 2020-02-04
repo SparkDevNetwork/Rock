@@ -585,6 +585,8 @@ namespace RockWeb.Blocks.RSVP
 
             var groupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
             var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+            lOccurrenceName.Text = occurrence.Name;
+            tbOccurrenceName.Text = occurrence.Name;
             lOccurrenceDate.Text = occurrence.OccurrenceDate.ToShortDateString();
             dpOccurrenceDate.SelectedDate = occurrence.OccurrenceDate;
             heAcceptMessage.Text = occurrence.AcceptConfirmationMessage;
@@ -975,6 +977,7 @@ var dnutChart = new Chart(dnutCtx, {{
 
                 //Create new occurrence.
                 var occurrence = new AttendanceOccurrence();
+                occurrence.Name = tbOccurrenceName.Text;
                 occurrence.GroupId = groupId;
 
                 if ( locpLocation.Location != null )
@@ -1051,6 +1054,8 @@ var dnutChart = new Chart(dnutCtx, {{
 
                 var occurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = occurrenceService.Get( occurrenceId );
+
+                occurrence.Name = tbOccurrenceName.Text;
 
                 if ( locpLocation.Location != null )
                 {
