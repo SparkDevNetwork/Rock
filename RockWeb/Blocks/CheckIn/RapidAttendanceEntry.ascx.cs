@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Order = 1 )]
 
-    #region Attendance Block Attribute Settings 
+    #region Attendance Block Attribute Settings
     [BooleanField(
         "Enable Attendance",
         Key = AttributeKey.EnableAttendance,
@@ -89,8 +89,8 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Attendance",
         IsRequired = true,
         Order = 5 )]
-    #endregion Attendance Block Attribute Settings 
-    #region Family Block Attribute Settings 
+    #endregion Attendance Block Attribute Settings
+    #region Family Block Attribute Settings
     [AttributeField(
         "Family Attributes",
         Key = AttributeKey.FamilyAttributes,
@@ -111,8 +111,8 @@ namespace RockWeb.Blocks.CheckIn
         Order = 2,
         IsRequired = true
         )]
-    #endregion Family Block Attribute Settings 
-    #region Individual Block Attribute Settings 
+    #endregion Family Block Attribute Settings
+    #region Individual Block Attribute Settings
     [CodeEditorField(
         "Header Lava Template",
         Key = AttributeKey.IndividualHeaderLavaTemplate,
@@ -140,6 +140,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Individual",
         EntityTypeGuid = Rock.SystemGuid.EntityType.PERSON,
         Order = 3,
+        AllowMultiple = true,
         IsRequired = false )]
     [BooleanField(
         "Show Communication Preference(Adults)",
@@ -166,6 +167,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Individual",
         EntityTypeGuid = Rock.SystemGuid.EntityType.PERSON,
         IsRequired = false,
+        AllowMultiple = true,
         Order = 6 )]
     [BooleanField(
         "Child Allow Email Edit",
@@ -327,7 +329,7 @@ namespace RockWeb.Blocks.CheckIn
         #region Attribute Default values
 
         private const string FamilyHeaderLavaTemplateDefaultValue = @"
-<h4>{{ Family.Name }}</h4>
+<h4 class='margin-t-none'>{{ Family.Name }}</h4>
 	{% if Family.GroupLocations != null %}
 	{% assign groupLocations = Family.GroupLocations %}
 	{% assign locationCount = groupLocations | Size %}
@@ -341,12 +343,14 @@ namespace RockWeb.Blocks.CheckIn
 	{% endif %}";
 
         private const string IndividualHeaderLavaTemplateDefaultValue = @"
-<div class='row'>
+<div class='row margin-v-lg'>
     <div class='col-md-6'>
-        {% if Person.Age != null and Person.Age != '' %}
+        {%- if Person.Age != null and Person.Age != '' -%}
         {{ Person.Age }} yrs old ({{ Person.BirthDate | Date:'M/d/yyyy' }}) <br />
-        {% endif %}
+        {%- endif -%}
+        {%- if Person.Email != '' -%}
 		<a href='mailto:{{ Person.Email }}'>{{ Person.Email }}</a>
+        {%- endif -%}
 		{% if Person.RecordStatusValue.Value != empty and Person.RecordStatusValue.Value == 'Inactive' -%}
 		    <br/>
 		    <span class='label label-danger' title='{{ Person.RecordStatusReasonValue.Value }}' data-toggle='tooltip'>{{ Person.RecordStatusValue.Value }}</span>
@@ -1885,7 +1889,7 @@ namespace RockWeb.Blocks.CheckIn
             rcwNotes.Visible = configuredNoteTypeGuids.Any();
             if ( configuredNoteTypeGuids.Any() )
             {
-                var noteTypes = configuredNoteTypeGuids.Select( a => NoteTypeCache.Get( a ) ).ToList();
+                var noteTypes = configuredNoteTypeGuids.Select( a => NoteTypeCache.Get( a ) ).OrderBy( a => a.Order ).ToList();
                 if ( rcwNotes.Visible )
                 {
                     ddlNoteType.DataSource = noteTypes;
