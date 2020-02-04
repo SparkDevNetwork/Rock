@@ -6,7 +6,7 @@
         <div class="panel panel-default">
 
             <asp:Panel ID="pnlHeading" runat="server" CssClass="panel-heading">
-                <h1 class="panel-title pull-left">
+                <h1 class="panel-title">
                     <i class="fa fa-user-check"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="RSVP for Event" />
                 </h1>
