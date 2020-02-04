@@ -28,9 +28,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            ShowCameraSupportAttributeOnGrid();
-            MobileRollups();
-            IPadCameraCheckinUpdate();
+            //ShowCameraSupportAttributeOnGrid();
+            //MobileRollups();
+            //IPadCameraCheckinUpdate();
         }
 
         /// <summary>
