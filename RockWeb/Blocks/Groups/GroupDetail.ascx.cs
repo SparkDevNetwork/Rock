@@ -623,7 +623,7 @@ namespace RockWeb.Blocks.Groups
                     {
                         groupLocation.GroupLocationScheduleConfigs.Remove( deleteConfig );
                     }
-                    // Remove 
+                    // Remove
                     group.GroupLocations.Remove( groupLocation );
                     groupLocationService.Delete( groupLocation );
                     checkinDataUpdated = true;
@@ -818,10 +818,7 @@ namespace RockWeb.Blocks.Groups
                 }
                 else
                 {
-<<<<<<< HEAD
-=======
                     // Group Type setting takes precedence over Group setting.
->>>>>>> hotfix-1.10.2
                     group.RSVPReminderOffsetDays = rsRsvpReminderOffsetDays.SelectedValue;
                 }
 
@@ -989,7 +986,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( adding )
                 {
-                    // Add ADMINISTRATE to the person who added the group 
+                    // Add ADMINISTRATE to the person who added the group
                     Rock.Security.Authorization.AllowPerson( group, Authorization.ADMINISTRATE, this.CurrentPerson, rockContext );
                 }
 
@@ -1426,7 +1423,7 @@ namespace RockWeb.Blocks.Groups
                         // Get all the allowed GroupTypes as defined by the parent group type
                         var allowedChildGroupTypesOfParentGroup = GetAllowedGroupTypes( GroupTypeCache.Get( parentGroup.GroupTypeId ), rockContext ).ToList();
 
-                        // Narrow it down to group types that the current user is allowed to edit 
+                        // Narrow it down to group types that the current user is allowed to edit
                         var authorizedGroupTypes = new List<GroupType>();
                         foreach ( var allowedGroupType in allowedChildGroupTypesOfParentGroup )
                         {
@@ -2554,7 +2551,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            // add any schedules that weren't shown in the repeater 
+            // add any schedules that weren't shown in the repeater
             foreach ( var schedule in schedules.Where( s => !currentGroupLocationScheduleConfigs.Any( x => x.ScheduleId == s.Id ) ) )
             {
                 currentGroupLocationScheduleConfigs.Add( new GroupLocationScheduleConfig
