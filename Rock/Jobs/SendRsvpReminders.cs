@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -268,6 +269,7 @@ namespace Rock.Jobs
 
             var rsvpOccurrences = new AttendanceOccurrenceService( rockContext )
                     .Queryable( "Attendees,Attendees.PersonAlias.Person" ).AsNoTracking()
+                    .Where( o => o.GroupId == group.Id )
                     .Where( o => o.OccurrenceDate >= startDate ) // OccurrenceDate must be greater than startDate (the beginning of the day from the offset).
                     .Where( o => o.OccurrenceDate <= endDate ) // OccurrenceDate must be less than endDate (the end of the day from the offset).
                     .Where( o => o.Attendees.Where( a => a.RSVP == RSVP.Yes ).Any() ) // Occurrence must have attendees who responded "Yes".
@@ -286,12 +288,103 @@ namespace Rock.Jobs
         private int SendReminder( Group group, AttendanceOccurrence occurrence, Person person, SystemCommunication reminder )
         {
             // Build Lava merge fields.
-            Dictionary<string, object> lavaMergeFields = new Dictionary<string, object>();
+            Dictionary<string, object> lavaMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(  null, person );
             lavaMergeFields.Add( "Person", person );
             lavaMergeFields.Add( "Group", group );
             lavaMergeFields.Add( "Occurrence", occurrence );
+            lavaMergeFields.Add( "OccurrenceTitle", GetOccurrenceTitle( occurrence ) );
 
-            // Send the message.
+            var smsNumber = person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+
+            if ( person.CommunicationPreference == CommunicationType.SMS
+                && !string.IsNullOrWhiteSpace( reminder.SMSMessage )
+                && reminder.SMSFromDefinedValueId.HasValue
+                && smsNumber != null )
+            {
+                return SendReminderSMS( person, reminder, lavaMergeFields, smsNumber );
+            }
+
+            return SendReminderEmail( person, reminder, lavaMergeFields );
+        }
+
+        /// <summary>
+        /// Calculates the display title for an <see cref="AttendanceOccurrence"/>.
+        /// </summary>
+        /// <param name="occurrence">The <see cref="AttendanceOccurrence"/>.</param>
+        private string GetOccurrenceTitle( AttendanceOccurrence occurrence )
+        {
+            bool hasTitle = ( !string.IsNullOrWhiteSpace( occurrence.Name ) );
+            bool hasSchedule = ( occurrence.Schedule != null );
+
+            if ( hasSchedule )
+            {
+                // This block is unnecessary if the event has a name (because the name will take priority over the schedule, anyway), but it
+                // has been intentionally left in place to prevent anyone from creating an unintentional bug in the future, as it affects
+                // the logic below.
+                DDay.iCal.Event calendarEvent = occurrence.Schedule.GetCalendarEvent();
+                if ( calendarEvent == null )
+                {
+                    hasSchedule = false;
+                }
+            }
+
+            if ( hasTitle )
+            {
+                return occurrence.Name;
+            }
+            else if ( hasSchedule )
+            {
+                return string.Format(
+                    "{0} - {1}",
+                    occurrence.Group.Name,
+                    occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString() );
+            }
+            else
+            {
+                return occurrence.Group.Name;
+            }
+        }
+
+        /// <summary>
+        /// Sends an RSVP reminder email to an individual attendee.
+        /// </summary>
+        /// <param name="person">The <see cref="Person"/>.</param>
+        /// <param name="reminder">The <see cref="SystemCommunication"/> to be sent as a reminder.</param>
+        /// <param name="lavaMergeFields">A dictionary containing Lava merge fields.</param>
+        /// <param name="phoneNumber">The <see cref="PhoneNumber"/> for SMS communications.</param>
+        /// <returns>1 if the communication was successfully sent, otherwise 0.</returns>
+        private int SendReminderSMS( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields, PhoneNumber phoneNumber )
+        {
+            string smsNumber = phoneNumber.Number;
+            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
+            {
+                smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
+            }
+
+            var recipient = new RockSMSMessageRecipient( person, smsNumber, lavaMergeFields );
+            var message = new RockSMSMessage();
+            message.SetRecipients( new List<RockSMSMessageRecipient>() { recipient } );            
+            message.FromNumber = DefinedValueCache.Get( reminder.SMSFromDefinedValueId.Value );
+            message.Message = reminder.SMSMessage;
+            message.Send( out List<string> smsErrors );
+
+            if ( !smsErrors.Any() )
+            {
+                return 1; // No error, this should be counted as a sent reminder.
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Sends an RSVP reminder SMS to an individual attendee.
+        /// </summary>
+        /// <param name="person">The <see cref="Person"/>.</param>
+        /// <param name="reminder">The <see cref="SystemCommunication"/> to be sent as a reminder.</param>
+        /// <param name="lavaMergeFields">A dictionary containing Lava merge fields.</param>
+        /// <returns>1 if the communication was successfully sent, otherwise 0.</returns>
+        private int SendReminderEmail( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields )
+        {
             var recipient = new RockEmailMessageRecipient( person, lavaMergeFields );
             var message = new RockEmailMessage( reminder );
             message.SetRecipients( new List<RockEmailMessageRecipient>() { recipient } );
