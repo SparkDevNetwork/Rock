@@ -1598,7 +1598,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( person != null && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKeys.PersonProfilePage ) ) )
             {
-                lbProfilesible  true;
+                lbProfilePage.Visible = true;
 
                 Dictionary<string, string> queryParms = new Dictionary<string, string>();
                 queryParms.Add( "PersonId", person.Id.ToString() );
