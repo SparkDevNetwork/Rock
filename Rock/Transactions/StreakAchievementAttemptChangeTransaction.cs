@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -56,6 +57,16 @@ namespace Rock.Transactions
         private int StreakTypeAchievementTypeId { get; }
 
         /// <summary>
+        /// Gets the start date.
+        /// </summary>
+        private DateTime StartDate { get; }
+
+        /// <summary>
+        /// Gets the end date.
+        /// </summary>
+        private DateTime? EndDate { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="StreakAchievementAttemptChangeTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
@@ -76,6 +87,8 @@ namespace Rock.Transactions
             IsNowEnding = !wasClosed && streakAchievementAttempt.IsClosed;
             IsNowSuccessful = !wasSuccessful && streakAchievementAttempt.IsSuccessful;
             StreakTypeAchievementTypeId = streakAchievementAttempt.StreakTypeAchievementTypeId;
+            StartDate = streakAchievementAttempt.AchievementAttemptStartDateTime;
+            EndDate = streakAchievementAttempt.AchievementAttemptEndDateTime;
         }
 
         /// <summary>
@@ -129,7 +142,7 @@ namespace Rock.Transactions
         /// Launches the workflow.
         /// </summary>
         /// <param name="workflowTypeId">The workflow type identifier.</param>
-        private static void LaunchWorkflow( int workflowTypeId )
+        private void LaunchWorkflow( int workflowTypeId )
         {
             var transaction = new LaunchWorkflowTransaction( workflowTypeId );
             transaction.Enqueue();
@@ -141,16 +154,40 @@ namespace Rock.Transactions
         /// <param name="stepTypeId">The step type identifier.</param>
         /// <param name="stepStatusId">The step status identifier.</param>
         /// <param name="personAliasId">The person alias identifier.</param>
-        private static void AddStep( int stepTypeId, int stepStatusId, int personAliasId )
+        private void AddStep( int stepTypeId, int stepStatusId, int personAliasId )
         {
             var rockContext = new RockContext();
             var stepService = new StepService( rockContext );
+            var stepProgramService = new StepProgramService( rockContext );
 
+            // Get the step program with step types and statuses to better calculate the dates for the new step
+            var stepProgram = stepProgramService.Queryable( "StepTypes, StepStatuses" ).FirstOrDefault( sp =>
+                sp.StepTypes.Any( st => st.Id == stepTypeId ) &&
+                sp.StepStatuses.Any( ss => ss.Id == stepStatusId ) );
+
+            var stepType = stepProgram?.StepTypes.FirstOrDefault( st => st.Id == stepTypeId );
+            var stepStatus = stepProgram?.StepStatuses.FirstOrDefault( ss => ss.Id == stepStatusId );
+
+            if ( stepType == null )
+            {
+                ExceptionLogService.LogException( $"Error adding step related to an achievement. The step type {stepTypeId} did not resolve." );
+                return;
+            }
+
+            if ( stepStatus == null )
+            {
+                ExceptionLogService.LogException( $"Error adding step related to an achievement. The step status {stepStatusId} did not resolve." );
+                return;
+            }
+
+            // Add the new step
             var step = new Step
             {
                 StepTypeId = stepTypeId,
                 StepStatusId = stepStatusId,
-                CompletedDateTime = RockDateTime.Today,
+                CompletedDateTime = stepStatus.IsCompleteStatus ? EndDate : null,
+                StartDateTime = StartDate,
+                EndDateTime = stepType.HasEndDate ? EndDate : null,
                 PersonAliasId = personAliasId
             };
 

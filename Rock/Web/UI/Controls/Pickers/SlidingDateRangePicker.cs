@@ -578,6 +578,8 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["EnabledSlidingDateRangeTypes"] = value;
+                EnsureChildControls();
+                PopulateDropDowns();
             }
         }
 
@@ -737,11 +739,13 @@ namespace Rock.Web.UI.Controls
             set
             {
                 string[] splitValues = ( value ?? string.Empty ).Split( '|' );
+                var defaultTimeUnit = this.EnabledSlidingDateRangeUnits.First();
+
                 if ( splitValues.Length == 5 )
                 {
                     this.SlidingDateRangeMode = splitValues[0].ConvertToEnum<SlidingDateRangeType>();
                     this.NumberOfTimeUnits = splitValues[1].AsIntegerOrNull() ?? 1;
-                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? this.EnabledSlidingDateRangeUnits.First();
+                    this.TimeUnit = splitValues[2].ConvertToEnumOrNull<TimeUnitType>() ?? defaultTimeUnit;
                     this.DateRangeModeStart = splitValues[3].AsDateTime();
                     this.DateRangeModeEnd = splitValues[4].AsDateTime();
                 }
@@ -749,7 +753,7 @@ namespace Rock.Web.UI.Controls
                 {
                     this.SlidingDateRangeMode = SlidingDateRangeType.All;
                     this.NumberOfTimeUnits = 1;
-                    this.TimeUnit = TimeUnitType.Hour;
+                    this.TimeUnit = defaultTimeUnit;
                     this.DateRangeModeStart = null;
                     this.DateRangeModeEnd = null;
                 }
@@ -790,6 +794,20 @@ namespace Rock.Web.UI.Controls
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the selected date range.
+        /// </summary>
+        /// <value>
+        /// The selected date range.
+        /// </value>
+        public DateRange SelectedDateRange
+        {
+            get
+            {
+                return CalculateDateRangeFromDelimitedValues( this.DelimitedValues );
+            }
         }
 
         /// <summary>

@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
     /// System Email Templates
     /// </summary>
+    [Obsolete( "Use SystemCommunication instead." )]
+    [RockObsolete( "1.10" )]
     public static class SystemEmail
     {
         /// <summary>
@@ -45,6 +49,11 @@ namespace Rock.SystemGuid
         /// Gets the template guid for group attendance reminder
         /// </summary>
         public const string GROUP_ATTENDANCE_REMINDER = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA";
+
+        /// <summary>
+        /// Gets the template guid for the Prayer Comments Notification
+        /// </summary>
+        public const string PRAYER_REQUEST_COMMENTS_NOTIFICATION = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
 
         /// <summary>
         /// Gets the template guid for event registration confirmation

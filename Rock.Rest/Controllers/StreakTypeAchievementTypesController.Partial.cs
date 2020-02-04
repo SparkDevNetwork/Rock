@@ -39,12 +39,13 @@ namespace Rock.Rest.Controllers
         /// Gets the progress for the person.
         /// </summary>
         /// <param name="personId">The person identifier. The current person is used if this is omitted.</param>
+        /// <param name="includeOnlyEligible">Include only progress statements for achievement types that have no unmet prerequisites</param>
         /// <returns></returns>
         /// <exception cref="HttpResponseException"></exception>
         [Authenticate, Secured]
         [HttpGet]
         [System.Web.Http.Route( "api/StreakTypeAchievementTypes/Progress" )]
-        public virtual List<ProgressStatement> GetProgressForPerson( [FromUri]int personId = default )
+        public virtual List<ProgressStatement> GetProgressForPerson( [FromUri]int personId = default, [FromUri]bool includeOnlyEligible = default )
         {
             var rockContext = Service.Context as RockContext;
 
@@ -61,10 +62,12 @@ namespace Rock.Rest.Controllers
             }
 
             var achievementTypeService = Service as StreakTypeAchievementTypeService;
-            var progressStatements = StreakTypeAchievementTypeCache.All()
-                .Where( stat => stat.IsActive )
-                .Select( stat => achievementTypeService.GetProgressStatement( stat, personId ) )
-                .ToList();
+            var progressStatements = achievementTypeService.GetProgressStatements( personId );
+
+            if ( includeOnlyEligible )
+            {
+                progressStatements = progressStatements.Where( ps => !ps.UnmetPrerequisites.Any() ).ToList();
+            }
 
             return progressStatements;
         }

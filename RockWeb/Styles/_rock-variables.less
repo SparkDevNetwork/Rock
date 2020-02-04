@@ -160,6 +160,31 @@
 @panel-footer-color:          @panel-text; // The color text of the panel's footer.
 
 
+// Cards
+
+@enable-rounded: false;
+
+@card-spacer-y:                     1.25rem;
+@card-spacer-x:                     1.25rem;
+@card-title-spacer-y:               .75rem;
+@card-border-width:                 1px;
+@card-border-radius:                @panel-border-radius; // $border-radius
+@card-border-color:                 @panel-default-border;
+@card-inner-border-radius:          ~"calc(@{card-border-radius} - @{card-border-width})";
+@card-cap-padding-y:                .75rem;
+@card-cap-padding-x:                1.25rem;
+@card-cap-bg:                       rgba(0,0,0,.03);
+@card-cap-color:                    ~""; // LESS PORT: Sass version uses `null`
+@card-height:                       ~""; // LESS PORT: Sass version uses `null`
+@card-color:                        ~""; // LESS PORT: Sass version uses `null`
+@card-bg:                           @panel-bg;
+
+@card-img-overlay-padding:          1.25rem;
+
+@card-group-margin:                 @grid-gutter-width / 2;
+@card-deck-margin:                  @card-group-margin;
+
+
 // Grid
 @grid-border-color:           #ddd; // The border color of the grids cells.
 @grid-padding:                12px; // The default padding of the grid cells.
@@ -333,7 +358,7 @@
 
 // Buttons
 @enable-btn-focus-outline:    false;
-@btn-focus-width:             0.2rem;
+@btn-focus-width:             .2rem;
 @btn-transition:              ~"color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out";
 
 @btn-action-color:            @theme-8-text;
@@ -378,9 +403,12 @@
 @const-border-darken-amt:     10%; // creates a border color by darkening the background by this amount
 
 // Font Weights
+@font-weight-lighter:         200;
 @font-weight-light:           300;
-@font-weight-bold:            700;
+@font-weight-normal:          400;
 @font-weight-semibold:        600;
+@font-weight-bold:            700;
+@font-weight-bolder:          900;
 
 // Alerts
 @alert-success-link-border-bottom:      1px dotted @alert-success-text;

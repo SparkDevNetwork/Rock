@@ -393,7 +393,7 @@
 					if(event.keyCode == 8 && $(this).val() == '')
 					{
 						 event.preventDefault();
-						 var last_tag = $(this).closest('.tagsinput').find('.tag:last').text();
+						 var last_tag = $(this).closest('.tagsinput').find('.tag').last().text();
 						 var id = $(this).attr('id').replace(/_tag$/, '');
 						 last_tag = last_tag.replace(/[\s]+x$/, '');
 						 $('#' + id).removeTag(escape(last_tag));

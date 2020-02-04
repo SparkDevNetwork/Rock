@@ -256,8 +256,33 @@ namespace Rock.Model
         [LavaInclude]
         public virtual PersonalDevice PersonalDevice { get; set; }
 
-        #endregion
+        /// <summary>
+        /// Sets the utm fields from URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        public void SetUTMFieldsFromURL( string url )
+        {
+            if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
+            {
+                var urlParams = System.Web.HttpUtility.ParseQueryString( url );
+                this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
+                this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
+                this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
+                this.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                this.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+            }
+        }
 
+        /// <summary>
+        /// Sets the interaction data (for example, the URL of the request), and obfuscates sensitive data that might be in the interactionData
+        /// </summary>
+        /// <param name="interactionData">The interaction data.</param>
+        public void SetInteractionData( string interactionData)
+        {
+            this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
+        }
+       
+        #endregion
     }
 
     #region Entity Configuration

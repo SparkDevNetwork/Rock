@@ -34,8 +34,38 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows a list of all person devices." )]
 
-    [LinkedPage( "Interactions Page", "The interactions associated with a specific personal device." )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
+    [ContextAware( typeof( Person ) )]
+
+    [LinkedPage(
+        "Interactions Page",
+        Key = AttributeKey.InteractionsPage,
+        Description = "The interactions associated with a specific personal device.",
+        Order = 0 )]
+
+    [CodeEditorField(
+        "Lava Template",
+        Key = AttributeKey.LavaTemplate,
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = CodeEditorValue.LavaTemplate,
+        Order = 1 )]
+
+    public partial class PersonalDevices : RockBlock
+    {
+        #region Attribute Keys and Values
+
+        private static class AttributeKey
+        {
+            public const string InteractionsPage = "InteractionsPage";
+            public const string LavaTemplate = "LavaTemplate";
+        }
+
+        private static class CodeEditorValue
+        {
+            public const string LavaTemplate = @"
 <div class=""panel panel-block"">       
     <div class=""panel-heading"">
         <h4 class=""panel-title"">
@@ -72,10 +102,11 @@ namespace RockWeb.Blocks.Crm
         </div>
     </div>
 </div>
-", "", 2, "LavaTemplate" )]
-    [ContextAware( typeof( Person ) )]
-    public partial class PersonalDevices : RockBlock
-    {
+";
+        }
+
+        #endregion Attribute Keys and Values
+
         #region Fields
 
         private Person _person = null;
@@ -187,7 +218,7 @@ namespace RockWeb.Blocks.Crm
                 mergeFields.Add( "LinkUrl", url );
 
 
-                string template = GetAttributeValue( "LavaTemplate" );
+                string template = GetAttributeValue( AttributeKey.LavaTemplate );
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
             }
             else

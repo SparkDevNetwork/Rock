@@ -22,6 +22,9 @@
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
             {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
+            AND cci.Status = 2
+            AND cci.StartDateTime <= DATEADD(hh, -5, GETDATE())
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime IS NOT NULL AND cci.ExpireDateTime > DATEADD(hh, -5, GETDATE()))
             ORDER BY ccia.[Order]
 
         {% else %}
@@ -35,8 +38,11 @@
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
             {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
+            AND cci.Status = 2
+            AND cci.StartDateTime <= DATEADD(hh, -5, GETDATE())
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime IS NOT NULL AND cci.ExpireDateTime > DATEADD(hh, -5, GETDATE()))
             ORDER BY cci.StartDateTime
-            
+
         {% endif %}
     {% endsql %}
 
@@ -72,7 +78,7 @@
                         {% capture content %}{% if child.Content != empty %}<p class="push-half-bottom">{{ child.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}</p>{% endif %}{% endcapture %}
                         {% capture textalignment %}{% endcapture %}
                         {% capture label %}{% if childType contains "Devotional" %}Session {{ result.Index | Plus:1 }}{% endif %}{% endcapture %}
-                        
+
                         {% assign actualDate = child | Attribute:'ActualDate','RawValue' %}
                         {% assign dates = child | Attribute:'Dates','RawValue' %}
                         {% assign dateParts = dates | Split:',' %}
@@ -113,7 +119,7 @@
                         {% capture backgroundcolor %}{% endcapture %}
                         {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ child.Id }}' ]}{% endcapture %}
                         {% capture linktext %}{% if childType contains "Sermon" or childType contains "Series" %}Watch{% else %}Read{% endif %} {{ childType | Singularize }}{% endcapture %}
-                        
+
                         {[ card id:'{{ id }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
                     {% endfor %}
                 {% endcontentchannelitem %}

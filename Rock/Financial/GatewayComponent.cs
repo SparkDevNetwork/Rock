@@ -370,6 +370,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// Calculates the next payment date based off of frequency and last transaction date.
+        /// Use this if the gateway doesn't support getting the next payment date from the gateway provider.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="lastTransactionDate">The last transaction date.</param>
@@ -415,6 +416,17 @@ namespace Rock.Financial
                     break;
                 case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
                     nextPayment = startDate.AddDays( 15 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH:
+                    if ( startDate.Day > 15 )
+                    {
+                        var nextMonth = startDate.AddMonths( 1 );
+                        nextPayment = new DateTime( nextMonth.Year, nextMonth.Month, 1 );
+                    }
+                    else
+                    {
+                        nextPayment = new DateTime( startDate.Year, startDate.Month, 15 );
+                    }
                     break;
                 case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
                     nextPayment = startDate.AddMonths( 1 );

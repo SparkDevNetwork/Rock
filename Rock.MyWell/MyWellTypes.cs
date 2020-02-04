@@ -662,7 +662,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTimUTC { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1079,7 +1079,7 @@ namespace Rock.MyWell
         }
 
         /// <summary>
-        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap" />) associated with <see cref="ApiMessage" /> or transaction status
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap" />) associated with <see cref="T:ApiMessage" /> or transaction status
         /// </summary>
         /// <value>
         /// The friendly message.
@@ -1837,7 +1837,14 @@ namespace Rock.MyWell
         /// <param name="customerId">The customer identifier.</param>
         public QueryCustomerSubscriptionsRequest( string customerId )
         {
-            CustomerIdSearch = new QuerySearchCustomerId( customerId );
+            if ( customerId.IsNullOrWhiteSpace() )
+            {
+                CustomerIdSearch = null;
+            }
+            else
+            {
+                CustomerIdSearch = new QuerySearchCustomerId( customerId );
+            }
         }
 
         /// <summary>

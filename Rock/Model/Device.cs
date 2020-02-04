@@ -133,6 +133,15 @@ namespace Rock.Model
         }
         private bool _isActive = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance has camera.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance has camera; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool HasCamera { get; set; }
+
         #endregion
 
         #region Virtual Properties

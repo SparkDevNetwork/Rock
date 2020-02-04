@@ -241,7 +241,8 @@ namespace Rock.Model
 
             var batchSummary = new Dictionary<Guid, List<Decimal>>();
 
-            var newTransactions = new List<FinancialTransaction>();
+            var newTransactionsForReceiptEmails = new List<FinancialTransaction>();
+
             var failedPayments = new List<FinancialTransaction>();
 
             var contributionTxnType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
@@ -485,7 +486,7 @@ namespace Rock.Model
 
                             if ( receiptEmail.HasValue && txnAmount > 0.0M )
                             {
-                                newTransactions.Add( transaction );
+                                newTransactionsForReceiptEmails.Add( transaction );
                             }
 
                             if (
@@ -565,10 +566,10 @@ namespace Rock.Model
             var updatePaymentStatusTxn = new Rock.Transactions.UpdatePaymentStatusTransaction( gateway.Id, scheduledTransactionIds );
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( updatePaymentStatusTxn );
 
-            if ( receiptEmail.HasValue && newTransactions.Any() )
+            if ( receiptEmail.HasValue && newTransactionsForReceiptEmails.Any() )
             {
                 // Queue a transaction to send receipts
-                var newTransactionIds = newTransactions.Select( t => t.Id ).ToList();
+                var newTransactionIds = newTransactionsForReceiptEmails.Select( t => t.Id ).ToList();
                 var sendPaymentReceiptsTxn = new Rock.Transactions.SendPaymentReceipts( receiptEmail.Value, newTransactionIds );
                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( sendPaymentReceiptsTxn );
             }

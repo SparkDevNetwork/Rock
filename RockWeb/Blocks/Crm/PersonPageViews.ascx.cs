@@ -35,9 +35,24 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Page Views" )]
     [Category( "CRM" )]
     [Description( "Lists a persons web sessions with details." )]
-    [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 1 )]
+
+    [IntegerField(
+        "Session Count",
+        Key = AttributeKey.SessionCount,
+        Description = "The number of sessions to show per page.",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Order = 0 )]
+
     public partial class PersonPageViews : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string SessionCount = "SessionCount";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private DateTime startDate = DateTime.MinValue;
@@ -210,7 +225,7 @@ namespace RockWeb.Blocks.Crm
         {
             var rockContext = new RockContext();
 
-            int sessionCount = GetAttributeValue( "SessionCount" ).AsInteger();
+            int sessionCount = GetAttributeValue( AttributeKey.SessionCount ).AsInteger();
 
             int skipCount = pageNumber * sessionCount;
 

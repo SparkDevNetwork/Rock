@@ -38,9 +38,26 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Short Link List" )]
     [Category( "CMS" )]
     [Description( "Lists all the short Links ." )]
-    [LinkedPage( "Detail Page" )]
+
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 0 )]
+
+    #endregion
     public partial class ShortLinkList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
+
         #region Filter Attribute Keys
 
         private class FilterAttributeKeys
@@ -192,7 +209,7 @@ namespace RockWeb.Blocks.Cms
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gShortLinks_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ShortLinkId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ShortLinkId", 0 );
         }
 
         /// <summary>
@@ -202,7 +219,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gShortLinks_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ShortLinkId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ShortLinkId", e.RowKeyId );
         }
 
         /// <summary>

@@ -56,7 +56,7 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType( "6B6A429D-E42C-70B5-4A04-98E886C45E7A" );
             RockMigrationHelper.DeletePage( "0591e498-0ad6-45a5-b8ca-9bca5c771f03" );
             Sql( $@"DELETE FROM [dbo].[ServiceJob] WHERE [Guid] = '{Rock.SystemGuid.ServiceJob.GET_NCOA}'" );
-            RockMigrationHelper.DeleteSystemEmail( SystemGuid.SystemEmail.SPARK_DATA_NOTIFICATION );
+            RockMigrationHelper.DeleteSystemEmail( SystemGuid.SystemCommunication.SPARK_DATA_NOTIFICATION );
 
             // Attrib for BlockType: Group Attendance List:Display Notes
             RockMigrationHelper.DeleteAttribute( "5C78C7A4-51F5-4C5D-838C-CC2882D6D408" );
@@ -132,7 +132,7 @@ namespace Rock.Migrations
     The '{{ SparkDataService }}' job has {{ Status }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", SystemGuid.SystemEmail.SPARK_DATA_NOTIFICATION );
+{{ 'Global' | Attribute:'EmailFooter' }}", SystemGuid.SystemCommunication.SPARK_DATA_NOTIFICATION );
 
             #endregion
         }

@@ -117,6 +117,8 @@ namespace Rock.Communication
         /// </value>
         public List<Attachment> EmailAttachments { get; set; } = new List<Attachment>();
 
+        #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RockEmailMessage"/> class.
         /// </summary>
@@ -128,28 +130,97 @@ namespace Rock.Communication
         /// <summary>
         /// Initializes a new instance of the <see cref="RockEmailMessage"/> class.
         /// </summary>
-        /// <param name="systemEmail">The system email.</param>
-        public RockEmailMessage( SystemEmail systemEmail ) : this()
+        /// <param name="systemCommunication">The system email.</param>
+        public RockEmailMessage( SystemCommunication systemCommunication ) : this()
         {
-            InitEmailMessage( systemEmail );
+            InitEmailMessage( systemCommunication );
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockEmailMessage" /> class.
         /// </summary>
-        /// <param name="systemEmailGuid">The system email unique identifier.</param>
-        public RockEmailMessage( Guid systemEmailGuid ) : this()
+        /// <param name="systemGuid">The system communication unique identifier.</param>
+        public RockEmailMessage( Guid systemGuid ) : this()
         {
             using ( var rockContext = new RockContext() )
             {
-                InitEmailMessage( new SystemEmailService( rockContext ).Get( systemEmailGuid ) );
+                var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemGuid );
+
+                if ( systemCommunication != null )
+                {
+                    InitEmailMessage( systemCommunication );
+                }
+                else
+                {
+                    // If a matching SystemCommunication could not be found, check if this is a reference to a legacy SystemEmail object.
+                    // This is necessary to provide backward-compatibility for third-party plugins.
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var systemEmail = new SystemEmailService( rockContext ).Get( systemGuid );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                    if ( systemEmail != null )
+                    {
+#pragma warning disable CS0612 // Type or member is obsolete
+                        InitEmailMessage( systemEmail );
+#pragma warning restore CS0612 // Type or member is obsolete
+                    }
+                }
             }
         }
 
         /// <summary>
         /// Initializes the email message.
         /// </summary>
+        /// <param name="systemCommunication">The system email.</param>
+        private void InitEmailMessage( SystemCommunication systemCommunication )
+        {
+            if ( systemCommunication == null )
+            {
+                return;
+            }
+
+            this.FromEmail = systemCommunication.From;
+            this.FromName = systemCommunication.FromName;
+
+            var recipients = systemCommunication.To.SplitDelimitedValues().ToList().Select( a => RockEmailMessageRecipient.CreateAnonymous( a, null ) ).ToList();
+            this.SetRecipients( recipients );
+
+            this.CCEmails = systemCommunication.Cc.SplitDelimitedValues().ToList();
+            this.BCCEmails = systemCommunication.Bcc.SplitDelimitedValues().ToList();
+            this.Subject = systemCommunication.Subject;
+            this.Message = systemCommunication.Body;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Sets the recipients.
+        /// </summary>
+        /// <param name="recipients">The recipients.</param>
+        public void SetRecipients( List<RockEmailMessageRecipient> recipients )
+        {
+            this.Recipients = new List<RockMessageRecipient>();
+            this.Recipients.AddRange( recipients );
+        }
+
+        #region Obsolete
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockEmailMessage"/> class.
+        /// </summary>
         /// <param name="systemEmail">The system email.</param>
+        [Obsolete( "Use constructor RockEmailMessage( SystemCommunication ) instead." )]
+        [RockObsolete( "1.10" )]
+        public RockEmailMessage( SystemEmail systemEmail ) : this()
+        {
+            InitEmailMessage( systemEmail );
+        }
+
+        /// <summary>
+        /// Initializes the email message.
+        /// </summary>
+        /// <param name="systemEmail">The system email.</param>
+        [Obsolete()]
         private void InitEmailMessage( SystemEmail systemEmail )
         {
             if ( systemEmail != null )
@@ -165,14 +236,6 @@ namespace Rock.Communication
             }
         }
 
-        /// <summary>
-        /// Sets the recipients.
-        /// </summary>
-        /// <param name="recipients">The recipients.</param>
-        public void SetRecipients( List<RockEmailMessageRecipient> recipients )
-        {
-            this.Recipients = new List<RockMessageRecipient>();
-            this.Recipients.AddRange( recipients );
-        }
+        #endregion
     }
 }

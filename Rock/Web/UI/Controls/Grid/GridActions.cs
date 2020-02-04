@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [ToolboxData( "<{0}:GridActions runat=server></{0}:GridActions>" )]
     public class GridActions : CompositeControl
@@ -75,17 +75,17 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowCommunicate
         {
-            get 
+            get
             {
                 // if the Grid has the PersonIdField set, default ShowCommunicate to True
                 bool hasPersonIdField = _parentGrid.CommunicationRecipientPersonIdFields.Any() || _parentGrid.PersonIdField.IsNotNullOrWhiteSpace();
 
-                return ViewState["ShowCommunicate"] as bool? ?? hasPersonIdField; 
+                return ViewState["ShowCommunicate"] as bool? ?? hasPersonIdField;
             }
-            
-            set 
-            { 
-                ViewState["ShowCommunicate"] = value; 
+
+            set
+            {
+                ViewState["ShowCommunicate"] = value;
             }
         }
 
@@ -196,7 +196,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _aAdd.Attributes["onclick"];
             }
-            
+
             set
             {
                 EnsureChildControls();
@@ -280,7 +280,7 @@ namespace Rock.Web.UI.Controls
             _lbCommunicate = new LinkButton();
             Controls.Add( _lbCommunicate );
             _lbCommunicate.ID = "lbCommunicate";
-            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
+            _lbCommunicate.CssClass = "btn btn-grid-action btn-communicate btn-default btn-sm";
             _lbCommunicate.ToolTip = "Communicate";
             _lbCommunicate.Click += lbCommunicate_Click;
             _lbCommunicate.CausesValidation = false;
@@ -294,7 +294,7 @@ namespace Rock.Web.UI.Controls
             _lbPersonMerge = new LinkButton();
             Controls.Add( _lbPersonMerge );
             _lbPersonMerge.ID = "lbPersonMerge";
-            _lbPersonMerge.CssClass = "btn-merge btn btn-default btn-sm";
+            _lbPersonMerge.CssClass = "btn btn-grid-action btn-merge btn-default btn-sm";
             _lbPersonMerge.ToolTip = "Merge Person Records";
             _lbPersonMerge.Click += lbPersonMerge_Click;
             _lbPersonMerge.CausesValidation = false;
@@ -308,7 +308,7 @@ namespace Rock.Web.UI.Controls
             _lbBulkUpdate = new LinkButton();
             Controls.Add( _lbBulkUpdate );
             _lbBulkUpdate.ID = "lbBulkUpdate";
-            _lbBulkUpdate.CssClass = "btn-bulk-update btn btn-default btn-sm";
+            _lbBulkUpdate.CssClass = "btn btn-grid-action btn-bulk-update btn-default btn-sm";
             _lbBulkUpdate.ToolTip = "Bulk Update";
             _lbBulkUpdate.Click += lbBulkUpdate_Click;
             _lbBulkUpdate.CausesValidation = false;
@@ -317,7 +317,7 @@ namespace Rock.Web.UI.Controls
             HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
             iBulkUpdate.Attributes.Add( "class", "fa fa-truck fa-fw" );
             _lbBulkUpdate.Controls.Add( iBulkUpdate );
-            
+
             // controls for excel export
             _aExcelExport = new HtmlGenericControl( "a" );
             Controls.Add( _aExcelExport );
@@ -329,7 +329,7 @@ namespace Rock.Web.UI.Controls
             _lbExcelExport = new LinkButton();
             Controls.Add( _lbExcelExport );
             _lbExcelExport.ID = "lbExcelExport";
-            _lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
+            _lbExcelExport.CssClass = "btn btn-grid-action btn-excelexport btn-default btn-sm";
             _lbExcelExport.ToolTip = "Export to Excel";
             _lbExcelExport.Click += lbExcelExport_Click;
             _lbExcelExport.CausesValidation = false;
@@ -342,7 +342,7 @@ namespace Rock.Web.UI.Controls
             _lbMergeTemplate = new LinkButton();
             Controls.Add( _lbMergeTemplate );
             _lbMergeTemplate.ID = "lbMergeTemplate";
-            _lbMergeTemplate.CssClass = "btn-merge-template btn btn-default btn-sm";
+            _lbMergeTemplate.CssClass = "btn btn-grid-action btn-merge-template btn-default btn-sm";
             _lbMergeTemplate.ToolTip = "Merge Records into Merge Template";
             _lbMergeTemplate.Click += _lbMergeTemplate_Click;
             _lbMergeTemplate.CausesValidation = false;
@@ -357,13 +357,13 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _aAdd );
             _aAdd.ID = "aAdd";
             _aAdd.Attributes.Add( "href", "#" );
-            _aAdd.Attributes.Add( "class", "btn-add btn btn-default btn-sm" );
+            _aAdd.Attributes.Add( "class", "btn btn-grid-action btn-add btn-default btn-sm" );
             _aAdd.InnerText = "Add";
 
             _lbAdd = new LinkButton();
             Controls.Add( _lbAdd );
             _lbAdd.ID = "lbAdd";
-            _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
+            _lbAdd.CssClass = "btn btn-grid-action btn-add btn-default btn-sm";
             _lbAdd.ToolTip = "Alt+N";
             _lbAdd.Click += lbAdd_Click;
             _lbAdd.CausesValidation = false;
@@ -595,7 +595,7 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         #region Event Handlers
-    
+
         /// <summary>
         /// Occurs when Person merge action is clicked.
         /// </summary>

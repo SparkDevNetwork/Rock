@@ -266,6 +266,32 @@ namespace Rock.Model
 
             return null;
         }
+
+        /// <summary>
+        /// Gets a list of inactive reasons allowed for the group type
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public List<DefinedValueCache> GetInactiveReasonsForGroupType( int groupTypeId )
+        {
+            return GetInactiveReasonsForGroupType( GroupTypeCache.Get( groupTypeId ).Guid );
+        }
+
+        /// <summary>
+        /// Gets a list of inactive reasons allowed for the group type
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <returns></returns>
+        public List<DefinedValueCache> GetInactiveReasonsForGroupType( Guid groupTypeGuid )
+        {
+            var inactiveDefinedTypeGuid = Rock.SystemGuid.DefinedType.GROUPTYPE_INACTIVE_REASONS.AsGuid();
+            string key = Rock.SystemKey.GroupTypeAttributeKey.INACTIVE_REASONS_GROUPTYPE_FILTER;
+
+            return DefinedTypeCache.Get( inactiveDefinedTypeGuid )
+                .DefinedValues
+                .Where( r => !r.GetAttributeValues( key ).Any() || r.GetAttributeValues( key ).Contains( groupTypeGuid.ToString() ) )
+                .ToList();
+        }
     }
 
     /// <summary>

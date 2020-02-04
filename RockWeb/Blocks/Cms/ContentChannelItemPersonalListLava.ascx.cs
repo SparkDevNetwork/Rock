@@ -39,10 +39,55 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of content items for the person using a Lava template." )]
 
-    [ContentChannelField("Content Channel", "The content channel to filter on. If blank all content items for the user will be displayed.", false, order:0)]
-    [IntegerField( "Max Items", "The maximum number of items to display (default 10)", false, 10, order: 1 )]
-    [LinkedPage( "Detail Page", "Page reference to the detail page. This will be included as a variable in the Lava.", false, order: 2 )]
-    [CodeEditorField("Lava Template", "The Lava template to use.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, order: 3, defaultValue: @"{% assign itemCount = Items | Size %}
+    #region Block Attributes
+
+    [ContentChannelField(
+        "Content Channel",
+        Description = "The content channel to filter on. If blank all content items for the user will be displayed.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.ContentChannel )]
+    [IntegerField(
+        "Max Items",
+        Description = "The maximum number of items to display (default 10)",
+        IsRequired = false,
+        DefaultIntegerValue = 10,
+        Order = 1,
+        Key = AttributeKey.MaxItems )]
+    [LinkedPage(
+        "Detail Page",
+        Description = "Page reference to the detail page. This will be included as a variable in the Lava.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.DetailPage )]
+    [CodeEditorField(
+        "Lava Template",
+        Description = "The Lava template to use.",
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
+        EditorTheme = Rock.Web.UI.Controls.CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        Order = 3,
+        DefaultValue = LavaTemplateDefaultValue,
+        Key = AttributeKey.LavaTemplate )]
+
+    #endregion Block Attributes
+    public partial class ContentChannelItemPersonalListLava : Rock.Web.UI.RockBlock
+    {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string ContentChannel = "ContentChannel";
+            public const string MaxItems = "MaxItems";
+            public const string DetailPage = "DetailPage";
+            public const string LavaTemplate = "LavaTemplate";
+        }
+
+        #endregion Attribute Keys
+
+        #region constants
+
+        protected const string LavaTemplateDefaultValue = @"{% assign itemCount = Items | Size %}
 
 {% if itemCount > 0 %}
     <div class='panel panel-default'> 
@@ -72,9 +117,9 @@ namespace RockWeb.Blocks.Cms
             <ul>
         </div>
     </div>
-{% endif %}" )]
-    public partial class ContentChannelItemPersonalListLava : Rock.Web.UI.RockBlock
-    {
+{% endif %}";
+
+        #endregion Constants
         #region Base Control Methods
 
         /// <summary>
@@ -126,7 +171,7 @@ namespace RockWeb.Blocks.Cms
         {
             RockContext rockContext = new RockContext();
 
-            Guid? contentChannelGuid = GetAttributeValue( "ContentChannel").AsGuidOrNull();
+            Guid? contentChannelGuid = GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull();
             ContentChannel contentChannel = null;
 
             ContentChannelItemService itemService = new ContentChannelItemService( rockContext );
@@ -140,12 +185,12 @@ namespace RockWeb.Blocks.Cms
             }
 
             var mergeFields = new Dictionary<string, object>();
-            mergeFields.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
+            mergeFields.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
             mergeFields.Add( "ContentChannel", contentChannel );    
             mergeFields.Add( "CurrentPerson", CurrentPerson );
-            mergeFields.Add( "Items", items.Take(GetAttributeValue( "MaxItems" ).AsInteger()).ToList() );
+            mergeFields.Add( "Items", items.Take(GetAttributeValue( AttributeKey.MaxItems ).AsInteger()).ToList() );
             
-            string template = GetAttributeValue( "LavaTemplate" );
+            string template = GetAttributeValue( AttributeKey.LavaTemplate );
 
             lContent.Text = template.ResolveMergeFields( mergeFields );
 

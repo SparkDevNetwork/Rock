@@ -4,8 +4,8 @@
     var newValue = '';
 
     var valueDelimiters = ['|', ','];
-    $span.children('span.value-list-rows:first').children('div.controls-row').each(function (index) {
-      var value = $(this).children('.js-value-list-input:first').val();
+    $span.children('span.value-list-rows').first().children('div.controls-row').each(function (index) {
+      var value = $(this).children('.js-value-list-input').first().val();
 
       valueDelimiters.forEach(function (v, i, a) {
         var re = new RegExp('\\' + v, 'g');
@@ -16,7 +16,7 @@
       newValue += value + '|'
     });
 
-    $span.children('input:first').val(newValue);
+    $span.children('input').first().val(newValue);
   }
 
   Sys.Application.add_load(function () {
