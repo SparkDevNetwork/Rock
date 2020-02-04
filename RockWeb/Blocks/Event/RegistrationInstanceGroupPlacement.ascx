@@ -140,12 +140,10 @@
 
                                                     <div class="panel-labels">
                                                         <div class="dropdown js-groupmember-actions hide-transit">
-                                                            <button class="btn btn-link btn-overflow" type="button" data-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></button>
+                                                            <button class="btn btn-square btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-h"></i></button>
                                                             <ul class="dropdown-menu">
-                                                                <li>
-                                                                    <a class="dropdown-item button btn-link js-remove-group-member">Remove</a>
-                                                                    <a class="dropdown-item button btn-link js-edit-group-member">Edit</a>
-                                                                </li>
+                                                                <li><a class="js-remove-group-member">Remove</a></li>
+                                                                <li><a class="js-edit-group-member">Edit</a></li>
                                                             </ul>
                                                         </div>
                                                     </div>
@@ -179,15 +177,14 @@
 
                                                         <div class="panel-labels">
                                                             <div class="dropdown js-group-actions hide-transit pull-right">
-                                                                <div class="btn btn-link btn-overflow btn-xs" data-toggle="dropdown">
-                                                                    <i class="fas fa-ellipsis-v"></i>
+                                                                <div class="btn btn-square btn-overflow btn-xs" data-toggle="dropdown">
+                                                                    <i class="fa fa-ellipsis-v"></i>
                                                                 </div>
                                                                 <ul class="dropdown-menu">
-                                                                    <li>
-                                                                        <a class="dropdown-item button btn-link js-detach-placement-group">Detach from Placement</a>
-                                                                        <a class="dropdown-item button btn-link js-delete-group">Delete Permanently</a>
-                                                                        <a class="dropdown-item button btn-link js-edit-group">Edit Group</a>
-                                                                    </li>
+                                                                    <li><a class="js-edit-group">Edit Group</a></li>
+                                                                    <li><a class="js-detach-placement-group">Detach from Placement</a></li>
+                                                                    <li role="separator" class="divider"></li>
+                                                                    <li><a class="dropdown-item-danger js-delete-group">Delete Permanently</a></li>
                                                                 </ul>
                                                             </div>
                                                             <div class="btn btn-default btn-xs pull-right js-placement-group-toggle-visibility placement-group-toggle-visibility">
