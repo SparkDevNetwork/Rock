@@ -117,6 +117,7 @@
     <Compile Include="Rock\StorageTests\AmazonS3ComponentTests.cs" />
     <Compile Include="Rock\StorageTests\FileSystemComponentTests.cs" />
     <Compile Include="Rock\Utility\ExtensionMethods\StringExtensionsTests.cs" />
+    <Compile Include="Rock\Utility\ExtensionMethods\TypeExtensionsTests.cs" />
     <Compile Include="Rock\Utility\NcoaApi\TrueNcoaApiTests.cs" />
     <Compile Include="Rock\Utility\RockDynamicTests.cs" />
     <Compile Include="Rock\Workflow\Action\BackgroundCheckRequestTests.cs" />
