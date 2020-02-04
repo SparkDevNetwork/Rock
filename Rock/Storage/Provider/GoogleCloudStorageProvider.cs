@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
+using Google;
 using Google.Cloud.Storage.V1;
 using Rock.Attribute;
 using Rock.Model;
@@ -128,15 +129,32 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override Stream GetContentStream( BinaryFile file )
         {
-            var bucketName = GetBucketName();
-            var googleObject = TranslateBinaryFileToGoogleObject( file );
-
-            using ( var client = GetStorageClient() )
+            try
             {
+                var googleObject = TranslateBinaryFileToGoogleObject( file, true );
                 var stream = new MemoryStream();
-                client.DownloadObject( googleObject, stream );
-                stream.Position = 0;
 
+                using ( var client = GetStorageClient() )
+                {
+                    client.DownloadObject( googleObject, stream );
+                }
+
+                stream.Position = 0;
+                return stream;
+            }
+            catch ( GoogleApiException )
+            {
+                // Because this provider was originally released without the guid as part of the path,
+                // this code allows a retry to find the file without the guid
+                var googleObject = TranslateBinaryFileToGoogleObject( file, false );
+                var stream = new MemoryStream();
+
+                using ( var client = GetStorageClient() )
+                {
+                    client.DownloadObject( googleObject, stream );
+                }
+
+                stream.Position = 0;
                 return stream;
             }
         }
@@ -152,7 +170,37 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override string GetPath( BinaryFile binaryFile )
         {
+            return GetPath( binaryFile, true );
+        }
+
+        /// <summary>
+        /// Gets the path.
+        /// </summary>
+        /// <param name="binaryFile">The binary file.</param>
+        /// <param name="includeGuid">if set to <c>true</c> [include unique identifier].</param>
+        /// <returns></returns>
+        private string GetPath( BinaryFile binaryFile, bool includeGuid )
+        {
+            /*
+             * 2020-02-04 BJW
+             *
+             * This code was originally released as not including the BinaryFile.Guid as part of the path. This caused issues
+             * where files of the same name as an existing file would overwrite that older file on GCP. The proper way to store
+             * the files is to use the guid (includeGuid = true). The includeGuid param is offered for backwards-compatibility.
+             * The "download" methods (GetStream and GetLink) first attempt to get the file using the guid in the path. If the
+             * file is not found, then a second attempt is made without the guid.
+             * 
+             */ 
+
             var rootFolder = GetRootFolder();
+
+            if ( includeGuid )
+            {
+                // Normal path format
+                return $"{rootFolder}{binaryFile.Guid}_{binaryFile.FileName}";
+            }
+
+            // For backwards-compatibility only
             return $"{rootFolder}{binaryFile.FileName}";
         }
 
@@ -164,12 +212,28 @@ namespace Rock.Storage.Provider
         public override string GetUrl( BinaryFile binaryFile )
         {
             var bucketName = GetBucketName();
-            var googleObject = TranslateBinaryFileToGoogleObject( binaryFile );
 
-            using ( var client = GetStorageClient() )
+            try
             {
-                var response = client.GetObject( bucketName, googleObject.Name );
-                return response.MediaLink;
+                var googleObject = TranslateBinaryFileToGoogleObject( binaryFile, true );
+
+                using ( var client = GetStorageClient() )
+                {
+                    var response = client.GetObject( bucketName, googleObject.Name );
+                    return response.MediaLink;
+                }
+            }
+            catch ( GoogleApiException )
+            {
+                // Because this provider was originally released without the guid as part of the path,
+                // this code allows a retry to find the file without the guid
+                var googleObject = TranslateBinaryFileToGoogleObject( binaryFile, false );
+
+                using ( var client = GetStorageClient() )
+                {
+                    var response = client.GetObject( bucketName, googleObject.Name );
+                    return response.MediaLink;
+                }
             }
         }
 
@@ -226,11 +290,13 @@ namespace Rock.Storage.Provider
         /// Translates the binary file to Google object.
         /// </summary>
         /// <param name="binaryFile">The binary file.</param>
+        /// <param name="includeGuid">Include the binary file guid in the path. This should be true except for backwards
+        /// compatibility purposes</param>
         /// <returns></returns>
-        private GoogleObject TranslateBinaryFileToGoogleObject( BinaryFile binaryFile )
+        private GoogleObject TranslateBinaryFileToGoogleObject( BinaryFile binaryFile, bool includeGuid = true )
         {
             var bucketName = GetBucketName();
-            var name = GetPath( binaryFile );
+            var name = GetPath( binaryFile, includeGuid );
 
             return new GoogleObject
             {
