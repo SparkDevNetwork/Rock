@@ -212,7 +212,7 @@ namespace Rock.Jobs
 
                 var isSmsEnabled = MediumContainer.HasActiveSmsTransport();
                 var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" ) || string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
-                var alwaysSendSms = isSmsEnabled && sendUsingConfiguration.Equals( "SMS" );
+                var alwaysSendSms = sendUsingConfiguration.Equals( "SMS" );
 
                 if ( !sendUsingConfiguration.Equals( "Email" ) && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
                 {
@@ -240,18 +240,19 @@ namespace Rock.Jobs
                         RockMessage message = null;
                         var recipients = new List<RockMessageRecipient>();
 
-                        var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
-                        var smsNumber = phoneNumber == null ? string.Empty : phoneNumber.ToSmsNumber();
-
-                        if ( sendSms && string.IsNullOrWhiteSpace( smsNumber ) )
-                        {
-                            sendSms = false;
-                            errorMessages.Add( string.Format( "No SMS number could be found for {0}.", leader.Person ) );
-                            errorCount++;
-                        }
-
                         if ( sendSms )
                         {
+                            var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+                            var smsNumber = phoneNumber == null ? string.Empty : phoneNumber.ToSmsNumber();
+
+                            if ( string.IsNullOrWhiteSpace( smsNumber ) || !isSmsEnabled )
+                            {
+                                string smsErrorMessage = GenerateSmsErrorMessage( isSmsEnabled, alwaysSendSms, leader.Person, groupMemberSendSms, personSendSms );
+                                errorMessages.Add( smsErrorMessage );
+                                errorCount++;
+                                continue;
+                            }
+
                             recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
 
                             message = new RockSMSMessage( systemCommunication );
@@ -296,6 +297,30 @@ namespace Rock.Jobs
                 ExceptionLogService.LogException( exception, context2 );
                 throw exception;
             }
+        }
+
+        private string GenerateSmsErrorMessage( bool isSmsEnabled, bool alwaysSendSms, Person person, bool groupMemberSendSms, bool personSendSms )
+        {
+            var smsErrorMessage = "{0} calls for SMS, but no SMS number could be found for {1}.";
+            if ( !isSmsEnabled )
+            {
+                smsErrorMessage = "{0} calls for SMS, but SMS is not enabled. {1} did not receive a notification.";
+            }
+
+            if ( alwaysSendSms )
+            {
+                smsErrorMessage = string.Format( smsErrorMessage, "Job Settings", person );
+            }
+            else if ( groupMemberSendSms )
+            {
+                smsErrorMessage = string.Format( smsErrorMessage, "Group Member Communications Settings", person );
+            }
+            else if ( personSendSms )
+            {
+                smsErrorMessage = string.Format( smsErrorMessage, "The Person's Communications Settings", person );
+            }
+
+            return smsErrorMessage;
         }
     }
 }
