@@ -160,10 +160,11 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Rs the filter_ display filter value.
+        /// Gets the display value for a filter field.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
+
         protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
@@ -302,9 +303,9 @@ namespace RockWeb.Blocks.Event
                 }
 
                 string statusFilter = rFilter.GetUserPreference( "Active Status" );
-                if ( !string.IsNullOrWhiteSpace(statusFilter))
+                if ( !string.IsNullOrWhiteSpace( statusFilter ) )
                 {
-                    if ( statusFilter == "inactive")
+                    if ( statusFilter == "inactive" )
                     {
                         qry = qry.Where( i => i.IsActive == false );
                     }
