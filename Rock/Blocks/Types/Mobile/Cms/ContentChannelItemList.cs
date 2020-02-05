@@ -131,7 +131,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Description = "The XAML for the lists data template.",
         Key = AttributeKeys.ListDataTemplate,
         Order = 0,
-        EditorMode = Web.UI.Controls.CodeEditorMode.Xml,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         DefaultValue = defaultDataTemplate,
         Category = "custommobile")]
 
