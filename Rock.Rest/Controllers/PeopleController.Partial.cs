@@ -1320,7 +1320,7 @@ namespace Rock.Rest.Controllers
     }
 
     /// <summary>
-    ///
+    /// 
     /// </summary>
     public class ConfigureTextToGiveArgs
     {

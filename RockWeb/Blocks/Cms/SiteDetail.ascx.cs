@@ -37,7 +37,7 @@ using Site = Rock.Model.Site;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    ///
+    /// 
     /// </summary>
     [DisplayName( "Site Detail" )]
     [Category( "CMS" )]
@@ -506,7 +506,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !site.IsValid )
                 {
-                    // Controls will render the error messages
+                    // Controls will render the error messages                    
                     return;
                 }
 
