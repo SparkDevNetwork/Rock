@@ -91,7 +91,7 @@
 
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
 
     <div class="md-text-constrained md-mx-auto panel overflow-hidden">
         <div class="editorial-content position-relative panel-body bg-white xs-soft xs-soft-half-bottom">

@@ -1,3 +1,4 @@
+{% assign site_name = 'Global' | Page:'SiteName' %}
 {{ site_name | AddMetaTagToHead:'property','og:site_name' }}
 {% if url and url != empty %}{{ url | AddMetaTagToHead:'property','og:url' }}{% endif %}
 
@@ -51,12 +52,12 @@
     {{ video_type | AddMetaTagToHead:'property','og:video:type' }}
     {{ video_width | AddMetaTagToHead:'property','og:video:width' }}
     {{ video_height | AddMetaTagToHead:'property','og:video:height' }}
-    
+
     <!-- Twitter Video Card -->
     {{ video | AddMetaTagToHead:'property','twitter:player' }}
     {{ video_width | AddMetaTagToHead:'property','twitter:player:width' }}
     {{ video_height | AddMetaTagToHead:'property','twitter:player:height' }}
-    
+
 {% endif %}
 
 {% if app and app != empty %}

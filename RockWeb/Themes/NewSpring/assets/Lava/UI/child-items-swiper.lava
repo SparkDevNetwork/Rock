@@ -1,27 +1,19 @@
 {% if cciid and cciid != empty %}
 
     {% comment %}
-        Determine how we're sorting child items based on the parent channel's (channel of the cciid that was passed in) ManuallyOrdered property.
-    {% endcomment %}
-
-    {% contentchannelitem id:'{{ cciid }}' iterator:'parentItems' %}
-        {% for parentItem in parentItems %}
-            {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
-        {% endfor %}
-    {% endcontentchannelitem %}
-
-    {% comment %}
         Set current item slug so we can determine what the active slide should be
     {% endcomment %}
     {% assign currentSlug = 'Global' | Page:'Path' | Split:'/' | Last %}
 
-    {% if sort == 'Order' %}
+    {% comment %}
+        Determine how we're sorting child items based on the parent channel's (channel of the cciid that was passed in) ManuallyOrdered property.
+    {% endcomment %}
+    {% capture sort %}{% if Item.ContentChannel.ChildItemsManuallyOrdered == true %}Order{% else %}StartDateTime{% endif %}{% endcapture %}
 
-        {% comment %}
-            If we're sorting by Order, we've got to start from the ContentChannelItemAssociation table since that's where the Order property is stored.
-        {% endcomment %}
+    {% sql %}
+        {% if sort == 'Order' %}
 
-        {% sql %}
+            /* If we're sorting by Order, we've got to start from the ContentChannelItemAssociation table since that's where the Order property is stored. */
             SELECT ROW_NUMBER() OVER (ORDER BY ccia.[Order]) - 1 'Index', cci.Id, ccis.Slug
             FROM ContentChannelItemAssociation ccia
             JOIN ContentChannelItem cci
@@ -29,24 +21,15 @@
             JOIN ContentChannelItemSlug ccis
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
             AND cci.Status = 2
             AND cci.StartDateTime <= DATEADD(hh, -5, GETDATE())
             AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime IS NOT NULL AND cci.ExpireDateTime > DATEADD(hh, -5, GETDATE()))
             ORDER BY ccia.[Order]
-        {% endsql %}
-        
-        {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
 
-    {% else %}
+        {% else %}
 
-        {% comment %}
-            If we're sorting by StartDateTime, we can go straight to the ContentChannelItem table since that property is with the other item properties/attributes we need.
-        {% endcomment %}
-
-        {% comment %}
-            Setup array of child content channel item ids ( by default they are`)
-        {% endcomment %}
-        {% sql %}
+            /* If we're sorting by StartDateTime, we can go straight to the ContentChannelItem table since that property is with the other item properties/attributes we need. */
             SELECT ROW_NUMBER() OVER (ORDER BY cci.StartDateTime) - 1 'Index', cci.Id, ccis.Slug
             FROM ContentChannelItemAssociation ccia
             JOIN ContentChannelItem cci
@@ -54,15 +37,16 @@
             JOIN ContentChannelItemSlug ccis
             ON ccis.ContentChannelItemId = cci.Id
             WHERE ccia.ContentChannelItemId = '{{ cciid }}'
+            {% if ccids and ccids != empty %}AND cci.ContentChannelId IN ({{ ccids }}){% endif %}
             AND cci.Status = 2
             AND cci.StartDateTime <= DATEADD(hh, -5, GETDATE())
             AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime IS NOT NULL AND cci.ExpireDateTime > DATEADD(hh, -5, GETDATE()))
             ORDER BY cci.StartDateTime
-        {% endsql %}
 
-        {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
+        {% endif %}
+    {% endsql %}
 
-    {% endif %}
+    {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
 
     {% comment %}
         Now that we've setup our array of child item ids, we'll loop through them and get the content channel item that corresponds to each Id and generate our swiper element.
@@ -94,7 +78,7 @@
                         {% capture content %}{% if child.Content != empty %}<p class="push-half-bottom">{{ child.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}</p>{% endif %}{% endcapture %}
                         {% capture textalignment %}{% endcapture %}
                         {% capture label %}{% if childType contains "Devotional" %}Session {{ result.Index | Plus:1 }}{% endif %}{% endcapture %}
-                        
+
                         {% assign actualDate = child | Attribute:'ActualDate','RawValue' %}
                         {% assign dates = child | Attribute:'Dates','RawValue' %}
                         {% assign dateParts = dates | Split:',' %}
@@ -133,9 +117,9 @@
                         {% capture trimcopy %}{% endcapture %}
                         {% capture linkcolor %}{% endcapture %}
                         {% capture backgroundcolor %}{% endcapture %}
-                        {% capture linkurl %}{[ getPermalink cciid:'{{ child.Id }}' ]}{% endcapture %}
+                        {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ child.Id }}' ]}{% endcapture %}
                         {% capture linktext %}{% if childType contains "Sermon" or childType contains "Series" %}Watch{% else %}Read{% endif %} {{ childType | Singularize }}{% endcapture %}
-                        
+
                         {[ card id:'{{ id }}' cciid:'{{ cciid }}' guid:'{{ guid }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
                     {% endfor %}
                 {% endcontentchannelitem %}
