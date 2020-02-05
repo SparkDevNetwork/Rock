@@ -678,7 +678,6 @@ namespace Rock.NMI
         {
             errorMessage = string.Empty;
             var financialGateway = new FinancialGatewayService( new RockContext() ).Get( transaction.FinancialGatewayId.Value );
-
             var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
             var restRequest = new RestRequest( Method.GET );
 

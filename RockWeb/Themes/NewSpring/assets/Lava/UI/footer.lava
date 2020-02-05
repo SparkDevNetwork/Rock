@@ -1,0 +1,55 @@
+{% assign orgAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
+{% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
+
+{% if CurrentPerson and CurrentPerson != empty %}
+    {% assign orgCampus = CurrentPerson | Campus %}
+    {% assign orgStreet = orgCampus.Location.Street1 %}
+{% endif %}
+
+{% if orgStreet and orgStreet != empty %}
+    {% assign orgAddress = orgCampus.Location %}
+{% endif %}
+
+{% if orgCampus.PhoneNumber and orgCampus.PhoneNumber != empty %}
+    {% assign orgPhone = orgCampus.PhoneNumber %}
+    {% capture orgPhone %}({{ orgPhone | Slice:0,3 }}) {{ orgPhone | Slice:4,9 }}{% endcapture %}
+{% endif %}
+
+<footer class="position-relative shell soft-double xs-soft-double-ends bg-gray-dark rounded shadowed">
+    <a href="#content" data-scroll title="Scroll to Top">
+        <img src="//dg0ddngxdz549.cloudfront.net/newspring/icons/newspring_mark.png" alt="NewSpring Church" class="position-absolute bottom-zero right-zero" style="max-width: 50px;">
+    </a>
+    <div class="row sans-serif strong text-decoration-none">
+        <div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom xs-push-half-bottom">
+            <h2 class="h5 text-white push-half-bottom">NewSpring {% if orgCampus and orgCampus != empty %}{{ orgCampus.Name }}{% else %}Church{% endif %}</h2>
+            <span class="text-white">
+                <p class="flush">
+                {{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %} <br>{{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</p>
+                <p class="flush-bottom xs-push-half-bottom"><a href="tel:+1{{ orgPhone | Remove:'(' | Remove:')' | Remove:'-' | Remove:' ' }}">{{ orgPhone }}</a></p>
+            </span>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom xs-push-half-bottom">
+            <h2 class="h5 text-white xs-text-center push-half-bottom">About</h2>
+            <ul class="list-unstyled xs-text-center flush-bottom xs-push-half-bottom">
+                <li><a href="/about">About NewSpring</a></li>
+                <li><a href="/beliefs">What We Believe</a></li>
+                <li><a href="/family-values">Family Values</a></li>
+            </ul>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 push-bottom xs-push-half-bottom">
+            <h2 class="h5 text-white xs-text-center push-half-bottom">Legal</h2>
+            <ul class="list-unstyled xs-text-center flush-bottom xs-push-half-bottom">
+                <li><a href="/privacy">Privacy Policy</a></li>
+                <li><a href="/terms">Terms of Use</a></li>
+                <li><a href="/reprinting-and-reposting">Reprinting &amp; Reposting</a></li>
+            </ul>
+        </div><div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom">
+            <h2 class="h5 text-white push-half-bottom">Social</h2>
+            <p class="text-white flush">
+                <a href="{{ 'Global' | Attribute:'OrganizationFacebook','RawValue' }}" target="_blank"><i class="fab fa-lg fa-facebook-square"></i></a>&nbsp;
+                <a href="{{ 'Global' | Attribute:'OrganizationTwitter','RawValue' }}" target="_blank"><i class="fab fa-lg fa-twitter-square"></i></a>&nbsp;
+                <a href="{{ 'Global' | Attribute:'OrganizationInstagram','RawValue' }}" target="_blank"><i class="fab fa-lg fa-instagram"></i></a>
+            </p>
+            
+        </div>
+    </div>
+    <p class="sans-serif strong text-white text-decoration-none flush-bottom xs-text-center"><small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on <i class="fab fa-rockrms" title="Rock RMS"></i> Rock RMS</a> &middot; <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=2">Report Website Issue</a></small></p>
+</footer>

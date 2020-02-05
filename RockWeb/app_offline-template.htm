@@ -1,48 +1,87 @@
 ﻿<!DOCTYPE html>
-<html class="no-js">
-    <head runat="server">
+<!--
+
+   ______                            __  _                ____                   __        __            
+  / ________  ____  ____  ___  _____/ /_(_____  ____ _   / __ \___  ____  ____  / ___     / /_____       
+ / /   / __ \/ __ \/ __ \/ _ \/ ___/ __/ / __ \/ __ `/  / /_/ / _ \/ __ \/ __ \/ / _ \   / __/ __ \      
+/ /___/ /_/ / / / / / / /  __/ /__/ /_/ / / / / /_/ /  / ____/  __/ /_/ / /_/ / /  __/  / /_/ /_/ /      
+\____/\____/_/ /_/_/ /_/\___/\___/\__/_/_/ /_/\__, /  /_/    \___/\____/ .___/_/\___/   \__/\____/       
+       __                                    /_____   ______          /__       ____  __  __             
+      / ___  _______  _______   ____ _____  ____/ /  / ________ ______/ /_     / __ \/ /_/ /_  ___  _____
+ __  / / _ \/ ___/ / / / ___/  / __ `/ __ \/ __  /  / __/ / __ `/ ___/ __ \   / / / / __/ __ \/ _ \/ ___/
+/ /_/ /  __(__  / /_/ (__  )  / /_/ / / / / /_/ /  / /___/ /_/ / /__/ / / /  / /_/ / /_/ / / /  __/ /    
+\____/\___/____/\__,_/____/   \__,_/_/ /_/\__,_/  /_____/\__,_/\___/_/ /_/   \____/\__/_/ /_/\___/_/     
+
+-->
+<html lang="en">
+    <head>
         <meta charset="utf-8">
-        <title></title>
-
-        <script src="Scripts/modernizr.js"></script>
-        <script src="Scripts/jquery-3.3.1.min.js"></script>
-
-        <link rel="stylesheet" href="Themes/Stark/Styles/bootstrap.css"/>
-        <link rel="stylesheet" href="Themes/Stark/Styles/theme.css" />
-
-        <!-- Set the viewport width to device width for mobile -->
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+        <title>Temporarily Unavailable | NewSpring Church</title>
+        <link rel="stylesheet" href="https://use.typekit.net/bcm6gqj.css">
         <style>
-            .offline-icon-col {
-                text-align: center;
-            }
+          * {
+            font-family: ff-meta-serif-web-pro, serif;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 22px;
+          }
+          html {
+            background-color: #303030;
+            color: #fff;
+            -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+          }
+          body {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            display: flex;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+          }
+          h1,h2,h3,h4,h5,h6 {
+            font-family: colfax-web, sans-serif;
+        font-style: normal;
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin-top: 0;
+          }
+          h1 { font-size: 62px; letter-spacing: -2px; }
+          h2 { font-size: 52px; }
+          h3 { font-size: 38px; }
+          h4 { font-size: 32px; }
+          h5 { font-size: 26px; }
+          h6 { font-size: 20px; }
 
-            .offline-icon-col i {
-                font-size: 200px;
-                color: #777;
-            }
+          h1,h2,h3,h4,h5,h6,p,ul,ol,small { margin-bottom: 30px; }
+
+          a {
+            color: #6bac43;
+          }
+
+          .container { 
+            padding: 30px;
+            max-width: 850px;
+            margin: 0 auto;
+            text-align: center; 
+          }
+
+          @media screen and (max-width: 600px) {
+        h1 {
+          font-size: 32px;
+          letter-spacing: -1px;
+        }
+          }
         </style>
-
     </head>
     <body>
-
-        <div class="jumbotron">
-            <div class="row">
-                <div class="col-md-4 offline-icon-col">
-                    <i class="fa fa-cog fa-spin"></i>
-                </div>
-                <div class="col-md-8">
-                    <h1>Updates in Progress...</h1>
-                    <p>Our website is unavailable for the moment. We'll be back and running before long so please try again soon.</p>
-                    <p><em>Thanks for your patience!</em></p>
-
-                    <!-- Consider adding information you think a person might want that's somewhat urgent to their need. -->
-                </div>
-            </div>
-            
+        <div class="container">
+          <img src="https://s3.amazonaws.com/ns.images/newspring/icons/newspring_mark.png" alt="NewSpring Church" style="max-width: 100px; margin-bottom: 30px;">
+          <h1>The old has passed away.<br>Behold, the new has come!</h1>
+          <p>The application you are trying to reach is currently down for scheduled maintenance or is temporarily unavailable. We apologize for any inconvenience and if you have any further questions please feel free to <a href="mailto:web.helpdesk@newspring.cc">reach out.</a></p>
         </div>
-
-        
     </body>
 </html>

@@ -1,0 +1,125 @@
+// Buttons
+.btn {
+	font-family: @font-family-sans-serif;
+	font-weight: 500;
+	text-decoration: none;
+	vertical-align: bottom;
+	border: 0px;
+}
+
+.btn-primary, .btn-secondary, .btn-tertiary {
+	border: 0px;
+}
+
+.btn-link:hover, .btn-link:active, .btn-link:focus {
+	text-decoration: none;
+}
+
+.btn-xs {
+	font-size: 14px;
+}
+
+.btn-share {
+	position: relative;
+	display: inline-block;
+
+	ul {
+		position: absolute;
+		top: @base-spacing-unit;
+		left: 50%;
+		width: 200px;
+		margin-left: -100px;
+	}
+
+	li {
+		display: inline-block;
+		width: 50px;
+	}
+}
+
+.btn-default { .button-variant(@gray-darker, @gray-lighter, @gray-lighter); }
+.btn-primary:active, .btn-primary:focus { background-color: @brand-primary; }
+.btn-secondary { .button-variant(@white, @brand-secondary, @brand-secondary); }
+.btn-tertiary { .button-variant(@white, @brand-tertiary, @brand-tertiary); }
+.btn-gray-lighter { .button-variant(@gray-darker, @gray-lighter, @gray-lighter); }
+.btn-gray-light { .button-variant(@gray-darker, @gray-light, @gray-light); }
+.btn-gray-dark { .button-variant(@white, @gray-dark, @gray-dark); }
+.btn-gray-darker { .button-variant(@white, @gray-darker, @gray-darker); }
+
+.btn-danger { .button-variant(@white, @brand-danger, @brand-danger); }
+
+.btn-facebook {
+  .button-variant(@white; @facebook; @facebook);
+}
+
+.btn-twitter {
+  .button-variant(@white; @twitter; @twitter);
+}
+
+.btn-google {
+  .button-variant(@white; @google; @google);
+}
+
+.btn-pinterest {
+  .button-variant(@white; @pinterest; @pinterest);
+}
+
+.btn .fa-xs, .fa-xs {
+	position: relative;
+	top: -1px;
+}
+
+.btn .fa-lg, .fa-lg {
+	position: relative;
+	top: 1px;
+}
+
+
+.btn-play {
+	width: @base-spacing-unit*2;
+	height: @base-spacing-unit*2;
+	line-height: @base-spacing-unit*2;
+	background-color: @brand-primary;
+	border-radius: 1000px;
+	border: 3px solid @white;
+	transition: background-color .1s;
+	font-size: @font-size-base*.8;
+	transform: scale(1.65);
+	z-index: 1;
+
+	&:hover {
+		color: @white;
+		background-color: @brand-secondary;
+	}
+
+	.wistia_embed {
+		display: inline-block;
+		position: absolute !important;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		border-radius: 1000px;
+
+		.wistia_click_to_play {
+			position: absolute !important;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			border-radius: 1000px;
+		}
+	}
+
+	i {
+		position: absolute !important;
+		top: 50% !important;
+		left: 50%;
+		height: 20px;
+		width: 20px;
+		line-height: 20px;
+		text-align: center;
+		margin-top: -10px;
+		margin-left: -9px;
+	}
+}

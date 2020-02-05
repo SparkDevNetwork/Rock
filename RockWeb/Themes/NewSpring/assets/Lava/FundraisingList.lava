@@ -1,0 +1,40 @@
+{% assign trips = GroupList | SortByAttribute:'OpportunityStartDate' %}
+
+{[ swiper id:'trips' title:'Upcoming Trips' subtitle:'' ]}
+    {% for item in trips %}{% if item.IsPublic == 'true' %}[[ item data:'' ]]
+        {% assign startDate = item | Attribute:'OpportunityStartDate' %}
+        {% assign endDate = item | Attribute:'OpportunityEndDate' %}
+        
+        {% assign photoUrl = item | Attribute:'OpportunityImage','Url' %}
+        {% assign dateRangeParts = item | Attribute:'OpportunityDateRange','RawValue' | Split:',' %}
+        {% assign dateRangePartsSize = dateRangeParts | Size %}
+
+        {% capture id %}{{ item.Id }}{% endcapture %}
+        {% capture title %}{{ item | Attribute:'OpportunityTitle' }}{% endcapture %}
+        {% capture titlesize %}h3{% endcapture %}
+        {% capture type %}Mission Trip{% endcapture %}
+        {% capture content %}<p>{{ item | Attribute:'OpportunitySummary' }}</p>{% endcapture %}
+        {% capture textalignment %}{% endcapture %}
+        {% capture label %}{% endcapture %}
+        {% capture subtitle %}
+            {{ startDate | Date:'MMMM' }} {{ startDate | Date:'d' | NumberToOrdinal }}, {{ startDate | Date:'yyyy' }}{% if startDate != empty %}
+            - {{ endDate | Date:'MMMM' }} {{ endDate | Date:'d' | NumberToOrdinal }}, {{ endDate | Date:'yyyy' }}{% endif %}
+        {% endcapture %}
+        {% capture imageurl %}{{ photoUrl }}{% endcapture %}
+        {% capture imageoverlayurl %}{% endcapture %}
+        {% capture imagealignment %}{% endcapture %}
+        {% capture imageopacity %}{% endcapture %}
+        {% capture grayscale %}{% endcapture %}
+        {% capture backgroundvideourl %}{% endcapture %}
+        {% capture lava %}{% endcapture %}
+        {% capture videoid %}{% endcapture %}
+        {% capture ratio %}{% endcapture %}
+        {% capture trimcopy %}y{% endcapture %}
+        {% capture linkcolor %}{% endcapture %}
+        {% capture backgroundcolor %}{% endcapture %}
+        {% capture linkurl %}/missions/{{ item.Id }}{% endcapture %}
+        {% capture linktext %}Trip Details{% endcapture %}
+
+        {[ card id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' ]}
+    [[ enditem ]]{% endif %}{% endfor %}
+{[ endswiper ]}
