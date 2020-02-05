@@ -103,10 +103,7 @@ namespace Rock.Rest.Filters
                              *
                              * Task: https://app.asana.com/0/1120115219297347/1153140643799337/f
                              */
-                            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                            {
-                                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", person );
-                            }
+                            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", person );
                         }
                     }
                 }

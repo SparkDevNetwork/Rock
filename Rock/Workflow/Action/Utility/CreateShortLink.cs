@@ -85,7 +85,7 @@ namespace Rock.Workflow.Action
             string url = GetAttributeValue( action, "Url", true ).ResolveMergeFields( mergeFields ).RemoveCrLf().Trim();
             if ( url.IsNullOrWhiteSpace() )
             {
-                errorMessages.Add( "A valid Target Url was not specified." );
+                errorMessages.Add( "A valid Target URL was not specified." );
                 return false;
             }
 

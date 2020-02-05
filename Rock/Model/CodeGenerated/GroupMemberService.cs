@@ -104,6 +104,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             target.ArchivedDateTime = source.ArchivedDateTime;
+            target.CommunicationPreference = source.CommunicationPreference;
             target.DateTimeAdded = source.DateTimeAdded;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

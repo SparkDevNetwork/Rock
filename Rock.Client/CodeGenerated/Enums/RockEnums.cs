@@ -740,10 +740,14 @@ namespace Rock.Client.Enums
     /// </summary>
     public enum StreakStructureType
     {
+        AnyAttendance = 0x0,
         Group = 0x1,
         GroupType = 0x2,
         GroupTypePurpose = 0x3,
         CheckInConfig = 0x4,
+        InteractionChannel = 0x5,
+        InteractionComponent = 0x6,
+        InteractionMedium = 0x7,
     }
 
     /// <summary>

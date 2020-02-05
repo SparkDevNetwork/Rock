@@ -17,18 +17,22 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Types.Mobile.Groups
 {
     /// <summary>
-    /// Displays a page to allow the user to mark attendance for a group.
+    /// Displays a page to allow the user to view a list of members in a group.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
@@ -40,7 +44,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     #region Block Attributes
 
     [LinkedPage( "Group Member Detail Page",
-        Description = "The page to that will display the group member details when selecting a member.",
+        Description = "The page that will display the group member details when selecting a member.",
         IsRequired = false,
         Key = AttributeKeys.GroupMemberDetailPage,
         Order = 0 )]
@@ -59,6 +63,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         DefaultValue = "",
         Key = AttributeKeys.Template,
         Order = 2 )]
+
+    [TextField( "Additional Fields",
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "CustomSetting",
+        Key = AttributeKeys.AdditionalFields,
+        Order = 3 )]
 
     #endregion
 
@@ -85,6 +97,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
             /// The template key.
             /// </summary>
             public const string Template = "Template";
+
+            /// <summary>
+            /// The additional fields key.
+            /// </summary>
+            public const string AdditionalFields = "AdditionalFields";
         }
 
         /// <summary>
@@ -156,7 +173,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <returns></returns>
         private string CreateLavaTemplate()
         {
-            var fields = new List<FieldSetting>();
+            var fields = GetAttributeValue( AttributeKeys.AdditionalFields ).FromJsonOrNull<List<FieldSetting>>() ?? new List<FieldSetting>();
 
             var properties = new Dictionary<string, string>
             {
@@ -216,6 +233,81 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     Title = title,
                     Members = members
                 };
+            }
+        }
+
+        #endregion
+
+        #region Custom Settings
+
+        /// <summary>
+        /// Defines the control that will provide additional Basic Settings tab content
+        /// for the GroupMemberList block.
+        /// </summary>
+        /// <seealso cref="Rock.Web.RockCustomSettingsProvider" />
+        [TargetType( typeof( GroupMemberList ) )]
+        public class GroupMemberListCustomSettingsProvider : Web.RockCustomSettingsProvider
+        {
+            /// <summary>
+            /// Gets the custom settings title. Used when displaying tabs or links to these settings.
+            /// </summary>
+            /// <value>
+            /// The custom settings title.
+            /// </value>
+            public override string CustomSettingsTitle => "Basic Settings";
+
+            /// <summary>
+            /// Gets the custom settings control. The returned control will be added to the parent automatically.
+            /// </summary>
+            /// <param name="attributeEntity">The attribute entity.</param>
+            /// <param name="parent">The parent control that will eventually contain the returned control.</param>
+            /// <returns>
+            /// A control that contains all the custom UI.
+            /// </returns>
+            public override Control GetCustomSettingsControl( IHasAttributes attributeEntity, Control parent )
+            {
+                var pnlContent = new Panel();
+                var groupMemberEntityTypeId = EntityTypeCache.GetId<GroupMember>().Value;
+
+                var jfBuilder = new JsonFieldsBuilder
+                {
+                    Label = "Additional Fields",
+                    SourceType = typeof( GroupMember ),
+                    AvailableAttributes = AttributeCache.All()
+                        .Where( a => a.EntityTypeId == groupMemberEntityTypeId )
+                        .Where( a => a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() && a.EntityTypeQualifierValue.IsNullOrWhiteSpace() )
+                        .ToList()
+                };
+
+                pnlContent.Controls.Add( jfBuilder );
+
+                return pnlContent;
+            }
+
+            /// <summary>
+            /// Update the custom UI to reflect the current settings found in the entity.
+            /// </summary>
+            /// <param name="attributeEntity">The attribute entity.</param>
+            /// <param name="control">The control returned by GetCustomSettingsControl() method.</param>
+            public override void ReadSettingsFromEntity( IHasAttributes attributeEntity, Control control )
+            {
+                var jfBuilder = ( JsonFieldsBuilder ) control.Controls[0];
+
+                jfBuilder.FieldSettings = attributeEntity.GetAttributeValue( AttributeKeys.AdditionalFields )
+                    .FromJsonOrNull<List<FieldSetting>>();
+            }
+
+            /// <summary>
+            /// Update the entity with values from the custom UI.
+            /// </summary>
+            /// <param name="attributeEntity">The attribute entity.</param>
+            /// <param name="control">The control returned by the GetCustomSettingsControl() method.</param>
+            /// <param name="rockContext">The rock context to use when accessing the database.</param>
+            public override void WriteSettingsToEntity( IHasAttributes attributeEntity, Control control, RockContext rockContext )
+            {
+                var jfBuilder = ( JsonFieldsBuilder ) control.Controls[0];
+
+                attributeEntity.SetAttributeValue( AttributeKeys.AdditionalFields, jfBuilder.FieldSettings.ToJson() );
             }
         }
 

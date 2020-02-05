@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select an event item
     /// </summary>
     public class EventItemPicker : RockDropDownList
     {

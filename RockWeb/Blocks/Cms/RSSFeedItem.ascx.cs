@@ -42,8 +42,8 @@ namespace RockWeb.Blocks.Cms
     #region Block Attributes
 
     [TextField(
-        "RSS Feed Url",
-        Description = "The Url of the RSS Feed to retrieve and consume",
+        "RSS Feed URL",
+        Description = "The URL of the RSS Feed to retrieve and consume",
         IsRequired = true,
         Category = "Feed",
         Key = AttributeKey.RSSFeedUrl )]

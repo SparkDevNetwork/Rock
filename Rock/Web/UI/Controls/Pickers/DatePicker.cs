@@ -21,7 +21,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    ///
+    /// Control that can be used to select a date
     /// </summary>
     public class DatePicker : DataTextBox, IPostBackEventHandler, IRockChangeHandlerControl
     {

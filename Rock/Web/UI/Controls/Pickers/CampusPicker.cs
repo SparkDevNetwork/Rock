@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a campus
     /// </summary>
     public class CampusPicker : RockDropDownList
     {

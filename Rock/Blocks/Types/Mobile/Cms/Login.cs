@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.RegistrationPage,
         Order = 0 )]
 
-    [UrlLinkField( "Forgot Password Url",
+    [UrlLinkField( "Forgot Password URL",
         Description = "The URL to link the user to when they have forgotton their password.",
         IsRequired = false,
         Key = AttributeKeys.ForgotPasswordUrl,
