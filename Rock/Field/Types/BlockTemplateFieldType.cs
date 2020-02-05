@@ -240,7 +240,7 @@ namespace Rock.Field.Types
                 blockTemplatePicker.TemplateKey = null;
                 blockTemplatePicker.TemplateValue = string.Empty;
 
-                string[] parts = ( value ?? string.Empty ).Split( '|' );
+                string[] parts = ( value ?? string.Empty ).Split( new[] { '|' }, 2 );
                 if ( parts.Length >= 1 )
                 {
                     var templateGuid = parts[0].AsGuid();

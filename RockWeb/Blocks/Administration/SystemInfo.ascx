@@ -4,23 +4,23 @@
 
     function pageLoad() {
 
-        $('#show-cache-objects').on('click', function () {
-            $('#cache-objects').toggle('slow', function () {
+        $('#show-cache-objects').off('click').on('click', function () {
+            $('#cache-objects').toggle(0, function () {
                 Rock.controls.modal.updateSize();
             });
         });
 
-        $('#show-routes').on('click', function () {
-            $('#routes').toggle('slow', function () {
+        $('#show-routes').off('click').on('click', function () {
+            $('#routes').toggle(0, function () {
                 Rock.controls.modal.updateSize();
             });
         });
 
-        $('a.show-pill').on('click', function () {
+        $('a.show-pill').off('click').on('click', function () {
     	    $('ul.nav-pills > li').attr('class', '');
     	    $(this).parent().attr('class', 'active');
-    	    $('div.tabContent > div').hide('slow');
-    	    $('#' + $(this).attr('pill')).show('slow', function () {
+    	    $('div.tabContent > div').hide();
+    	    $('#' + $(this).attr('pill')).show(0, function () {
     	        Rock.controls.modal.updateSize();
     	    });
         });

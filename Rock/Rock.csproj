@@ -222,8 +222,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.2\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.4\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
@@ -450,6 +450,8 @@
     <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberEdit.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupView.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
@@ -466,6 +468,7 @@
     <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
     <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
+    <Compile Include="Jobs\SendRsvpReminders.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Jobs\SendPrayerComments.cs" />
@@ -478,6 +481,7 @@
     <Compile Include="Mobile\JsonFields\FieldSetting.cs" />
     <Compile Include="Mobile\JsonFields\FieldSource.cs" />
     <Compile Include="Mobile\JsonFields\PropertyField.cs" />
+    <Compile Include="Mobile\MobileExtensions.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
@@ -513,11 +517,14 @@
     <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
     <Compile Include="Plugin\HotFixes\094_AchievementPagesAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
+    <Compile Include="Plugin\HotFixes\099_MigrationRollupsFor10_2_0.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
     <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
+    <Compile Include="Storage\Common\GoogleCloudStorage.cs" />
+    <Compile Include="Storage\Provider\GoogleCloudStorageProvider.cs" />
     <Compile Include="SystemGuid\Person.cs" />
     <Compile Include="SystemGuid\SystemCommunication.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
@@ -1984,13 +1991,20 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\DefinedValueEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAdd.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddSingleSelect.cs" />
     <Compile Include="Web\UI\Controls\JsonFieldsBuilder.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AssessmentTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BlockTemplatePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddMultipleSelect.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MetricItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\InteractionChannelPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\InteractionComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\InteractionChannelInteractionComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypeAchievementTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />

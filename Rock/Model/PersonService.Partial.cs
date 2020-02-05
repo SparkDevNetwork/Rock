@@ -3447,6 +3447,17 @@ namespace Rock.Model
         #endregion
 
         #region User Preferences
+
+        /// <summary>
+        /// Gets the prefix for a user preference key that includes the block id so that it specific to the specified block
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <returns></returns>
+        public static string GetBlockUserPreferenceKeyPrefix( int blockId )
+        {
+            return $"block-{blockId}-";
+        }
+
         /// <summary>
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>

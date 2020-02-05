@@ -56,17 +56,7 @@ namespace Rock.Web.Cache
         [DataMember]
         [Obsolete( "Use NotificationSystemCommunicationId instead." )]
         [RockObsolete( "1.10" )]
-        public int? NotificationSystemEmailId {
-            get
-            {
-                return this.NotificationSystemCommunicationId;
-            }
-            private set
-            {
-                this.NotificationSystemCommunicationId = value;
-            }
-
-        }
+        public int? NotificationSystemEmailId { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [include actions in notification].
@@ -192,6 +182,11 @@ namespace Rock.Web.Cache
             if ( workflowActionForm == null ) return;
 
             NotificationSystemCommunicationId = workflowActionForm.NotificationSystemCommunicationId;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            NotificationSystemEmailId = workflowActionForm.NotificationSystemEmailId;
+#pragma warning disable CS0618 // Type or member is obsolete
+
             IncludeActionsInNotification = workflowActionForm.IncludeActionsInNotification;
             Header = workflowActionForm.Header;
             Footer = workflowActionForm.Footer;

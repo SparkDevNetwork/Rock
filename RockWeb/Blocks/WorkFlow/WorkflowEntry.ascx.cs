@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.WorkFlow
         "Workflow Type",
         Description = "Type of workflow to start.",
         Key = AttributeKey.WorkflowType,
-        Order = 0)]
+        Order = 0 )]
     [BooleanField(
         "Show Summary View",
         Description = "If workflow has been completed, should the summary view be displayed?",
@@ -289,7 +289,7 @@ namespace RockWeb.Blocks.WorkFlow
                 return false;
             }
 
-            if ( !(_workflowType.IsActive ?? true) )
+            if ( !( _workflowType.IsActive ?? true ) )
             {
                 ShowNotes( false );
                 ShowMessage( NotificationBoxType.Warning, "Sorry", "This type of workflow is not active." );
@@ -341,12 +341,12 @@ namespace RockWeb.Blocks.WorkFlow
             if ( _workflow == null )
             {
                 string workflowName = PageParameter( "WorkflowName" );
-                if ( string.IsNullOrWhiteSpace(workflowName))
+                if ( string.IsNullOrWhiteSpace( workflowName ) )
                 {
                     workflowName = "New " + _workflowType.WorkTerm;
                 }
 
-                _workflow = Rock.Model.Workflow.Activate( _workflowType, workflowName);
+                _workflow = Rock.Model.Workflow.Activate( _workflowType, workflowName );
                 if ( _workflow != null )
                 {
                     // If a PersonId or GroupId parameter was included, load the corresponding
@@ -414,7 +414,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                             _actionType = _action.ActionTypeCache;
                             ActionTypeId = _actionType.Id;
-                            return true; 
+                            return true;
                         }
                     }
                 }
@@ -586,9 +586,9 @@ namespace RockWeb.Blocks.WorkFlow
                         value = _activity.AttributeValues[attribute.Key].Value;
                     }
 
-                    if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml))
+                    if ( !string.IsNullOrWhiteSpace( formAttribute.PreHtml ) )
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields(mergeFields) ) );
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PreHtml.ResolveMergeFields( mergeFields ) ) );
                     }
 
                     if ( formAttribute.IsReadOnly )
@@ -619,7 +619,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                             if ( field is Rock.Field.ILinkableFieldType )
                             {
-                                string url = ( (Rock.Field.ILinkableFieldType)field ).UrlLink( value, attribute.QualifierValues );
+                                string url = ( ( Rock.Field.ILinkableFieldType ) field ).UrlLink( value, attribute.QualifierValues );
                                 url = ResolveRockUrl( "~" ).EnsureTrailingForwardslash() + url;
                                 lAttribute.Text = string.Format( "<a href='{0}' target='_blank'>{1}</a>", url, formattedValue );
                             }
@@ -633,13 +633,13 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                     else
                     {
-                        attribute.AddControl( phAttributes.Controls, value, BlockValidationGroup, setValues, true, formAttribute.IsRequired, 
+                        attribute.AddControl( phAttributes.Controls, value, BlockValidationGroup, setValues, true, formAttribute.IsRequired,
                             ( formAttribute.HideLabel ? string.Empty : attribute.Name ) );
                     }
 
                     if ( !string.IsNullOrWhiteSpace( formAttribute.PostHtml ) )
                     {
-                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields) ) );
+                        phAttributes.Controls.Add( new LiteralControl( formAttribute.PostHtml.ResolveMergeFields( mergeFields ) ) );
                     }
 
                 }
@@ -693,7 +693,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         }
 
-        private void ShowNotes(bool visible)
+        private void ShowNotes( bool visible )
         {
             divNotes.Visible = visible;
 
@@ -723,7 +723,7 @@ namespace RockWeb.Blocks.WorkFlow
                         var attribute = AttributeCache.Get( formAttribute.AttributeId );
                         var control = phAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
 
-                        if ( attribute != null && control != null)
+                        if ( attribute != null && control != null )
                         {
                             Rock.Attribute.IHasAttributes item = null;
                             if ( attribute.EntityTypeId == _workflow.TypeId )
@@ -746,7 +746,7 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         private void CompleteFormAction( string formAction )
-        { 
+        {
             if ( !string.IsNullOrWhiteSpace( formAction ) &&
                 _workflow != null &&
                 _actionType != null &&
@@ -758,7 +758,7 @@ namespace RockWeb.Blocks.WorkFlow
                 mergeFields.Add( "Action", _action );
                 mergeFields.Add( "Activity", _activity );
                 mergeFields.Add( "Workflow", _workflow );
-                
+
                 Guid activityTypeGuid = Guid.Empty;
                 string responseText = "Your information has been submitted successfully.";
 
@@ -784,7 +784,7 @@ namespace RockWeb.Blocks.WorkFlow
                 _action.FormAction = formAction;
                 _action.AddLogEntry( "Form Action Selected: " + _action.FormAction );
 
-                if (_action.ActionTypeCache.IsActivityCompletedOnSuccess)
+                if ( _action.ActionTypeCache.IsActivityCompletedOnSuccess )
                 {
                     _action.Activity.MarkComplete();
                 }
@@ -820,11 +820,20 @@ namespace RockWeb.Blocks.WorkFlow
                     }
                 }
 
+                // If the LastProcessedDateTime is equal to RockDateTime.Now we need to pause for a bit so the workflow will actually process here.
+                // The resolution of System.DateTime.UTCNow is between .5 and 15 ms which can cause the workflow processing to not properly pick up
+                // where it left off.
+                // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.utcnow?view=netframework-4.7#remarks
+                while ( _workflow.LastProcessedDateTime == RockDateTime.Now )
+                {
+                    System.Threading.Thread.Sleep( 1 );
+                }
+
                 List<string> errorMessages;
                 if ( _workflowService.Process( _workflow, out errorMessages ) )
                 {
                     Guid? previousActionGuid = null;
-                    
+
                     if ( _action != null )
                     {
                         // Compare GUIDs since the IDs are DB generated and will be 0 if the workflow is not persisted.
@@ -843,7 +852,7 @@ namespace RockWeb.Blocks.WorkFlow
                         _workflowService.PersistImmediately( _action );
 
                         // If we are already being directed (presumably from the Redirect Action), don't redirect again.
-                        if (!Response.IsRequestBeingRedirected)
+                        if ( !Response.IsRequestBeingRedirected )
                         {
                             var cb = CurrentPageReference;
                             cb.Parameters.AddOrReplace( "WorkflowId", _workflow.Id.ToString() );
@@ -870,7 +879,7 @@ namespace RockWeb.Blocks.WorkFlow
                 }
                 else
                 {
-                    ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):", 
+                    ShowMessage( NotificationBoxType.Danger, "Workflow Processing Error(s):",
                         "<ul><li>" + errorMessages.AsDelimited( "</li><li>", null, true ) + "</li></ul>" );
                 }
                 if ( _workflow.Id != 0 )

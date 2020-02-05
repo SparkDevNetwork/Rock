@@ -28,6 +28,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST = "E5618730-9E50-4BDA-9E13-D27697F83980";
 
+        /// <summary>
+        /// The block template for the mobile group member view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_VIEW = "09053C7C-9374-4489-8A7B-71F02E3E7D89";
+
+        /// <summary>
+        /// The block template for the mobile group view.
+        /// </summary>
+        public const string BLOCK_TEMPLATE_MOBILE_GROUP_VIEW = "559346FB-C684-42CF-8F4C-CF4A1C278AD6";
+
         #endregion
 
         #region Campus

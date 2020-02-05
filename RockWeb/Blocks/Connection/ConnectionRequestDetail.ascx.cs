@@ -1598,7 +1598,7 @@ namespace RockWeb.Blocks.Connection
                     contactList.Add( emailTag );
                 }
 
-                lContactInfo.Text = contactList.AsDelimited( "</br>" );
+                lContactInfo.Text = contactList.AsDelimited( "<br>" );
             }
             else
             {

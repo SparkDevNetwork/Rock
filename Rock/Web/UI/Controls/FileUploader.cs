@@ -451,7 +451,7 @@ namespace Rock.Web.UI.Controls
         Bindable( true ),
         Category( "Behavior" ),
         DefaultValue( "true" ),
-        Description( "The Url where files will be uploaded to" )
+        Description( "The URL where files will be uploaded to" )
         ]
         public string UploadUrl
         {
@@ -564,7 +564,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum UploaderDisplayMode
         {
@@ -900,7 +900,7 @@ Rock.controls.fileUploader.initialize({{
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class FileUploaderEventArgs : EventArgs
     {

@@ -52,7 +52,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the attendance association (<see cref="Rock.Model.StreakStructureType"/>). If not set, this streak type
-        /// will account for any attendance record.
+        /// will not be associated with attendance.
         /// </summary>
         [DataMember]
         public StreakStructureType? StructureType { get; set; }
@@ -200,6 +200,11 @@ namespace Rock.Model
     public enum StreakStructureType
     {
         /// <summary>
+        /// The <see cref="StreakType"/> is associated with any attendance record.
+        /// </summary>
+        AnyAttendance = 0,
+
+        /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance to a single group.
         /// </summary>
         Group = 1,
@@ -217,7 +222,22 @@ namespace Rock.Model
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance specified by a check-in configuration.
         /// </summary>
-        CheckInConfig = 4
+        CheckInConfig = 4,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions in a certain channel.
+        /// </summary>
+        InteractionChannel = 5,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions in a certain component.
+        /// </summary>
+        InteractionComponent = 6,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions over a certain.
+        /// </summary>
+        InteractionMedium = 7
     }
 
     /// <summary>

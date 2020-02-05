@@ -212,9 +212,9 @@
                 }
 
                 // handle click of scan button
-                $('.js-camera-button-container .js-camera-button').on('click', function (a) {
+                $('.js-camera-button').on('click', function (a) {
                     a.preventDefault();
-                    if (window.RockCheckinNative) {
+                    if (window.RockCheckinNative && window.RockCheckinNative.StartCamera) {
                         // Reset the swipe processing as it may have failed silently.
                         swipeProcessing = false;
                         window.RockCheckinNative.StartCamera(false);
@@ -335,13 +335,6 @@
                         <div class="js-start-button-container">
                             <asp:Literal ID="lStartButtonHtml" runat="server" />
                         </div>
-                        <asp:Panel ID="pnlCameraButtonContainer" runat="server" class="js-camera-button-container">
-                            <div class='checkin-search-actions checkin-camera'>
-                                <a class='btn btn-primary btn-checkin js-camera-button'>
-                                    <span>Scan Barcode</span>
-                                </a>
-                            </div>
-                        </asp:Panel>
                     </div>
                 </div>
             </div>

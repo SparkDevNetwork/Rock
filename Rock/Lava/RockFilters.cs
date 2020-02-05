@@ -951,6 +951,33 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Returns matched RegEx list of strings from inputted string
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="expression">The regex expression.</param>
+        /// <returns></returns>
+        public static List<string> RegExMatchValues( string input, string expression )
+        {
+            if ( input == null )
+            {
+                return null;
+            }
+
+            Regex regex = new Regex( expression );
+            var matches = regex.Matches( input );
+
+            // Flatten all matches to single list
+            var captured = matches
+                .Cast<Match>()
+                .Where( m => m.Success == true )
+                .SelectMany( o =>
+                    o.Groups.Cast<Capture>()
+                        .Select( c => c.Value ) );
+
+            return captured.ToList();
+        }
+
+        /// <summary>
         /// The slice filter returns a substring, starting at the specified index.
         /// </summary>
         /// <param name="input">The input string.</param>
@@ -2260,8 +2287,6 @@ namespace Rock.Lava
                             }
                         }
                     }
-
-
 
                     // Otherwise return the formatted value
                     return field.FormatValue( null, attribute.EntityTypeId, entityId, rawValue, attribute.QualifierValues, false );

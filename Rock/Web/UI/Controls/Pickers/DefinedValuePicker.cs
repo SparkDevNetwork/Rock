@@ -23,7 +23,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a defined value from a particular pre-configured defined type
     /// </summary>
     public class DefinedValuePicker : RockDropDownList, IDefinedValuePicker
     {

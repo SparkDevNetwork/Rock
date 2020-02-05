@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 using Rock;
@@ -432,6 +433,11 @@ namespace Rock.Transactions
             }
 
             rockContext.BulkInsert( interactionsToInsert );
+
+            // This logic is normally handled in the Interaction.PostSave method, but since the BulkInsert bypasses those
+            // model hooks, streaks need to be updated here. Also, it is not necessary for this logic to complete before this
+            // transaction can continue processing and exit, so update the streak using a task.
+            interactionsToInsert.ForEach( i => Task.Run( () => StreakTypeService.HandleInteractionRecord( i ) ) );
         }
     }
 

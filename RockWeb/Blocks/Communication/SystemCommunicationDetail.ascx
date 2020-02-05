@@ -49,10 +49,10 @@
                     <asp:Panel ID="pnlEmailSummaryAdditionalFields" runat="server" CssClass="js-additional-fields" Style="display: none">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:EmailBox ID="tbCc" runat="server" Label="CC List" AllowMultiple="true" />
+                                <Rock:EmailBox ID="tbCc" runat="server" Label="CC List" AllowMultiple="true" Help="Enter one or more email addresses (separated by commas) to include them in the CC line of the email." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:EmailBox ID="tbBcc" runat="server" Label="BCC List" AllowMultiple="true" />
+                                <Rock:EmailBox ID="tbBcc" runat="server" Label="BCC List" AllowMultiple="true" Help="Enter one or more email addresses (separated by commas) to include them in the BCC line of the email." />
                             </div>
                         </div>
                     </asp:Panel>
