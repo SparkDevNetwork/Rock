@@ -215,11 +215,11 @@ namespace Rock.Model
                 if ( excludedPersonRecordTypeIds.Count == 1 )
                 {
                     var excludedPersonRecordTypeId = excludedPersonRecordTypeIds[0];
-                    qry = qry.Where( a => a.RecordTypeValueId.HasValue && excludedPersonRecordTypeId != a.RecordTypeValueId.Value );
+                    qry = qry.Where( p => p.RecordTypeValueId.HasValue && excludedPersonRecordTypeId != p.RecordTypeValueId.Value );
                 }
                 else
                 {
-                    qry = qry.Where( a => a.RecordTypeValueId.HasValue && !excludedPersonRecordTypeIds.Contains( a.RecordTypeValueId.Value ) );
+                    qry = qry.Where( p => p.RecordTypeValueId.HasValue && !excludedPersonRecordTypeIds.Contains( p.RecordTypeValueId.Value ) );
                 }
             }
 

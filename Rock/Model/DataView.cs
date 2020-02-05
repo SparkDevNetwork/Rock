@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -129,6 +130,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? PersistedLastRefreshDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether deceased should be included.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include deceased]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IncludeDeceased { get; set; }
 
         #endregion
 
@@ -455,6 +465,19 @@ namespace Rock.Model
             else
             {
                 Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( filteredEntityType, serviceInstance, paramExpression, dataViewFilterOverrides, errorMessages ) : null;
+                if ( cachedEntityType.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id )
+                {
+                    var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable( this.IncludeDeceased );
+                    Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, paramExpression, "p" );
+                    if ( filterExpression == null )
+                    {
+                        filterExpression = extractedFilterExpression;
+                    }
+                    else
+                    {
+                        filterExpression = Expression.AndAlso( filterExpression, extractedFilterExpression );
+                    }
+                }
 
                 Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
                 if ( transformedExpression != null )
