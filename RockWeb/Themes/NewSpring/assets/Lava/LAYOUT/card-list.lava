@@ -28,7 +28,7 @@
 			{% assign dateParts = dates | Split:',' %}
             {% capture subtitle %}
 				{%- comment -%}Check this item's channel to see if dates should be visible{%- endcomment -%}
-				{% if showdates != 'false' showDate == 'Yes' %}
+				{% if showdates != 'false' and showDate == 'Yes' %}
 					{%- comment -%}If item has a date range, display it - otherwise display the item start date{%- endcomment -%}
 					{% if dates != empty %}
 						{[ formatDate date:'{{ dateParts[0] }}' ]}{% if dateParts[1] != dateParts[0] %} - {[ formatDate date:'{{ dateParts[1] }}' ]}{% endif %}
