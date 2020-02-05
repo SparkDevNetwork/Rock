@@ -301,15 +301,94 @@ namespace Rock.Rest.Controllers
         /// <param name="streakTypeId"></param>
         /// <param name="personId">Defaults to the current person</param>
         /// <param name="dateOfEngagement">Defaults to now</param>
-        /// <param name="groupId">This is required for marking attendance unless the streak type is a group structure type</param>
+        /// <param name="groupId">Obsolete: This param will be removed in v13. Use the MarkAttendanceEngagement method instead. This is required for marking attendance unless the streak type is a group structure type</param>
         /// <param name="locationId"></param>
-        /// <param name="scheduleId"></param>
+        /// <param name="scheduleId">Obsolete: This param will be removed in v13. Use the MarkAttendanceEngagement method instead</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
         [System.Web.Http.Route( "api/StreakTypes/MarkEngagement/{streakTypeId}" )]
+        [Obsolete( "The groupId and scheduleId params will be removed. Use the new simpler MarkEngagement, MarkAttendanceEngagement, or MarkInteractionEngagement methods instead." )]
+        [RockObsolete( "1.12" )]
         public virtual HttpResponseMessage MarkEngagement( int streakTypeId, [FromUri]int? personId = null,
             [FromUri]DateTime? dateOfEngagement = null, [FromUri]int? groupId = null, [FromUri]int? locationId = null, [FromUri]int? scheduleId = null )
+        {
+            /* 1/31/2020 BJW
+             *
+             * Originally, streaks were set-up to be driven by attendance only, which is where this method with all the optional
+             * parameters was introduced. At the date of this note, we are adding support to use interactions to drive streak data. Because generating
+             * an interaction requires a distinct set of arguments from generating an attendance, and because those arguments could become
+             * large when considering the InteractionData field, we opted to use a [FromBody] argument object. Then for standardization sake,
+             * we opted to transform the attendance mark engagement method to also use a [FromBody] argument object.
+             *
+             * In v13, the schedule and group id params should be removed but not actually the whole method. We are giving a long obsolete
+             * warning period since this is an API endpoint that developers won't get a compiler warning about.
+             *
+             * Task: https://app.asana.com/0/1120115219297347/1159048461540337/f
+             */
+
+            // Make sure the streak type exists
+            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
+
+            if ( streakTypeCache == null )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "The streak type id did not resolve" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // If not specified, use the current person id
+            if ( !personId.HasValue )
+            {
+                personId = GetCurrentPersonId();
+            }
+
+            // Mark the engagement
+            var streakTypeService = Service as StreakTypeService;
+            var errorMessage = string.Empty;
+
+            if ( scheduleId.HasValue || groupId.HasValue )
+            {
+                // This condition should be removed in v13 as these params will be removed
+                var attendanceEngagementArgs = new AttendanceEngagementArgs {
+                    GroupId = groupId,
+                    LocationId = locationId,
+                    ScheduleId = scheduleId
+                };
+
+                streakTypeService.MarkAttendanceEngagement( streakTypeCache, personId.Value, attendanceEngagementArgs, out errorMessage, dateOfEngagement );
+            }
+            else
+            {
+                streakTypeService.MarkEngagement( streakTypeCache, personId.Value, out errorMessage, dateOfEngagement, locationId );
+            }
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            // Save to the DB
+            var rockContext = Service.Context as RockContext;
+            rockContext.SaveChanges();
+
+            return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
+        }
+
+        /// <summary>
+        /// Notes that the person has engaged through interaction. This will update the occurrence map and also add an
+        /// interaction record (if enabled).
+        /// </summary>
+        /// <param name="streakTypeId"></param>
+        /// <param name="personId">Defaults to the current person</param>
+        /// <param name="dateOfEngagement">Defaults to now</param>
+        /// <param name="interactionEngagementArgs">Data used to create an interaction record if enabled in the streak type</param>
+        /// <returns></returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "api/StreakTypes/MarkInteractionEngagement/{streakTypeId}" )]
+        public virtual HttpResponseMessage MarkInteractionEngagement( int streakTypeId, [FromBody]InteractionEngagementArgs interactionEngagementArgs,
+            [FromUri]int? personId = null, [FromUri]DateTime? dateOfEngagement = null )
         {
             // Make sure the streak type exists
             var streakTypeCache = StreakTypeCache.Get( streakTypeId );
@@ -321,17 +400,14 @@ namespace Rock.Rest.Controllers
             }
 
             // If not specified, use the current person id
-            var rockContext = Service.Context as RockContext;
-
             if ( !personId.HasValue )
             {
                 personId = GetCurrentPersonId();
             }
 
-            // Get the data from the service
+            // Mark the engagement
             var streakTypeService = Service as StreakTypeService;
-            streakTypeService.MarkEngagement( streakTypeCache, personId.Value, out var errorMessage,
-                dateOfEngagement, groupId, locationId, scheduleId );
+            streakTypeService.MarkInteractionEngagement( streakTypeCache, personId.Value, interactionEngagementArgs, out var errorMessage, dateOfEngagement );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -340,26 +416,35 @@ namespace Rock.Rest.Controllers
             }
 
             // Save to the DB
+            var rockContext = Service.Context as RockContext;
             rockContext.SaveChanges();
+
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
         }
 
         /// <summary>
-        /// Notes that the person has engaged through interaction. This will update the occurrence map and also add an
-        /// interaction record (if enabled).
+        /// Notes that the person has engaged through attendance. This will update the occurrence map and also add an
+        /// attendance record (if enabled).
         /// </summary>
         /// <param name="streakTypeId"></param>
         /// <param name="personId">Defaults to the current person</param>
         /// <param name="dateOfEngagement">Defaults to now</param>
-        /// <param name="interactionPostModel">Optional data used to create an interaction record if enabled in the streak type</param>
+        /// <param name="attendanceEngagementArgs">Optional data used to create an attendance record if enabled in the streak type</param>
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpPost]
-        [System.Web.Http.Route( "api/StreakTypes/MarkInteractionEngagement/{streakTypeId}" )]
-        public virtual HttpResponseMessage MarkInteractionEngagement( int streakTypeId, [FromBody]InteractionPostModel interactionPostModel,
+        [System.Web.Http.Route( "api/StreakTypes/MarkAttendanceEngagement/{streakTypeId}" )]
+        public virtual HttpResponseMessage MarkAttendanceEngagement( int streakTypeId, [FromBody]AttendanceEngagementArgs attendanceEngagementArgs,
             [FromUri]int? personId = null, [FromUri]DateTime? dateOfEngagement = null )
         {
-            var rockContext = Service.Context as RockContext;
+            // Make sure the streak type exists
+            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
+
+            if ( streakTypeCache == null )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, "The streak type id did not resolve" );
+                throw new HttpResponseException( errorResponse );
+            }
 
             // If not specified, use the current person id
             if ( !personId.HasValue )
@@ -367,47 +452,19 @@ namespace Rock.Rest.Controllers
                 personId = GetCurrentPersonId();
             }
 
-            // Wrap the logic so that we can reuse the MarkEngagement method, but rollback everything if an error occurs
-            // while adding the interaction
-            rockContext.WrapTransaction( () =>
+            // Mark the engagement
+            var streakTypeService = Service as StreakTypeService;
+            streakTypeService.MarkAttendanceEngagement( streakTypeCache, personId.Value, attendanceEngagementArgs, out var errorMessage, dateOfEngagement );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                // Add the engagement to the streak
-                MarkEngagement( streakTypeId, personId, dateOfEngagement );
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
+                throw new HttpResponseException( errorResponse );
+            }
 
-                // If data was supplied, add an interaction
-                if ( interactionPostModel != null )
-                {
-                    var personAliasService = new PersonAliasService( rockContext );
-                    var personAliasId = personAliasService.Queryable().AsNoTracking()
-                        .Where( pa => pa.PersonId == personId )
-                        .Select( pa => pa.Id )
-                        .FirstOrDefault();
-
-                    if ( personAliasId == default )
-                    {
-                        var errorMessage = $"The person alias id for person {personId} did not resolve";
-                        var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, errorMessage );
-                        throw new HttpResponseException( errorResponse );
-                    }
-
-                    var interactionService = new InteractionService( rockContext );
-
-                    interactionService.AddInteraction(
-                        interactionPostModel.InteractionComponentId,
-                        interactionPostModel.EntityId,
-                        interactionPostModel.Operation,
-                        interactionPostModel.InteractionData,
-                        personAliasId,
-                        dateOfEngagement ?? RockDateTime.Now,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null );
-                }
-
-                rockContext.SaveChanges();
-            } );
+            // Save to the DB
+            var rockContext = Service.Context as RockContext;
+            rockContext.SaveChanges();
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created );
         }
@@ -429,36 +486,5 @@ namespace Rock.Rest.Controllers
 
             return personId.Value;
         }
-    }
-
-    /// <summary>
-    /// Data needed to create an interaction via <see cref="StreakTypesController.MarkInteractionEngagement" />
-    /// </summary>
-    public class InteractionPostModel
-    {
-        /// <summary>
-        /// Gets or sets the operation.
-        /// </summary>
-        public string Operation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionComponent"/> Component that is associated with this Interaction.
-        /// </summary>
-        public int InteractionComponentId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Id of the entity that this interaction component is related to.
-        /// For example:
-        ///  if this is a Page View:
-        ///     Interaction.EntityId is the Page.Id of the page that was viewed
-        ///  if this is a Communication Recipient activity:
-        ///     Interaction.EntityId is the CommunicationRecipient.Id that did the click or open
-        /// </summary>
-        public int? EntityId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the interaction data.
-        /// </summary>
-        public string InteractionData { get; set; }
     }
 }

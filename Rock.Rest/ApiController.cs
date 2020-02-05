@@ -221,10 +221,7 @@ namespace Rock.Rest
                     string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-            }
+            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
 
             Service.Context.SaveChanges();
 
@@ -264,10 +261,7 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
-                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-                }
+                System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }
@@ -390,10 +384,7 @@ namespace Rock.Rest
             // Verify model is valid before saving
             if ( targetModel.IsValid )
             {
-                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-                }
+                System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }

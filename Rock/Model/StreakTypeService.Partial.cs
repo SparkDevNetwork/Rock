@@ -1259,9 +1259,170 @@ namespace Rock.Model
         /// <param name="locationId"></param>
         /// <param name="scheduleId"></param>
         /// <param name="addOrUpdateAttendanceRecord">Should this method add or create <see cref="Attendance"/> models?</param>
+        [Obsolete( "Use the new simpler MarkEngagement, MarkAttendanceEngagement, or MarkInteractionEngagement methods instead" )]
+        [RockObsolete( "1.12" )]
         public void MarkEngagement( StreakTypeCache streakTypeCache, int personId, out string errorMessage,
             DateTime? dateOfEngagement = null, int? groupId = null, int? locationId = null, int? scheduleId = null,
             bool addOrUpdateAttendanceRecord = true )
+        {
+            var attendanceEngagementArgs = new AttendanceEngagementArgs
+            {
+                GroupId = groupId,
+                LocationId = locationId,
+                ScheduleId = scheduleId
+            };
+
+            MarkAttendanceEngagement( streakTypeCache, personId, attendanceEngagementArgs, out errorMessage, dateOfEngagement );
+        }
+
+        /// <summary>
+        /// Notes that the currently logged in person is present. This will update the Streak Engagement map and also add an
+        /// Interaction (if enabled).
+        /// </summary>
+        /// <param name="streakTypeCache"></param>
+        /// <param name="personId"></param>
+        /// <param name="interactionEngagementArgs"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="dateOfEngagement">Defaults to today</param>
+        public void MarkInteractionEngagement( StreakTypeCache streakTypeCache, int personId, InteractionEngagementArgs interactionEngagementArgs,
+            out string errorMessage, DateTime? dateOfEngagement = null )
+        {
+            // Apply default values to parameters
+            if ( !dateOfEngagement.HasValue )
+            {
+                dateOfEngagement = RockDateTime.Today;
+            }
+
+            // Override the component id if the streak type is explicit about it
+            if ( streakTypeCache.StructureType == StreakStructureType.InteractionComponent &&
+                streakTypeCache.StructureEntityId.HasValue &&
+                interactionEngagementArgs != null )
+            {
+                interactionEngagementArgs.InteractionComponentId = streakTypeCache.StructureEntityId.Value;
+            }
+
+            var streak = MarkEngagement( streakTypeCache, personId, out errorMessage, dateOfEngagement.Value, null );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            if ( streak == null )
+            {
+                errorMessage = "The streak was not returned from Mark Engagement, but no error was specified";
+                return;
+            }
+
+            // If interaction link is enabled then update add an interaction model
+            if ( streakTypeCache.EnableAttendance && interactionEngagementArgs != null && streakTypeCache.StructureType.HasValue && (
+                    streakTypeCache.StructureType == StreakStructureType.InteractionChannel ||
+                    streakTypeCache.StructureType == StreakStructureType.InteractionComponent ||
+                    streakTypeCache.StructureType == StreakStructureType.InteractionMedium ) )
+            {
+                var rockContext = Context as RockContext;
+                var interactionService = new InteractionService( rockContext );
+
+                interactionService.AddInteraction(
+                    interactionEngagementArgs.InteractionComponentId,
+                    interactionEngagementArgs.EntityId,
+                    interactionEngagementArgs.Operation,
+                    interactionEngagementArgs.InteractionData,
+                    streak.PersonAliasId,
+                    dateOfEngagement.Value,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null );
+            }
+        }
+
+        /// <summary>
+        /// Notes that the currently logged in person is present. This will update the Streak Engagement map and also add an
+        /// Attendance (if enabled).
+        /// </summary>
+        /// <param name="streakTypeCache"></param>
+        /// <param name="personId"></param>
+        /// <param name="attendanceEngagementArgs"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="dateOfEngagement">Defaults to today</param>
+        public void MarkAttendanceEngagement( StreakTypeCache streakTypeCache, int personId, AttendanceEngagementArgs attendanceEngagementArgs,
+            out string errorMessage, DateTime? dateOfEngagement = null )
+        {
+            // Apply default values to parameters
+            if ( !dateOfEngagement.HasValue )
+            {
+                dateOfEngagement = RockDateTime.Today;
+            }
+
+            // Override the group id if the streak type is explicit about the group
+            if ( streakTypeCache.StructureType == StreakStructureType.Group &&
+                streakTypeCache.StructureEntityId.HasValue &&
+                attendanceEngagementArgs != null )
+            {
+                attendanceEngagementArgs.GroupId = streakTypeCache.StructureEntityId;
+            }
+
+            var streak = MarkEngagement( streakTypeCache, personId, out errorMessage, dateOfEngagement.Value, attendanceEngagementArgs?.LocationId );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            if ( streak == null )
+            {
+                errorMessage = "The streak was not returned from Mark Engagement, but no error was specified";
+                return;
+            }
+
+            // If attendance is enabled then update attendance models
+            if ( streakTypeCache.EnableAttendance && attendanceEngagementArgs != null && streakTypeCache.StructureType.HasValue && (
+                    streakTypeCache.StructureType == StreakStructureType.AnyAttendance ||
+                    streakTypeCache.StructureType == StreakStructureType.CheckInConfig ||
+                    streakTypeCache.StructureType == StreakStructureType.Group ||
+                    streakTypeCache.StructureType == StreakStructureType.GroupType ||
+                    streakTypeCache.StructureType == StreakStructureType.GroupTypePurpose ) )
+            {
+                var rockContext = Context as RockContext;
+                var attendanceService = new AttendanceService( rockContext );
+
+                // Add or update the attendance, but don't sync streaks since that would create a logic loop
+                attendanceService.AddOrUpdate( streak.PersonAliasId, dateOfEngagement.Value, attendanceEngagementArgs.GroupId,
+                    attendanceEngagementArgs.LocationId, attendanceEngagementArgs.ScheduleId, null, null, null, null,
+                    null, null, null );
+            }
+        }
+
+        /// <summary>
+        /// Notes that the currently logged in person is present. This will update the Streak Engagement map.
+        /// </summary>
+        /// <param name="streakTypeCache"></param>
+        /// <param name="personId"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="dateOfEngagement">Defaults to today</param>
+        /// <param name="locationId"></param>
+        public void MarkEngagement( StreakTypeCache streakTypeCache, int personId, out string errorMessage, DateTime? dateOfEngagement = null, int? locationId = null )
+        {
+            // Apply default values to parameters
+            if ( !dateOfEngagement.HasValue )
+            {
+                dateOfEngagement = RockDateTime.Today;
+            }
+
+            MarkEngagement( streakTypeCache, personId, out errorMessage, dateOfEngagement.Value, locationId );
+        }
+
+        /// <summary>
+        /// Notes that the currently logged in person is present. This will update the Streak Engagement map
+        /// </summary>
+        /// <param name="streakTypeCache"></param>
+        /// <param name="personId"></param>
+        /// <param name="errorMessage"></param>
+        /// <param name="dateOfEngagement"></param>
+        /// <param name="locationId"></param>
+        private Streak MarkEngagement( StreakTypeCache streakTypeCache, int personId, out string errorMessage, DateTime dateOfEngagement, int? locationId )
         {
             errorMessage = string.Empty;
 
@@ -1269,42 +1430,30 @@ namespace Rock.Model
             if ( streakTypeCache == null )
             {
                 errorMessage = "A valid streak type is required";
-                return;
+                return null;
             }
 
             if ( !streakTypeCache.IsActive )
             {
                 errorMessage = "An active streak type is required";
-                return;
-            }
-
-            // Override the group id if the streak type is explicit about the group
-            if ( streakTypeCache.StructureType == StreakStructureType.Group && streakTypeCache.StructureEntityId.HasValue )
-            {
-                groupId = streakTypeCache.StructureEntityId;
-            }
-
-            // Apply default values to parameters
-            if ( !dateOfEngagement.HasValue )
-            {
-                dateOfEngagement = RockDateTime.Today;
+                return null;
             }
 
             var maxDate = AlignDate( RockDateTime.Today, streakTypeCache );
             var minDate = AlignDate( streakTypeCache.StartDate, streakTypeCache );
-            var alignedDateOfEngagement = AlignDate( dateOfEngagement.Value, streakTypeCache );
+            var alignedDateOfEngagement = AlignDate( dateOfEngagement, streakTypeCache );
 
             // Validate the engagement date
             if ( alignedDateOfEngagement < minDate )
             {
                 errorMessage = "Cannot mark engagement before the streak type start date";
-                return;
+                return null;
             }
 
             if ( alignedDateOfEngagement > maxDate )
             {
                 errorMessage = "Cannot mark engagement in the future";
-                return;
+                return null;
             }
 
             // Get the streak if it exists. The first streak is fine, since when streaks are calculated the maps are combined
@@ -1315,7 +1464,7 @@ namespace Rock.Model
             if ( streak == null && streakTypeCache.RequiresEnrollment )
             {
                 errorMessage = "This streak type requires enrollment";
-                return;
+                return null;
             }
 
             if ( streak == null )
@@ -1325,13 +1474,13 @@ namespace Rock.Model
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return;
+                    return null;
                 }
 
                 if ( streak == null )
                 {
                     errorMessage = "The enrollment was not successful but no error was specified";
-                    return;
+                    return null;
                 }
             }
 
@@ -1340,7 +1489,7 @@ namespace Rock.Model
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                return;
+                return null;
             }
 
             // Entity Framework cannot detect in-place changes to byte arrays, so force set the properties to modified state
@@ -1359,7 +1508,7 @@ namespace Rock.Model
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                return;
+                return null;
             }
 
             if ( !isOccurrenceSet )
@@ -1368,7 +1517,7 @@ namespace Rock.Model
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
                 {
-                    return;
+                    return null;
                 }
 
                 // Entity Framework cannot detect in-place changes to byte arrays, so force set the properties to modified state
@@ -1381,20 +1530,7 @@ namespace Rock.Model
                 }
             }
 
-            // If attendance is enabled then update attendance models
-            if ( streakTypeCache.EnableAttendance && addOrUpdateAttendanceRecord && streakTypeCache.StructureType.HasValue && (
-                    streakTypeCache.StructureType == StreakStructureType.AnyAttendance ||
-                    streakTypeCache.StructureType == StreakStructureType.CheckInConfig ||
-                    streakTypeCache.StructureType == StreakStructureType.Group ||
-                    streakTypeCache.StructureType == StreakStructureType.GroupType ||
-                    streakTypeCache.StructureType == StreakStructureType.GroupTypePurpose ) )
-            {
-                var attendanceService = new AttendanceService( rockContext );
-
-                // Add or update the attendance, but don't sync streaks since that would create a logic loop
-                attendanceService.AddOrUpdate( streak.PersonAliasId, dateOfEngagement.Value, groupId, locationId,
-                    scheduleId, null, null, null, null, null, null, null );
-            }
+            return streak;
         }
 
         /// <summary>
@@ -1506,7 +1642,7 @@ namespace Rock.Model
 
             foreach ( var streakType in matchedStreakTypes )
             {
-                MarkEngagement( streakType, personId, out errorMessage, interaction.InteractionDateTime, addOrUpdateAttendanceRecord: false );
+                MarkEngagement( streakType, personId, out errorMessage, interaction.InteractionDateTime, null );
             }
         }
 
@@ -1607,7 +1743,7 @@ namespace Rock.Model
 
             foreach ( var streakType in matchedStreakTypes )
             {
-                MarkEngagement( streakType, personId, out errorMessage, occurrence.OccurrenceDate, addOrUpdateAttendanceRecord: false );
+                MarkEngagement( streakType, personId, out errorMessage, occurrence.OccurrenceDate, null );
             }
         }
 
@@ -2994,5 +3130,66 @@ namespace Rock.Model
         /// Did the person have an exclusion?
         /// </summary>
         public bool HasExclusion { get; set; }
+    }
+
+    /// <summary>
+    /// Data needed to create an interaction via <see cref="StreakTypeService.MarkInteractionEngagement" />
+    /// </summary>
+    public class InteractionEngagementArgs
+    {
+        /// <summary>
+        /// Gets or sets the operation.
+        /// </summary>
+        public string Operation { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="Rock.Model.InteractionComponent"/> Component that is associated with this Interaction.
+        /// </summary>
+        public int InteractionComponentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the entity that this interaction component is related to.
+        /// For example:
+        ///  if this is a Page View:
+        ///     Interaction.EntityId is the Page.Id of the page that was viewed
+        ///  if this is a Communication Recipient activity:
+        ///     Interaction.EntityId is the CommunicationRecipient.Id that did the click or open
+        /// </summary>
+        public int? EntityId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction data.
+        /// </summary>
+        public string InteractionData { get; set; }
+    }
+
+    /// <summary>
+    /// Data needed to create an attendance via <see cref="StreakTypeService.MarkAttendanceEngagement" />
+    /// </summary>
+    public class AttendanceEngagementArgs
+    {
+        /// <summary>
+        /// Gets or sets the group identifier.
+        /// </summary>
+        /// <value>
+        /// The group identifier.
+        /// </value>
+        public int? GroupId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location identifier.
+        /// </summary>
+        /// <value>
+        /// The location identifier.
+        /// </value>
+        public int? LocationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the schedule identifier.
+        /// </summary>
+        /// <value>
+        /// The schedule identifier.
+        /// </value>
+        public int? ScheduleId { get; set; }
     }
 }

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -39,7 +40,6 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        
         [Bindable( true )]
         [Category( "Appearance" )]
         [DefaultValue( "" )]
@@ -330,11 +330,11 @@ namespace Rock.Web.UI.Controls
                     {
                         var definedValues = definedType.DefinedValues;
 
-                        foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value).Distinct() )
+                        foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
                         {
                             sbScript.AppendFormat( "\t\t'{0}' : [\n", countryCode );
 
-                            foreach( var definedValue in definedValues.Where( v => v.Value == countryCode).OrderBy( v => v.Order))
+                            foreach ( var definedValue in definedValues.Where( v => v.Value == countryCode ).OrderBy( v => v.Order ) )
                             {
                                 string match = definedValue.GetAttributeValue( "MatchRegEx" );
                                 string replace = definedValue.GetAttributeValue( "FormatRegEx" );
@@ -443,17 +443,16 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            _hfCountryCode.RenderControl( writer );
-
+                       
             this.CssClass = string.Empty;
 
-            bool renderCountryCodeButton = false;
-
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            IEnumerable<string> countryCodes = null;
+
+            var renderCountryCodeButton = false;
             if ( definedType != null )
             {
-                var countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct();
+                countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct();
 
                 if ( countryCodes != null && countryCodes.Any() )
                 {
@@ -462,49 +461,17 @@ namespace Rock.Web.UI.Controls
                         CountryCode = countryCodes.FirstOrDefault();
                     }
 
-                    if ( countryCodes.Count() > 1 )
-                    {
-                        renderCountryCodeButton = true;
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-btn" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-default dropdown-toggle" );
-                        writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
-                        writer.AddAttribute( "data-toggle", "dropdown" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Button );
-
-                        writer.Write( CountryCode + " " );
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "caret" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                        writer.RenderEndTag();
-
-                        writer.RenderEndTag();  // Button
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "dropdown-menu" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Ul );
-
-                        foreach ( string countryCode in countryCodes )
-                        {
-                            writer.RenderBeginTag( HtmlTextWriterTag.Li );
-
-                            writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
-                            writer.RenderBeginTag( HtmlTextWriterTag.A );
-                            writer.Write( countryCode );
-                            writer.RenderEndTag();
-
-                            writer.RenderEndTag();  // Li
-                        }
-
-                        writer.RenderEndTag();      // Ul
-
-                        writer.RenderEndTag();      // div.input-group-btn
-                    }
+                    renderCountryCodeButton = countryCodes.Count() > 1;
                 }
             }
 
-            if ( !renderCountryCodeButton )
+            _hfCountryCode.RenderControl( writer );
+
+            if ( renderCountryCodeButton )
+            {
+                RenderCountryCodeButton( writer, countryCodes );
+            }
+            else
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
@@ -512,9 +479,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            
-
-            ( (WebControl)this ).AddCssClass( "form-control js-phone-format" );
+            ( ( WebControl ) this ).AddCssClass( "form-control js-phone-format" );
             if ( !string.IsNullOrWhiteSpace( Placeholder ) )
             {
                 this.Attributes["placeholder"] = Placeholder;
@@ -525,6 +490,44 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
 
             writer.RenderEndTag();              // div.input-group
+        }
+
+        private void RenderCountryCodeButton( HtmlTextWriter writer, IEnumerable<string> countryCodes )
+        {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-btn" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-default dropdown-toggle" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
+            writer.AddAttribute( "data-toggle", "dropdown" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Button );
+
+            writer.Write( CountryCode + " " );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "caret" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();  // Button
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "dropdown-menu" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Ul );
+
+            foreach ( string countryCode in countryCodes )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Li );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.Write( countryCode );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();  // Li
+            }
+
+            writer.RenderEndTag();      // Ul
+
+            writer.RenderEndTag();      // div.input-group-btn
         }
 
 
@@ -552,10 +555,10 @@ namespace Rock.Web.UI.Controls
                 return true;
             }
 
-            foreach( var definedValue in definedType.DefinedValues )
+            foreach ( var definedValue in definedType.DefinedValues )
             {
                 string matchRegEx = definedValue.GetAttributeValue( "MatchRegEx" );
-                if (matchRegEx.IsNullOrWhiteSpace())
+                if ( matchRegEx.IsNullOrWhiteSpace() )
                 {
                     // No available pattern so move on
                     continue;
