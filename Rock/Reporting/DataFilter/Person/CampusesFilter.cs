@@ -293,7 +293,7 @@ function() {{
                 var groupTypeFamily = GroupTypeCache.GetFamilyGroupType();
                 int groupTypeFamilyId = groupTypeFamily != null ? groupTypeFamily.Id : 0;
 
-                var groupMemberServiceQry = groupMemberService.Queryable()
+                var groupMemberServiceQry = groupMemberService.Queryable( true )
                     .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId )
                     .Where( xx => campusIds.Contains( xx.Group.CampusId ?? 0 ) );
 
