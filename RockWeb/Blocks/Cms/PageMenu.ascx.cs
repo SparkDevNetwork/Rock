@@ -125,6 +125,12 @@ namespace RockWeb.Blocks.Cms
                     queryString = CurrentPageReference.QueryString;
                 }
 
+                // Get default merge fields.
+                var pageProperties = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+
+                pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
+                pageProperties.Add( "IncludePageList", GetIncludePageList() );
+
                 // Get list of pages in current page's hierarchy
                 var pageHeirarchy = new List<int>();
                 if ( currentPage != null )
@@ -132,21 +138,8 @@ namespace RockWeb.Blocks.Cms
                     pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
                 }
 
-                // Add context to merge fields
-                var contextEntityTypes = RockPage.GetContextEntityTypes();
-                var contextObjects = new Dictionary<string, object>();
-                foreach ( var conextEntityType in contextEntityTypes )
-                {
-                    var contextObject = RockPage.GetCurrentContext( conextEntityType );
-                    contextObjects.Add( conextEntityType.FriendlyName, contextObject );
-                }
-
-                var pageProperties = new Dictionary<string, object>();
-                pageProperties.Add( "CurrentPerson", CurrentPerson );
-                pageProperties.Add( "Context", contextObjects );
                 pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
-                pageProperties.Add( "CurrentPage", this.PageCache );
 
                 using ( var rockContext = new RockContext() )
                 {
