@@ -56,6 +56,8 @@ namespace Rock.Web.UI.Controls
         private Panel _pnlCustomActions;
         private LinkButton _lbPersonMerge;
         private LinkButton _lbBulkUpdate;
+        private LinkButton _lbDefaultLaunchWorkflow;
+        private List<LinkButton> _customLaunchWorkflowButtons = new List<LinkButton>();
         private LinkButton _lbCommunicate;
         private HtmlGenericControl _aAdd;
         private LinkButton _lbAdd;
@@ -109,6 +111,35 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["ShowMergePerson"] = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show launch workflow].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show launch workflow]; otherwise, <c>false</c>.
+        /// </value>
+        private bool ShowDefaultLaunchWorkflowButton
+        {
+            get =>
+                _parentGrid.ShowWorkflowButtons &&
+                _parentGrid.EnableDefaultLaunchWorkflow &&
+                _parentGrid.EntityTypeId.HasValue;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [show custom launch workflow buttons].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show custom launch workflow buttons]; otherwise, <c>false</c>.
+        /// </value>
+        private bool ShowCustomLaunchWorkflowButtons
+        {
+            get =>
+                _parentGrid.ShowWorkflowButtons &&
+                _parentGrid.WorkflowLaunchConfigs != null &&
+                _parentGrid.WorkflowLaunchConfigs.Any() &&
+                _parentGrid.EntityTypeId.HasValue;
         }
 
         /// <summary>
@@ -317,7 +348,48 @@ namespace Rock.Web.UI.Controls
             HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
             iBulkUpdate.Attributes.Add( "class", "fa fa-truck fa-fw" );
             _lbBulkUpdate.Controls.Add( iBulkUpdate );
-            
+
+            // control for default launch workflow
+            _lbDefaultLaunchWorkflow = new LinkButton();
+            _lbDefaultLaunchWorkflow.ID = "lbDefaultLaunchWorkflow";
+            _lbDefaultLaunchWorkflow.CssClass = "btn-launch-workflow btn btn-default btn-sm";
+            _lbDefaultLaunchWorkflow.ToolTip = "Launch Workflow";
+            _lbDefaultLaunchWorkflow.Click += lbLaunchWorkflow_Click;
+            _lbDefaultLaunchWorkflow.CausesValidation = false;
+            _lbDefaultLaunchWorkflow.PreRender += lb_PreRender;
+            Controls.Add( _lbDefaultLaunchWorkflow );
+            var iLaunchWorkflow = new HtmlGenericControl( "i" );
+            iLaunchWorkflow.Attributes.Add( "class", "fa fa-cog fa-fw" );
+            _lbDefaultLaunchWorkflow.Controls.Add( iLaunchWorkflow );
+
+            // Build custom launch workflow buttons
+            if (_parentGrid.WorkflowLaunchConfigs?.Any() == true)
+            {
+                var index = 1;
+
+                foreach ( var config in _parentGrid.WorkflowLaunchConfigs )
+                {
+                    var linkButton = new LinkButton();
+                    linkButton.ID = $"lbCustomLaunchWorkflow-{index}";
+                    linkButton.CssClass = "btn-launch-workflow btn btn-default btn-sm";
+                    linkButton.ToolTip = config.HelpText.IsNullOrWhiteSpace() ? "Launch Workflow" : config.HelpText;
+                    linkButton.CommandArgument = config.Route;
+                    linkButton.CommandName = "Route";
+                    linkButton.Command += lbLaunchWorkflow_Click;
+                    linkButton.CausesValidation = false;
+                    linkButton.PreRender += lb_PreRender;
+                    Controls.Add( linkButton );
+
+                    var icon = new HtmlGenericControl( "i" );
+                    icon.Attributes.Add( "class", config.IconCssClass.IsNullOrWhiteSpace() ?
+                        "fa fa-cog fa-fw" :
+                        config.IconCssClass );
+
+                    linkButton.Controls.Add( icon );
+                    index++;
+                }
+            }
+
             // controls for excel export
             _aExcelExport = new HtmlGenericControl( "a" );
             Controls.Add( _aExcelExport );
@@ -432,6 +504,19 @@ namespace Rock.Web.UI.Controls
             _lbPersonMerge.Visible = ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
             _lbBulkUpdate.Visible = ShowBulkUpdate && _parentGrid.CanViewTargetPage( _parentGrid.BulkUpdatePageRoute );
 
+            var defaultLaunchWorkflowRoute = _parentGrid.DefaultLaunchWorkflowPageRoute;
+            var canViewDefaultLaunchWorkflowRoute = _parentGrid.CanViewTargetPage( defaultLaunchWorkflowRoute );
+            _lbDefaultLaunchWorkflow.Visible = ShowDefaultLaunchWorkflowButton && canViewDefaultLaunchWorkflowRoute;
+
+            foreach ( var customLaunchWorkflowButton in _customLaunchWorkflowButtons )
+            {
+                var customRoute = customLaunchWorkflowButton.CommandArgument.ToStringSafe();
+                var hasCustomRoute = !customRoute.IsNullOrWhiteSpace();
+
+                customLaunchWorkflowButton.Visible = ShowCustomLaunchWorkflowButtons &&
+                    ( hasCustomRoute ? _parentGrid.CanViewTargetPage( customRoute ) : canViewDefaultLaunchWorkflowRoute );
+            }
+
             if ( ShowCommunicate )
             {
                 string url = _parentGrid.CommunicationPageRoute;
@@ -516,6 +601,16 @@ namespace Rock.Web.UI.Controls
             {
                 BulkUpdateClick( sender, e );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbBulkUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbLaunchWorkflow_Click( object sender, EventArgs e )
+        {
+            LaunchWorkflowClick?.Invoke( sender, e );
         }
 
         /// <summary>
@@ -605,6 +700,11 @@ namespace Rock.Web.UI.Controls
         /// Occurs when bulk update action is clicked.
         /// </summary>
         public event EventHandler BulkUpdateClick;
+
+        /// <summary>
+        /// Occurs when [launch workflow click].
+        /// </summary>
+        public event EventHandler LaunchWorkflowClick;
 
         /// <summary>
         /// Occurs when communicate action is clicked.
