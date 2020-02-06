@@ -671,16 +671,6 @@ namespace Rock.Blocks.Types.Web.Events
         }
 
         /// <summary>
-        /// Get a grid-specific filter setting key.
-        /// </summary>
-        /// <param name="fieldName"></param>
-        /// <returns></returns>
-        //private string GetFieldFilterName( string fieldName )
-        //{
-        //    return FilterPreferenceKeyPrefix + fieldName;
-        //}
-
-        /// <summary>
         /// Remove the dynamic columns from the grid.
         /// </summary>
         /// <param name="grid"></param>
@@ -736,18 +726,12 @@ namespace Rock.Blocks.Types.Web.Events
 
         #region Support Methods
 
-        //protected void ClearPageCache()
-        //{
-        //    string key = string.Format( "RegistrationInstance:{0}", registrationInstanceId );
-        //}
-
         /// <summary>
-        /// Gets the registration instance.
+        /// Gets the shared registration instance.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        /// <summary>
         private RegistrationInstance GetSharedRegistrationInstance( int registrationInstanceId, RockContext rockContext = null )
         {
             string key = string.Format( "RegistrationInstance:{0}", registrationInstanceId );
@@ -819,10 +803,9 @@ namespace Rock.Blocks.Types.Web.Events
         /// <summary>
         /// Get a dictionary lookup of person phone numbers.
         /// </summary>
-        /// <param name="rockContext"></param>
-        /// <param name=""></param>
-        /// <param name="registrantFields"></param>
-        /// <param name="personIds"></param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrantFields">The registrant fields.</param>
+        /// <param name="personIds">The person ids.</param>
         /// <returns></returns>
         protected Dictionary<int, PhoneNumber> GetPersonMobilePhoneLookup( RockContext rockContext, IEnumerable<RegistrantFormField> registrantFields, List<int> personIds )
         {
