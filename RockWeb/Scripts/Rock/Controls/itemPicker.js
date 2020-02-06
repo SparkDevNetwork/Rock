@@ -21,6 +21,7 @@
                     treeOptions = {
                         multiselect: this.options.allowMultiSelect,
                         categorySelection: this.options.allowCategorySelection,
+                        categoryPrefix: this.options.categoryPrefix,
                         restUrl: this.options.restUrl,
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds,
@@ -240,6 +241,7 @@
                 restUrl: null,
                 restParams: null,
                 allowCategorySelection: false,
+                categoryPrefix: '',
                 allowMultiSelect: false,
                 defaultText: '',
                 selectedIds: null,
