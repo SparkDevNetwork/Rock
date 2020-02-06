@@ -2,17 +2,8 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <code>
-            <asp:Literal ID="lRegistrationTemplateName" runat="server" />
-            <asp:Literal ID="lRegistrationInstanceName" runat="server" />
-        </code>
-
         <Rock:ButtonGroup ID="bgRegistrationTemplatePlacement" runat="server" Label="Select Placement Type" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="bgRegistrationTemplatePlacement_SelectedIndexChanged" />
-
-
         <Rock:NotificationBox ID="nbConfigurationError" runat="server" />
-
-
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-group-placement">
 
             <%-- Panel Header --%>
