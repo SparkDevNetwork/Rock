@@ -28,7 +28,8 @@ var ZebraPrintPlugin = {
         tagJson = JSON.stringify(labels);
         if (labels.length > 0) {
             // call plugins
-            if (RockCheckinNative) {
+
+            if (typeof RockCheckinNative !== 'undefined' && RockCheckinNative) {
                 console.log('Printing with Rock Native Bridge');
                 RockCheckinNative.PrintLabels(tagJson)
                     .then(function (result) {
