@@ -15,11 +15,15 @@
             <div class="panel-body">
                 <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
-                <div class="row margin-t-lg">
+                <div class="margin-t-md">
+                    <asp:Literal ID="lEntityTypeName" runat="server" />
+                </div>
+
+                <div class="row margin-t-sm">
                     <asp:Repeater ID="rEntitySetItems" runat="server">
                         <ItemTemplate>
                             <div class="col-xs-1 margin-b-md" style="width: 175px;">
-                                <%# Eval("Text") %>
+                                <%# Eval("Html") %>
                             </div>
                         </ItemTemplate>
                     </asp:Repeater>

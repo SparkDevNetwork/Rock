@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -160,7 +159,7 @@ namespace RockWeb.Blocks.Workflow
             /// <summary>
             /// The by pass confirm
             /// </summary>
-            public const string ByPassConfirm = "ByPassConfirm";
+            public const string BypassConfirm = "BypassConfirm";
         }
 
         /// <summary>
@@ -256,7 +255,7 @@ namespace RockWeb.Blocks.Workflow
 
             if ( !Page.IsPostBack )
             {
-                if ( PageParameter( PageParameterKey.ByPassConfirm ).AsBoolean() && !PageParameter( PageParameterKey.WorkflowTypeId ).IsNullOrWhiteSpace() )
+                if ( PageParameter( PageParameterKey.BypassConfirm ).AsBoolean() && !PageParameter( PageParameterKey.WorkflowTypeId ).IsNullOrWhiteSpace() )
                 {
                     LaunchWorkflows();
                     _hasLaunched = true;
@@ -390,6 +389,7 @@ namespace RockWeb.Blocks.Workflow
             BindShowAllControls();
             BindButtons();
             BindSuccessMessage();
+            BindEntityTypeName();
         }
 
         /// <summary>
@@ -639,47 +639,58 @@ namespace RockWeb.Blocks.Workflow
             {
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
-                    Text = e.ToString()
+                    Html = e.ToString()
                 } );
             }
             else if ( entityTypeCache.Id == groupMemberEntityTypeId )
             {
-                viewModels = entityQuery.Include( "Person" ).ToList().Select( e => new RepeaterViewModel
+                viewModels = entityQuery.Include( "Person" ).Include( "Group" ).ToList().Select( e => new RepeaterViewModel
                 {
-                    Text = ( ( GroupMember ) e ).Person.ToString()
+                    Html = string.Format( "{0}<br /><sup>({1})</sup>", ( ( GroupMember ) e ).Person, ( ( GroupMember ) e ).Group )
                 } );
             }
             else if ( entityTypeCache.Id == connectionRequestEntityTypeId )
             {
-                viewModels = entityQuery.Include( "PersonAlias.Person" ).ToList().Select( e => new RepeaterViewModel
+                viewModels = entityQuery.Include( "PersonAlias.Person" ).Include( "ConnectionOpportunity" ).ToList().Select( e => new RepeaterViewModel
                 {
-                    Text = ( ( ConnectionRequest ) e ).PersonAlias.Person.ToString()
+                    Html = string.Format( "{0}<br /><sup>({1})</sup>", ( ( ConnectionRequest ) e ).PersonAlias.Person, ( ( ConnectionRequest ) e ).ConnectionOpportunity )
                 } );
             }
             else if ( entityTypeCache.GetEntityType().GetProperty( "Name" ) != null )
             {
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
-                    Text = e.GetPropertyValue( "Name" ).ToString()
+                    Html = e.GetPropertyValue( "Name" ).ToString()
                 } );
             }
             else if ( entityTypeCache.GetEntityType().GetProperty( "Title" ) != null )
             {
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
-                    Text = e.GetPropertyValue( "Title" ).ToString()
+                    Html = e.GetPropertyValue( "Title" ).ToString()
                 } );
             }
             else
             {
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
-                    Text = string.Format( "{0} Id: {1}", entityTypeCache.FriendlyName, e.Id )
+                    Html = string.Format( "{0} Id: {1}", entityTypeCache.FriendlyName, e.Id )
                 } );
             }
 
             rEntitySetItems.DataSource = viewModels;
             rEntitySetItems.DataBind();
+        }
+
+        /// <summary>
+        /// Binds the name of the entity type.
+        /// </summary>
+        private void BindEntityTypeName()
+        {
+            var entityTypeCache = GetEntityTypeCache();
+            lEntityTypeName.Text = entityTypeCache == null ?
+                string.Empty :
+                string.Format( "<strong>{0}</strong>", entityTypeCache.FriendlyName.Pluralize() );
         }
 
         #endregion Methods
@@ -785,7 +796,13 @@ namespace RockWeb.Blocks.Workflow
         /// </summary>
         internal class RepeaterViewModel
         {
-            public string Text { get; set; }
+            /// <summary>
+            /// Gets or sets the HTML.
+            /// </summary>
+            /// <value>
+            /// The HTML.
+            /// </value>
+            public string Html { get; set; }
         }
 
         #endregion ViewModels
