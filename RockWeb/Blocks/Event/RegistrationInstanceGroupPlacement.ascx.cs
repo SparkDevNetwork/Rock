@@ -406,12 +406,6 @@ namespace RockWeb.Blocks.Event
             lGroupPlacementGroupTypeName.Text = groupType.GroupTerm.Pluralize();
             lAddPlacementGroupButtonText.Text = string.Format( " Add {0}", groupType.GroupTerm );
 
-            lRegistrationTemplateName.Text = string.Format( "<p>Registration Template: {0}</p>", registrationTemplatePlacement.RegistrationTemplate.Name );
-            if ( registrationInstanceId.HasValue )
-            {
-                lRegistrationInstanceName.Text = string.Format( "<p>Registration Instance: {0}</p>", new RegistrationInstanceService( rockContext ).GetSelect( registrationInstanceId.Value, s => s.Name ) );
-            }
-
             BindPlacementGroupsRepeater();
 
             hfGroupDetailUrl.Value = this.LinkedPageUrl( AttributeKey.GroupDetailPage );
