@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "siteId" ).AsInteger() );
+                ShowDetail( PageParameter( "editSiteId" ).AsInteger() );
             }
 
             if ( dlgPageAttribute.Visible )
@@ -611,7 +611,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 var qryParams = new Dictionary<string, string>();
-                qryParams["siteId"] = site.Id.ToString();
+                qryParams["editSiteId"] = site.Id.ToString();
 
                 NavigateToPage( RockPage.Guid, qryParams );
             }
