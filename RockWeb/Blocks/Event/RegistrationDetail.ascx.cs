@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Event
             if ( !Page.IsPostBack )
             {
                 LoadState();
-                if ( RegistrationInstanceId.HasValue )
+                if ( RegistrationInstanceId.HasValue && RegistrationId.HasValue )
                 {
                     ShowDetail( RegistrationId.Value, RegistrationInstanceId );
                 }
