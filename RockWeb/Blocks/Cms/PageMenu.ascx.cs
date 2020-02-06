@@ -125,12 +125,6 @@ namespace RockWeb.Blocks.Cms
                     queryString = CurrentPageReference.QueryString;
                 }
 
-                // Get default merge fields.
-                var pageProperties = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-
-                pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
-                pageProperties.Add( "IncludePageList", GetIncludePageList() );
-
                 // Get list of pages in current page's hierarchy
                 var pageHeirarchy = new List<int>();
                 if ( currentPage != null )
@@ -138,31 +132,17 @@ namespace RockWeb.Blocks.Cms
                     pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
                 }
 
+                // Get default merge fields.
+                var pageProperties = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
+
 
                 using ( var rockContext = new RockContext() )
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-
-                // Add Page objects for each of the included pages.
-                var dataContext = new RockContext();
-
-                var includedPageProperty = new Dictionary<string, object>();
-
-                var includedPages = GetIncludePageList();
-
-                foreach ( var includedPage in includedPages )
-                {
-                    var includedPageLink = includedPage.Value.ToStringSafe();
-
-                    var page = GetPageFromLinkOrThrow( includedPageLink, dataContext );
-
-                    includedPageProperty.Add( includedPage.Key, page.GetMenuProperties( 0, CurrentPerson, dataContext ) );
-                }
-
-                pageProperties.Add( "IncludedPages", includedPageProperty.Values.ToList() );
+           
                 var lavaTemplate = GetTemplate();
 
                 // Apply Enabled Lava Commands
@@ -205,53 +185,6 @@ namespace RockWeb.Blocks.Cms
         }
 
         #region Methods
-
-        /// <summary>
-        /// Get a PageCache object that matches the provided link, or throw an exception if no match is found.
-        /// </summary>
-        /// <param name="includedPageLink"></param>
-        /// <param name="dataContext"></param>
-        /// <returns></returns>
-        private PageCache GetPageFromLinkOrThrow( string includedPageLink, RockContext dataContext )
-        {
-            PageCache page = null;
-
-            // Try to match a defined route.
-            var routeService = new PageRouteService( dataContext );
-
-            var routeName = includedPageLink.ToStringSafe().TrimStart( '~' ).TrimStart( '/' );
-
-            var pageRoute = routeService.Queryable().FirstOrDefault( r => r.Route.Equals( routeName, StringComparison.OrdinalIgnoreCase ) );
-
-            if ( pageRoute != null )
-            {
-                page = PageCache.Get( pageRoute.PageId );
-            }
-
-            if ( page == null )
-            {
-                // Try to match an entry in the Routing Table.
-                var pageUrl = RockPage.ResolveRockUrlIncludeRoot( includedPageLink );
-
-                var pageUri = new Uri( pageUrl, UriKind.Absolute );
-
-                var rockPageRef = new PageReference( pageUri, Page.Request.ApplicationPath );
-
-                if ( !rockPageRef.IsValid )
-                {
-                    throw new Exception( string.Format( "Page Reference \"{0}\" is invalid.", includedPageLink ) );
-                }
-
-                page = PageCache.Get( rockPageRef.PageId );
-            }
-
-            if ( page == null )
-            {
-                throw new Exception( string.Format( "Page Reference \"{0}\" is invalid.", includedPageLink ) );
-            }
-
-            return page;
-        }
 
         private string CacheKey()
         {
