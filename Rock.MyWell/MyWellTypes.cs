@@ -2380,7 +2380,7 @@ namespace Rock.MyWell
         }
 
         /// <summary>
-        /// Status codes that seem to indicate a failure (status codes aren't clearly documented)
+        /// Status codes that seem to indicate a failure. As of 2020/02/05, not officially documented yet, but see note in <seealso cref="IsFailure"/>
         /// </summary>
         private static readonly string[] FailureStatusCodes = { "declined", "returned", "late_return", "reversed"};
 
@@ -2405,8 +2405,44 @@ namespace Rock.MyWell
                     400 thru 499 are processor rejection errors.
 
             and status is the actual result of whether the transaction was settled, failed, pending, etc
-            Known status values are "unknown", "declined", "authorized", "pending_settlement", "settled", "voided", "refunded", "late_return", "pending", "partially_refunded",
            */
+
+            /* MP 2020/02/06
+
+            From an Email. Here are all the possible response codes and description. They aren't documented yet, but here is what the email said:
+
+            unknown
+                We did not receive a response from the processor's endpoint.
+
+            declined
+              Transaction was not approved.
+
+            authorized
+              An auth only transaction was processed, not yet captured.
+
+            pending_settlement
+              Transaction not yet batch settled.
+
+            settled
+              Transaction has been batch settled.
+
+            voided
+             Transaction was voided before settlement. We initiate an auth reversal behind the scenes on processors that support it.
+
+            reversed
+              Not used.
+
+            refunded
+              Transaction was refunded for the full amount of the sale or captured authorization.
+
+            partially_refunded
+              Transaction was partially refunded for a partial amount of the sale or captured authorization.
+
+            returned
+              ACH transaction did not clear, no settlement.
+
+            late_return
+              ACH transaction was returned after settlement. */
 
             bool isFailure;
 
