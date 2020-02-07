@@ -30,6 +30,15 @@
                 });
             });
 
+               // handle onkeypress for the account amount input boxes
+            function handleSearchKeyPress(element, keyCode) {
+                // if Enter was pressed, click the Go button.
+                if (keyCode == 13) {
+                    $('#<%=btnGo.ClientID%>')[0].click();
+                    return false;
+                }
+            }
+
             function isDirty() {
                 if ($('#<%= hfAttendanceDirty.ClientID %>').val() == 'true' || $('#<%= hfPersonDirty.ClientID %>').val() == 'true') {
                     if (confirm('You have not saved your changes. Are you sure you want to continue?')) {
@@ -181,7 +190,7 @@
                         <div class="row d-flex no-gutters">
                             <div class="col-md-3 d-flex align-items-center sidebar">
                                 <div class="d-flex w-100 padding-all-sm">
-                                    <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="resource-search js-resource-search flex-grow-1" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
+                                    <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="resource-search js-resource-search flex-grow-1" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
                                     <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
                                 </div>
                             </div>
@@ -272,7 +281,7 @@
                                             <Rock:RockCheckBox ID="cbIsPublic" Label="Public" runat="server" />
                                         </asp:Panel>
                                         <div class="col-md-4">
-                                            <Rock:ButtonDropDownList ID="bddlCategory" runat="server" Label="Prayer Category"></Rock:ButtonDropDownList>
+                                            <Rock:CategoryPicker ID="cpPrayerCategory" runat="server" Label="Prayer Category"  EntityTypeName="Rock.Model.PrayerRequest" />
                                         </div>
                                     </div>
                                 </asp:Panel>
