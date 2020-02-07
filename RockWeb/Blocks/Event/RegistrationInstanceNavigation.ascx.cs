@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -105,7 +104,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         public void BindPageList()
         {
-            if ( this.RegistrationInstance == null || this.RegistrationInstance.RegistrationTemplate == null  )
+            if ( this.RegistrationInstance == null || this.RegistrationInstance.RegistrationTemplate == null )
             {
                 return;
             }
@@ -160,6 +159,7 @@ namespace RockWeb.Blocks.Event
                     navigationPageInfo.PageReference.Parameters.AddOrReplace( pageParameter.Key, pageParameter.Value.ToString() );
                 }
             }
+
             rptPages.DataSource = navigationPageInfoList;
             rptPages.DataBind();
         }
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Event
             {
                 if ( navigationPageInfo.IsGroupPlacementPage )
                 {
-                    if (navigationPageInfo.RegistrationTemplatePlacementId.HasValue && this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsInteger() == navigationPageInfo.RegistrationTemplatePlacementId.Value )
+                    if ( navigationPageInfo.RegistrationTemplatePlacementId.HasValue && this.PageParameter( PageParameterKey.RegistrationTemplatePlacementId ).AsInteger() == navigationPageInfo.RegistrationTemplatePlacementId.Value )
                     {
                         liNavigationTab.AddCssClass( "active" );
                     }
@@ -196,10 +196,10 @@ namespace RockWeb.Blocks.Event
             }
 
             var aPageLink = e.Item.FindControl( "aPageLink" ) as HtmlAnchor;
-            
+
             aPageLink.HRef = pageReference.BuildUrl();
             aPageLink.InnerText = navigationPageInfo.TabTitle;
-            
+
             var lPageName = e.Item.FindControl( "lPageName" ) as Literal;
         }
 
@@ -218,8 +218,11 @@ namespace RockWeb.Blocks.Event
         private class NavigationPageInfo
         {
             public string TabTitle { get; set; }
+
             public PageReference PageReference { get; set; }
+
             public bool IsGroupPlacementPage { get; set; }
+
             public int? RegistrationTemplatePlacementId { get; set; }
         }
     }

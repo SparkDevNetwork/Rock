@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks.Types.Web.Events;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -46,15 +47,23 @@ namespace RockWeb.Blocks.Event
 
     #region Block Attributes
 
-    [AccountField( "Default Account",
-        "The default account to use for new registration instances",
+    [AccountField(
+        "Default Account",
+        Description = "The default account to use for new registration instances",
         Key = AttributeKey.DefaultAccount,
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.FinancialAccount.EVENT_REGISTRATION,
         Order = 0 )]
 
+    [LinkedPage(
+        "Payment Reminder Page",
+        Key = AttributeKey.PaymentReminderPage,
+        Description = "The page for manually sending payment reminders.",
+        IsRequired = false,
+        Order = 1 )]
+
     #endregion Block Attributes
-    public partial class RegistrationInstanceDetail : Rock.Web.UI.RockBlock, IDetailBlock
+    public partial class RegistrationInstanceDetail : RegistrationInstanceBlock, IDetailBlock
     {
         #region Attribute Keys
 
@@ -67,6 +76,8 @@ namespace RockWeb.Blocks.Event
             /// The default account for a new Registration Instance.
             /// </summary>
             public const string DefaultAccount = "DefaultAccount";
+
+            public const string PaymentReminderPage = "PaymentReminderPage";
         }
 
         #endregion Attribute Keys
@@ -87,7 +98,6 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Page Parameter Keys
-
 
         #region Fields
 
@@ -157,21 +167,8 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
-            var breadCrumbs = new List<BreadCrumb>();
-
-            int? registrationInstanceId = PageParameter( pageReference, "RegistrationInstanceId" ).AsIntegerOrNull();
-            if ( registrationInstanceId.HasValue )
-            {
-                RegistrationInstance registrationInstance = GetRegistrationInstance( registrationInstanceId.Value );
-                if ( registrationInstance != null )
-                {
-                    breadCrumbs.Add( new BreadCrumb( registrationInstance.ToString(), pageReference ) );
-                    return breadCrumbs;
-                }
-            }
-
-            breadCrumbs.Add( new BreadCrumb( "New Registration Instance", pageReference ) );
-            return breadCrumbs;
+            // use the GetBreadCrumbs from base RegistrationInstanceBlock 
+            return base.GetBreadCrumbs( pageReference );
         }
 
         /// <summary>
@@ -229,7 +226,7 @@ namespace RockWeb.Blocks.Event
                             rockContext.SaveChanges();
                         } );
 
-                        var qryParams = new Dictionary<string, string> { { "RegistrationTemplateId", registrationTemplateId.ToString() } };
+                        var qryParams = new Dictionary<string, string> { { PageParameterKey.RegistrationTemplateId, registrationTemplateId.ToString() } };
                         NavigateToParentPage( qryParams );
                     }
                     else
@@ -249,8 +246,8 @@ namespace RockWeb.Blocks.Event
         protected void btnSendPaymentReminder_Click( object sender, EventArgs e )
         {
             Dictionary<string, string> queryParms = new Dictionary<string, string>();
-            queryParms.Add( "RegistrationInstanceId", PageParameter( "RegistrationInstanceId" ) );
-            NavigateToLinkedPage( "PaymentReminderPage", queryParms );
+            queryParms.Add( PageParameterKey.RegistrationInstanceId, PageParameter( PageParameterKey.RegistrationInstanceId ) );
+            NavigateToLinkedPage( AttributeKey.PaymentReminderPage, queryParms );
         }
 
         /// <summary>
@@ -277,7 +274,7 @@ namespace RockWeb.Blocks.Event
                 if ( instance == null )
                 {
                     instance = new RegistrationInstance();
-                    instance.RegistrationTemplateId = PageParameter( "RegistrationTemplateId" ).AsInteger();
+                    instance.RegistrationTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsInteger();
                     service.Add( instance );
                     newInstance = true;
                 }
@@ -295,8 +292,8 @@ namespace RockWeb.Blocks.Event
             if ( newInstance )
             {
                 var qryParams = new Dictionary<string, string>();
-                qryParams.Add( "RegistrationTemplateId", PageParameter( "RegistrationTemplateId" ) );
-                qryParams.Add( "RegistrationInstanceId", instance.Id.ToString() );
+                qryParams.Add( PageParameterKey.RegistrationTemplateId, PageParameter( PageParameterKey.RegistrationTemplateId ) );
+                qryParams.Add( PageParameterKey.RegistrationInstanceId, instance.Id.ToString() );
                 NavigateToCurrentPage( qryParams );
             }
             else
@@ -307,9 +304,8 @@ namespace RockWeb.Blocks.Event
                     instance = new RegistrationInstanceService( rockContext ).Get( instance.Id );
                     ShowReadonlyDetails( instance );
 
-
                     // show send payment reminder link
-                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                    if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PaymentReminderPage ) ) &&
                         ( ( instance.RegistrationTemplate.SetCostOnInstance.HasValue && instance.RegistrationTemplate.SetCostOnInstance == true && instance.Cost.HasValue && instance.Cost.Value > 0 ) ||
                             instance.RegistrationTemplate.Cost > 0 ||
                             instance.RegistrationTemplate.Fees.Count > 0 ) )
@@ -335,10 +331,10 @@ namespace RockWeb.Blocks.Event
             {
                 var qryParams = new Dictionary<string, string>();
 
-                int? parentTemplateId = PageParameter( "RegistrationTemplateId" ).AsIntegerOrNull();
+                int? parentTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
                 if ( parentTemplateId.HasValue )
                 {
-                    qryParams["RegistrationTemplateId"] = parentTemplateId.ToString();
+                    qryParams[PageParameterKey.RegistrationTemplateId] = parentTemplateId.ToString();
                 }
 
                 // Cancelling on Add.  Return to Grid
@@ -356,6 +352,11 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbTemplate_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
@@ -365,7 +366,7 @@ namespace RockWeb.Blocks.Event
                 var registrationInstance = service.Get( hfRegistrationInstanceId.Value.AsInteger() );
                 if ( registrationInstance != null )
                 {
-                    qryParams.Add( "RegistrationTemplateId", registrationInstance.RegistrationTemplateId.ToString() );
+                    qryParams.Add( PageParameterKey.RegistrationTemplateId, registrationInstance.RegistrationTemplateId.ToString() );
                 }
             }
 
@@ -384,19 +385,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private RegistrationInstance GetRegistrationInstance( int registrationInstanceId, RockContext rockContext = null )
         {
-            string key = string.Format( "RegistrationInstance:{0}", registrationInstanceId );
-            RegistrationInstance registrationInstance = RockPage.GetSharedItem( key ) as RegistrationInstance;
-            if ( registrationInstance == null )
-            {
-                rockContext = rockContext ?? new RockContext();
-                registrationInstance = new RegistrationInstanceService( rockContext )
-                    .Queryable( "RegistrationTemplate,Account,RegistrationTemplate.Forms.Fields" )
-                    .AsNoTracking()
-                    .FirstOrDefault( i => i.Id == registrationInstanceId );
-                RockPage.SaveSharedItem( key, registrationInstance );
-            }
-
-            return registrationInstance;
+            return base.GetRegistrationInstance( registrationInstanceId, rockContext );
         }
 
         /// <summary>
@@ -413,8 +402,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowDetail()
         {
-            int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
-            int? parentTemplateId = PageParameter( "RegistrationTemplateId" ).AsIntegerOrNull();
+            int? registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            int? parentTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
 
             if ( !registrationInstanceId.HasValue )
             {
@@ -437,7 +426,7 @@ namespace RockWeb.Blocks.Event
                     registrationInstance.IsActive = true;
                     registrationInstance.RegistrationTemplateId = parentTemplateId ?? 0;
 
-                    Guid? accountGuid = GetAttributeValue( "DefaultAccount" ).AsGuidOrNull();
+                    Guid? accountGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
                     if ( accountGuid.HasValue )
                     {
                         var account = new FinancialAccountService( rockContext ).Get( accountGuid.Value );
@@ -450,7 +439,6 @@ namespace RockWeb.Blocks.Event
                     registrationInstance.RegistrationTemplate = new RegistrationTemplateService( rockContext )
                         .Get( registrationInstance.RegistrationTemplateId );
                 }
-
 
                 hlType.Visible = registrationInstance.RegistrationTemplate != null;
                 hlType.Text = registrationInstance.RegistrationTemplate != null ? registrationInstance.RegistrationTemplate.Name : string.Empty;
@@ -503,7 +491,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // show send payment reminder link
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( "PaymentReminderPage" ) ) &&
+                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PaymentReminderPage ) ) &&
                     ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 ) ||
                     registrationInstance.RegistrationTemplate.Cost > 0 ||
                     registrationInstance.RegistrationTemplate.Fees.Count > 0 ) )
@@ -516,14 +504,13 @@ namespace RockWeb.Blocks.Event
                 }
             }
         }
-       
 
         /// <summary>
         /// Sets the following on postback.
         /// </summary>
         private void SetFollowingOnPostback()
         {
-            int? registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+            int? registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
             if ( registrationInstanceId.HasValue )
             {
                 using ( var rockContext = new RockContext() )

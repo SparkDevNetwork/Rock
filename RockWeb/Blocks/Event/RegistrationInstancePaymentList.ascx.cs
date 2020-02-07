@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Event
 
         #region Properties and Fields
 
-        private List<Registration> _PaymentRegistrations;
+        private List<Registration> _paymentRegistrations;
 
         #endregion
 
@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fPayments_ApplyFilterClick( object sender, EventArgs e )
         {
-            fPayments.SaveUserPreference( "Payments Date Range", "Transaction Date Range", sdrpPaymentDateRange.DelimitedValues );
+            fPayments.SaveUserPreference( UserPreferenceKey.GridFilter_PaymentsDateRange, "Transaction Date Range", sdrpPaymentDateRange.DelimitedValues );
 
             BindPaymentsGrid();
         }
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Event
                 var registrants = new List<string>();
 
                 var registrationIds = transaction.TransactionDetails.Select( d => d.EntityId ).ToList();
-                foreach ( var registration in _PaymentRegistrations
+                foreach ( var registration in _paymentRegistrations
                     .Where( r => registrationIds.Contains( r.Id ) ) )
                 {
                     if ( registration.PersonAlias != null && registration.PersonAlias.Person != null )
@@ -286,9 +286,8 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindPaymentsFilter()
         {
-            sdrpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( "Payments Date Range" );
+            sdrpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( UserPreferenceKey.GridFilter_PaymentsDateRange );
         }
-
 
         /// <summary>
         /// Configure the payments grid.
@@ -322,7 +321,7 @@ namespace RockWeb.Blocks.Event
                     int registrationEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
 
                     // Get all the registrations for this instance
-                    _PaymentRegistrations = new RegistrationService( rockContext )
+                    _paymentRegistrations = new RegistrationService( rockContext )
                         .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person" ).AsNoTracking()
                         .Where( r =>
                             r.RegistrationInstanceId == instanceId.Value &&
@@ -330,7 +329,7 @@ namespace RockWeb.Blocks.Event
                         .ToList();
 
                     // Get the Registration Ids
-                    var registrationIds = _PaymentRegistrations
+                    var registrationIds = _paymentRegistrations
                         .Select( r => r.Id )
                         .ToList();
 
