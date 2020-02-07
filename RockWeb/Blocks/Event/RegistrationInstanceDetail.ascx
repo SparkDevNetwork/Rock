@@ -52,22 +52,6 @@
             </div>
         </div>
 
-        <asp:Panel ID="pnlNoData" runat="server">
-            <div class="panel panel-block">
-                <div class="panel-heading">
-                    <h1 class="panel-title">
-                        <i class="fa fa-file-o"></i>
-                        <asp:Literal ID="lBlockTitle" runat="server" />
-                    </h1>
-                </div>
-
-                <div class="panel-body">
-                    <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info"
-                        Text="There is no active registration instance to show in this view." />
-                </div>
-            </div>
-        </asp:Panel>
-
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfRegistrationInstanceId" runat="server" />

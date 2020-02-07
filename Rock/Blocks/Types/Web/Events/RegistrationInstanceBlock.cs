@@ -37,11 +37,6 @@ namespace Rock.Blocks.Types.Web.Events
     [ContextAware( typeof( RegistrationInstance ) )]
     public abstract class RegistrationInstanceBlock : ContextEntityBlock
     {
-        /// <summary>
-        /// The Registration Instance identifier
-        /// </summary>
-        private const string PageParameterRegistrationInstanceId = "RegistrationInstanceId";
-
         #region Shared Item Keys
 
         /// <summary>
@@ -61,6 +56,47 @@ namespace Rock.Blocks.Types.Web.Events
         }
 
         #endregion Shared Item Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// The Registration Instance identifier
+            /// </summary>
+            public const string RegistrationInstanceId = "RegistrationInstanceId";
+
+            /// <summary>
+            /// The Registration Template identifier.
+            /// </summary>
+            public const string RegistrationTemplateId = "RegistrationTemplateId";
+        }
+
+        #endregion Page Parameter Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for User Preferences
+        /// </summary>
+        private static class UserPreferenceKey
+        {
+            public const string GridFilter_Grade = "Grade";
+            public const string GridFilter_Phone = "Phone";
+            public const string GridFilter_MiddleName = "MiddleName";
+            public const string GridFilter_HomePhone = "HomePhone";
+            public const string GridFilter_Email = "Email";
+            public const string GridFilter_MaritalStatus = "Marital Status";
+            public const string GridFilter_BirthdateRange = "Birthdate Range";
+            public const string GridFilter_AnniversaryDateRange = "AnniversaryDate Range";
+            public const string GridFilter_Gender = "Gender";
+            public const string GridFilter_HomeCampus = "Home Campus";
+        }
+
+        #endregion Page Parameter Keys
 
         #region Properties and Fields
 
@@ -93,16 +129,6 @@ namespace Rock.Blocks.Types.Web.Events
         }
 
         /// <summary>
-        /// Is wait-listing enabled for the active Registration Instance?
-        /// </summary>
-        protected bool WaitListIsEnabled { get; private set; }
-
-        /// <summary>
-        /// Is group placement enabled for the active Registration Instance?
-        /// </summary>
-        protected bool GroupPlacementIsEnabled { get; private set; }
-
-        /// <summary>
         /// Does the current user have permission to edit the block and its specific content?
         /// </summary>
         protected bool UserCanEditBlockContent
@@ -119,34 +145,6 @@ namespace Rock.Blocks.Types.Web.Events
                 return this.UserCanEdit
                     || registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson )
                     || registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-            }
-        }
-
-        private bool? _RegistrationInstanceHasCosts;
-
-        /// <summary>
-        /// Does the active Registration Instance have associated costs?
-        /// </summary>
-        protected bool RegistrationInstanceHasCosts
-        {
-            get
-            {
-                if ( !_RegistrationInstanceHasCosts.HasValue )
-                {
-                    var registrationInstance = this.RegistrationInstance;
-
-                    if ( registrationInstance != null )
-                    {
-                        // Check if this Registration Instance has associated costs or fees.
-                        _RegistrationInstanceHasCosts = ( registrationInstance.RegistrationTemplate != null
-                            && ( ( registrationInstance.RegistrationTemplate.SetCostOnInstance.HasValue && registrationInstance.RegistrationTemplate.SetCostOnInstance == true && registrationInstance.Cost.HasValue && registrationInstance.Cost.Value > 0 )
-                            || registrationInstance.RegistrationTemplate.Cost > 0
-                            || registrationInstance.RegistrationTemplate.Fees.Count > 0 ) );
-
-                    }
-                }
-
-                return _RegistrationInstanceHasCosts.GetValueOrDefault();
             }
         }
 
@@ -188,7 +186,7 @@ namespace Rock.Blocks.Types.Web.Events
                     }
                 }
 
-                return _RegistrationInstanceHasCosts.GetValueOrDefault();
+                return _RegistrationInstanceHasPayments.GetValueOrDefault();
             }
         }
 
@@ -204,7 +202,7 @@ namespace Rock.Blocks.Types.Web.Events
         {
             base.OnInit( e );
 
-            RegistrationInstanceId = PageParameter( PageParameterRegistrationInstanceId ).AsIntegerOrNull();
+            RegistrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
 
             if ( RegistrationInstance == null
                  && RegistrationInstanceId.HasValue )
@@ -247,7 +245,7 @@ namespace Rock.Blocks.Types.Web.Events
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationInstanceId = PageParameter( pageReference, PageParameterRegistrationInstanceId ).AsIntegerOrNull();
+            int? registrationInstanceId = PageParameter( pageReference, PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
 
             if ( registrationInstanceId.HasValue )
             {
@@ -279,7 +277,7 @@ namespace Rock.Blocks.Types.Web.Events
         /// Adds the filter controls and grid columns for all of the registration template's form fields.
         /// that were configured to 'Show on Grid'
         /// </summary>
-        protected void AddRegistrationTemplateFieldsToGrid( List<RegistrantFormField> RegistrantFields, PlaceHolder filterFieldsContainer, Grid grid, GridFilter gridFilter, bool setValues, bool disableAddressFieldExport )
+        protected void AddRegistrationTemplateFieldsToGrid( RegistrantFormField[] RegistrantFields, PlaceHolder filterFieldsContainer, Grid grid, GridFilter gridFilter, bool setValues, bool disableAddressFieldExport )
         {
             filterFieldsContainer.Controls.Clear();
 
@@ -309,7 +307,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        ddlCampus.SetValue( gridFilter.GetUserPreference(  "Home Campus" ) );
+                                        ddlCampus.SetValue( gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_HomeCampus ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( ddlCampus );
@@ -329,7 +327,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbEmailFilter.Text = gridFilter.GetUserPreference( "Email" );
+                                        tbEmailFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Email );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbEmailFilter );
@@ -352,7 +350,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        drpBirthdateFilter.DelimitedValues = gridFilter.GetUserPreference(  "Birthdate Range" );
+                                        drpBirthdateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_BirthdateRange );
                                     }
 
                                     filterFieldsContainer.Controls.Add( drpBirthdateFilter );
@@ -375,7 +373,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbMiddleNameFilter.Text = gridFilter.GetUserPreference( "MiddleName" );
+                                        tbMiddleNameFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_MiddleName );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbMiddleNameFilter );
@@ -398,7 +396,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        drpAnniversaryDateFilter.DelimitedValues = gridFilter.GetUserPreference(  "AnniversaryDate Range" );
+                                        drpAnniversaryDateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_AnniversaryDateRange );
                                     }
 
                                     filterFieldsContainer.Controls.Add( drpAnniversaryDateFilter );
@@ -426,7 +424,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     // by not calling SetValue otherwise it will select 12th grade.
                                     if ( setValues )
                                     {
-                                        var groupPlacementsGradeUserPreference = gridFilter.GetUserPreference(  "Grade" ).AsIntegerOrNull();
+                                        var groupPlacementsGradeUserPreference = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Grade ).AsIntegerOrNull();
                                         if ( groupPlacementsGradeUserPreference != null )
                                         {
                                             gpGradeFilter.SetValue( groupPlacementsGradeUserPreference );
@@ -454,7 +452,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        ddlGenderFilter.SetValue( gridFilter.GetUserPreference(  "Gender" ) );
+                                        ddlGenderFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Gender ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( ddlGenderFilter );
@@ -478,7 +476,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        dvpMaritalStatusFilter.SetValue( gridFilter.GetUserPreference(  "Marital Status" ) );
+                                        dvpMaritalStatusFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_MaritalStatus ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( dvpMaritalStatusFilter );
@@ -504,7 +502,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbMobilePhoneFilter.Text = gridFilter.GetUserPreference(  "Phone" );
+                                        tbMobilePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Phone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbMobilePhoneFilter );
@@ -527,7 +525,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbHomePhoneFilter.Text = gridFilter.GetUserPreference(  "HomePhone" );
+                                        tbHomePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_HomePhone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbHomePhoneFilter );
@@ -581,7 +579,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                             if ( setValues )
                             {
-                                string savedValue = gridFilter.GetUserPreference(  attribute.Key );
+                                string savedValue = gridFilter.GetUserPreference( attribute.Key );
                                 if ( !string.IsNullOrWhiteSpace( savedValue ) )
                                 {
                                     try
@@ -624,7 +622,7 @@ namespace Rock.Blocks.Types.Web.Events
         /// Get the collection of fields that are included in the forms associated with the registration template.
         /// </summary>
         /// <returns></returns>
-        protected List<RegistrantFormField> GetRegistrantFormFields()
+        protected RegistrantFormField[] GetRegistrantFormFields()
         {
             var fields = new List<RegistrantFormField>();
 
@@ -660,14 +658,14 @@ namespace Rock.Blocks.Types.Web.Events
                                 new RegistrantFormField
                                 {
                                     FieldSource = formField.FieldSource,
-                                    Attribute = AttributeCache.Get( formField.AttributeId.Value )
+                                    AttributeId = formField.AttributeId.Value
                                 } );
                         }
                     }
                 }
             }
 
-            return fields;
+            return fields.ToArray();
         }
 
         /// <summary>
@@ -741,16 +739,6 @@ namespace Rock.Blocks.Types.Web.Events
             if ( registrationInstance == null )
             {
                 registrationInstance = GetRegistrationInstance( registrationInstanceId );
-
-                var registrationTemplate = registrationInstance?.RegistrationTemplate;
-
-                if ( registrationTemplate != null )
-                {
-                    this.WaitListIsEnabled = registrationTemplate.WaitListEnabled;
-
-                    this.GroupPlacementIsEnabled = registrationTemplate.AllowGroupPlacement;
-                }
-
                 RockPage.SaveSharedItem( key, registrationInstance );
             }
 
@@ -761,16 +749,38 @@ namespace Rock.Blocks.Types.Web.Events
         /// Load the registration instance data, but do not populate the display properties.
         /// Use this method to load data for postback processing.
         /// </summary>
-        /// <param name="registrationInstanceId"></param>
-        /// <param name="parentTemplateId"></param>
-        protected RegistrationInstance GetRegistrationInstance( int? registrationInstanceId, int? parentTemplateId = null )
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <returns></returns>
+        protected RegistrationInstance GetRegistrationInstance( int? registrationInstanceId )
         {
             var rockContext = new RockContext();
 
-            var registrationInstance = new RegistrationInstanceService( rockContext )
-                .Queryable( "RegistrationTemplate,Account,RegistrationTemplate.Forms.Fields" )
-                .AsNoTracking()
-                .FirstOrDefault( i => i.Id == registrationInstanceId );
+            RegistrationInstance registrationInstance;
+
+            if ( !registrationInstanceId.HasValue )
+            {
+                return null;
+            }
+
+            if ( registrationInstanceId == 0 )
+            {
+                registrationInstance = new RegistrationInstance();
+                // get the RegistrationTemplateId in case we are creating a new RegistrationInstance
+                int? registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+
+                registrationInstance.RegistrationTemplateId = registrationTemplateId ?? 0;
+            }
+            else
+            {
+                registrationInstance = new RegistrationInstanceService( rockContext )
+                    .Queryable()
+                    .Include( a => a.RegistrationTemplate )
+                    .Include( a => a.Account )
+                    .Include( a => a.RegistrationTemplate.Forms )
+                    .Include( a => a.RegistrationTemplate.Forms.Select( s => s.Fields ) )
+                    .AsNoTracking()
+                    .FirstOrDefault( i => i.Id == registrationInstanceId );
+            }
 
             if ( registrationInstance == null )
             {
@@ -864,12 +874,21 @@ namespace Rock.Blocks.Types.Web.Events
             public RegistrationPersonFieldType? PersonFieldType { get; set; }
 
             /// <summary>
+            /// Gets or sets the attribute identifier.
+            /// </summary>
+            /// <value>
+            /// The attribute identifier.
+            /// </value>
+            public int AttributeId { get; set; }
+
+            /// <summary>
             /// Gets or sets the attribute.
             /// </summary>
             /// <value>
             /// The attribute.
             /// </value>
-            public AttributeCache Attribute { get; set; }
+            public AttributeCache Attribute => AttributeCache.Get( AttributeId );
+            
         }
 
         #endregion

@@ -15,26 +15,20 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
-
-using DotLiquid;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Web.Cache;
+using Rock.Blocks.Types.Web.Events;
 using Rock.Data;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 using Rock.Model;
 using Rock.Web;
-using Rock.Blocks.Types.Web.Events;
-using System.Web.UI.WebControls;
-using System.Web.UI.HtmlControls;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Event
 {
@@ -42,25 +36,21 @@ namespace RockWeb.Blocks.Event
     [Category( "Event" )]
     [Description( "Provides the navigation for the tabs navigation section of the Registration Instance Page/Layout" )]
 
-    [LinkedPage(
-        "WaitList Page"
-        )]
-
-    [LinkedPage( "WaitList Page",
+    [LinkedPage( "Wait List Page",
         "The Page that shows the Wait List",
         Key = AttributeKey.WaitListPage,
         IsRequired = false,
-        // TODO: DefaultValue = Rock.SystemGuid.FinancialAccount.EVENT_REGISTRATION,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE_WAIT_LIST,
         Order = 0 )]
 
     [LinkedPage( "Group Placement Tool Page",
         "The Page that shows Group Placements for the selected placement type",
         Key = AttributeKey.GroupPlacementToolPage,
         IsRequired = false,
-        // TODO: DefaultValue = Rock.SystemGuid.FinancialAccount.EVENT_REGISTRATION,
-        Order = 0 )]
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE_PLACEMENT_GROUPS,
+        Order = 1 )]
 
-    public partial class RegistrationInstanceNavigation : RegistrationInstanceBlock
+    public partial class RegistrationInstanceNavigation : RegistrationInstanceBlock, ISecondaryBlock
     {
         #region Attribute Keys
 
@@ -79,6 +69,19 @@ namespace RockWeb.Blocks.Event
 
         private static class PageParameterKey
         {
+            /// <summary>
+            /// The Registration Instance identifier
+            /// </summary>
+            public const string RegistrationInstanceId = "RegistrationInstanceId";
+
+            /// <summary>
+            /// The Registration Template identifier.
+            /// </summary>
+            public const string RegistrationTemplateId = "RegistrationTemplateId";
+
+            /// <summary>
+            /// The registration template placement identifier
+            /// </summary>
             public const string RegistrationTemplatePlacementId = "RegistrationTemplatePlacementId";
         }
 
@@ -102,7 +105,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         public void BindPageList()
         {
-            if ( this.RegistrationInstance == null )
+            if ( this.RegistrationInstance == null || this.RegistrationInstance.RegistrationTemplate == null  )
             {
                 return;
             }
@@ -198,6 +201,15 @@ namespace RockWeb.Blocks.Event
             aPageLink.InnerText = navigationPageInfo.TabTitle;
             
             var lPageName = e.Item.FindControl( "lPageName" ) as Literal;
+        }
+
+        /// <summary>
+        /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlView.Visible = visible;
         }
 
         /// <summary>

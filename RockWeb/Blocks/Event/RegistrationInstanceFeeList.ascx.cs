@@ -59,20 +59,6 @@ namespace RockWeb.Blocks.Event
         #region Base Control Methods
 
         /// <summary>
-        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
-        //protected override void LoadViewState( object savedState )
-        //{
-        //    base.LoadViewState( savedState );
-
-        //    RegistrationTemplateId = ViewState["RegistrationTemplateId"] as int? ?? 0;
-
-        //    // don't set the values if this is a postback from a grid 'ClearFilter'
-        //    bool setValues = this.Request.Params["__EVENTTARGET"] == null || !this.Request.Params["__EVENTTARGET"].EndsWith( "_lbClearFilter" );
-        //}
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -98,59 +84,11 @@ namespace RockWeb.Blocks.Event
         {
             base.OnLoad( e );
 
-            //InitializeActiveRegistrationInstance();
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
             }
         }
-
-        /// <summary>
-        /// Saves any user control view-state changes that have occurred since the last page postback.
-        /// </summary>
-        /// <returns>
-        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
-        /// </returns>
-        //protected override object SaveViewState()
-        //{
-        //    //ViewState["RegistrationTemplateId"] = RegistrationTemplateId;
-
-        //    return base.SaveViewState();
-        //}
-
-        /// <summary>
-        /// Gets the bread crumbs.
-        /// </summary>
-        /// <param name="pageReference">The page reference.</param>
-        /// <returns></returns>
-        //public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
-        //{
-        //    var breadCrumbs = new List<BreadCrumb>();
-
-        //    int? registrationInstanceId = PageParameter( pageReference, PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-        //    if ( registrationInstanceId.HasValue )
-        //    {
-        //        RegistrationInstance registrationInstance = GetRegistrationInstance( registrationInstanceId.Value );
-        //        if ( registrationInstance != null )
-        //        {
-        //            breadCrumbs.Add( new BreadCrumb( registrationInstance.ToString(), pageReference ) );
-        //            return breadCrumbs;
-        //        }
-        //    }
-
-        //    breadCrumbs.Add( new BreadCrumb( "New Registration Instance", pageReference ) );
-        //    return breadCrumbs;
-        //}
-
-        /// <summary>
-        /// Handles the BlockUpdated event of the control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        //protected void Block_BlockUpdated( object sender, EventArgs e )
-        //{
-        //}
 
         #endregion
 
@@ -226,101 +164,25 @@ namespace RockWeb.Blocks.Event
 
         #region Methods
 
-        //private RegistrationInstance _RegistrationInstance = null;
-
-        /// <summary>
-        /// Load the active Registration Instance for the current page context.
-        /// </summary>
-        //private void InitializeActiveRegistrationInstance()
-        //{
-        //    _RegistrationInstance = null;
-
-        //    int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsInteger();
-
-        //    if ( registrationInstanceId != 0 )
-        //    {
-        //        _RegistrationInstance = GetRegistrationInstance( registrationInstanceId.Value );
-        //    }
-
-        //    hfRegistrationInstanceId.Value = registrationInstanceId.ToString();
-        //}
-
-        /// <summary>
-        /// Gets the registration instance.
-        /// </summary>
-        /// <param name="registrationInstanceId">The registration instance identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        //private RegistrationInstance GetRegistrationInstance( int registrationInstanceId, RockContext rockContext = null )
-        //{
-        //    string key = string.Format( "RegistrationInstance:{0}", registrationInstanceId );
-        //    RegistrationInstance registrationInstance = RockPage.GetSharedItem( key ) as RegistrationInstance;
-        //    if ( registrationInstance == null )
-        //    {
-        //        rockContext = rockContext ?? new RockContext();
-        //        registrationInstance = new RegistrationInstanceService( rockContext )
-        //            .Queryable( "RegistrationTemplate,Account,RegistrationTemplate.Forms.Fields" )
-        //            .AsNoTracking()
-        //            .FirstOrDefault( i => i.Id == registrationInstanceId );
-        //        RockPage.SaveSharedItem( key, registrationInstance );
-        //    }
-
-        //    return registrationInstance;
-        //}
-
         /// <summary>
         /// Shows the detail.
         /// </summary>
         private void ShowDetail()
         {
-            //int? registrationInstanceId = PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-            //int? parentTemplateId = PageParameter( "RegistrationTemplateId" ).AsIntegerOrNull();
 
             var registrationInstance = this.RegistrationInstance;
 
             if ( registrationInstance == null )
             {
-                //pnlDetails.Visible = false;
                 return;
             }
 
-            //using ( var rockContext = new RockContext() )
-            //{
-                
-                //if ( registrationInstanceId.HasValue )
-                //{
-                //    registrationInstance = GetRegistrationInstance( registrationInstanceId.Value, rockContext );
-                //}
 
-                //if ( registrationInstance == null )
-                //{
-                //    registrationInstance = new RegistrationInstance();
-                //    registrationInstance.Id = 0;
-                //    registrationInstance.IsActive = true;
-                //    registrationInstance.RegistrationTemplateId = parentTemplateId ?? 0;
-
-                //    Guid? accountGuid = GetAttributeValue( "DefaultAccount" ).AsGuidOrNull();
-                //    if ( accountGuid.HasValue )
-                //    {
-                //        var account = new FinancialAccountService( rockContext ).Get( accountGuid.Value );
-                //        registrationInstance.AccountId = account != null ? account.Id : 0;
-                //    }
-                //}
-
-                //if ( registrationInstance.RegistrationTemplate == null && registrationInstance.RegistrationTemplateId > 0 )
-                //{
-                //    registrationInstance.RegistrationTemplate = new RegistrationTemplateService( rockContext )
-                //        .Get( registrationInstance.RegistrationTemplateId );
-                //}
 
                 pnlDetails.Visible = true;
-                //hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
-                //hfRegistrationTemplateId.Value = registrationInstance.RegistrationTemplateId.ToString();
-                //RegistrationTemplateId = registrationInstance.RegistrationTemplateId;
 
                 BindFeesFilter();
                 BindFeesGrid();
-            //}
         }
 
         /// <summary>
