@@ -1275,7 +1275,7 @@ namespace Rock.Web.UI
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}", BlockCache.Id, BlockCache.BlockType.Name ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}&CurrentPageId={2}", BlockCache.Id, BlockCache.BlockType.Name, this.PageCache?.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
