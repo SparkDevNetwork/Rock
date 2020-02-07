@@ -92,10 +92,10 @@ namespace RockWeb.Blocks.Event
 
         #region Properties and Fields
 
-        private Dictionary<int, Location> _HomeAddresses = new Dictionary<int, Location>();
-        private Dictionary<int, PhoneNumber> _MobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
-        private Dictionary<int, PhoneNumber> _HomePhoneNumbers = new Dictionary<int, PhoneNumber>();
-        private bool _IsExporting = false;
+        private Dictionary<int, Location> _homeAddresses = new Dictionary<int, Location>();
+        private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private bool _isExporting = false;
 
         /// <summary>
         /// Gets or sets the registrant form fields that were configured as 'Show on Grid' for the registration template
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            RegistrantFields = ViewState["RegistrantFields"] as RegistrantFormField[];
+            RegistrantFields = ViewState[ViewStateKey.RegistrantFields] as RegistrantFormField[];
 
             SetUserPreferencePrefix( this.RegistrationTemplateId.GetValueOrDefault() );
 
@@ -203,7 +203,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["RegistrantFields"] = RegistrantFields;
+            ViewState[ViewStateKey.RegistrantFields] = RegistrantFields;
 
             return base.SaveViewState();
         }
@@ -219,11 +219,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fRegistrants_ApplyFilterClick( object sender, EventArgs e )
         {
-            fRegistrants.SaveUserPreference( "Registrants Date Range", "Registration Date Range", sdrpRegistrantsRegistrantDateRange.DelimitedValues );
-            fRegistrants.SaveUserPreference( "First Name", tbRegistrantsRegistrantFirstName.Text );
-            fRegistrants.SaveUserPreference( "Last Name", tbRegistrantsRegistrantLastName.Text );
-            fRegistrants.SaveUserPreference( "In Group", ddlRegistrantsInGroup.SelectedValue );
-            fRegistrants.SaveUserPreference( "Signed Document", ddlRegistrantsSignedDocument.SelectedValue );
+            fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_RegistrantsDateRange, "Registrants Date Range", sdrpRegistrantsRegistrantDateRange.DelimitedValues );
+            fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_FirstName, tbRegistrantsRegistrantFirstName.Text );
+            fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_LastName, tbRegistrantsRegistrantLastName.Text );
+            fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_InGroup, ddlRegistrantsInGroup.SelectedValue );
+            fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_SignedDocument, ddlRegistrantsSignedDocument.SelectedValue );
 
             if ( RegistrantFields != null )
             {
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Event
                                 var ddlCampus = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsCampus" ) as RockDropDownList;
                                 if ( ddlCampus != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Home Campus", ddlCampus.SelectedValue );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_HomeCampus, ddlCampus.SelectedValue );
                                 }
 
                                 break;
@@ -246,7 +246,7 @@ namespace RockWeb.Blocks.Event
                                 var tbEmailFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsEmailFilter" ) as RockTextBox;
                                 if ( tbEmailFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Email", tbEmailFilter.Text );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_Email, tbEmailFilter.Text );
                                 }
 
                                 break;
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.Event
                                 var drpBirthdateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsBirthdateFilter" ) as DateRangePicker;
                                 if ( drpBirthdateFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Birthdate Range", drpBirthdateFilter.DelimitedValues );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_BirthdateRange, drpBirthdateFilter.DelimitedValues );
                                 }
 
                                 break;
@@ -263,22 +263,24 @@ namespace RockWeb.Blocks.Event
                                 var tbMiddleNameFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMiddleNameFilter" ) as RockTextBox;
                                 if ( tbMiddleNameFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "MiddleName", tbMiddleNameFilter.Text );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_MiddleName, tbMiddleNameFilter.Text );
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.AnniversaryDate:
                                 var drAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
                                 if ( drAnniversaryDateFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "AnniversaryDate Range", drAnniversaryDateFilter.DelimitedValues );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_AnniversaryDateRange, drAnniversaryDateFilter.DelimitedValues );
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
                                 {
                                     int? gradeOffset = gpGradeFilter.SelectedValueAsInt( false );
-                                    fRegistrants.SaveUserPreference( "Grade", gradeOffset.HasValue ? gradeOffset.Value.ToString() : string.Empty );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_Grade, gradeOffset.HasValue ? gradeOffset.Value.ToString() : string.Empty );
                                 }
 
                                 break;
@@ -287,7 +289,7 @@ namespace RockWeb.Blocks.Event
                                 var ddlGenderFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Gender", ddlGenderFilter.SelectedValue );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_Gender, ddlGenderFilter.SelectedValue );
                                 }
 
                                 break;
@@ -296,7 +298,7 @@ namespace RockWeb.Blocks.Event
                                 var dvpMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "dvpRegistrantsMaritalStatusFilter" ) as DefinedValuePicker;
                                 if ( dvpMaritalStatusFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Marital Status", dvpMaritalStatusFilter.SelectedValue );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_MaritalStatus, dvpMaritalStatusFilter.SelectedValue );
                                 }
 
                                 break;
@@ -305,7 +307,7 @@ namespace RockWeb.Blocks.Event
                                 var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Cell Phone", "Cell Phone", tbMobilePhoneFilter.Text );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_CellPhone, "Cell Phone", tbMobilePhoneFilter.Text );
                                 }
 
                                 break;
@@ -314,7 +316,7 @@ namespace RockWeb.Blocks.Event
                                 var tbRegistrantsHomePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsHomePhoneFilter" ) as RockTextBox;
                                 if ( tbRegistrantsHomePhoneFilter != null )
                                 {
-                                    fRegistrants.SaveUserPreference( "Home Phone", tbRegistrantsHomePhoneFilter.Text );
+                                    fRegistrants.SaveUserPreference( UserPreferenceKey.GridFilter_HomePhone, tbRegistrantsHomePhoneFilter.Text );
                                 }
 
                                 break;
@@ -332,7 +334,10 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fRegistrants.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch { }
+                            catch
+                            {
+                                // ignore
+                            }
                         }
                     }
                 }
@@ -401,6 +406,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     tbMiddleNameFilter.Text = string.Empty;
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.AnniversaryDate:
                                 var drAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
@@ -409,6 +415,7 @@ namespace RockWeb.Blocks.Event
                                     drAnniversaryDateFilter.LowerValue = null;
                                     drAnniversaryDateFilter.UpperValue = null;
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
@@ -486,7 +493,10 @@ namespace RockWeb.Blocks.Event
                         e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                         return;
                     }
-                    catch { }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
             }
 
@@ -571,7 +581,7 @@ namespace RockWeb.Blocks.Event
         {
             var registrationInstanceId = hfRegistrationInstanceId.Value.AsInteger();
 
-            var registrationInstance = GetRegistrationInstance( registrationInstanceId );
+            var registrationInstance = GetRegistrationInstance( registrationInstanceId, new RockContext() );
 
             var name = registrationInstance.Name.FormatAsHtmlTitle();
 
@@ -670,11 +680,12 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( _HomeAddresses.Any() && _HomeAddresses.ContainsKey( registrant.PersonId.Value ) )
+                if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
-                    var location = _HomeAddresses[registrant.PersonId.Value];
+                    var location = _homeAddresses[registrant.PersonId.Value];
+
                     // break up addresses if exporting
-                    if ( _IsExporting )
+                    if ( _isExporting )
                     {
                         var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
                         var lStreet2 = e.Row.FindControl( "lStreet2" ) as Literal;
@@ -703,9 +714,9 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( _MobilePhoneNumbers.Any() )
+                if ( _mobilePhoneNumbers.Any() )
                 {
-                    var mobileNumber = _MobilePhoneNumbers[registrant.PersonId.Value];
+                    var mobileNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
                     var mobileField = e.Row.FindControl( "lRegistrantsMobile" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsMobile" ) as Literal;
                     if ( mobileField != null )
                     {
@@ -718,12 +729,11 @@ namespace RockWeb.Blocks.Event
                             mobileField.Text = mobileNumber.IsUnlisted ? "Unlisted" : mobileNumber.NumberFormatted;
                         }
                     }
-
                 }
 
-                if ( _HomePhoneNumbers.Any() )
+                if ( _homePhoneNumbers.Any() )
                 {
-                    var homePhoneNumber = _HomePhoneNumbers[registrant.PersonId.Value];
+                    var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
                     var homePhoneField = e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
                     if ( homePhoneField != null )
                     {
@@ -736,7 +746,6 @@ namespace RockWeb.Blocks.Event
                             homePhoneField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
                         }
                     }
-
                 }
             }
         }
@@ -847,12 +856,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrantsFilter( RegistrationInstance instance )
         {
-            sdrpRegistrantsRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( "Registrants Date Range" );
-            tbRegistrantsRegistrantFirstName.Text = fRegistrants.GetUserPreference( "First Name" );
-            tbRegistrantsRegistrantLastName.Text = fRegistrants.GetUserPreference( "Last Name" );
-            ddlRegistrantsInGroup.SetValue( fRegistrants.GetUserPreference( "In Group" ) );
+            sdrpRegistrantsRegistrantDateRange.DelimitedValues = fRegistrants.GetUserPreference( UserPreferenceKey.GridFilter_RegistrantsDateRange );
+            tbRegistrantsRegistrantFirstName.Text = fRegistrants.GetUserPreference( UserPreferenceKey.GridFilter_FirstName );
+            tbRegistrantsRegistrantLastName.Text = fRegistrants.GetUserPreference( UserPreferenceKey.GridFilter_LastName );
+            ddlRegistrantsInGroup.SetValue( fRegistrants.GetUserPreference( UserPreferenceKey.GridFilter_InGroup ) );
 
-            ddlRegistrantsSignedDocument.SetValue( fRegistrants.GetUserPreference( "Signed Document" ) );
+            ddlRegistrantsSignedDocument.SetValue( fRegistrants.GetUserPreference( UserPreferenceKey.GridFilter_SignedDocument ) );
             ddlRegistrantsSignedDocument.Visible = instance != null && instance.RegistrationTemplate != null && instance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue;
         }
 
@@ -861,7 +870,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrantsGrid( bool isExporting = false )
         {
-            _IsExporting = isExporting;
+            _isExporting = isExporting;
 
             int? instanceId = this.RegistrationInstanceId;
 
@@ -960,18 +969,17 @@ namespace RockWeb.Blocks.Event
                     var personAttributesIds = new List<int>();
                     var groupMemberAttributesIds = new List<int>();
 
-
                     var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
 
-                    if ( isExporting || RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ) )
+                    if ( isExporting || ( RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ) ) )
                     {
-                        _HomeAddresses = Person.GetHomeLocations( personIds );
+                        _homeAddresses = Person.GetHomeLocations( personIds );
                     }
 
                     if ( RegistrantFields != null )
                     {
-                        _MobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
-                        _HomePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
+                        _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
+                        _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
 
                         // Filter by any selected
                         foreach ( var personFieldType in RegistrantFields
@@ -1041,6 +1049,7 @@ namespace RockWeb.Blocks.Event
                                             r.PersonAlias.Person.MiddleName != null &&
                                             r.PersonAlias.Person.MiddleName.Contains( tbMiddleNameFilter.Text ) );
                                     }
+
                                     break;
                                 case RegistrationPersonFieldType.AnniversaryDate:
                                     var drpAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
@@ -1060,6 +1069,7 @@ namespace RockWeb.Blocks.Event
                                                 r.PersonAlias.Person.AnniversaryDate.Value <= drpAnniversaryDateFilter.UpperValue.Value );
                                         }
                                     }
+
                                     break;
                                 case RegistrationPersonFieldType.Grade:
                                     var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
@@ -1413,5 +1423,4 @@ namespace RockWeb.Blocks.Event
 
         #endregion   
     }
-
 }

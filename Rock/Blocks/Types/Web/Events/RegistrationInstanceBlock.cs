@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.Web.UI.Controls;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Rock.Blocks.Types.Web.Events
 {
@@ -77,26 +78,185 @@ namespace Rock.Blocks.Types.Web.Events
 
         #endregion Page Parameter Keys
 
-        #region Page Parameter Keys
+        #region ViewState Keys
+
+        /// <summary>
+        /// Keys to use for ViewState
+        /// </summary>
+        protected static class ViewStateKey
+        {
+            /// <summary>
+            /// The registrant fields
+            /// </summary>
+            public const string RegistrantFields = "RegistrantFields";
+
+            /// <summary>
+            /// The available registration attribute ids for grid
+            /// </summary>
+            public const string AvailableRegistrationAttributeIdsForGrid = "AvailableRegistrationAttributeIdsForGrid";
+        }
+
+        #endregion ViewState Keys
+
+        #region User Preference Keys
 
         /// <summary>
         /// Keys to use for User Preferences
         /// </summary>
-        private static class UserPreferenceKey
+        protected static class UserPreferenceKey
         {
+            /// <summary>
+            /// The grid filter grade
+            /// </summary>
             public const string GridFilter_Grade = "Grade";
-            public const string GridFilter_Phone = "Phone";
+
+            /// <summary>
+            /// The grid filter middle name
+            /// </summary>
             public const string GridFilter_MiddleName = "MiddleName";
+
+            /// <summary>
+            /// The grid filter home phone
+            /// </summary>
             public const string GridFilter_HomePhone = "HomePhone";
+
+            /// <summary>
+            /// The grid filter cell phone
+            /// </summary>
+            public const string GridFilter_CellPhone = "CellPhone";
+
+            /// <summary>
+            /// The grid filter email
+            /// </summary>
             public const string GridFilter_Email = "Email";
+
+            /// <summary>
+            /// The grid filter marital status
+            /// </summary>
             public const string GridFilter_MaritalStatus = "Marital Status";
+
+            /// <summary>
+            /// The grid filter birthdate range
+            /// </summary>
             public const string GridFilter_BirthdateRange = "Birthdate Range";
+
+            /// <summary>
+            /// The grid filter anniversary date range
+            /// </summary>
             public const string GridFilter_AnniversaryDateRange = "AnniversaryDate Range";
+
+            /// <summary>
+            /// The grid filter gender
+            /// </summary>
             public const string GridFilter_Gender = "Gender";
+
+            /// <summary>
+            /// The grid filter home campus
+            /// </summary>
             public const string GridFilter_HomeCampus = "Home Campus";
+
+            /// <summary>
+            /// The grid filter date range
+            /// </summary>
+            public const string GridFilter_DateRange = "Date Range";
+
+            /// <summary>
+            /// The grid filter first name
+            /// </summary>
+            public const string GridFilter_FirstName = "First Name";
+
+            /// <summary>
+            /// The grid filter last name
+            /// </summary>
+            public const string GridFilter_LastName = "Last Name";
+
+            /// <summary>
+            /// The grid filter registrants date range
+            /// </summary>
+            public const string GridFilter_RegistrantsDateRange = "Registrants DateRange";
+
+            /// <summary>
+            /// The grid filter in group
+            /// </summary>
+            public const string GridFilter_InGroup = "In Group";
+
+            /// <summary>
+            /// The grid filter signed document
+            /// </summary>
+            public const string GridFilter_SignedDocument = "Signed Document";
+
+            /// <summary>
+            /// The grid filter fee date range
+            /// </summary>
+            public const string GridFilter_FeeDateRange = "Fee Date Range";
+
+            /// <summary>
+            /// The grid filter fee options
+            /// </summary>
+            public const string GridFilter_FeeOptions = "Fee Options";
+
+            /// <summary>
+            /// The grid filter fee name
+            /// </summary>
+            public const string GridFilter_FeeName = "Fee Name";
+
+            /// <summary>
+            /// The grid filter discount date range
+            /// </summary>
+            public const string GridFilter_DiscountDateRange = "Discount Date Range";
+
+            /// <summary>
+            /// The grid filter discount code
+            /// </summary>
+            public const string GridFilter_DiscountCode = "Discount Code";
+
+            /// <summary>
+            /// The grid filter discount code search
+            /// </summary>
+            public const string GridFilter_DiscountCodeSearch = "Discount Code Search";
+
+            /// <summary>
+            /// The grid filter campus
+            /// </summary>
+            public const string GridFilter_Campus = "Campus";
+
+            /// <summary>
+            /// The grid filter payments date range
+            /// </summary>
+            public const string GridFilter_PaymentsDateRange = "Payments Date Range";
+
+            /// <summary>
+            /// The grid filter registrations date range
+            /// </summary>
+            public const string GridFilter_RegistrationsDateRange = "Registrations Date Range";
+
+            /// <summary>
+            /// The grid filter payment status
+            /// </summary>
+            public const string GridFilter_PaymentStatus = "Payment Status";
+
+            /// <summary>
+            /// The grid filter registered by first name
+            /// </summary>
+            public const string GridFilter_RegisteredByFirstName = "Registered By First Name";
+
+            /// <summary>
+            /// The grid filter registered by last name
+            /// </summary>
+            public const string GridFilter_RegisteredByLastName = "Registered By Last Name";
+
+            /// <summary>
+            /// The grid filter registrant first name
+            /// </summary>
+            public const string GridFilter_RegistrantFirstName = "Registrant First Name";
+
+            /// <summary>
+            /// The grid filter registrant last name
+            /// </summary>
+            public const string GridFilter_RegistrantLastName = "Registrant Last Name";
         }
 
-        #endregion Page Parameter Keys
+        #endregion User Preference Keys
 
         #region Properties and Fields
 
@@ -148,7 +308,7 @@ namespace Rock.Blocks.Types.Web.Events
             }
         }
 
-        private bool? _RegistrationInstanceHasPayments;
+        private bool? _registrationInstanceHasPayments;
 
         /// <summary>
         /// Does the active Registration Instance have associated payments?
@@ -157,7 +317,7 @@ namespace Rock.Blocks.Types.Web.Events
         {
             get
             {
-                if ( !_RegistrationInstanceHasPayments.HasValue )
+                if ( !_registrationInstanceHasPayments.HasValue )
                 {
                     var registrationInstance = this.RegistrationInstance;
 
@@ -174,7 +334,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                         var registrationEntityType = EntityTypeCache.Get( typeof( Rock.Model.Registration ) );
 
-                        _RegistrationInstanceHasPayments = new FinancialTransactionDetailService( dataContext )
+                        _registrationInstanceHasPayments = new FinancialTransactionDetailService( dataContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.EntityTypeId.HasValue &&
@@ -182,11 +342,10 @@ namespace Rock.Blocks.Types.Web.Events
                                 d.EntityTypeId.Value == registrationEntityType.Id &&
                                 registrationIdQry.Contains( d.EntityId.Value ) )
                             .Any();
-
                     }
                 }
 
-                return _RegistrationInstanceHasPayments.GetValueOrDefault();
+                return _registrationInstanceHasPayments.GetValueOrDefault();
             }
         }
 
@@ -277,7 +436,7 @@ namespace Rock.Blocks.Types.Web.Events
         /// Adds the filter controls and grid columns for all of the registration template's form fields.
         /// that were configured to 'Show on Grid'
         /// </summary>
-        protected void AddRegistrationTemplateFieldsToGrid( RegistrantFormField[] RegistrantFields, PlaceHolder filterFieldsContainer, Grid grid, GridFilter gridFilter, bool setValues, bool disableAddressFieldExport )
+        protected void AddRegistrationTemplateFieldsToGrid( RegistrantFormField[] registrantFields, PlaceHolder filterFieldsContainer, Grid grid, GridFilter gridFilter, bool setValues, bool disableAddressFieldExport )
         {
             filterFieldsContainer.Controls.Clear();
 
@@ -285,9 +444,9 @@ namespace Rock.Blocks.Types.Web.Events
 
             string dataFieldExpression = string.Empty;
 
-            if ( RegistrantFields != null )
+            if ( registrantFields != null )
             {
-                foreach ( var field in RegistrantFields )
+                foreach ( var field in registrantFields )
                 {
                     if ( field.FieldSource == RegistrationFieldSource.PersonField
                          && field.PersonFieldType.HasValue )
@@ -317,6 +476,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     templateField.HeaderText = "Campus";
                                     grid.Columns.Add( templateField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.Email:
@@ -340,6 +500,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     emailField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( emailField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.Birthdate:
@@ -364,6 +525,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     birthdateField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( birthdateField );
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.MiddleName:
                                 {
@@ -386,6 +548,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     middleNameField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( middleNameField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.AnniversaryDate:
@@ -410,6 +573,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     anniversaryDateField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( anniversaryDateField );
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.Grade:
                                 {
@@ -441,6 +605,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     gradeField.HeaderText = "Grade";
                                     grid.Columns.Add( gradeField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.Gender:
@@ -465,6 +630,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     genderField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( genderField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.MaritalStatus:
@@ -489,6 +655,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     maritalStatusField.SortExpression = dataFieldExpression;
                                     grid.Columns.Add( maritalStatusField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.MobilePhone:
@@ -502,7 +669,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbMobilePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Phone );
+                                        tbMobilePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_CellPhone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbMobilePhoneFilter );
@@ -512,6 +679,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     phoneNumbersField.HeaderText = mobileLabel;
                                     grid.Columns.Add( phoneNumbersField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.HomePhone:
@@ -535,6 +703,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     homePhoneNumbersField.HeaderText = homePhoneLabel;
                                     grid.Columns.Add( homePhoneNumbersField );
                                 }
+
                                 break;
 
                             case RegistrationPersonFieldType.Address:
@@ -551,12 +720,14 @@ namespace Rock.Blocks.Types.Web.Events
                                     addressField.ID = "lGroupPlacementsAddress";
                                     grid.Columns.Add( addressField );
                                 }
+
                                 break;
                         }
                     }
                     else if ( field.Attribute != null )
                     {
                         var attribute = field.Attribute;
+
                         // Add dynamic filter fields
                         var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filterGroupPlacements_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                         if ( filterFieldControl != null )
@@ -728,9 +899,8 @@ namespace Rock.Blocks.Types.Web.Events
         /// Gets the shared registration instance.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private RegistrationInstance GetSharedRegistrationInstance( int registrationInstanceId, RockContext rockContext = null )
+        private RegistrationInstance GetSharedRegistrationInstance( int registrationInstanceId )
         {
             string key = string.Format( "RegistrationInstance:{0}", registrationInstanceId );
 
@@ -738,7 +908,7 @@ namespace Rock.Blocks.Types.Web.Events
 
             if ( registrationInstance == null )
             {
-                registrationInstance = GetRegistrationInstance( registrationInstanceId );
+                registrationInstance = GetRegistrationInstance( registrationInstanceId, new RockContext() );
                 RockPage.SaveSharedItem( key, registrationInstance );
             }
 
@@ -750,37 +920,23 @@ namespace Rock.Blocks.Types.Web.Events
         /// Use this method to load data for postback processing.
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        protected RegistrationInstance GetRegistrationInstance( int? registrationInstanceId )
+        protected RegistrationInstance GetRegistrationInstance( int? registrationInstanceId, RockContext rockContext )
         {
-            var rockContext = new RockContext();
-
-            RegistrationInstance registrationInstance;
-
-            if ( !registrationInstanceId.HasValue )
+            if ( !registrationInstanceId.HasValue || registrationInstanceId.Value == 0 )
             {
                 return null;
             }
 
-            if ( registrationInstanceId == 0 )
-            {
-                registrationInstance = new RegistrationInstance();
-                // get the RegistrationTemplateId in case we are creating a new RegistrationInstance
-                int? registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
-
-                registrationInstance.RegistrationTemplateId = registrationTemplateId ?? 0;
-            }
-            else
-            {
-                registrationInstance = new RegistrationInstanceService( rockContext )
-                    .Queryable()
-                    .Include( a => a.RegistrationTemplate )
-                    .Include( a => a.Account )
-                    .Include( a => a.RegistrationTemplate.Forms )
-                    .Include( a => a.RegistrationTemplate.Forms.Select( s => s.Fields ) )
-                    .AsNoTracking()
-                    .FirstOrDefault( i => i.Id == registrationInstanceId );
-            }
+            var registrationInstance = new RegistrationInstanceService( rockContext )
+                .Queryable()
+                .Include( a => a.RegistrationTemplate )
+                .Include( a => a.Account )
+                .Include( a => a.RegistrationTemplate.Forms )
+                .Include( a => a.RegistrationTemplate.Forms.Select( s => s.Fields ) )
+                .Where( a => a.Id == registrationInstanceId.Value )
+                .AsNoTracking().FirstOrDefault();
 
             if ( registrationInstance == null )
             {
@@ -863,6 +1019,7 @@ namespace Rock.Blocks.Types.Web.Events
             /// <value>
             /// The field source.
             /// </value>
+            [DataMember]
             public RegistrationFieldSource FieldSource { get; set; }
 
             /// <summary>
@@ -871,6 +1028,7 @@ namespace Rock.Blocks.Types.Web.Events
             /// <value>
             /// The type of the person field.
             /// </value>
+            [DataMember]
             public RegistrationPersonFieldType? PersonFieldType { get; set; }
 
             /// <summary>
@@ -879,6 +1037,7 @@ namespace Rock.Blocks.Types.Web.Events
             /// <value>
             /// The attribute identifier.
             /// </value>
+            [DataMember]
             public int AttributeId { get; set; }
 
             /// <summary>
@@ -887,11 +1046,10 @@ namespace Rock.Blocks.Types.Web.Events
             /// <value>
             /// The attribute.
             /// </value>
+            [IgnoreDataMember]
             public AttributeCache Attribute => AttributeCache.Get( AttributeId );
-            
         }
 
         #endregion
-
     }
 }

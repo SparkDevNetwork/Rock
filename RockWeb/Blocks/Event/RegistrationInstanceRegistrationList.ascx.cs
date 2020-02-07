@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Event
         Key = AttributeKey.RegistrationPage,
         IsRequired = false,
         Order = 1 )]
+
     [BooleanField(
         "Display Discount Codes",
         "Display the discount code used with a payment",
@@ -97,9 +98,9 @@ namespace RockWeb.Blocks.Event
 
         #region Properties and Fields
 
-        private List<FinancialTransactionDetail> _RegistrationPayments;
+        private List<FinancialTransactionDetail> _registrationPayments;
 
-        private bool _InstanceHasCost = false;
+        private bool _instanceHasCost = false;
 
         /// <summary>
         /// Gets or sets the available registration attributes where IsGridColumn = true
@@ -121,9 +122,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            AvailableRegistrationAttributeIdsForGrid = ViewState["AvailableRegistrationAttributeIdsForGrid"] as int[];
-
-            SetUserPreferencePrefix( RegistrationTemplateId.Value );
+            AvailableRegistrationAttributeIdsForGrid = ViewState[ViewStateKey.AvailableRegistrationAttributeIdsForGrid] as int[];
 
             // Don't set the dynamic control values if this is a postback from a grid 'ClearFilter'.
             bool setValues = this.Request.Params["__EVENTTARGET"] == null || !this.Request.Params["__EVENTTARGET"].EndsWith( "_lbClearFilter" );
@@ -175,7 +174,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["AvailableRegistrationAttributeIdsForGrid"] = AvailableRegistrationAttributeIdsForGrid;
+            ViewState[ViewStateKey.AvailableRegistrationAttributeIdsForGrid] = AvailableRegistrationAttributeIdsForGrid;
 
             return base.SaveViewState();
         }
@@ -315,7 +314,7 @@ namespace RockWeb.Blocks.Event
                     lRegistrants.Text = registrantNames;
                 }
 
-                var payments = _RegistrationPayments.Where( p => p.EntityId == registration.Id );
+                var payments = _registrationPayments.Where( p => p.EntityId == registration.Id );
                 bool hasPayments = payments.Any();
                 decimal totalPaid = hasPayments ? payments.Select( p => p.Amount ).DefaultIfEmpty().Sum() : 0.0m;
 
@@ -324,7 +323,7 @@ namespace RockWeb.Blocks.Event
                 var lRegistrationCost = e.Row.FindControl( "lRegistrationCost" ) as Literal;
                 if ( lRegistrationCost != null )
                 {
-                    lRegistrationCost.Visible = _InstanceHasCost || discountedCost > 0.0M;
+                    lRegistrationCost.Visible = _instanceHasCost || discountedCost > 0.0M;
                     lRegistrationCost.Text = string.Format( "<span class='label label-info'>{0}</span>", discountedCost.FormatAsCurrency() );
                 }
 
@@ -332,7 +331,7 @@ namespace RockWeb.Blocks.Event
                 var lDiscount = e.Row.FindControl( "lDiscount" ) as Literal;
                 if ( lDiscount != null )
                 {
-                    lDiscount.Visible = _InstanceHasCost && !string.IsNullOrEmpty( discountCode );
+                    lDiscount.Visible = _instanceHasCost && !string.IsNullOrEmpty( discountCode );
                     lDiscount.Text = string.Format( "<span class='label label-default'>{0}</span>", discountCode );
                 }
 
@@ -340,7 +339,7 @@ namespace RockWeb.Blocks.Event
                 if ( lBalance != null )
                 {
                     decimal balanceDue = registration.DiscountedCost - totalPaid;
-                    lBalance.Visible = _InstanceHasCost || discountedCost > 0.0M;
+                    lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
                     string balanceCssClass;
                     if ( balanceDue > 0.0m )
                     {
@@ -357,7 +356,10 @@ namespace RockWeb.Blocks.Event
 
                     lBalance.Text = string.Format(
     @"<span class='label {0}'>{1}</span>
-    <input type='hidden' class='js-has-payments' value='{2}' />", balanceCssClass, balanceDue.FormatAsCurrency(), hasPayments.ToTrueFalse() );
+    <input type='hidden' class='js-has-payments' value='{2}' />",
+    balanceCssClass,
+    balanceDue.FormatAsCurrency(),
+    hasPayments.ToTrueFalse() );
                 }
             }
         }
@@ -500,12 +502,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrationsFilter()
         {
-            sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( "Registrations Date Range" );
-            ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( "Payment Status" ) );
-            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( "RegisteredBy First Name" );
-            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( "RegisteredBy Last Name" );
-            tbRegistrationRegistrantFirstName.Text = fRegistrations.GetUserPreference( "Registrant First Name" );
-            tbRegistrationRegistrantLastName.Text = fRegistrations.GetUserPreference( "Registrant Last Name" );
+            sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegistrationsDateRange );
+            ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_PaymentStatus ) );
+            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegisteredByFirstName );
+            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegisteredByLastName );
+            tbRegistrationRegistrantFirstName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegistrantFirstName );
+            tbRegistrationRegistrantLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegistrantLastName );
         }
 
         /// <summary>
@@ -530,7 +532,7 @@ namespace RockWeb.Blocks.Event
                             cost = instance.Cost ?? 0.0m;
                         }
 
-                        _InstanceHasCost = cost > 0.0m;
+                        _instanceHasCost = cost > 0.0m;
                     }
 
                     var qry = new RegistrationService( rockContext )
@@ -724,7 +726,7 @@ namespace RockWeb.Blocks.Event
                             .Select( r => r.Id )
                             .ToList();
 
-                        _RegistrationPayments = new FinancialTransactionDetailService( rockContext )
+                        _registrationPayments = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
                                 d.EntityTypeId.HasValue &&

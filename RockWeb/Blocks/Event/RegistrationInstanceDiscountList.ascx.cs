@@ -72,7 +72,6 @@ namespace RockWeb.Blocks.Event
             gDiscounts.GridRebind += gDiscounts_GridRebind;
 
             this.AddConfigurationUpdateTrigger( upnlContent );
-
         }
 
         /// <summary>
@@ -87,7 +86,6 @@ namespace RockWeb.Blocks.Event
             {
                 ShowDetail();
             }
-
         }
 
         #endregion
@@ -113,6 +111,7 @@ namespace RockWeb.Blocks.Event
                     {
                         e.Value = string.Empty;
                     }
+
                     break;
 
                 case "DiscountCodeSearch":
@@ -143,9 +142,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fDiscounts_ApplyFilterClick( object sender, EventArgs e )
         {
-            fDiscounts.SaveUserPreference( "DiscountDateRange", "Discount Date Range", sdrpDiscountDateRange.DelimitedValues );
-            fDiscounts.SaveUserPreference( "DiscountCode", "Discount Code", ddlDiscountCode.SelectedItem.Text );
-            fDiscounts.SaveUserPreference( "DiscountCodeSearch", "Discount Code Search", tbDiscountCodeSearch.Text );
+            fDiscounts.SaveUserPreference( UserPreferenceKey.GridFilter_DiscountDateRange, "Discount Date Range", sdrpDiscountDateRange.DelimitedValues );
+            fDiscounts.SaveUserPreference( UserPreferenceKey.GridFilter_DiscountCode, "Discount Code", ddlDiscountCode.SelectedItem.Text );
+            fDiscounts.SaveUserPreference( UserPreferenceKey.GridFilter_DiscountCodeSearch, "Discount Code Search", tbDiscountCodeSearch.Text );
 
             BindDiscountsGrid();
         }
@@ -171,7 +170,7 @@ namespace RockWeb.Blocks.Event
         {
             var registrationInstance = this.RegistrationInstance;
 
-            if ( registrationInstance == null  )
+            if ( registrationInstance == null )
             {
                 return;
             }
@@ -185,10 +184,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindDiscountsFilter()
         {
-            sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetUserPreference( "DiscountDateRange" );
+            sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetUserPreference( UserPreferenceKey.GridFilter_DiscountDateRange );
             PopulateDiscountCodeList();
-            ddlDiscountCode.SelectedIndex = ddlDiscountCode.Items.IndexOf( ddlDiscountCode.Items.FindByText( fDiscounts.GetUserPreference( "DiscountCode" ) ) );
-            tbDiscountCodeSearch.Text = fDiscounts.GetUserPreference( "DiscountCodeSearch" );
+            ddlDiscountCode.SelectedIndex = ddlDiscountCode.Items.IndexOf( ddlDiscountCode.Items.FindByText( fDiscounts.GetUserPreference( UserPreferenceKey.GridFilter_DiscountCode ) ) );
+            tbDiscountCodeSearch.Text = fDiscounts.GetUserPreference( UserPreferenceKey.GridFilter_DiscountCodeSearch );
         }
 
         /// <summary>

@@ -93,16 +93,20 @@ namespace RockWeb.Blocks.Event
             /// The Registration Instance identifier
             /// </summary>
             public const string RegistrationInstanceId = "RegistrationInstanceId";
+
+            public const string RegistrationId = "RegistrationId";
+
+            public const string WaitListSetId = "WaitListSetId";
         }
 
         #endregion Page Parameter Keys
 
         #region Properties and Fields
 
-        private Dictionary<int, Location> _HomeAddresses = new Dictionary<int, Location>();
-        private Dictionary<int, PhoneNumber> _MobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
-        private Dictionary<int, PhoneNumber> _HomePhoneNumbers = new Dictionary<int, PhoneNumber>();
-        private List<int> _WaitListOrder = null;
+        private Dictionary<int, Location> _homeAddresses = new Dictionary<int, Location>();
+        private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private List<int> _waitListOrder = null;
 
         #endregion
 
@@ -144,7 +148,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            RegistrantFields = ViewState["RegistrantFields"] as RegistrantFormField[];
+            RegistrantFields = ViewState[ViewStateKey.RegistrantFields] as RegistrantFormField[];
 
             SetUserPreferencePrefix( RegistrationTemplateId.Value );
 
@@ -204,7 +208,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["RegistrantFields"] = RegistrantFields;
+            ViewState[ViewStateKey.RegistrantFields] = RegistrantFields;
 
             return base.SaveViewState();
         }
@@ -227,7 +231,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrant != null )
                 {
                     var qryParams = new Dictionary<string, string>();
-                    qryParams.Add( "RegistrationId", registrant.RegistrationId.ToString() );
+                    qryParams.Add( PageParameterKey.RegistrationId, registrant.RegistrationId.ToString() );
                     string url = LinkedPageUrl( AttributeKey.RegistrationPage, qryParams );
                     url += "#" + e.RowKeyValue;
                     Response.Redirect( url, false );
@@ -258,7 +262,10 @@ namespace RockWeb.Blocks.Event
                         item.EntityId = ( int ) key;
                         entitySet.Items.Add( item );
                     }
-                    catch { }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
 
                 if ( entitySet.Items.Any() )
@@ -270,7 +277,7 @@ namespace RockWeb.Blocks.Event
 
                     // redirect to the waitlist page
                     Dictionary<string, string> queryParms = new Dictionary<string, string>();
-                    queryParms.Add( "WaitListSetId", entitySet.Id.ToString() );
+                    queryParms.Add( PageParameterKey.WaitListSetId, entitySet.Id.ToString() );
                     NavigateToLinkedPage( AttributeKey.WaitListProcessingPage, queryParms );
                 }
             }
@@ -283,7 +290,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gWaitList_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.RegistrationPage, "RegistrationId", 0, "RegistrationInstanceId", this.RegistrationInstanceId.GetValueOrDefault() );
+            NavigateToLinkedPage( AttributeKey.RegistrationPage, PageParameterKey.RegistrationId, 0, PageParameterKey.RegistrationInstanceId, this.RegistrationInstanceId.GetValueOrDefault() );
         }
 
         /// <summary>
@@ -293,9 +300,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fWaitList_ApplyFilterClick( object sender, EventArgs e )
         {
-            fWaitList.SaveUserPreference( "Date Range", "Date Range", drpWaitListDateRange.DelimitedValues );
-            fWaitList.SaveUserPreference( "First Name", "First Name", tbWaitListFirstName.Text );
-            fWaitList.SaveUserPreference( "Last Name", "Last Name", tbWaitListLastName.Text );
+            fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_DateRange, "Date Range", drpWaitListDateRange.DelimitedValues );
+            fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_FirstName, "First Name", tbWaitListFirstName.Text );
+            fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_LastName, "Last Name", tbWaitListLastName.Text );
 
             if ( RegistrantFields != null )
             {
@@ -309,7 +316,7 @@ namespace RockWeb.Blocks.Event
                                 var ddlCampus = phWaitListFormFieldFilters.FindControl( "ddlWaitlistCampus" ) as RockDropDownList;
                                 if ( ddlCampus != null )
                                 {
-                                    fWaitList.SaveUserPreference( "Home Campus", "Home Campus", ddlCampus.SelectedValue );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_HomeCampus, "Home Campus", ddlCampus.SelectedValue );
                                 }
 
                                 break;
@@ -318,7 +325,7 @@ namespace RockWeb.Blocks.Event
                                 var tbEmailFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistEmailFilter" ) as RockTextBox;
                                 if ( tbEmailFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "Email", "Email", tbEmailFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_Email, "Email", tbEmailFilter.Text );
                                 }
 
                                 break;
@@ -327,7 +334,7 @@ namespace RockWeb.Blocks.Event
                                 var drpBirthdateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistBirthdateFilter" ) as DateRangePicker;
                                 if ( drpBirthdateFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "Birthdate Range", "Birthdate Range", drpBirthdateFilter.DelimitedValues );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_BirthdateRange, "Birthdate Range", drpBirthdateFilter.DelimitedValues );
                                 }
 
                                 break;
@@ -335,22 +342,24 @@ namespace RockWeb.Blocks.Event
                                 var tbMiddleNameFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMiddleNameFilter" ) as RockTextBox;
                                 if ( tbMiddleNameFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "MiddleName", "MiddleName", tbMiddleNameFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_MiddleName, "MiddleName", tbMiddleNameFilter.Text );
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.AnniversaryDate:
                                 var drpAnniversaryDateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistAnniversaryDateFilter" ) as DateRangePicker;
                                 if ( drpAnniversaryDateFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "AnniversaryDate Range", "AnniversaryDate Range", drpAnniversaryDateFilter.DelimitedValues );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_AnniversaryDateRange, "AnniversaryDate Range", drpAnniversaryDateFilter.DelimitedValues );
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phWaitListFormFieldFilters.FindControl( "gpWaitlistGradeFilter" ) as GradePicker;
                                 if ( gpGradeFilter != null )
                                 {
                                     int? gradeOffset = gpGradeFilter.SelectedValueAsInt( false );
-                                    fWaitList.SaveUserPreference( "Grade", "Grade", gradeOffset.HasValue ? gradeOffset.Value.ToString() : string.Empty );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_Grade, "Grade", gradeOffset.HasValue ? gradeOffset.Value.ToString() : string.Empty );
                                 }
 
                                 break;
@@ -359,7 +368,7 @@ namespace RockWeb.Blocks.Event
                                 var ddlGenderFilter = phWaitListFormFieldFilters.FindControl( "ddlWaitlistGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "Gender", "Gender", ddlGenderFilter.SelectedValue );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_Gender, "Gender", ddlGenderFilter.SelectedValue );
                                 }
 
                                 break;
@@ -368,7 +377,7 @@ namespace RockWeb.Blocks.Event
                                 var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "dvpWaitlistMaritalStatusFilter" ) as DefinedValuePicker;
                                 if ( dvpMaritalStatusFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "Marital Status", "Marital Status", dvpMaritalStatusFilter.SelectedValue );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_MaritalStatus, "Marital Status", dvpMaritalStatusFilter.SelectedValue );
                                 }
 
                                 break;
@@ -377,7 +386,7 @@ namespace RockWeb.Blocks.Event
                                 var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "Phone", "Cell Phone", tbMobilePhoneFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_CellPhone, "Cell Phone", tbMobilePhoneFilter.Text );
                                 }
 
                                 break;
@@ -386,7 +395,7 @@ namespace RockWeb.Blocks.Event
                                 var tbWaitlistHomePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistHomePhoneFilter" ) as RockTextBox;
                                 if ( tbWaitlistHomePhoneFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( "HomePhone", "Home Phone", tbWaitlistHomePhoneFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_HomePhone, "Home Phone", tbWaitlistHomePhoneFilter.Text );
                                 }
 
                                 break;
@@ -404,7 +413,10 @@ namespace RockWeb.Blocks.Event
                                 var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
                                 fWaitList.SaveUserPreference( attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
                             }
-                            catch { }
+                            catch
+                            {
+                                // ignore
+                            }
                         }
                     }
                 }
@@ -473,6 +485,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     tbMiddleNameFilter.Text = string.Empty;
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.AnniversaryDate:
                                 var drpAnniversaryDateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistAnniversaryDateFilter" ) as DateRangePicker;
@@ -481,6 +494,7 @@ namespace RockWeb.Blocks.Event
                                     drpAnniversaryDateFilter.UpperValue = null;
                                     drpAnniversaryDateFilter.LowerValue = null;
                                 }
+
                                 break;
                             case RegistrationPersonFieldType.Grade:
                                 var gpGradeFilter = phWaitListFormFieldFilters.FindControl( "gpWaitlistGradeFilter" ) as GradePicker;
@@ -560,7 +574,10 @@ namespace RockWeb.Blocks.Event
                         e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
                         return;
                     }
-                    catch { }
+                    catch
+                    {
+                        // ignore
+                    }
                 }
             }
 
@@ -651,7 +668,6 @@ namespace RockWeb.Blocks.Event
                 title = this.RegistrationInstance.Name;
             }
 
-
             gWaitList.ExportTitleName = title + " - Registration Wait List";
             gWaitList.ExportFilename = gWaitList.ExportFilename ?? title + " - Registration Wait List";
 
@@ -685,7 +701,7 @@ namespace RockWeb.Blocks.Event
                 var lWaitListOrder = e.Row.FindControl( "lWaitListOrder" ) as Literal;
                 if ( lWaitListOrder != null )
                 {
-                    lWaitListOrder.Text = ( _WaitListOrder.IndexOf( registrant.Id ) + 1 ).ToString();
+                    lWaitListOrder.Text = ( _waitListOrder.IndexOf( registrant.Id ) + 1 ).ToString();
                 }
 
                 // Set the campus
@@ -716,17 +732,16 @@ namespace RockWeb.Blocks.Event
                 }
 
                 var lAddress = e.Row.FindControl( "lWaitlistAddress" ) as Literal;
-                if ( lAddress != null && _HomeAddresses.Count() > 0 && _HomeAddresses.ContainsKey( registrant.PersonId.Value ) )
+                if ( lAddress != null && _homeAddresses.Count() > 0 && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
                 {
-                    var location = _HomeAddresses[registrant.PersonId.Value];
+                    var location = _homeAddresses[registrant.PersonId.Value];
                     lAddress.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
                 }
 
                 var mobileField = e.Row.FindControl( "lWaitlistMobile" ) as Literal;
                 if ( mobileField != null )
                 {
-
-                    var mobilePhoneNumber = _MobilePhoneNumbers[registrant.PersonId.Value];
+                    var mobilePhoneNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
                     if ( mobilePhoneNumber == null || mobilePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
                     {
                         mobileField.Text = string.Empty;
@@ -740,8 +755,7 @@ namespace RockWeb.Blocks.Event
                 var homePhoneField = e.Row.FindControl( "lWaitlistHomePhone" ) as Literal;
                 if ( homePhoneField != null )
                 {
-
-                    var homePhoneNumber = _HomePhoneNumbers[registrant.PersonId.Value];
+                    var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
                     if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
                     {
                         homePhoneField.Text = string.Empty;
@@ -769,7 +783,6 @@ namespace RockWeb.Blocks.Event
 
             if ( registrationInstance == null )
             {
-                //pnlDetails.Visible = false;
                 return;
             }
 
@@ -799,9 +812,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="instance">The instance.</param>
         private void BindWaitListFilter( RegistrationInstance instance )
         {
-            drpWaitListDateRange.DelimitedValues = fWaitList.GetUserPreference( "Date Range" );
-            tbWaitListFirstName.Text = fWaitList.GetUserPreference( "First Name" );
-            tbWaitListLastName.Text = fWaitList.GetUserPreference( "Last Name" );
+            drpWaitListDateRange.DelimitedValues = fWaitList.GetUserPreference( UserPreferenceKey.GridFilter_DateRange );
+            tbWaitListFirstName.Text = fWaitList.GetUserPreference( UserPreferenceKey.GridFilter_FirstName );
+            tbWaitListLastName.Text = fWaitList.GetUserPreference( UserPreferenceKey.GridFilter_LastName );
         }
 
         /// <summary>
@@ -818,7 +831,7 @@ namespace RockWeb.Blocks.Event
                 {
                     var registrationInstance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
 
-                    _WaitListOrder = new RegistrationRegistrantService( rockContext ).Queryable().Where( r =>
+                    _waitListOrder = new RegistrationRegistrantService( rockContext ).Queryable().Where( r =>
                                             r.Registration.RegistrationInstanceId == instanceId.Value &&
                                             r.PersonAlias != null &&
                                             r.PersonAlias.Person != null &&
@@ -869,13 +882,13 @@ namespace RockWeb.Blocks.Event
                     }
 
                     var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
-                    if ( isExporting || RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ) )
+                    if ( isExporting || ( RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ) ) )
                     {
-                        _HomeAddresses = Person.GetHomeLocations( personIds );
+                        _homeAddresses = Person.GetHomeLocations( personIds );
                     }
 
-                    _MobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
-                    _HomePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
+                    _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
+                    _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
 
                     bool preloadCampusValues = false;
                     var registrantAttributes = new List<AttributeCache>();
@@ -1321,5 +1334,4 @@ namespace RockWeb.Blocks.Event
 
         #endregion       
     }
-
 }
