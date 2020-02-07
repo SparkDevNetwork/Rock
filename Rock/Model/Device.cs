@@ -142,6 +142,15 @@ namespace Rock.Model
         [DataMember]
         public bool HasCamera { get; set; }
 
+        /// <summary>
+        /// Gets or sets the camera barcode configuration.
+        /// </summary>
+        /// <value>
+        /// The type of the camera barcode configuration.
+        /// </value>
+        [DataMember]
+        public CameraBarcodeConfiguration? CameraBarcodeConfigurationType { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -292,6 +301,29 @@ namespace Rock.Model
         /// The label will be printed by the server.
         /// </summary>
         Server = 1
+    }
+
+    /// <summary>
+    /// The Camera barcode configuration values.
+    /// </summary>
+    public enum CameraBarcodeConfiguration
+    {
+        /// <summary>
+        /// Off
+        /// </summary>
+        Off = 0,
+        /// <summary>
+        /// Available
+        /// </summary>
+        Available = 1,
+        /// <summary>
+        /// Always on
+        /// </summary>
+        AlwaysOn = 2,
+        /// <summary>
+        /// Passive
+        /// </summary>
+        Passive = 3
     }
 
     #endregion
