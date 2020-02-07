@@ -98,20 +98,12 @@ namespace RockWeb.Blocks.Event
         private bool _IsExporting = false;
 
         /// <summary>
-        /// Gets or sets the available registration attributes where IsGridColumn = true
-        /// </summary>
-        /// <value>
-        /// The available attributes.
-        /// </value>
-        public List<AttributeCache> AvailableRegistrationAttributesForGrid { get; set; }
-
-        /// <summary>
         /// Gets or sets the registrant form fields that were configured as 'Show on Grid' for the registration template
         /// </summary>
         /// <value>
         /// The registrant fields.
         /// </value>
-        public List<RegistrantFormField> RegistrantFields { get; set; }
+        public RegistrantFormField[] RegistrantFields { get; set; }
 
         /// <summary>
         /// Gets or sets the person campus ids.
@@ -149,8 +141,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            AvailableRegistrationAttributesForGrid = ViewState["AvailableRegistrationAttributesForGrid"] as List<AttributeCache>;
-            RegistrantFields = ViewState["RegistrantFields"] as List<RegistrantFormField>;
+            RegistrantFields = ViewState["RegistrantFields"] as RegistrantFormField[];
 
             SetUserPreferencePrefix( this.RegistrationTemplateId.GetValueOrDefault() );
 
@@ -213,7 +204,6 @@ namespace RockWeb.Blocks.Event
         protected override object SaveViewState()
         {
             ViewState["RegistrantFields"] = RegistrantFields;
-            ViewState["AvailableRegistrationAttributesForGrid"] = AvailableRegistrationAttributesForGrid;
 
             return base.SaveViewState();
         }
@@ -830,22 +820,10 @@ namespace RockWeb.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
-                AvailableRegistrationAttributesForGrid = new List<AttributeCache>();
-
-                int entityTypeId = new Registration().TypeId;
-                foreach ( var attributeCache in new AttributeService( new RockContext() ).GetByEntityTypeQualifier( entityTypeId, "RegistrationTemplateId", registrationInstance.RegistrationTemplateId.ToString(), false )
-                    .Where( a => a.IsGridColumn )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToAttributeCacheList() )
-                {
-                    AvailableRegistrationAttributesForGrid.Add( attributeCache );
-                }
-
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
                 hfRegistrationTemplateId.Value = registrationInstance.RegistrationTemplateId.ToString();
 
-                this.RegistrantFields = GetRegistrantFormFields();
+                this.RegistrantFields = GetRegistrantFormFields().ToArray();
 
                 SetUserPreferencePrefix( hfRegistrationTemplateId.ValueAsInt() );
 

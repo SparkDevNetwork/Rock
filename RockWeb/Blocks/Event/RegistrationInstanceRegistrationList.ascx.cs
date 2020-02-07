@@ -107,7 +107,7 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The available attributes.
         /// </value>
-        public List<AttributeCache> AvailableRegistrationAttributesForGrid { get; set; }
+        public int[] AvailableRegistrationAttributeIdsForGrid { get; set; }
 
         #endregion
 
@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            AvailableRegistrationAttributesForGrid = ViewState["AvailableRegistrationAttributesForGrid"] as List<AttributeCache>;
+            AvailableRegistrationAttributeIdsForGrid = ViewState["AvailableRegistrationAttributeIdsForGrid"] as int[];
 
             SetUserPreferencePrefix( RegistrationTemplateId.Value );
 
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["AvailableRegistrationAttributesForGrid"] = AvailableRegistrationAttributesForGrid;
+            ViewState["AvailableRegistrationAttributeIdsForGrid"] = AvailableRegistrationAttributeIdsForGrid;
 
             return base.SaveViewState();
         }
@@ -455,7 +455,7 @@ namespace RockWeb.Blocks.Event
 
             using ( var rockContext = new RockContext() )
             {
-                AvailableRegistrationAttributesForGrid = new List<AttributeCache>();
+                var availableRegistrationAttributesForGrid = new List<AttributeCache>();
 
                 int entityTypeId = new Registration().TypeId;
                 foreach ( var attributeCache in new AttributeService( new RockContext() ).GetByEntityTypeQualifier( entityTypeId, "RegistrationTemplateId", registrationInstance.RegistrationTemplateId.ToString(), false )
@@ -464,8 +464,10 @@ namespace RockWeb.Blocks.Event
                     .ThenBy( a => a.Name )
                     .ToAttributeCacheList() )
                 {
-                    AvailableRegistrationAttributesForGrid.Add( attributeCache );
+                    availableRegistrationAttributesForGrid.Add( attributeCache );
                 }
+
+                AvailableRegistrationAttributeIdsForGrid = availableRegistrationAttributesForGrid.Select( a => a.Id ).ToArray();
 
                 pnlDetails.Visible = true;
 
@@ -759,9 +761,9 @@ namespace RockWeb.Blocks.Event
             }
 
             // Add Attribute columns if necessary
-            if ( AvailableRegistrationAttributesForGrid != null )
+            if ( AvailableRegistrationAttributeIdsForGrid != null )
             {
-                foreach ( var attributeCache in AvailableRegistrationAttributesForGrid )
+                foreach ( var attributeCache in AvailableRegistrationAttributeIdsForGrid.Select( a => AttributeCache.Get( a ) ) )
                 {
                     bool columnExists = gRegistrations.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attributeCache.Id ) != null;
                     if ( !columnExists )
