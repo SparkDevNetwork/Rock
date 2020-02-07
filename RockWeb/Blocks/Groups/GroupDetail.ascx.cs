@@ -442,28 +442,36 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing thmuch the same event data.</param>
         protected void btnArchive_Click( object sender, EventArgs e )
         {
-            int? parentGroupId = null;
             RockContext rockContext = new RockContext();
-
             GroupService groupService = new GroupService( rockContext );
-            AuthService authService = new AuthService( rockContext );
-            Group group = groupService.Get( hfGroupId.Value.AsInteger() );
-
-            if ( group != null )
+            var groupId = hfGroupId.Value.AsInteger();
+            if ( groupService.Queryable().Any( r => r.ParentGroupId == groupId ) )
             {
-                if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
-                {
-                    mdDeleteWarning.Show( "You are not authorized to archive this group.", ModalAlertType.Information );
-                    return;
-                }
-
-                parentGroupId = group.ParentGroupId;
-                groupService.Archive( group, this.CurrentPersonAliasId, true );
-
-                rockContext.SaveChanges();
+                mdArchive.Show();
+                return;
             }
 
-            NavigateAfterDeleteOrArchive( parentGroupId );
+            ArchiveSingleGroup( hfGroupId.Value.AsInteger() );
+        }
+
+        /// <summary>
+        /// Handles the SaveThenAddClick event of the mdArchive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdArchive_SingleGroupClick( object sender, EventArgs e )
+        {
+            ArchiveSingleGroup( hfGroupId.Value.AsInteger() );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdArchive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdArchive_AllChildGroupsClick( object sender, EventArgs e )
+        {
+            ArchiveAllChildGroups( hfGroupId.Value.AsInteger() );
         }
 
         /// <summary>
@@ -1805,23 +1813,23 @@ namespace RockWeb.Blocks.Groups
             spSchedules.Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
 
 
-                if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
-                {
-                    wpMeetingDetails.Visible = true;
-                    gGroupLocations.Visible = true;
-                    BindGroupLocationsGrid();
-                }
-                else
-                {
-                    wpMeetingDetails.Visible = pnlSchedule.Visible;
-                    gGroupLocations.Visible = false;
-                }
+            if ( groupType != null && groupType.LocationSelectionMode != GroupLocationPickerMode.None )
+            {
+                wpMeetingDetails.Visible = true;
+                gGroupLocations.Visible = true;
+                BindGroupLocationsGrid();
+            }
+            else
+            {
+                wpMeetingDetails.Visible = pnlSchedule.Visible;
+                gGroupLocations.Visible = false;
+            }
 
-                gGroupLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
-                spSchedules.Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
+            gGroupLocations.Columns[2].Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
+            spSchedules.Visible = groupType != null && ( groupType.EnableLocationSchedules ?? false );
 
-                phGroupAttributes.Controls.Clear();
-                group.LoadAttributes();
+            phGroupAttributes.Controls.Clear();
+            group.LoadAttributes();
 
             if ( group.Attributes != null && group.Attributes.Any() )
             {
@@ -2251,7 +2259,7 @@ namespace RockWeb.Blocks.Groups
                 .Queryable().AsNoTracking()
                 .OrderBy( t => t.Name ) )
             {
-                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );                
+                ddlSignatureDocumentTemplate.Items.Add( new ListItem( documentType.Name, documentType.Id.ToString() ) );
             }
 
             // Populate RSVP Reminder Communication Templates
@@ -2559,7 +2567,7 @@ namespace RockWeb.Blocks.Groups
                     Schedule = schedule
                 } );
             }
-            
+
 
             BindGroupLocationScheduleCapacities( currentGroupLocationScheduleConfigs );
         }
@@ -2588,7 +2596,73 @@ namespace RockWeb.Blocks.Groups
             var selectedLocation = locpGroupLocation.Location;
             return selectedLocation != null;
         }
-        
+
+        /// <summary>
+        /// Used to archive the single group
+        /// </summary>
+        private void ArchiveSingleGroup( int groupId )
+        {
+            int? parentGroupId = null;
+            RockContext rockContext = new RockContext();
+            GroupService groupService = new GroupService( rockContext );
+            AuthService authService = new AuthService( rockContext );
+
+            Group group = groupService.Get( hfGroupId.Value.AsInteger() );
+            if ( group != null )
+            {
+                if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdArchive.Hide();
+                    mdDeleteWarning.Show( "You are not authorized to archive this group.", ModalAlertType.Information );
+                    return;
+                }
+
+                parentGroupId = group.ParentGroupId;
+                groupService.Archive( group, this.CurrentPersonAliasId, true );
+
+                rockContext.SaveChanges();
+            }
+
+            NavigateAfterDeleteOrArchive( parentGroupId );
+        }
+
+        /// <summary>
+        /// Used to archive the group and all child groups
+        /// </summary>
+        private void ArchiveAllChildGroups( int groupId )
+        {
+            int? parentGroupId = null;
+            RockContext rockContext = new RockContext();
+            GroupService groupService = new GroupService( rockContext );
+            AuthService authService = new AuthService( rockContext );
+
+            Group group = groupService.Get( hfGroupId.Value.AsInteger() );
+            if ( group != null )
+            {
+                if ( !group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) )
+                {
+                    mdArchive.Hide();
+                    mdDeleteWarning.Show( "You are not authorized to archive this group.", ModalAlertType.Information );
+                    return;
+                }
+
+                parentGroupId = group.ParentGroupId;
+
+
+                var childGroups = groupService.GetAllDescendentGroups( group.Id, true );
+                foreach ( var childGroup in childGroups )
+                {
+                    groupService.Archive( childGroup, this.CurrentPersonAliasId, true );
+                }
+
+                groupService.Archive( group, this.CurrentPersonAliasId, true );
+
+                rockContext.SaveChanges();
+            }
+
+            NavigateAfterDeleteOrArchive( parentGroupId );
+        }
+
         #endregion
 
         #region Location Grid and Picker
@@ -2773,7 +2847,7 @@ namespace RockWeb.Blocks.Groups
                             ScheduleId = s.Id,
                             Schedule = s
                         };
-            }
+                    }
                 } ).ToList();
 
                 // Handle case where schedules are created and no group location configuration exists yet
