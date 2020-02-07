@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Cms
             int pageId = hfPageId.Value.AsInteger();
             var page = PageCache.Get( pageId );
 
-            hlInvalidZoneWarning.Visible = _invalidPageZones.Contains( zoneName );
+            hlInvalidZoneWarning.Visible = _invalidPageZones != null && _invalidPageZones.Contains( zoneName );
 
             lZoneTitle.Text = string.Format( "{0} Zone", zoneName );
             lZoneIcon.Text = "<i class='fa fa-th-large'></i>";
@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Cms
         {
             get
             {
-                return ViewState["_invalidPageZones"] as string[];
+                return ViewState["_invalidPageZones"] as string[] ?? new string[0];
             }
 
             set
