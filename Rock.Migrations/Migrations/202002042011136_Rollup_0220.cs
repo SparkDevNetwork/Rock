@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            CodeGenMigrationsUp();
+            //CodeGenMigrationsUp();
             ShowCameraSupportAttributeOnGrid();
             MobileRollups();
             IPadCameraCheckinUpdate();
@@ -40,7 +40,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            CodeGenMigrationsDown();
+            //CodeGenMigrationsDown();
         }
 
         /// <summary>
