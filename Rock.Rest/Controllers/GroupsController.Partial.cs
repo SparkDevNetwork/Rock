@@ -1456,7 +1456,7 @@ namespace Rock.Rest.Controllers
             /// <value>
             /// The location type identifier.
             /// </value>
-            public int LocationTypeId { get; set; }
+            public int? LocationTypeId { get; set; }
 
             /// <summary>
             /// Gets or sets the schedules.
