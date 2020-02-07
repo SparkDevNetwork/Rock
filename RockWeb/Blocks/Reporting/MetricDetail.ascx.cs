@@ -276,6 +276,14 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.IsCumulative = cbIsCumulative.Checked;
             metric.EnableAnalytics = cbEnableAnalytics.Checked;
 
+            avcAttributes.GetEditValues( metric );
+            // only save if everything saves:
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                metric.SaveAttributeValues();
+            });
+
             int sourceTypeDataView = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_DATAVIEW.AsGuid() ).Id;
             int sourceTypeSQL = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
             int sourceTypeLava = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid() ).Id;
@@ -942,6 +950,9 @@ The Lava can include Lava merge fields:";
             }
 
             BindMetricPartitionsGrid();
+
+            metric.LoadAttributes();
+            avcAttributes.AddEditControls( metric, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>
