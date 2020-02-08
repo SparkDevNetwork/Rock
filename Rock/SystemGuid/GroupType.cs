@@ -99,5 +99,10 @@ namespace Rock.SystemGuid
         /// Communication List group type guid
         /// </summary>
         public const string GROUPTYPE_COMMUNICATIONLIST = "D1D95777-FFA3-CBB3-4A6D-658706DAED33";
+
+        /// <summary>
+        /// The Service Attendance group type guid
+        /// </summary>
+        public const string GROUPTYPE_SERVICE_ATTENDANCE = "77713830-AE5E-4B1A-94FA-E145DFF85035";
     }
 }
