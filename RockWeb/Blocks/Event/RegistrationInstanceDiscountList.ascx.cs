@@ -38,7 +38,6 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Instance - Discount List" )]
     [Category( "Event" )]
     [Description( "Displays the discounts related to an event registration instance." )]
-
     public partial class RegistrationInstanceDiscountList : RegistrationInstanceBlock, ISecondaryBlock
     {
         #region Page Parameter Keys

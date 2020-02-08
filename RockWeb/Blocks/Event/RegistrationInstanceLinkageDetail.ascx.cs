@@ -31,11 +31,11 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Event
 {
     /// <summary>
-    /// Template block for developers to use to start a new block.
+    /// 
     /// </summary>
     [DisplayName( "Registration Instance Linkage Detail" )]
     [Category( "Event" )]
-    [Description( "Template block for editing a linkage associated to an event registration instance." )]
+    [Description( "Block for editing a linkage associated to an event registration instance." )]
 
     public partial class RegistrationInstanceLinkageDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {

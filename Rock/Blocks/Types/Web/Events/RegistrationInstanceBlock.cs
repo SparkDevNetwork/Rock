@@ -74,6 +74,16 @@ namespace Rock.Blocks.Types.Web.Events
             /// The Registration Template identifier.
             /// </summary>
             public const string RegistrationTemplateId = "RegistrationTemplateId";
+
+            /// <summary>
+            /// The registration identifier
+            /// </summary>
+            public const string RegistrationId = "RegistrationId";
+
+            /// <summary>
+            /// The registrant identifier
+            /// </summary>
+            public const string RegistrantId = "RegistrantId";
         }
 
         #endregion Page Parameter Keys
@@ -404,7 +414,24 @@ namespace Rock.Blocks.Types.Web.Events
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationInstanceId = PageParameter( pageReference, PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+            if ( registrationInstanceId == null )
+            {
+                var registrationId = this.PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+                var rockContext = new RockContext();
+                if ( registrationId.HasValue )
+                {
+                    registrationInstanceId = new RegistrationService( rockContext ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
+                }
+                else
+                {
+                    var registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull();
+                    if ( registrantId.HasValue )
+                    {
+                        registrationInstanceId = new RegistrationRegistrantService( rockContext ).GetSelect( registrationId.Value, s => s.Registration.RegistrationInstanceId );
+                    }
+                }
+            }
 
             if ( registrationInstanceId.HasValue )
             {
@@ -412,13 +439,19 @@ namespace Rock.Blocks.Types.Web.Events
 
                 if ( registrationInstance != null )
                 {
-                    breadCrumbs.Add( new BreadCrumb( registrationInstance.ToString(), pageReference ) );
+                    var breadCrumbReference = new PageReference( pageReference );
+                    breadCrumbReference.Parameters.AddOrReplace( PageParameterKey.RegistrationInstanceId, registrationInstanceId.ToString() );
+                    breadCrumbs.Add( new BreadCrumb( registrationInstance.ToString(), breadCrumbReference ) );
 
                     return breadCrumbs;
                 }
             }
 
-            breadCrumbs.Add( new BreadCrumb( "New Registration Instance", pageReference ) );
+            if ( registrationInstanceId == 0 )
+            {
+                breadCrumbs.Add( new BreadCrumb( "New Registration Instance", pageReference ) );
+                return breadCrumbs;
+            }
 
             return breadCrumbs;
         }

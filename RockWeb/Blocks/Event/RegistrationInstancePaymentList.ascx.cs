@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.Event
         "Transaction Detail Page",
         "The page for viewing details about a payment",
         Key = AttributeKey.TransactionDetailPage,
+        DefaultValue = Rock.SystemGuid.Page.TRANSACTION_DETAIL_TRANSACTIONS,
         IsRequired = false,
         Order = 1 )]
 
@@ -53,6 +54,7 @@ namespace RockWeb.Blocks.Event
         "Registration Page",
         "The page for editing registration and registrant information",
         Key = AttributeKey.RegistrationPage,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_DETAIL,
         IsRequired = false,
         Order = 2 )]
 
