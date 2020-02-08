@@ -31,7 +31,15 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddLayout( "C2D29296-6A87-47A9-A753-EE4E9159C4C4", "RegistrationInstance", "Registration Instance", "", "194CC66E-8CC1-4087-AC14-955CDCB70CDF" ); // Site:Rock RMS
 
             // Update Layout of the RegistrationInstance page to be the Registration Instance layout
-            Sql( @"update [Page] set LayoutId = ( select top 1 Id from Layout where [Guid] = '194CC66E-8CC1-4087-AC14-955CDCB70CDF') where [Guid] = '844DC54B-DAEC-47B3-A63A-712DD6D57793'" );
+            Sql( @"UPDATE [Block]
+SET [Zone] = 'RegistrationInstanceDetail'
+	,[PageId] = NULL
+	,[LayoutId] = (
+		SELECT TOP 1 [Id]
+		FROM [Layout]
+		WHERE [Guid] = '194CC66E-8CC1-4087-AC14-955CDCB70CDF'
+		)
+WHERE [Guid] = '5F44A3A8-500B-4C89-95CA-8C4246B53C3F'" );
 
             // Update Zone of the RegistrationInstanceDetail block
             Sql( @"update [Block] set [Zone] = 'RegistrationInstanceDetail' where [Guid] = '5F44A3A8-500B-4C89-95CA-8C4246B53C3F'" );
@@ -43,16 +51,31 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddPage( true, "614AF351-6C48-4B6B-B50E-9F7E03BC00A4", "194CC66E-8CC1-4087-AC14-955CDCB70CDF", "Registration Instance - Linkages", "", "8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "614AF351-6C48-4B6B-B50E-9F7E03BC00A4", "194CC66E-8CC1-4087-AC14-955CDCB70CDF", "Registration Instance - Wait List", "", "E17883C2-6442-4AE5-B561-2C783F7F89C9", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "614AF351-6C48-4B6B-B50E-9F7E03BC00A4", "194CC66E-8CC1-4087-AC14-955CDCB70CDF", "Registration Instance - Placement Groups", "", "0CD950D7-033D-42B1-A53E-108F311DC5BF", "" ); // Site:Rock RMS
-            
 
-            Sql( "UPDATE [Page] set PageTitle = 'Registrations', InternalName = 'Registration Instance - Registrations', BrowserTitle = 'Registration Instance' where [Guid] ='844DC54B-DAEC-47B3-A63A-712DD6D57793'" );
-            Sql( "UPDATE [Page] set PageTitle = 'Wait List', InternalName = 'Registration Instance - Wait List', BrowserTitle = 'Registration Instance - Wait List' where [Guid] ='E17883C2-6442-4AE5-B561-2C783F7F89C9'" );
-            Sql( "UPDATE [Page] set PageTitle = 'Payments', InternalName = 'Registration Instance - Payments', BrowserTitle = 'Registration Instance - Payments' where [Guid] ='562D6252-D614-4ED4-B602-D8160066611D'" );
-            Sql( "UPDATE [Page] set PageTitle = 'Discounts', InternalName = 'Registration Instance - Discounts', BrowserTitle = 'Registration Instance - Discounts' where [Guid] ='6EE74759-D11B-4911-9BC8-CF23DE5534B2'" );
-            Sql( "UPDATE [Page] set PageTitle = 'Fees', InternalName = 'Registration Instance - Fees', BrowserTitle = 'Registration Instance - Fees' where [Guid] ='B0576A70-CCB3-4E98-B6C4-3D758DD5F609'" );
-            Sql( "UPDATE [Page] set PageTitle = 'Linkages', InternalName = 'Registration Instance - Linkages', BrowserTitle = 'Registration Instance - Linkages' where [Guid] ='8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5'" );
-            Sql( "UPDATE [Page] set PageTitle = 'Registrants', InternalName = 'Registration Instance - Registrants', BrowserTitle = 'Registration Instance - Registrants' where [Guid] ='6138DA76-BD9A-4373-A55C-F88F155E1B13'" );
-            Sql( "UPDATE [Page] set PageTitle = 'Placement Groups', InternalName = 'Registration Instance - Placement Groups', BrowserTitle = 'Registration Instance - Placement Groups' where [Guid] ='0CD950D7-033D-42B1-A53E-108F311DC5BF'" );
+            Sql( "UPDATE [Page] set PageTitle = 'Wait List Confirmation', InternalName = 'Wait List Confirmation', BrowserTitle = 'Wait List Confirmation' where [Guid] ='4BF84D3F-DE7B-4F8B-814A-1E728E69C105'" );
+
+
+            Sql( @"
+UPDATE [Page]
+SET PageTitle = 'Registrations'
+	,InternalName = 'Registration Instance - Registrations'
+	,BrowserTitle = 'Registration Instance'
+	,BreadCrumbDisplayName = 0
+	,LayoutId = (
+		SELECT TOP 1 [Id]
+		FROM [Layout]
+		WHERE [Guid] = '194CC66E-8CC1-4087-AC14-955CDCB70CDF'
+		)
+WHERE [Guid] = '844DC54B-DAEC-47B3-A63A-712DD6D57793'
+" );
+
+            Sql( "UPDATE [Page] set PageTitle = 'Wait List', InternalName = 'Registration Instance - Wait List', BrowserTitle = 'Registration Instance - Wait List', BreadCrumbDisplayName = 0 where [Guid] ='E17883C2-6442-4AE5-B561-2C783F7F89C9'" );
+            Sql( "UPDATE [Page] set PageTitle = 'Payments', InternalName = 'Registration Instance - Payments', BrowserTitle = 'Registration Instance - Payments', BreadCrumbDisplayName = 0 where [Guid] ='562D6252-D614-4ED4-B602-D8160066611D'" );
+            Sql( "UPDATE [Page] set PageTitle = 'Discounts', InternalName = 'Registration Instance - Discounts', BrowserTitle = 'Registration Instance - Discounts', BreadCrumbDisplayName = 0 where [Guid] ='6EE74759-D11B-4911-9BC8-CF23DE5534B2'" );
+            Sql( "UPDATE [Page] set PageTitle = 'Fees', InternalName = 'Registration Instance - Fees', BrowserTitle = 'Registration Instance - Fees', BreadCrumbDisplayName = 0 where [Guid] ='B0576A70-CCB3-4E98-B6C4-3D758DD5F609'" );
+            Sql( "UPDATE [Page] set PageTitle = 'Linkages', InternalName = 'Registration Instance - Linkages', BrowserTitle = 'Registration Instance - Linkages', BreadCrumbDisplayName = 0 where [Guid] ='8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5'" );
+            Sql( "UPDATE [Page] set PageTitle = 'Registrants', InternalName = 'Registration Instance - Registrants', BrowserTitle = 'Registration Instance - Registrants', BreadCrumbDisplayName = 0 where [Guid] ='6138DA76-BD9A-4373-A55C-F88F155E1B13'" );
+            Sql( "UPDATE [Page] set PageTitle = 'Placement Groups', InternalName = 'Registration Instance - Placement Groups', BrowserTitle = 'Registration Instance - Placement Groups', BreadCrumbDisplayName = 0 where [Guid] ='0CD950D7-033D-42B1-A53E-108F311DC5BF'" );
 
             RockMigrationHelper.UpdateBlockType( "Registration Group Placement", "Block to manage group placement for Registration Instances.", "~/Blocks/Event/RegistrationInstanceGroupPlacement.ascx", "Event", "9AF434D2-FB9B-43D7-8550-DD0B92B7A70A" );
             RockMigrationHelper.UpdateBlockType( "Registration Instance - Discount List", "Displays the discounts related to an event registration instance.", "~/Blocks/Event/RegistrationInstanceDiscountList.ascx", "Event", "6C8954BF-E221-4B2F-AC3B-612DC16BA27D" );
@@ -74,11 +97,6 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "AF0740C9-BC60-434B-A360-EB70A7CEA108", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Group Placement Tool Page", "GroupPlacementToolPage", "Group Placement Tool Page", @"The Page that shows Group Placements for the selected placement type", 0, @"", "D3C7AF94-FB85-45BA-8FD8-87AC9499ED56" );
             // Attrib for BlockType: Registration Instance - Navigation:WaitList Page
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "AF0740C9-BC60-434B-A360-EB70A7CEA108", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "WaitList Page", "WaitListPage", "WaitList Page", @"The Page that shows the Wait List", 0, @"", "4269C69A-9AFA-4636-93B6-3D1013F24A2D" );
-            // Attrib Value for Block:Registration Instance Detail, Attribute:Default Account Page: Registration Instance, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "5F44A3A8-500B-4C89-95CA-8C4246B53C3F", "4FA1CCF7-9921-41EE-BC5F-DE358A1E5A89", @"2a6f9e5f-6859-44f1-ab0e-ce9cf6b08ee5" );
-            // Attrib Value for Block:Registration Instance Detail, Attribute:MergeField Page: Registration Instance, Site: Rock RMS
-            RockMigrationHelper.AddBlockAttributeValue( "5F44A3A8-500B-4C89-95CA-8C4246B53C3F", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder > 0 %}{{ person.SecurityCode }}-{{ person.Age }}yr\&{% endif %}{% endfor %}" );
-
             // Attrib for BlockType: Registration Instance - Navigation:Group Placement Tool Page
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "AF0740C9-BC60-434B-A360-EB70A7CEA108", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Group Placement Tool Page", "GroupPlacementToolPage", "Group Placement Tool Page", @"The Page that shows Group Placements for the selected placement type", 0, @"", "D3C7AF94-FB85-45BA-8FD8-87AC9499ED56" );
             // Attrib for BlockType: Registration Instance - Navigation:WaitList Page
@@ -107,6 +125,14 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddBlock( true, "8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "E877FDE1-DEE6-48F8-8150-4E28D5ABB694".AsGuid(), "Registration Instance - Linkage List", "RegistrationInstanceTabDetail", @"", @"", 0, "9661CB22-270E-44FD-B535-D93457636A2A" );
             // Add Block to Page: Registration Instance - Registrants Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "6138DA76-BD9A-4373-A55C-F88F155E1B13".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "4D4FBC7B-068C-499A-8BA4-C9209CA9BB6E".AsGuid(), "Registration Instance - Registrant List", "RegistrationInstanceTabDetail", @"", @"", 0, "C37F7A43-CDB9-4AD4-A713-BC4F4785E45A" );
+
+            // Attrib Value for Block:Page Menu, Attribute:Root Page , Layout: Registration Instance, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "3C0E6099-9FA2-4811-8B57-F101D47BD7BE", "41F1C42E-2395-4063-BD4F-031DF8D5B231", @"20f97a93-7949-4c2a-8a5e-c756fe8585ca" );
+
+            // Attrib Value for Block:Registration Instance Detail, Attribute:Default Account Page: Registration Instance, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "5F44A3A8-500B-4C89-95CA-8C4246B53C3F", "4FA1CCF7-9921-41EE-BC5F-DE358A1E5A89", @"2a6f9e5f-6859-44f1-ab0e-ce9cf6b08ee5" );
+            // Attrib Value for Block:Registration Instance Detail, Attribute:MergeField Page: Registration Instance, Site: Rock RMS
+            RockMigrationHelper.AddBlockAttributeValue( "5F44A3A8-500B-4C89-95CA-8C4246B53C3F", "51EB8583-55EA-4431-8B66-B5BD0F83D81E", @"{% for person in People %}{% assign remainder = forloop.index | Modulo:2 %}{% if remainder > 0 %}{{ person.SecurityCode }}-{{ person.Age }}yr\&{% endif %}{% endfor %}" );
         }
 
         /// <summary>
