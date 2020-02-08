@@ -1190,8 +1190,7 @@ namespace RockWeb.Blocks.Examples
             Guid knownRelationshipsGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid();
             var memberService = new GroupMemberService( rockContext );
 
-            var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable( "GroupType" )
-                .Where( r => r.GroupType.Guid == knownRelationshipsGroupTypeGuid ).ToList();
+            var groupTypeRoles = GroupTypeCache.Get( knownRelationshipsGroupTypeGuid, rockContext ).Roles;
 
             //// We have to create (or fetch existing) two groups for each relationship, adding the
             //// other person as a member of that group with the appropriate GroupTypeRole (GTR):
@@ -1650,7 +1649,6 @@ namespace RockWeb.Blocks.Examples
             }
 
             GroupService groupService = new GroupService( rockContext );
-            DefinedTypeCache smallGroupTopicType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
 
             // Next create the group along with its members.
             foreach ( var elemGroup in elemGroups.Elements( "group" ) )
@@ -1731,6 +1729,13 @@ namespace RockWeb.Blocks.Examples
                 {
                     var topic = elemGroup.Attribute( "studyTopic" ).Value;
                     DefinedValueCache smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+
+                    // add it as new if we didn't find it.
+                    if ( smallGroupTopicDefinedValue == null )
+                    {
+                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType );
+                    }
+
                     group.SetAttributeValue( "Topic", smallGroupTopicDefinedValue.Guid.ToString() );
                 }
 
