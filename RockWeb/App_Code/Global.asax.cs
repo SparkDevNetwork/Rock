@@ -807,6 +807,7 @@ namespace RockWeb
                                 catch ( Exception ex )
                                 {
                                     // If an exception occurs in an an assembly, log the error, and continue with next assembly
+                                    System.Diagnostics.Debug.WriteLine( ex.Message );
                                     LogError( ex, null );
                                 }
                             }
