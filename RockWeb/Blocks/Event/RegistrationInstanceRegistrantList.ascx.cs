@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Event
         "Registration Page",
         "The page for editing registration and registrant information",
         Key = AttributeKey.RegistrationPage,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_DETAIL,
         IsRequired = false,
         Order = 1 )]
 
@@ -775,9 +776,11 @@ namespace RockWeb.Blocks.Event
                 {
                     var qryParams = new Dictionary<string, string>();
                     qryParams.Add( "RegistrationId", registrant.RegistrationId.ToString() );
+                    qryParams.Add( "RegistrationInstanceId", hfRegistrationInstanceId.Value );
                     string url = LinkedPageUrl( AttributeKey.RegistrationPage, qryParams );
                     url += "#" + e.RowKeyValue;
                     Response.Redirect( url, false );
+                    Context.ApplicationInstance.CompleteRequest();
                 }
             }
         }

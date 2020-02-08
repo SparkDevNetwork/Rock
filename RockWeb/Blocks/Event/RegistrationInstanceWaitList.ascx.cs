@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Event
         "Wait List Process Page",
         "The page for moving a person from the wait list to a full registrant.",
         Key = AttributeKey.WaitListProcessingPage,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_WAIT_LIST_CONFIRMATION,
         IsRequired = false,
         Order = 1 )]
 
@@ -55,6 +56,7 @@ namespace RockWeb.Blocks.Event
         "Registration Page",
         "The page for editing registration and registrant information",
         Key = AttributeKey.RegistrationPage,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_DETAIL,
         IsRequired = false,
         Order = 2 )]
 

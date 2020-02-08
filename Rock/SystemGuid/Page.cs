@@ -659,6 +659,26 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_INSTANCE_WAIT_LIST = "E17883C2-6442-4AE5-B561-2C783F7F89C9";
 
         /// <summary>
+        /// The registration detail
+        /// </summary>
+        public const string REGISTRATION_DETAIL = "FC81099A-2F98-4EBA-AC5A-8300B2FE46C4";
+
+        /// <summary>
+        /// The registration instance linkage
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_LINKAGE = "DE4B12F0-C3E6-451C-9E35-7E9E66A01F4E";
+
+        /// <summary>
+        /// The registration send payment reminders
+        /// </summary>
+        public const string REGISTRATION_SEND_PAYMENT_REMINDERS = "2828BBCF-B3FC-4707-B063-086748853978";
+
+        /// <summary>
+        /// The registration wait list confirmation
+        /// </summary>
+        public const string REGISTRATION_WAIT_LIST_CONFIRMATION = "4BF84D3F-DE7B-4F8B-814A-1E728E69C105";
+
+        /// <summary>
         /// Gets the Exception Detail page guid
         /// ParentPage: Exception List
         /// </summary>

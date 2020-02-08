@@ -47,6 +47,7 @@ namespace RockWeb.Blocks.Event
         "Registration Page",
         "The page for editing registration and registrant information",
         Key = AttributeKey.RegistrationPage,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_DETAIL,
         IsRequired = false,
         Order = 1 )]
 
@@ -436,7 +437,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRegistrations_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.RegistrationPage, "RegistrationId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.RegistrationPage, "RegistrationId", e.RowKeyId, PageParameterKey.RegistrationInstanceId, this.RegistrationInstanceId );
         }
 
         #endregion
