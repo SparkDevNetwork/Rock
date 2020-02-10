@@ -518,7 +518,5 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_JWT_SEARCH_KEY = "DEECB6D1-E596-4A15-B0DB-B2947B5DB784";
 
         #endregion JWT Config Attributes
-
-        public const string GLOBAL_DEFAULT_PHONE_COUNTRY_CODE = "2EA6AE8E-CF09-43A8-A83B-A70F05F282DF";
     }
 }

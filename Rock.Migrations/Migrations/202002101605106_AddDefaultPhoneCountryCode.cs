@@ -36,7 +36,7 @@ namespace Rock.Migrations
                 "This is the default country code you would like to use for your phone numbers.",
                 10,
                 "1",
-                SystemGuid.Attribute.GLOBAL_DEFAULT_PHONE_COUNTRY_CODE,
+                "2EA6AE8E-CF09-43A8-A83B-A70F05F282DF",
                 "DefaultPhoneCountryCode" );
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            RockMigrationHelper.DeleteAttribute( SystemGuid.Attribute.GLOBAL_DEFAULT_PHONE_COUNTRY_CODE );
+            RockMigrationHelper.DeleteAttribute( "2EA6AE8E-CF09-43A8-A83B-A70F05F282DF" );
         }
     }
 }
