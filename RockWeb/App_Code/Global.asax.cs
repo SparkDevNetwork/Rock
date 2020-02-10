@@ -471,7 +471,7 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            Context.Items.AddOrReplace( "Request_Start_Time", RockDateTime.Now );
+            Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
         }
 
         /// <summary>
@@ -807,6 +807,7 @@ namespace RockWeb
                                 catch ( Exception ex )
                                 {
                                     // If an exception occurs in an an assembly, log the error, and continue with next assembly
+                                    System.Diagnostics.Debug.WriteLine( ex.Message );
                                     LogError( ex, null );
                                 }
                             }

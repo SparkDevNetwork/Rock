@@ -87,7 +87,7 @@ namespace Rock.Web.UI
                 transaction.IPAddress = Request.UserHostAddress;
                 RockQueue.TransactionQueue.Enqueue( transaction );
 
-                Context.Items.AddOrReplace( "PersonViewed", "Handled" );
+                Context.AddOrReplaceItem( "PersonViewed", "Handled" );
             }
         }
 
