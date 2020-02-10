@@ -442,7 +442,7 @@ namespace Rock.Rest.Controllers
                     string.Join( ",", person.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             var rockContext = ( Rock.Data.RockContext ) Service.Context;
 
@@ -481,7 +481,7 @@ namespace Rock.Rest.Controllers
                     string.Join( ",", person.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             PersonService.AddPersonToFamily( person, person.Id == 0, familyId, groupRoleId, ( Rock.Data.RockContext ) Service.Context );
 
@@ -503,7 +503,7 @@ namespace Rock.Rest.Controllers
         {
             SetProxyCreation( true );
 
-            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
             var person = this.Get( personId );
             CheckCanEdit( person );
 

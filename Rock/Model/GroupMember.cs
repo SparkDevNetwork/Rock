@@ -901,14 +901,13 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        var originalActiveStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
-                        var newActiveStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );
+                        var originalStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
+                        var newStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );
 
                         hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
                         || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
                         || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() )
-                        || ( rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true && !rockContext.Entry( this ).Property( "GroupMemberStatus" ).ToStringSafe().AsBoolean() )
-                        || originalActiveStatus != GroupMemberStatus.Active && newActiveStatus == GroupMemberStatus.Active;
+                        || ( originalStatus != GroupMemberStatus.Active && newStatus == GroupMemberStatus.Active );
                     }
                 }
 
