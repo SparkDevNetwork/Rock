@@ -214,7 +214,7 @@
                 // handle click of scan button
                 $('.js-camera-button').on('click', function (a) {
                     a.preventDefault();
-                    if (window.RockCheckinNative && window.RockCheckinNative.StartCamera) {
+                    if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined') {
                         // Reset the swipe processing as it may have failed silently.
                         swipeProcessing = false;
                         window.RockCheckinNative.StartCamera(false);
@@ -222,11 +222,13 @@
                 });
 
                 // auto-show or auto-enable camera if configured to do so.
-                if ($('.js-camera-mode').val() === 'Always On') {
-                    window.RockCheckinNative.StartCamera(false);
-                }
-                else if ($('.js-camera-mode').val() === 'Passive') {
-                    window.RockCheckinNative.StartCamera(true);
+                if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined') {
+                    if ($('.js-camera-mode').val() === 'AlwaysOn') {
+                        window.RockCheckinNative.StartCamera(false);
+                    }
+                    else if ($('.js-camera-mode').val() === 'Passive') {
+                        window.RockCheckinNative.StartCamera(true);
+                    }
                 }
 
                 if ($('.js-manager-login').length) {
