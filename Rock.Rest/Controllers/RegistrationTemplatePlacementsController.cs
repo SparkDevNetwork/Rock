@@ -98,7 +98,8 @@ namespace Rock.Rest.Controllers
             var placementGroupsQuery = sharedGroupsQuery.Union( instanceGroupsQuery );
 
             // make sure the specified group is one of the placement groups
-            if ( !placementGroupsQuery.Any( a => a.Id != groupId ) )
+
+            if ( !placementGroupsQuery.Any( a => a.Id == groupId ) )
             {
                 return ControllerContext.Request.CreateErrorResponse(
                         HttpStatusCode.NotFound,

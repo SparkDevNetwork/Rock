@@ -626,6 +626,14 @@ namespace RockWeb.Blocks.Event
             }
 
             nbNotAllowedToAddGroup.Visible = false;
+            nbNewPlacementGroupParentGroupWarning.Visible = false;
+            gpNewPlacementGroupParentGroup.SetValue( ( int? ) null );
+            tbNewPlacementGroupName.Text = string.Empty;
+            cpNewPlacementGroupCampus.SetValue( ( int? ) null );
+            nbGroupCapacity.Text = string.Empty;
+            tbNewPlacementGroupDescription.Text = string.Empty;
+            nbAddExistingPlacementGroupWarning.Visible = false;
+            gpAddExistingPlacementGroup.SetValue( ( int? ) null );
 
             mdAddPlacementGroup.Show();
         }
@@ -942,6 +950,8 @@ namespace RockWeb.Blocks.Event
                 placementGroup.CampusId = cpNewPlacementGroupCampus.SelectedCampusId;
                 placementGroup.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
                 placementGroup.Description = tbNewPlacementGroupDescription.Text;
+
+                groupService.Add( placementGroup );
 
                 if ( !placementGroup.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
                 {

@@ -509,7 +509,7 @@
 
                 // hide any other alerts that are showing
                 $('.js-alert', self.$groupPlacementTool).not($placeRegistrantError).hide();
-                $placeRegistrantError.find('.js-placement-place-registrant-error-text').text((jqXhr.responseJSON && jqXhr.responseJSON.message || jqXhr.responseText));
+                $placeRegistrantError.find('.js-placement-place-registrant-error-text').text((jqXHR.responseJSON && jqXHR.responseJSON.Message || jqXHR.responseText));
                 $placeRegistrantError.show();
             },
             /**
@@ -571,7 +571,7 @@
                                 $group.hide();
                             }).fail(function (jqXHR) {
                                 var $groupAlert = $('.js-placement-group-error', $group);
-                                $groupAlert.find('.js-placement-group-error-text').text('Unable to detach group: '  + (jqXhr.responseJSON && jqXhr.responseJSON.message || jqXhr.responseText));
+                                $groupAlert.find('.js-placement-group-error-text').text('Unable to detach group: ' + (jqXHR.responseJSON && jqXHR.responseJSON.Message || jqXHR.responseText));
                                 $groupAlert.show();
                             });
                         });
@@ -588,7 +588,7 @@
                                 $group.hide();
                             }).fail(function (jqXHR) {
                                 var $groupAlert = $('.js-placement-group-error', $group);
-                                $groupAlert.find('.js-placement-group-error-text').text('Unable to delete group: '  + (jqXhr.responseJSON && jqXhr.responseJSON.message || jqXhr.responseText))
+                                $groupAlert.find('.js-placement-group-error-text').text('Unable to delete group: ' + (jqXHR.responseJSON && jqXHR.responseJSON.Message || jqXHR.responseText))
                                 $groupAlert.show();
                             });
                         });
