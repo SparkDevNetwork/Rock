@@ -88,7 +88,7 @@ namespace Rock.Rest.Controllers
 
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
 
-            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
         }
 
