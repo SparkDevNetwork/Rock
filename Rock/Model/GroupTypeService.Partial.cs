@@ -81,34 +81,33 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId, int maxRecursion )
         {
-            //TODO: Test this with a circular reference and varying levels of recursion
             return this.ExecuteQuery(
                 $@"
                 WITH CTE ([RecursionLevel], [GroupTypeId], [ChildGroupTypeId])
                 AS (
-	                SELECT 
-		                    0 AS [RecursionLevel]
-		                , [GroupTypeId]
-		                , [ChildGroupTypeId]
-	                FROM [GroupTypeAssociation]
-	                WHERE [GroupTypeId] = {parentGroupTypeId}
+                    SELECT
+                          0 AS [RecursionLevel]
+                        , [GroupTypeId]
+                        , [ChildGroupTypeId]
+                    FROM [GroupTypeAssociation]
+                    WHERE [GroupTypeId] = {parentGroupTypeId}
 
-	                UNION ALL
+                    UNION ALL
 
-	                SELECT acte.[RecursionLevel] + 1 AS [RecursionLevel]
-		                , [a].[GroupTypeId]
-		                , [a].[ChildGroupTypeId]
-	                FROM [GroupTypeAssociation] [a]
-	                JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
+                    SELECT acte.[RecursionLevel] + 1 AS [RecursionLevel]
+                        , [a].[GroupTypeId]
+                        , [a].[ChildGroupTypeId]
+                    FROM [GroupTypeAssociation] [a]
+                    JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
                     WHERE acte.[ChildGroupTypeId] <> acte.[GroupTypeId]
-	                    AND [a].[ChildGroupTypeId] <> acte.[GroupTypeId] -- and the child group type can't be a parent group type
-	                    AND (acte.RecursionLevel + 1 ) < {maxRecursion}
+                        AND [a].[ChildGroupTypeId] <> acte.[GroupTypeId] -- and the child group type can't be a parent group type
+                        AND (acte.RecursionLevel + 1 ) < {maxRecursion}
                 )
 
                 SELECT *
                 FROM [GroupType]
                 WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
-                OPTION (MAXRECURSION {maxRecursion})" );
+                OPTION ( MAXRECURSION {maxRecursion} )" );
         }
 
         /// <summary>
