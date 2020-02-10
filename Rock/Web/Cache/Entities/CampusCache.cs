@@ -206,6 +206,31 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the single campus from cache, if only one active campus exists.
+        /// </summary>
+        /// <value>
+        /// The single campus.
+        /// </value>
+        public static CampusCache SingleCampus
+        {
+            get
+            {
+                var all = All( false );
+                return all.Count == 1
+                    ? all.First()
+                    : null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the single campus id from cache, if only one active campus exists.
+        /// </summary>
+        /// <value>
+        /// The single campus identifier.
+        /// </value>
+        public static int? SingleCampusId => SingleCampus?.Id;
+
         #endregion
 
         #region Public Methods
