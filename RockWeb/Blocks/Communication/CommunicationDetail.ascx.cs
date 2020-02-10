@@ -1216,6 +1216,9 @@ namespace RockWeb.Blocks.Communication
             gRecipients.RowClickEnabled = false;
 
             gRecipients.RowDataBound += gRecipients_RowDataBound;
+            gRecipients.AllowCustomPaging = true;
+
+            SetDefaultGridPageSize( gRecipients );
         }
 
         /// <summary>
@@ -1225,6 +1228,25 @@ namespace RockWeb.Blocks.Communication
         {
             gInteractions.DataKeyNames = new string[] { "Id" };
             gInteractions.GridRebind += gInteractions_GridRebind;
+
+            SetDefaultGridPageSize( gInteractions );
+        }
+
+        /// <summary>
+        /// Set the default page size for the specified grid.
+        /// </summary>
+        /// <param name="grid"></param>
+        private void SetDefaultGridPageSize( Grid grid )
+        {
+            // Ensure that the page size is not set to maximum on an initial page load, because it may result in a timeout.
+            // This can be confusing or difficult to fix if the user is not aware of the persisted page size settings.
+            if ( !this.IsPostBack )
+            {
+                if ( grid.PageSize > 500 )
+                {
+                    grid.PageSize = 500;
+                }
+            }
         }
 
         /// <summary>
@@ -1487,7 +1509,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             Report report = null;
-            DataTable dataTable = null;
+            ReportOutputBuilder.TabularReportOutputResult result = null;
 
             var dataContext = new RockContext();
 
@@ -1509,20 +1531,29 @@ namespace RockWeb.Blocks.Communication
 
                 ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.RawValue;
 
+                int? pageSize = null;
+                int? pageIndex = null;
+
                 if ( _GridIsExporting )
                 {
                     contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.FormattedText;
                 }
+                else
+                {
+                    // Only retrieve data for the current grid page.
+                    pageSize = gRecipients.PageSize;
+                    pageIndex = gRecipients.PageIndex;
+                }
 
-                var results = builder.GetReportData( this.CurrentPerson,
+                result = builder.GetReportData( this.CurrentPerson,
                     whereExpression,
                     parameterExpression,
                     dataContext,
-                    contentType );
+                    contentType,
+                    pageIndex,
+                    pageSize );
 
-                dataTable = results.Data;
-
-                AddStandardRecipientFieldsToDataSource( dataContext, dataTable, builder );
+                AddStandardRecipientFieldsToDataSource( dataContext, result.Data, builder );
 
                 // Add report columns to the grid.
                 bool preserveExistingColumns = !this.IsPostBack;
@@ -1531,7 +1562,7 @@ namespace RockWeb.Blocks.Communication
                     this.CurrentPerson,
                     false,
                     dataContext,
-                    results.ReportFieldToDataColumnMap,
+                    result.ReportFieldToDataColumnMap,
                     preserveExistingColumns,
                     addSelectionColumn: true );
 
@@ -1544,7 +1575,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             // If the grid is sorted by a communication-specific column, apply the sort now.
-            var dataView = dataTable.AsDataView();
+            var dataView = result.Data.AsDataView();
 
             try
             {
@@ -1576,6 +1607,8 @@ namespace RockWeb.Blocks.Communication
             }
 
             // Show the data set in the grid.
+            gRecipients.VirtualItemCount = result.ReportRowCount.GetValueOrDefault();
+
             gRecipients.DataSource = dataView;
 
             gRecipients.DataBind();
@@ -2494,28 +2527,28 @@ namespace RockWeb.Blocks.Communication
         private void AddStandardRecipientColumns()
         {
             // Add the standard columns to the grid, inserted after the Name column.
+            // Sorting is disabled for these columns because their data is only added after the initial report data page is retrieved.
             BoundField boundField;
 
             var nameField = gRecipients.GetColumnByHeaderText( "Name" );
 
             var insertAtIndex = gRecipients.GetColumnIndex( nameField ) + 1;
 
-            boundField = new BoundField { HeaderText = "Status", DataField = "DeliveryStatus", SortExpression = "DeliveryStatus" };
+            boundField = new BoundField { HeaderText = "Status", DataField = "DeliveryStatus" };
             gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
 
-            boundField = new BoundField { HeaderText = "Medium", DataField = "CommunicationMediumName", SortExpression = "CommunicationMediumName" };
+            boundField = new BoundField { HeaderText = "Medium", DataField = "CommunicationMediumName" };
             gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
 
-            boundField = new BoundField { HeaderText = "Note", DataField = "DeliveryStatusNote", SortExpression = "DeliveryStatusNote" };
+            boundField = new BoundField { HeaderText = "Note", DataField = "DeliveryStatusNote" };
             gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
 
             var openedField = new BoolField();
             openedField.HeaderText = "Opened";
             openedField.DataField = "HasOpened";
-            openedField.SortExpression = "HasOpened";
 
             gRecipients.Columns.Insert( insertAtIndex, openedField );
             insertAtIndex++;
@@ -2523,7 +2556,6 @@ namespace RockWeb.Blocks.Communication
             var clickedField = new BoolField();
             clickedField.HeaderText = "Clicked";
             clickedField.DataField = "HasClicked";
-            clickedField.SortExpression = "HasClicked";
 
             gRecipients.Columns.Insert( insertAtIndex, clickedField );
             insertAtIndex++;

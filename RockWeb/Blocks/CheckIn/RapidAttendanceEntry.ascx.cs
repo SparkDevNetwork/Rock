@@ -1609,7 +1609,7 @@ namespace RockWeb.Blocks.CheckIn
                         a.Occurrence.LocationId == groupLocation.LocationId &&
                         a.Occurrence.ScheduleId == _attendanceSettingState.ScheduleId );
 
-                hlAttendance.Text = string.Format( "{0} - {1} - {2}", groupLocation.Location, schedule.Name, _attendanceSettingState.AttendanceDate.ToShortDateString() );
+                hlAttendance.Text = string.Format( "{0} - {1} - {2}", groupLocation.Group.Name, schedule.Name, _attendanceSettingState.AttendanceDate.ToShortDateString() );
                 if ( GetAttributeValue( AttributeKey.AttendanceListPage ).IsNotNullOrWhiteSpace() )
                 {
                     var qryParams = new Dictionary<string, string>();
@@ -1663,6 +1663,12 @@ namespace RockWeb.Blocks.CheckIn
                 attendedPersonIds = GetAttendedPersonIds( rockContext, personIds );
             }
 
+            bool includeCampusName = false;
+            if ( CampusCache.All( false ).Count > 1 )
+            {
+                includeCampusName = true;
+            }
+
             _searchResultsState = new List<SearchResult>();
             foreach ( var person in persons )
             {
@@ -1680,7 +1686,7 @@ namespace RockWeb.Blocks.CheckIn
                         Age = person.Age
                     };
 
-                    if ( person.PrimaryFamily.Campus != null )
+                    if ( includeCampusName && person.PrimaryFamily.Campus != null )
                     {
                         searchResult.CampusName = person.PrimaryFamily.Campus.Name;
                     }
@@ -1769,6 +1775,7 @@ namespace RockWeb.Blocks.CheckIn
             pnlEditFamily.Visible = false;
             pnlMainEntry.Visible = SelectedPersonId.HasValue;
             ShowFamilyActionButton( SelectedPersonId.HasValue );
+            lFamilyDetail.Text = string.Empty;
             if ( SelectedPersonId.HasValue )
             {
                 var searchResult = _searchResultsState.FirstOrDefault( a => a.Id == SelectedPersonId );
