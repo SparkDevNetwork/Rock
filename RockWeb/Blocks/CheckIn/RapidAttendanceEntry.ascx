@@ -132,15 +132,18 @@
                                             <div class="family-select-item <%# (bool)Eval("IsActive") ? "" :"is-inactive" %> <%# SelectedPersonId.HasValue && (int)Eval("Id") == SelectedPersonId.Value ? "active" :"" %>">
                                                 <asp:LinkButton ID="lbPerson" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" CssClass="js-main-event">
                                                 <div>
-                                                        <h5 class="strong d-inline"><%# Eval("Name") %></h5> <%# Eval("Age") %>
+                                                        <h5 class="strong d-inline"><%# Eval("Name") %></h5> <span class="age"><%# Eval("Age") %></span>
+
                                                         <% if ( IsAttendanceEnabled )
                                                             { %>   <i class="fa fa-circle <%# (bool)Eval("IsAttended") ? "text-success":"text-muted" %> pull-right" aria-hidden="true"></i> <% } %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "<span class='label label-campus pull-right margin-r-sm'>"+ Eval("CampusName").ToString() +"</span>" :"" %>
                                                 </div>
-                                                        <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ? Eval("FamilyMemberNames").ToString() +"<br/>" :"" %>
-                                                        <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "Campus: "+ Eval("CampusName").ToString() +"<br/>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ?  "<span class='family-member-names'>"+Eval("FamilyMemberNames").ToString() +"</span>" :"" %>
+                                                    <div class="margin-t-sm small">
                                                         <%# !string.IsNullOrEmpty((string)Eval("Email")) ? Eval("Email").ToString() +"<br/>" :"" %>
                                                         <%# Eval("Address") != null ? Eval("Address.FormattedAddress").ToString() +"<br/>" :"" %>
                                                         <%# !string.IsNullOrEmpty((string)Eval("Mobile")) ? "M: "+Eval("Mobile").ToString() +"<br/>" :"" %>
+                                                    </div>
                                                 </asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
