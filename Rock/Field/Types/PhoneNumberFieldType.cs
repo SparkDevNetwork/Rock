@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     /// </summary>
     public class PhoneNumberFieldType : FieldType
     {
+        #region JsonPhoneNumber Class
         /// <summary>
         /// Internal call used to serialize and deserialize the phone number.
         /// </summary>
@@ -104,7 +105,9 @@ namespace Rock.Field.Types
                 return GetStringFromJsonPhoneNumber( jsonPhoneNumber );
             }
         }
+        #endregion
 
+        #region Edit Control
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -156,7 +159,9 @@ namespace Rock.Field.Types
 
             return JsonPhoneNumber.GetStringFromPhoneNumber( phoneNumberBox.CountryCode, phoneNumberBox.Number );
         }
+        #endregion
 
+        #region Formatting
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -172,5 +177,6 @@ namespace Rock.Field.Types
 
             return base.FormatValue( parentControl, formattedPhoneNumber, null, condensed );
         }
+        #endregion
     }
 }
