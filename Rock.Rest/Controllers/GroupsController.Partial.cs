@@ -218,14 +218,13 @@ namespace Rock.Rest.Controllers
             int groupTypeId = GroupTypeCache.Get( groupTypeGuid ).Id;
 
             var rockContext = new RockContext();
-            var groupTypeTree = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeId ).Select( t => t.Id ).ToList();
-            groupTypeTree.Add( groupTypeId );
+            var groupTypeChildList = new GroupTypeService( rockContext ).GetAllAssociatedDescendents( groupTypeId, 20 ).Select( t => t.Id ).ToList();
+            groupTypeChildList.Add( groupTypeId );
 
             var groups = new GroupService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                //.Where( g => g.GroupType.Guid == groupTypeGuid )
-                .Where( g => groupTypeTree.Contains( g.GroupTypeId ) )
+                .Where( g => groupTypeChildList.Contains( g.GroupTypeId ) )
                 .Select( g => new CheckinConfig
                 {
                     Id = g.Id,
@@ -261,7 +260,6 @@ namespace Rock.Rest.Controllers
                 .ToList();
 
             // The returned type is great but lets add some schedule details from the ical string
-
             foreach (var groupCheckinInfo in groups)
             {
                 if ( groupCheckinInfo.Locations.IsNull() )
