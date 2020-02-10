@@ -359,6 +359,12 @@ namespace Rock.Model
         /// <returns></returns>
         public static string DefaultCountryCode()
         {
+            var defaultAttributeValue = GlobalAttributesCache.Value( "DefaultPhoneCountryCode" );
+            if ( !string.IsNullOrWhiteSpace( defaultAttributeValue ) )
+            {
+                return defaultAttributeValue;
+            }
+
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             if ( definedType != null )
             {

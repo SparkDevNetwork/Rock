@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 using System.Web.UI;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -26,11 +27,33 @@ namespace Rock.Field.Types
     /// </summary>
     public class PhoneNumberFieldType : FieldType
     {
+        /// <summary>
+        /// Internal call used to serialize and deserialize the phone number.
+        /// </summary>
         private class JsonPhoneNumber
         {
+            /// <summary>
+            /// Gets or sets the base phone number.
+            /// </summary>
+            /// <value>
+            /// The base phone number.
+            /// </value>
             public string Number { get; set; }
+
+
+            /// <summary>
+            /// Gets or sets the phone number's country code.
+            /// </summary>
+            /// <value>
+            /// The phone number's country code.
+            /// </value>
             public string CountryCode { get; set; }
 
+            /// <summary>
+            /// Gets the builds the phone number object from a JSON string.
+            /// </summary>
+            /// <param name="value">The JSON string for the phone number.</param>
+            /// <returns></returns>
             public static JsonPhoneNumber GetJsonPhoneNumberFromString( string value )
             {
                 JsonPhoneNumber jsonPhoneNumber = null;
@@ -47,39 +70,29 @@ namespace Rock.Field.Types
                 {
                     return new JsonPhoneNumber
                     {
-                        CountryCode = GetDefaultCountryCode(),
+                        CountryCode = PhoneNumber.DefaultCountryCode(),
                         Number = value
                     };
                 }
                 return jsonPhoneNumber;
             }
 
-            private static string GetDefaultCountryCode()
-            {
-                var defaultCountryCodeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.GLOBAL_DEFAULT_PHONE_COUNTRY_CODE.AsGuid() );
-                var defaultCountryCode = "1";
-                if ( defaultCountryCodeAttribute != null )
-                {
-                    var defaultCountryCodeValue = defaultCountryCodeAttribute.GetAttributeValue( defaultCountryCodeAttribute.Key );
-
-                    if ( !string.IsNullOrWhiteSpace( defaultCountryCodeValue ) )
-                    {
-                        defaultCountryCode = defaultCountryCodeValue;
-                    }
-                    else if ( !string.IsNullOrWhiteSpace( defaultCountryCodeAttribute.DefaultValue ) )
-                    {
-                        defaultCountryCode = defaultCountryCodeAttribute.DefaultValue;
-                    }
-                }
-
-                return defaultCountryCode;
-            }
-
+            /// <summary>
+            /// Gets the JSON string the represents the phone number object.
+            /// </summary>
+            /// <param name="jsonPhoneNumber">The phone number object.</param>
+            /// <returns></returns>
             public static string GetStringFromJsonPhoneNumber( JsonPhoneNumber jsonPhoneNumber )
             {
                 return Newtonsoft.Json.JsonConvert.SerializeObject( jsonPhoneNumber );
             }
 
+            /// <summary>
+            /// Builds a valid JSON string using the supplied country code and number.
+            /// </summary>
+            /// <param name="countryCode">The country code.</param>
+            /// <param name="number">The number.</param>
+            /// <returns></returns>
             public static string GetStringFromPhoneNumber( string countryCode, string number )
             {
                 var jsonPhoneNumber = new JsonPhoneNumber
@@ -105,6 +118,12 @@ namespace Rock.Field.Types
             return new PhoneNumberBox { ID = id };
         }
 
+        /// <summary>
+        /// Sets the correct values on the phone number control.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var phoneNumberBox = control as PhoneNumberBox;
@@ -115,10 +134,16 @@ namespace Rock.Field.Types
             }
 
             var jsonPhoneNumber = JsonPhoneNumber.GetJsonPhoneNumberFromString( value );
-            phoneNumberBox.Number = jsonPhoneNumber.Number;
+            phoneNumberBox.Number = PhoneNumber.FormattedNumber( jsonPhoneNumber.CountryCode, jsonPhoneNumber.Number, false );
             phoneNumberBox.CountryCode = jsonPhoneNumber.CountryCode;
         }
 
+        /// <summary>
+        /// Reads new values entered by the user for the field
+        /// </summary>
+        /// <param name="control">Parent control that controls were added to in the CreateEditControl() method</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns>A JSON string representing the phone number.</returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             var phoneNumberBox = control as PhoneNumberBox;
@@ -132,12 +157,20 @@ namespace Rock.Field.Types
             return JsonPhoneNumber.GetStringFromPhoneNumber( phoneNumberBox.CountryCode, phoneNumberBox.Number );
         }
 
+        /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns>Returns the formatted phone number.</returns>
         public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             var jsonPhoneNumber = JsonPhoneNumber.GetJsonPhoneNumberFromString( value );
-            var formattedValue = string.Format( "+{0} {1}", jsonPhoneNumber.CountryCode, jsonPhoneNumber.Number );
+            var formattedPhoneNumber = PhoneNumber.FormattedNumber( jsonPhoneNumber.CountryCode, jsonPhoneNumber.Number, !jsonPhoneNumber.CountryCode.Equals( PhoneNumber.DefaultCountryCode() ) );
 
-            return base.FormatValue( parentControl, formattedValue, null, condensed );
+            return base.FormatValue( parentControl, formattedPhoneNumber, null, condensed );
         }
     }
 }
