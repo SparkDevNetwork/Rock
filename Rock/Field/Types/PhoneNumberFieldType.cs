@@ -14,6 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+using System.Web.UI;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -23,12 +26,71 @@ namespace Rock.Field.Types
     /// </summary>
     public class PhoneNumberFieldType : FieldType
     {
+        private class JsonPhoneNumber
+        {
+            public string Number { get; set; }
+            public string CountryCode { get; set; }
 
-        #region Formatting
-                
-        #endregion
+            public static JsonPhoneNumber GetJsonPhoneNumberFromString( string value )
+            {
+                JsonPhoneNumber jsonPhoneNumber = null;
+                try
+                {
+                    jsonPhoneNumber = Newtonsoft.Json.JsonConvert.DeserializeObject<JsonPhoneNumber>( value );
+                }
+                catch
+                {
+                    // Not a valid JSON object so handle like phone number.
+                }
 
-        #region Edit Control
+                if ( jsonPhoneNumber == null )
+                {
+                    return new JsonPhoneNumber
+                    {
+                        CountryCode = GetDefaultCountryCode(),
+                        Number = value
+                    };
+                }
+                return jsonPhoneNumber;
+            }
+
+            private static string GetDefaultCountryCode()
+            {
+                var defaultCountryCodeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.GLOBAL_DEFAULT_PHONE_COUNTRY_CODE.AsGuid() );
+                var defaultCountryCode = "1";
+                if ( defaultCountryCodeAttribute != null )
+                {
+                    var defaultCountryCodeValue = defaultCountryCodeAttribute.GetAttributeValue( defaultCountryCodeAttribute.Key );
+
+                    if ( !string.IsNullOrWhiteSpace( defaultCountryCodeValue ) )
+                    {
+                        defaultCountryCode = defaultCountryCodeValue;
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( defaultCountryCodeAttribute.DefaultValue ) )
+                    {
+                        defaultCountryCode = defaultCountryCodeAttribute.DefaultValue;
+                    }
+                }
+
+                return defaultCountryCode;
+            }
+
+            public static string GetStringFromJsonPhoneNumber( JsonPhoneNumber jsonPhoneNumber )
+            {
+                return Newtonsoft.Json.JsonConvert.SerializeObject( jsonPhoneNumber );
+            }
+
+            public static string GetStringFromPhoneNumber( string countryCode, string number )
+            {
+                var jsonPhoneNumber = new JsonPhoneNumber
+                {
+                    CountryCode = countryCode,
+                    Number = number
+                };
+
+                return GetStringFromJsonPhoneNumber( jsonPhoneNumber );
+            }
+        }
 
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
@@ -40,77 +102,42 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new PhoneNumberBox { ID = id }; 
+            return new PhoneNumberBox { ID = id };
         }
 
-        /*/// <summary>
-        /// Tests the value to ensure that it is a valid value.  If not, message will indicate why
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="message">The message.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is valid; otherwise, <c>false</c>.
-        /// </returns>
-        public override bool IsValid( string value, bool required, out string message )
+        public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            var phoneNumberBox = control as PhoneNumberBox;
+            if ( phoneNumberBox == null )
             {
-                decimal result;
-                if ( !decimal.TryParse( value, out result ) )
-                {
-                    message = "The input provided is not a valid currency value.";
-                    return true;
-                }
+                base.SetEditValue( control, configurationValues, value );
+                return;
             }
 
-            return base.IsValid( value, required, out message );
+            var jsonPhoneNumber = JsonPhoneNumber.GetJsonPhoneNumberFromString( value );
+            phoneNumberBox.Number = jsonPhoneNumber.Number;
+            phoneNumberBox.CountryCode = jsonPhoneNumber.CountryCode;
         }
 
-        /// <summary>
-        /// Returns the value using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object ValueAsFieldType( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
+        public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            return value.AsDecimalOrNull();
-        }
+            var phoneNumberBox = control as PhoneNumberBox;
+            var editValue = string.Empty;
 
-        /// <summary>
-        /// Returns the value that should be used for sorting, using the most appropriate datatype
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="configurationValues">The configuration values.</param>
-        /// <returns></returns>
-        public override object SortValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues )
-        {
-            // return ValueAsFieldType which returns the value as a Decimal
-            return this.ValueAsFieldType( parentControl, value, configurationValues );
-        }
-
-        #endregion
-
-        #region Filter Control
-
-        /// <summary>
-        /// Gets the type of the filter comparison.
-        /// </summary>
-        /// <value>
-        /// The type of the filter comparison.
-        /// </value>
-        public override Model.ComparisonType FilterComparisonType
-        {
-            get
+            if ( phoneNumberBox == null )
             {
-                return ComparisonHelper.NumericFilterComparisonTypes;
+                return base.GetEditValue( control, configurationValues );
             }
-        }*/
 
-        #endregion
+            return JsonPhoneNumber.GetStringFromPhoneNumber( phoneNumberBox.CountryCode, phoneNumberBox.Number );
+        }
 
+        public override string FormatValue( System.Web.UI.Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            var jsonPhoneNumber = JsonPhoneNumber.GetJsonPhoneNumberFromString( value );
+            var formattedValue = string.Format( "+{0} {1}", jsonPhoneNumber.CountryCode, jsonPhoneNumber.Number );
+
+            return base.FormatValue( parentControl, formattedValue, null, condensed );
+        }
     }
 }
