@@ -26,7 +26,7 @@ using Rock.Security;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select multiple data views
     /// </summary>
     public class DataViewsPicker : RockListBox
     {

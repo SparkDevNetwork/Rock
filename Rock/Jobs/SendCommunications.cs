@@ -91,17 +91,19 @@ namespace Rock.Jobs
             }
 
             // check for communications that have not been sent but are past the expire date. Mark them as failed and set a warning.
-            var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
+            var expireDateTimeEndWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
+
+            // limit the query to only look a week prior to the window to avoid performance issue (it could be slow to query at ALL the communication recipient before the expire date, as there could several years worth )
+            var expireDateTimeBeginWindow = expireDateTimeEndWindow.AddDays( -7 );
+
             var qryExpiredRecipients = new CommunicationRecipientService( rockContext ).Queryable()
                 .Where( cr =>
                     cr.Communication.Status == CommunicationStatus.Approved &&
                     cr.Status == CommunicationRecipientStatus.Pending &&
                     (
-                        ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < beginWindow )
-                        || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < beginWindow )
+                        ( !cr.Communication.FutureSendDateTime.HasValue && cr.Communication.CreatedDateTime.HasValue && cr.Communication.CreatedDateTime < expireDateTimeEndWindow && cr.Communication.CreatedDateTime > expireDateTimeBeginWindow )
+                        || ( cr.Communication.FutureSendDateTime.HasValue && cr.Communication.FutureSendDateTime < expireDateTimeEndWindow && cr.Communication.FutureSendDateTime  > expireDateTimeBeginWindow)
                     ) );
-
-            var count = qryExpiredRecipients.Count();
 
             rockContext.BulkUpdate( qryExpiredRecipients, c => new CommunicationRecipient { Status = CommunicationRecipientStatus.Failed, StatusNote = "Communication was not sent before the expire window (possibly due to delayed approval)." } );
         }

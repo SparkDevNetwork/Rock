@@ -639,6 +639,8 @@ namespace Rock.MyWell
         /// <param name="subscriptionRequestParameters">The subscription request parameters.</param>
         /// <param name="scheduleTransactionFrequencyValueGuid">The schedule transaction frequency value unique identifier.</param>
         /// <param name="startDate">The start date.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
         private static bool SetSubscriptionBillingPlanParameters( SubscriptionRequestParameters subscriptionRequestParameters, Guid scheduleTransactionFrequencyValueGuid, DateTime startDate, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -938,7 +940,6 @@ namespace Rock.MyWell
             get
             {
                 var values = new List<DefinedValueCache>();
-
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
@@ -1122,7 +1123,6 @@ namespace Rock.MyWell
 
                 if ( SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate, out errorMessage ) )
                 {
-
                     var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
                     subscriptionId = subscriptionResult.Data?.Id;
 
@@ -1490,7 +1490,9 @@ namespace Rock.MyWell
         /// Removes the emails.
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="onProgress">The on progress.</param>
         /// <returns></returns>
+        /// <exception cref="System.Exception">Unexpected response from SearchCustomerSubscriptions</exception>
         public int RemoveEmails( FinancialGateway financialGateway, EventHandler<string> onProgress )
         {
             var emailRemoveCount = 0;

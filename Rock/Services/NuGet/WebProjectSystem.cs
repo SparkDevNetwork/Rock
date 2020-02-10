@@ -179,10 +179,22 @@ namespace Rock.Services.NuGet
             string fileToDelete = string.Empty;
             int fileCount = 0;
 
-            // If dll file not in the bin folder...
-            if ( path.EndsWith( ".dll" ) && !path.Contains( @"\bin\" ) )
+            bool dllFileNotInBin = path.EndsWith( ".dll" ) && !path.Contains( @"\bin\" );
+            bool roslynAssembly = (path.EndsWith( ".dll" ) || path.EndsWith( ".exe" )) && path.Contains( @"\roslyn\" );
+
+            // If this a roslyn assembly or a dll file from the Content files, rename it so that we don't have problems with it being locks
+            if ( roslynAssembly || dllFileNotInBin )
             {
-                string physicalFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", path ) );
+                string physicalFile;
+                if ( roslynAssembly )
+                {
+                    physicalFile = path;
+                }
+                else
+                {
+                    physicalFile = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", path ) );
+                }
+                
                 if ( File.Exists( physicalFile ) )
                 {
                     // generate a unique *.#.rdelete filename

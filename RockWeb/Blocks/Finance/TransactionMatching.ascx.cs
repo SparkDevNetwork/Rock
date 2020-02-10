@@ -50,15 +50,14 @@ namespace RockWeb.Blocks.Finance
     [LinkedPage(
         "Add Family Link",
         Key = AttributeKey.AddFamilyLink,
-        Description = "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked",
+        Description = "Select the page to be opened in a separate browser window where a new family can be added. If not specified, you can create a new family within this block.",
         IsRequired = false,
-        DefaultValue = "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7",
         Order = 1 )]
 
     [LinkedPage(
         "Add Business Link",
         Key = AttributeKey.AddBusinessLink,
-        Description ="Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked",
+        Description = "Select the page to be opened in a separate browser window where a new business can be added. If not specified, you can create a new business within this block.",
         IsRequired = false,
         Order = 2 )]
 
@@ -87,24 +86,118 @@ namespace RockWeb.Blocks.Finance
         "Prompt to Edit Payment Detail Attributes",
         Key = AttributeKey.DisplayPaymentDetailAttributeControls,
         Description = "If Transaction Payment Detail has attributes configured, this will prompt to edit the values for those.",
-        DefaultBooleanValue =  false,
+        DefaultBooleanValue = false,
         Order = 6 )]
+
+    [DefinedValueField(
+        "Default Person Connection Status",
+        Key = AttributeKey.DefaultPersonConnectionStatus,
+        IsRequired = false,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to default the connection status dropdown to.",
+        Order = 7 )]
+
+    [DefinedValueField(
+        "Person Record Status",
+        Key = AttributeKey.PersonRecordStatus,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
+        IsRequired = false,
+        Description = "The default status to use when adding a person. This is not shown as a selection.",
+        Order = 8 )]
+
+    [BooleanField(
+        "Show Family Role",
+        Key = AttributeKey.ShowFamilyRole,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefaultBooleanValue = true,
+        Description = "Determines if the Adult/Child toggle should be shown. If hidden, the role will be set to adult. The default will always be adult.",
+        Order = 9 )]
+
+    [BooleanField(
+        "Show Email",
+        Key = AttributeKey.ShowEmail,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefaultBooleanValue = false,
+        Description = "Determines if the email address field should be shown.",
+        Order = 9 )]
+
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Attribute Keys
+
+        /// <summary>
+        /// Categories for attributes
+        /// </summary>
+        private static class AttributeCategory
+        {
+            /// <summary>
+            /// The add person or business section
+            /// </summary>
+            public const string AddPersonOrBusiness = "Creating a new Person or Business";
+        }
 
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
         private static class AttributeKey
         {
+            /// <summary>
+            /// The accounts
+            /// </summary>
             public const string Accounts = "Accounts";
+
+            /// <summary>
+            /// The add family link
+            /// </summary>
             public const string AddFamilyLink = "AddFamilyLink";
+
+            /// <summary>
+            /// The add business link
+            /// </summary>
             public const string AddBusinessLink = "AddBusinessLink";
+
+            /// <summary>
+            /// The batch detail page
+            /// </summary>
             public const string BatchDetailPage = "BatchDetailPage";
+
+            /// <summary>
+            /// The transaction detail page
+            /// </summary>
             public const string TransactionDetailPage = "TransactionDetailPage";
+
+            /// <summary>
+            /// The expand person search options
+            /// </summary>
             public const string ExpandPersonSearchOptions = "ExpandPersonSearchOptions";
+
+            /// <summary>
+            /// The display payment detail attribute controls
+            /// </summary>
             public const string DisplayPaymentDetailAttributeControls = "DisplayPaymentDetailAttributeControls";
+
+            /// <summary>
+            /// The default person connection status
+            /// </summary>
+            public const string DefaultPersonConnectionStatus = "DefaultPersonConnectionStatus";
+
+            /// <summary>
+            /// The person record status
+            /// </summary>
+            public const string PersonRecordStatus = "PersonRecordStatus";
+
+            /// <summary>
+            /// The person record status
+            /// </summary>
+            public const string ShowFamilyRole = "ShowFamilyRole";
+
+            /// <summary>
+            /// The show email
+            /// </summary>
+            public const string ShowEmail = "ShowEmail";
         }
 
         #endregion Attribute Keys
@@ -220,7 +313,7 @@ namespace RockWeb.Blocks.Finance
             {
                 hfBackNextHistory.Value = string.Empty;
                 LoadDropDowns();
-                ShowDetail( PageParameter( PageParameterKey.BatchId ).AsInteger() );
+                RenderState();
             }
             else
             {
@@ -278,7 +371,7 @@ namespace RockWeb.Blocks.Finance
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             LoadDropDowns();
-            ShowDetail( PageParameter( PageParameterKey.BatchId ).AsInteger() );
+            RenderState();
         }
 
         #endregion
@@ -294,7 +387,7 @@ namespace RockWeb.Blocks.Finance
             var rockContext = new RockContext();
             var blockAccountGuidList = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
-            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            string keyPrefix = GetUserPreferenceKeyPrefix();
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
@@ -407,33 +500,54 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the user preference key prefix.
+        /// </summary>
+        /// <returns></returns>
+        private string GetUserPreferenceKeyPrefix()
+        {
+            return string.Format( "transaction-matching-{0}-", BlockId );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="batchId">The financial batch identifier.</param>
         public void ShowDetail( int batchId )
         {
+            btnAddFamily.Visible = true;
+            btnAddBusiness.Visible = true;
+            btnFilter.Visible = true;
+            divAddNewMatch.Visible = false;
+            pnlEdit.Visible = true;
+
             string addFamilyUrl = this.LinkedPageUrl( AttributeKey.AddFamilyLink );
             string addBusinessUrl = this.LinkedPageUrl( AttributeKey.AddBusinessLink );
 
             ppSelectNew.ExpandSearchOptions = this.GetAttributeValue( AttributeKey.ExpandPersonSearchOptions ).AsBoolean();
 
-            rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( addFamilyUrl );
-            if ( rcwAddNewFamily.Visible )
+            if ( !string.IsNullOrWhiteSpace( addFamilyUrl ) )
             {
                 // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-                hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addFamilyUrl );
+                btnAddFamily.OnClientClick = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addFamilyUrl );
+            }
+            else
+            {
+                btnAddFamily.OnClientClick = null;
             }
 
-            rcwAddNewBusiness.Visible = !string.IsNullOrWhiteSpace( addBusinessUrl );
-            if ( rcwAddNewBusiness.Visible )
+            if ( !string.IsNullOrWhiteSpace( addBusinessUrl ) )
             {
-                hlAddNewBusiness.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addBusinessUrl );
+                btnAddBusiness.OnClientClick = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addBusinessUrl );
+            }
+            else
+            {
+                btnAddBusiness.OnClientClick = null;
             }
 
             hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
 
-            int? specificTransactionId = PageParameter(  PageParameterKey.TransactionId ).AsIntegerOrNull();
+            int? specificTransactionId = PageParameter( PageParameterKey.TransactionId ).AsIntegerOrNull();
             if ( specificTransactionId.HasValue )
             {
                 hfBackNextHistory.Value = specificTransactionId.Value.ToString();
@@ -442,7 +556,7 @@ namespace RockWeb.Blocks.Finance
                 btnNext.Text = "Save";
             }
 
-            NavigateToTransaction( Direction.Next );
+            NavigateToTransaction( IsPostBack ? Direction.Current : Direction.Next );
         }
 
         /// <summary>
@@ -526,8 +640,9 @@ namespace RockWeb.Blocks.Finance
                 {
                     qryTransactionsToMatch = financialTransactionService
                         .Queryable()
-                        .Include(a => a.AuthorizedPersonAlias.Person)
-                        .Include(a => a.ProcessedByPersonAlias.Person)
+                        .Include( ft => ft.AuthorizedPersonAlias.Person )
+                        .Include( ft => ft.ProcessedByPersonAlias.Person )
+                        .Include( ft => ft.Images )
                         .Where( a => a.Id == toTransactionId );
                 }
 
@@ -546,8 +661,9 @@ namespace RockWeb.Blocks.Finance
                     // we exhausted the transactions that aren't processed and aren't in our history list, so remove those restrictions and show all transactions that haven't been matched yet
                     var qryRemainingTransactionsToMatch = financialTransactionService
                         .Queryable()
-                        .Include( a => a.AuthorizedPersonAlias.Person )
-                        .Include( a => a.ProcessedByPersonAlias.Person )
+                        .Include( ft => ft.AuthorizedPersonAlias.Person )
+                        .Include( ft => ft.ProcessedByPersonAlias.Person )
+                        .Include( ft => ft.Images )
                         .Where( a => a.AuthorizedPersonAliasId == null );
 
                     if ( batchId != 0 )
@@ -584,8 +700,8 @@ namespace RockWeb.Blocks.Finance
                     pnlEdit.Visible = false;
 
                     btnFilter.Visible = false;
-                    rcwAddNewBusiness.Visible = false;
-                    rcwAddNewFamily.Visible = false;
+                    btnAddFamily.Visible = false;
+                    btnAddBusiness.Visible = false;
                 }
                 else
                 {
@@ -708,7 +824,11 @@ namespace RockWeb.Blocks.Finance
 
                     ddlIndividual_SelectedIndexChanged( null, null );
 
-                    ppSelectNew.SetValue( null );
+                    if ( direction != Direction.Current )
+                    {
+                        ppSelectNew.SetValue( null );
+                    }
+
                     if ( transactionToMatch.TransactionDetails.Any() )
                     {
                         cbTotalAmount.Text = transactionToMatch.TotalAmount.ToString();
@@ -739,7 +859,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( existingAmounts )
                     {
-                        string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+                        string keyPrefix = GetUserPreferenceKeyPrefix();
                         bool onlyShowSelectedAccounts = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
                         UpdateVisibleAccountBoxes( onlyShowSelectedAccounts );
                     }
@@ -749,14 +869,11 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     tbSummary.Text = transactionToMatch.Summary;
+                    var primaryImage = GetPrimaryImage( transactionToMatch );
 
-                    if ( transactionToMatch.Images.Any() )
+                    if ( primaryImage != null )
                     {
-                        var primaryImage = transactionToMatch.Images
-                            .OrderBy( i => i.Order )
-                            .FirstOrDefault();
-
-                        lImage.Text = string.Format( "<a href='{0}' target='_blank'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId ) ) );
+                        lImage.Text = GetCheckImageHtml( primaryImage );
                         lImage.Visible = true;
                         nbNoTransactionImageWarning.Visible = false;
 
@@ -823,6 +940,23 @@ namespace RockWeb.Blocks.Finance
             }
         }
 
+        /// <summary>
+        /// Gets the primary check image HTML.
+        /// </summary>
+        private string GetCheckImageHtml( FinancialTransactionImage financialTransactionImage )
+        {
+            if ( financialTransactionImage == null )
+            {
+                return string.Empty;
+            }
+
+            return string.Format(
+                "<a href='{0}' target='_blank'><img src='{0}'/></a>",
+                ResolveRockUrl( string.Format(
+                    "~/GetImage.ashx?id={0}",
+                    financialTransactionImage.BinaryFileId ) ) );
+        }
+
         private void UpdateVisibleAccountBoxes( bool onlyShowSelectedAccounts = false )
         {
             List<int> _sortedAccountIds = _visibleDisplayedAccountIds.ToList();
@@ -868,13 +1002,94 @@ namespace RockWeb.Blocks.Finance
         #region Events
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the dvpAddPersonMaritalStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dvpAddPersonMaritalStatus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncFamilyControlsOnRoleAndMaritalStatus();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the bgAddPersonRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bgAddPersonRole_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncFamilyControlsOnRoleAndMaritalStatus();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveNewMatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveNewMatch_Click( object sender, EventArgs e )
+        {
+            var newPerson = IsAddNewFamilyMode() ?
+                SaveNewFamily() :
+                SaveNewBusiness();
+
+            if ( newPerson != null )
+            {
+                hfIsAddNewFamilyMode.Value = "false";
+                hfIsAddNewBusinessMode.Value = "false";
+                RenderState();
+
+                ppSelectNew.SetValue( newPerson );
+                ddlIndividual.SetValue( string.Empty );
+                LoadPersonPreview( ppSelectNew.PersonId.Value );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelNewMatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelNewMatch_Click( object sender, EventArgs e )
+        {
+            hfIsAddNewBusinessMode.Value = "false";
+            hfIsAddNewFamilyMode.Value = "false";
+            RenderState();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the BtnAddBusiness control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        protected void BtnAddBusiness_Click( object sender, EventArgs e )
+        {
+            hfIsAddNewFamilyMode.Value = "false";
+            hfIsAddNewBusinessMode.Value = "true";
+            RenderState();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the BtnAddFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        protected void BtnAddFamily_Click( object sender, EventArgs e )
+        {
+            hfIsAddNewFamilyMode.Value = "true";
+            hfIsAddNewBusinessMode.Value = "false";
+            RenderState();
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the mdAccountsPersonalFilter control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAccountsPersonalFilter_SaveClick( object sender, EventArgs e )
         {
-            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var selectedAccountIdList = apDisplayedPersonalAccounts.SelectedValuesAsInt().ToList();
             var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
@@ -934,7 +1149,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
-            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var personalAccountList = new FinancialAccountService( new RockContext() )
@@ -1321,7 +1536,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                NavigateToLinkedPage( AttributeKey.BatchDetailPage, new Dictionary<string, string> { { PageParameterKey.BatchId , batchId.Value.ToString() } } );
+                NavigateToLinkedPage( AttributeKey.BatchDetailPage, new Dictionary<string, string> { { PageParameterKey.BatchId, batchId.Value.ToString() } } );
             }
         }
 
@@ -1424,5 +1639,602 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
+        #region State Determining
+
+        /// <summary>
+        /// Determines whether [is add new family mode].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is add new family mode]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsAddNewFamilyMode()
+        {
+            return hfIsAddNewFamilyMode.Value.Trim().ToLower() == "true";
+        }
+
+        /// <summary>
+        /// Determines whether [is add new business mode].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is add new business mode]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsAddNewBusinessMode()
+        {
+            return hfIsAddNewBusinessMode.Value.Trim().ToLower() == "true";
+        }
+
+        /// <summary>
+        /// Shows the controls needed
+        /// </summary>
+        private void RenderState()
+        {
+            if ( IsAddNewFamilyMode() || IsAddNewBusinessMode() )
+            {
+                RenderAddNewMatchMode();
+            }
+            else
+            {
+                ShowDetail( PageParameter( PageParameterKey.BatchId ).AsInteger() );
+            }
+        }
+
+        /// <summary>
+        /// Renders the add new match mode.
+        /// </summary>
+        private void RenderAddNewMatchMode()
+        {
+            btnAddFamily.Visible = false;
+            btnAddBusiness.Visible = false;
+            btnFilter.Visible = false;
+            divAddNewMatch.Visible = true;
+            pnlEdit.Visible = false;
+
+            var currentTransaction = GetCurrentTransactionUntracked();
+            var primaryImage = GetPrimaryImage( currentTransaction );
+            lAddNewMatchImage.Text = GetCheckImageHtml( primaryImage );
+
+            if ( IsAddNewFamilyMode() )
+            {
+                RenderAddNewFamilyMode();
+            }
+            else
+            {
+                RenderAddNewBusinessMode();
+            }
+        }
+
+        /// <summary>
+        /// Shows the add new family mode.
+        /// </summary>
+        private void RenderAddNewFamilyMode()
+        {
+            divAddNewFamily.Visible = true;
+            divAddNewBusiness.Visible = false;
+
+            BindFamilyGroupRoles( bgAddPersonRole );
+
+            var suffixDefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
+            dvpAddPersonSuffix.DefinedTypeId = suffixDefinedTypeId;
+            dvpAddSpouseSuffix.DefinedTypeId = suffixDefinedTypeId;
+
+            dvpAddPersonMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ).Id;
+            dvpAddPersonConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
+
+            EnforceCampusSettings( cpAddPersonCampus );
+            ResetAddPersonForm();
+        }
+
+        /// <summary>
+        /// Shows the add new business mode.
+        /// </summary>
+        private void RenderAddNewBusinessMode()
+        {
+            divAddNewFamily.Visible = false;
+            divAddNewBusiness.Visible = true;
+            ResetAddBusinessForm();
+        }
+
+        #endregion State Determining
+
+        #region Data Interface
+
+        /// <summary>
+        /// Saves the new family.
+        /// </summary>
+        /// <returns></returns>
+        private Person SaveNewFamily()
+        {
+            var isMarried = IsNewPersonMarried();
+            var isChild = IsNewPersonRoleChild();
+            var gender = GetGender( rblAddPersonGender.SelectedValue );
+
+            var person = new Person
+            {
+                RecordStatusValueId = GetRecordStatusId(),
+                FirstName = tbAddPersonFirstName.Text,
+                LastName = tbAddPersonLastName.Text,
+                SuffixValueId = dvpAddPersonSuffix.SelectedDefinedValueId,
+                Gender = gender,
+                MaritalStatusValueId = isChild ? null : dvpAddPersonMaritalStatus.SelectedDefinedValueId,
+                ConnectionStatusValueId = dvpAddPersonConnectionStatus.SelectedDefinedValueId,
+                Email = ebAddPersonEmail.Text.Trim()
+            };
+
+            var homePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Id;
+            var mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            var homePhone = GetPhoneModel( pnAddPersonHomePhone, homePhoneTypeId, cbAddPersonHomePhoneSms.Checked, cbAddPersonHomePhoneUnlisted.Checked );
+
+            if ( homePhone != null )
+            {
+                person.PhoneNumbers.Add( homePhone );
+            }
+
+            var mobilePhone = GetPhoneModel( pnAddPersonMobilePhone, mobilePhoneTypeId, cbAddPersonMobilePhoneSms.Checked, cbAddPersonMobilePhoneUnlisted.Checked );
+
+            if ( mobilePhone != null )
+            {
+                person.PhoneNumbers.Add( mobilePhone );
+            }
+
+            var groupMember = new GroupMember
+            {
+                Person = person,
+                GroupRoleId = ( isChild ? GetChildRole() : GetAdultRole() ).Id
+            };
+
+            var familyMembers = new List<GroupMember> { groupMember };
+
+            // Add spouse if needed
+            if ( isMarried && ( !tbAddSpouseFirstName.Text.IsNullOrWhiteSpace() || !tbAddSpouseLastName.Text.IsNullOrWhiteSpace() ) )
+            {
+                var spouseGender = GetGender( rblAddSpouseGender.SelectedValue );
+
+                var spouse = new Person
+                {
+                    RecordStatusValueId = GetRecordStatusId(),
+                    FirstName = tbAddSpouseFirstName.Text,
+                    LastName = tbAddSpouseLastName.Text,
+                    SuffixValueId = dvpAddSpouseSuffix.SelectedDefinedValueId,
+                    Gender = spouseGender,
+                    MaritalStatusValueId = dvpAddPersonMaritalStatus.SelectedDefinedValueId,
+                    ConnectionStatusValueId = dvpAddPersonConnectionStatus.SelectedDefinedValueId
+                };
+
+                if ( homePhone != null )
+                {
+                    var spouseHomePhone = GetPhoneModel( pnAddPersonHomePhone, homePhoneTypeId, cbAddPersonHomePhoneSms.Checked, cbAddPersonHomePhoneUnlisted.Checked );
+                    spouse.PhoneNumbers.Add( spouseHomePhone );
+                }
+
+                var spouseGroupMember = new GroupMember
+                {
+                    Person = spouse,
+                    GroupRoleId = GetAdultRole().Id
+                };
+
+                familyMembers.Add( spouseGroupMember );
+            }
+
+            var rockContext = new RockContext();
+            var campusId = cpAddPersonCampus.SelectedCampusId;
+            var addressLocation = GetAddressLocation( rockContext, acAddPersonAddress );
+            var family = GroupService.SaveNewFamily( rockContext, familyMembers, cpAddPersonCampus.SelectedCampusId, false );
+
+            if ( addressLocation != null )
+            {
+                GroupService.AddNewGroupAddress( rockContext, family, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, addressLocation );
+            }
+
+            rockContext.SaveChanges();
+            ResetAddPersonForm();
+            return person;
+        }
+
+        /// <summary>
+        /// Saves the new business.
+        /// </summary>
+        /// <returns></returns>
+        private Person SaveNewBusiness()
+        {
+            var business = new Person
+            {
+                RecordStatusValueId = GetRecordStatusId(),
+                RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id,
+                LastName = tbAddBusinessName.Text,
+                Email = ebAddBusinessEmail.Text.Trim()
+            };
+
+            var workPhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ).Id;
+            var workPhone = GetPhoneModel( pnbAddBusinessPhone, workPhoneTypeId, cbAddBusinessSms.Checked, cbAddBusinessUnlisted.Checked );
+
+            if ( workPhone != null )
+            {
+                business.PhoneNumbers.Add( workPhone );
+            }
+
+            var familyMembers = new List<GroupMember> {
+                new GroupMember
+                {
+                    Person = business,
+                    GroupRoleId = GetAdultRole().Id
+                }
+            };
+
+            var rockContext = new RockContext();
+            var addressLocation = GetAddressLocation( rockContext, acAddBusinessAddress );
+            var campusId = cpAddBusinessCampus.SelectedCampusId;
+
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            var familyName = business.LastName + " Business";
+            var family = GroupService.SaveNewGroup( rockContext, familyGroupType.Id, null, familyName, familyMembers, campusId, false );
+
+            if ( addressLocation != null )
+            {
+                GroupService.AddNewGroupAddress( rockContext, family, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK, addressLocation );
+            }
+
+            rockContext.SaveChanges();
+            ResetAddBusinessForm();
+            return business;
+        }
+
+        /// <summary>
+        /// Gets the batch identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetBatchId()
+        {
+            if ( _batchId == default( int ) )
+            {
+                _batchId = PageParameter( PageParameterKey.BatchId ).AsInteger();
+            }
+
+            return _batchId;
+        }
+        private int _batchId;
+
+        /// <summary>
+        /// Gets the current transaction.
+        /// </summary>
+        /// <returns></returns>
+        private FinancialTransaction GetCurrentTransactionUntracked()
+        {
+            var transactionId = hfTransactionId.Value.AsInteger();
+            var cachedTransactionId = _currentTransactionUntracked == null ? 0 : _currentTransactionUntracked.Id;
+
+            if ( transactionId != cachedTransactionId && transactionId == 0 )
+            {
+                _currentTransactionUntracked = null;
+            }
+            else if ( transactionId != cachedTransactionId )
+            {
+                var rockContext = new RockContext();
+                var transactionService = new FinancialTransactionService( rockContext );
+
+                _currentTransactionUntracked = transactionService.Queryable()
+                    .AsNoTracking()
+                    .Include( ft => ft.AuthorizedPersonAlias.Person )
+                    .Include( ft => ft.ProcessedByPersonAlias.Person )
+                    .Include( ft => ft.Images )
+                    .FirstOrDefault( ft => ft.Id == transactionId );
+            }
+
+            return _currentTransactionUntracked;
+        }
+        private FinancialTransaction _currentTransactionUntracked;
+
+        /// <summary>
+        /// Gets the primary image.
+        /// </summary>
+        /// <param name="financialTransaction">The financial transaction.</param>
+        /// <returns></returns>
+        private FinancialTransactionImage GetPrimaryImage( FinancialTransaction financialTransaction )
+        {
+            if ( financialTransaction == null || !financialTransaction.Images.Any() )
+            {
+                return null;
+            }
+
+            return financialTransaction.Images
+                .OrderBy( i => i.Order )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the child role.
+        /// </summary>
+        /// <returns></returns>
+        private GroupTypeRoleCache GetChildRole()
+        {
+            var childRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            var groupTypeCache = GroupTypeCache.GetFamilyGroupType();
+            return groupTypeCache.Roles.FirstOrDefault( gtr => gtr.Guid == childRoleGuid );
+        }
+
+        /// <summary>
+        /// Gets the adult role.
+        /// </summary>
+        /// <returns></returns>
+        private GroupTypeRoleCache GetAdultRole()
+        {
+            var adultRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+            var groupTypeCache = GroupTypeCache.GetFamilyGroupType();
+            return groupTypeCache.Roles.FirstOrDefault( gtr => gtr.Guid == adultRoleGuid );
+        }
+
+        #endregion Data Interface
+
+        #region Control Helpers
+
+        /// <summary>
+        /// Binds the family group roles.
+        /// </summary>
+        /// <param name="buttonGroup">The button group.</param>
+        private void BindFamilyGroupRoles( ButtonGroup buttonGroup )
+        {
+            buttonGroup.DataTextField = "Name";
+            buttonGroup.DataValueField = "Id";
+
+            var groupTypeCache = GroupTypeCache.GetFamilyGroupType();
+            buttonGroup.DataSource = groupTypeCache.Roles;
+
+            buttonGroup.DataBind();
+            buttonGroup.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Synchronizes the family controls based on family role and marital status.
+        /// </summary>
+        private void SyncFamilyControlsOnRoleAndMaritalStatus()
+        {
+            var isChild = IsNewPersonRoleChild();
+            var isMarried = IsNewPersonMarried();
+
+            divAddPersonSpouse.Visible = !isChild && ( isMarried || !dvpAddPersonMaritalStatus.SelectedDefinedValueId.HasValue );
+            dvpAddPersonMaritalStatus.Visible = !isChild;
+        }
+
+        /// <summary>
+        /// Determines whether [is new person role child].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is new person role child]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsNewPersonRoleChild()
+        {
+            var childRole = GetChildRole();
+            return childRole != null && childRole.Id == bgAddPersonRole.SelectedValue.AsInteger();
+        }
+
+        /// <summary>
+        /// Determines whether [is new person married].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is new person married]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsNewPersonMarried()
+        {
+            if ( IsNewPersonRoleChild() )
+            {
+                return false;
+            }
+
+            var marriedStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
+            var maritalStatusDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS );
+            var marriedStatus = maritalStatusDefinedType.DefinedValues.FirstOrDefault( dv => dv.Guid == marriedStatusGuid );
+            return marriedStatus != null && marriedStatus.Id == dvpAddPersonMaritalStatus.SelectedDefinedValueId;
+        }
+
+        /// <summary>
+        /// Gets the gender.
+        /// </summary>
+        /// <param name="mOrF">The m or f.</param>
+        /// <returns></returns>
+        private Gender GetGender( string mOrF )
+        {
+            if ( mOrF == "M" )
+            {
+                return Gender.Male;
+            }
+
+            if ( mOrF == "F" )
+            {
+                return Gender.Female;
+            }
+
+            return Gender.Unknown;
+        }
+
+        /// <summary>
+        /// Gets a phone model.
+        /// </summary>
+        /// <param name="phoneNumberBox">The phone number box.</param>
+        /// <param name="numberTypeValueId">The number type value identifier.</param>
+        /// <param name="isSms">if set to <c>true</c> [is SMS].</param>
+        /// <param name="isUnlisted">if set to <c>true</c> [is unlisted].</param>
+        /// <returns></returns>
+        private PhoneNumber GetPhoneModel( PhoneNumberBox phoneNumberBox, int numberTypeValueId, bool isSms, bool isUnlisted )
+        {
+            var cleanedNumber = PhoneNumber.CleanNumber( phoneNumberBox.Number );
+
+            if ( cleanedNumber.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return new PhoneNumber
+            {
+                Number = cleanedNumber,
+                NumberTypeValueId = numberTypeValueId,
+                IsMessagingEnabled = isSms,
+                IsUnlisted = isUnlisted,
+                CountryCode = PhoneNumber.CleanNumber( phoneNumberBox.CountryCode )
+            };
+        }
+
+        /// <summary>
+        /// Gets the address location.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="addressControl">The address control.</param>
+        /// <returns></returns>
+        private Location GetAddressLocation( RockContext rockContext, AddressControl addressControl )
+        {
+            var locationService = new LocationService( rockContext );
+            return locationService.Get(
+                addressControl.Street1,
+                addressControl.Street2,
+                addressControl.City,
+                addressControl.State,
+                addressControl.PostalCode,
+                addressControl.Country );
+        }
+
+        /// <summary>
+        /// Enforces the campus settings.
+        /// </summary>
+        /// <param name="campusPicker">The campus picker.</param>
+        private void EnforceCampusSettings( CampusPicker campusPicker )
+        {
+            if ( campusPicker == null || campusPicker.Items == null || campusPicker.Items.Count < 1 )
+            {
+                return;
+            }
+
+            if ( campusPicker.Items.Count == 2 && campusPicker.Items[0].Value.IsNullOrWhiteSpace() )
+            {
+                campusPicker.SelectedIndex = 1;
+                campusPicker.Visible = false;
+                return;
+            }
+
+            var keyPrefix = GetUserPreferenceKeyPrefix();
+            var campusIdSetting = GetUserPreference( keyPrefix + "account-campus" ).AsIntegerOrNull();
+
+            if ( campusIdSetting.HasValue )
+            {
+                campusPicker.SelectedValue = campusIdSetting.ToString();
+                campusPicker.Visible = false;
+            }
+            else
+            {
+                campusPicker.SelectedValue = null;
+                campusPicker.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Resets the add person.
+        /// </summary>
+        private void ResetAddPersonForm()
+        {
+            tbAddPersonFirstName.Text = null;
+            tbAddPersonLastName.Text = null;
+            dvpAddPersonSuffix.SelectedDefinedValueId = null;
+            rblAddPersonGender.SelectedValue = null;
+            bgAddPersonRole.SelectedIndex = 0;
+
+            SetDefaultValue( dvpAddPersonConnectionStatus, AttributeKey.DefaultPersonConnectionStatus );
+            dvpAddPersonMaritalStatus.SelectedDefinedValueId = null;
+
+            tbAddSpouseFirstName.Text = null;
+            tbAddSpouseLastName.Text = null;
+            dvpAddSpouseSuffix.SelectedDefinedValueId = null;
+            rblAddSpouseGender.SelectedValue = null;
+
+            EnforceCampusSettings( cpAddPersonCampus );
+            acAddPersonAddress.SetValues( null );
+
+            pnAddPersonHomePhone.Text = null;
+            cbAddPersonHomePhoneSms.Checked = false;
+            cbAddPersonHomePhoneUnlisted.Checked = false;
+
+            pnAddPersonMobilePhone.Text = null;
+            cbAddPersonMobilePhoneSms.Checked = false;
+            cbAddPersonMobilePhoneUnlisted.Checked = false;
+
+            ebAddPersonEmail.Text = null;
+
+            divAddPersonSpouse.Visible = true;
+            dvpAddPersonMaritalStatus.Visible = true;
+            bgAddPersonRole.Visible = ShouldShowFamilyRoleControl();
+            ebAddPersonEmail.Visible = ShouldShowEmailControl();
+        }
+
+        /// <summary>
+        /// Resets the add person.
+        /// </summary>
+        private void ResetAddBusinessForm()
+        {
+            tbAddBusinessName.Text = null;
+
+            pnbAddBusinessPhone.Text = null;
+            cbAddBusinessSms.Checked = false;
+            cbAddBusinessUnlisted.Checked = false;
+
+            ebAddBusinessEmail.Text = null;
+
+            EnforceCampusSettings( cpAddBusinessCampus );
+
+            acAddBusinessAddress.SetValues( null );
+
+            ebAddBusinessEmail.Visible = ShouldShowEmailControl();
+        }
+
+        /// <summary>
+        /// Sets the default value.
+        /// </summary>
+        /// <param name="definedValuePicker">The defined value picker.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        private void SetDefaultValue( DefinedValuePicker definedValuePicker, string attributeKey )
+        {
+            var defaultValueGuid = GetAttributeValue( attributeKey ).AsGuidOrNull();
+
+            if ( defaultValueGuid.HasValue )
+            {
+                var defaultValueId = DefinedValueCache.GetId( defaultValueGuid.Value );
+
+                if ( defaultValueId.HasValue )
+                {
+                    definedValuePicker.SelectedDefinedValueId = defaultValueId.Value;
+                    return;
+                }
+            }
+
+            definedValuePicker.SelectedDefinedValueId = null;
+        }
+
+        /// <summary>
+        /// Gets the record status identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetRecordStatusId()
+        {
+            var valueGuid = GetAttributeValue( AttributeKey.PersonRecordStatus ).AsGuidOrNull() ??
+                Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
+
+            return DefinedValueCache.Get( valueGuid ).Id;
+        }
+
+        /// <summary>
+        /// Should show the family role control.
+        /// </summary>
+        /// <returns></returns>
+        private bool ShouldShowFamilyRoleControl()
+        {
+            return GetAttributeValue( AttributeKey.ShowFamilyRole ).AsBooleanOrNull() ?? true;
+        }
+
+        /// <summary>
+        /// Should show the family role control.
+        /// </summary>
+        /// <returns></returns>
+        private bool ShouldShowEmailControl()
+        {
+            return GetAttributeValue( AttributeKey.ShowEmail ).AsBooleanOrNull() ?? false;
+        }
+
+        #endregion Control Helpers
     }
 }

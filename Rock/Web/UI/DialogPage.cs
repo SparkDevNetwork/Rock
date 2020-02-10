@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI
 {
@@ -38,6 +39,51 @@ namespace Rock.Web.UI
         /// The close message.
         /// </value>
         public virtual string CloseMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public virtual string ValidationGroup
+        {
+            get
+            {
+                return SaveButton?.ValidationGroup;
+            }
+            set
+            {
+                if ( SaveButton != null )
+                {
+                    SaveButton.ValidationGroup = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The save button
+        /// </summary>
+        private LinkButton saveButton;
+
+        /// <summary>
+        /// Gets the save button.
+        /// </summary>
+        /// <value>
+        /// The save button.
+        /// </value>
+        private LinkButton SaveButton
+        {
+            get
+            {
+                if ( saveButton == null )
+                {
+                   saveButton =  this.FindControl( "btnSave" ) as LinkButton;
+                }
+
+                return saveButton;
+            }
+        }
 
         /// <summary>
         /// Fires the save.

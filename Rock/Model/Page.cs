@@ -536,7 +536,9 @@ namespace Rock.Model
                 var routes = RouteTable.Routes;
                 if ( routes != null )
                 {
-                    foreach( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
+                    var routesToRemove = new List<Route>();
+
+                    foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
                     { 
                         var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
                         pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
@@ -546,9 +548,15 @@ namespace Rock.Model
                         }
                         else
                         {
-                            RouteTable.Routes.Remove( existingRoute );
+                            routesToRemove.Add( existingRoute );
                         }
                     }
+
+                    foreach ( var existingRoute in routesToRemove )
+                    {
+                        RouteTable.Routes.Remove( existingRoute );
+                    }
+
                 }
             }
 
@@ -604,11 +612,11 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
-            if ( oldPageCache != null )
-            {
-                oldPageCache.RemoveChildPages();
-            }
+            //var oldPageCache = PageCache.Get( this.Id, (RockContext)dbContext );
+            //if ( oldPageCache != null )
+            //{
+            //    oldPageCache.RemoveChildPages();
+            //}
 
             PageCache.UpdateCachedEntity( this.Id, entityState );
 

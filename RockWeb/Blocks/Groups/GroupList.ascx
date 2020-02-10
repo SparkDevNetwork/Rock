@@ -48,9 +48,12 @@
                 <div>
                     <Rock:NotificationBox ID="nbModalDetailsMessage" runat="server" NotificationBoxType="Danger" Title="Error" Visible="false" />
                     <Rock:NotificationBox ID="nbModalDetailSyncMessage" runat="server" NotificationBoxType="Info" Title="Synced Group! " Visible="false" Text="The selected group uses Group Sync. Only roles that are not being synced are listed. Please make sure this person needs to be added manually instead of meeting the sync conditions."></Rock:NotificationBox>
+                    <asp:ValidationSummary ID="vsValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                    <asp:CustomValidator ID="cvGroupMember" runat="server" Display="None" />
                 </div>
                 <div class="row">
                     <div class="col-md-4">
+                        <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectedIndexChanged" ValidationGroup="GroupName"/>
                         <Rock:RockDropDownList ID="ddlGroup" runat="server" Label="Group" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true" />
                         <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" ValidationGroup="GroupName" EnhanceForLongLists="false" AutoPostBack="false" />
                     </div>

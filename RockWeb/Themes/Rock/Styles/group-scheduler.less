@@ -40,9 +40,10 @@
     flex: 0 1 auto !important;
     -ms-flex-direction: column !important;
     flex-direction: column !important;
+    overflow: hidden;
   }
 
-  .viewport {
+  .scroll-list {
     flex-shrink: 1 !important;
     flex-grow: 1 !important;
     height: 100%;
@@ -480,7 +481,7 @@
   margin: 0 3px 0 0;
 
   &::before {
-    font-family: FontAwesome;
+    font-family: @fa-font-face;
     font-style: normal;
     font-weight: @fa-theme-weight;
     color: @pending-icon-color;

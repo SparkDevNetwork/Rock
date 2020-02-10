@@ -248,7 +248,7 @@ namespace Rock.Web.UI
                     _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
                     if ( _CurrentUser != null )
                     {
-                        Context.Items.Add( "CurrentUser", _CurrentUser );
+                        Context.Items.AddOrReplace( "CurrentUser", _CurrentUser );
                     }
                 }
 
@@ -267,7 +267,7 @@ namespace Rock.Web.UI
 
                 if ( _CurrentUser != null )
                 {
-                    Context.Items.Add( "CurrentUser", _CurrentUser );
+                    Context.Items.AddOrReplace( "CurrentUser", _CurrentUser );
                     CurrentPerson = _CurrentUser.Person;
                 }
                 else
@@ -311,7 +311,7 @@ namespace Rock.Web.UI
                 _currentPerson = value;
                 if ( _currentPerson != null )
                 {
-                    Context.Items.Add( "CurrentPerson", value );
+                    Context.Items.AddOrReplace( "CurrentPerson", value );
                 }
 
                 _currentPersonAlias = null;
@@ -669,9 +669,26 @@ namespace Rock.Web.UI
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>( scriptManager_Navigate );
 
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebForms.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebForms.js" });
+			_scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebUIValidation.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebUIValidation.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "MenuStandards.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/MenuStandards.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "Focus.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/Focus.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "GridView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/GridView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "DetailsView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/DetailsView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "TreeView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/TreeView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebParts.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebParts.js" });
+
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
-            _scriptManager.Scripts.Add( new ScriptReference( "~/Bundles/WebFormsJs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/WebFormsJs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
@@ -1291,6 +1308,7 @@ namespace Rock.Web.UI
                         Page.Trace.Warn( "Adding admin footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
+                        adminFooter.AddCssClass( "js-cms-admin-footer" );
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
@@ -1323,7 +1341,7 @@ namespace Rock.Web.UI
                         {
                             HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aBlockConfig );
-                            aBlockConfig.Attributes.Add( "class", "btn block-config" );
+                            aBlockConfig.Attributes.Add( "class", "btn block-config js-block-config" );
                             aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
                             aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
                             HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
@@ -1338,7 +1356,7 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aPageProperties );
                             aPageProperties.ID = "aPageProperties";
                             aPageProperties.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aPageProperties.Attributes.Add( "class", "btn properties" );
+                            aPageProperties.Attributes.Add( "class", "btn properties js-page-properties" );
                             aPageProperties.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
                             aPageProperties.Attributes.Add( "Title", "Page Properties" );
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
@@ -1353,7 +1371,7 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aChildPages );
                             aChildPages.ID = "aChildPages";
                             aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aChildPages.Attributes.Add( "class", "btn page-child-pages" );
+                            aChildPages.Attributes.Add( "class", "btn page-child-pages js-page-child-pages" );
                             aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", _pageCache.Id ) ) + "')" );
                             aChildPages.Attributes.Add( "Title", "Child Pages" );
                             HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
@@ -1363,7 +1381,7 @@ namespace Rock.Web.UI
                             // RockPage Zones
                             HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aPageZones );
-                            aPageZones.Attributes.Add( "class", "btn page-zones" );
+                            aPageZones.Attributes.Add( "class", "btn page-zones js-page-zones" );
                             aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
                             aPageZones.Attributes.Add( "Title", "Page Zones" );
                             HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
@@ -2655,41 +2673,41 @@ Sys.Application.add_load(function () {
         {
             if ( page != null && page.Header != null )
             {
-                if ( !ReplaceExistingHtmlMeta( page, htmlMeta ) )
-                {
-                    // Find last meta element
-                    int index = 0;
-                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                    {
-                        if ( page.Header.Controls[i] is HtmlMeta )
-                        {
-                            index = i;
-                            break;
-                        }
-                    }
+                RemoveExistingHtmlMeta( page, htmlMeta );
 
-                    if ( index == page.Header.Controls.Count )
+                // Find last meta element
+                int index = 0;
+                for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
+                {
+                    if ( page.Header.Controls[i] is HtmlMeta )
                     {
-                        page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.Add( htmlMeta );
-                    }
-                    else
-                    {
-                        page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.AddAt( ++index, htmlMeta );
+                        index = i;
+                        break;
                     }
                 }
+
+                if ( index == page.Header.Controls.Count )
+                {
+                    page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
+                    page.Header.Controls.Add( htmlMeta );
+                }
+                else
+                {
+                    page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
+                    page.Header.Controls.AddAt( ++index, htmlMeta );
+                }
+
             }
         }
 
         /// <summary>
-        /// Replaces an existing HtmlMeta control if all attributes match except for Content.
-        /// Returns <c>true</c> if the meta tag already exists and was replaced.
+        /// Removes an existing HtmlMeta control if all attributes match except for Content.
+        /// Returns <c>true</c> if the meta tag already exists and was removed.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for..</param>
+        /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for.</param>
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the meta tag already exists; otherwise <c>false</c>.</returns>
-        private static bool ReplaceExistingHtmlMeta( Page page, HtmlMeta newMeta )
+        private static bool RemoveExistingHtmlMeta( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
 
@@ -2699,20 +2717,15 @@ Sys.Application.add_load(function () {
                 {
                     if ( control is HtmlMeta )
                     {
-                        HtmlMeta existingMeta = (HtmlMeta)control;
+                        HtmlMeta existingMeta = ( HtmlMeta )control;
 
                         bool sameAttributes = true;
-                        bool hasContentAttribute_NewMeta = false;
                         bool hasContentAttribute_ExistingMeta = ( existingMeta.Attributes["Content"] != null );
 
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
                         {
-                            if ( attributeKey.ToLower() == "content" )
+                            if ( attributeKey.ToLower() != "content" ) // ignore content attribute.
                             {
-                                hasContentAttribute_NewMeta = true;
-                            }
-                            else
-                            { 
                                 if ( existingMeta.Attributes[attributeKey] == null ||
                                     existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
                                 {
@@ -2724,25 +2737,7 @@ Sys.Application.add_load(function () {
 
                         if ( sameAttributes )
                         {
-                            if ( hasContentAttribute_NewMeta )
-                            {
-                                if ( hasContentAttribute_ExistingMeta )
-                                {
-                                    existingMeta.Attributes["Content"] = newMeta.Attributes["Content"];
-                                }
-                                else
-                                {
-                                    existingMeta.Attributes.Add( "Content", newMeta.Attributes["Content"] );
-                                }
-                            }
-                            else
-                            {
-                                if ( hasContentAttribute_ExistingMeta )
-                                {
-                                    existingMeta.Attributes.Remove( "Content" );
-                                }
-                            }
-
+                            page.Header.Controls.Remove( existingMeta );
                             existsAlready = true;
                             break;
                         }
@@ -2936,7 +2931,7 @@ Sys.Application.add_load(function () {
         public static void AddScriptLink( Page page, string path, bool fingerprint = true )
         {
             var scriptManager = ScriptManager.GetCurrent( page );
-             
+
             if ( fingerprint )
             {
                 path = Fingerprint.Tag( page.ResolveUrl( path ) );

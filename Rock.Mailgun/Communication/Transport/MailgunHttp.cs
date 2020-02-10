@@ -121,7 +121,7 @@ namespace Rock.Communication.Transport
             fromAddress = fromAddress.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : fromAddress;
             fromName = fromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : fromName;
 
-            if ( !fromAddress.IsValidEmail() )
+            if ( fromAddress.IsNullOrWhiteSpace() )
             {
                 errorMessages.Add( "A From address was not provided." );
                 return false;
@@ -289,7 +289,7 @@ namespace Rock.Communication.Transport
                 fromAddress = fromAddress.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
                 fromName = fromName.ResolveMergeFields( mergeFields, currentPerson, communication.EnabledLavaCommands );
                 Parameter replyTo = new Parameter();
-                
+
                 // Reply To
                 if ( communication.ReplyToEmail.IsNotNullOrWhiteSpace() )
                 {
@@ -346,7 +346,7 @@ namespace Rock.Communication.Transport
 
                         // To
                         restRequest.AddParameter( "to",  new MailAddress( recipient.PersonAlias.Person.Email, recipient.PersonAlias.Person.FullName ).ToString() );
-                        
+
                         // Safe sender checks
                         CheckSafeSender( restRequest, fromAddress, globalAttributes.GetValue( "OrganizationEmail" ) );
 
@@ -387,7 +387,7 @@ namespace Rock.Communication.Transport
 
                         // Body HTML
                         string htmlBody = communication.Message;
-                        
+
                         // Get the unsubscribe content and add a merge field for it
                         if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
                         {
@@ -421,7 +421,7 @@ namespace Rock.Communication.Transport
                                 htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
                             }
 
-                            // add the main Html content to the email
+                            // add the main HTML content to the email
                             restRequest.AddParameter( "html", htmlBody );
                         }
 

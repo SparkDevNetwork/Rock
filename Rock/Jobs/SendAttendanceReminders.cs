@@ -36,8 +36,16 @@ namespace Rock.Jobs
     /// Job to process communications
     /// </summary>
     [GroupTypeField( "Group Type", "The Group type to send attendance reminders for.", true, Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP, "", 0 )]
-    [SystemEmailField( "System Email", "The system email to use when sending reminder.", true, Rock.SystemGuid.SystemEmail.GROUP_ATTENDANCE_REMINDER, "", 1 )]
+    [SystemCommunicationField( "System Email", "The system email to use when sending reminder.", true, Rock.SystemGuid.SystemCommunication.GROUP_ATTENDANCE_REMINDER, "", 1 )]
     [TextField( "Send Reminders", "Comma delimited list of days after a group meets to send an additional reminder. For example, a value of '2,4' would result in an additional reminder getting sent two and four days after group meets if attendance was not entered.", false, "", "", 2 )]
+    [CustomDropdownListField(
+        "Send Using",
+        "Specifies how the reminder will be sent.",
+        "Email,SMS,Recipient Preference",
+        Key = "SendUsingConfiguration",
+        IsRequired = true,
+        DefaultValue = "Recipient Preference",
+        Order = 3 )]
     [DisallowConcurrentExecution]
     public class SendAttendanceReminder : IJob
     {
@@ -56,6 +64,8 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var groupType = GroupTypeCache.Get( dataMap.GetString( "GroupType" ).AsGuid() );
+            var sendUsingConfiguration = dataMap.GetString( "SendUsingConfiguration" );
+
             int attendanceRemindersSent = 0;
             int errorCount = 0;
             var errorMessages = new List<string>();
@@ -188,7 +198,7 @@ namespace Rock.Jobs
 
                 // Get the leaders of those groups
                 var leaders = groupMemberService
-                    .Queryable( "Group,Person" ).AsNoTracking()
+                    .Queryable( "Group,Person,Person.PhoneNumbers" ).AsNoTracking()
                     .Where( m =>
                         groupIds.Contains( m.GroupId ) &&
                         m.GroupMemberStatus == GroupMemberStatus.Active &&
@@ -197,52 +207,120 @@ namespace Rock.Jobs
                         m.Person.Email != string.Empty )
                     .ToList();
 
+                var systemEmailGuid = dataMap.GetString( "SystemEmail" ).AsGuid();
+                var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemEmailGuid );
+
+                var isSmsEnabled = MediumContainer.HasActiveSmsTransport();
+                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" ) || string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
+                var alwaysSendSms = sendUsingConfiguration.Equals( "SMS" );
+
+                if ( !sendUsingConfiguration.Equals( "Email" ) && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
+                {
+                    errorMessages.Add( string.Format( "No SMS message found in system communication {0}.", systemCommunication.Title ) );
+                    errorCount++;
+                }
+
                 // Loop through the leaders
                 foreach ( var leader in leaders )
                 {
+                    var groupMemberSendSms = !alwaysSendEmail && leader.CommunicationPreference == CommunicationType.SMS;
+                    var personSendSms = !alwaysSendEmail
+                                            && leader.CommunicationPreference == CommunicationType.RecipientPreference
+                                            && leader.Person.CommunicationPreference == CommunicationType.SMS;
+
+                    var sendSms = alwaysSendSms || groupMemberSendSms || personSendSms;
+
                     foreach ( var group in occurrences.Where( o => o.Key == leader.GroupId ) )
                     {
-                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields(  null, leader.Person );
+                        var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, leader.Person );
                         mergeObjects.Add( "Person", leader.Person );
                         mergeObjects.Add( "Group", leader.Group );
                         mergeObjects.Add( "Occurrence", group.Value.Max() );
 
-                        var recipients = new List<RockEmailMessageRecipient>();
-                        recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeObjects ) );
+                        RockMessage message = null;
+                        var recipients = new List<RockMessageRecipient>();
 
-                        var emailMessage = new RockEmailMessage( dataMap.GetString( "SystemEmail" ).AsGuid() );
-                        emailMessage.SetRecipients( recipients );
-                        var errors = new List<string>();
-                        emailMessage.Send(out errors);
-
-                        if (errors.Any())
+                        if ( sendSms )
                         {
-                            errorCount += errors.Count;
-                            errorMessages.AddRange( errors );
+                            var phoneNumber = leader.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+                            var smsNumber = phoneNumber == null ? string.Empty : phoneNumber.ToSmsNumber();
+
+                            if ( string.IsNullOrWhiteSpace( smsNumber ) || !isSmsEnabled )
+                            {
+                                string smsErrorMessage = GenerateSmsErrorMessage( isSmsEnabled, alwaysSendSms, leader.Person, groupMemberSendSms, personSendSms );
+                                errorMessages.Add( smsErrorMessage );
+                                errorCount++;
+                                continue;
+                            }
+
+                            recipients.Add( new RockSMSMessageRecipient( leader.Person, smsNumber, mergeObjects ) );
+
+                            message = new RockSMSMessage( systemCommunication );
+                            message.SetRecipients( recipients );
                         }
                         else
                         {
-                            attendanceRemindersSent++;
+                            recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeObjects ) );
+
+                            message = new RockEmailMessage( systemCommunication );
+                            message.SetRecipients( recipients );
                         }
 
+                        if ( message != null )
+                        {
+                            var errors = new List<string>();
+                            if ( message.Send( out errors ) )
+                            {
+                                attendanceRemindersSent++;
+                            }
+                            else
+                            {
+                                errorCount += errors.Count;
+                                errorMessages.AddRange( errors );
+                            }
+                        }
                     }
                 }
             }
 
             context.Result = string.Format( "{0} attendance reminders sent", attendanceRemindersSent );
-            if (errorMessages.Any())
+            if ( errorMessages.Any() )
             {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine();
-                sb.Append( string.Format( "{0} Errors: ", errorCount ));
+                sb.Append( string.Format( "{0} Errors: ", errorCount ) );
                 errorMessages.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
                 string errors = sb.ToString();
                 context.Result += errors;
-                var exception = new Exception( errors );
+                var exception = new Exception( context.Result.ToString() );
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
                 throw exception;
             }
+        }
+
+        private string GenerateSmsErrorMessage( bool isSmsEnabled, bool alwaysSendSms, Person person, bool groupMemberSendSms, bool personSendSms )
+        {
+            var smsErrorMessage = "{0} calls for SMS, but no SMS number could be found for {1}.";
+            if ( !isSmsEnabled )
+            {
+                smsErrorMessage = "{0} calls for SMS, but SMS is not enabled. {1} did not receive a notification.";
+            }
+
+            if ( alwaysSendSms )
+            {
+                smsErrorMessage = string.Format( smsErrorMessage, "Job Settings", person );
+            }
+            else if ( groupMemberSendSms )
+            {
+                smsErrorMessage = string.Format( smsErrorMessage, "Group Member Communications Settings", person );
+            }
+            else if ( personSendSms )
+            {
+                smsErrorMessage = string.Format( smsErrorMessage, "The Person's Communications Settings", person );
+            }
+
+            return smsErrorMessage;
         }
     }
 }

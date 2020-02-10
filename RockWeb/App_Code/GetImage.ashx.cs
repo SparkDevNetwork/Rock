@@ -314,6 +314,7 @@ namespace RockWeb
                 if ( binaryFileMetaData.BinaryFileType_AllowCaching )
                 {
                     // if binaryFileType is set to allowcaching, also tell the browser to cache it for 365 days
+                    context.Response.Cache.SetCacheability( HttpCacheability.Public );
                     context.Response.Cache.SetLastModified( binaryFileMetaData.ModifiedDateTime );
                     context.Response.Cache.SetMaxAge( new TimeSpan( 365, 0, 0, 0 ) );
                 }

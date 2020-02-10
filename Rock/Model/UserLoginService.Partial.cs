@@ -80,7 +80,7 @@ namespace Rock.Model
         /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void SetPassword( UserLogin user, string password )
         {
-            var entityType = EntityTypeCache.Get( user.EntityTypeId ?? 0);
+            var entityType = EntityTypeCache.Get( user.EntityTypeId ?? 0 );
 
             var authenticationComponent = AuthenticationContainer.GetComponent( entityType.Name );
             if ( authenticationComponent == null || !authenticationComponent.IsActive )
@@ -103,7 +103,8 @@ namespace Rock.Model
             if ( !string.IsNullOrEmpty( code ) )
             {
                 string identifier = string.Empty;
-                try { identifier = Rock.Security.Encryption.DecryptString( code ); }
+                try
+                { identifier = Rock.Security.Encryption.DecryptString( code ); }
                 catch { }
 
                 if ( identifier.IsNotNullOrWhiteSpace() && identifier.StartsWith( "ROCK|" ) )
@@ -234,7 +235,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether a new UserLogin with the specified parameters would be valid 
+        /// Determines whether a new UserLogin with the specified parameters would be valid
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         /// <param name="password">The password.</param>
@@ -324,7 +325,7 @@ namespace Rock.Model
             string username,
             string password,
             bool isConfirmed,
-            bool isRequirePasswordChange)
+            bool isRequirePasswordChange )
         {
             if ( person != null )
             {
@@ -406,76 +407,82 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates the last login and writes to the person's history log
+        /// Updates the last login, writes to the person's history log, and saves changes to the database
         /// </summary>
         /// <param name="userName">Name of the user.</param>
         public static void UpdateLastLogin( string userName )
         {
-            if ( !string.IsNullOrWhiteSpace( userName ))
+            if ( string.IsNullOrWhiteSpace( userName ) )
             {
-                using ( var rockContext = new RockContext() )
+                return;
+            }
+
+            int? personId = null;
+            bool impersonated = userName.StartsWith( "rckipid=" );
+            using ( var rockContext = new RockContext() )
+            {
+                if ( !impersonated )
                 {
-                    int? personId = null;
-                    bool impersonated = userName.StartsWith( "rckipid=" );
-
-                    if ( !impersonated )
+                    var userLogin = new UserLoginService( rockContext ).Queryable().Where( a => a.UserName == userName ).FirstOrDefault();
+                    if ( userLogin != null )
                     {
-                        var userLogin = new UserLoginService( rockContext ).GetByUserName( userName );
-                        if ( userLogin != null )
-                        {
-                            userLogin.LastLoginDateTime = RockDateTime.Now;
-                            personId = userLogin.PersonId;
-                        }
-                    }
-                    else
-                    {
-                        var impersonationToken = userName.Substring( 8 );
-                        personId = new PersonService( rockContext ).GetByImpersonationToken( impersonationToken, false, null )?.Id;
-                    }
-
-                    if ( personId.HasValue )
-                    {
-                        var relatedDataBuilder = new System.Text.StringBuilder();
-                        int? relatedEntityTypeId = null;
-                        int? relatedEntityId = null;
-
-                        if ( impersonated )
-                        {
-                            var impersonatedByUser = HttpContext.Current?.Session["ImpersonatedByUser"] as UserLogin;
-
-                            relatedEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
-                            relatedEntityId = impersonatedByUser?.PersonId;
-                            
-                            if ( impersonatedByUser != null )
-                            {
-                                relatedDataBuilder.Append( $" impersonated by { impersonatedByUser.Person.FullName }" );
-                            }
-                        }
-                        
-                        if ( HttpContext.Current != null && HttpContext.Current.Request != null )
-                        {
-                            string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.Url.AbsoluteUri );
-
-                            // obfuscate the url specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
-                            Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
-                            cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-
-                            relatedDataBuilder.AppendFormat( " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
-                                cleanUrl, HttpContext.Current.Request.UserHostAddress );
-                        }
-
-                        var historyChangeList = new History.HistoryChangeList();
-                        var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, userName );
-
-                        if ( relatedDataBuilder.Length > 0 )
-                        {
-                            historyChange.SetRelatedData( relatedDataBuilder.ToString(), null, null );
-                        }
-
-                        HistoryService.SaveChanges( rockContext, typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, true );
+                        userLogin.LastLoginDateTime = RockDateTime.Now;
+                        personId = userLogin.PersonId;
+                        rockContext.SaveChanges();
                     }
                 }
+                else
+                {
+                    var impersonationToken = userName.Substring( 8 );
+                    personId = new PersonService( rockContext ).GetByImpersonationToken( impersonationToken, false, null )?.Id;
+                }
             }
+
+            if ( personId == null )
+            {
+                return;
+            }
+
+            var relatedDataBuilder = new System.Text.StringBuilder();
+            int? relatedEntityTypeId = null;
+            int? relatedEntityId = null;
+
+            if ( impersonated )
+            {
+                var impersonatedByUser = HttpContext.Current?.Session["ImpersonatedByUser"] as UserLogin;
+
+                relatedEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
+                relatedEntityId = impersonatedByUser?.PersonId;
+
+                if ( impersonatedByUser != null )
+                {
+                    relatedDataBuilder.Append( $" impersonated by { impersonatedByUser.Person.FullName }" );
+                }
+            }
+
+            if ( HttpContext.Current != null && HttpContext.Current.Request != null )
+            {
+                string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.Url.AbsoluteUri );
+
+                // obfuscate the URL specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
+                Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
+                cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
+
+                relatedDataBuilder.AppendFormat( " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
+                    cleanUrl, HttpContext.Current.Request.UserHostAddress );
+            }
+
+            var historyChangeList = new History.HistoryChangeList();
+            var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, userName );
+
+            if ( relatedDataBuilder.Length > 0 )
+            {
+                historyChange.SetRelatedData( relatedDataBuilder.ToString(), null, null );
+            }
+
+            var historyList = HistoryService.GetChanges( typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, null, null, null, null, null );
+
+            new Rock.Transactions.SaveHistoryTransaction( historyList ).Enqueue();
         }
 
         /// <summary>

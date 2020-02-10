@@ -189,10 +189,10 @@
                             <Rock:PanelWidget ID="wpLinkedPages" runat="server" Title="Linked Pages">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:PagePicker ID="ppGroupDetailPage" runat="server" Label="Group Detail Page" Help="If showing the Grid, this is the page user will be redirected to when they click on the row. If using Formatted ouput, a url to this page will be included as a 'GroupDetailPage' property of the 'LinkedPages' merge field." Required="false" />
+                                        <Rock:PagePicker ID="ppGroupDetailPage" runat="server" Label="Group Detail Page" Help="If showing the Grid, this is the page user will be redirected to when they click on the row. If using Formatted ouput, a URL to this page will be included as a 'GroupDetailPage' property of the 'LinkedPages' merge field." Required="false" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:PagePicker ID="ppRegisterPage" runat="server" Label="Register Page" Help="If this value is set and the block is configured to show the Grid, a 'Register' button will be added to each row for user to click and be redirected to this page. If using Formatted ouput, a url to this page will be included as a 'RegisterPage' property of the 'LinkedPages' merge field." Required="false" />
+                                        <Rock:PagePicker ID="ppRegisterPage" runat="server" Label="Register Page" Help="If this value is set and the block is configured to show the Grid, a 'Register' button will be added to each row for user to click and be redirected to this page. If using Formatted ouput, a URL to this page will be included as a 'RegisterPage' property of the 'LinkedPages' merge field." Required="false" />
                                     </div>
                                 </div>
                             </Rock:PanelWidget>

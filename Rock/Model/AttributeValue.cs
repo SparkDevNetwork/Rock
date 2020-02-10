@@ -28,6 +28,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -351,15 +352,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the history changes to be saved in <see cref="PostSaveChanges(Data.DbContext)"/>
-        /// </summary>
-        /// <value>
-        /// The history changes.
-        /// </value>
-        [NotMapped]
-        private History.HistoryChangeList HistoryChanges { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether a new AttributeValueHistory with CurrentRowIndicator needs to be saved in <see cref="PostSaveChanges(Data.DbContext)"/>
         /// </summary>
         /// <value>
@@ -367,24 +359,6 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         private bool PostSaveAttributeValueHistoryCurrent { get; set; } = false;
-
-        /// <summary>
-        /// Gets or sets the type of the history entity.
-        /// </summary>
-        /// <value>
-        /// The type of the history entity.
-        /// </value>
-        [NotMapped]
-        private int? HistoryEntityTypeId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the history entity identifier.
-        /// </summary>
-        /// <value>
-        /// The history entity identifier.
-        /// </value>
-        [NotMapped]
-        private int? HistoryEntityId { get; set; }
 
         #endregion
 
@@ -398,6 +372,7 @@ namespace Rock.Model
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
             var attributeCache = AttributeCache.Get( this.AttributeId );
+
             if ( attributeCache != null )
             {
                 // Check to see if this attribute value if for a File, Image, or BackgroundCheck field type.
@@ -415,14 +390,10 @@ namespace Rock.Model
                     PreSaveBinaryFile( dbContext, entry );
                 }
 
-                // Check to see if this attribute is for a person or group, and if so, save to history table
-                bool saveToHistoryTable = attributeCache.EntityTypeId.HasValue &&
-                        ( attributeCache.EntityTypeId.Value == EntityTypeCache.Get( typeof( Person ) ).Id
-                          || attributeCache.EntityTypeId.Value == EntityTypeCache.Get( typeof( Group ) ).Id );
-
-                if ( saveToHistoryTable || attributeCache.EnableHistory )
+                // Save to the historical table if history is enabled
+                if ( attributeCache.EnableHistory )
                 {
-                    SaveToHistoryTable( dbContext, entry, attributeCache, saveToHistoryTable );
+                    SaveToHistoryTable( dbContext, entry, attributeCache, true );
                 }
             }
 
@@ -435,19 +406,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            int? historyEntityId = ( HistoryEntityId.HasValue && HistoryEntityId.Value > 0 ) ? HistoryEntityId.Value : this.EntityId;
             var rockContext = dbContext as RockContext;
-            if ( HistoryChanges != null && HistoryChanges.Any() && HistoryEntityTypeId.HasValue && historyEntityId.HasValue )
-            {
-                if ( HistoryEntityTypeId.Value == EntityTypeCache.Get( typeof( Person ) ).Id )
-                {
-                    HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
-                }
-                else
-                {
-                    HistoryService.SaveChanges( rockContext, typeof( Group ), Rock.SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid(), historyEntityId.Value, HistoryChanges, string.Empty, typeof( Attribute ), AttributeId, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
-                }
-            }
 
             if ( this.PostSaveAttributeValueHistoryCurrent )
             {
@@ -535,7 +494,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves to history table.
+        /// Saves to attribute historical value table.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="entry">The entry.</param>
@@ -543,49 +502,17 @@ namespace Rock.Model
         /// <param name="saveToHistoryTable">if set to <c>true</c> [save to history table].</param>
         protected void SaveToHistoryTable( Rock.Data.DbContext dbContext, DbEntityEntry entry, AttributeCache attributeCache, bool saveToHistoryTable )
         {
-            string oldValue = string.Empty;
-            string newValue = string.Empty;
-
-            HistoryEntityTypeId = attributeCache.EntityTypeId.Value;
-            HistoryEntityId = EntityId;
-
-            switch ( entry.State )
-            {
-                case EntityState.Added:
-                    newValue = Value;
-                    break;
-
-                case EntityState.Modified:
-                    oldValue = entry.OriginalValues["Value"].ToStringSafe();
-                    newValue = Value;
-                    break;
-
-                case EntityState.Deleted:
-                    HistoryEntityId = entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
-                    oldValue = entry.OriginalValues["Value"].ToStringSafe();
-                    return;
-            }
-
             this.PostSaveAttributeValueHistoryCurrent = false;
 
-            if ( oldValue == newValue )
+            var oldValue = GetHistoryOldValue( entry );
+            var newValue = GetHistoryNewValue( entry.State );
+
+            if ( oldValue == newValue || !attributeCache.EnableHistory )
             {
                 return;
             }
 
-            var formattedOldValue = oldValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, oldValue, attributeCache.QualifierValues, true ) : string.Empty;
-            var formattedNewValue = newValue.IsNotNullOrWhiteSpace() ? attributeCache.FieldType.Field.FormatValue( null, newValue, attributeCache.QualifierValues, true ) : string.Empty;
-
-            if ( saveToHistoryTable )
-            {
-                HistoryChanges = new History.HistoryChangeList();
-                History.EvaluateChange( HistoryChanges, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
-            }
-
-            if ( !attributeCache.EnableHistory )
-            {
-                return;
-            }
+            var formattedOldValue = GetHistoryFormattedValue( oldValue, attributeCache );
 
             // value changed and attribute.EnableHistory = true, so flag PostSaveAttributeValueHistoryCurrent
             this.PostSaveAttributeValueHistoryCurrent = true;
@@ -670,7 +597,201 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion ICacheable
+
+        #region History
+
+        /// <summary>
+        /// This method is called in the
+        /// <see cref="M:Rock.Data.Model`1.PreSaveChanges(Rock.Data.DbContext,System.Data.Entity.Infrastructure.DbEntityEntry,System.Data.Entity.EntityState)" />
+        /// method. Use it to populate <see cref="P:Rock.Data.Model`1.HistoryItems" /> if needed.
+        /// These history items are queued to be written into the database post save (so that they
+        /// are only written if the save actually occurs).
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        protected override void BuildHistoryItems( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            var attributeCache = AttributeCache.Get( AttributeId );
+
+            if ( attributeCache?.EntityTypeId == null )
+            {
+                return;
+            }
+
+            var entityTypeId = attributeCache.EntityTypeId.Value;
+            var entityId = EntityId ?? entry.OriginalValues["EntityId"].ToStringSafe().AsIntegerOrNull();
+            var caption = attributeCache.Name;
+
+            // Check to see if this attribute is for a person or group, and if so, save to history table
+            var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+
+            var entityTypesToSaveToHistoryTable = new List<int> {
+                personEntityTypeId,
+                EntityTypeCache.Get( typeof( Group ) ).Id
+            };
+
+            var saveToHistoryTable = entityTypesToSaveToHistoryTable.Contains( entityTypeId );
+
+            // If the value is not directly linked to a person or group, it still may be linked through an attribute matrix.
+            // Matrix attribute changes are only logged here for modify. Add and delete are handled in the AttributeMatrixItem.
+            if ( !saveToHistoryTable && state == EntityState.Modified && IsLikelyWithinMatrix() )
+            {
+                var rootMatrixAttributeValue = GetRootMatrixAttributeValue();
+
+                if ( rootMatrixAttributeValue == null )
+                {
+                    return;
+                }
+
+                var rootMatrixAttributeCache = AttributeCache.Get( rootMatrixAttributeValue.AttributeId );
+
+                if ( rootMatrixAttributeCache == null || !rootMatrixAttributeCache.EntityTypeId.HasValue )
+                {
+                    return;
+                }
+
+                saveToHistoryTable = entityTypesToSaveToHistoryTable.Contains( rootMatrixAttributeCache.EntityTypeId.Value );
+
+                if ( saveToHistoryTable )
+                {
+                    // Use the values from the root matrix attribute since this is the attribute that ties the
+                    // values to a person or group and are thus more meaningful
+                    entityTypeId = rootMatrixAttributeCache.EntityTypeId.Value;
+                    entityId = rootMatrixAttributeValue.EntityId;
+                    caption = rootMatrixAttributeCache.Name;
+                }
+            }
+
+            if ( !saveToHistoryTable || !entityId.HasValue )
+            {
+                return;
+            }
+
+            // We have determined to write to the History table. Now determine what changed.
+            var oldValue = GetHistoryOldValue( entry );
+            var newValue = GetHistoryNewValue( state );
+
+            if ( oldValue == newValue )
+            {
+                return;
+            }
+
+            // Evaluate the history change
+            var formattedOldValue = GetHistoryFormattedValue( oldValue, attributeCache );
+            var formattedNewValue = GetHistoryFormattedValue( newValue, attributeCache );
+            var historyChangeList = new History.HistoryChangeList();
+            History.EvaluateChange( historyChangeList, attributeCache.Name, formattedOldValue, formattedNewValue, attributeCache.FieldType.Field.IsSensitive() );
+
+            if ( !historyChangeList.Any() )
+            {
+                return;
+            }
+
+            var categoryGuid = entityTypeId == personEntityTypeId ?
+                SystemGuid.Category.HISTORY_PERSON_DEMOGRAPHIC_CHANGES.AsGuid() :
+                SystemGuid.Category.HISTORY_GROUP_CHANGES.AsGuid();
+
+            HistoryItems = HistoryService.GetChanges(
+                entityTypeId == personEntityTypeId ? typeof( Person ) : typeof( Group ),
+                categoryGuid,
+                entityId.Value,
+                historyChangeList,
+                caption,
+                typeof( Attribute ),
+                AttributeId,
+                dbContext.GetCurrentPersonAlias()?.Id,
+                dbContext.SourceOfChange );
+        }
+
+        /// <summary>
+        /// Get the new value for a history record
+        /// </summary>
+        /// <returns></returns>
+        private string GetHistoryNewValue( EntityState state )
+        {
+            switch ( state )
+            {
+                case EntityState.Added:
+                case EntityState.Modified:
+                    return Value;
+                case EntityState.Deleted:
+                default:
+                    return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Get the old value for a history record
+        /// </summary>
+        /// <param name="entry"></param>
+        /// <returns></returns>
+        private static string GetHistoryOldValue( DbEntityEntry entry )
+        {
+            switch ( entry.State )
+            {
+                case EntityState.Added:
+                    return string.Empty;
+                case EntityState.Modified:
+                case EntityState.Deleted:
+                default:
+                    return entry.OriginalValues["Value"].ToStringSafe();
+            }
+        }
+
+        /// <summary>
+        /// Gets a formatted old or new value for history recording purposes.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="attributeCache"></param>
+        /// <returns></returns>
+        private static string GetHistoryFormattedValue( string value, AttributeCache attributeCache )
+        {
+            return value.IsNotNullOrWhiteSpace() ?
+                attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, true ) :
+                string.Empty;
+        }
+
+        /// <summary>
+        /// Determines whether this attribute value is part of an attribute matrix.
+        /// This is determined by checking if the attribute's entity type is
+        /// <see cref="AttributeMatrixItem" />. This does not guarantee that the value
+        /// is part of a matrix of values, but it is a good indicator to check before
+        /// doing more expensive queries like <see cref="GetRootMatrixAttributeValue" />
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is within matrix]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsLikelyWithinMatrix()
+        {
+            var attributeCache = AttributeCache.Get( AttributeId );
+            var entityTypeId = EntityTypeCache.GetId( typeof( AttributeMatrixItem ) );
+            return attributeCache?.EntityTypeId != null && attributeCache.EntityTypeId == entityTypeId;
+        }
+
+        /// <summary>
+        /// Gets the root matrix attribute value that ties the matrix values to a person or other entity.
+        /// </summary>
+        /// <returns></returns>
+        private AttributeValue GetRootMatrixAttributeValue()
+            {
+            var rockContext = new RockContext();
+            var attributeMatrixService = new AttributeMatrixService( rockContext );
+            var attributeValueService = new AttributeValueService( rockContext );
+
+            var matrixGuidQuery = attributeMatrixService.Queryable().AsNoTracking().Where( am =>
+                am.AttributeMatrixItems.Any( ami => ami.Id == EntityId )
+            ).Select( am => am.Guid.ToString() );
+
+            var attributeValue = attributeValueService.Queryable().AsNoTracking().FirstOrDefault( av =>
+                matrixGuidQuery.Contains( av.Value )
+            );
+
+            return attributeValue;
+        }
+
+        #endregion History
     }
 
     #region Entity Configuration

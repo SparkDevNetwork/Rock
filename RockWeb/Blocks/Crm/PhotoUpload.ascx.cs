@@ -38,10 +38,30 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM > PhotoRequest" )]
     [Description( "Allows a photo to be uploaded for the given person (logged in person) and optionally their family members." )]
 
-    [BooleanField( "Include Family Members", "If checked, other family members will also be displayed allowing their photos to be uploaded.", true )]
-    [BooleanField( "Allow Staff", "If checked, staff members will also be allowed to upload new photos for themselves.", false )]
+    [BooleanField(
+        "Include Family Members",
+        Key = AttributeKey.IncludeFamilyMembers,
+        Description = "If checked, other family members will also be displayed allowing their photos to be uploaded.",
+        DefaultBooleanValue = true,
+        Order = 0 )]
+
+    [BooleanField(
+        "Allow Staff",
+        Key = AttributeKey.AllowStaff,
+        Description = "If checked, staff members will also be allowed to upload new photos for themselves.",
+        DefaultBooleanValue = false,
+        Order = 1 )]
+
     public partial class PhotoUpload : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string IncludeFamilyMembers = "IncludeFamilyMembers";
+            public const string AllowStaff = "AllowStaff";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         /// <summary>
@@ -91,7 +111,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( ! Page.IsPostBack )
             {
-                if ( ! GetAttributeValue( "AllowStaff" ).AsBoolean() )
+                if ( ! GetAttributeValue( AttributeKey.AllowStaff ).AsBoolean() )
                 {
                     GroupService service = new GroupService( new RockContext() );
                     _staffGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS ) );
@@ -179,7 +199,7 @@ namespace RockWeb.Blocks.Crm
             {
                 people.Add( CurrentPerson );
 
-                if ( GetAttributeValue( "IncludeFamilyMembers" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.IncludeFamilyMembers ).AsBoolean() )
                 {
                     foreach ( var member in CurrentPerson.GetFamilyMembers( includeSelf: false ).ToList() )
                     {

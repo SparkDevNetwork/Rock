@@ -27,6 +27,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Transactions;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -154,7 +155,7 @@ namespace RockWeb.Blocks.Streaks
         /// </summary>
         private void InitializeActionButtons()
         {
-            btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in a job and may take several minutes to complete.');";
+            btnRebuild.Attributes["onclick"] = "javascript: return Rock.dialogs.confirmDelete(event, 'data', 'Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in separate process and may take several minutes to complete.');";
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'All associated Enrollments and Exclusions will also be deleted!');", StreakType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( StreakType ) ).Id;
         }
@@ -172,6 +173,16 @@ namespace RockWeb.Blocks.Streaks
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFrequencyOccurrence control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlFrequencyOccurrence_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncFrequencyControls();
+        }
 
         /// <summary>
         /// Button to go to the map editor page
@@ -233,13 +244,13 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// The change event of the attendance structure selection
+        /// The change event of the linked activity structure selection
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         protected void ddlStructureType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            RenderAttendanceStructureControls();
+            RenderLinkedActivityStructureControls();
         }
 
         /// <summary>
@@ -355,20 +366,42 @@ namespace RockWeb.Blocks.Streaks
                 return;
             }
 
-            var job = new ServiceJobService( rockContext ).Get( Rock.SystemGuid.ServiceJob.REBUILD_STREAK.AsGuid() );
+            new StreakTypeRebuildTransaction( streakType.Id ).Enqueue();
+            ShowBlockSuccess( nbEditModeMessage, "The streak type rebuild has been started." );
+            btnRebuild.Enabled = false;
+        }
 
-            if ( job == null )
+        /// <summary>
+        /// Synchronizes the rebuild status.
+        /// </summary>
+        private void SyncRebuildStatus()
+        {
+            if ( RockQueue.IsExecuting<StreakTypeRebuildTransaction>() )
             {
-                ShowBlockError( nbEditModeMessage, "The streak type rebuild job could not be found." );
+                var progress = RockQueue.CurrentlyExecutingTransactionProgress;
+
+                if ( progress.HasValue )
+                {
+                    ShowBlockNotification( nbEditModeMessage, string.Format(
+                        "A streak type rebuild is running and is {0}% complete. Please check back later.",
+                        progress.Value ));
+                }
+                else
+                {
+                    ShowBlockNotification( nbEditModeMessage, "A streak type rebuild is currently running. Please check back later." );
+                }
+
+                btnRebuild.Enabled = false;
             }
-
-            var jobData = new Dictionary<string, string> {
-                { Rock.Jobs.RebuildStreakMaps.DataMapKey.StreakTypeId, streakType.Id.ToString() }
-            };
-
-            var transaction = new Rock.Transactions.RunJobNowTransaction( job.Id, jobData );
-            System.Threading.Tasks.Task.Run( () => transaction.Execute() );
-            ShowBlockSuccess( nbEditModeMessage, "The streak type rebuild has been started. Check the Rock Jobs page for the status." );
+            else if ( RockQueue.IsInQueue<StreakTypeRebuildTransaction>() )
+            {
+                ShowBlockNotification( nbEditModeMessage, "A streak type rebuild is currently queued. Please check back later." );
+                btnRebuild.Enabled = false;
+            }
+            else
+            {
+                btnRebuild.Enabled = true;
+            }
         }
 
         /// <summary>
@@ -426,16 +459,25 @@ namespace RockWeb.Blocks.Streaks
                 streakType.OccurrenceFrequency = frequencySelected;
 
                 var selectedDate = rdpStartDate.SelectedDate ?? RockDateTime.Today;
-                streakType.StartDate = isDaily ? selectedDate : selectedDate.SundayDate();                
+                streakType.StartDate = isDaily ? selectedDate : selectedDate.SundayDate();
             }
 
             streakType.Name = tbName.Text;
             streakType.IsActive = cbActive.Checked;
             streakType.Description = tbDescription.Text;
             streakType.EnableAttendance = cbEnableAttendance.Checked;
-            streakType.RequiresEnrollment = cbRequireEnrollment.Checked;            
-            streakType.StructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );            
+            streakType.RequiresEnrollment = cbRequireEnrollment.Checked;
+            streakType.StructureType = GetEnumSelected<StreakStructureType>( ddlStructureType );
             streakType.StructureEntityId = GetStructureEntityIdSelected();
+
+            if ( streakType.OccurrenceFrequency == StreakOccurrenceFrequency.Daily )
+            {
+                streakType.FirstDayOfWeek = null;
+            }
+            else
+            {
+                streakType.FirstDayOfWeek = dowPicker.SelectedDayOfWeek;
+            }
 
             if ( !streakType.IsValid )
             {
@@ -542,9 +584,11 @@ namespace RockWeb.Blocks.Streaks
             cbRequireEnrollment.Checked = streakType.RequiresEnrollment;
             rdpStartDate.SelectedDate = streakType.StartDate;
             ddlFrequencyOccurrence.SelectedValue = streakType.OccurrenceFrequency.ToString();
+            dowPicker.SelectedDayOfWeek = streakType.FirstDayOfWeek;
             ddlStructureType.SelectedValue = structureType.HasValue ? structureType.Value.ToString() : string.Empty;
 
-            RenderAttendanceStructureControls();
+            RenderLinkedActivityStructureControls();
+            SyncFrequencyControls();
         }
 
         /// <summary>
@@ -568,6 +612,8 @@ namespace RockWeb.Blocks.Streaks
 
             lReadOnlyTitle.Text = ActionTitle.Add( StreakType.FriendlyTypeName ).FormatAsHtmlTitle();
             hlInactive.Visible = false;
+
+            SyncFrequencyControls();
         }
 
         /// <summary>
@@ -595,6 +641,8 @@ namespace RockWeb.Blocks.Streaks
             lReadOnlyTitle.Text = streakType.Name.FormatAsHtmlTitle();
             hlInactive.Visible = !streakType.IsActive;
             btnRebuild.Enabled = streakType.IsActive;
+            btnRebuild.Visible = streakType.StructureType.HasValue &&
+                ( streakType.StructureType == StreakStructureType.AnyAttendance || streakType.StructureEntityId.HasValue );
 
             var descriptionList = new DescriptionList();
             descriptionList.Add( "Description", streakType.Description );
@@ -613,11 +661,11 @@ namespace RockWeb.Blocks.Streaks
                         structureName
                     ) );
 
-                descriptionList.Add( "Attendance Structure", structureString );
+                descriptionList.Add( "Linked Activity", structureString );
             }
             else
             {
-                descriptionList.Add( "Attendance Structure", "Any Rock Attendance" );
+                descriptionList.Add( "Linked Activity", "None" );
             }
 
             lStreakTypeDescription.Text = descriptionList.Html;
@@ -631,6 +679,8 @@ namespace RockWeb.Blocks.Streaks
             SetLinkVisibility( btnAchievements, AttributeKey.AchievementsPage );
             SetLinkVisibility( btnExclusions, AttributeKey.ExclusionsPage );
             SetLinkVisibility( btnMapEditor, AttributeKey.MapEditorPage );
+
+            SyncRebuildStatus();
         }
 
         /// <summary>
@@ -639,7 +689,7 @@ namespace RockWeb.Blocks.Streaks
         private void BindDropDownLists()
         {
             BindDropDownListToEnum( typeof( StreakOccurrenceFrequency ), ddlFrequencyOccurrence, false );
-            BindDropDownListToEnum( typeof( StreakStructureType ), ddlStructureType, true, "Any Rock Attendance" );
+            BindDropDownListToEnum( typeof( StreakStructureType ), ddlStructureType, true, "None" );
         }
 
         /// <summary>
@@ -678,7 +728,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render the appropriate controls for the selected attendance structure type
+        /// Render the appropriate controls for the selected linked activity type
         /// </summary>
         private int? GetStructureEntityIdSelected()
         {
@@ -691,22 +741,46 @@ namespace RockWeb.Blocks.Streaks
 
             switch ( selectedStructureType.Value )
             {
+                case StreakStructureType.AnyAttendance:
+                    return null;
                 case StreakStructureType.CheckInConfig:
                 case StreakStructureType.GroupType:
                     return gtpStructureGroupTypePicker.SelectedGroupTypeId;
                 case StreakStructureType.Group:
                     return gpStructureGroupPicker.GroupId;
                 case StreakStructureType.GroupTypePurpose:
-                    return dvpStructureGroupTypePurposePicker.SelectedDefinedValueId;
+                case StreakStructureType.InteractionMedium:
+                    return dvpStructureDefinedValuePicker.SelectedDefinedValueId;
+                case StreakStructureType.InteractionChannel:
+                    return icChannelPicker.SelectedValueAsInt();
+                case StreakStructureType.InteractionComponent:
+                    return icicComponentPicker.InteractionComponentId;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
             }
         }
 
         /// <summary>
-        /// Render the appropriate controls for the selected attendance structure type
+        /// Synchronizes the frequency controls.
         /// </summary>
-        private void RenderAttendanceStructureControls()
+        private void SyncFrequencyControls()
+        {
+            var frequencySelected = GetEnumSelected<StreakOccurrenceFrequency>( ddlFrequencyOccurrence ) ?? StreakOccurrenceFrequency.Daily;
+
+            if ( frequencySelected == StreakOccurrenceFrequency.Daily )
+            {
+                dowPicker.Visible = false;
+            }
+            else
+            {
+                dowPicker.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Render the appropriate controls for the selected linked activity type
+        /// </summary>
+        private void RenderLinkedActivityStructureControls()
         {
             var isAddMode = IsAddMode();
 
@@ -716,8 +790,10 @@ namespace RockWeb.Blocks.Streaks
             }
 
             gpStructureGroupPicker.Visible = false;
-            dvpStructureGroupTypePurposePicker.Visible = false;
+            dvpStructureDefinedValuePicker.Visible = false;
             gtpStructureGroupTypePicker.Visible = false;
+            icicComponentPicker.Visible = false;
+            icChannelPicker.Visible = false;
 
             var streakType = isAddMode ? null : GetStreakType();
             var originalStructureType = isAddMode ? null : streakType.StructureType;
@@ -732,6 +808,8 @@ namespace RockWeb.Blocks.Streaks
 
             switch ( selectedStructureType.Value )
             {
+                case StreakStructureType.AnyAttendance:
+                    break;
                 case StreakStructureType.CheckInConfig:
                     RenderCheckinConfigControl( structureEntityId );
                     break;
@@ -742,7 +820,16 @@ namespace RockWeb.Blocks.Streaks
                     RenderGroupTypeControl( structureEntityId );
                     break;
                 case StreakStructureType.GroupTypePurpose:
-                    RenderGroupTypePurposeControl( structureEntityId );
+                    RenderStructureDefinedValueControl( structureEntityId, "Group Type Purpose", Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE );
+                    break;
+                case StreakStructureType.InteractionChannel:
+                    RenderInteractionChannelControl( structureEntityId );
+                    break;
+                case StreakStructureType.InteractionComponent:
+                    RenderInteractionComponentControl( structureEntityId );
+                    break;
+                case StreakStructureType.InteractionMedium:
+                    RenderStructureDefinedValueControl( structureEntityId, "Interaction Medium", Rock.SystemGuid.DefinedType.INTERACTION_CHANNEL_MEDIUM );
                     break;
                 default:
                     throw new NotImplementedException( "The structure type is not implemented" );
@@ -750,7 +837,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of check in config
+        /// Render control for linked activity structure of check in config
         /// </summary>
         private void RenderCheckinConfigControl( int? structureEntityId )
         {
@@ -769,7 +856,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of group
+        /// Render control for linked activity structure of group
         /// </summary>
         private void RenderGroupControl( int? structureEntityId )
         {
@@ -779,7 +866,7 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of group type
+        /// Render control for linked activity structure of group type
         /// </summary>
         private void RenderGroupTypeControl( int? structureEntityId )
         {
@@ -796,14 +883,35 @@ namespace RockWeb.Blocks.Streaks
         }
 
         /// <summary>
-        /// Render control for attendance structure of group type purpose
+        /// Render control for linked activity structure of group type purpose or interaction medium
         /// </summary>
-        private void RenderGroupTypePurposeControl( int? structureEntityId )
+        private void RenderStructureDefinedValueControl( int? structureEntityId, string label, string definedTypeGuidString )
         {
-            dvpStructureGroupTypePurposePicker.Label = "Group Type Purpose";
-            dvpStructureGroupTypePurposePicker.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE ).Id;
-            dvpStructureGroupTypePurposePicker.SelectedDefinedValueId = structureEntityId;
-            dvpStructureGroupTypePurposePicker.Visible = true;
+            dvpStructureDefinedValuePicker.Label = label;
+            dvpStructureDefinedValuePicker.DefinedTypeId = DefinedTypeCache.Get( definedTypeGuidString ).Id;
+            dvpStructureDefinedValuePicker.SelectedDefinedValueId = structureEntityId;
+            dvpStructureDefinedValuePicker.Visible = true;
+        }
+
+        /// <summary>
+        /// Renders the interaction channel control.
+        /// </summary>
+        /// <param name="structureEntityId">The structure entity identifier.</param>
+        private void RenderInteractionChannelControl( int? structureEntityId )
+        {
+            icChannelPicker.Label = "Interaction Channel";
+            icChannelPicker.SetValue( structureEntityId );
+            icChannelPicker.Visible = true;
+        }
+
+        /// <summary>
+        /// Renders the interaction component control.
+        /// </summary>
+        /// <param name="structureEntityId">The structure entity identifier.</param>
+        private void RenderInteractionComponentControl( int? structureEntityId )
+        {
+            icicComponentPicker.InteractionComponentId = structureEntityId;
+            icicComponentPicker.Visible = true;
         }
 
         #endregion Internal Methods
@@ -927,7 +1035,7 @@ namespace RockWeb.Blocks.Streaks
         private Streak _streak = null;
 
         /// <summary>
-        /// Get the name of the streak type attendance structure
+        /// Get the name of the streak type linked activity structure
         /// </summary>
         /// <returns></returns>
         private string GetStreakStructureName()

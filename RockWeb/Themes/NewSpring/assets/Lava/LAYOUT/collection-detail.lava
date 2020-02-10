@@ -21,7 +21,7 @@
 {{ channelName | Singularize | SetPageTitle:'PageTitle' }}
 
 {% assign defaultTranslation = 'Global' | Attribute:'BibleTranslation','Value' %}
-{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' openintab:'true' ]}
+{[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' openintab:'true' ]}
 
     {% assign baseBackgroundColor = Item | Attribute:'BackgroundColor' %}
     {% if baseBackgroundColor and baseBackgroundColor != empty %}

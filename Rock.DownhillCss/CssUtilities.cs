@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -17,7 +33,7 @@ namespace Rock.DownhillCss
         // each. The values below are roughly mapped from the Bootstrap 4 values.
         private static decimal[] spacingValues = { 0, .25m, .5m, 1, 2, 3 };
 
-        // TODO: Consider that Tailwind.css has a lot more of these {0,.25,.5,.75,1,1.25,1.5,2,2.5,3,4,5,6,8,10,12,14,16} 
+        // TODO: Consider that Tailwind.css has a lot more of these {0,.25,.5,.75,1,1.25,1.5,2,2.5,3,4,5,6,8,10,12,14,16}
         // https://tailwindcss.com/docs/customizing-spacing#default-spacing-scale
 
 
@@ -478,8 +494,8 @@ namespace Rock.DownhillCss
             for ( int i = 0; i < spacingValueCount; i++ )
             {
                 frameworkCss.AppendLine( $".py-{i} {{" );
-                frameworkCss.AppendLine( $"    margin-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
-                frameworkCss.AppendLine( $"    margin-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
+                frameworkCss.AppendLine( $"    padding-top: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
+                frameworkCss.AppendLine( $"    padding-bottom: {spacingValues[i] * settings.SpacingBase}{settings.SpacingUnits};" );
                 frameworkCss.AppendLine( "}" );
             }
         }
@@ -705,11 +721,11 @@ namespace Rock.DownhillCss
 }
 
 .invisible {
-    visibility: hidden; 
+    visibility: hidden;
 }
 
 .collapse {
-    visibility: collapse; 
+    visibility: collapse;
 }
 
 /* Text Named Sizes */

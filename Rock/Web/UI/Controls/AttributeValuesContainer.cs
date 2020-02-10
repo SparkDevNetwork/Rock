@@ -368,112 +368,37 @@ namespace Rock.Web.UI.Controls
 
             var excludedAttributeGuids = this.ExcludedAttributes.Select( a => a.Guid ).ToList();
             _editModeAttributeIdsState = new List<int>();
-
             if ( item != null && item.Attributes != null )
             {
                 List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
 
-                HtmlGenericControl tabs = null;
-                HtmlGenericControl parentControl = null;
-                if ( DisplayAsTabs )
-                {
-                    tabs = new HtmlGenericControl( "ul" );
-                    tabs.AddCssClass( "nav nav-tabs margin-b-lg" );
-                    _phAttributes.Controls.Add( tabs );
-
-                    parentControl = new HtmlGenericControl( "div" );
-                    parentControl.AddCssClass( "tab-content" );
-                    _phAttributes.Controls.Add( parentControl );
-                }
-
-                int i = 0;
-                foreach ( var attributeCategory in attributeCategories )
+                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
                 {
                     IEnumerable<AttributeCache> attributes = GetFilteredAttributesForCategory( attributeCategory );
 
                     if ( attributes.Any() )
                     {
-                        HtmlGenericControl tab = null;
-                        if ( DisplayAsTabs )
-                        {
-                            string categoryName = "Attributes";
-                            string id = "Attributes";
-                            if ( attributeCategory.Category != null )
-                            {
-                                categoryName = attributeCategory.Category.Name.Trim();
-                                id = attributeCategory.Category.Id.ToString();
-                            }
-
-
-                            tab = new HtmlGenericControl( "div" );
-                            tab.ID = id;
-                            tab.AddCssClass( "tab-pane fade in" );
-                            parentControl.Controls.Add( tab );
-
-                            var tabClientId = tab.ClientID;
-
-                            #region tabs
-                            HtmlGenericControl li = new HtmlGenericControl( "li" );
-                            HtmlGenericControl a = new HtmlGenericControl( "a" );
-                            a.Attributes.Add( "data-toggle", "tab" );
-                            a.Attributes.Add( "href", "#" + tabClientId );
-                            a.InnerText = categoryName;
-                            li.Controls.Add( a );
-                            tabs.Controls.Add( li );
-                            #endregion tabs
-
-                            if ( i == 0 )
-                            {
-                                tab.AddCssClass( "active" );
-                                li.AddCssClass( "active" );
-                            }
-                        }
-
                         var attributeKeys = attributes.Select( a => a.Key ).ToList();
 
                         // keep track of which attributes we created edit controls for, so we can re-create them on postback
                         _editModeAttributeIdsState.AddRange( attributes.Select( a => a.Id ) );
 
-                        if ( DisplayAsTabs )
+                        AttributeAddEditControlsOptions options = new AttributeAddEditControlsOptions
                         {
-                            AttributeAddEditControlsOptions options = new AttributeAddEditControlsOptions
-                            {
-                                NumberOfColumns = this.NumberOfColumns,
-                                IncludedAttributes = attributes.ToList(),
-                                ShowCategoryLabel = false,
-                                ShowPrePostHtml = this.ShowPrePostHtml
-                            };
+                            NumberOfColumns = this.NumberOfColumns,
+                            IncludedAttributes = attributes.ToList(),
+                            ShowCategoryLabel = ShowCategoryLabel,
+                            ShowPrePostHtml = this.ShowPrePostHtml
+                        };
 
-                            Rock.Attribute.Helper.AddEditControlsForCategory(
-                                attributeCategory.CategoryName,
-                                item,
-                                tab,
-                                this.ValidationGroup,
-                                setValue,
-                                options
-                            );
-                        }
-                        else
-                        {
-                            AttributeAddEditControlsOptions options = new AttributeAddEditControlsOptions
-                            {
-                                NumberOfColumns = this.NumberOfColumns,
-                                IncludedAttributes = attributes.ToList(),
-                                ShowCategoryLabel = ShowCategoryLabel,
-                                ShowPrePostHtml = this.ShowPrePostHtml
-                            };
-
-                            Rock.Attribute.Helper.AddEditControlsForCategory(
-                                attributeCategory.CategoryName,
-                                item,
-                                _phAttributes,
-                                this.ValidationGroup,
-                                setValue,
-                                options
-                            );
-                        }
-
-                        i++;
+                        Rock.Attribute.Helper.AddEditControlsForCategory(
+                            attributeCategory.CategoryName,
+                            item,
+                            _phAttributes,
+                            this.ValidationGroup,
+                            setValue,
+                            options
+                        );
                     }
                 }
             }
@@ -606,7 +531,61 @@ namespace Rock.Web.UI.Controls
             bool displayAsTabs = this.DisplayAsTabs & attributeCategories.Where( a => a.CategoryName.IsNotNullOrWhiteSpace() ).SelectMany( a => a.Attributes ).Any();
 
             var exclude = ( ExcludedAttributes != null && ExcludedAttributes.Count() != 0 ) ? ExcludedAttributes.Select( k => k.Key ).ToList() : null;
-            Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, exclude, showHeadingLabels, displayAsTabs );
+
+            if ( displayAsTabs )
+            {
+                HtmlGenericControl tabs = new HtmlGenericControl( "ul" );
+                tabs.AddCssClass( "nav nav-tabs margin-b-lg" );
+                _phAttributes.Controls.Add( tabs );
+
+                HtmlGenericControl tabContent = new HtmlGenericControl( "div" );
+                tabContent.AddCssClass( "tab-content" );
+                _phAttributes.Controls.Add( tabContent );
+
+                int tabIndex = 0;
+                foreach ( var attributeCategory in attributeCategories.OrderBy( a => a.Category == null ? 0 : a.Category.Order ) )
+                {
+                    string categoryName = "Attributes";
+                    string id = "Attributes";
+                    if ( attributeCategory.Category != null )
+                    {
+                        categoryName = attributeCategory.Category.Name.Trim();
+                        id = attributeCategory.Category.Id.ToString();
+                    }
+
+                    HtmlGenericControl parentControl = new HtmlGenericControl( "div" );
+                    parentControl.ID = id;
+                    parentControl.AddCssClass( "tab-pane fade in" );
+                    tabContent.Controls.Add( parentControl );
+                    var tabClientId = parentControl.ClientID;
+
+                    #region tabs
+                    HtmlGenericControl li = new HtmlGenericControl( "li" );
+                    HtmlGenericControl a = new HtmlGenericControl( "a" );
+                    a.Attributes.Add( "data-toggle", "tab" );
+                    a.Attributes.Add( "href", "#" + tabClientId );
+
+                    a.InnerText = categoryName;
+                    li.Controls.Add( a );
+                    tabs.Controls.Add( li );
+                    #endregion tabs
+
+                    if ( tabIndex == 0 )
+                    {
+                        parentControl.AddCssClass( "active" );
+                        li.AddCssClass( "active" );
+                    }
+
+                    tabIndex++;
+
+                    Rock.Attribute.Helper.AddDisplayControls( item, new List<AttributeCategory>() { attributeCategory }, parentControl, exclude, false );
+                }
+
+            }
+            else
+            {
+                Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, exclude, showHeadingLabels );
+            }
         }
 
         #endregion Methods

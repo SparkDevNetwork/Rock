@@ -188,6 +188,7 @@ namespace RockWeb.Blocks.CheckIn
 
                         if ( printFromClient.Any() )
                         {
+                            // When debugging and using ngrok you will need to change this to the ngrok address (e.g. var urlRoot = "http://developrock.ngrok.io";). Not sure why this isn't using a global attribute.
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
                             printFromClient
                                 .OrderBy( l => l.PersonId )
@@ -302,7 +303,7 @@ namespace RockWeb.Blocks.CheckIn
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
                     navigator.notification.alert(
-                        'An error occurred while printing the labels.' + error[0],  // message
+                        'An error occurred while printing the labels. ' + error[0],  // message
                         alertDismissed,         // callback
                         'Error',            // title
                         'Ok'                  // buttonName

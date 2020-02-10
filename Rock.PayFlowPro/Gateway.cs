@@ -924,6 +924,8 @@ namespace Rock.PayFlowPro
             recurringInfo.MaxFailPayments = 0;
             recurringInfo.Term = 0;
             var selectedFrequencyGuid = transactionFrequencyValue.Guid.ToString().ToUpper();
+
+            // see https://www.paypalobjects.com/webstatic/en_US/developer/docs/pdf/wpppe_rp_guide.pdf for how these are implemented
             switch ( selectedFrequencyGuid )
             {
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:

@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a group
     /// </summary>
     public class GroupPicker : ItemPicker
     {

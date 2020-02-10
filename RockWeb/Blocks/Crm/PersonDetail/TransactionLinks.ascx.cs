@@ -36,87 +36,57 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     #region Block Attributes
 
     [LinkedPage(
-        name: "Add Transaction Page",
-        description: "",
-        required: true,
-        defaultValue: Rock.SystemGuid.Page.ADD_TRANSACTION,
-        category: "",
-        order: 0,
-        key: AttributeKey.AddTransactionPage )]
+        "Add Transaction Page",
+        Key = AttributeKey.AddTransactionPage,
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.ADD_TRANSACTION,
+        Order = 0 )]
 
     [LinkedPage(
-        name: "Text to Give Settings Page",
-        description: "",
-        required: false,
-        defaultValue: "",
-        category: "",
-        order: 0,
-        key: AttributeKey.TextToGiveSettingsPage )]
+        "Text to Give Settings Page",
+        Key = AttributeKey.TextToGiveSettingsPage,
+        IsRequired = false,
+        Order = 1 )]
 
     [BooleanField(
-        name: "Is Secondary Block",
-        description: "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",
-        defaultValue: false,
-        category: "",
-        order: 1,
-        key: AttributeKey.IsSecondaryBlock )]
+        "Is Secondary Block",
+        Key = AttributeKey.IsSecondaryBlock,
+        Description = "Flag indicating whether this block is considered secondary and should be hidden when other secondary blocks are hidden.",
+        DefaultBooleanValue = false,
+        Order = 2 )]
 
     [IntegerField(
-        name: "Person Token Expire Minutes",
-        description: "The number of minutes the person token for the transaction is valid after it is issued.",
-        required: true,
-        defaultValue: 60,
-        category: "",
-        order: 2,
-        key: AttributeKey.PersonTokenExpireMinutes )]
+        "Person Token Expire Minutes",
+        Key = AttributeKey.PersonTokenExpireMinutes,
+        Description = "The number of minutes the person token for the transaction is valid after it is issued.",
+        IsRequired = true,
+        DefaultIntegerValue = 60,
+        Order = 3 )]
 
     [IntegerField(
-        name: "Person Token Usage Limit",
-        description: "The maximum number of times the person token for the transaction can be used.",
-        required: false,
-        defaultValue: 1,
-        category: "",
-        order: 3,
-        key: AttributeKey.PersonTokenUsageLimit )]
+        "Person Token Usage Limit",
+        Key = AttributeKey.PersonTokenUsageLimit,
+        Description = "The maximum number of times the person token for the transaction can be used.",
+        IsRequired = false,
+        DefaultIntegerValue = 1,
+        Order = 4 )]
 
     #endregion Block Attributes
 
     public partial class TransactionLinks : PersonBlock, ISecondaryBlock
     {
-        #region Keys
+        #region Attribute Keys
 
-        /// <summary>
-        /// Attribute Keys
-        /// </summary>
         private static class AttributeKey
         {
-            /// <summary>
-            /// The add transaction page
-            /// </summary>
             public const string AddTransactionPage = "AddTransactionPage";
-
-            /// <summary>
-            /// The is secondary block
-            /// </summary>
             public const string IsSecondaryBlock = "IsSecondaryBlock";
-
-            /// <summary>
-            /// The person token expire minutes
-            /// </summary>
             public const string PersonTokenExpireMinutes = "PersonTokenExpireMinutes";
-
-            /// <summary>
-            /// The person token usage limit
-            /// </summary>
             public const string PersonTokenUsageLimit = "PersonTokenUsageLimit";
-
-            /// <summary>
-            /// The text to give settings page
-            /// </summary>
             public const string TextToGiveSettingsPage = "TextToGiveSettingsPage";
         }
 
-        #endregion Keys
+        #endregion Attribute Keys
 
         #region Base Control Methods
 

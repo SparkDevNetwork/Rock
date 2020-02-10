@@ -1,14 +1,12 @@
 {% assign pagesize = 12 %}
 {% assign currentpage = 'Global' | PageParameter:'Page' %}
 {% assign offset = currentpage | Times:pagesize | Minus:pagesize %}
-
 {% assign pagesize = pagesize | AsInteger %}
-
 
 <section>
     <div class="row">
     	{% for item in Items limit:pagesize offset:offset %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
-		
+
 			{% contentchannel id:'{{ item.ContentChannelId }}' iterator:'channels' %}
 				{% for channel in channels %}
 					{% assign showDate = channel | Attribute:'IsDateVisible' %}
@@ -19,14 +17,18 @@
             {% assign cciid = item.Id %}
     	    {% assign guid = item.Guid %}
     	    {% assign channelNameParts = item.ContentChannel.Name | Split:' - ' %}
-    	    {% assign type = channelNameParts[1] | Singularize %}
+			{% if item.ContentChannelId == 26 %}
+				{% capture type %}{{ item | Attribute:'Category' }} {{ channelNameParts[1] | Singularize }}{% endcapture %}
+			{% else %}
+    	    	{% assign type = channelNameParts[1] | Singularize %}
+			{% endif %}
     	    {% assign title = item.Title | Replace:"'","’" %}
             {% assign titlesize = "h4" %}
 			{% assign dates = item | Attribute:'Dates','RawValue' %}
 			{% assign dateParts = dates | Split:',' %}
             {% capture subtitle %}
 				{%- comment -%}Check this item's channel to see if dates should be visible{%- endcomment -%}
-				{% if showDate == 'Yes' %}
+				{% if showdates != 'false' and showDate == 'Yes' %}
 					{%- comment -%}If item has a date range, display it - otherwise display the item start date{%- endcomment -%}
 					{% if dates != empty %}
 						{[ formatDate date:'{{ dateParts[0] }}' ]}{% if dateParts[1] != dateParts[0] %} - {[ formatDate date:'{{ dateParts[1] }}' ]}{% endif %}
@@ -35,11 +37,22 @@
 					{% endif %}
 				{% endif %}
 			{% endcapture %}
-    	    {% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
+
+			{% if ratio != empty %}
+				{% capture imageKey %}Image{{ ratio | Capitalize }}{% endcapture %}
+				{% assign imageurl = item | Attribute:imageKey,'Url' %}
+				{% if imageurl == empty %}
+					{% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
+				{% endif %}
+			{% else %}
+				{% assign imageurl = item | Attribute:'ImageLandscape','Url' %}
+			{% endif %}
+
 			{% assign summary = item | Attribute:'Summary' %}
     	    {% capture content %}<p class="push-half-bottom">{% if summary and summary != empty %}{{ summary | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% else %}{{ item.Content | StripHtml | HtmlDecode | Replace:"'","’" | Truncate:140,'...' }}{% endif %}</p>{% endcapture %}
-    	    {% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
-    	    {% capture linktext %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endcapture %}
+    	    {% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
+
+    	    {% capture linktext %}{% if cardlinktext and cardlinktext != empty %}{{ cardlinktext }}{% else %}{% if type contains 'Sermon' or type contains 'Series' %}Watch{% else %}Read{% endif %} {{ type }}{% endif %}{% endcapture %}
     	    {% capture trimcopy %}{% endcapture %}
 
 			{%- comment -%}Get number of parent items{%- endcomment -%}
@@ -61,7 +74,7 @@
 					{% for parentItem in parents %}
 						{% assign collectiontext = parentItem.Title %}
 						{% capture collectionurl %}{{ parentItem.ContentChannel.ChannelUrl }}/{{ parentItem.PrimarySlug }}{% endcapture %}
-						{% capture linkurl %}{[ getPermalink cciid:'{{ item.Id }}' ]}{% endcapture %}
+						{% capture linkurl %}{[ getPermalink urlprefix:'{{ urlprefix }}' cciid:'{{ item.Id }}' ]}{% endcapture %}
 						{% assign imageurl = parentItem | Attribute:'ImageLandscape','Url' %}
 					{% endfor %}
 				{% endcontentchannelitem %}
@@ -69,11 +82,11 @@
         	    {% assign collectiontext = '' %}
         	    {% assign collectionurl = '' %}
     	    {% endif %}
-    	    
+
             {[ card guid:'{{ guid }}' cciid:'{{ cciid }}' id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' linkedpageid:'{{ linkedpageid }}' linkedpageroute:'{{ linkedpageroute }}' ]}
-    	    
+
     	</div>{% endfor -%}
-    	
+
     </div>
 </section>
 

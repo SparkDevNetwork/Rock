@@ -1079,7 +1079,7 @@ namespace Rock.MyWell
         }
 
         /// <summary>
-        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap" />) associated with <see cref="ApiMessage" /> or transaction status
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap" />) associated with <see cref="T:ApiMessage" /> or transaction status
         /// </summary>
         /// <value>
         /// The friendly message.

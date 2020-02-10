@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select data view items for a particular pre-configured data view
     /// </summary>
     public class DataViewItemPicker : ItemPicker
     {

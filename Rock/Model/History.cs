@@ -116,7 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The related entity type identifier.
         /// </value>
-        /// 
+        ///
         [DataMember]
         public int? RelatedEntityTypeId { get; set; }
 
@@ -390,7 +390,7 @@ namespace Rock.Model
                                     StringBuilder loginSummaryBuilder = new StringBuilder();
                                     loginSummaryBuilder.Append( $"User logged in with <span class='field-name'>{this.ValueName}</span> username" );
 
-                                    // if Related Data has data, it could be additional info about the HostAddress the person logged in from and the url of the page when they logged in
+                                    // if Related Data has data, it could be additional info about the HostAddress the person logged in from and the URL of the page when they logged in
                                     if ( !string.IsNullOrEmpty( this.RelatedData ) )
                                     {
                                         loginSummaryBuilder.Append( $", {this.RelatedData}" );
@@ -431,7 +431,7 @@ namespace Rock.Model
                         }
                     }
 
-                    // some unexpected verb was used to make a custom summary 
+                    // some unexpected verb was used to make a custom summary
                     var stringBuilder = new StringBuilder();
 
                     // Start with whatever custom verb was used. For example 'WATCHED' => 'Watched'
@@ -1705,7 +1705,7 @@ namespace Rock.Model
         public class HistoryChangeList : List<HistoryChange>
         {
             /// <summary>
-            /// Adds a HistoryChange record to the list 
+            /// Adds a HistoryChange record to the list
             /// Returns the HistoryChange object so caller can set additional property values if needed
             /// </summary>
             /// <param name="historyVerb">The history verb.</param>
@@ -1749,7 +1749,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HistoryChange
         {

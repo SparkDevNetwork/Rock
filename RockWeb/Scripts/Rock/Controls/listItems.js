@@ -14,13 +14,13 @@
                 function updateListItemValues(e) {
                     var $span = e.closest('span.list-items');
                     var keyValuePairs = [];
-                    $span.children('span.list-items-rows:first').children('div.controls-row').each(function (index) {
+                    $span.children('span.list-items-rows').first().children('div.controls-row').each(function (index) {
                         keyValuePairs.push({
-                            'Key': $(this).children('.input-group').find('.js-list-items-input:first').data('id'),
-                            'Value': $(this).children('.input-group').find('.js-list-items-input:first').val()
+                            'Key': $(this).children('.input-group').find('.js-list-items-input').first().data('id'),
+                            'Value': $(this).children('.input-group').find('.js-list-items-input').first().val()
                         });
                     });
-                    $span.children('input:first').val(JSON.stringify(keyValuePairs));
+                    $span.children('input').first().val(JSON.stringify(keyValuePairs));
                     if (options.valueChangedScript) {
                         window.location = "javascript:" + options.valueChangedScript;
                     }
