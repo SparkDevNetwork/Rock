@@ -61,6 +61,14 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202002042011136_Rollup_0220.cs" />
+    <Compile Include="Migrations\202002042011136_Rollup_0220.Designer.cs">
+      <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002072057059_DeviceCameraBarcodeConfiguration.cs" />
+    <Compile Include="Migrations\202002072057059_DeviceCameraBarcodeConfiguration.Designer.cs">
+      <DependentUpon>202002072057059_DeviceCameraBarcodeConfiguration.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.Designer.cs">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
@@ -1027,6 +1035,12 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202002042011136_Rollup_0220.resx">
+      <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002072057059_DeviceCameraBarcodeConfiguration.resx">
+      <DependentUpon>202002072057059_DeviceCameraBarcodeConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.resx">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
     </EmbeddedResource>
