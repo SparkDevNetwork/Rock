@@ -63,11 +63,13 @@ namespace Rock.Jobs
                 var rockContext = new RockContext();
 
                 int expirationDays = GetJobAttributeValue( "ExpirationPeriod", 3, rockContext );
+                var beginWindow = RockDateTime.Now.AddDays( 0 - expirationDays );
                 var cutoffTime = RockDateTime.Now.AddMinutes( 0 - alertPeriod );
-
+                
                 var communications = new CommunicationService( rockContext )
                     .GetQueued( expirationDays, alertPeriod, false, false )
-                    .Where( c => !c.ReviewedDateTime.HasValue || c.ReviewedDateTime.Value.CompareTo( cutoffTime ) < 0 )     // Make sure communication wasn't just recently approved
+                    .NotRecentlyApproved( cutoffTime )
+                    .IfScheduledAreInWindow( beginWindow, cutoffTime )
                     .OrderBy( c => c.Id )
                     .ToList();
 
