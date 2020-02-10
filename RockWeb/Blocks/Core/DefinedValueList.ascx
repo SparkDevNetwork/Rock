@@ -45,13 +45,9 @@
                     <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
                 </legend>
                 <fieldset>
-                    <div class="row-fluid">
-                        <div class="span12">
-                            <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Value" ValidationGroup="Value" Label="Value"/>
-                            <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidationGroup="Value" ValidateRequestMode="Disabled"/>
-                            <asp:CheckBox ID="cbValueActive" runat="server" Text="Active" />
-                        </div>
-                    </div>
+                    <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Value" ValidationGroup="Value" Label="Value"/>
+                    <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidationGroup="Value" ValidateRequestMode="Disabled"/>
+                    <asp:CheckBox ID="cbValueActive" runat="server" Text="Active" />
                     <div class="attributes">
                         <Rock:AttributeValuesContainer ID="avcDefinedValueAttributes" runat="server" />
                     </div>
