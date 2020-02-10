@@ -51,10 +51,10 @@ namespace Rock.Jobs
     [CustomDropdownListField(
         "Send Using",
         "Specifies how the reminder will be sent.",
-        "Email,SMS,Recipient Preference",
+        "1^Email,2^SMS,0^Recipient Preference",
         Key = AttributeKey.SendUsingConfiguration,
         IsRequired = true,
-        DefaultValue = "Recipient Preference",
+        DefaultValue = "0",
         Order = 3 )]
     #endregion
 
@@ -106,7 +106,8 @@ namespace Rock.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             var groupType = GroupTypeCache.Get( dataMap.GetString( AttributeKey.GroupType ).AsGuid() );
-            var sendUsingConfiguration = dataMap.GetString( AttributeKey.SendUsingConfiguration );
+            var sendUsingConfiguration = ( CommunicationType ) dataMap.GetString( AttributeKey.SendUsingConfiguration ).AsInteger();
+
 
             int attendanceRemindersSent = 0;
             int errorCount = 0;
@@ -253,10 +254,10 @@ namespace Rock.Jobs
                 var systemCommunication = new SystemCommunicationService( rockContext ).Get( systemEmailGuid );
 
                 var isSmsEnabled = MediumContainer.HasActiveSmsTransport();
-                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration.Equals( "Email" ) || string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
-                var alwaysSendSms = sendUsingConfiguration.Equals( "SMS" );
+                var alwaysSendEmail = !isSmsEnabled || sendUsingConfiguration == CommunicationType.Email || string.IsNullOrWhiteSpace( systemCommunication.SMSMessage );
+                var alwaysSendSms = sendUsingConfiguration == CommunicationType.SMS;
 
-                if ( !sendUsingConfiguration.Equals( "Email" ) && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
+                if ( sendUsingConfiguration != CommunicationType.Email && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
                 {
                     errorMessages.Add( string.Format( "No SMS message found in system communication {0}.", systemCommunication.Title ) );
                     errorCount++;
