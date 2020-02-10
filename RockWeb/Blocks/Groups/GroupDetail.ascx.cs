@@ -799,9 +799,16 @@ namespace RockWeb.Blocks.Groups
                 triggersUpdated = true;
             }
 
+            int? campusId = cpCampus.SelectedCampusId;
+            if ( !campusId.HasValue && group.GroupType.GroupsRequireCampus )
+            {
+                // If the CampusPicker doesn't have a selected value AND there is only one campus, grab its ID from the cache
+                campusId = CampusCache.SingleCampusId;
+            }
+
             group.Name = tbName.Text;
             group.Description = tbDescription.Text;
-            group.CampusId = cpCampus.SelectedCampusId;
+            group.CampusId = campusId;
             group.GroupTypeId = CurrentGroupTypeId;
             group.ParentGroupId = gpParentGroup.SelectedValueAsInt();
             group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
