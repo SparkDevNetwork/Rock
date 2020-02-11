@@ -218,13 +218,10 @@
                 var $noRegistrantsDiv = $('.js-no-registrants-div', self.$groupPlacementTool)
                 var $sourceContainer = $('.js-group-placement-registrant-container ');
                 if ($sourceContainer.height() == 0) {
-                    if ($noRegistrantsDiv.length == 0) {
-                        var $noRegistrantsDiv = $('<div class="js-no-registrants-div no-registrants-div"></div>')
-                        $noRegistrantsDiv.appendTo($sourceContainer)
-                    }
+                        $sourceContainer.addClass("empty");
                 }
                 else {
-                    $noRegistrantsDiv.remove();
+                    $sourceContainer.removeClass("empty");
                 }
             },
             /** Removes the groupMember and repopulates the UI */
@@ -302,18 +299,16 @@
 
                     if (groupCapacity) {
                         var groupMemberCount = $('.js-group-member', $placementGroup).length;
-                        $groupCapacityLabel.text(groupMemberCount + '|' + groupCapacity);
+                        $groupCapacityLabel.text(groupMemberCount + ' / ' + groupCapacity);
                         var groupCapacityPercent = (groupMemberCount / groupCapacity) * 100;
                         if (groupCapacityPercent > 100) {
-                            $groupCapacityLabel.attr('data-status', 'over-capacity');
-                        }
-                        else if (groupCapacityPercent == 100) {
-                            $groupCapacityLabel.attr('data-status', 'at-capacity');
-                        }
-                        else if (groupCapacityPercent > 80) {
-                            $groupCapacityLabel.attr('data-status', 'near-capacity');
+                            $groupCapacityLabel.attr('data-status', 'over-capacity').attr('title', 'Group Over Capacity');
+                        } else if (groupCapacityPercent == 100) {
+                            $groupCapacityLabel.attr('data-status', 'at-capacity').attr('title', 'Group At Capacity');
+                        } else if (groupCapacityPercent > 80) {
+                            $groupCapacityLabel.attr('data-status', 'near-capacity').attr('title', (groupCapacity - groupMemberCount) + ' Spots Remaining');
                         } else {
-                            $groupCapacityLabel.attr('data-status', 'under-capacity');
+                            $groupCapacityLabel.attr('data-status', 'under-capacity').attr('title', (groupCapacity - groupMemberCount) + ' Spots Remaining');
                         }
 
                         if (self.hideFullGroups && groupMemberCount >= groupCapacity) {
@@ -329,13 +324,13 @@
                     var $groupRoleMaxMembersLabel = $('.js-grouptyperole-max-members-label', $groupRoleMembers);
                     if (groupRoleMaxMembers) {
                         var groupRoleMemberCount = groupMembers.length;
-                        $groupRoleMaxMembersLabel.text(groupRoleMemberCount + '|' + groupRoleMaxMembers);
+                        $groupRoleMaxMembersLabel.text(groupRoleMemberCount + ' / ' + groupRoleMaxMembers);
                         if (groupRoleMemberCount > groupRoleMaxMembers) {
-                            $groupRoleMaxMembersLabel.attr('data-status', 'over-capacity');
+                            $groupRoleMaxMembersLabel.attr('data-status', 'over-capacity').attr('title', 'Group role over capacity.');
                         } else if (groupRoleMemberCount == groupRoleMaxMembers) {
-                            $groupRoleMaxMembersLabel.attr('data-status', 'at-capacity');
+                            $groupRoleMaxMembersLabel.attr('data-status', 'at-capacity').attr('title', 'Group role at capacity.');
                         } else {
-                            $groupRoleMaxMembersLabel.attr('data-status', 'under-capacity');
+                            $groupRoleMaxMembersLabel.attr('data-status', 'under-capacity').attr('title', 'Group role under capacity.');
                         }
                     }
                     else {
@@ -658,9 +653,7 @@
 
                 self.$groupPlacementTool.on('click', '.js-placement-group-toggle-visibility', function () {
                     $('i', this).toggleClass('fa-chevron-down fa-chevron-up');
-                    var $placementGroup = $(this).closest('.js-placement-group');
-                    var $groupRolesPanel = $placementGroup.find('.js-group-details');
-                    $groupRolesPanel.slideToggle();
+                    $(this).closest('.js-placement-group').find('.js-group-details').slideToggle();
                 });
 
                 // add autoscroll capabilities during dragging

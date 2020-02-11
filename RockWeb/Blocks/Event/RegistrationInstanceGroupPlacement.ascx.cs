@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Event
         #region Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class PlacementConfiguration
         {
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Event
             }
 
             /// <summary>
-            /// Whether the all Registrant Details should be expanded (from the 
+            /// Whether the all Registrant Details should be expanded (from the
             /// </summary>
             /// <value>
             ///   <c>true</c> if [expand registrant details]; otherwise, <c>false</c>.
@@ -752,7 +752,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !dataViewFilter.IsValid )
             {
-                // Controls will render the error messages                    
+                // Controls will render the error messages
                 return;
             }
 
@@ -841,6 +841,7 @@ namespace RockWeb.Blocks.Event
 
             var avcGroupAttributes = e.Item.FindControl( "avcGroupAttributes" ) as AttributeValuesContainer;
             avcGroupAttributes.ShowCategoryLabel = false;
+            avcGroupAttributes.NumberOfColumns = 2;
             avcGroupAttributes.IncludedAttributes = GetPlacementConfiguration().DisplayedGroupAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
             placementGroup.LoadAttributes();
             avcGroupAttributes.AddDisplayControls( placementGroup );
