@@ -175,6 +175,7 @@ namespace RockWeb.Blocks.Core
                 device.PrintFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
                 device.IsActive = cbIsActive.Checked;
                 device.HasCamera = cbHasCamera.Checked;
+                device.CameraBarcodeConfigurationType = ddlCameraBarcodeConfigurationType.SelectedValue.ConvertToEnumOrNull<CameraBarcodeConfiguration>();
 
                 if ( device.Location == null )
                 {
@@ -363,6 +364,8 @@ namespace RockWeb.Blocks.Core
 
             ddlPrinter.DataBind();
             ddlPrinter.Items.Insert( 0, new ListItem() );
+
+            ddlCameraBarcodeConfigurationType.BindToEnum<CameraBarcodeConfiguration>( true );
         }
 
         /// <summary>
@@ -405,6 +408,7 @@ namespace RockWeb.Blocks.Core
             ddlPrinter.SetValue( device.PrinterDeviceId );
             ddlPrintFrom.SetValue( device.PrintFrom.ConvertToInt().ToString() );
             cbHasCamera.Checked = device.HasCamera;
+            ddlCameraBarcodeConfigurationType.SetValue( device.CameraBarcodeConfigurationType.HasValue ? device.CameraBarcodeConfigurationType.ConvertToInt().ToString() : null );
 
             SetPrinterVisibility();
             SetPrinterSettingsVisibility();
@@ -572,6 +576,7 @@ namespace RockWeb.Blocks.Core
             var deviceType = DefinedValueCache.Get( deviceTypeValueId );
 
             cbHasCamera.Visible = deviceType != null && deviceType.GetAttributeValue( "core_SupportsCameras" ).AsBoolean();
+            ddlCameraBarcodeConfigurationType.Visible = deviceType != null && deviceType.GetAttributeValue( "core_SupportsCameras" ).AsBoolean();
         }
 
         /// <summary>
