@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -26,12 +27,12 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks.Types.Web.Events;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Blocks.Types.Web.Events;
 
 namespace RockWeb.Blocks.Event
 {
@@ -52,6 +53,14 @@ namespace RockWeb.Blocks.Event
         IsRequired = false,
         Order = 1 )]
 
+    [LinkedPage(
+        "Group Placement Page",
+        "The page for managing the registrant's group placements",
+        Key = AttributeKey.GroupPlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE_PLACEMENT_GROUPS,
+        IsRequired = false,
+        Order = 2 )]
+
     #endregion
 
     public partial class RegistrationInstanceRegistrantList : RegistrationInstanceBlock, ISecondaryBlock
@@ -69,9 +78,9 @@ namespace RockWeb.Blocks.Event
             public const string RegistrationPage = "RegistrationPage";
 
             /// <summary>
-            /// The page for processing a wait list entry.
+            /// The group placement page
             /// </summary>
-            public const string WaitListProcessingPage = "WaitListProcessingPage";
+            public const string GroupPlacementPage = "GroupPlacementPage";
         }
 
         #endregion Attribute Keys
@@ -96,6 +105,10 @@ namespace RockWeb.Blocks.Event
         private Dictionary<int, Location> _homeAddresses = new Dictionary<int, Location>();
         private Dictionary<int, PhoneNumber> _mobilePhoneNumbers = new Dictionary<int, PhoneNumber>();
         private Dictionary<int, PhoneNumber> _homePhoneNumbers = new Dictionary<int, PhoneNumber>();
+        private List<RegistrationTemplatePlacement> _registrationTemplatePlacements = null;
+        private List<PlacementGroupInfo> _placementGroupInfoList = null;
+        private RockLiteralField _placementsField = null;
+
         private bool _isExporting = false;
 
         /// <summary>
@@ -120,7 +133,7 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The signed person ids.
         /// </value>
-        private List<int> Signers { get; set; }
+        private List<int> SignersPersonAliasIds { get; set; }
 
         /// <summary>
         /// Gets or sets the group links.
@@ -599,156 +612,227 @@ namespace RockWeb.Blocks.Event
         private void gRegistrants_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             var registrant = e.Row.DataItem as RegistrationRegistrant;
-            if ( registrant != null )
+            if ( registrant == null )
             {
-                // Set the registrant name value
-                var lRegistrant = e.Row.FindControl( "lRegistrant" ) as Literal;
-                if ( lRegistrant != null )
+                return;
+            }
+
+            // Set the registrant name value
+            var lRegistrant = e.Row.FindControl( "lRegistrant" ) as Literal;
+            if ( lRegistrant != null )
+            {
+                if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
-                    if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
-                    {
-                        lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
-                            ( Signers != null && !Signers.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-pencil-square-o text-danger'></i>" : string.Empty );
-                    }
-                    else
-                    {
-                        lRegistrant.Text = string.Empty;
-                    }
+                    lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
+                        ( SignersPersonAliasIds != null && !SignersPersonAliasIds.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-pencil-square-o text-danger'></i>" : string.Empty );
                 }
-
-                // Set the Group Name
-                if ( registrant.GroupMember != null && GroupLinks.ContainsKey( registrant.GroupMember.GroupId ) )
+                else
                 {
-                    var lGroup = e.Row.FindControl( "lGroup" ) as Literal;
-                    if ( lGroup != null )
-                    {
-                        lGroup.Text = GroupLinks[registrant.GroupMember.GroupId];
-                    }
+                    lRegistrant.Text = string.Empty;
                 }
+            }
 
-                // Set the campus
-                var lCampus = e.Row.FindControl( "lRegistrantsCampus" ) as Literal;
-
-                // if it's null, try looking for the "lGroupPlacementsCampus" control since this RowDataBound event is shared between
-                // two different grids.
-                if ( lCampus == null )
+            // Set the Group Name
+            if ( registrant.GroupMember != null && GroupLinks.ContainsKey( registrant.GroupMember.GroupId ) )
+            {
+                var lGroup = e.Row.FindControl( "lGroup" ) as Literal;
+                if ( lGroup != null )
                 {
-                    lCampus = e.Row.FindControl( "lGroupPlacementsCampus" ) as Literal;
+                    lGroup.Text = GroupLinks[registrant.GroupMember.GroupId];
                 }
+            }
 
-                if ( lCampus != null && PersonCampusIds != null )
+            // Set the campus
+            var lCampus = e.Row.FindControl( "lRegistrantsCampus" ) as Literal;
+
+            // if it's null, try looking for the "lGroupPlacementsCampus" control since this RowDataBound event is shared between
+            // two different grids.
+            if ( lCampus == null )
+            {
+                lCampus = e.Row.FindControl( "lGroupPlacementsCampus" ) as Literal;
+            }
+
+            if ( lCampus != null && PersonCampusIds != null )
+            {
+                if ( registrant.PersonAlias != null )
                 {
-                    if ( registrant.PersonAlias != null )
+                    if ( PersonCampusIds.ContainsKey( registrant.PersonAlias.PersonId ) )
                     {
-                        if ( PersonCampusIds.ContainsKey( registrant.PersonAlias.PersonId ) )
+                        var campusIds = PersonCampusIds[registrant.PersonAlias.PersonId];
+                        if ( campusIds.Any() )
                         {
-                            var campusIds = PersonCampusIds[registrant.PersonAlias.PersonId];
-                            if ( campusIds.Any() )
+                            var campusNames = new List<string>();
+                            foreach ( int campusId in campusIds )
                             {
-                                var campusNames = new List<string>();
-                                foreach ( int campusId in campusIds )
+                                var campus = CampusCache.Get( campusId );
+                                if ( campus != null )
                                 {
-                                    var campus = CampusCache.Get( campusId );
-                                    if ( campus != null )
-                                    {
-                                        campusNames.Add( campus.Name );
-                                    }
+                                    campusNames.Add( campus.Name );
                                 }
-
-                                lCampus.Text = campusNames.AsDelimited( "<br/>" );
                             }
-                        }
-                    }
-                }
 
-                // Set the Fees
-                var lFees = e.Row.FindControl( "lFees" ) as Literal;
-                if ( lFees != null )
-                {
-                    if ( registrant.Fees != null && registrant.Fees.Any() )
-                    {
-                        var feeDesc = new List<string>();
-                        foreach ( var fee in registrant.Fees )
-                        {
-                            feeDesc.Add( string.Format(
-                                "{0}{1} ({2})",
-                                fee.Quantity > 1 ? fee.Quantity.ToString( "N0" ) + " " : string.Empty,
-                                fee.Quantity > 1 ? fee.RegistrationTemplateFee.Name.Pluralize() : fee.RegistrationTemplateFee.Name,
-                                fee.Cost.FormatAsCurrency() ) );
-                        }
-
-                        lFees.Text = feeDesc.AsDelimited( "<br/>" );
-                    }
-                }
-
-                if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
-                {
-                    var location = _homeAddresses[registrant.PersonId.Value];
-
-                    // break up addresses if exporting
-                    if ( _isExporting )
-                    {
-                        var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
-                        var lStreet2 = e.Row.FindControl( "lStreet2" ) as Literal;
-                        var lCity = e.Row.FindControl( "lCity" ) as Literal;
-                        var lState = e.Row.FindControl( "lState" ) as Literal;
-                        var lPostalCode = e.Row.FindControl( "lPostalCode" ) as Literal;
-                        var lCountry = e.Row.FindControl( "lCountry" ) as Literal;
-
-                        if ( location != null )
-                        {
-                            lStreet1.Text = location.Street1;
-                            lStreet2.Text = location.Street2;
-                            lCity.Text = location.City;
-                            lState.Text = location.State;
-                            lPostalCode.Text = location.PostalCode;
-                            lCountry.Text = location.Country;
-                        }
-                    }
-                    else
-                    {
-                        var addressField = e.Row.FindControl( "lRegistrantsAddress" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsAddress" ) as Literal;
-                        if ( addressField != null )
-                        {
-                            addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
-                        }
-                    }
-                }
-
-                if ( _mobilePhoneNumbers.Any() )
-                {
-                    var mobileNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
-                    var mobileField = e.Row.FindControl( "lRegistrantsMobile" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsMobile" ) as Literal;
-                    if ( mobileField != null )
-                    {
-                        if ( mobileNumber == null || mobileNumber.NumberFormatted.IsNullOrWhiteSpace() )
-                        {
-                            mobileField.Text = string.Empty;
-                        }
-                        else
-                        {
-                            mobileField.Text = mobileNumber.IsUnlisted ? "Unlisted" : mobileNumber.NumberFormatted;
-                        }
-                    }
-                }
-
-                if ( _homePhoneNumbers.Any() )
-                {
-                    var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
-                    var homePhoneField = e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
-                    if ( homePhoneField != null )
-                    {
-                        if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
-                        {
-                            homePhoneField.Text = string.Empty;
-                        }
-                        else
-                        {
-                            homePhoneField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                            lCampus.Text = campusNames.AsDelimited( "<br/>" );
                         }
                     }
                 }
             }
+
+            // Set the Fees
+            var lFees = e.Row.FindControl( "lFees" ) as Literal;
+            if ( lFees != null )
+            {
+                if ( registrant.Fees != null && registrant.Fees.Any() )
+                {
+                    var feeDesc = new List<string>();
+                    foreach ( var fee in registrant.Fees )
+                    {
+                        feeDesc.Add( string.Format(
+                            "{0}{1} ({2})",
+                            fee.Quantity > 1 ? fee.Quantity.ToString( "N0" ) + " " : string.Empty,
+                            fee.Quantity > 1 ? fee.RegistrationTemplateFee.Name.Pluralize() : fee.RegistrationTemplateFee.Name,
+                            fee.Cost.FormatAsCurrency() ) );
+                    }
+
+                    lFees.Text = feeDesc.AsDelimited( "<br/>" );
+                }
+            }
+
+            var lPlacements = e.Row.FindControl( "lPlacements" ) as Literal;
+            if ( lPlacements != null )
+            {
+                SetPlacementFieldHtml( registrant, lPlacements );
+            }
+
+            if ( _homeAddresses.Any() && _homeAddresses.ContainsKey( registrant.PersonId.Value ) )
+            {
+                var location = _homeAddresses[registrant.PersonId.Value];
+
+                // break up addresses if exporting
+                if ( _isExporting )
+                {
+                    var lStreet1 = e.Row.FindControl( "lStreet1" ) as Literal;
+                    var lStreet2 = e.Row.FindControl( "lStreet2" ) as Literal;
+                    var lCity = e.Row.FindControl( "lCity" ) as Literal;
+                    var lState = e.Row.FindControl( "lState" ) as Literal;
+                    var lPostalCode = e.Row.FindControl( "lPostalCode" ) as Literal;
+                    var lCountry = e.Row.FindControl( "lCountry" ) as Literal;
+
+                    if ( location != null )
+                    {
+                        lStreet1.Text = location.Street1;
+                        lStreet2.Text = location.Street2;
+                        lCity.Text = location.City;
+                        lState.Text = location.State;
+                        lPostalCode.Text = location.PostalCode;
+                        lCountry.Text = location.Country;
+                    }
+                }
+                else
+                {
+                    var addressField = e.Row.FindControl( "lRegistrantsAddress" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsAddress" ) as Literal;
+                    if ( addressField != null )
+                    {
+                        addressField.Text = location != null && location.FormattedAddress.IsNotNullOrWhiteSpace() ? location.FormattedAddress : string.Empty;
+                    }
+                }
+            }
+
+            if ( _mobilePhoneNumbers.Any() )
+            {
+                var mobileNumber = _mobilePhoneNumbers[registrant.PersonId.Value];
+                var mobileField = e.Row.FindControl( "lRegistrantsMobile" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsMobile" ) as Literal;
+                if ( mobileField != null )
+                {
+                    if ( mobileNumber == null || mobileNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                    {
+                        mobileField.Text = string.Empty;
+                    }
+                    else
+                    {
+                        mobileField.Text = mobileNumber.IsUnlisted ? "Unlisted" : mobileNumber.NumberFormatted;
+                    }
+                }
+            }
+
+            if ( _homePhoneNumbers.Any() )
+            {
+                var homePhoneNumber = _homePhoneNumbers[registrant.PersonId.Value];
+                var homePhoneField = e.Row.FindControl( "lRegistrantsHomePhone" ) as Literal ?? e.Row.FindControl( "lGroupPlacementsHomePhone" ) as Literal;
+                if ( homePhoneField != null )
+                {
+                    if ( homePhoneNumber == null || homePhoneNumber.NumberFormatted.IsNullOrWhiteSpace() )
+                    {
+                        homePhoneField.Text = string.Empty;
+                    }
+                    else
+                    {
+                        homePhoneField.Text = homePhoneNumber.IsUnlisted ? "Unlisted" : homePhoneNumber.NumberFormatted;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the placement field HTML.
+        /// </summary>
+        /// <param name="registrant">The registrant.</param>
+        /// <param name="lPlacements">The l placements.</param>
+        private void SetPlacementFieldHtml( RegistrationRegistrant registrant, Literal lPlacements )
+        {
+            var placementsHtmlBuilder = new StringBuilder();
+            foreach ( var registrationTemplatePlacement in _registrationTemplatePlacements )
+            {
+                var queryParams = new Dictionary<string, string>();
+                queryParams.Add( "RegistrationTemplatePlacementId", registrationTemplatePlacement.Id.ToString() );
+                queryParams.Add( "RegistrationInstanceId", this.RegistrationInstanceId.ToString() );
+                queryParams.Add( "RegistrantId", registrant.Id.ToString() );
+                var groupPlacementUrl = LinkedPageUrl( AttributeKey.GroupPlacementPage, queryParams );
+
+                var registrantPlacedGroups = this._placementGroupInfoList.Where( a =>
+                     ( a.RegistrationTemplatePlacementId.HasValue && a.RegistrationTemplatePlacementId.Value == registrationTemplatePlacement.Id )
+                     || ( !a.RegistrationTemplatePlacementId.HasValue && a.Group.GroupTypeId == registrationTemplatePlacement.GroupTypeId ) )
+                    .Where( a => a.PersonIds.Contains( registrant.PersonAlias.PersonId ) ).ToList();
+
+                var groupCount = registrantPlacedGroups.Count();
+                var toolTip = registrantPlacedGroups.Select( a => a.Group.Name ).ToList().AsDelimited( ", ", " and " );
+
+                string btnClass;
+                if ( groupCount > 0 )
+                {
+                    btnClass = "btn btn-success btn-xs btn-placement-status registrant-is-placed";
+                }
+                else
+                {
+                    btnClass = "btn btn-default btn-xs btn-placement-status registrant-not-placed";
+                }
+
+                string iconCssClass = registrationTemplatePlacement.GetIconCssClass();
+                if ( iconCssClass.IsNullOrWhiteSpace() )
+                {
+                    iconCssClass = "fa fa-users";
+                }
+
+                string groupCountText;
+                if ( registrationTemplatePlacement.AllowMultiplePlacements )
+                {
+                    groupCountText = groupCount.ToString();
+                }
+                else
+                {
+                    groupCountText = string.Empty;
+                }
+
+                placementsHtmlBuilder.AppendLine(
+                    string.Format(
+                        @"<a class='{0}' href='{1}' title='{2}'><i class='{3}'></i>{4}</a>",
+                        btnClass, // {0}
+                        groupPlacementUrl, // {1}
+                        toolTip, // {2}
+                        iconCssClass, // {3}
+                        groupCountText ) ); // {4}
+            }
+
+            lPlacements.Text = string.Format( "<div class='placement-list'>{0}</div>", placementsHtmlBuilder.ToString() );
         }
 
         /// <summary>
@@ -877,519 +961,574 @@ namespace RockWeb.Blocks.Event
 
             int? instanceId = this.RegistrationInstanceId;
 
-            if ( instanceId.HasValue )
+            if ( !instanceId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationInstanceService = new RegistrationInstanceService( rockContext );
+
+                var registrationInstance = registrationInstanceService.GetNoTracking( instanceId.Value );
+                if ( registrationInstance == null )
                 {
-                    var registrationInstance = new RegistrationInstanceService( rockContext ).Get( instanceId.Value );
-
-                    if ( registrationInstance != null &&
-                        registrationInstance.RegistrationTemplate != null &&
-                        registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.HasValue )
-                    {
-                        Signers = new SignatureDocumentService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( d =>
-                                d.SignatureDocumentTemplateId == registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
-                                d.Status == SignatureDocumentStatus.Signed &&
-                                d.BinaryFileId.HasValue &&
-                                d.AppliesToPersonAlias != null )
-                            .OrderByDescending( d => d.LastStatusDate )
-                            .Select( d => d.AppliesToPersonAlias.PersonId )
-                            .ToList();
-                    }
-
-                    // Start query for registrants
-                    var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
-                    var qry = registrationRegistrantService
-                    .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
-                    .Where( r =>
-                        r.Registration.RegistrationInstanceId == instanceId.Value &&
-                        r.PersonAlias != null &&
-                        r.PersonAlias.Person != null &&
-                        r.OnWaitList == false );
-
-                    // Filter by daterange
-                    var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpRegistrantsRegistrantDateRange.DelimitedValues );
-                    if ( dateRange.Start.HasValue )
-                    {
-                        qry = qry.Where( r =>
-                            r.CreatedDateTime.HasValue &&
-                            r.CreatedDateTime.Value >= dateRange.Start.Value );
-                    }
-
-                    if ( dateRange.End.HasValue )
-                    {
-                        qry = qry.Where( r =>
-                            r.CreatedDateTime.HasValue &&
-                            r.CreatedDateTime.Value < dateRange.End.Value );
-                    }
-
-                    // Filter by first name
-                    if ( !string.IsNullOrWhiteSpace( tbRegistrantsRegistrantFirstName.Text ) )
-                    {
-                        string rfname = tbRegistrantsRegistrantFirstName.Text;
-                        qry = qry.Where( r =>
-                            r.PersonAlias.Person.NickName.StartsWith( rfname ) ||
-                            r.PersonAlias.Person.FirstName.StartsWith( rfname ) );
-                    }
-
-                    // Filter by last name
-                    if ( !string.IsNullOrWhiteSpace( tbRegistrantsRegistrantLastName.Text ) )
-                    {
-                        string rlname = tbRegistrantsRegistrantLastName.Text;
-                        qry = qry.Where( r =>
-                            r.PersonAlias.Person.LastName.StartsWith( rlname ) );
-                    }
-
-                    // Filter by signed documents
-                    if ( Signers != null )
-                    {
-                        if ( ddlRegistrantsSignedDocument.SelectedValue.AsBooleanOrNull() == true )
-                        {
-                            qry = qry.Where( r => Signers.Contains( r.PersonAlias.PersonId ) );
-                        }
-                        else if ( ddlRegistrantsSignedDocument.SelectedValue.AsBooleanOrNull() == false )
-                        {
-                            qry = qry.Where( r => !Signers.Contains( r.PersonAlias.PersonId ) );
-                        }
-                    }
-
-                    if ( ddlRegistrantsInGroup.SelectedValue.AsBooleanOrNull() == true )
-                    {
-                        qry = qry.Where( r => r.GroupMemberId.HasValue );
-                    }
-                    else if ( ddlRegistrantsInGroup.SelectedValue.AsBooleanOrNull() == false )
-                    {
-                        qry = qry.Where( r => !r.GroupMemberId.HasValue );
-                    }
-
-                    bool preloadCampusValues = false;
-                    var registrantAttributes = new List<AttributeCache>();
-                    var personAttributes = new List<AttributeCache>();
-                    var groupMemberAttributes = new List<AttributeCache>();
-                    var registrantAttributeIds = new List<int>();
-                    var personAttributesIds = new List<int>();
-                    var groupMemberAttributesIds = new List<int>();
-
-                    var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
-
-                    if ( isExporting || ( RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ) ) )
-                    {
-                        _homeAddresses = Person.GetHomeLocations( personIds );
-                    }
-
-                    if ( RegistrantFields != null )
-                    {
-                        _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
-                        _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
-
-                        // Filter by any selected
-                        foreach ( var personFieldType in RegistrantFields
-                            .Where( f =>
-                                f.FieldSource == RegistrationFieldSource.PersonField &&
-                                f.PersonFieldType.HasValue )
-                            .Select( f => f.PersonFieldType.Value ) )
-                        {
-                            switch ( personFieldType )
-                            {
-                                case RegistrationPersonFieldType.Campus:
-                                    preloadCampusValues = true;
-
-                                    var ddlCampus = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsCampus" ) as RockDropDownList;
-                                    if ( ddlCampus != null )
-                                    {
-                                        var campusId = ddlCampus.SelectedValue.AsIntegerOrNull();
-                                        if ( campusId.HasValue )
-                                        {
-                                            var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.Members.Any( m =>
-                                                    m.Group.GroupType.Guid == familyGroupTypeGuid &&
-                                                    m.Group.CampusId.HasValue &&
-                                                    m.Group.CampusId.Value == campusId ) );
-                                        }
-                                    }
-
-                                    break;
-
-                                case RegistrationPersonFieldType.Email:
-                                    var tbEmailFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsEmailFilter" ) as RockTextBox;
-                                    if ( tbEmailFilter != null && !string.IsNullOrWhiteSpace( tbEmailFilter.Text ) )
-                                    {
-                                        qry = qry.Where( r =>
-                                            r.PersonAlias.Person.Email != null &&
-                                            r.PersonAlias.Person.Email.Contains( tbEmailFilter.Text ) );
-                                    }
-
-                                    break;
-
-                                case RegistrationPersonFieldType.Birthdate:
-                                    var drpBirthdateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsBirthdateFilter" ) as DateRangePicker;
-                                    if ( drpBirthdateFilter != null )
-                                    {
-                                        if ( drpBirthdateFilter.LowerValue.HasValue )
-                                        {
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.BirthDate.HasValue &&
-                                                r.PersonAlias.Person.BirthDate.Value >= drpBirthdateFilter.LowerValue.Value );
-                                        }
-
-                                        if ( drpBirthdateFilter.UpperValue.HasValue )
-                                        {
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.BirthDate.HasValue &&
-                                                r.PersonAlias.Person.BirthDate.Value <= drpBirthdateFilter.UpperValue.Value );
-                                        }
-                                    }
-
-                                    break;
-                                case RegistrationPersonFieldType.MiddleName:
-                                    var tbMiddleNameFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMiddleNameFilter" ) as RockTextBox;
-                                    if ( tbMiddleNameFilter != null && !string.IsNullOrWhiteSpace( tbMiddleNameFilter.Text ) )
-                                    {
-                                        qry = qry.Where( r =>
-                                            r.PersonAlias.Person.MiddleName != null &&
-                                            r.PersonAlias.Person.MiddleName.Contains( tbMiddleNameFilter.Text ) );
-                                    }
-
-                                    break;
-                                case RegistrationPersonFieldType.AnniversaryDate:
-                                    var drpAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
-                                    if ( drpAnniversaryDateFilter != null )
-                                    {
-                                        if ( drpAnniversaryDateFilter.LowerValue.HasValue )
-                                        {
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
-                                                r.PersonAlias.Person.AnniversaryDate.Value >= drpAnniversaryDateFilter.LowerValue.Value );
-                                        }
-
-                                        if ( drpAnniversaryDateFilter.UpperValue.HasValue )
-                                        {
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.AnniversaryDate.HasValue &&
-                                                r.PersonAlias.Person.AnniversaryDate.Value <= drpAnniversaryDateFilter.UpperValue.Value );
-                                        }
-                                    }
-
-                                    break;
-                                case RegistrationPersonFieldType.Grade:
-                                    var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
-                                    if ( gpGradeFilter != null )
-                                    {
-                                        int? graduationYear = Person.GraduationYearFromGradeOffset( gpGradeFilter.SelectedValueAsInt( false ) );
-                                        if ( graduationYear.HasValue )
-                                        {
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.GraduationYear.HasValue &&
-                                                r.PersonAlias.Person.GraduationYear == graduationYear.Value );
-                                        }
-                                    }
-
-                                    break;
-
-                                case RegistrationPersonFieldType.Gender:
-                                    var ddlGenderFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsGenderFilter" ) as RockDropDownList;
-                                    if ( ddlGenderFilter != null )
-                                    {
-                                        var gender = ddlGenderFilter.SelectedValue.ConvertToEnumOrNull<Gender>();
-                                        if ( gender.HasValue )
-                                        {
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.Gender == gender );
-                                        }
-                                    }
-
-                                    break;
-
-                                case RegistrationPersonFieldType.MaritalStatus:
-                                    var dvpMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "dvpRegistrantsMaritalStatusFilter" ) as DefinedValuePicker;
-                                    if ( dvpMaritalStatusFilter != null )
-                                    {
-                                        var maritalStatusId = dvpMaritalStatusFilter.SelectedValue.AsIntegerOrNull();
-                                        if ( maritalStatusId.HasValue )
-                                        {
-                                            qry = qry.Where( r =>
-                                                r.PersonAlias.Person.MaritalStatusValueId.HasValue &&
-                                                r.PersonAlias.Person.MaritalStatusValueId.Value == maritalStatusId.Value );
-                                        }
-                                    }
-
-                                    break;
-
-                                case RegistrationPersonFieldType.MobilePhone:
-                                    var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
-                                    if ( tbMobilePhoneFilter != null && !string.IsNullOrWhiteSpace( tbMobilePhoneFilter.Text ) )
-                                    {
-                                        string numericPhone = tbMobilePhoneFilter.Text.AsNumeric();
-                                        if ( !string.IsNullOrEmpty( numericPhone ) )
-                                        {
-                                            var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
-                                                .Queryable()
-                                                .Where( a => a.Number.Contains( numericPhone ) )
-                                                .Select( a => a.PersonId );
-
-                                            qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
-                                        }
-                                    }
-
-                                    break;
-
-                                case RegistrationPersonFieldType.HomePhone:
-                                    var tbRegistrantsHomePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsHomePhoneFilter" ) as RockTextBox;
-                                    if ( tbRegistrantsHomePhoneFilter != null && !string.IsNullOrWhiteSpace( tbRegistrantsHomePhoneFilter.Text ) )
-                                    {
-                                        string numericPhone = tbRegistrantsHomePhoneFilter.Text.AsNumeric();
-                                        if ( !string.IsNullOrEmpty( numericPhone ) )
-                                        {
-                                            var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
-                                                .Queryable()
-                                                .Where( a => a.Number.Contains( numericPhone ) )
-                                                .Select( a => a.PersonId );
-
-                                            qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
-                                        }
-                                    }
-
-                                    break;
-                            }
-                        }
-
-                        // Get all the registrant attributes selected to be on grid
-                        registrantAttributes = RegistrantFields
-                            .Where( f =>
-                                f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
-                            .Select( f => f.Attribute )
-                            .ToList();
-                        registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
-
-                        // Filter query by any configured registrant attribute filters
-                        if ( registrantAttributes != null && registrantAttributes.Any() )
-                        {
-                            foreach ( var attribute in registrantAttributes )
-                            {
-                                var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
-                            }
-                        }
-
-                        // Get all the person attributes selected to be on grid
-                        personAttributes = RegistrantFields
-                            .Where( f =>
-                                f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.PersonAttribute )
-                            .Select( f => f.Attribute )
-                            .ToList();
-                        personAttributesIds = personAttributes.Select( a => a.Id ).Distinct().ToList();
-
-                        // Filter query by any configured person attribute filters
-                        if ( personAttributes != null && personAttributes.Any() )
-                        {
-                            PersonService personService = new PersonService( rockContext );
-                            var personQry = personService.Queryable().AsNoTracking();
-                            foreach ( var attribute in personAttributes )
-                            {
-                                var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                personQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( personQry, filterControl, attribute, personService, Rock.Reporting.FilterMode.SimpleFilter );
-                            }
-
-                            qry = qry.Where( r => personQry.Any( p => p.Id == r.PersonAlias.PersonId ) );
-                        }
-
-                        // Get all the group member attributes selected to be on grid
-                        groupMemberAttributes = RegistrantFields
-                            .Where( f =>
-                                f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
-                            .Select( f => f.Attribute )
-                            .ToList();
-                        groupMemberAttributesIds = groupMemberAttributes.Select( a => a.Id ).Distinct().ToList();
-
-                        // Filter query by any configured person attribute filters
-                        if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
-                        {
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
-                            foreach ( var attribute in groupMemberAttributes )
-                            {
-                                var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
-                            }
-
-                            qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
-                        }
-                    }
-
-                    // Sort the query
-                    IOrderedQueryable<RegistrationRegistrant> orderedQry = null;
-                    SortProperty sortProperty = gRegistrants.SortProperty;
-                    if ( sortProperty != null )
-                    {
-                        orderedQry = qry.Sort( sortProperty );
-                    }
-                    else
-                    {
-                        orderedQry = qry
-                            .OrderBy( r => r.PersonAlias.Person.LastName )
-                            .ThenBy( r => r.PersonAlias.Person.NickName );
-                    }
-
-                    // increase the timeout just in case. A complex filter on the grid might slow things down
-                    rockContext.Database.CommandTimeout = 180;
-
-                    // Set the grids LinqDataSource which will run query and set results for current page
-                    gRegistrants.SetLinqDataSource<RegistrationRegistrant>( orderedQry );
-
-                    if ( RegistrantFields != null )
-                    {
-                        // Get the query results for the current page
-                        var currentPageRegistrants = gRegistrants.DataSource as List<RegistrationRegistrant>;
-                        if ( currentPageRegistrants != null )
-                        {
-                            // Get all the registrant ids in current page of query results
-                            var registrantIds = currentPageRegistrants
-                                .Select( r => r.Id )
-                                .Distinct()
-                                .ToList();
-
-                            // Get all the person ids in current page of query results
-                            var currentPagePersonIds = currentPageRegistrants
-                                .Select( r => r.PersonAlias.PersonId )
-                                .Distinct()
-                                .ToList();
-
-                            // Get all the group member ids and the group id in current page of query results
-                            var groupMemberIds = new List<int>();
-                            GroupLinks = new Dictionary<int, string>();
-                            foreach ( var groupMember in currentPageRegistrants
-                                .Where( m =>
-                                    m.GroupMember != null &&
-                                    m.GroupMember.Group != null )
-                                .Select( m => m.GroupMember ) )
-                            {
-                                groupMemberIds.Add( groupMember.Id );
-
-                                string linkedPageUrl = LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } );
-                                GroupLinks.AddOrIgnore(
-                                    groupMember.GroupId,
-                                    isExporting ? groupMember.Group.Name : string.Format( "<a href='{0}'>{1}</a>", linkedPageUrl, groupMember.Group.Name ) );
-                            }
-
-                            // If the campus column was selected to be displayed on grid, preload all the people's
-                            // campuses so that the databind does not need to query each row
-                            if ( preloadCampusValues )
-                            {
-                                PersonCampusIds = new Dictionary<int, List<int>>();
-
-                                Guid familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-                                foreach ( var personCampusList in new GroupMemberService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( m =>
-                                        m.Group.GroupType.Guid == familyGroupTypeGuid &&
-                                        currentPagePersonIds.Contains( m.PersonId ) )
-                                    .GroupBy( m => m.PersonId )
-                                    .Select( m => new
-                                    {
-                                        PersonId = m.Key,
-                                        CampusIds = m
-                                            .Where( g => g.Group.CampusId.HasValue )
-                                            .Select( g => g.Group.CampusId.Value )
-                                            .ToList()
-                                    } ) )
-                                {
-                                    PersonCampusIds.Add( personCampusList.PersonId, personCampusList.CampusIds );
-                                }
-                            }
-
-                            // If there are any attributes that were selected to be displayed, we're going
-                            // to try and read all attribute values in one query and then put them into a
-                            // custom grid ObjectList property so that the AttributeField columns don't need
-                            // to do the LoadAttributes and querying of values for each row/column
-                            if ( personAttributesIds.Any() || groupMemberAttributesIds.Any() || registrantAttributeIds.Any() )
-                            {
-                                // Query the attribute values for all rows and attributes
-                                var attributeValues = new AttributeValueService( rockContext )
-                                    .Queryable( "Attribute" ).AsNoTracking()
-                                    .Where( v =>
-                                        v.EntityId.HasValue &&
-                                        (
-                                            (
-                                                personAttributesIds.Contains( v.AttributeId ) &&
-                                                currentPagePersonIds.Contains( v.EntityId.Value )
-                                            ) ||
-                                            (
-                                                groupMemberAttributesIds.Contains( v.AttributeId ) &&
-                                                groupMemberIds.Contains( v.EntityId.Value )
-                                            ) ||
-                                            (
-                                                registrantAttributeIds.Contains( v.AttributeId ) &&
-                                                registrantIds.Contains( v.EntityId.Value )
-                                            )
-                                        ) ).ToList();
-
-                                // Get the attributes to add to each row's object
-                                var attributes = new Dictionary<string, AttributeCache>();
-                                RegistrantFields
-                                        .Where( f => f.Attribute != null )
-                                        .Select( f => f.Attribute )
-                                        .ToList()
-                                    .ForEach( a => attributes
-                                        .Add( a.Id.ToString() + a.Key, a ) );
-
-                                // Initialize the grid's object list
-                                gRegistrants.ObjectList = new Dictionary<string, object>();
-
-                                // Loop through each of the current page's registrants and build an attribute
-                                // field object for storing attributes and the values for each of the registrants
-                                foreach ( var registrant in currentPageRegistrants )
-                                {
-                                    // Create a row attribute object
-                                    var attributeFieldObject = new AttributeFieldObject();
-
-                                    // Add the attributes to the attribute object
-                                    attributeFieldObject.Attributes = attributes;
-
-                                    // Add any person attribute values to object
-                                    attributeValues
-                                        .Where( v =>
-                                            personAttributesIds.Contains( v.AttributeId ) &&
-                                            v.EntityId.Value == registrant.PersonAlias.PersonId )
-                                        .ToList()
-                                        .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
-
-                                    // Add any group member attribute values to object
-                                    if ( registrant.GroupMemberId.HasValue )
-                                    {
-                                        attributeValues
-                                            .Where( v =>
-                                                groupMemberAttributesIds.Contains( v.AttributeId ) &&
-                                                v.EntityId.Value == registrant.GroupMemberId.Value )
-                                            .ToList()
-                                            .ForEach( v => attributeFieldObject.AttributeValues
-                                                .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
-                                    }
-
-                                    // Add any registrant attribute values to object
-                                    attributeValues
-                                        .Where( v =>
-                                            registrantAttributeIds.Contains( v.AttributeId ) &&
-                                            v.EntityId.Value == registrant.Id )
-                                        .ToList()
-                                        .ForEach( v => attributeFieldObject.AttributeValues
-                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
-
-                                    // Add row attribute object to grid's object list
-                                    gRegistrants.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
-                                }
-                            }
-                        }
-                    }
-
-                    gRegistrants.DataBind();
+                    return;
                 }
+
+                var requiredSignatureDocumentTemplateId = registrationInstance.RegistrationTemplate.RequiredSignatureDocumentTemplateId;
+
+                if ( requiredSignatureDocumentTemplateId.HasValue )
+                {
+                    SignersPersonAliasIds = new SignatureDocumentService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( d =>
+                            d.SignatureDocumentTemplateId == requiredSignatureDocumentTemplateId.Value &&
+                            d.Status == SignatureDocumentStatus.Signed &&
+                            d.BinaryFileId.HasValue &&
+                            d.AppliesToPersonAlias != null )
+                        .OrderByDescending( d => d.LastStatusDate )
+                        .Select( d => d.AppliesToPersonAlias.PersonId )
+                        .ToList();
+                }
+
+                // Start query for registrants
+                var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
+                var qry = registrationRegistrantService
+                .Queryable( "PersonAlias.Person.PhoneNumbers.NumberTypeValue,Fees.RegistrationTemplateFee,GroupMember.Group" ).AsNoTracking()
+                .Where( r =>
+                    r.Registration.RegistrationInstanceId == instanceId.Value &&
+                    r.PersonAlias != null &&
+                    r.PersonAlias.Person != null &&
+                    r.OnWaitList == false );
+
+                // Filter by daterange
+                var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpRegistrantsRegistrantDateRange.DelimitedValues );
+                if ( dateRange.Start.HasValue )
+                {
+                    qry = qry.Where( r =>
+                        r.CreatedDateTime.HasValue &&
+                        r.CreatedDateTime.Value >= dateRange.Start.Value );
+                }
+
+                if ( dateRange.End.HasValue )
+                {
+                    qry = qry.Where( r =>
+                        r.CreatedDateTime.HasValue &&
+                        r.CreatedDateTime.Value < dateRange.End.Value );
+                }
+
+                // Filter by first name
+                if ( !string.IsNullOrWhiteSpace( tbRegistrantsRegistrantFirstName.Text ) )
+                {
+                    string rfname = tbRegistrantsRegistrantFirstName.Text;
+                    qry = qry.Where( r =>
+                        r.PersonAlias.Person.NickName.StartsWith( rfname ) ||
+                        r.PersonAlias.Person.FirstName.StartsWith( rfname ) );
+                }
+
+                // Filter by last name
+                if ( !string.IsNullOrWhiteSpace( tbRegistrantsRegistrantLastName.Text ) )
+                {
+                    string rlname = tbRegistrantsRegistrantLastName.Text;
+                    qry = qry.Where( r =>
+                        r.PersonAlias.Person.LastName.StartsWith( rlname ) );
+                }
+
+                // Filter by signed documents
+                if ( SignersPersonAliasIds != null )
+                {
+                    if ( ddlRegistrantsSignedDocument.SelectedValue.AsBooleanOrNull() == true )
+                    {
+                        qry = qry.Where( r => SignersPersonAliasIds.Contains( r.PersonAlias.PersonId ) );
+                    }
+                    else if ( ddlRegistrantsSignedDocument.SelectedValue.AsBooleanOrNull() == false )
+                    {
+                        qry = qry.Where( r => !SignersPersonAliasIds.Contains( r.PersonAlias.PersonId ) );
+                    }
+                }
+
+                if ( ddlRegistrantsInGroup.SelectedValue.AsBooleanOrNull() == true )
+                {
+                    qry = qry.Where( r => r.GroupMemberId.HasValue );
+                }
+                else if ( ddlRegistrantsInGroup.SelectedValue.AsBooleanOrNull() == false )
+                {
+                    qry = qry.Where( r => !r.GroupMemberId.HasValue );
+                }
+
+                bool preloadCampusValues = false;
+                var registrantAttributes = new List<AttributeCache>();
+                var personAttributes = new List<AttributeCache>();
+                var groupMemberAttributes = new List<AttributeCache>();
+                var registrantAttributeIds = new List<int>();
+                var personAttributesIds = new List<int>();
+                var groupMemberAttributesIds = new List<int>();
+
+                var personIds = qry.Select( r => r.PersonAlias.PersonId ).Distinct().ToList();
+
+                if ( isExporting || ( RegistrantFields != null && RegistrantFields.Any( f => f.PersonFieldType != null && f.PersonFieldType == RegistrationPersonFieldType.Address ) ) )
+                {
+                    _homeAddresses = Person.GetHomeLocations( personIds );
+                }
+
+                _registrationTemplatePlacements = registrationInstance.RegistrationTemplate.Placements.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+
+                _placementsField.Visible = _registrationTemplatePlacements.Any();
+
+                if ( _registrationTemplatePlacements.Any() )
+                {
+                    var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
+                    var instancePlacementGroupsQry = registrationInstanceService.GetRegistrationInstancePlacementGroups( registrationInstance );
+                    _placementGroupInfoList = instancePlacementGroupsQry.AsNoTracking().Select( s => new
+                    {
+                        Group = s,
+                        PersonIds = s.Members.Select( m => m.PersonId ).ToList()
+                    } )
+                        .ToList()
+                        .Select( a => new PlacementGroupInfo
+                        {
+                            Group = a.Group,
+                            RegistrationTemplatePlacementId = null,
+                            PersonIds = a.PersonIds.ToArray(),
+                        } ).ToList();
+
+                    foreach ( var placementTemplate in registrationInstance.RegistrationTemplate.Placements )
+                    {
+                        var registrationTemplatePlacementPlacementGroupsQuery = registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( placementTemplate );
+
+                        var templatePlacementGroupInfoList = registrationTemplatePlacementPlacementGroupsQuery.AsNoTracking()
+                            .Select( s => new
+                            {
+                                Group = s,
+                                PersonIds = s.Members.Select( m => m.PersonId ).ToList()
+                            } )
+                            .ToList()
+                            .Select( a => new PlacementGroupInfo
+                            {
+                                Group = a.Group,
+                                RegistrationTemplatePlacementId = placementTemplate.Id,
+                                PersonIds = a.PersonIds.ToArray()
+                            } ).ToList();
+
+                        _placementGroupInfoList = _placementGroupInfoList.Union( templatePlacementGroupInfoList ).ToList();
+                    }
+                }
+                else
+                {
+                    _placementGroupInfoList = new List<PlacementGroupInfo>();
+                }
+
+                if ( RegistrantFields != null )
+                {
+                    _mobilePhoneNumbers = GetPersonMobilePhoneLookup( rockContext, this.RegistrantFields, personIds );
+                    _homePhoneNumbers = GetPersonHomePhoneLookup( rockContext, this.RegistrantFields, personIds );
+
+                    // Filter by any selected
+                    foreach ( var personFieldType in RegistrantFields
+                        .Where( f =>
+                            f.FieldSource == RegistrationFieldSource.PersonField &&
+                            f.PersonFieldType.HasValue )
+                        .Select( f => f.PersonFieldType.Value ) )
+                    {
+                        switch ( personFieldType )
+                        {
+                            case RegistrationPersonFieldType.Campus:
+                                preloadCampusValues = true;
+
+                                var ddlCampus = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsCampus" ) as RockDropDownList;
+                                if ( ddlCampus != null )
+                                {
+                                    var campusId = ddlCampus.SelectedValue.AsIntegerOrNull();
+                                    if ( campusId.HasValue )
+                                    {
+                                        var familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.Members.Any( m =>
+                                                m.Group.GroupType.Guid == familyGroupTypeGuid &&
+                                                m.Group.CampusId.HasValue &&
+                                                m.Group.CampusId.Value == campusId ) );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Email:
+                                var tbEmailFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsEmailFilter" ) as RockTextBox;
+                                if ( tbEmailFilter != null && !string.IsNullOrWhiteSpace( tbEmailFilter.Text ) )
+                                {
+                                    qry = qry.Where( r =>
+                                        r.PersonAlias.Person.Email != null &&
+                                        r.PersonAlias.Person.Email.Contains( tbEmailFilter.Text ) );
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Birthdate:
+                                var drpBirthdateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsBirthdateFilter" ) as DateRangePicker;
+                                if ( drpBirthdateFilter != null )
+                                {
+                                    if ( drpBirthdateFilter.LowerValue.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.BirthDate.HasValue &&
+                                            r.PersonAlias.Person.BirthDate.Value >= drpBirthdateFilter.LowerValue.Value );
+                                    }
+
+                                    if ( drpBirthdateFilter.UpperValue.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.BirthDate.HasValue &&
+                                            r.PersonAlias.Person.BirthDate.Value <= drpBirthdateFilter.UpperValue.Value );
+                                    }
+                                }
+
+                                break;
+                            case RegistrationPersonFieldType.MiddleName:
+                                var tbMiddleNameFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMiddleNameFilter" ) as RockTextBox;
+                                if ( tbMiddleNameFilter != null && !string.IsNullOrWhiteSpace( tbMiddleNameFilter.Text ) )
+                                {
+                                    qry = qry.Where( r =>
+                                        r.PersonAlias.Person.MiddleName != null &&
+                                        r.PersonAlias.Person.MiddleName.Contains( tbMiddleNameFilter.Text ) );
+                                }
+
+                                break;
+                            case RegistrationPersonFieldType.AnniversaryDate:
+                                var drpAnniversaryDateFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "drpRegistrantsAnniversaryDateFilter" ) as DateRangePicker;
+                                if ( drpAnniversaryDateFilter != null )
+                                {
+                                    if ( drpAnniversaryDateFilter.LowerValue.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                            r.PersonAlias.Person.AnniversaryDate.Value >= drpAnniversaryDateFilter.LowerValue.Value );
+                                    }
+
+                                    if ( drpAnniversaryDateFilter.UpperValue.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.AnniversaryDate.HasValue &&
+                                            r.PersonAlias.Person.AnniversaryDate.Value <= drpAnniversaryDateFilter.UpperValue.Value );
+                                    }
+                                }
+
+                                break;
+                            case RegistrationPersonFieldType.Grade:
+                                var gpGradeFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "gpRegistrantsGradeFilter" ) as GradePicker;
+                                if ( gpGradeFilter != null )
+                                {
+                                    int? graduationYear = Person.GraduationYearFromGradeOffset( gpGradeFilter.SelectedValueAsInt( false ) );
+                                    if ( graduationYear.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.GraduationYear.HasValue &&
+                                            r.PersonAlias.Person.GraduationYear == graduationYear.Value );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.Gender:
+                                var ddlGenderFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "ddlRegistrantsGenderFilter" ) as RockDropDownList;
+                                if ( ddlGenderFilter != null )
+                                {
+                                    var gender = ddlGenderFilter.SelectedValue.ConvertToEnumOrNull<Gender>();
+                                    if ( gender.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.Gender == gender );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.MaritalStatus:
+                                var dvpMaritalStatusFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "dvpRegistrantsMaritalStatusFilter" ) as DefinedValuePicker;
+                                if ( dvpMaritalStatusFilter != null )
+                                {
+                                    var maritalStatusId = dvpMaritalStatusFilter.SelectedValue.AsIntegerOrNull();
+                                    if ( maritalStatusId.HasValue )
+                                    {
+                                        qry = qry.Where( r =>
+                                            r.PersonAlias.Person.MaritalStatusValueId.HasValue &&
+                                            r.PersonAlias.Person.MaritalStatusValueId.Value == maritalStatusId.Value );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.MobilePhone:
+                                var tbMobilePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsMobilePhoneFilter" ) as RockTextBox;
+                                if ( tbMobilePhoneFilter != null && !string.IsNullOrWhiteSpace( tbMobilePhoneFilter.Text ) )
+                                {
+                                    string numericPhone = tbMobilePhoneFilter.Text.AsNumeric();
+                                    if ( !string.IsNullOrEmpty( numericPhone ) )
+                                    {
+                                        var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
+                                            .Queryable()
+                                            .Where( a => a.Number.Contains( numericPhone ) )
+                                            .Select( a => a.PersonId );
+
+                                        qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
+                                    }
+                                }
+
+                                break;
+
+                            case RegistrationPersonFieldType.HomePhone:
+                                var tbRegistrantsHomePhoneFilter = phRegistrantsRegistrantFormFieldFilters.FindControl( "tbRegistrantsHomePhoneFilter" ) as RockTextBox;
+                                if ( tbRegistrantsHomePhoneFilter != null && !string.IsNullOrWhiteSpace( tbRegistrantsHomePhoneFilter.Text ) )
+                                {
+                                    string numericPhone = tbRegistrantsHomePhoneFilter.Text.AsNumeric();
+                                    if ( !string.IsNullOrEmpty( numericPhone ) )
+                                    {
+                                        var phoneNumberPersonIdQry = new PhoneNumberService( rockContext )
+                                            .Queryable()
+                                            .Where( a => a.Number.Contains( numericPhone ) )
+                                            .Select( a => a.PersonId );
+
+                                        qry = qry.Where( r => phoneNumberPersonIdQry.Contains( r.PersonAlias.PersonId ) );
+                                    }
+                                }
+
+                                break;
+                        }
+                    }
+
+                    // Get all the registrant attributes selected to be on grid
+                    registrantAttributes = RegistrantFields
+                        .Where( f =>
+                            f.Attribute != null &&
+                            f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
+                        .Select( f => f.Attribute )
+                        .ToList();
+                    registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
+
+                    // Filter query by any configured registrant attribute filters
+                    if ( registrantAttributes != null && registrantAttributes.Any() )
+                    {
+                        foreach ( var attribute in registrantAttributes )
+                        {
+                            var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
+                            qry = attribute.FieldType.Field.ApplyAttributeQueryFilter( qry, filterControl, attribute, registrationRegistrantService, Rock.Reporting.FilterMode.SimpleFilter );
+                        }
+                    }
+
+                    // Get all the person attributes selected to be on grid
+                    personAttributes = RegistrantFields
+                        .Where( f =>
+                            f.Attribute != null &&
+                            f.FieldSource == RegistrationFieldSource.PersonAttribute )
+                        .Select( f => f.Attribute )
+                        .ToList();
+                    personAttributesIds = personAttributes.Select( a => a.Id ).Distinct().ToList();
+
+                    // Filter query by any configured person attribute filters
+                    if ( personAttributes != null && personAttributes.Any() )
+                    {
+                        PersonService personService = new PersonService( rockContext );
+                        var personQry = personService.Queryable().AsNoTracking();
+                        foreach ( var attribute in personAttributes )
+                        {
+                            var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
+                            personQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( personQry, filterControl, attribute, personService, Rock.Reporting.FilterMode.SimpleFilter );
+                        }
+
+                        qry = qry.Where( r => personQry.Any( p => p.Id == r.PersonAlias.PersonId ) );
+                    }
+
+                    // Get all the group member attributes selected to be on grid
+                    groupMemberAttributes = RegistrantFields
+                        .Where( f =>
+                            f.Attribute != null &&
+                            f.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
+                        .Select( f => f.Attribute )
+                        .ToList();
+                    groupMemberAttributesIds = groupMemberAttributes.Select( a => a.Id ).Distinct().ToList();
+
+                    // Filter query by any configured person attribute filters
+                    if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
+                    {
+                        var groupMemberService = new GroupMemberService( rockContext );
+                        var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
+                        foreach ( var attribute in groupMemberAttributes )
+                        {
+                            var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
+                            groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                        }
+
+                        qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
+                    }
+                }
+
+                // Sort the query
+                IOrderedQueryable<RegistrationRegistrant> orderedQry = null;
+                SortProperty sortProperty = gRegistrants.SortProperty;
+                if ( sortProperty != null )
+                {
+                    orderedQry = qry.Sort( sortProperty );
+                }
+                else
+                {
+                    orderedQry = qry
+                        .OrderBy( r => r.PersonAlias.Person.LastName )
+                        .ThenBy( r => r.PersonAlias.Person.NickName );
+                }
+
+                // increase the timeout just in case. A complex filter on the grid might slow things down
+                rockContext.Database.CommandTimeout = 180;
+
+                // Set the grids LinqDataSource which will run query and set results for current page
+                gRegistrants.SetLinqDataSource<RegistrationRegistrant>( orderedQry );
+
+                if ( RegistrantFields != null )
+                {
+                    // Get the query results for the current page
+                    var currentPageRegistrants = gRegistrants.DataSource as List<RegistrationRegistrant>;
+                    if ( currentPageRegistrants != null )
+                    {
+                        // Get all the registrant ids in current page of query results
+                        var registrantIds = currentPageRegistrants
+                            .Select( r => r.Id )
+                            .Distinct()
+                            .ToList();
+
+                        // Get all the person ids in current page of query results
+                        var currentPagePersonIds = currentPageRegistrants
+                            .Select( r => r.PersonAlias.PersonId )
+                            .Distinct()
+                            .ToList();
+
+                        // Get all the group member ids and the group id in current page of query results
+                        var groupMemberIds = new List<int>();
+                        GroupLinks = new Dictionary<int, string>();
+                        foreach ( var groupMember in currentPageRegistrants
+                            .Where( m =>
+                                m.GroupMember != null &&
+                                m.GroupMember.Group != null )
+                            .Select( m => m.GroupMember ) )
+                        {
+                            groupMemberIds.Add( groupMember.Id );
+
+                            string linkedPageUrl = LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } );
+                            GroupLinks.AddOrIgnore(
+                                groupMember.GroupId,
+                                isExporting ? groupMember.Group.Name : string.Format( "<a href='{0}'>{1}</a>", linkedPageUrl, groupMember.Group.Name ) );
+                        }
+
+                        // If the campus column was selected to be displayed on grid, preload all the people's
+                        // campuses so that the databind does not need to query each row
+                        if ( preloadCampusValues )
+                        {
+                            PersonCampusIds = new Dictionary<int, List<int>>();
+
+                            Guid familyGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+                            foreach ( var personCampusList in new GroupMemberService( rockContext )
+                                .Queryable().AsNoTracking()
+                                .Where( m =>
+                                    m.Group.GroupType.Guid == familyGroupTypeGuid &&
+                                    currentPagePersonIds.Contains( m.PersonId ) )
+                                .GroupBy( m => m.PersonId )
+                                .Select( m => new
+                                {
+                                    PersonId = m.Key,
+                                    CampusIds = m
+                                        .Where( g => g.Group.CampusId.HasValue )
+                                        .Select( g => g.Group.CampusId.Value )
+                                        .ToList()
+                                } ) )
+                            {
+                                PersonCampusIds.Add( personCampusList.PersonId, personCampusList.CampusIds );
+                            }
+                        }
+
+                        // If there are any attributes that were selected to be displayed, we're going
+                        // to try and read all attribute values in one query and then put them into a
+                        // custom grid ObjectList property so that the AttributeField columns don't need
+                        // to do the LoadAttributes and querying of values for each row/column
+                        if ( personAttributesIds.Any() || groupMemberAttributesIds.Any() || registrantAttributeIds.Any() )
+                        {
+                            // Query the attribute values for all rows and attributes
+                            var attributeValues = new AttributeValueService( rockContext )
+                                .Queryable( "Attribute" ).AsNoTracking()
+                                .Where( v =>
+                                    v.EntityId.HasValue &&
+                                    (
+                                        (
+                                            personAttributesIds.Contains( v.AttributeId ) &&
+                                            currentPagePersonIds.Contains( v.EntityId.Value )
+                                        ) ||
+                                        (
+                                            groupMemberAttributesIds.Contains( v.AttributeId ) &&
+                                            groupMemberIds.Contains( v.EntityId.Value )
+                                        ) ||
+                                        (
+                                            registrantAttributeIds.Contains( v.AttributeId ) &&
+                                            registrantIds.Contains( v.EntityId.Value )
+                                        )
+                                    ) ).ToList();
+
+                            // Get the attributes to add to each row's object
+                            var attributes = new Dictionary<string, AttributeCache>();
+                            RegistrantFields
+                                    .Where( f => f.Attribute != null )
+                                    .Select( f => f.Attribute )
+                                    .ToList()
+                                .ForEach( a => attributes
+                                    .Add( a.Id.ToString() + a.Key, a ) );
+
+                            // Initialize the grid's object list
+                            gRegistrants.ObjectList = new Dictionary<string, object>();
+
+                            // Loop through each of the current page's registrants and build an attribute
+                            // field object for storing attributes and the values for each of the registrants
+                            foreach ( var registrant in currentPageRegistrants )
+                            {
+                                // Create a row attribute object
+                                var attributeFieldObject = new AttributeFieldObject();
+
+                                // Add the attributes to the attribute object
+                                attributeFieldObject.Attributes = attributes;
+
+                                // Add any person attribute values to object
+                                attributeValues
+                                    .Where( v =>
+                                        personAttributesIds.Contains( v.AttributeId ) &&
+                                        v.EntityId.Value == registrant.PersonAlias.PersonId )
+                                    .ToList()
+                                    .ForEach( v => attributeFieldObject.AttributeValues
+                                        .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
+
+                                // Add any group member attribute values to object
+                                if ( registrant.GroupMemberId.HasValue )
+                                {
+                                    attributeValues
+                                        .Where( v =>
+                                            groupMemberAttributesIds.Contains( v.AttributeId ) &&
+                                            v.EntityId.Value == registrant.GroupMemberId.Value )
+                                        .ToList()
+                                        .ForEach( v => attributeFieldObject.AttributeValues
+                                            .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
+                                }
+
+                                // Add any registrant attribute values to object
+                                attributeValues
+                                    .Where( v =>
+                                        registrantAttributeIds.Contains( v.AttributeId ) &&
+                                        v.EntityId.Value == registrant.Id )
+                                    .ToList()
+                                    .ForEach( v => attributeFieldObject.AttributeValues
+                                        .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );
+
+                                // Add row attribute object to grid's object list
+                                gRegistrants.ObjectList.Add( registrant.Id.ToString(), attributeFieldObject );
+                            }
+                        }
+                    }
+                }
+
+                gRegistrants.DataBind();
             }
         }
 
@@ -1405,6 +1544,11 @@ namespace RockWeb.Blocks.Event
             feeField.ID = "lFees";
             feeField.HeaderText = "Fees";
             gRegistrants.Columns.Add( feeField );
+
+            _placementsField = new RockLiteralField();
+            _placementsField.ID = "lPlacements";
+            _placementsField.HeaderText = "Placements";
+            gRegistrants.Columns.Add( _placementsField );
 
             var deleteField = new DeleteField();
             gRegistrants.Columns.Add( deleteField );
@@ -1424,6 +1568,41 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = visible;
         }
 
-        #endregion   
+        #endregion
+
+        #region classes
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [System.Diagnostics.DebuggerDisplay( "{Group.Name}, RegistrationTemplatePlacementId = {RegistrationTemplatePlacementId} " )]
+        protected class PlacementGroupInfo
+        {
+            /// <summary>
+            /// Gets or sets the group.
+            /// </summary>
+            /// <value>
+            /// The group.
+            /// </value>
+            public Group Group { get; set; }
+
+            /// <summary>
+            /// Gets or sets the registration template placement identifier.
+            /// </summary>
+            /// <value>
+            /// The registration template placement identifier.
+            /// </value>
+            public int? RegistrationTemplatePlacementId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person ids.
+            /// </summary>
+            /// <value>
+            /// The person ids.
+            /// </value>
+            public int[] PersonIds { get; set; }
+        }
+
+        #endregion classes
     }
 }

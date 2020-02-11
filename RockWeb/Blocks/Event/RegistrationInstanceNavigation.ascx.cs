@@ -82,6 +82,11 @@ namespace RockWeb.Blocks.Event
             /// The registration template placement identifier
             /// </summary>
             public const string RegistrationTemplatePlacementId = "RegistrationTemplatePlacementId";
+
+            /// <summary>
+            /// The registrant identifier
+            /// </summary>
+            public const string RegistrantId = "RegistrantId";
         }
 
         #endregion PageParameterKeys
@@ -129,7 +134,7 @@ namespace RockWeb.Blocks.Event
 
             var navigationPageInfoList = pageList.Select( a => new NavigationPageInfo
             {
-                TabTitle = a.PageTitle,
+                TabTitleHtml = a.PageTitle,
                 PageReference = new PageReference( a.Id )
             } ).ToList();
 
@@ -144,14 +149,23 @@ namespace RockWeb.Blocks.Event
                     {
                         var groupPlacementPageReference = new PageReference( groupPlacementToolPageId.Value );
                         groupPlacementPageReference.Parameters.Add( PageParameterKey.RegistrationTemplatePlacementId, registrationTemplatePlacement.Id.ToString() );
-                        var navigationPageInfo = new NavigationPageInfo { PageReference = groupPlacementPageReference, TabTitle = registrationTemplatePlacement.Name, IsGroupPlacementPage = true, RegistrationTemplatePlacementId = registrationTemplatePlacement.Id };
+                        var navigationPageInfo = new NavigationPageInfo
+                        {
+                            PageReference = groupPlacementPageReference,
+                            TabTitleHtml = string.Format( "<i class='{0}'></i> {1}", registrationTemplatePlacement.GetIconCssClass(), registrationTemplatePlacement.Name ),
+                            IsGroupPlacementPage = true,
+                            RegistrationTemplatePlacementId = registrationTemplatePlacement.Id };
 
                         navigationPageInfoList.Add( navigationPageInfo );
                     }
                 }
             }
 
-            var currentPageParameters = this.PageParameters().Where( a => a.Key != "PageId" && a.Key != PageParameterKey.RegistrationTemplatePlacementId ).ToList();
+            var currentPageParameters = this.PageParameters().Where( a =>
+                a.Key != "PageId"
+                && a.Key != PageParameterKey.RegistrationTemplatePlacementId
+                && a.Key != PageParameterKey.RegistrantId ).ToList();
+
             foreach ( var navigationPageInfo in navigationPageInfoList )
             {
                 foreach ( var pageParameter in currentPageParameters )
@@ -198,7 +212,7 @@ namespace RockWeb.Blocks.Event
             var aPageLink = e.Item.FindControl( "aPageLink" ) as HtmlAnchor;
 
             aPageLink.HRef = pageReference.BuildUrl();
-            aPageLink.InnerText = navigationPageInfo.TabTitle;
+            aPageLink.InnerHtml = navigationPageInfo.TabTitleHtml;
 
             var lPageName = e.Item.FindControl( "lPageName" ) as Literal;
         }
@@ -217,7 +231,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private class NavigationPageInfo
         {
-            public string TabTitle { get; set; }
+            public string TabTitleHtml { get; set; }
 
             public PageReference PageReference { get; set; }
 

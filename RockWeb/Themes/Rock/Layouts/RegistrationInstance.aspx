@@ -59,7 +59,7 @@
                 </div>
             </div>
 
-   		    <div class="pagetabs">
+   		    <div class="registration-instance-navigation">
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:Zone Name="TabNavigation" runat="server" />
