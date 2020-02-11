@@ -244,14 +244,14 @@ namespace RockWeb.Blocks.Groups
             };
 
             int? id = e.RowKeyValues["Id"].ToString().AsIntegerOrNull();
-            if ( id.HasValue  )
+            if ( id.HasValue )
             {
                 qryParams.Add( "OccurrenceId", id.Value.ToString() );
             }
 
             if ( !id.HasValue || id.Value == 0 )
             {
-                string occurrenceDate = ( (DateTime)e.RowKeyValues["OccurrenceDate"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
+                string occurrenceDate = ( ( DateTime ) e.RowKeyValues["OccurrenceDate"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
                 qryParams.Add( "Date", occurrenceDate );
 
                 var locationId = e.RowKeyValues["LocationId"] as int?;
@@ -556,8 +556,8 @@ namespace RockWeb.Blocks.Groups
                 {
                     string parentLocationPath = locationService.GetPath( parentLocationId );
                     foreach ( var occ in occurrences
-                        .Where( o => 
-                            o.ParentLocationId.HasValue && 
+                        .Where( o =>
+                            o.ParentLocationId.HasValue &&
                             o.ParentLocationId.Value == parentLocationId ) )
                     {
                         occ.ParentLocationPath = parentLocationPath;
@@ -629,10 +629,11 @@ namespace RockWeb.Blocks.Groups
         public bool DidNotOccur { get; set; }
         public int DidAttendCount { get; set; }
         public double AttendanceRate { get; set; }
+        public double PercentMembersAttended { get; set; }
         public bool CanDelete { get; set; }
         public string Notes { get; set; }
 
-        public AttendanceListOccurrence ( AttendanceOccurrence occurrence )
+        public AttendanceListOccurrence( AttendanceOccurrence occurrence )
         {
             Id = occurrence.Id;
             OccurrenceDate = occurrence.OccurrenceDate;
@@ -651,7 +652,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             LocationName = occurrence.Location != null ? occurrence.Location.Name : string.Empty;
-            ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : (int?)null;
+            ParentLocationId = occurrence.Location != null ? occurrence.Location.ParentLocationId : ( int? ) null;
             ScheduleId = occurrence.ScheduleId;
 
             if ( occurrence.Schedule != null )
@@ -671,6 +672,7 @@ namespace RockWeb.Blocks.Groups
             DidNotOccur = occurrence.DidNotOccur ?? false;
             DidAttendCount = occurrence.DidAttendCount;
             AttendanceRate = occurrence.AttendanceRate;
+            PercentMembersAttended = occurrence.PercentMembersAttended;
             Notes = occurrence.Notes;
         }
     }

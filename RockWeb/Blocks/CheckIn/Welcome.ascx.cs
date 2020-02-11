@@ -443,8 +443,13 @@ namespace RockWeb.Blocks.CheckIn
             //
             // Include the camera button if it is enabled and the device supports it.
             //
-            hfCameraMode.Value = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration ).ConvertToEnum<CameraBarcodeConfiguration>( CameraBarcodeConfiguration.Available ).ToString();
-            if ( pnlActive.Visible && hfCameraMode.Value != "Off" && CurrentCheckInState.Kiosk.Device.HasCamera )
+            var blockCameraMode = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration ).ConvertToEnum<CameraBarcodeConfiguration>( CameraBarcodeConfiguration.Available );
+            var deviceHasCamera = CurrentCheckInState.Kiosk.Device.HasCamera;
+            var cameraMode = CurrentCheckInState.Kiosk.Device.CameraBarcodeConfigurationType ?? blockCameraMode;
+            cameraMode = deviceHasCamera ? cameraMode : CameraBarcodeConfiguration.Off;
+
+            hfCameraMode.Value = cameraMode.ToString();
+            if ( pnlActive.Visible && cameraMode != CameraBarcodeConfiguration.Off )
             {
                 var scanButtonText = GetAttributeValue( AttributeKey.ScanButtonText );
                 if ( scanButtonText.IsNullOrWhiteSpace() )
