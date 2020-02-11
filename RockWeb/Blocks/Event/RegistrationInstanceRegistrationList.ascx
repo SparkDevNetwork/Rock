@@ -15,7 +15,7 @@
 
                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                 <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-instance-has-payments" />
-      
+
                 <asp:Panel ID="pnlRegistrations" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
                         <h1 class="panel-title">
