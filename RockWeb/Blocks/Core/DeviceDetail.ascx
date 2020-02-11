@@ -79,6 +79,7 @@
                             </asp:Panel>
 
                             <Rock:RockCheckBox ID="cbHasCamera" runat="server" Label="Has Camera" Help="Determines if the device has a camera. This is currently only used for reading barcodes on iPads." />
+                            <Rock:RockDropDownList ID="ddlCameraBarcodeConfigurationType" runat="server" Label="Camera Barcode Configuration" Help="If set, this value will override any block setting for check-in." />
                         </div>
                     </div>
 

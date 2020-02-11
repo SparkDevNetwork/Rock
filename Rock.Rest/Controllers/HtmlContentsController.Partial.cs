@@ -50,7 +50,7 @@ namespace Rock.Rest.Controllers
                 if ( htmlContent != null )
                 {
                     htmlContent.Content = htmlContents.Content;
-                    System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", person );
+                    System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
 
                     Service.Context.SaveChanges();
 

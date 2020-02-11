@@ -1050,7 +1050,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         {
             if ( !dataBinding && AllowCustomPaging && PreDataBound && CurrentPageRows < PageSize )
             {
-                // When using a LinqDataSource (custom paging) and doing a postback from the last page of a grid that
+                // When using custom paging and doing a postback from the last page of a grid that
                 // has fewer rows, the default dummy data source used by Asp.Net to rebuild controls does not reflect the
                 // correct number of rows. Because we add custom paging and action rows to the end of the table, this results in
                 // header/body/footer ordering errors and/or viewstate errors. As a work-around a custom dummy data source
@@ -1235,6 +1235,19 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             else
             {
                 itemCount = 0;
+            }
+
+            // If custom paging is enabled, set the current page row count here to avoid viewstate errors on postback.
+            if ( this.AllowCustomPaging )
+            {
+                if ( itemCount > this.PageSize )
+                {
+                    CurrentPageRows = this.PageSize;
+                }
+                else
+                {
+                    CurrentPageRows = itemCount;
+                }
             }
 
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;

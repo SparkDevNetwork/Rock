@@ -444,7 +444,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 // remove any campuses that removed in the UI
-                var uiCampuses = cblSelectedItemsAsInt( cblCampus );
+                var uiCampuses = campusCblSelectedItemsAsInt( cblCampus );
                 foreach ( var connectionOpportunityCampus in connectionOpportunity.ConnectionOpportunityCampuses.Where( c => !uiCampuses.Contains( c.CampusId ) ).ToList() )
                 {
                     connectionOpportunity.ConnectionOpportunityCampuses.Remove( connectionOpportunityCampus );
@@ -1263,7 +1263,7 @@ namespace RockWeb.Blocks.Connection
         private void BindDefaultConnectors()
         {
             var defaultConnectors = new List<DefaultConnector>();
-            foreach (var campusId in cblSelectedItemsAsInt( cblCampus) )
+            foreach (var campusId in campusCblSelectedItemsAsInt( cblCampus) )
             {
                 var connectorGroups = ConnectorGroupsState
                     .Where( g => !g.CampusId.HasValue || g.CampusId.Value == campusId )
@@ -1309,7 +1309,11 @@ namespace RockWeb.Blocks.Connection
             lvDefaultConnectors.DataBind();
         }
 
-
+        /// <summary>
+        /// Get the identifiers of the selected checkbox list items.
+        /// </summary>
+        /// <param name="cbl">The checkbox list.</param>
+        /// <returns></returns>
         private List<int> cblSelectedItemsAsInt( CheckBoxList cbl )
         {
             var values = new List<int>();
@@ -1320,6 +1324,28 @@ namespace RockWeb.Blocks.Connection
                 if ( int.TryParse( stringValue, out numValue ) )
                 {
                     values.Add( numValue );
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
+        /// Get the selected campus identitfiers or the single campus id if no campuses were selected and there is only one campus.
+        /// </summary>
+        /// <param name="cbl">The campus checkbox list.</param>
+        /// <returns></returns>
+        private List<int> campusCblSelectedItemsAsInt( CheckBoxList campusCbl )
+        {
+            var values = cblSelectedItemsAsInt( campusCbl );
+            
+            // if no campuses were selected and there is only a single campus, manually add it
+            if ( !values.Any() && !rcwCampus.Visible )
+            {
+                int? singleCampusId = CampusCache.SingleCampusId;
+                if ( singleCampusId.HasValue )
+                {
+                    values.Add( singleCampusId.Value );
                 }
             }
 
