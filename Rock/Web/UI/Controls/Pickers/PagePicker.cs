@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -66,7 +67,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( ViewState["PromptForPageRoute"] != null )
                 {
-                    return (bool)ViewState["PromptForPageRoute"];
+                    return ( bool ) ViewState["PromptForPageRoute"];
                 }
 
                 // default to true
@@ -484,10 +485,14 @@ namespace Rock.Web.UI.Controls
             {
                 // if the BlockProperties block is the current block, we'll treat the page that this block properties is for as the current page
                 int blockId = rockBlock.PageParameter( "BlockId" ).AsInteger();
-                var block = new BlockService( new RockContext() ).Get( blockId );
-                if ( block != null )
+                var block = BlockCache.Get( blockId );
+                if ( block?.PageId != null )
                 {
                     pageId = block.PageId;
+                }
+                else
+                {
+                    pageId = rockBlock.PageParameter( "CurrentPageId" ).AsIntegerOrNull();
                 }
             }
             else
