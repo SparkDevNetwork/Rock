@@ -305,16 +305,26 @@
 }
 
 .placement-group {
-  .panel-drawer {
+  .panel-drawer > span {
+    display: block;
+    padding: 16px;
     font-size: @font-size-small;
     background: #fff;
-    border-bottom: 1px solid #dbdbdb;
+    border-bottom: 1px solid @panel-default-border;
 
     dl {
       margin-bottom: 0;
 
+      &:empty {
+        display: none;
+      }
+
       dt {
         margin-top: 8px;
+
+        &:first-child {
+          margin-top: 0;
+        }
       }
     }
   }

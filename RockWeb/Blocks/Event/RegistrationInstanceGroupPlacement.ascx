@@ -182,9 +182,7 @@
                                                     <div class="panel-body padding-all-none js-group-details">
 
                                                         <div class="panel-drawer">
-                                                            <div class="drawer-content">
-                                                            <Rock:AttributeValuesContainer ID="avcGroupAttributes" NumberOfColumns="3" runat="server" />
-                                                            </div>
+                                                            <Rock:AttributeValuesContainer ID="avcGroupAttributes" runat="server" />
                                                         </div>
 
                                                         <asp:Repeater ID="rptPlacementGroupRole" runat="server" OnItemDataBound="rptPlacementGroupRole_ItemDataBound" Visible="true">
