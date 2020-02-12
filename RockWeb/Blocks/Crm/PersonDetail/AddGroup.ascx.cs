@@ -84,6 +84,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected string _groupTypeName = string.Empty;
 
         private DefinedValueCache _locationType = null;
+        private bool _isValidLocationType = false;
 
         private bool _confirmMaritalStatus = true;
         private int _childRoleId = 0;
@@ -187,7 +188,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             _groupTypeName = _groupType.Name;
             _isFamilyGroupType = _groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             _locationType = _groupType.LocationTypeValues.FirstOrDefault( v => v.Guid.Equals( GetAttributeValue( "LocationType" ).AsGuid() ) );
-            if ( _locationType == null )
+            _isValidLocationType = _locationType != null;
+            if ( !_isValidLocationType )
             {
                 _locationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
             }
@@ -244,10 +246,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             nfciContactInfo.ShowCellPhoneFirst = GetAttributeValue( "ShowCellPhoneNumberFirst" ).AsBoolean();
             nfciContactInfo.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
 
-            acAddress.Required = GetAttributeValue( "Address" ) == "REQUIRED";
+            acAddress.Visible = _isValidLocationType;
+            acAddress.Required = _isValidLocationType && GetAttributeValue( "Address" ) == "REQUIRE";
             acAddress.ShowCounty = GetAttributeValue( "ShowCounty" ).AsBoolean();
 
-            cbHomeless.Visible = GetAttributeValue( "Address" ) == "HOMELESS";
+            cbHomeless.Visible = _isValidLocationType && GetAttributeValue( "Address" ) == "HOMELESS";
 
             _homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             _cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
@@ -442,36 +445,39 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         errorMessages.Add( "Grade is required for all children." );
                     }
 
-                    int? locationId = null;
-                    string locationKey = GetLocationKey();
-                    if ( !string.IsNullOrEmpty( locationKey ) )
+                    if ( _isValidLocationType )
                     {
-                        if ( _verifiedLocations.ContainsKey( locationKey ) )
+                        int? locationId = null;
+                        string locationKey = GetLocationKey();
+                        if ( !string.IsNullOrEmpty( locationKey ) )
                         {
-                            locationId = _verifiedLocations[locationKey];
-                        }
-                        else
-                        {
-                            using ( var rockContext = new RockContext() )
+                            if ( _verifiedLocations.ContainsKey( locationKey ) )
                             {
-                                var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-                                locationId = location != null ? location.Id : ( int? ) null;
-                                _verifiedLocations.AddOrIgnore( locationKey, locationId );
+                                locationId = _verifiedLocations[locationKey];
+                            }
+                            else
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+                                    locationId = location != null ? location.Id : ( int? ) null;
+                                    _verifiedLocations.AddOrIgnore( locationKey, locationId );
+                                }
                             }
                         }
-                    }
 
-                    if ( !locationId.HasValue )
-                    {
-                        string addressRequired = GetAttributeValue( "Address" );
-                        if ( addressRequired == "REQUIRED" )
+                        if ( !locationId.HasValue )
                         {
-                            errorMessages.Add( "Address is required." );
-                        }
+                            string addressRequired = GetAttributeValue( "Address" );
+                            if ( addressRequired == "REQUIRE" )
+                            {
+                                errorMessages.Add( "Address is required." );
+                            }
 
-                        if ( addressRequired == "HOMELESS" && !cbHomeless.Checked )
-                        {
-                            errorMessages.Add( "Address is required unless the family is homeless." );
+                            if ( addressRequired == "HOMELESS" && !cbHomeless.Checked )
+                            {
+                                errorMessages.Add( "Address is required unless the family is homeless." );
+                            }
                         }
                     }
                 }
