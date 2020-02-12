@@ -15,8 +15,8 @@
 
 :root {
   --checkin-footer-background: @dark-checkin-footer-background;
-  --input-color: @text-color;
-  --input-bg: @background-color;
+  --input-color: @dark-text-color;
+  --input-bg: @dark-background-color;
   --input-border-focus: #fff;
   --btn-checkinselect-bg: transparent !important;
   --btn-checkinselect-color: #fff !important;
@@ -38,6 +38,10 @@ body {
       border-bottom: 1px solid #E2E8F0;
     }
   }
+}
+
+select option {
+  background: var(--input-bg);
 }
 
 a,
