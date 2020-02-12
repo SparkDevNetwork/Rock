@@ -15,12 +15,15 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// Allow configuring multiple launch workflow buttons on a grid with custom routes and button icons
+    /// Allow configuring custom action buttons on a grid with custom routes and button icons
     /// </summary>
-    public class WorkflowLaunchConfig
+    [Serializable]
+    public class CustomActionConfig
     {
         /// <summary>
         /// Gets or sets the route. This will be formatted using an EntitySetId in position {0}. If position {0} is not included in this value,
@@ -43,7 +46,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the help text shown on mouse-over of the button icon.
-        /// Example: Click here to go to the Meal-Train workflow kickoff page.
+        /// Example: Click here to go to the Meal-Train kickoff page.
         /// </summary>
         /// <value>
         /// The help text.

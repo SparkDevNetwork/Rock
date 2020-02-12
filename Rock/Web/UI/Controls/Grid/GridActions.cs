@@ -57,7 +57,7 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbPersonMerge;
         private LinkButton _lbBulkUpdate;
         private LinkButton _lbDefaultLaunchWorkflow;
-        private List<LinkButton> _customLaunchWorkflowButtons = new List<LinkButton>();
+        private List<LinkButton> _customActionButtons = new List<LinkButton>();
         private LinkButton _lbCommunicate;
         private HtmlGenericControl _aAdd;
         private LinkButton _lbAdd;
@@ -122,23 +122,23 @@ namespace Rock.Web.UI.Controls
         private bool ShowDefaultLaunchWorkflowButton
         {
             get =>
-                _parentGrid.ShowWorkflowButtons &&
+                _parentGrid.ShowWorkflowOrCustomActionButtons &&
                 _parentGrid.EnableDefaultLaunchWorkflow &&
                 _parentGrid.EntityTypeId.HasValue;
         }
 
         /// <summary>
-        /// Gets a value indicating whether [show custom launch workflow buttons].
+        /// Gets a value indicating whether [show custom action buttons].
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [show custom launch workflow buttons]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [show custom action buttons]; otherwise, <c>false</c>.
         /// </value>
-        private bool ShowCustomLaunchWorkflowButtons
+        private bool ShowCustomActionButtons
         {
             get =>
-                _parentGrid.ShowWorkflowButtons &&
-                _parentGrid.WorkflowLaunchConfigs != null &&
-                _parentGrid.WorkflowLaunchConfigs.Any() &&
+                _parentGrid.ShowWorkflowOrCustomActionButtons &&
+                _parentGrid.CustomActionConfigs != null &&
+                _parentGrid.CustomActionConfigs.Any() &&
                 _parentGrid.EntityTypeId.HasValue;
         }
 
@@ -362,20 +362,23 @@ namespace Rock.Web.UI.Controls
             iLaunchWorkflow.Attributes.Add( "class", "fa fa-cog fa-fw" );
             _lbDefaultLaunchWorkflow.Controls.Add( iLaunchWorkflow );
 
-            // Build custom launch workflow buttons
-            if (_parentGrid.WorkflowLaunchConfigs?.Any() == true)
+            // Build custom action buttons
+            if ( _parentGrid.CustomActionConfigs?.Any() == true )
             {
                 var index = 1;
+                _customActionButtons = new List<LinkButton>();
 
-                foreach ( var config in _parentGrid.WorkflowLaunchConfigs )
+                foreach ( var config in _parentGrid.CustomActionConfigs )
                 {
                     var linkButton = new LinkButton();
-                    linkButton.ID = $"lbCustomLaunchWorkflow-{index}";
-                    linkButton.CssClass = "btn-launch-workflow btn btn-default btn-sm";
-                    linkButton.ToolTip = config.HelpText.IsNullOrWhiteSpace() ? "Launch Workflow" : config.HelpText;
+                    _customActionButtons.Add( linkButton );
+
+                    linkButton.ID = $"lbCustomAction-{index}";
+                    linkButton.CssClass = "btn-custom-action btn btn-default btn-sm";
+                    linkButton.ToolTip = config.HelpText.IsNullOrWhiteSpace() ? "Custom Action" : config.HelpText;
                     linkButton.CommandArgument = config.Route;
                     linkButton.CommandName = "Route";
-                    linkButton.Command += lbLaunchWorkflow_Click;
+                    linkButton.Command += lbCustomAction_Click;
                     linkButton.CausesValidation = false;
                     linkButton.PreRender += lb_PreRender;
                     Controls.Add( linkButton );
@@ -508,12 +511,12 @@ namespace Rock.Web.UI.Controls
             var canViewDefaultLaunchWorkflowRoute = _parentGrid.CanViewTargetPage( defaultLaunchWorkflowRoute );
             _lbDefaultLaunchWorkflow.Visible = ShowDefaultLaunchWorkflowButton && canViewDefaultLaunchWorkflowRoute;
 
-            foreach ( var customLaunchWorkflowButton in _customLaunchWorkflowButtons )
+            foreach ( var customLaunchWorkflowButton in _customActionButtons )
             {
                 var customRoute = customLaunchWorkflowButton.CommandArgument.ToStringSafe();
                 var hasCustomRoute = !customRoute.IsNullOrWhiteSpace();
 
-                customLaunchWorkflowButton.Visible = ShowCustomLaunchWorkflowButtons &&
+                customLaunchWorkflowButton.Visible = ShowCustomActionButtons &&
                     ( hasCustomRoute ? _parentGrid.CanViewTargetPage( customRoute ) : canViewDefaultLaunchWorkflowRoute );
             }
 
@@ -610,7 +613,17 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void lbLaunchWorkflow_Click( object sender, EventArgs e )
         {
-            LaunchWorkflowClick?.Invoke( sender, e );
+            WorkflowOrCustomActionClick?.Invoke( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCustomAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbCustomAction_Click( object sender, EventArgs e )
+        {
+            WorkflowOrCustomActionClick?.Invoke( sender, e );
         }
 
         /// <summary>
@@ -702,9 +715,9 @@ namespace Rock.Web.UI.Controls
         public event EventHandler BulkUpdateClick;
 
         /// <summary>
-        /// Occurs when [launch workflow click].
+        /// Occurs when [workflow or custom action click].
         /// </summary>
-        public event EventHandler LaunchWorkflowClick;
+        public event EventHandler WorkflowOrCustomActionClick;
 
         /// <summary>
         /// Occurs when communicate action is clicked.
