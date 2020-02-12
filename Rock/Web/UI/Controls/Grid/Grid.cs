@@ -383,18 +383,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the workflow launch configs.
+        /// Gets or sets the custom action configs.
         /// </summary>
-        /// <value>
-        /// The workflow launch configs.
-        /// </value>
-        public List<WorkflowLaunchConfig> WorkflowLaunchConfigs
+        public List<CustomActionConfig> CustomActionConfigs
         {
-            get => ViewState["WorkflowLaunchConfigs"]
+            get => ViewState["CustomActionConfigs"]
                 .ToStringSafe()
-                .FromJsonOrNull<List<WorkflowLaunchConfig>>() ?? 
-                new List<WorkflowLaunchConfig>();
-            set => ViewState["WorkflowLaunchConfigs"] = value.ToJson();
+                .FromJsonOrNull<List<CustomActionConfig>>() ?? 
+                new List<CustomActionConfig>();
+            set => ViewState["CustomActionConfigs"] = value.ToJson();
         }
 
         /// <summary>
@@ -697,20 +694,21 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether any workflow buttons (default or custom) are shown.
+        /// Gets or sets a value indicating whether the default workflow launch button or any custom actions
+        /// should be shown.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [show workflow buttons]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [show workflow or custom action buttons]; otherwise, <c>false</c>.
         /// </value>
         [
         Category( "Appearance" ),
         DefaultValue( true ),
-        Description( "Show Workflow Buttons" )
+        Description( "Show Workflow or Custom Action Buttons" )
         ]
-        public virtual bool ShowWorkflowButtons
+        public virtual bool ShowWorkflowOrCustomActionButtons
         {
-            get => ViewState["ShowWorkflowButtons"] as bool? ?? true;
-            set => ViewState["ShowWorkflowButtons"] = value;
+            get => ViewState["ShowWorkflowOrCustomActionButtons"] as bool? ?? true;
+            set => ViewState["ShowWorkflowOrCustomActionButtons"] = value;
         }
 
         /// <summary>
@@ -789,7 +787,7 @@ namespace Rock.Web.UI.Controls
             this.Actions.PersonMergeClick += Actions_PersonMergeClick;
             this.Actions.BulkUpdateClick += Actions_BulkUpdateClick;
             this.Actions.CommunicateClick += Actions_CommunicateClick;
-            this.Actions.LaunchWorkflowClick += Actions_LaunchWorkflowClick;
+            this.Actions.WorkflowOrCustomActionClick += Actions_WorkflowOrCustomActionClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
             this.Actions.MergeTemplateClick += Actions_MergeTemplateClick;
 
@@ -1758,11 +1756,11 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         }
 
         /// <summary>
-        /// Handles the LaunchWorkflowClick event of the Actions control.
+        /// Handles the WorkflowOrCustomActionClick event of the Actions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Actions_LaunchWorkflowClick( object sender, EventArgs e )
+        protected void Actions_WorkflowOrCustomActionClick( object sender, EventArgs e )
         {
             // disable paging if no specific keys where selected (or if no select option is shown)
             var selectAll = !SelectedKeys.Any();

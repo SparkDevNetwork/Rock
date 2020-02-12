@@ -1901,7 +1901,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
-    <Compile Include="Web\UI\Controls\Grid\WorkflowLaunchConfig.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />
