@@ -161,14 +161,37 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Gets the bread crumbs.
+        /// Gets the breadcrumbs for the page on which this block resides.
         /// </summary>
         /// <param name="pageReference">The page reference.</param>
         /// <returns></returns>
         public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
-            // use the GetBreadCrumbs from base RegistrationInstanceBlock 
-            return base.GetBreadCrumbs( pageReference );
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
+
+            if ( registrationInstanceId.HasValue )
+            {
+                var registrationInstance = GetSharedRegistrationInstance( registrationInstanceId.Value );
+
+                if ( registrationInstance != null )
+                {
+                    var breadCrumbReference = new PageReference( pageReference );
+                    breadCrumbReference.Parameters.AddOrReplace( PageParameterKey.RegistrationInstanceId, registrationInstanceId.ToString() );
+                    breadCrumbs.Add( new BreadCrumb( registrationInstance.ToString(), breadCrumbReference ) );
+
+                    return breadCrumbs;
+                }
+            }
+
+            if ( registrationInstanceId == 0 )
+            {
+                breadCrumbs.Add( new BreadCrumb( "New Registration Instance", pageReference ) );
+                return breadCrumbs;
+            }
+
+            return breadCrumbs;
         }
 
         /// <summary>

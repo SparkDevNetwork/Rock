@@ -405,56 +405,7 @@ namespace Rock.Blocks.Types.Web.Events
             this.OnBlockUpdated();
         }
 
-        /// <summary>
-        /// Gets the breadcrumbs for the page on which this block resides.
-        /// </summary>
-        /// <param name="pageReference">The page reference.</param>
-        /// <returns></returns>
-        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
-        {
-            var breadCrumbs = new List<BreadCrumb>();
-
-            int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-            if ( registrationInstanceId == null )
-            {
-                var registrationId = this.PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
-                var rockContext = new RockContext();
-                if ( registrationId.HasValue )
-                {
-                    registrationInstanceId = new RegistrationService( rockContext ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
-                }
-                else
-                {
-                    var registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull();
-                    if ( registrantId.HasValue )
-                    {
-                        registrationInstanceId = new RegistrationRegistrantService( rockContext ).GetSelect( registrationId.Value, s => s.Registration.RegistrationInstanceId );
-                    }
-                }
-            }
-
-            if ( registrationInstanceId.HasValue )
-            {
-                var registrationInstance = GetSharedRegistrationInstance( registrationInstanceId.Value );
-
-                if ( registrationInstance != null )
-                {
-                    var breadCrumbReference = new PageReference( pageReference );
-                    breadCrumbReference.Parameters.AddOrReplace( PageParameterKey.RegistrationInstanceId, registrationInstanceId.ToString() );
-                    breadCrumbs.Add( new BreadCrumb( registrationInstance.ToString(), breadCrumbReference ) );
-
-                    return breadCrumbs;
-                }
-            }
-
-            if ( registrationInstanceId == 0 )
-            {
-                breadCrumbs.Add( new BreadCrumb( "New Registration Instance", pageReference ) );
-                return breadCrumbs;
-            }
-
-            return breadCrumbs;
-        }
+        
 
         #endregion
 
@@ -933,7 +884,7 @@ namespace Rock.Blocks.Types.Web.Events
         /// </summary>
         /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns></returns>
-        private RegistrationInstance GetSharedRegistrationInstance( int registrationInstanceId )
+        public RegistrationInstance GetSharedRegistrationInstance( int registrationInstanceId )
         {
             string key = string.Format( "RegistrationInstance:{0}", registrationInstanceId );
 

@@ -134,7 +134,7 @@ namespace RockWeb.Blocks.Event
 
             var navigationPageInfoList = pageList.Select( a => new NavigationPageInfo
             {
-                TabTitleHtml = a.PageTitle,
+                TabTitle = a.PageTitle,
                 PageReference = new PageReference( a.Id )
             } ).ToList();
 
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Event
                         var navigationPageInfo = new NavigationPageInfo
                         {
                             PageReference = groupPlacementPageReference,
-                            TabTitleHtml = string.Format( "<i class='{0}'></i> {1}", registrationTemplatePlacement.GetIconCssClass(), registrationTemplatePlacement.Name ),
+                            TabTitle = registrationTemplatePlacement.Name,
                             IsGroupPlacementPage = true,
                             RegistrationTemplatePlacementId = registrationTemplatePlacement.Id };
 
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Event
             var aPageLink = e.Item.FindControl( "aPageLink" ) as HtmlAnchor;
 
             aPageLink.HRef = pageReference.BuildUrl();
-            aPageLink.InnerHtml = navigationPageInfo.TabTitleHtml;
+            aPageLink.InnerHtml = navigationPageInfo.TabTitle;
 
             var lPageName = e.Item.FindControl( "lPageName" ) as Literal;
         }
@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private class NavigationPageInfo
         {
-            public string TabTitleHtml { get; set; }
+            public string TabTitle { get; set; }
 
             public PageReference PageReference { get; set; }
 

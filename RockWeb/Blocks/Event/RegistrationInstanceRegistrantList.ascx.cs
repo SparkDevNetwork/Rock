@@ -47,7 +47,7 @@ namespace RockWeb.Blocks.Event
 
     [LinkedPage(
         "Registration Page",
-        "The page for editing registration and registrant information",
+        Description = "The page for editing registration and registrant information",
         Key = AttributeKey.RegistrationPage,
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_DETAIL,
         IsRequired = false,
@@ -55,11 +55,20 @@ namespace RockWeb.Blocks.Event
 
     [LinkedPage(
         "Group Placement Page",
-        "The page for managing the registrant's group placements",
+        Description = "The page for managing the registrant's group placements",
         Key = AttributeKey.GroupPlacementPage,
         DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE_PLACEMENT_GROUPS,
         IsRequired = false,
         Order = 2 )]
+
+
+    [LinkedPage(
+        "Group Detail Page",
+        Description = "The page for viewing details about a group",
+        Key = AttributeKey.GroupDetailPage,
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
+        Order = 3 )]
 
     #endregion
 
@@ -81,6 +90,8 @@ namespace RockWeb.Blocks.Event
             /// The group placement page
             /// </summary>
             public const string GroupPlacementPage = "GroupPlacementPage";
+
+            public const string GroupDetailPage = "GroupDetailPage";
         }
 
         #endregion Attribute Keys
@@ -1411,7 +1422,7 @@ namespace RockWeb.Blocks.Event
                         {
                             groupMemberIds.Add( groupMember.Id );
 
-                            string linkedPageUrl = LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } );
+                            string linkedPageUrl = LinkedPageUrl( AttributeKey.GroupDetailPage, new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } );
                             GroupLinks.AddOrIgnore(
                                 groupMember.GroupId,
                                 isExporting ? groupMember.Group.Name : string.Format( "<a href='{0}'>{1}</a>", linkedPageUrl, groupMember.Group.Name ) );
