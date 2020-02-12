@@ -59,22 +59,21 @@
                                         <%-- template that groupPlacement.js uses to populate available registrants --%>
 
                                         <div class="js-registrant registrant person unselectable" data-person-gender="" data-registrant-id="" data-person-id="">
+    
+                                            <span class="person-name js-registrant-name"></span>
+                                            
+                                            <div class="details-container small js-registrant-details hide-transit">
+                                                <dl class="registration-instance-name-container js-registration-instance-name-container">
+                                                    <dt>Instance</dt>
+                                                    <dd class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></dd>
+                                                </dl>
 
-
-                                                <span class="person-name js-registrant-name"></span>
-
-                                                <div class="details-container small js-registrant-details hide-transit">
-                                                    <dl class="registration-instance-name-container js-registration-instance-name-container">
-                                                        <dt>Instance</dt>
-                                                        <dd class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></dd>
-                                                    </dl>
-
-                                                    <div class="registrant-attributes-container js-registrant-attributes-container">
-                                                    </div>
-
-                                                    <div class="registrant-fees-container js-registrant-fees-container">
-                                                    </div>
+                                                <div class="registrant-attributes-container js-registrant-attributes-container">
                                                 </div>
+
+                                                <div class="registrant-fees-container js-registrant-fees-container">
+                                                </div>
+                                            </div>
 
                                         </div>
                                     </div>
@@ -120,16 +119,16 @@
                                         <%-- template that groupPlacement.js uses to populate group member divs --%>
 
                                         <div class="js-group-member person groupmember unselectable" data-person-gender="" data-groupmember-id="" data-person-id="">
+                                            <a class="js-person-id-anchor person-id-anchor"></a>
                                             <div class="person-container">
-                                            <span class="person-name js-groupmember-name"></span>
-
-                                            <div class="dropdown js-groupmember-actions hide-transit">
-                                                <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-h"></i></button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="js-edit-group-member">Edit</a></li>
-                                                    <li><a class="js-remove-group-member">Remove</a></li>
-                                                </ul>
-                                            </div>
+                                                <span class="person-name js-groupmember-name"></span>
+                                                <div class="dropdown js-groupmember-actions hide-transit">
+                                                    <button class="btn btn-overflow" type="button" data-toggle="dropdown"><i class="fa fa-ellipsis-h"></i></button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="js-edit-group-member">Edit</a></li>
+                                                        <li><a class="js-remove-group-member">Remove</a></li>
+                                                    </ul>
+                                                </div>
                                             </div>
 
                                             <div class="details-container js-groupmember-details hide-transit">
@@ -173,7 +172,10 @@
                                                                 <i class="fa fa-chevron-up"></i>
                                                             </div>
                                                             <div class="placement-status-labels pull-right">
-                                                                <Rock:HighlightLabel runat="server" LabelType="Info" ID="hlInstanceName" CssClass="margin-r-sm" Visible="false" /><Rock:HighlightLabel runat="server" LabelType="Default" ID="hlRegistrationTemplatePlacementName" CssClass="margin-r-sm" Visible="false" /><Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="margin-r-sm" Visible="false" /><span class="label label-custom placement-capacity-label js-placement-capacity-label margin-r-sm" data-status="none"></span>
+                                                                <Rock:HighlightLabel runat="server" LabelType="Info" ID="hlInstanceName" CssClass="margin-r-sm" Visible="false" />
+                                                                <Rock:HighlightLabel runat="server" LabelType="Default" ID="hlRegistrationTemplatePlacementName" CssClass="margin-r-sm" Visible="false" />
+                                                                <Rock:HighlightLabel runat="server" LabelType="Campus" ID="hlGroupCampus" CssClass="margin-r-sm" Visible="false" />
+                                                                <span class="label label-custom placement-capacity-label js-placement-capacity-label margin-r-sm" data-status="none"></span>
                                                             </div>
 
                                                         </div>

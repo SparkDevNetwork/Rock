@@ -61,7 +61,6 @@ namespace RockWeb.Blocks.Event
         IsRequired = false,
         Order = 2 )]
 
-
     [LinkedPage(
         "Group Detail Page",
         Description = "The page for viewing details about a group",
@@ -796,8 +795,14 @@ namespace RockWeb.Blocks.Event
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "RegistrationTemplatePlacementId", registrationTemplatePlacement.Id.ToString() );
                 queryParams.Add( "RegistrationInstanceId", this.RegistrationInstanceId.ToString() );
-                queryParams.Add( "RegistrantId", registrant.Id.ToString() );
+
+                /* NOTE: MDP - 2020-02-12
+                  We could add RegistrantId has a parameter, but decided not to do this (yet).
+                  // queryParams.Add( "RegistrantId", registrant.Id.ToString() );
+                */
+
                 var groupPlacementUrl = LinkedPageUrl( AttributeKey.GroupPlacementPage, queryParams );
+                groupPlacementUrl += "#PersonId_" + registrant.PersonId.ToString();
 
                 var registrantPlacedGroups = this._placementGroupInfoList.Where( a =>
                      ( a.RegistrationTemplatePlacementId.HasValue && a.RegistrationTemplatePlacementId.Value == registrationTemplatePlacement.Id )
