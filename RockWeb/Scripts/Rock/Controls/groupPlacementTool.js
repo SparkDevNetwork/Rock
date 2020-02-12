@@ -218,7 +218,7 @@
                 var $noRegistrantsDiv = $('.js-no-registrants-div', self.$groupPlacementTool)
                 var $sourceContainer = $('.js-group-placement-registrant-container ');
                 if ($sourceContainer.height() == 0) {
-                        $sourceContainer.addClass("empty");
+                    $sourceContainer.addClass("empty");
                 }
                 else {
                     $sourceContainer.removeClass("empty");
@@ -320,6 +320,21 @@
                         $groupCapacityLabel.attr('data-status', 'none');
                     }
 
+                    var pageAnchor = location.hash;
+                    if (pageAnchor) {
+                        var pageAnchorPersonId = pageAnchor.replace('#PersonId_', '');
+
+                        if (pageAnchorPersonId && $('.js-group-member[data-person-id=' + pageAnchorPersonId + ']', $groupRoleContainer).length) {
+
+                            // Since the group members load after the page is loaded, we have to manually navigate to the anchor
+                            // first change hash to something else to trigger the browser to renavigate to personid anchor
+                            setTimeout(function () {
+                                location.hash = "#other";
+                                location.hash = '#PersonId_' + pageAnchorPersonId;
+                            }, 0)
+                        }
+                    }
+
                     var groupRoleMaxMembers = parseInt($('.js-grouptyperole-max-members', $groupRoleMembers).val()) || null;
                     var $groupRoleMaxMembersLabel = $('.js-grouptyperole-max-members-label', $groupRoleMembers);
                     if (groupRoleMaxMembers) {
@@ -347,6 +362,7 @@
                 var self = this;
                 $groupMemberDiv.attr('data-groupmember-id', groupMember.Id);
                 $groupMemberDiv.attr('data-person-id', groupMember.PersonId);
+                $groupMemberDiv.find('.js-person-id-anchor').prop('name', 'PersonId_' + groupMember.PersonId);
                 $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
                 $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
                 var $editGroupMemberButton = $groupMemberDiv.find('.js-edit-group-member');
@@ -406,7 +422,7 @@
                     url: getGroupPlacementRegistrantsUrl,
                     data: getGroupPlacementRegistrantsParameters
                 }).done(function (registrants) {
-                    if ( registrants !== null ) {
+                    if (registrants !== null) {
                         var registrantContainerParent = $registrantContainer.parent();
 
                         // temporarily detach $registrantContainer to speed up adding the registrantdivs
@@ -427,16 +443,16 @@
                         self.checkVisibleRegistrants();
 
                         self.expandOrHideRegistrantDetails(expandDetails);
+
+                        setTimeout(function () {
+                            $loadingNotification.hide();
+                        }, 0)
                     }
 
-                    setTimeout(function () {
-                        $loadingNotification.hide();
-                    }, 0)
                 }).fail(function (a) {
                     console.log('fail:' + a.responseText);
                     $loadingNotification.hide();
                 });
-
             },
             /**  populates the registrant element */
             populateRegistrantDiv: function ($registrantDiv, registrant) {
