@@ -2,7 +2,7 @@
 <asp:UpdatePanel ID="upContent" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlView" runat="server">
-            <ul class="nav nav-pills margin-b-md">
+            <ul class="nav nav-tabs margin-b-md">
                 <asp:Repeater ID="rptPages" runat="server" OnItemDataBound="rptPages_ItemDataBound">
                     <ItemTemplate>
                         <li runat="server" id="liNavigationTab" class="">
