@@ -55,7 +55,7 @@
                 <p class="push-half-bottom">{{ attribute.Summary }}</p>
                 <p>
                 {% if CurrentPerson and CurrentPerson != empty %}
-                    <a href="/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ Item.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }}: {{ attribute.Title | Replace:"'","’" | EscapeDataString }}&ResourceSummary={{ attribute.Summary | Replace:"'","’" | EscapeDataString }}&ResourceUrl={% if attribute.Link != empty %}{{ attribute.Link }}{% else %}{{ attribute.File }}{% endif %}" class="btn btn-primary" target="_blank">Download Now</a>
+                    <a href="/workflows/617?PersonAliasId={{ CurrentPerson.PrimaryAliasId }}&ResourceId={{ Item.Id }}&ResourceImage={{ Item | Attribute:'ImageLandscape','Url' }}&ResourceTitle={{ Item.Title | Replace:"'","’" | EscapeDataString }}&ResourceSummary={{ attribute.Title | Replace:"'","’" | EscapeDataString }}&ResourceUrl={% if attribute.Link != empty %}{{ attribute.Link }}{% else %}{{ attribute.File }}{% endif %}" class="btn btn-primary" target="_blank">Download Now</a>
                 {% else %}
                     <a href="/sign-in?returnurl={{ currentUrl }}" class="btn btn-primary">Sign In to Download</a>
                 {% endif %}

@@ -3,15 +3,12 @@
 {% assign offset = currentpage | Times:pagesize | Minus:pagesize %}
 {% assign pagesize = pagesize | AsInteger %}
 
+
 <section>
     <div class="row">
     	{% for item in Items limit:pagesize offset:offset %}<div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
 
-			{% contentchannel id:'{{ item.ContentChannelId }}' iterator:'channels' %}
-				{% for channel in channels %}
-					{% assign showDate = channel | Attribute:'IsDateVisible' %}
-				{% endfor %}
-			{% endcontentchannel %}
+			{% assign showDate = item.ContentChannel | Attribute:'IsDateVisible' %}
 
             {% assign id = item.Id %}
             {% assign cciid = item.Id %}
