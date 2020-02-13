@@ -20,7 +20,7 @@ namespace Rock.Plugin.HotFixes
     /// Plug-in migration
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 100, "1.10.0" )]
+    [MigrationNumber( 101, "1.10.0" )]
     public class RegistrationInstanceGroupPlacement : Migration
     {
         /// <summary>
