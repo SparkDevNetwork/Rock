@@ -245,6 +245,10 @@
     <Compile Include="Migrations\202002052231500_GridLaunchWorkflows.Designer.cs">
       <DependentUpon>202002052231500_GridLaunchWorkflows.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002102130226_AutomateStepsFromDataview.cs" />
+    <Compile Include="Migrations\202002102130226_AutomateStepsFromDataview.Designer.cs">
+      <DependentUpon>202002102130226_AutomateStepsFromDataview.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -988,6 +992,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202002052231500_GridLaunchWorkflows.resx">
       <DependentUpon>202002052231500_GridLaunchWorkflows.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002102130226_AutomateStepsFromDataview.resx">
+      <DependentUpon>202002102130226_AutomateStepsFromDataview.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
