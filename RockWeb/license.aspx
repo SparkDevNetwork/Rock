@@ -30,7 +30,7 @@
                         <h1>Rock Relationship Management System License</h1>
 
                         <h3>Rock Community License</h3>
-                        <p>Copyright 2018 Spark Development Network</p>
+                        <p>Copyright 2020 Spark Development Network</p>
 
                         <p>
                             Licensed under the Rock Community License (the "License");
@@ -49,12 +49,12 @@
                         </p>
 
                         <h1>Component Licenses</h1>
-                        Rock was written using several other open-source projects and packages.  Each 
+                        Rock was written using several other open-source projects and packages.  Each
                         of these is attributed below with their respective licenses.
 
                         <ul>
                             <li><a href="#aspwebapi">ASP.net Web API</a> (Apache) - <a href="http://aspnetwebstack.codeplex.com/">Project Site</a> </li>
-                            
+
                             <li><a href="http://twitter.github.io/bootstrap/">Bootstrap</a> (Apache)</li>
                             <li><a href="https://github.com/aspnet/EntityFramework6">Entity Framework</a> (Apache)</li>
                             <li><a href="http://summernote.org/">Summernote</a> (MIT)</li>
@@ -135,6 +135,7 @@
                             <li><a href="https://github.com/AngleSharp/AngleSharp">AngleSharp</a> (MIT)</li>
                             <li><a href="https://github.com/vilppu/OpenHtmlToPdf">OpenHtmlToPdf</a> (Creative Commons - Attribution 3.0 Unported (CC BY 3.0))</li>
                             <li><a href="http://www.pdfsharp.net">PDF Sharp</a> (MIT)</li>
+                            <li><a href="https://facebook.design/soundkit">Facebook Sound Kit</a> (Custom)</li>
                         </ul>
                     </div>
                 </div>
