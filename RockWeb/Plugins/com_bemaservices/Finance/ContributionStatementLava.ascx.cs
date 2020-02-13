@@ -457,7 +457,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             /* BEMA.FE4.End */
 
             /* BEMA.FE1.Start */
-            var accountIds = new FinancialAccountService( rockContext ).GetByGuids( GetAttributeValue( AttributeKey.PledgeAccounts ).Split().AsGuidList() ).Select( a => a.Id ).ToList();
+            var accountIds = new FinancialAccountService( rockContext ).GetByGuids( GetAttributeValue( AttributeKey.PledgeAccounts ).SplitDelimitedValues().AsGuidList() ).Select( a => a.Id ).ToList();
             /* BEMA.FE1.End */
 
             // pledge information
