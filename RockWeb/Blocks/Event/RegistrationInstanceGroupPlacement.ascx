@@ -101,7 +101,7 @@
                                                 <i class="fa fa-refresh fa-spin margin-l-md js-loading-notification" style="display: none; opacity: .4;"></i>
 
                                                 <%-- container for list of registrants --%>
-                                                <asp:Panel ID="pnlRegistrantListContainer" CssClass="js-group-placement-registrant-container group-placement-registrant-container dropzone" data-empty-label="No People Avalible" runat="server">
+                                                <asp:Panel ID="pnlRegistrantListContainer" CssClass="js-group-placement-registrant-container group-placement-registrant-container dropzone" data-empty-label="No People Available" runat="server">
                                                 </asp:Panel>
                                             </div>
                                         </div>
@@ -184,7 +184,7 @@
                                                     <div class="panel-body padding-all-none js-group-details">
 
                                                         <div class="panel-drawer">
-                                                            <Rock:AttributeValuesContainer ID="avcGroupAttributes" runat="server" />
+                                                            <Rock:AttributeValuesContainer ID="avcGroupAttributes" runat="server" NumberOfColumns="2" />
                                                         </div>
 
                                                         <asp:Repeater ID="rptPlacementGroupRole" runat="server" OnItemDataBound="rptPlacementGroupRole_ItemDataBound" Visible="true">

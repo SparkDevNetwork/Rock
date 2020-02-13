@@ -237,7 +237,7 @@
                 }).done(function (deleteResult) {
                     // if the group member has been removed from the group, and the registrant is hidden due to 'allow multiple placements=false', we can show it again since they are no longer in a group
                     var $registrantsToShow = self.$registrantList.find('[data-person-id=' + personId + ']');
-
+                    $registrantsToShow.attr('allow-search', 'true');
                     $registrantsToShow.show();
 
                     self.populateGroupRoleMembers($groupRoleMembers);
@@ -381,7 +381,9 @@
                     var $attributesDiv = $('.js-groupmember-attributes-container', $groupMemberDiv);
                     var $attributesDl = $('<dl></dl>');
                     for (var displayedAttribute in groupMember.Attributes) {
-                        $attributesDl.append('<dt>' + groupMember.Attributes[displayedAttribute].Name + ' </dt><dd>' + groupMember.AttributeValues[displayedAttribute].Value + '</dd>');
+                        if (groupMember.AttributeValues[displayedAttribute].ValueFormatted) {
+                            $attributesDl.append('<dt>' + groupMember.Attributes[displayedAttribute].Name + ' </dt><dd>' + groupMember.AttributeValues[displayedAttribute].ValueFormatted + '</dd>');
+                        }
                     }
 
                     $attributesDiv.append($attributesDl);
@@ -437,7 +439,6 @@
                             $registrantContainer.append($registrantDiv);
                         }
 
-
                         registrantContainerParent.append($registrantContainer);
 
                         self.checkVisibleRegistrants();
@@ -478,6 +479,7 @@
                 // if multiple placements aren't allowed, and this registrant(person) is already in one of the placement groups, then hide the div
                 // If the person is removed from a placement group, then we can show again
                 if (self.allowMultiplePlacements == false && registrant.AlreadyPlacedInGroup) {
+                    $registrantDiv.attr('allow-search', 'false');
                     $registrantDiv.hide();
                 }
 
@@ -501,7 +503,9 @@
                 if (registrant.AttributeValues && Object.keys(registrant.AttributeValues).length > 0) {
                     var $attributesDl = $('<dl></dl>');
                     for (var displayedAttribute in registrant.Attributes) {
-                        $attributesDl.append('<dt>' + registrant.Attributes[displayedAttribute].Name + ' </dt><dd>' + registrant.AttributeValues[displayedAttribute].Value + '</dd>');
+                        if (registrant.AttributeValues[displayedAttribute].ValueFormatted) {
+                            $attributesDl.append('<dt>' + registrant.Attributes[displayedAttribute].Name + ' </dt><dd>' + registrant.AttributeValues[displayedAttribute].ValueFormatted + '</dd>');
+                        }
                     }
                     $attributesDiv.append($attributesDl);
                 }
@@ -613,13 +617,18 @@
                 $('.js-registrant-search', self.$groupPlacementTool).on('keyup', function () {
                     var value = $(this).find('input').val().toLowerCase().trim();
                     $(".js-group-placement-registrant-container .js-registrant").filter(function () {
+                        var $registrantDiv = $(this);
+                        if ($registrantDiv.attr('allow-search') == 'false') {
+                            return;
+                        }
+
                         if (value == '') {
                             // show everybody
-                            $(this).toggle(true);
+                            $registrantDiv.toggle(true);
                         }
                         else {
 
-                            var registrantName = $(this).find('.js-registrant-name').text();
+                            var registrantName = $registrantDiv.find('.js-registrant-name').text();
                             var registrantNameSplit = registrantName.split(' ');
                             var anyMatch = false;
 
@@ -637,7 +646,7 @@
                                 }
                             }
 
-                            $(this).toggle(anyMatch);
+                            $registrantDiv.toggle(anyMatch);
                         }
                     });
                 });

@@ -1117,9 +1117,16 @@ namespace Rock.Attribute
             bool showCategoryLabel = addEditControlsOptions?.ShowCategoryLabel ?? true;
 
             // ensure valid number of columns
-            if ( numberOfColumns.HasValue && numberOfColumns.Value > 12 )
+            if ( numberOfColumns.HasValue )
             {
-                numberOfColumns = 12;
+                if ( numberOfColumns.Value > 12 )
+                {
+
+                }
+                else if ( numberOfColumns < 1 )
+                {
+                    numberOfColumns = 1;
+                }
             }
 
             bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
@@ -1217,14 +1224,51 @@ namespace Rock.Attribute
         /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
         public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
+            AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions = new AttributeAddDisplayControlsOptions
+            {
+                ShowCategoryLabel = showHeading,
+            };
+
+            attributeAddDisplayControlsOptions.ExcludedAttributes = exclude != null ? item?.Attributes.Select( a => a.Value ).Where( a => exclude.Contains( a.Key ) || exclude.Contains( a.Name ) ).ToList() : null;
+
+
+            AddDisplayControls( item, attributeCategories, parentControl, attributeAddDisplayControlsOptions );
+        }
+
+        /// <summary>
+        /// Adds the display controls.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="attributeCategories">The attribute categories.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="attributeAddDisplayControlsOptions">The attribute add display controls options.</param>
+        public static void AddDisplayControls( Rock.Attribute.IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions )
+        {
             if ( item == null )
             {
                 return;
             }
 
+            attributeAddDisplayControlsOptions = attributeAddDisplayControlsOptions ?? new AttributeAddDisplayControlsOptions();
+            List<AttributeCache> excludedAttributes = attributeAddDisplayControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
+            int? numberOfColumns = attributeAddDisplayControlsOptions?.NumberOfColumns;
+
+            // ensure valid number of columns
+            if ( numberOfColumns.HasValue )
+            {
+                if ( numberOfColumns.Value > 12 )
+                {
+
+                }
+                else if ( numberOfColumns < 1 )
+                {
+                    numberOfColumns = 1;
+                }
+            }
+
             foreach ( var attributeCategory in attributeCategories )
             {
-                if ( showHeading )
+                if ( attributeAddDisplayControlsOptions.ShowCategoryLabel )
                 {
                     HtmlGenericControl header = new HtmlGenericControl( "h4" );
 
@@ -1234,34 +1278,50 @@ namespace Rock.Attribute
                     parentControl.Controls.Add( header );
                 }
 
+
                 HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                 parentControl.Controls.Add( dl );
-
-                foreach ( var attribute in attributeCategory.Attributes.Where( a => AttributeCache.Get( a.Id ).IsActive ) )
+                dl.AddCssClass( "attribute-value-container-display" );
+                if ( numberOfColumns.HasValue )
                 {
-                    if ( exclude == null || ( !exclude.Contains( attribute.Name ) && !exclude.Contains( attribute.Key ) ) )
+                    dl.AddCssClass( "row" );
+                }
+
+                foreach ( var attribute in attributeCategory.Attributes.Where( a => AttributeCache.Get( a.Id ).IsActive && !excludedAttributes.Contains( a ) ) )
+                {
+                    // Get the Attribute Value formatted for display.
+                    string value = attribute.DefaultValue;
+                    if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
                     {
-                        // Get the Attribute Value formatted for display.
-                        string value = attribute.DefaultValue;
-                        if ( item.AttributeValues.ContainsKey( attribute.Key ) && item.AttributeValues[attribute.Key] != null )
+                        value = item.AttributeValues[attribute.Key].Value;
+                    }
+
+                    string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
+
+                    // If the Attribute Value has some content, display it.
+                    if ( !string.IsNullOrWhiteSpace( controlHtml ) )
+                    {
+                        HtmlGenericControl dtDdParent;
+                        if ( numberOfColumns.HasValue )
                         {
-                            value = item.AttributeValues[attribute.Key].Value;
+                            int colSize = ( int ) Math.Ceiling( 12.0 / ( double ) numberOfColumns.Value );
+                            dtDdParent = new HtmlGenericControl( "div" );
+                            dtDdParent.AddCssClass( $"col-md-{colSize}" );
+                            dl.Controls.Add( dtDdParent );
+                        }
+                        else
+                        {
+                            dtDdParent = dl;
                         }
 
-                        string controlHtml = attribute.FieldType.Field.FormatValueAsHtml( parentControl, attribute.EntityTypeId, item.Id, value, attribute.QualifierValues );
+                        HtmlGenericControl dt = new HtmlGenericControl( "dt" );
+                        dt.InnerText = attribute.Name;
+                        dtDdParent.Controls.Add( dt );
 
-                        // If the Attribute Value has some content, display it.
-                        if ( !string.IsNullOrWhiteSpace( controlHtml ) )
-                        {
-                            HtmlGenericControl dt = new HtmlGenericControl( "dt" );
-                            dt.InnerText = attribute.Name;
-                            dl.Controls.Add( dt );
+                        HtmlGenericControl dd = new HtmlGenericControl( "dd" );
 
-                            HtmlGenericControl dd = new HtmlGenericControl( "dd" );
-
-                            dd.InnerHtml = controlHtml;
-                            dl.Controls.Add( dd );
-                        }
+                        dd.InnerHtml = controlHtml;
+                        dtDdParent.Controls.Add( dd );
                     }
                 }
             }
@@ -1408,20 +1468,19 @@ namespace Rock.Attribute
         public List<AttributeCache> IncludedAttributes { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of columns.
-        /// </summary>
-        /// <value>
-        /// The number of columns.
-        /// </value>
-        public int? NumberOfColumns { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [show pre post HTML] (if EntityType supports it)
         /// </summary>
         /// <value>
         ///   <c>true</c> if [show pre post HTML]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowPrePostHtml { get; set; } = true;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class AttributeAddDisplayControlsOptions : AttributeAddControlsOptions
+    {
     }
 
     /// <summary>
@@ -1436,6 +1495,14 @@ namespace Rock.Attribute
         /// The excluded attributes.
         /// </value>
         public List<AttributeCache> ExcludedAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of columns.
+        /// </summary>
+        /// <value>
+        /// The number of columns.
+        /// </value>
+        public int? NumberOfColumns { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [show category label].

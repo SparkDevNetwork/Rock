@@ -272,22 +272,47 @@ namespace Rock.Model
         /// <value>
         /// The fees.
         /// </value>
-        public Dictionary<string, decimal> Fees
+        public Dictionary<string, string> Fees
         {
             get
             {
-                if ( this.Options.IncludeFees )
+                if ( !this.Options.IncludeFees )
                 {
-                    var feeInfo = RegistrationRegistrant.Fees.Select( a => new
-                    {
-                        FeeName = a.RegistrationTemplateFeeItem?.Name ?? "Fee",
-                        a.TotalCost
-                    } ).ToDictionary( a => a.FeeName, v => v.TotalCost );
-
-                    return feeInfo;
+                    return new Dictionary<string, string>();
                 }
 
-                return null;
+                var fees = RegistrationRegistrant.Fees.Where( a => a.Quantity > 0 ).Select( fee =>
+                  {
+                      string feeLabel;
+                      if ( fee.RegistrationTemplateFee.FeeType == RegistrationFeeType.Multiple && fee.Option.IsNotNullOrWhiteSpace() )
+                      {
+                          feeLabel = $"{fee.RegistrationTemplateFee.Name}-{fee.Option}";
+                      }
+                      else
+                      {
+                          feeLabel = fee.Option;
+                      }
+
+                      string feeCostText;
+                      if ( fee.Quantity > 1 )
+                      {
+                          feeCostText = $"{fee.Quantity} at {fee.Cost.FormatAsCurrency()}";
+                      }
+                      else
+                      {
+                          feeCostText = fee.TotalCost.FormatAsCurrency();
+                      }
+
+                      var result = new
+                      {
+                          FeeName = feeLabel,
+                          TotalCostText = feeCostText
+                      };
+
+                      return result;
+                  } ).ToDictionary( a => a.FeeName, v => v.TotalCostText );
+
+                return fees;
             }
         }
 
