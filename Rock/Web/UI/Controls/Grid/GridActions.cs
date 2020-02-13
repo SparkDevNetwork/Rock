@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private List<Control> _customActions;
-        private Panel _pnlCustomActions;
+        private PlaceHolder _pnlCustomActions;
         private LinkButton _lbPersonMerge;
         private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
@@ -264,7 +264,7 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            _pnlCustomActions = new Panel();
+            _pnlCustomActions = new PlaceHolder();
 
             Controls.Add( _pnlCustomActions );
 
@@ -402,7 +402,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the control but only renders custom actions in the once, in the actionFooterRow.
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="renderAsMirrored">if set to <c>true</c> [render as mirrored].</param>
