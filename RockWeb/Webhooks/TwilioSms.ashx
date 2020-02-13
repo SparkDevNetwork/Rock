@@ -205,6 +205,7 @@ class TwilioSmsResponseAsync : IAsyncResult
                 var outcomes = SmsActionService.ProcessIncomingMessage( message );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
                 var twilioMessage = new Twilio.TwiML.Message();
+                var messagingResponse = new Twilio.TwiML.MessagingResponse();
 
                 if ( smsResponse != null )
                 {
@@ -220,10 +221,9 @@ class TwilioSmsResponseAsync : IAsyncResult
                             twilioMessage.Media( binaryFile.Url );
                         }
                     }
-                }
 
-                var messagingResponse = new Twilio.TwiML.MessagingResponse();
-                messagingResponse.Message( twilioMessage );
+                    messagingResponse.Message( twilioMessage );
+                }
 
                 response.Write( messagingResponse.ToString() );
             }
