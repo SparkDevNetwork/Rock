@@ -52,7 +52,7 @@ namespace Rock.Search.Person
         }
 
         /// <summary>
-        /// The url to redirect user to after they've entered search criteria
+        /// The URL to redirect user to after they've entered search criteria
         /// </summary>
         public override string ResultUrl
         {

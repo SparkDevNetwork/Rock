@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Security
 Thank you for logging in, however, we need to confirm the email associated with this account belongs to you. We’ve sent you an email that contains a link for confirming.  Please click the link in your email to continue.
 ", "", 2 )]
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", false, "", "", 3 )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
+    [SystemCommunicationField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT, "", 4 )]
     [CodeEditorField( "Locked Out Caption", "The text (HTML) to display when a user's account has been locked.", CodeEditorMode.Html, CodeEditorTheme.Rock, 100, false, @"
 {%- assign phone = Global' | Attribute:'OrganizationPhone' | Trim -%} Sorry, your account has been locked.  Please {% if phone != '' %}contact our office at {{ 'Global' | Attribute:'OrganizationPhone' }} or email{% else %}email us at{% endif %} <a href='mailto:{{ 'Global' | Attribute:'OrganizationEmail' }}'>{{ 'Global' | Attribute:'OrganizationEmail' }}</a> for help. Thank you.
 ", "", 5 )]
@@ -261,6 +261,14 @@ Thank you for logging in, however, we need to confirm the email associated with 
                             CheckUser( userLogin, Request.QueryString["returnurl"], cbRememberMe.Checked );
                             return;
                         }
+                        else if ( component.Authenticate( userLogin, tbPassword.Text ) )
+                        {
+                            // If the password authenticates, check to see if this user is locked out.
+                            if ( CheckUserLockout( userLogin ) )
+                            {
+                                return;
+                            }
+                        }
                     }
                 }
             }
@@ -310,26 +318,56 @@ Thank you for logging in, however, we need to confirm the email associated with 
                 }
                 else
                 {
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
-
-                    if ( userLogin.IsLockedOut ?? false )
-                    {
-                        lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
-
-                        pnlLogin.Visible = false;
-                        pnlLockedOut.Visible = true;
-                    }
-                    else
-                    {
-                        SendConfirmation( userLogin );
-
-                        lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
-
-                        pnlLogin.Visible = false;
-                        pnlConfirmation.Visible = true;
-                    }
+                    CheckUserLockoutAndConfirmation( userLogin );
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks to see if the user is locked out and then verifies that their account has been confirmed.
+        /// </summary>
+        /// <param name="userLogin">The user login.</param>
+        private void CheckUserLockoutAndConfirmation( UserLogin userLogin )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+
+            if ( CheckUserLockout( userLogin, mergeFields ) )
+            {
+                return;
+            }
+            else
+            {
+                SendConfirmation( userLogin );
+
+                lConfirmCaption.Text = GetAttributeValue( "ConfirmCaption" ).ResolveMergeFields( mergeFields );
+                pnlLogin.Visible = false;
+                pnlConfirmation.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Checks to see if the user is locked out and shows an appropriate message if they are.
+        /// </summary>
+        /// <param name="userLogin">The user login.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <returns>True if the user is locked out.</returns>
+        private bool CheckUserLockout( UserLogin userLogin, Dictionary<string, object> mergeFields = null )
+        {
+            if ( mergeFields == null )
+            {
+                mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage, CurrentPerson );
+            }
+
+            bool isLockedOut = ( userLogin.IsLockedOut ?? false );
+
+            if ( isLockedOut )
+            {
+                lLockedOutCaption.Text = GetAttributeValue( "LockedOutCaption" ).ResolveMergeFields( mergeFields );
+                pnlLogin.Visible = false;
+                pnlLockedOut.Visible = true;
+            }
+
+            return isLockedOut;
         }
 
         /// <summary>

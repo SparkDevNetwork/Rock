@@ -216,29 +216,37 @@ namespace Rock.Financial
                 return false;
             }
 
+            // Since an instance of this class should be used per transaction, and because the args cannot be changed after the
+            // instantiation, we can "cache" the result of this function. This function is public so other code can call it explicitly,
+            // and it is also called during the actual charge method, which means it is very likely to be called multiple times.
+            if ( _isRepeatCharge.HasValue )
+            {
+                errorMessage = _isRepeatChargeErrorMessage;
+                return _isRepeatCharge.Value;
+            }
+
             LoadEntities();
 
             // Get all the person aliases in the giving group
-            var personAliasIds = _personAliasService.Queryable()
+            var personAliasIdQuery = _personAliasService.Queryable()
                 .AsNoTracking()
                 .Where( a => a.Person.GivingId == _authorizedPerson.GivingId )
-                .Select( a => a.Id )
-                .ToList();
+                .Select( a => a.Id );
 
             // Check to see if a transaction exists for the person aliases within the last 5 minutes. This should help eliminate accidental repeat charges.
             var minDateTime = RockDateTime.Now.AddMinutes( -5 );
-            var recentTransactions = _financialTransactionService.Queryable()
+            var recentTransactionQuery = _financialTransactionService.Queryable()
                 .AsNoTracking()
                 .Include( t => t.TransactionDetails )
                 .Where( t =>
                     // Check for transactions in the giving group
-                    t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) &&
+                    t.AuthorizedPersonAliasId.HasValue && personAliasIdQuery.Contains( t.AuthorizedPersonAliasId.Value ) &&
                     // Check for recent transactions
                     ( t.TransactionDateTime >= minDateTime || t.FutureProcessingDateTime >= minDateTime ) )
                 .ToList();
 
             // Look for a recent transaction that has the same account/amount combinations
-            var repeatTransaction = recentTransactions.FirstOrDefault( t => t.TransactionDetails.All( d =>
+            var repeatTransaction = recentTransactionQuery.FirstOrDefault( t => t.TransactionDetails.All( d =>
                 _automatedPaymentArgs.AutomatedPaymentDetails.Any( ad =>
                     ad.AccountId == d.AccountId &&
                     ad.Amount == d.Amount ) ) );
@@ -246,11 +254,18 @@ namespace Rock.Financial
             if ( repeatTransaction != null )
             {
                 errorMessage = string.Format( "Found a likely repeat charge. Check transaction id: {0}. Toggle EnableDuplicateChecking to disable this protection.", repeatTransaction.Id );
-                return true;
+                _isRepeatCharge = true;
+            }
+            else
+            {
+                _isRepeatCharge = false;
             }
 
-            return false;
+            _isRepeatChargeErrorMessage = errorMessage;
+            return _isRepeatCharge.Value;
         }
+        private bool? _isRepeatCharge = null;
+        private string _isRepeatChargeErrorMessage = null;
 
         /// <summary>
         /// Validates that the frequency of the scheduled transaction appears to be adhered to
@@ -266,13 +281,24 @@ namespace Rock.Financial
                 return true;
             }
 
+            // Since an instance of this class should be used per transaction, and because the args cannot be changed after the
+            // instantiation, we can "cache" the result of this function. This function is public so other code can call it explicitly,
+            // and it is also called during the actual charge method, which means it is very likely to be called multiple times.
+            if ( _isAccordingToSchedule.HasValue )
+            {
+                errorMessage = _isAccordingToScheduleErrorMessage;
+                return _isAccordingToSchedule.Value;
+            }
+
             LoadEntities();
             var instructionsToIgnore = "Toggle EnableScheduleAdherenceProtection to disable this protection.";
 
             if ( _financialScheduledTransaction == null )
             {
                 errorMessage = string.Format( "The scheduled transaction did not resolve. {0}", instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
             // Allow a 1 day margin of error since this is not meant to be restrictive (just prevent big errors)
@@ -282,13 +308,17 @@ namespace Rock.Financial
             if ( tomorrow < _financialScheduledTransaction.StartDate )
             {
                 errorMessage = string.Format( "The schedule start date is in the future. {0}", instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
             if ( _financialScheduledTransaction.EndDate.HasValue && yesterday > _financialScheduledTransaction.EndDate )
             {
                 errorMessage = string.Format( "The schedule end date is in the past. {0}", instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
             if ( _financialScheduledTransaction.NumberOfPayments.HasValue )
@@ -303,7 +333,9 @@ namespace Rock.Financial
                 if ( _currentNumberOfPaymentsForSchedule.Value >= _financialScheduledTransaction.NumberOfPayments.Value )
                 {
                     errorMessage = string.Format( "The scheduled transaction already has the maximum number of occurrences. {0}", instructionsToIgnore );
-                    return false;
+                    _isAccordingToScheduleErrorMessage = errorMessage;
+                    _isAccordingToSchedule = false;
+                    return _isAccordingToSchedule.Value;
                 }
             }
 
@@ -344,7 +376,9 @@ namespace Rock.Financial
                         "The scheduled transaction frequency ID is not valid: {0}. {1}",
                         _financialScheduledTransaction.TransactionFrequencyValueId,
                         instructionsToIgnore );
-                    return false;
+                    _isAccordingToScheduleErrorMessage = errorMessage;
+                    _isAccordingToSchedule = false;
+                    return _isAccordingToSchedule.Value;
             }
 
             var previousOccurrenceTransaction = _financialTransactionService.Queryable()
@@ -360,11 +394,17 @@ namespace Rock.Financial
                     previousOccurrenceTransaction.TransactionDateTime.Value.ToShortDateString(),
                     previousOccurrenceTransaction.Id,
                     instructionsToIgnore );
-                return false;
+                _isAccordingToScheduleErrorMessage = errorMessage;
+                _isAccordingToSchedule = false;
+                return _isAccordingToSchedule.Value;
             }
 
-            return true;
+            _isAccordingToScheduleErrorMessage = errorMessage;
+            _isAccordingToSchedule = true;
+            return _isAccordingToSchedule.Value;
         }
+        private bool? _isAccordingToSchedule = null;
+        private string _isAccordingToScheduleErrorMessage = null;
 
         /// <summary>
         /// Validates the arguments supplied to the constructor. Entities are loaded from supplied IDs where applicable to ensure existence and a valid state.
@@ -823,7 +863,7 @@ namespace Rock.Financial
                 _financialTransactionService.Add( financialTransaction );
             }
 
-            _rockContext.SaveChanges();        
+            _rockContext.SaveChanges();
 
             if ( _futureTransaction == null )
             {

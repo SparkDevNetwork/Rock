@@ -73,7 +73,7 @@
                     <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" ></Rock:RockTextBox>
                     <dl id="availabilityMessageRow">
                         <dt></dt>
-                        <dd><div id="availabilityMessage" class="alert"/></dd>
+                        <dd><div id="availabilityMessage" class="alert"></div></dd>
                     </dl>
                     <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>
                     <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password" ValidateRequestMode="Disabled" ></Rock:RockTextBox>

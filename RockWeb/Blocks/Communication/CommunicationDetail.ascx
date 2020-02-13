@@ -360,23 +360,27 @@
             </div>
         </div>
 
-        <asp:HiddenField ID="hfActiveDialog" runat="server" />
+        <asp:UpdatePanel ID="upDialog" runat="server" UpdateMode="Conditional">
+            <ContentTemplate>
+                <asp:HiddenField ID="hfActiveDialog" runat="server" />
 
-        <Rock:ModalDialog ID="mdCreateTemplate" runat="server" Title="New Personal Template" OnCancelScript="clearActiveDialog();">
-            <Content>
-                <asp:ValidationSummary ID="valCreateTemplate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
-                <Rock:NotificationBox ID="nbTemplate" runat="server" NotificationBoxType="Info" Text="This will create a new personal communication template based off the current communication." Dismissable="True"></Rock:NotificationBox>
-                <div class="row">
-                    <div class="col-sm-6">
-                        <Rock:RockTextBox ID="tbTemplateName" runat="server" Label="Template Name" />
-                    </div>
-                    <div class="col-sm-6">
-                        <Rock:CategoryPicker ID="cpTemplateCategory" runat="server" AllowMultiSelect="false" Label="Category" EntityTypeName="Rock.Model.CommunicationTemplate" />
-                    </div>
-                </div>
-                <Rock:RockTextBox ID="tbTemplateDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
-            </Content>
-        </Rock:ModalDialog>
+                <Rock:ModalDialog ID="mdCreateTemplate" runat="server" Title="New Personal Template" OnCancelScript="clearActiveDialog();">
+                    <Content>
+                        <asp:ValidationSummary ID="valCreateTemplate" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                        <Rock:NotificationBox ID="nbTemplate" runat="server" NotificationBoxType="Info" Text="This will create a new personal communication template based off the current communication." Dismissable="True"></Rock:NotificationBox>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <Rock:RockTextBox ID="tbTemplateName" runat="server" Label="Template Name" />
+                            </div>
+                            <div class="col-sm-6">
+                                <Rock:CategoryPicker ID="cpTemplateCategory" runat="server" AllowMultiSelect="false" Label="Category" EntityTypeName="Rock.Model.CommunicationTemplate" />
+                            </div>
+                        </div>
+                        <Rock:RockTextBox ID="tbTemplateDescription" runat="server" Label="Description" TextMode="MultiLine" Rows="3" />
+                    </Content>
+                </Rock:ModalDialog>
+            </ContentTemplate>
+        </asp:UpdatePanel>
 
         <script>
             $('.js-date-rollover').tooltip();
@@ -385,6 +389,7 @@
         <script>
             Sys.Application.add_load(function () {
                 loadCharts();
+                refreshMessageContent();
 
                 <%-- Hook the bootstrap tab change event to force the charts on a previously inactive tab to reload.
                      If we don't do this, the charts will not be visible following a postback from a different tab. --%>
@@ -392,6 +397,12 @@
                     loadCharts();
                 });
             });
+
+            <%-- Load the Message Content --%>
+            function refreshMessageContent() {
+                var scriptText = $('#load-email-body').html();
+                eval(scriptText);
+            }
 
             <%-- Load the Analytics Charts --%>
             function loadCharts() {

@@ -45,5 +45,34 @@ namespace Rock.Attribute
             FieldConfigurationValues.Add( VALUES_KEY, new Field.ConfigurationValue( listSource ) );
             FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( "True" ) );
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomEnhancedListFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CustomEnhancedListFieldAttribute( string name )
+            : base( name, "", false, "", "", 0, null, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName)
+        {
+            FieldConfigurationValues.Add( ENHANCED_SELECTION_KEY, new Field.ConfigurationValue( "True" ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the source of the values to display in a list.
+        /// </summary>
+        /// <value>
+        /// Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.
+        /// </value>
+        public string ListSource
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( VALUES_KEY ).ToStringSafe();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( VALUES_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
     }
 }

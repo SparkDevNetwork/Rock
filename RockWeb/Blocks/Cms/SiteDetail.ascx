@@ -33,7 +33,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" />
+                            <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-6">
                                <Rock:RockCheckBox ID="cbIsActive" runat="server" CssClass="js-isactivegroup" Text="Active" />
@@ -57,8 +57,8 @@
                             <Rock:PagePicker ID="ppPageNotFoundPage" runat="server" Label="404 Page" Required="false" PromptForPageRoute="true" Help="Page to use instead of the server's 404 message." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A list of domains that are associated with this site (list can be either comma delimited or each on a separate line).  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the url. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page." />
-                            <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
+                            <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" LabelTextFromPropertyName="false" Label="Domain(s)" Help="A list of domains that are associated with this site (list can be either comma delimited or each on a separate line).  These values are used by Rock to load the correct site whenever a specific page or route is not provided in the URL. Rock will determine the site to use by finding the first site with a domain value that is contained by the current request's hostname in the url.  It will then display that site's default page." />
+                            <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The URL that user will be redirected to if an error occurs on site" />
                             <Rock:DataTextBox ID="tbGoogleAnalytics" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="GoogleAnalyticsCode" Help="Optional Google Analytics Code.  If specified, the Google Analytics script with this code will be added to every page rendered for this site." />
                             <Rock:RockCheckBox ID="cbRequireEncryption" runat="server" Label="Require Encryption" Help="Ensures that the site is loaded over SSL by redirecting to https." />
                             <Rock:RockCheckBox ID="cbEnableForShortening" runat="server" Label="Enabled for Shortening" Help="Should this site (and its first domain) be an available option when creating shortlinks?" />
@@ -67,16 +67,19 @@
                                     <Rock:ImageUploader ID="imgSiteIcon" runat="server" Help="Commonly called a 'favicon', this image is used as a browser and app icon for your site. Recommended image size is 192x192. Rock will automatically create all the sizes required by various devices." Label="Site Icon" />
                                 </div>
                                 <div class="col-md-4 col-lg-3">
-                                    <Rock:ImageUploader ID="imgSiteLogo" runat="server" Help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing" 
+                                    <Rock:ImageUploader ID="imgSiteLogo" runat="server" Help="The site logo is used by certain themes to apply to the changes on the site. See the theme's documentation for information on sizing"
                                         Label="Site Logo" />
                                 </div>
                             </div>
-                            
+
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         </div>
                     </div>
 
                     <Rock:PanelWidget ID="wpPageAttributes" runat="server" Title="Page Attributes" CssClass="site-page-attribute-panel">
-                        <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info" 
+                        <Rock:NotificationBox ID="NotificationBox1" runat="server" NotificationBoxType="Info"
                             Text="Page Attributes apply to all of the pages of this site. Each page will have its own value for these attributes" />
                         <div class="grid">
                             <Rock:Grid ID="gPageAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Page Attribute">

@@ -1,6 +1,9 @@
 <div id="results" class="row text-center">
-    
+
 </div>
+
+{% comment %}Set search engine id to use from site attribute value{% endcomment %}
+{% assign gcseid = CurrentPage.Layout.Site | Attribute:'GoogleCustomSearchEngineId' %}
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -9,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <div class="col-md-12">
     {[ section title:'Not sure what to search? Start here!' ]}
         <p style="line-height: 41px;">
-            {% definedvalue where:'DefinedTypeId == 103' sort:'Order' iterator:'values' %}
+            {% definedvalue where:'DefinedTypeId == {{ suggestionsdefinedtypeid }}' sort:'Order' iterator:'values' %}
                 {% for value in values %}
                     {[ button linktext:'{{ value.Value }}' linkurl:'/search?query={{ value.Value }}' ]}
                 {% endfor %}
@@ -62,12 +65,12 @@ document.addEventListener("DOMContentLoaded", function() {
         Stretchy.resize(searchInput,searchInput.parentElement);
     });
 
-    
+
     // Listen for return key
     searchInput.addEventListener('keyup', function(e) {
         var key = e.which || e.keyCode;
         var query = searchInput.value;
-        
+
         if (key === 13) { // 13 is enter
 
             if(query == '') {
@@ -81,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 searchInput.parentElement.parentElement.classList.add('bg-gray-dark');
                 searchGoogle(query);
             };
-            
+
         } else {
 
             if(searchInput.value != '') {
@@ -93,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
     });
-    
+
 
     function searchGoogle(query, startIndex){
 
@@ -121,8 +124,8 @@ document.addEventListener("DOMContentLoaded", function() {
         var Http = new XMLHttpRequest();
 
         // Define request url
-        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ "Global" | Attribute:"GoogleCustomSearchEngineID" }}&num=9&q=' + query + startIndex;
-        
+        var requestUrl = 'https://www.googleapis.com/customsearch/v1?key={{ "Global" | Attribute:"GoogleCustomSearchKey" }}&cx={{ gcseid }}&num=9&q=' + query + startIndex;
+
         // Open request
         Http.open("GET", requestUrl);
 
@@ -139,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 
     function populateResults(response, query) {
-        
+
         var scroll = new SmoothScroll();
 
         var totalResults = response.searchInformation.totalResults;
@@ -170,7 +173,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (response.items) {
             for (var i = 0; i < response.items.length; i++) {
                 var item = response.items[i];
-                
+
                 if(item.pagemap && item.pagemap.cse_image && item.pagemap.cse_image[0].src != 'null'){
                     itemImage = item.pagemap.cse_image[0].src;
                 } else {
@@ -228,8 +231,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 searchGoogle(response.queries.previousPage[0].searchTerms, response.queries.previousPage[0].startIndex);
             });
         }
-        
+
     }
-    
+
 });
 </script>

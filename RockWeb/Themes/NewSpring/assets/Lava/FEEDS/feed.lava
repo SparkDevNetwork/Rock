@@ -111,7 +111,7 @@
             {% assign description = description | Trim %}
 
             {% if description and description != empty and description != '' %}
-                {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'YouVersion' cssclass:'scripture' ]}
+                {[ scripturize defaulttranslation:'{{ defaultTranslation }}' landingsite:'BibleGateway' cssclass:'scripture' ]}
                     <description><![CDATA[
                         {{ description }}
                     ]]></description>

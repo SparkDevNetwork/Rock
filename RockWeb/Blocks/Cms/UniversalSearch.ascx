@@ -115,7 +115,7 @@
                     window.document.location = $(this).data("href");
                 });
 
-                $(".js-model-filter input").change(function () {
+                $(".js-model-filter input").on('change', function () {
 
                     var entityId = $(this).val();
                     var selector = ".js-entity-id-" + entityId + " input";

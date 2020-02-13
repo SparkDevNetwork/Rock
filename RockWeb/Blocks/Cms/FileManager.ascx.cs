@@ -29,11 +29,48 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block that can be used to browse and manage files on the web server" )]
 
-    [TextField( "Root Folder", "The Root folder to browse", true, "~/Content" )]
-    [CustomDropdownListField( "Browse Mode", "Select 'image' to show only image files. Select 'doc' to show all files. Also, in 'image' mode, the ImageUploader handler will process uploaded files instead of FileUploader.", "doc,image", true, "doc", order: 1 )]
-    [LinkedPage( "File Editor Page", "Page used to edit  the contents of a file.", false, "", "", 2 )]
+    #region Block Attributes
+
+    [TextField(
+        "Root Folder",
+        Description = "The Root folder to browse",
+        IsRequired = true,
+        DefaultValue = "~/Content",
+        Order = 0,
+        Key = AttributeKey.RootFolder )]
+
+    [CustomDropdownListField(
+        "Browse Mode",
+        Description = "Select 'image' to show only image files. Select 'doc' to show all files. Also, in 'image' mode, the ImageUploader handler will process uploaded files instead of FileUploader.",
+        ListSource = "doc,image",
+        IsRequired = true,
+        DefaultValue = "doc",
+        Order = 1,
+        Key = AttributeKey.BrowseMode )]
+
+    [LinkedPage(
+        "File Editor Page",
+        Description = "Page used to edit  the contents of a file.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.FileEditorPage )]
+
+    #endregion Block Attributes
     public partial class FileManager : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string RootFolder = "RootFolder";
+            public const string BrowseMode = "BrowseMode";
+            public const string FileEditorPage = "FileEditorPage";
+        }
+
+        #endregion Attribute Keys
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -49,6 +86,10 @@ namespace RockWeb.Blocks.Cms
             SetupIFrame();
         }
 
+        #endregion Base Control Methods
+
+        #region Events
+
         /// <summary>
         /// Handles the BlockUpdated event of the Block control.
         /// </summary>
@@ -58,6 +99,10 @@ namespace RockWeb.Blocks.Cms
         {
             SetupIFrame();
         }
+
+        #endregion Events
+
+        #region Methods
 
         /// <summary>
         /// Sets up the iframe.
@@ -71,9 +116,9 @@ namespace RockWeb.Blocks.Cms
             string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
 
             var iframeUrl = ResolveRockUrl( "~/htmleditorplugins/rockfilebrowser" );
-            string rootFolder = GetAttributeValue( "RootFolder" );
-            string browseMode = GetAttributeValue( "BrowseMode" );
-            string url = LinkedPageUrl( "FileEditorPage" );
+            string rootFolder = GetAttributeValue( AttributeKey.RootFolder );
+            string browseMode = GetAttributeValue( AttributeKey.BrowseMode );
+            string url = LinkedPageUrl( AttributeKey.FileEditorPage );
             if ( string.IsNullOrWhiteSpace( browseMode ) )
             {
                 browseMode = "doc";
@@ -92,5 +137,7 @@ namespace RockWeb.Blocks.Cms
 
             iframeFileBrowser.Src = iframeUrl;
         }
+
+        #endregion Methods
     }
 }

@@ -79,12 +79,14 @@ namespace RockWeb.Blocks.Connection
         Key = AttributeKeys.Badges )]
     [CodeEditorField(
         "Lava Heading Template",
+        IsRequired = false,
         Key = AttributeKeys.LavaHeadingTemplate,
         EditorMode = CodeEditorMode.Lava,
         Description = "The HTML Content to render above the person’s name. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         Order = 6 )]
     [CodeEditorField(
         "Lava Badge Bar",
+        IsRequired = false,
         Key = AttributeKeys.LavaBadgeBar,
         EditorMode = CodeEditorMode.Lava,
         Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
@@ -656,7 +658,7 @@ namespace RockWeb.Blocks.Connection
 
                     ddlTransferOpportunity.Items.Clear();
                     foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
-                        .Where( o => o.Id != connectionRequest.ConnectionOpportunityId ).OrderBy( o => o.Name ) )
+                        .OrderBy( o => o.Name ) )
                     {
                         ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     }
@@ -667,7 +669,7 @@ namespace RockWeb.Blocks.Connection
                     rbTransferNoConnector.Checked = false;
 
                     rbTransferCurrentConnector.Text = string.Format( "Current Connector: {0}", connectionRequest.ConnectorPersonAlias != null ? connectionRequest.ConnectorPersonAlias.ToString() : "No Connector" );
-
+                    ddlTransferOpportunity.SetValue( connectionRequest.ConnectionOpportunityId );
                     ddlTransferOpportunity_SelectedIndexChanged( null, null );
                 }
             }
@@ -719,7 +721,7 @@ namespace RockWeb.Blocks.Connection
 
             int? defaultConnectorPersonId = null;
             var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
-            if ( connectionRequest != null )
+            if ( connectionRequest != null && connectionOpportunity != null )
             {
                 defaultConnectorPersonId = connectionOpportunity.GetDefaultConnectorPersonId( connectionRequest.CampusId );
                 if ( defaultConnectorPersonId.HasValue )
@@ -1555,6 +1557,11 @@ namespace RockWeb.Blocks.Connection
                 lbTransfer.Visible = false;
             }
 
+            if ( connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.Count <= 1 )
+            {
+                lbTransfer.Visible = false;
+            }
+
             lContactInfo.Text = string.Empty;
 
             Person person = null;
@@ -1591,7 +1598,7 @@ namespace RockWeb.Blocks.Connection
                     contactList.Add( emailTag );
                 }
 
-                lContactInfo.Text = contactList.AsDelimited( "</br>" );
+                lContactInfo.Text = contactList.AsDelimited( "<br>" );
             }
             else
             {

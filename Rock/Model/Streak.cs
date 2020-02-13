@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -228,7 +229,10 @@ namespace Rock.Model
 
             if ( !_isDeleted )
             {
-                StreakService.HandlePostSaveChanges( Id );
+                // Running this as a task allows possibly changed streak type properties to be
+                // propogated to the streak type cache. Also there isn't really a reason that
+                // the data context save operation needs to wait while this is done.
+                Task.Run( () => StreakService.HandlePostSaveChanges( Id ) );
             }
         }
 

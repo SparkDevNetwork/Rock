@@ -196,16 +196,22 @@ $('.js-date-rollover').tooltip();
         ///          <div class="drawer-content" style="display: none;">
         ///              PLACEHOLDER
         ///              <div class="row">
-        ///                  <div class="col-md-6">
+        ///                  <div class="col-md-4">
         ///                      <dl>
         ///                         <dt>Created By</dt>
         ///                         <dd>Admin Admin (6 days ago)</dd>
         ///                      </dl>
         ///                  </div>
-        ///                  <div class="col-md-6">
+        ///                  <div class="col-md-4">
         ///                      <dl>
         ///                         <dt>Last Modified By</dt>
         ///                         <dd>Admin Admin (46 minutes ago)</dd>
+        ///                      </dl>
+        ///                  </div>
+        ///                  <div class="col-md-4">
+        ///                      <dl>
+        ///                         <dt>Id</dt>
+        ///                         <dd>12</dd>
         ///                      </dl>
         ///                  </div>
         ///              </div>
@@ -219,7 +225,7 @@ $('.js-date-rollover').tooltip();
             if ( this.Visible )
             {
                 // panel-drawer div
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-drawer rock-panel-drawer " + CssClass + ( Expanded ? "open" : string.Empty ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-drawer rock-panel-drawer " + CssClass + ( Expanded ? "open" : string.Empty ) );
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -229,7 +235,7 @@ $('.js-date-rollover').tooltip();
 
                 // drawer-content div
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "drawer-content" );
-                if ( ! Expanded )
+                if ( !Expanded )
                 {
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
@@ -237,7 +243,7 @@ $('.js-date-rollover').tooltip();
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // PlaceHolder
-                if ( ! string.IsNullOrEmpty( Placeholder ) )
+                if ( !string.IsNullOrEmpty( Placeholder ) )
                 {
                     writer.Write( Placeholder );
                 }
@@ -247,8 +253,8 @@ $('.js-date-rollover').tooltip();
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    // div col 6 with Created By
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                    // div col 4 with Created By
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.RenderBeginTag( HtmlTextWriterTag.Dl );
                     writer.RenderBeginTag( HtmlTextWriterTag.Dt );
@@ -260,8 +266,8 @@ $('.js-date-rollover').tooltip();
                     writer.RenderEndTag();
                     writer.RenderEndTag();
 
-                    // div col 6 with Modified By
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                    // div col 4 with Modified By
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     writer.RenderBeginTag( HtmlTextWriterTag.Dl );
                     writer.RenderBeginTag( HtmlTextWriterTag.Dt );
@@ -269,6 +275,19 @@ $('.js-date-rollover').tooltip();
                     writer.RenderEndTag();
                     writer.RenderBeginTag( HtmlTextWriterTag.Dd );
                     writer.Write( _modifiedAuditHtml );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+
+                    // div col 4 with Modified By
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-4" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Dl );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Dt );
+                    writer.Write( "Id" );
+                    writer.RenderEndTag();
+                    writer.RenderBeginTag( HtmlTextWriterTag.Dd );
+                    writer.Write( _entityId );
                     writer.RenderEndTag();
                     writer.RenderEndTag();
                     writer.RenderEndTag();

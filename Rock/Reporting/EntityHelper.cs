@@ -343,6 +343,26 @@ namespace Rock.Reporting
                                     a.EntityTypeQualifierColumn == string.Empty ||
                                     a.EntityTypeQualifierColumn == "GroupTypeId" );
                         }
+                        else if ( entityType == typeof( ConnectionRequest ) )
+                        {
+                            // in the case of Connection Requests, show attributes that are entity global, but also ones that are qualified by ConnectionOpportunityId
+                            qryAttributes = qryAttributes
+                                .Where( a =>
+                                    a.EntityTypeQualifierColumn == null ||
+                                    a.EntityTypeQualifierColumn == string.Empty ||
+                                    a.EntityTypeQualifierColumn == "ConnectionOpportunityId" 
+                                    );
+                        }
+                        else if ( entityType == typeof( Registration ) )
+                        {
+                            // in the case of Registrations, show attributes that are entity global, but also ones that are qualified by RegistrationTemplateId
+                            qryAttributes = qryAttributes
+                                .Where( a =>
+                                    a.EntityTypeQualifierColumn == null ||
+                                    a.EntityTypeQualifierColumn == string.Empty ||
+                                    a.EntityTypeQualifierColumn == "RegistrationTemplateId"
+                                    );
+                        }
                         else if ( entityType == typeof( ContentChannelItem ) )
                         {
                             // in the case of ContentChannelItem, show attributes that are entity global, but also ones that are qualified by ContentChannelTypeId or ContentChannelId
@@ -543,6 +563,21 @@ namespace Rock.Reporting
 
                 }
 
+                // Special processing for Entity Type "ConnectionRequest" to handle sub-types that are distinguished by ConnectionOpportunityId.
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ConnectionRequest ) ) && attribute.EntityTypeQualifierColumn == "ConnectionOpportunityId" )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var connectionOpportunityName = new ConnectionOpportunityService( rockContext ).GetSelect( attribute.EntityTypeQualifierValue.AsInteger(), s => s.Name );
+                        if ( connectionOpportunityName != null )
+                        {
+                            // Append the Qualifier to the title
+                            entityField.AttributeEntityTypeQualifierName = connectionOpportunityName;
+                            entityField.Title = string.Format( "{0} (Opportunity: {1})", attribute.Name, connectionOpportunityName );
+                        }
+                    }
+                }
+
                 // Special processing for Entity Type "ContentChannelItem" to handle sub-types that are distinguished by ContentChannelTypeId.
                 if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( ContentChannelItem ) ) && attribute.EntityTypeQualifierColumn == "ContentChannelTypeId" )
                 {
@@ -554,6 +589,21 @@ namespace Rock.Reporting
                             // Append the Qualifier to the title
                             entityField.AttributeEntityTypeQualifierName = contentChannelTypeName;
                             entityField.Title = string.Format( "{0} (ChannelType: {1})", attribute.Name, contentChannelTypeName );
+                        }
+                    }
+                }
+
+                // Special processing for Entity Type "Registration" to handle sub-types that are distinguished by RegistrationTemplateId.
+                if ( attribute.EntityTypeId == EntityTypeCache.GetId( typeof( Registration ) ) && attribute.EntityTypeQualifierColumn == "RegistrationTemplateId" )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var RegistrationTemplateName = new RegistrationTemplateService( rockContext ).GetSelect( attribute.EntityTypeQualifierValue.AsInteger(), s => s.Name );
+                        if ( RegistrationTemplateName != null )
+                        {
+                            // Append the Qualifier to the title
+                            entityField.AttributeEntityTypeQualifierName = RegistrationTemplateName;
+                            entityField.Title = string.Format( "{0} (Registration Template: {1})", attribute.Name, RegistrationTemplateName );
                         }
                     }
                 }

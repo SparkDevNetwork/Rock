@@ -110,6 +110,12 @@ namespace Rock.Workflow.Action
         /// <returns></returns>
         public override bool Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages )
         {
+            /*
+             * 2019-12-09 - ED
+             * This activity will create a new assessment for each assessment type selected. If an assessment already exists for that type it is left in a pending status but a new assessment is still created.
+             * Per Jon, code in Rock should account for the possibility of multiple assessments for a type that are in a pending state and only select the latest one.
+             */
+             
             rockContext = rockContext ?? new RockContext();
 
             errorMessages = new List<string>();
@@ -145,22 +151,14 @@ namespace Rock.Workflow.Action
 
             foreach( string assessmentTypeGuid in assessmentTypeGuids )
             {
-                // Check for an existing record
                 var assessmentTypeService = new AssessmentTypeService( rockContext );
                 int? assessmentTypeId = assessmentTypeService.GetId( assessmentTypeGuid.AsGuid() );
 
-                var assessmentService = new AssessmentService( rockContext );
-                var existingAssessment = assessmentService
-                    .Queryable()
-                    .Where( a => a.PersonAliasId == personAlias.Id )
-                    .Where( a => a.AssessmentTypeId == assessmentTypeId )
-                    .Where( a => a.Status == AssessmentRequestStatus.Pending )
-                    .FirstOrDefault();
-
-                // If a pending record for this person/type is found mark it complete.
-                if ( existingAssessment != null )
+                if ( assessmentTypeId == null )
                 {
-                    existingAssessment.Status = AssessmentRequestStatus.Complete;
+                    // This really shouldn't be able to happen, but let's not risk an NRE.
+                    errorMessages.Add( $"Invalid Assessment Type: {assessmentTypeGuid}" );
+                    continue;
                 }
 
                 // Create a new assessment
@@ -174,6 +172,7 @@ namespace Rock.Workflow.Action
                     Status = AssessmentRequestStatus.Pending
                 };
 
+                var assessmentService = new AssessmentService( rockContext );
                 assessmentService.Add( assessment );
                 rockContext.SaveChanges();
             }

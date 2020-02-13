@@ -163,7 +163,7 @@ namespace Rock.Communication.Transport
                     errorMessages.Add( "A From address was not provided and no Organization email address is configured." );
                     return false;
                 }
-                
+
                 MailMessage message = new MailMessage();
 
                 // Reply To
@@ -180,12 +180,14 @@ namespace Rock.Communication.Transport
                 message.IsBodyHtml = true;
                 message.Priority = MailPriority.Normal;
 
+                var cssInliningEnabled = emailMessage.CssInliningEnabled;
+
                 using ( var smtpClient = GetSmtpClient() )
                 {
                     foreach( var messageRecipient in rockMessage.GetRecipients() )
                     {
                         try
-                        { 
+                        {
                             foreach( var mergeField in mergeFields )
                             {
                                 messageRecipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
@@ -198,7 +200,7 @@ namespace Rock.Communication.Transport
 
                             // Set From/To and check safe sender
                             message.From = new MailAddress( fromAddress, fromName );
-                            message.To.Add( new MailAddress( 
+                            message.To.Add( new MailAddress(
                                 messageRecipient.To.ResolveMergeFields( messageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ),
                                 messageRecipient.Name.ResolveMergeFields( messageRecipient.MergeFields, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands ) ) );
                             CheckSafeSender( message, globalAttributes );
@@ -222,11 +224,21 @@ namespace Rock.Communication.Transport
                             // Subject
                             string subject = ResolveText( emailMessage.Subject, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, messageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
 
+                            message.Subject = subject.Left( 998 );
+
                             // Body
                             string body = ResolveText( emailMessage.Message, emailMessage.CurrentPerson, emailMessage.EnabledLavaCommands, messageRecipient.MergeFields, emailMessage.AppRoot, emailMessage.ThemeRoot );
                             body = Regex.Replace( body, @"\[\[\s*UnsubscribeOption\s*\]\]", string.Empty );
 
-                            message.Subject = subject.Left(998);
+                            if ( !string.IsNullOrWhiteSpace( body ) )
+                            {
+                                if ( cssInliningEnabled )
+                                {
+                                    // Move styles inline to ensure compatibility with a wider range of email clients.
+                                    body = body.ConvertHtmlStylesToInlineAttributes();
+                                }
+                            }
+
                             message.Body = body;
 
                             var metaData = new Dictionary<string, string>( emailMessage.MessageMetaData );
@@ -298,14 +310,14 @@ namespace Rock.Communication.Transport
                     .FirstOrDefault( c => c.Id == communication.Id );
 
                 bool hasPendingRecipients;
-                if ( communication != null && 
-                    communication.Status == Model.CommunicationStatus.Approved && 
+                if ( communication != null &&
+                    communication.Status == Model.CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ))
                 {
                     var qryRecipients = new CommunicationRecipientService( communicationRockContext ).Queryable();
 
                     hasPendingRecipients = qryRecipients
-                        .Where( r => 
+                        .Where( r =>
                             r.CommunicationId == communication.Id &&
                             r.Status == Model.CommunicationRecipientStatus.Pending &&
                             r.MediumEntityTypeId.HasValue &&
@@ -345,7 +357,7 @@ namespace Rock.Communication.Transport
                 {
                     fromName = globalAttributes.GetValue( "OrganizationName" );
                 }
-                
+
                 MailMessage message = new MailMessage();
 
                 // Reply To
@@ -394,7 +406,7 @@ namespace Rock.Communication.Transport
 
                                     // Create merge field dictionary
                                     var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
-                                        
+
                                     // CC
                                     string cc = communication.CCEmails;
                                     if ( !string.IsNullOrWhiteSpace( cc ) )
@@ -433,7 +445,7 @@ namespace Rock.Communication.Transport
                                         }
                                     }
 
-                                    // Add Html view
+                                    // Add HTML view
                                     // Get the unsubscribe content and add a merge field for it
                                     string htmlBody = communication.Message;
                                     if ( communication.IsBulkCommunication && mediumAttributes.ContainsKey( "UnsubscribeHTML" ) )
@@ -530,7 +542,7 @@ namespace Rock.Communication.Transport
                         }
                     }
                 }
-                
+
             }
         }
 
@@ -651,7 +663,7 @@ namespace Rock.Communication.Transport
                         }
 
                         if ( !safe )
-                        { 
+                        {
                             unsafeToDomain = true;
                             break;
                         }

@@ -40,9 +40,26 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists themes in the Theme folder." )]
 
-    [LinkedPage("Theme Styler Page", "Page to use for the theme styler page.")]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Theme Styler Page",
+        Key = AttributeKey.ThemeStylerPage,
+        Description = "Page to use for the theme styler page.",
+        Order = 0 )]
+
+    #endregion
     public partial class ThemeList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string ThemeStylerPage = "ThemeStylerPage";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         // used for private variables
@@ -274,7 +291,7 @@ namespace RockWeb.Blocks.Cms
         {
             Dictionary<string, string> qryParams = new Dictionary<string, string>();
             qryParams.Add( "EditTheme", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( "ThemeStylerPage", qryParams );
+            NavigateToLinkedPage( AttributeKey.ThemeStylerPage, qryParams );
         }
     }
 }

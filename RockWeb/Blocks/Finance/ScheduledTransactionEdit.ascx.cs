@@ -1351,11 +1351,11 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Set the date prompt based on the frequency value entered
         $('#ButtonDropDown_btnFrequency .dropdown-menu a').on('click', function () {{
-            var $when = $(this).parents('div.form-group:first').next();
+            var $when = $(this).parents('div.form-group').first().next();
             if ($(this).attr('data-id') == '{3}') {{
-                $when.find('label:first').html('When');
+                $when.find('label').first().html('When');
             }} else {{
-                $when.find('label:first').html('First Gift');
+                $when.find('label').first().html('First Gift');
 
                 // Set date to tomorrow if it is equal or less than today's date
                 var $dateInput = $when.find('input');
@@ -1390,7 +1390,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Toggle credit card display if saved card option is available
         $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
-            var $content = $(this).parents('div.form-group:first').next('.radio-content')
+            var $content = $(this).parents('div.form-group').first().next('.radio-content')
             var radioDisplay = $content.css('display');
             if ($(this).val() == 0 && radioDisplay == 'none') {{
                 $content.slideToggle();

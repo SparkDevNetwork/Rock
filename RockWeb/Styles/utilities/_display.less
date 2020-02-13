@@ -1,0 +1,31 @@
+//
+// Utilities for common `display` values
+//
+
+.util-mix-display(@breakpoint:"base") {
+
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+.display-breakpoints(@infix) {
+  .d@{infix}-none         { display: none !important; }
+  .d@{infix}-inline       { display: inline !important; }
+  .d@{infix}-inline-block { display: inline-block !important; }
+  .d@{infix}-block        { display: block !important; }
+  .d@{infix}-table        { display: table !important; }
+  .d@{infix}-table-row    { display: table-row !important; }
+  .d@{infix}-table-cell   { display: table-cell !important; }
+  .d@{infix}-flex         { display: flex !important; }
+  .d@{infix}-inline-flex  { display: inline-flex !important; }
+}

@@ -136,7 +136,7 @@
 
                 // get date list from hidden field
                 var $hiddenField = $modal.find('.js-specific-datelist-values');
-                var dateList = $hiddenField.val().split(",");
+                var dateList = $hiddenField.val().split(',');
 
                 // delete selectedDate
                 var index = dateList.indexOf(selectedDate);
@@ -167,7 +167,7 @@
             $modal.find('.add-exclusion-daterange-ok').off('click').on('click', function () {
 
                 // get daterange list from hidden field
-                var dateRangeListValues = $modal.find('.js-exclusion-daterange-list-values').val().split(",");
+                var dateRangeListValues = $modal.find('.js-exclusion-daterange-list-values').val().split(',');
                 if (!dateRangeListValues[0]) {
                     // if blank, initialize as a new empty array
                     dateRangeListValues = [];
@@ -208,21 +208,21 @@
             });
 
             // fadeIn/fadeOut the X buttons to delete dateRanges
-            $modal.find('.lstExclusionDateRanges').on("mouseenter",
+            $modal.find('.lstExclusionDateRanges').on('mouseenter',
                 function () {
                     $(this).find('li a').stop(true, true).show();
-                }).on("mouseleave",
+                }).on('mouseleave',
                 function () {
                     $(this).find('li a').stop(true, true).fadeOut(500);
                 });
 
             // delete dateRange from list
             $modal.find('.lstExclusionDateRanges').off('click').on('click', 'li a', function () {
-                var selectedDateRange = $(this).siblings("span").text();
+                var selectedDateRange = $(this).siblings('span').text();
 
                 // get dateRange list from hidden field
                 var $hiddenField = $modal.find('.js-exclusion-daterange-list-values');
-                var dateRangeList = $hiddenField.val().split(",");
+                var dateRangeList = $hiddenField.val().split(',');
 
                 // delete selectedDateRange
                 var index = dateRangeList.indexOf(selectedDateRange);
@@ -249,12 +249,12 @@
                     startTimeValue = $datetimepicker.last().val();
 
                 if (!startDateValue.isValid) {
-                    $datetimepicker.parents(".form-group").first().toggleClass("has-error", 1);
+                    $datetimepicker.parents('.form-group').first().toggleClass('has-error', 1);
                     event.preventDefault();
                     return;
                 }
                 else {
-                    $datetimepicker.parents(".form-group").first().toggleClass("has-error", 0);
+                    $datetimepicker.parents('.form-group').first().toggleClass('has-error', 0);
                 }
             });
         };

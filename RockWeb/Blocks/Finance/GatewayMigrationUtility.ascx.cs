@@ -615,7 +615,7 @@ namespace RockWeb.Blocks.Finance
                 Task.Delay( 2000 ).Wait();
 
                 _hubContext.Clients.All.setMigrateScheduledTransactionsButtonVisibility( this.SignalRNotificationKey, false );
-
+                
 
                 foreach ( var scheduledTransaction in scheduledTransactions )
                 {
@@ -756,12 +756,13 @@ namespace RockWeb.Blocks.Finance
                         var tempFinancialScheduledTransaction = myWellGatewayComponent.AddScheduledPayment( myWellFinancialGateway, paymentSchedule, referencePaymentInfo, out errorMessage );
                         if ( tempFinancialScheduledTransaction != null )
                         {
-                            //////////// This cannot be undone!!
+                            //////////// This cannot be undone!! 
                             nmiGatewayComponent.CancelScheduledPayment( scheduledTransaction, out errorMessage );
 
                             scheduledTransaction.TransactionCode = tempFinancialScheduledTransaction.TransactionCode;
                             scheduledTransaction.GatewayScheduleId = tempFinancialScheduledTransaction.GatewayScheduleId;
                             scheduledTransaction.FinancialGatewayId = tempFinancialScheduledTransaction.FinancialGatewayId;
+                            scheduledTransaction.IsActive = tempFinancialScheduledTransaction.IsActive;
                             rockContext.SaveChanges();
 
                             scheduledTransactionMigrationResult.DidMigrateSuccessfully = true;
@@ -997,7 +998,7 @@ and fst.NextPaymentDate >= GetDate()*/
                 a.FinancialGatewayId == nmiFinancialGatewayID && a.IsActive
                 && !string.IsNullOrEmpty( a.GatewayScheduleId ) ).ToList();
 
-            // loop thru scheduledTransactions that might have a stale NextPaymentDate and make sure that they are updated
+            // loop thru scheduledTransactions that might have a stale NextPaymentDate and make sure that they are updated 
             foreach ( var scheduledTransaction in scheduledTransactionList )
             {
                 if ( scheduledTransaction.TransactionFrequencyValueId != transactionFrequencyValueIdOneTime )

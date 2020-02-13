@@ -90,7 +90,7 @@ namespace Rock.Rest.Controllers
 
             prayerRequest.PrayerCount = ( prayerRequest.PrayerCount ?? 0 ) + 1;
 
-            System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
             Service.Context.SaveChanges();
         }
 
@@ -154,6 +154,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [EnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/GetForGroupMembersOfPersonInGroupTypes/{personId}" )]
         public IQueryable<PrayerRequest> GetForGroupMembersOfPersonInGroupTypes( bool excludePerson, string groupTypeIds, int personId )
         {

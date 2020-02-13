@@ -34,7 +34,12 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists HTML content blocks that need approval." )]
 
-    [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve HTML content." )]
+    #region Block Attributes
+    [SecurityAction(
+        Authorization.APPROVE,
+        "The roles and/or users that have access to approve HTML content." )]
+
+    #endregion Block Attributes
     public partial class HtmlContentApproval : Rock.Web.UI.RockBlock
     {
         #region Fields
