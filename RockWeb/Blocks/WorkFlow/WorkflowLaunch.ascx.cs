@@ -629,52 +629,89 @@ namespace RockWeb.Blocks.Workflow
                 return;
             }
 
-            var personEntityTypeId = EntityTypeCache.Get<Person>().Id;
-            var groupEntityTypeId = EntityTypeCache.Get<Group>().Id;
-            var groupMemberEntityTypeId = EntityTypeCache.Get<GroupMember>().Id;
-            var connectionRequestEntityTypeId = EntityTypeCache.Get<ConnectionRequest>().Id;
+            // Generate a view model for each entity that contains HTML to show the user what the entities are in the most
+            // human friendly way possible
+            var theType = entityTypeCache.GetEntityType();
             IEnumerable<RepeaterViewModel> viewModels;
 
-            if ( entityTypeCache.Id == personEntityTypeId || entityTypeCache.Id == groupEntityTypeId )
+            const string twoLineTemplate = "{0}<br /><sup>({1})</sup>";
+            const string nameAndIdTemplate = "{0} Id: {1}";
+
+            /*
+             * 2020-02-13 BJW
+             *
+             * This giant if statement is written this way so as to make the conditional choice for how to render each entity outside
+             * of a loop. It would probably be easier to read if we put the conditionals inside the loop, but then those conditionals
+             * would be evaluated for every entity. Since this block has potential to display thousands of entities, I thought it best
+             * to try to optimize this way.
+             */
+
+            if ( entityTypeCache.Id == EntityTypeCache.Get<Person>().Id || entityTypeCache.Id == EntityTypeCache.Get<Group>().Id )
             {
+                // Person or Group have a good ToString override that works well here
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
                     Html = e.ToString()
                 } );
             }
-            else if ( entityTypeCache.Id == groupMemberEntityTypeId )
+            else if ( entityTypeCache.Id == EntityTypeCache.Get<GroupMember>().Id )
             {
+                // Group members should show both the group and the person ToString results
                 viewModels = entityQuery.Include( "Person" ).Include( "Group" ).ToList().Select( e => new RepeaterViewModel
                 {
-                    Html = string.Format( "{0}<br /><sup>({1})</sup>", ( ( GroupMember ) e ).Person, ( ( GroupMember ) e ).Group )
+                    Html = string.Format( twoLineTemplate, ( ( GroupMember ) e ).Person, ( ( GroupMember ) e ).Group )
                 } );
             }
-            else if ( entityTypeCache.Id == connectionRequestEntityTypeId )
+            else if ( entityTypeCache.Id == EntityTypeCache.Get<ConnectionRequest>().Id )
             {
+                // Connection requests should show both the opportunity and the person ToString results. ConnectionOpportunity has a good ToString method
                 viewModels = entityQuery.Include( "PersonAlias.Person" ).Include( "ConnectionOpportunity" ).ToList().Select( e => new RepeaterViewModel
                 {
-                    Html = string.Format( "{0}<br /><sup>({1})</sup>", ( ( ConnectionRequest ) e ).PersonAlias.Person, ( ( ConnectionRequest ) e ).ConnectionOpportunity )
+                    Html = string.Format( twoLineTemplate, ( ( ConnectionRequest ) e ).PersonAlias.Person, ( ( ConnectionRequest ) e ).ConnectionOpportunity )
                 } );
             }
-            else if ( entityTypeCache.GetEntityType().GetProperty( "Name" ) != null )
+            else if ( theType.GetProperty( "Name" ) != null )
             {
+                // If there is a name property then use that
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
                     Html = e.GetPropertyValue( "Name" ).ToString()
                 } );
             }
-            else if ( entityTypeCache.GetEntityType().GetProperty( "Title" ) != null )
+            else if ( theType.GetProperty( "Title" ) != null )
             {
+                // If there is a title property then use that
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
                     Html = e.GetPropertyValue( "Title" ).ToString()
                 } );
             }
+            else if ( theType.GetProperty( "Person" ) != null )
+            {
+                // If there is a Person property then use the person's name with the entity id underneath
+                viewModels = entityQuery.Include( "Person" ).ToList().Select( e => new RepeaterViewModel
+                {
+                    Html = string.Format( twoLineTemplate,
+                        e.GetPropertyValue( "Person" ),
+                        string.Format( nameAndIdTemplate, entityTypeCache.FriendlyName, e.Id ) )
+                } );
+            }
+            else if ( theType.GetProperty( "PersonAlias" ) != null )
+            {
+                // If there is a PersonAlias property then use the person's name with the entity id underneath
+                viewModels = entityQuery.Include( "PersonAlias.Person" ).ToList().Select( e => new RepeaterViewModel
+                {
+                    Html = string.Format( twoLineTemplate,
+                        ( ( PersonAlias ) e.GetPropertyValue( "PersonAlias" ) ).Person,
+                        string.Format( nameAndIdTemplate, entityTypeCache.FriendlyName, e.Id ) )
+                } );
+            }
             else
             {
+                // There are no configured properties on this entity type, so just so the entity type name and entity id
                 viewModels = entityQuery.ToList().Select( e => new RepeaterViewModel
                 {
-                    Html = string.Format( "{0} Id: {1}", entityTypeCache.FriendlyName, e.Id )
+                    Html = string.Format( nameAndIdTemplate, entityTypeCache.FriendlyName, e.Id )
                 } );
             }
 
