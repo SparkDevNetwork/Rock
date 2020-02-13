@@ -95,5 +95,10 @@ namespace Rock.SystemGuid
         /// The Job to Rebuild a Sequence.
         /// </summary>
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
+
+        /// <summary>
+        /// The steps automation job - add steps based on people in a dataview
+        /// </summary>
+        public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
     }
 }

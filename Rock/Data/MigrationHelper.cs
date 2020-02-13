@@ -2117,6 +2117,26 @@ WHERE [Guid] = '{pageGuid}';";
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core attribute for the entity, specify the key with a 'core.' prefix</param>
         public void UpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
+            UpdateEntityAttribute( entityTypeName, fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierValue, name, description, order, defaultValue, guid, key, null );
+        }
+
+        /// <summary>
+        /// Updates the Entity Attribute for the given EntityType, FieldType, and name (key).
+        /// otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core attribute for the entity, specify the key with a 'core.' prefix</param>
+        /// <param name="isRequired"></param>
+        public void UpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key, bool? isRequired )
+        {
             EnsureEntityTypeExists( entityTypeName );
 
             if ( string.IsNullOrWhiteSpace( key ) )
@@ -2145,7 +2165,8 @@ WHERE [Guid] = '{pageGuid}';";
                         [Description] = '{4}',
                         [Order] = {5},
                         [DefaultValue] = '{6}',
-                        [Guid] = '{7}'
+                        [Guid] = '{7}',
+                        [IsRequired] = {10}
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = '{8}'
                     AND [EntityTypeQualifierValue] = '{9}'
@@ -2161,7 +2182,7 @@ WHERE [Guid] = '{pageGuid}';";
                     VALUES(
                         1,@FieldTypeId,@EntityTypeid,'{8}','{9}',
                         '{2}','{3}','{4}',
-                        {5},0,'{6}',0,0,
+                        {5},0,'{6}',0,{11},
                         '{7}')
                 END
 ",
@@ -2174,7 +2195,11 @@ WHERE [Guid] = '{pageGuid}';";
                     defaultValue?.Replace( "'", "''" ) ?? string.Empty,
                     guid,
                     entityTypeQualifierColumn,
-                    entityTypeQualifierValue )
+                    entityTypeQualifierValue,
+                    isRequired.HasValue ?
+                        ( isRequired.Value ? "1" : "0" ) :
+                        "[IsRequired]",
+                    isRequired == true ? "1" : "0" )
             );
         }
 

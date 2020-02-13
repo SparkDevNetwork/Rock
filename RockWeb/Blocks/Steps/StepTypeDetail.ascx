@@ -181,7 +181,7 @@
 
                     <Rock:PanelWidget ID="wpAdvanced" runat="server" Title="Advanced Settings">
                         <div class="row">
-                            <div class="col-md-6" style="display: none;"><!-- feature coming soon -->
+                            <div class="col-md-6">
                                 <Rock:DataViewItemPicker ID="dvpAutocomplete"
                                     runat="server"
                                     DataField="WorkflowType"
@@ -191,7 +191,8 @@
                                     runat="server"
                                     DataField="WorkflowType"
                                     Label="Audience Data View"
-                                    Help="A Data View that returns a list of people who are eligible to take this step." />
+                                    Help="A Data View that returns a list of people who are eligible to take this step."
+                                    Visible="false" /><!-- feature coming soon -->
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbAllowEdit"
