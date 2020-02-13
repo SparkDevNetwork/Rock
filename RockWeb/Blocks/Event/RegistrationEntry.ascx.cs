@@ -3072,7 +3072,8 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            if ( familyId.HasValue && location != null )
+            // If we have family ID and a meaninful location then update that info
+            if ( familyId.HasValue && location != null && location.IsMinimumViableAddress() )
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
                 var existingLocation = new LocationService( rockContext ).Get(
