@@ -765,10 +765,7 @@ namespace RockWeb.Blocks.Event
 
             cblDisplayedRegistrantAttributes.Items.Clear();
 
-            var registrantAttributes = new AttributeService( rockContext ).GetByEntityTypeId( EntityTypeCache.GetId<RegistrationRegistrant>() )
-                .Where( a =>
-                    a.EntityTypeQualifierColumn == "RegistrationTemplateId" &&
-                    a.EntityTypeQualifierValue == registrationTemplateId.ToString() ).ToAttributeCacheList();
+            var registrantAttributes = GetRegistrantFormFields().Where( a => a.FieldSource == RegistrationFieldSource.RegistrantAttribute ).Select( a => a.Attribute ).Where( a => a != null ).ToList();
 
             foreach ( var registrantAttribute in registrantAttributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
@@ -1470,7 +1467,7 @@ namespace RockWeb.Blocks.Event
                 var attribute = field.Attribute;
                 var filterControl = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
 
-                if ( filterControl != null )
+                if ( filterControl != null && filterControl.Visible )
                 {
                     try
                     {
@@ -1570,6 +1567,5 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Registrant Filter
-
     }
 }

@@ -790,7 +790,7 @@ namespace RockWeb.Blocks.Event
 
             var rockContext = new RockContext();
 
-            this.RegistrantFields = GetRegistrantFormFields();
+            this.RegistrantFields = GetRegistrantFormFields().Where( a => a.IsGridField ).ToArray();
 
             SetUserPreferencePrefix( this.RegistrationInstanceId );
 
