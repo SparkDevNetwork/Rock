@@ -269,7 +269,7 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                // Remove/delete any registrant fees that are no longer in UI with quantity 
+                // Remove/delete any registrant fees that are no longer in UI with quantity
                 foreach ( var dbFee in registrant.Fees.ToList() )
                 {
                     if ( !RegistrantState.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
@@ -399,7 +399,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( !registrant.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
@@ -525,7 +525,7 @@ namespace RockWeb.Blocks.Event
                     null,
                     null );
             }
-            
+
             NavigateToRegistration();
         }
 
@@ -548,8 +548,8 @@ namespace RockWeb.Blocks.Event
         {
             var qryParams = new Dictionary<string, string>();
             var pageCache = PageCache.Get( RockPage.PageId );
-            if ( pageCache != null && 
-                pageCache.ParentPage != null && 
+            if ( pageCache != null &&
+                pageCache.ParentPage != null &&
                 pageCache.ParentPage.ParentPage != null &&
                 pageCache.ParentPage.ParentPage.ParentPage != null )
             {
@@ -663,6 +663,8 @@ namespace RockWeb.Blocks.Event
                         this.RegistrationTemplateId = registrant.Registration.RegistrationInstance.RegistrationTemplateId;
                         this.RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
 
+                        lTitle.Text = registrant.ToString();
+
                         lWizardTemplateName.Text = registrant.Registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = registrant.Registration.RegistrationInstance.Name;
                         lWizardRegistrationName.Text = registrant.Registration.ToString();
@@ -689,6 +691,8 @@ namespace RockWeb.Blocks.Event
                     {
                         this.RegistrationTemplateId = registration.RegistrationInstance.RegistrationTemplateId;
                         this.RegistrationInstanceId = registration.RegistrationInstanceId;
+
+                        lTitle.Text = "Add Registrant";
 
                         lWizardTemplateName.Text = registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = registration.RegistrationInstance.Name;
