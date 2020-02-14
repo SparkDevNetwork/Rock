@@ -82,7 +82,7 @@
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                                    <Rock:RockBoundField DataField="FieldType" HeaderText="Field Type" />
+                                    <Rock:RockLiteralField ID="lFieldType" HeaderText="Field Type" />
                                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
                                     <Rock:BoolField DataField="IsGridColumn" HeaderText="Show in Grid" />
                                     <Rock:BoolField DataField="AllowSearch" HeaderText="Allow Search" />
