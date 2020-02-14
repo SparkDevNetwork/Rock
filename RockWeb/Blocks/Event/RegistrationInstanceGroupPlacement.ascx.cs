@@ -812,6 +812,8 @@ namespace RockWeb.Blocks.Event
                 ddlFeeName.Items.Add( new ListItem( templateFee.Name, templateFee.Id.ToString() ) );
             }
 
+            rcwFeeFilters.Visible = templateFees.Any();
+
             cblFeeOptions.Visible = false;
 
             if ( placementConfiguration.FilterFeeId.HasValue )
@@ -1523,6 +1525,9 @@ namespace RockWeb.Blocks.Event
                     filterControlWrapper.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
                 }
             }
+
+            // hide the registrant filters secition if there aren't any visible
+            rcwRegistrantFilters.Visible = registrantAttributeFields.Where( a => displayedRegistrantAttributes.Contains( a.AttributeId ) ).Any();
         }
 
         /// <summary>
