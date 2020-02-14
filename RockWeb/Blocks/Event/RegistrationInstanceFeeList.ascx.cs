@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Event
 
             fFees.ApplyFilterClick += fFees_ApplyFilterClick;
 
-            gFees.EmptyDataText = "There are no items to show in this view.";
+            gFees.EmptyDataText = "No Fees Found";
             gFees.GridRebind += gFees_GridRebind;
 
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -332,6 +332,6 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = visible;
         }
 
-        #endregion   
+        #endregion
     }
 }

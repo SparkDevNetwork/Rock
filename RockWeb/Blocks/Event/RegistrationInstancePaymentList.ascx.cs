@@ -111,7 +111,7 @@ namespace RockWeb.Blocks.Event
 
             fPayments.ApplyFilterClick += fPayments_ApplyFilterClick;
 
-            gPayments.EmptyDataText = "There are no items to show in this view.";
+            gPayments.EmptyDataText = "No Payments Found";
             gPayments.DataKeyNames = new string[] { "Id" };
             gPayments.Actions.ShowAdd = false;
             gPayments.RowDataBound += gPayments_RowDataBound;
@@ -403,6 +403,6 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = visible;
         }
 
-        #endregion   
+        #endregion
     }
 }
