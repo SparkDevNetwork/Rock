@@ -313,16 +313,23 @@
                                 <Rock:RockCheckBox ID="cbShowFees" runat="server" Label="Show Fees" Help="Enable this to show any fees associated with each registrant." />
                             </div>
                         </div>
-                        <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedRegistrantAttributes_SelectedIndexChanged" />
 
-                        <Rock:RockControlWrapper ID="rcwFeeFilters" runat="server" Label="Fee Filters" Help="Select fees to limit registrants that have selected that fee.">
-                            <Rock:RockDropDownList ID="ddlFeeName" runat="server" Label="Fee" AutoPostBack="true" OnSelectedIndexChanged="ddlFeeName_SelectedIndexChanged" />
-                            <Rock:RockCheckBoxList ID="cblFeeOptions" runat="server" Label="Fee Options" />
-                        </Rock:RockControlWrapper>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
+                                    <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedRegistrantAttributes_SelectedIndexChanged" />
 
-                        <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
-                            <Rock:DynamicPlaceholder ID="phRegistrantFilters" runat="server" />
-                        </Rock:RockControlWrapper>
+                                    <Rock:DynamicPlaceholder ID="phRegistrantFilters" runat="server" />
+                                </Rock:RockControlWrapper>
+
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockControlWrapper ID="rcwFeeFilters" runat="server" Label="Fee Filters" Help="Select fees to limit registrants that have selected that fee.">
+                                    <Rock:RockDropDownList ID="ddlFeeName" runat="server" Label="Fee" AutoPostBack="true" OnSelectedIndexChanged="ddlFeeName_SelectedIndexChanged" />
+                                    <Rock:RockCheckBoxList ID="cblFeeOptions" runat="server" Label="Fee Options" />
+                                </Rock:RockControlWrapper>
+                            </div>
+                        </div>
 
                         <Rock:RockControlWrapper ID="rcwPersonFilters" runat="server" Label="Person Filters">
                             <Rock:DynamicPlaceholder ID="phPersonFilters" runat="server" />
