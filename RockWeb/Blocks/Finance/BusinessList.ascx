@@ -24,7 +24,7 @@
                     </Rock:GridFilter>
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                    <Rock:Grid ID="gBusinessList" runat="server" RowItemText="Business" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowSelected="gBusinessList_RowSelected">
+                    <Rock:Grid ID="gBusinessList" runat="server" RowItemText="Business" EmptyDataText="No Businesses Found" AllowSorting="true" OnRowSelected="gBusinessList_RowSelected" IsBusiness="true">
                         <Columns>
                             <Rock:SelectField></Rock:SelectField>
                             <Rock:RockBoundField DataField="BusinessName" HeaderText="Business Name" SortExpression="LastName" />
