@@ -325,14 +325,15 @@
                             </div>
                         </div>
 
-                        <div class="row">
+                        <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedRegistrantAttributes_SelectedIndexChanged" />
+                    </Rock:PanelWidget>
+
+                    <Rock:PanelWidget ID="pwFilterConfiguration" runat="server" Title="Filters">
+                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
-                                    <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedRegistrantAttributes_SelectedIndexChanged" />
-
                                     <Rock:DynamicPlaceholder ID="phRegistrantFilters" runat="server" />
                                 </Rock:RockControlWrapper>
-
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockControlWrapper ID="rcwFeeFilters" runat="server" Label="Fee Filters" Help="Select fees to limit registrants that have selected that fee.">
@@ -345,7 +346,6 @@
                         <Rock:RockControlWrapper ID="rcwPersonFilters" runat="server" Label="Person Filters">
                             <Rock:DynamicPlaceholder ID="phPersonFilters" runat="server" />
                         </Rock:RockControlWrapper>
-
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="pwGroupConfiguration" runat="server" Title="Group Configuration">
