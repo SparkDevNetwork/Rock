@@ -22,6 +22,7 @@
                 // uses https://github.com/uxsolutions/bootstrap-datepicker
                 var datePicker = $datePickerInputGroup.datepicker({
                     format: dateFormat,
+                    assumeNearbyYear: 10,
                     autoclose: true,
                     todayBtn: "linked",
                     forceParse: options.forceParse,
