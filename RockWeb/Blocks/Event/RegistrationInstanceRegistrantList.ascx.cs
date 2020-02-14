@@ -935,7 +935,7 @@ namespace RockWeb.Blocks.Event
                 hfRegistrationInstanceId.Value = registrationInstance.Id.ToString();
                 hfRegistrationTemplateId.Value = registrationInstance.RegistrationTemplateId.ToString();
 
-                this.RegistrantFields = GetRegistrantFormFields().ToArray();
+                this.RegistrantFields = GetRegistrantFormFields().Where( a => a.IsGridField ).ToArray();
 
                 SetUserPreferencePrefix( hfRegistrationTemplateId.ValueAsInt() );
 

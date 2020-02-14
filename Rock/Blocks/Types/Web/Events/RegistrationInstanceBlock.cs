@@ -295,7 +295,17 @@ namespace Rock.Blocks.Types.Web.Events
         /// </value>
         protected int? RegistrationTemplateId
         {
-            get => this.RegistrationInstance?.RegistrationTemplateId;
+            get
+            {
+                int? registrationTemplateId = this.RegistrationInstance?.RegistrationTemplateId;
+
+                if ( registrationTemplateId == null )
+                {
+                    registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+                }
+
+                return registrationTemplateId;
+            }
         }
 
         /// <summary>
@@ -404,8 +414,6 @@ namespace Rock.Blocks.Types.Web.Events
         {
             this.OnBlockUpdated();
         }
-
-        
 
         #endregion
 
@@ -774,48 +782,56 @@ namespace Rock.Blocks.Types.Web.Events
         }
 
         /// <summary>
-        /// Get the collection of fields that are included in the forms associated with the registration template.
+        /// Get the collection of fields (PersonFields, RegistrantFields, GroupMemberFields, RegistrationFields) that are included in the forms associated with the registration template.
         /// </summary>
         /// <returns></returns>
         protected RegistrantFormField[] GetRegistrantFormFields()
         {
             var fields = new List<RegistrantFormField>();
 
-            var registrationInstance = this.RegistrationInstance;
-
-            if ( registrationInstance != null )
+            if ( !this.RegistrationTemplateId.HasValue )
             {
-                foreach ( var form in registrationInstance.RegistrationTemplate.Forms )
-                {
-                    var formFields = form.Fields
-                        .Where( f => f.IsGridField )
-                        .OrderBy( f => f.Order )
-                        .ToList();
+                return new RegistrantFormField[0];
+            }
 
-                    foreach ( var formField in formFields )
+            List<RegistrationTemplateForm> registrationTemplateForms = new RegistrationTemplateService( new RockContext() ).GetSelect( this.RegistrationTemplateId.Value, s => s.Forms )?.ToList();
+
+            if ( registrationTemplateForms == null )
+            {
+                return new RegistrantFormField[0];
+            }
+
+            foreach ( var form in registrationTemplateForms )
+            {
+                var formFields = form.Fields
+                    .OrderBy( f => f.Order )
+                    .ToList();
+
+                foreach ( var formField in formFields )
+                {
+                    if ( formField.FieldSource == RegistrationFieldSource.PersonField )
                     {
-                        if ( formField.FieldSource == RegistrationFieldSource.PersonField )
-                        {
-                            if ( formField.PersonFieldType != RegistrationPersonFieldType.FirstName &&
-                                formField.PersonFieldType != RegistrationPersonFieldType.LastName )
-                            {
-                                fields.Add(
-                                    new RegistrantFormField
-                                    {
-                                        FieldSource = formField.FieldSource,
-                                        PersonFieldType = formField.PersonFieldType
-                                    } );
-                            }
-                        }
-                        else
+                        if ( formField.PersonFieldType != RegistrationPersonFieldType.FirstName &&
+                            formField.PersonFieldType != RegistrationPersonFieldType.LastName )
                         {
                             fields.Add(
                                 new RegistrantFormField
                                 {
                                     FieldSource = formField.FieldSource,
-                                    AttributeId = formField.AttributeId.Value
+                                    PersonFieldType = formField.PersonFieldType,
+                                    IsGridField = formField.IsGridField
                                 } );
                         }
+                    }
+                    else
+                    {
+                        fields.Add(
+                            new RegistrantFormField
+                            {
+                                FieldSource = formField.FieldSource,
+                                AttributeId = formField.AttributeId.Value,
+                                IsGridField = formField.IsGridField
+                            } );
                     }
                 }
             }
@@ -1023,6 +1039,15 @@ namespace Rock.Blocks.Types.Web.Events
             /// </value>
             [DataMember]
             public int AttributeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether this instance is grid field.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is grid field; otherwise, <c>false</c>.
+            /// </value>
+            [DataMember]
+            public bool IsGridField { get; set; }
 
             /// <summary>
             /// Gets or sets the attribute.
