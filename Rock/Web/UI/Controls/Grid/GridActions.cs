@@ -55,6 +55,7 @@ namespace Rock.Web.UI.Controls
         private List<Control> _customActions;
         private PlaceHolder _pnlCustomActions;
         private LinkButton _lbPersonMerge;
+        private LinkButton _lbBusinessMerge;
         private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
         private HtmlGenericControl _aAdd;
@@ -276,6 +277,20 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            // control for person merge
+            _lbBusinessMerge = new LinkButton();
+            Controls.Add( _lbBusinessMerge );
+            _lbBusinessMerge.ID = "lbBusinessMerge";
+            _lbBusinessMerge.CssClass = "btn btn-grid-action btn-merge btn-default btn-sm";
+            _lbBusinessMerge.ToolTip = "Merge Person Records";
+            _lbBusinessMerge.Click += lbPersonMerge_Click;
+            _lbBusinessMerge.CausesValidation = false;
+            _lbBusinessMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbBusinessMerge );
+            HtmlGenericControl iBusinessMerge = new HtmlGenericControl( "i" );
+            iBusinessMerge.Attributes.Add( "class", "fa fa-sign-in-alt fa-fw" );
+            _lbBusinessMerge.Controls.Add( iBusinessMerge );
+
             // control for communicate
             _lbCommunicate = new LinkButton();
             Controls.Add( _lbCommunicate );
@@ -429,7 +444,8 @@ namespace Rock.Web.UI.Controls
         {
             var rockPage = Page as RockPage;
 
-            _lbPersonMerge.Visible = ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbPersonMerge.Visible = !_parentGrid.IsBusiness && ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbBusinessMerge.Visible = _parentGrid.IsBusiness && ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.BusinessMergePageRoute );
             _lbBulkUpdate.Visible = ShowBulkUpdate && _parentGrid.CanViewTargetPage( _parentGrid.BulkUpdatePageRoute );
 
             if ( ShowCommunicate )

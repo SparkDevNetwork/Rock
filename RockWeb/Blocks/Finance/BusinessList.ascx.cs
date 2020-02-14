@@ -42,10 +42,6 @@ namespace RockWeb.Blocks.Finance
         "Detail Page",
         Key = AttributeKey.DetailPage,
         Order = 0 )]
-    [LinkedPage(
-        "Business Merge Page",
-        Key = AttributeKey.BusinessMergePage,
-        Order = 1 )]
 
     #endregion Block Attributes
     public partial class BusinessList : RockBlock, ICustomGridColumns
@@ -55,7 +51,6 @@ namespace RockWeb.Blocks.Finance
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string BusinessMergePage = "BusinessMergePage";
         }
 
         #endregion Attribute Keys
@@ -80,17 +75,7 @@ namespace RockWeb.Blocks.Finance
             gBusinessList.Actions.AddClick += gBusinessList_AddClick;
             gBusinessList.GridRebind += gBusinessList_GridRebind;
             gBusinessList.IsDeleteEnabled = canEdit;
-            var isMergePersonAllowed = GetAttributeValue( AttributeKey.BusinessMergePage ).IsNotNullOrWhiteSpace();
-            if ( isMergePersonAllowed )
-            { 
-                var lbMerge = new LinkButton();
-                lbMerge.ID = "lbMerge";
-                lbMerge.ToolTip = "Merge";
-                lbMerge.Click += lbMerge_Click;
-                lbMerge.CssClass = "btn btn-grid-action btn-default btn-sm";
-                lbMerge.Text = "<i class='fa fa fa-sign-in-alt'></i>";
-                gBusinessList.Actions.AddCustomActionControl( lbMerge );
-            }
+            gBusinessList.PersonIdField = "Id";
         }
 
         /// <summary>
@@ -190,47 +175,6 @@ namespace RockWeb.Blocks.Finance
             var businessId = e.RowKeyId;
             parms.Add( "businessId", businessId.ToString() );
             NavigateToLinkedPage( AttributeKey.DetailPage, parms );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbMerge control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void lbMerge_Click( object sender, EventArgs e )
-        {
-            // create entity set with selected individuals
-            var keys = gBusinessList.SelectedKeys.ToList();
-            if ( keys.Any() )
-            {
-                var entitySet = new Rock.Model.EntitySet();
-                entitySet.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Get<Rock.Model.Person>().Id;
-                entitySet.ExpireDateTime = RockDateTime.Now.AddMinutes( 20 );
-
-                foreach ( var key in keys )
-                {
-                    try
-                    {
-                        var item = new Rock.Model.EntitySetItem();
-                        item.EntityId = ( int ) key;
-                        entitySet.Items.Add( item );
-                    }
-                    catch { }
-                }
-
-                if ( entitySet.Items.Any() )
-                {
-                    var rockContext = new RockContext();
-                    var service = new Rock.Model.EntitySetService( rockContext );
-                    service.Add( entitySet );
-                    rockContext.SaveChanges();
-
-                    // redirect to the waitlist page
-                    Dictionary<string, string> queryParms = new Dictionary<string, string>();
-                    queryParms.Add( "Set", entitySet.Id.ToString() );
-                    NavigateToLinkedPage( AttributeKey.BusinessMergePage, queryParms );
-                }
-            }
         }
 
         #endregion Events
