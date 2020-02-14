@@ -89,6 +89,7 @@ namespace RockWeb.Blocks.Event
             gEventAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gEventAttributes.GridRebind += gEventAttributes_GridRebind;
             gEventAttributes.GridReorder += gEventAttributes_GridReorder;
+            gEventAttributes.RowDataBound += gEventAttributes_RowDataBound;
 
             gContentChannels.DataKeyNames = new string[] { "Guid" };
             gContentChannels.Actions.ShowAdd = UserCanAdministrate;
@@ -494,6 +495,32 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the RowDataBound event of the gEventAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gEventAttributes_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var attribute = e.Row.DataItem as Attribute;
+            if ( attribute == null )
+            {
+                return;
+            }
+
+            bool isEditAuthorized = attribute.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            ( ( LinkButton ) e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is EditField ).Controls[0] ).Enabled = isEditAuthorized;
+            ( ( LinkButton ) e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is DeleteField ).Controls[0] ).Enabled = isEditAuthorized;
+
+            string fieldTypeName = FieldTypeCache.GetName( attribute.FieldTypeId );
+            ( ( Literal ) e.Row.FindControl( "lFieldType" ) ).Text = fieldTypeName;
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the dlgAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -884,17 +911,6 @@ namespace RockWeb.Blocks.Event
             gEventAttributes.DataSource = EventAttributesState
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .Select( a => new
-                {
-                    a.Id,
-                    a.Guid,
-                    a.Name,
-                    a.Description,
-                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
-                    a.IsRequired,
-                    a.IsGridColumn,
-                    a.AllowSearch
-                } )
                 .ToList();
             gEventAttributes.DataBind();
         }
