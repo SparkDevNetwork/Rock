@@ -815,7 +815,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of available the scheduler resources (people) based on the options specified in schedulerResourceParameters 
+        /// Gets a list of available resources (people) based on the options specified in schedulerResourceParameters
+        /// <para>If the source of resources is a group, only active group members will be included</para>
         /// </summary>
         /// <param name="schedulerResourceParameters">The scheduler resource parameters.</param>
         /// <returns></returns>
@@ -863,7 +864,9 @@ namespace Rock.Model
 
             if ( schedulerResourceParameters.ResourceGroupId.HasValue )
             {
-                groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == schedulerResourceParameters.ResourceGroupId.Value );
+                groupMemberQry = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == schedulerResourceParameters.ResourceGroupId.Value )
+                    .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
 
                 var resourceGroup = groupService.GetNoTracking( schedulerResourceParameters.ResourceGroupId.Value );
                 if ( resourceGroup?.SchedulingMustMeetRequirements == true )
