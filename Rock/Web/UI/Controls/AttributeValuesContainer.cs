@@ -516,7 +516,7 @@ namespace Rock.Web.UI.Controls
                 item.LoadAttributes();
             }
 
-            _displayModeAttributeIdValuesState = new Dictionary<int, string>();
+            _displayModeAttributeIdValuesState = item.AttributeValues.ToDictionary( k => k.Value.AttributeId, v => v.Value.Value );
 
             List<AttributeCategory> attributeCategories = GetFilteredAttributeCategories( item );
 
@@ -526,7 +526,7 @@ namespace Rock.Web.UI.Controls
             }
 
             // only show heading labels if ShowCategoryLabel and there is at least attribute to show
-            bool showHeadingLabels = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
+            bool showCategoryLabel = this.ShowCategoryLabel && attributeCategories.SelectMany( a => a.Attributes ).Any();
             // only show heading labels if ShowCategoryLabel and there is at least one attribute with category name
             bool displayAsTabs = this.DisplayAsTabs & attributeCategories.Where( a => a.CategoryName.IsNotNullOrWhiteSpace() ).SelectMany( a => a.Attributes ).Any();
 
@@ -584,7 +584,14 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, exclude, showHeadingLabels );
+                AttributeAddDisplayControlsOptions attributeAddDisplayControlsOptions = new AttributeAddDisplayControlsOptions
+                {
+                    ExcludedAttributes = this.ExcludedAttributes.ToList(),
+                    NumberOfColumns = this.NumberOfColumns,
+                    ShowCategoryLabel = showCategoryLabel
+                };
+
+                Rock.Attribute.Helper.AddDisplayControls( item, attributeCategories, _phAttributes, attributeAddDisplayControlsOptions );
             }
         }
 
