@@ -17,8 +17,11 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 
 using Rock.Data;
+using Rock.Reporting;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -32,8 +35,9 @@ namespace Rock.Model
         /// Gets the group placement registrants.
         /// </summary>
         /// <param name="options">The options.</param>
+        /// <param name="currentPerson">The current person.</param>
         /// <returns></returns>
-        public List<GroupPlacementRegistrant> GetGroupPlacementRegistrants( GetGroupPlacementRegistrantsParameters options )
+        public List<GroupPlacementRegistrant> GetGroupPlacementRegistrants( GetGroupPlacementRegistrantsParameters options, Person currentPerson )
         {
             var rockContext = this.Context as RockContext;
 
@@ -73,7 +77,60 @@ namespace Rock.Model
                 registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Id == options.RegistrantId.Value );
             }
 
+            Block registrationInstanceGroupPlacementBlock = new BlockService( rockContext ).Get( options.BlockId );
+            if ( registrationInstanceGroupPlacementBlock != null && currentPerson != null )
+            {
+                const string RegistrantAttributeFilter_RegistrationInstanceId = "RegistrantAttributeFilter_RegistrationInstanceId_{0}";
+                const string RegistrantAttributeFilter_RegistrationTemplateId = "RegistrantAttributeFilter_RegistrationTemplateId_{0}";
+                string userPreferenceKey;
+                if ( options.RegistrationInstanceId.HasValue )
+                {
+                    userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( RegistrantAttributeFilter_RegistrationInstanceId, options.RegistrationInstanceId );
+                }
+                else
+                {
+                    userPreferenceKey = PersonService.GetBlockUserPreferenceKeyPrefix( options.BlockId ) + string.Format( RegistrantAttributeFilter_RegistrationTemplateId, options.RegistrationTemplateId );
+                }
+
+                var attributeFilters = PersonService.GetUserPreference( currentPerson, userPreferenceKey ).FromJsonOrNull<Dictionary<int, string>>() ?? new Dictionary<int, string>();
+                var parameterExpression = registrationRegistrantService.ParameterExpression;
+                Expression registrantWhereExpression = null;
+                foreach ( var attributeFilter in attributeFilters )
+                {
+                    var attribute = AttributeCache.Get( attributeFilter.Key );
+                    var attributeFilterValues = attributeFilter.Value.FromJsonOrNull<List<string>>();
+                    var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+                    if ( entityField != null && attributeFilterValues != null )
+                    {
+                        var attributeWhereExpression = ExpressionHelper.GetAttributeExpression( registrationRegistrantService, parameterExpression, entityField, attributeFilterValues );
+                        if ( registrantWhereExpression == null )
+                        {
+                            registrantWhereExpression = attributeWhereExpression;
+                        }
+                        else
+                        {
+                            registrantWhereExpression = Expression.AndAlso( registrantWhereExpression, attributeWhereExpression );
+                        }
+                    }
+                }
+
+                if ( registrantWhereExpression != null )
+                {
+                    registrationRegistrantQuery = registrationRegistrantQuery.Where( parameterExpression, registrantWhereExpression );
+                }
+            }
+
             var registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( options.RegistrationTemplatePlacementId );
+
+            if ( options.FilterFeeId.HasValue )
+            {
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Fees.Any( f => f.RegistrationTemplateFeeId == options.FilterFeeId.Value ) );
+            }
+
+            if ( options.FilterFeeOptionIds?.Any() == true )
+            {
+                registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Fees.Any( f => f.RegistrationTemplateFeeItemId.HasValue && options.FilterFeeOptionIds.Contains( f.RegistrationTemplateFeeItemId.Value ) ) );
+            }
 
             registrationRegistrantQuery = registrationRegistrantQuery.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.NickName );
 
@@ -443,5 +500,29 @@ namespace Rock.Model
         /// The displayed attribute ids.
         /// </value>
         public int[] DisplayedAttributeIds { get; set; } = new int[0];
+
+        /// <summary>
+        /// Gets or sets the block identifier.
+        /// </summary>
+        /// <value>
+        /// The block identifier.
+        /// </value>
+        public int BlockId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the filter fee identifier.
+        /// </summary>
+        /// <value>
+        /// The filter fee identifier.
+        /// </value>
+        public int? FilterFeeId { get; set; }
+
+        /// <summary>
+        /// Gets the filter fee option ids.
+        /// </summary>
+        /// <value>
+        /// The filter fee option ids.
+        /// </value>
+        public int[] FilterFeeOptionIds { get; set; } = new int[0];
     }
 }

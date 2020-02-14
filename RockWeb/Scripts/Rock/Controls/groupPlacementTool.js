@@ -404,6 +404,9 @@
                     RegistrationTemplatePlacementId: self.registrationTemplatePlacementId,
                     IncludeFees: $('.js-options-include-fees', self.$groupPlacementTool).val(),
                     RegistrantPersonDataViewFilterId: parseInt($('.js-options-registrant-person-dataviewfilter-id', self.$groupPlacementTool).val()) || null,
+                    BlockId: self.blockId,
+                    FilterFeeId: parseInt($('.js-options-filter-fee-id', self.$groupPlacementTool).val()) || null,
+
                 };
 
                 if ($('.js-registration-template-instance-id-list', self.$groupPlacementTool).val() != '') {
@@ -412,6 +415,10 @@
 
                 if ($('.js-options-displayed-registrant-attribute-ids', self.$groupPlacementTool).val() != '') {
                     getGroupPlacementRegistrantsParameters.DisplayedAttributeIds = JSON.parse($('.js-options-displayed-registrant-attribute-ids', self.$groupPlacementTool).val());
+                }
+
+                if ($('.js-options-filter-fee-item-ids', self.$groupPlacementTool).val() != '') {
+                    getGroupPlacementRegistrantsParameters.FilterFeeOptionIds = JSON.parse($('.js-options-filter-fee-item-ids', self.$groupPlacementTool).val());
                 }
 
                 var $loadingNotification = self.$groupPlacementTool.find('.js-loading-notification');

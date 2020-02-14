@@ -50,6 +50,9 @@
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedRegistrantAttributeIds" runat="server" CssClass="js-options-displayed-registrant-attribute-ids" />
                         <Rock:HiddenFieldWithClass ID="hfOptionsDisplayedGroupMemberAttributeKeys" runat="server" CssClass="js-options-displayed-groupmember-attribute-keys" />
 
+                        <Rock:HiddenFieldWithClass ID="hfOptionsFilterFeeId" runat="server" CssClass="js-options-filter-fee-id" />
+                        <Rock:HiddenFieldWithClass ID="hfOptionsFilterFeeItemIds" runat="server" CssClass="js-options-filter-fee-item-ids" />
+
                         <div class="row row-eq-height">
                             <div class="col-md-4 col-lg-3">
 
@@ -59,9 +62,9 @@
                                         <%-- template that groupPlacement.js uses to populate available registrants --%>
 
                                         <div class="js-registrant registrant person unselectable" data-person-gender="" data-registrant-id="" data-person-id="">
-    
+
                                             <span class="person-name js-registrant-name"></span>
-                                            
+
                                             <div class="details-container small js-registrant-details hide-transit">
                                                 <dl class="registration-instance-name-container js-registration-instance-name-container">
                                                     <dt>Instance</dt>
@@ -301,7 +304,7 @@
                         </div>
                     </Rock:PanelWidget>
 
-                    <Rock:PanelWidget ID="pnlRegistrantConfiguration" runat="server" Title="Registrant Configuration">
+                    <Rock:PanelWidget ID="pnlRegistrantConfiguration" runat="server" Title="Registrant Configuration" Expanded="true">
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockCheckBox ID="cbHighlightGenders" runat="server" Label="Highlight Genders" Help="Enable this to highlight each registrant to indicate their gender (pink, blue)." />
@@ -310,16 +313,21 @@
                                 <Rock:RockCheckBox ID="cbShowFees" runat="server" Label="Show Fees" Help="Enable this to show any fees associated with each registrant." />
                             </div>
                         </div>
+                        <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" AutoPostBack="true" OnSelectedIndexChanged="cblDisplayedRegistrantAttributes_SelectedIndexChanged" />
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <Rock:RockListBox ID="cblDisplayedRegistrantAttributes" EnhanceForLongLists="true" runat="server" Label="Displayed Registrant Attributes" />
+                        <Rock:RockControlWrapper ID="rcwFeeFilters" runat="server" Label="Fee Filters" Help="Select fees to limit registrants that have selected that fee.">
+                            <Rock:RockDropDownList ID="ddlFeeName" runat="server" Label="Fee" AutoPostBack="true" OnSelectedIndexChanged="ddlFeeName_SelectedIndexChanged" />
+                            <Rock:RockCheckBoxList ID="cblFeeOptions" runat="server" Label="Fee Options" />
+                        </Rock:RockControlWrapper>
 
-                                <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
-                                    <Rock:DynamicPlaceholder ID="phFilters" runat="server" />
-                                </Rock:RockControlWrapper>
-                            </div>
-                        </div>
+                        <Rock:RockControlWrapper ID="rcwRegistrantFilters" runat="server" Label="Registrant Filters">
+                            <Rock:DynamicPlaceholder ID="phRegistrantFilters" runat="server" />
+                        </Rock:RockControlWrapper>
+
+                        <Rock:RockControlWrapper ID="rcwPersonFilters" runat="server" Label="Person Filters">
+                            <Rock:DynamicPlaceholder ID="phPersonFilters" runat="server" />
+                        </Rock:RockControlWrapper>
+
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="pwGroupConfiguration" runat="server" Title="Group Configuration">

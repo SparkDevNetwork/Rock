@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks.Types.Web.Events;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -52,7 +53,7 @@ namespace RockWeb.Blocks.Event
         )]
 
     #endregion Block Attributes
-    public partial class RegistrationInstanceGroupPlacement : RockBlock
+    public partial class RegistrationInstanceGroupPlacement : RegistrationInstanceBlock
     {
         #region Attribute Keys
 
@@ -81,8 +82,10 @@ namespace RockWeb.Blocks.Event
 
         private static class UserPreferenceKey
         {
-            public const string PlacementConfigurationJSON_RegistrantInstanceId = "PlacementConfigurationJSON_RegistrantInstanceId_{0}";
-            public const string PlacementConfigurationJSON_RegistrantTemplateId = "PlacementConfigurationJSON_RegistrantTemplateId_{0}";
+            public const string PlacementConfigurationJSON_RegistrationInstanceId = "PlacementConfigurationJSON_RegistrationInstanceId_{0}";
+            public const string PlacementConfigurationJSON_RegistrationTemplateId = "PlacementConfigurationJSON_RegistrationTemplateId_{0}";
+            public const string RegistrantAttributeFilter_RegistrationInstanceId = "RegistrantAttributeFilter_RegistrationInstanceId_{0}";
+            public const string RegistrantAttributeFilter_RegistrationTemplateId = "RegistrantAttributeFilter_RegistrationTemplateId_{0}";
         }
 
         #endregion UserPreferenceKeys
@@ -114,6 +117,7 @@ namespace RockWeb.Blocks.Event
                 DisplayedRegistrantAttributeIds = new int[0];
                 DisplayedGroupAttributeIds = new int[0];
                 DisplayedGroupMemberAttributeIds = new int[0];
+                FilterFeeOptionIds = new int[0];
             }
 
             /// <summary>
@@ -205,6 +209,22 @@ namespace RockWeb.Blocks.Event
             ///   <c>true</c> if [hide full groups]; otherwise, <c>false</c>.
             /// </value>
             public bool HideFullGroups { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the filter fee.
+            /// </summary>
+            /// <value>
+            /// The name of the filter fee.
+            /// </value>
+            public int? FilterFeeId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the filter fee options.
+            /// </summary>
+            /// <value>
+            /// The filter fee options.
+            /// </value>
+            public int[] FilterFeeOptionIds { get; set; }
         }
 
         #endregion Classes
@@ -326,6 +346,9 @@ namespace RockWeb.Blocks.Event
             hfRegistrationTemplateInstanceIds.Value = placementConfiguration.IncludedRegistrationInstanceIds.ToJson();
             hfRegistrationTemplateShowInstanceName.Value = placementConfiguration.ShowRegistrationInstanceName.ToJavaScriptValue();
 
+            hfOptionsFilterFeeId.Value = placementConfiguration.FilterFeeId.ToString();
+            hfOptionsFilterFeeItemIds.Value = placementConfiguration.FilterFeeOptionIds.ToJson();
+
             hfRegistrationTemplatePlacementId.Value = registrationTemplatePlacementId.ToString();
 
             RegistrationTemplatePlacement registrationTemplatePlacement = null;
@@ -426,11 +449,11 @@ namespace RockWeb.Blocks.Event
                 string placementConfigurationJSON;
                 if ( registrationInstanceId.HasValue )
                 {
-                    placementConfigurationJSON = GetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantInstanceId, registrationInstanceId.Value ) );
+                    placementConfigurationJSON = GetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrationInstanceId, registrationInstanceId.Value ) );
                 }
                 else
                 {
-                    placementConfigurationJSON = GetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantTemplateId, registrationTemplateId ) );
+                    placementConfigurationJSON = GetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrationTemplateId, registrationTemplateId ) );
                 }
 
                 _placementConfiguration = placementConfigurationJSON.FromJsonOrNull<PlacementConfiguration>() ?? new PlacementConfiguration();
@@ -453,11 +476,11 @@ namespace RockWeb.Blocks.Event
             string placementConfigurationJSON = placementConfiguration.ToJson();
             if ( registrationInstanceId.HasValue )
             {
-                SetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantInstanceId, registrationInstanceId.Value ), placementConfigurationJSON );
+                SetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrationInstanceId, registrationInstanceId.Value ), placementConfigurationJSON );
             }
             else
             {
-                SetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrantTemplateId, registrationTemplateId ), placementConfigurationJSON );
+                SetBlockUserPreference( string.Format( UserPreferenceKey.PlacementConfigurationJSON_RegistrationTemplateId, registrationTemplateId ), placementConfigurationJSON );
             }
 
             ShowDetails();
@@ -673,6 +696,8 @@ namespace RockWeb.Blocks.Event
 
             CreateFilterControl( dataViewFilter, true, rockContext );
 
+            AddRegistrantAttributeFilters( true );
+
             if ( inTemplateMode )
             {
                 cbShowRegistrationInstanceName.Checked = placementConfiguration.ShowRegistrationInstanceName;
@@ -731,6 +756,28 @@ namespace RockWeb.Blocks.Event
 
             cblDisplayedGroupMemberAttributes.SetValues( placementConfiguration.DisplayedGroupMemberAttributeIds );
             cbHideFullGroups.Checked = placementConfiguration.HideFullGroups;
+
+            var registrationTemplateFeeService = new RegistrationTemplateFeeService( new RockContext() );
+            var templateFees = registrationTemplateFeeService.Queryable().Where( f => f.RegistrationTemplateId == registrationTemplateId ).ToList();
+
+            ddlFeeName.Items.Clear();
+            ddlFeeName.Items.Add( new ListItem() );
+
+            foreach ( var templateFee in templateFees )
+            {
+                ddlFeeName.Items.Add( new ListItem( templateFee.Name, templateFee.Id.ToString() ) );
+            }
+
+            cblFeeOptions.Visible = false;
+
+            if ( placementConfiguration.FilterFeeId.HasValue )
+            {
+                ddlFeeName.SetValue( placementConfiguration.FilterFeeId.Value );
+                ddlFeeName_SelectedIndexChanged( ddlFeeName, null );
+                cblFeeOptions.SetValues( placementConfiguration.FilterFeeOptionIds );
+            }
+
+            UpdateDisplayedRegistrantFilters();
         }
 
         /// <summary>
@@ -740,7 +787,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdPlacementConfiguration_SaveClick( object sender, EventArgs e )
         {
-            var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
+            var dataViewFilter = ReportingHelper.GetFilterFromControls( phPersonFilters );
+
+            SaveRegistrantAttributeFilters();
 
             // update Guids since we are creating a new dataFilter and children and deleting the old one
             SetNewDataFilterGuids( dataViewFilter );
@@ -783,6 +832,10 @@ namespace RockWeb.Blocks.Event
             placementConfiguration.DisplayedGroupAttributeIds = cblDisplayedGroupAttributes.SelectedValues.AsIntegerList().ToArray();
             placementConfiguration.HideFullGroups = cbHideFullGroups.Checked;
             placementConfiguration.DisplayedGroupMemberAttributeIds = cblDisplayedGroupMemberAttributes.SelectedValues.AsIntegerList().ToArray();
+
+            placementConfiguration.FilterFeeId = ddlFeeName.SelectedValue.AsIntegerOrNull();
+            placementConfiguration.FilterFeeOptionIds = cblFeeOptions.SelectedValuesAsInt.ToArray();
+
             SavePlacementConfiguration( placementConfiguration );
 
             mdPlacementConfiguration.Hide();
@@ -1078,7 +1131,7 @@ namespace RockWeb.Blocks.Event
 
         #endregion Add Placement Group
 
-        #region Registrant Filter
+        #region Person Filter
 
         /// <summary>
         /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
@@ -1094,6 +1147,8 @@ namespace RockWeb.Blocks.Event
             {
                 CreateFilterControl( dataViewFilter, false, new RockContext() );
             }
+
+            AddRegistrantAttributeFilters( false );
         }
 
         /// <summary>
@@ -1104,7 +1159,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            var dataViewFilterJson = ReportingHelper.GetFilterFromControls( phFilters ).ToJson();
+            var dataViewFilterJson = ReportingHelper.GetFilterFromControls( phPersonFilters ).ToJson();
             ViewState[ViewStateKey.DataFilterJSON] = dataViewFilterJson;
 
             return base.SaveViewState();
@@ -1180,10 +1235,10 @@ namespace RockWeb.Blocks.Event
         /// <param name="rockContext">The rock context.</param>
         private void CreateFilterControl( DataViewFilter filter, bool setSelection, RockContext rockContext )
         {
-            phFilters.Controls.Clear();
+            phPersonFilters.Controls.Clear();
             if ( filter != null )
             {
-                CreateFilterControl( phFilters, filter, setSelection, rockContext );
+                CreateFilterControl( phPersonFilters, filter, setSelection, rockContext );
             }
         }
 
@@ -1294,6 +1349,178 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        #endregion Person Filter
+
+        #region Registrant Filter
+
+        /// <summary>
+        /// Adds the registrant attribute filters.
+        /// </summary>
+        public void AddRegistrantAttributeFilters( bool setValues )
+        {
+            var registrantAttributeFields = this.GetRegistrantFormFields().Where( a => a.FieldSource == RegistrationFieldSource.RegistrantAttribute ).ToList();
+            phRegistrantFilters.Controls.Clear();
+
+            int? registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            int registrationTemplateId = hfRegistrationTemplateId.Value.AsInteger();
+
+            Dictionary<int, string> attributeFilters;
+            if ( registrationInstanceId.HasValue )
+            {
+                attributeFilters = GetBlockUserPreference( string.Format( UserPreferenceKey.RegistrantAttributeFilter_RegistrationInstanceId, registrationInstanceId.Value ) ).FromJsonOrNull<Dictionary<int, string>>();
+            }
+            else
+            {
+                attributeFilters = GetBlockUserPreference( string.Format( UserPreferenceKey.RegistrantAttributeFilter_RegistrationTemplateId, registrationTemplateId ) ).FromJsonOrNull<Dictionary<int, string>>();
+            }
+
+            foreach ( var field in registrantAttributeFields )
+            {
+                var attribute = field.Attribute;
+
+                // Add dynamic filter fields
+                var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filterRegistrants_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+
+                if ( setValues && attributeFilters != null )
+                {
+                    var attributeFilterValue = attributeFilters.GetValueOrNull( attribute.Id );
+                    if ( attributeFilterValue.IsNotNullOrWhiteSpace() )
+                    {
+                        var filterValues = attributeFilterValue.FromJsonOrNull<List<string>>();
+                        attribute.FieldType.Field.SetFilterValues( filterFieldControl, attribute.QualifierValues, filterValues );
+                    }
+                }
+
+                if ( filterFieldControl != null )
+                {
+                    if ( filterFieldControl is IRockControl )
+                    {
+                        var rockControl = ( IRockControl ) filterFieldControl;
+                        rockControl.Label = attribute.Name;
+                        rockControl.Help = attribute.Description;
+                        phRegistrantFilters.Controls.Add( filterFieldControl );
+                    }
+                    else
+                    {
+                        var wrapper = new RockControlWrapper();
+                        wrapper.ID = filterFieldControl.ID + "_wrapper";
+                        wrapper.Label = attribute.Name;
+                        wrapper.Controls.Add( filterFieldControl );
+                        phRegistrantFilters.Controls.Add( wrapper );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves the registrant attribute filters.
+        /// </summary>
+        public void SaveRegistrantAttributeFilters()
+        {
+            var registrantAttributeFields = this.GetRegistrantFormFields().Where( a => a.FieldSource == RegistrationFieldSource.RegistrantAttribute ).ToList();
+            Dictionary<int, string> attributeFilters = new Dictionary<int, string>();
+            foreach ( var field in registrantAttributeFields )
+            {
+                var attribute = field.Attribute;
+                var filterControl = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
+
+                if ( filterControl != null )
+                {
+                    try
+                    {
+                        var values = attribute.FieldType.Field.GetFilterValues( filterControl, field.Attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                        attributeFilters.Add( attribute.Id, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            }
+
+            int? registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
+            int registrationTemplateId = hfRegistrationTemplateId.Value.AsInteger();
+
+            if ( registrationInstanceId.HasValue )
+            {
+                SetBlockUserPreference( string.Format( UserPreferenceKey.RegistrantAttributeFilter_RegistrationInstanceId, registrationInstanceId.Value ), attributeFilters.ToJson() );
+            }
+            else
+            {
+                SetBlockUserPreference( string.Format( UserPreferenceKey.RegistrantAttributeFilter_RegistrationTemplateId, registrationTemplateId ), attributeFilters.ToJson() );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblDisplayedRegistrantAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblDisplayedRegistrantAttributes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            UpdateDisplayedRegistrantFilters();
+        }
+
+        /// <summary>
+        /// Updates the displayed registrant filters.
+        /// </summary>
+        private void UpdateDisplayedRegistrantFilters()
+        {
+            var registrantAttributeFields = this.GetRegistrantFormFields().Where( a => a.FieldSource == RegistrationFieldSource.RegistrantAttribute ).ToList();
+            var displayedRegistrantAttributes = cblDisplayedRegistrantAttributes.SelectedValuesAsInt;
+            foreach ( var field in registrantAttributeFields )
+            {
+                var attribute = field.Attribute;
+                var filterControl = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
+                var filterControlWrapper = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() + "_wrapper" );
+                filterControl.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                if ( filterControlWrapper != null )
+                {
+                    filterControlWrapper.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFeeName control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlFeeName_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            Populate_cblFeeOptions();
+            if ( cblFeeOptions.Items.Count > 1 )
+            {
+                cblFeeOptions.Visible = true;
+            }
+            else
+            {
+                cblFeeOptions.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Populates cblFeeOptions with fee options.
+        /// </summary>
+        private void Populate_cblFeeOptions()
+        {
+            cblFeeOptions.Items.Clear();
+
+            int? feeId = ddlFeeName.SelectedValue.AsIntegerOrNull();
+            if ( feeId.HasValue )
+            {
+                var feeItems = new RegistrationTemplateFeeItemService( new RockContext() ).Queryable().Where( a => a.RegistrationTemplateFeeId == feeId );
+
+                foreach ( var feeItem in feeItems )
+                {
+                    cblFeeOptions.Items.Add( new ListItem( feeItem.Name, feeItem.Id.ToString() ) );
+                }
+
+                cblFeeOptions.Visible = true;
+            }
+        }
+
         #endregion Registrant Filter
+
     }
 }
