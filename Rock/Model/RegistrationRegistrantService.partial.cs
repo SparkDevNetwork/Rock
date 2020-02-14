@@ -133,6 +133,9 @@ namespace Rock.Model
                 registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.Fees.Any( f => f.RegistrationTemplateFeeItemId.HasValue && options.FilterFeeOptionIds.Contains( f.RegistrationTemplateFeeItemId.Value ) ) );
             }
 
+            // don't include registrants that are on the waiting list
+            registrationRegistrantQuery = registrationRegistrantQuery.Where( a => a.OnWaitList == false );
+
             registrationRegistrantQuery = registrationRegistrantQuery.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.NickName );
 
             var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
