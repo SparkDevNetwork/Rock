@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Event
 
             fRegistrations.ApplyFilterClick += fRegistrations_ApplyFilterClick;
 
-            gRegistrations.EmptyDataText = "There are no items to show in this view.";
+            gRegistrations.EmptyDataText = "No Registrations Found";
             gRegistrations.DataKeyNames = new string[] { "Id" };
             gRegistrations.Actions.ShowAdd = true;
             gRegistrations.Actions.AddClick += gRegistrations_AddClick;

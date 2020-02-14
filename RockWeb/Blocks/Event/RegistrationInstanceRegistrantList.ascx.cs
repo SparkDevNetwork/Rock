@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Event
 
             fRegistrants.ApplyFilterClick += fRegistrants_ApplyFilterClick;
 
-            gRegistrants.EmptyDataText = "There are no items to show in this view.";
+            gRegistrants.EmptyDataText = "No Registrants Found";
             gRegistrants.DataKeyNames = new string[] { "Id" };
             gRegistrants.Actions.ShowAdd = true;
             gRegistrants.Actions.AddClick += gRegistrants_AddClick;
@@ -1589,7 +1589,7 @@ namespace RockWeb.Blocks.Event
         #region classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         [System.Diagnostics.DebuggerDisplay( "{Group.Name}, RegistrationTemplatePlacementId = {RegistrationTemplatePlacementId} " )]
         protected class PlacementGroupInfo

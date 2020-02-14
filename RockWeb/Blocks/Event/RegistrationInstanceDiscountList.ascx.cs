@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Event
 
             fDiscounts.ApplyFilterClick += fDiscounts_ApplyFilterClick;
 
-            gDiscounts.EmptyDataText = "There are no items to show in this view.";
+            gDiscounts.EmptyDataText = "No Discounts Found";
             gDiscounts.GridRebind += gDiscounts_GridRebind;
 
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -318,6 +318,6 @@ namespace RockWeb.Blocks.Event
             pnlDetails.Visible = visible;
         }
 
-        #endregion   
+        #endregion
     }
 }

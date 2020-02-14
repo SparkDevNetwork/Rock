@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Event
 
             fLinkages.ApplyFilterClick += fLinkages_ApplyFilterClick;
 
-            gLinkages.EmptyDataText = "There are no items to show in this view.";
+            gLinkages.EmptyDataText = "No Linkages Found";
             gLinkages.DataKeyNames = new string[] { "Id" };
             gLinkages.Actions.ShowAdd = true;
             gLinkages.Actions.AddClick += gLinkages_AddClick;
