@@ -77,10 +77,12 @@
                                             <span class="person-name js-registrant-name"></span>
 
                                             <div class="details-container small js-registrant-details hide-transit">
-                                                <dl class="registration-instance-name-container js-registration-instance-name-container">
-                                                    <dt>Instance</dt>
-                                                    <dd class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></dd>
-                                                </dl>
+                                                <div class="registration-instance-name-container js-registration-instance-name-container">
+                                                    <dl>
+                                                        <dt>Instance</dt>
+                                                        <dd class="registrant-registrationinstance-name js-registrant-registrationinstance-name"></dd>
+                                                    </dl>
+                                                </div>
 
                                                 <div class="registrant-attributes-container js-registrant-attributes-container">
                                                 </div>
