@@ -10,9 +10,6 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlDetails" runat="server">
-
-            <div class="panel panel-block">
-
                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                 <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-instance-has-payments" />
 
@@ -50,7 +47,6 @@
                         </div>
                     </div>
                 </asp:Panel>
-            </div>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
