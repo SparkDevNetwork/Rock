@@ -4,8 +4,6 @@
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
 
-            <div class="panel panel-block">
-
                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
 
                 <asp:Panel ID="pnlFees" runat="server" CssClass="panel panel-block">
@@ -41,7 +39,6 @@
                     </div>
                 </asp:Panel>
 
-            </div>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

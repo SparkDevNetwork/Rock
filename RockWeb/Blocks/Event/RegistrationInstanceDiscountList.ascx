@@ -5,7 +5,6 @@
 
         <asp:Panel ID="pnlDetails" runat="server">
 
-            <div class="panel panel-block">
 
                 <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
 
@@ -84,7 +83,7 @@
                         </div>
                     </div>
                 </asp:Panel>
-            </div>
+
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
