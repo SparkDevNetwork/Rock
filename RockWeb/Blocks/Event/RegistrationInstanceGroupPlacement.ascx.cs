@@ -357,7 +357,7 @@ namespace RockWeb.Blocks.Event
             {
                 registrationTemplatePlacement = new RegistrationTemplatePlacementService( rockContext ).Get( registrationTemplatePlacementId.Value );
 
-                if ( registrationTemplatePlacement.RegistrationTemplateId != registrationTemplateId )
+                if ( registrationTemplatePlacement == null || registrationTemplatePlacement.RegistrationTemplateId != registrationTemplateId )
                 {
                     // if the registration template placement is for a different registration template, don't use it
                     registrationTemplatePlacement = null;
@@ -373,18 +373,17 @@ namespace RockWeb.Blocks.Event
 
             BindDropDowns();
 
-            // if a registrationTemplatePlacement wasn't specified (or wasn't specified initially), show the prompt
-            bgRegistrationTemplatePlacement.Visible = ( registrationTemplatePlacement == null ) || this.PageParameter( PageParameterKey.PromptForTemplatePlacement ).AsBoolean();
+            var registrationTemplatePlacements = registrationTemplateService.GetSelect( registrationTemplateId.Value, s => s.Placements ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            BindRegistrationTemplatePlacementPrompt( registrationTemplatePlacements );
 
-            if ( registrationTemplatePlacement != null )
+            // if a registrationTemplatePlacement wasn't specified (or wasn't specified initially), show the prompt
+            rcwSelectRegistrationTemplatePlacement.Visible = ( registrationTemplatePlacement == null ) || this.PageParameter( PageParameterKey.PromptForTemplatePlacement ).AsBoolean();
+
+            if ( registrationTemplatePlacement == null )
             {
-                bgRegistrationTemplatePlacement.SetValue( registrationTemplatePlacement );
-            }
-            else
-            {
-                if ( bgRegistrationTemplatePlacement.Items.Count == 0 )
+                if ( !registrationTemplatePlacements.Any() )
                 {
-                    bgRegistrationTemplatePlacement.Visible = false;
+                    rptSelectRegistrationTemplatePlacement.Visible = false;
                     nbConfigurationError.Text = "No Placement Types available for this registration template.";
                     nbConfigurationError.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
                     nbConfigurationError.Visible = true;
@@ -392,13 +391,10 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                bgRegistrationTemplatePlacement.SelectedIndex = 0;
-                var defaultRegistrationTemplatePlacementId = bgRegistrationTemplatePlacement.SelectedValue.AsIntegerOrNull();
-                if ( defaultRegistrationTemplatePlacementId.HasValue )
-                {
-                    ReloadPageWithRegistrationTemplatePlacementId( bgRegistrationTemplatePlacement.SelectedValue.AsInteger() );
-                    return;
-                }
+                var defaultRegistrationTemplatePlacementId = registrationTemplatePlacements.First().Id;
+
+                ReloadPageWithRegistrationTemplatePlacementId( defaultRegistrationTemplatePlacementId );
+                return;
             }
 
             if ( registrationTemplatePlacement == null )
@@ -413,7 +409,7 @@ namespace RockWeb.Blocks.Event
                 else
                 {
                     // Prompt for registrationTemplatePlacement
-                    bgRegistrationTemplatePlacement.Visible = true;
+                    rcwSelectRegistrationTemplatePlacement.Visible = true;
                 }
 
                 return;
@@ -491,22 +487,70 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindDropDowns()
         {
-            var registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
-
-            var rockContext = new RockContext();
-            var registrationTemplateService = new RegistrationTemplateService( rockContext );
-            var registrationTemplatePlacements = registrationTemplateService.GetSelect( registrationTemplateId.Value, s => s.Placements ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            bgRegistrationTemplatePlacement.Items.Clear();
-            foreach ( var registrationTemplatePlacementItem in registrationTemplatePlacements )
-            {
-                bgRegistrationTemplatePlacement.Items.Add(
-                    new ListItem(
-                        string.Format( "<i class='{0}'></i> {1}", registrationTemplatePlacementItem.GetIconCssClass(), registrationTemplatePlacementItem.Name ),
-                        registrationTemplatePlacementItem.Id.ToString() ) );
-            }
-
             bgAddNewOrExistingPlacementGroup.Items.Clear();
             bgAddNewOrExistingPlacementGroup.BindToEnum<AddPlacementGroupTab>();
+        }
+
+        /// <summary>
+        /// Binds the prompt for the Registration Template Placement,
+        /// Returns false if there are no registration templates for the current RegistrationTemplate,
+        /// </summary>
+        /// <returns></returns>
+        private void BindRegistrationTemplatePlacementPrompt( List<RegistrationTemplatePlacement> registrationTemplatePlacements )
+        {
+            rptSelectRegistrationTemplatePlacement.DataSource = registrationTemplatePlacements;
+            rptSelectRegistrationTemplatePlacement.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptSelectRegistrationTemplatePlacement control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptSelectRegistrationTemplatePlacement_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            RegistrationTemplatePlacement registrationTemplatePlacement = e.Item.DataItem as RegistrationTemplatePlacement;
+            if ( registrationTemplatePlacement == null )
+            {
+                return;
+            }
+
+            var additionalQueryParameters = new Dictionary<string, string>();
+            additionalQueryParameters.Add( PageParameterKey.RegistrationTemplatePlacementId, registrationTemplatePlacement.Id.ToString() );
+            additionalQueryParameters.Add( PageParameterKey.PromptForTemplatePlacement, true.ToString() );
+
+            var pageUrl = GetCurrentPageUrl( additionalQueryParameters );
+            var currentRegistrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
+            string activeClass = string.Empty;
+            if ( currentRegistrationTemplatePlacementId.HasValue )
+            {
+                if ( currentRegistrationTemplatePlacementId == registrationTemplatePlacement.Id )
+                {
+                    activeClass = "active";
+                }
+            }
+            else
+            {
+                if ( e.Item.ItemIndex == 0 )
+                {
+                    activeClass = "active";
+                }
+            }
+
+            var lTabHtml = e.Item.FindControl( "lTabHtml" ) as Literal;
+            string lTabHtmlFormat =
+@"
+<li class='{0}'>
+   <a href = '{1}'><i class='{2}'></i> {3}</a>
+</li>
+";
+
+            lTabHtml.Text = string.Format(
+                lTabHtmlFormat,
+                activeClass, // {0}
+                pageUrl, // {1}
+                registrationTemplatePlacement.GetIconCssClass(),  // {2}
+                registrationTemplatePlacement.Name );  // {3}
         }
 
         private Dictionary<int, List<int>> _placementGroupIdRegistrationInstanceIds;
@@ -892,12 +936,25 @@ namespace RockWeb.Blocks.Event
                 hlRegistrationTemplatePlacementName.Visible = true;
             }
 
-            var avcGroupAttributes = e.Item.FindControl( "avcGroupAttributes" ) as AttributeValuesContainer;
-            avcGroupAttributes.ShowCategoryLabel = false;
-            avcGroupAttributes.NumberOfColumns = 2;
-            avcGroupAttributes.IncludedAttributes = GetPlacementConfiguration().DisplayedGroupAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
-            placementGroup.LoadAttributes();
-            avcGroupAttributes.AddDisplayControls( placementGroup );
+            var pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
+
+            var displayedAttributes = GetPlacementConfiguration().DisplayedGroupAttributeIds.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
+
+            if ( displayedAttributes.Any() )
+            {
+                pnlGroupAttributes.Visible = true;
+                var avcGroupAttributes = e.Item.FindControl( "avcGroupAttributes" ) as AttributeValuesContainer;
+                avcGroupAttributes.ShowCategoryLabel = false;
+                avcGroupAttributes.NumberOfColumns = 2;
+                avcGroupAttributes.IncludedAttributes = displayedAttributes;
+                placementGroup.LoadAttributes();
+                avcGroupAttributes.AddDisplayControls( placementGroup );
+                pnlGroupAttributes.Visible = avcGroupAttributes.GetDisplayedAttributes().Any();
+            }
+            else
+            {
+                pnlGroupAttributes.Visible = false;
+            }
 
             var rptPlacementGroupRole = e.Item.FindControl( "rptPlacementGroupRole" ) as Repeater;
             rptPlacementGroupRole.DataSource = _groupTypeRoles;
@@ -928,19 +985,6 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the bgRegistrationTemplatePlacement control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void bgRegistrationTemplatePlacement_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            if ( bgRegistrationTemplatePlacement.SelectedValue.AsInteger() > 0 )
-            {
-                ReloadPageWithRegistrationTemplatePlacementId( bgRegistrationTemplatePlacement.SelectedValue.AsInteger() );
-            }
-        }
 
         /// <summary>
         /// Reloads the page with registration template placement identifier parameter

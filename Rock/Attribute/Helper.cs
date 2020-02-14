@@ -1314,6 +1314,9 @@ namespace Rock.Attribute
                             dtDdParent = dl;
                         }
 
+                        dtDdParent.AddCssClass( "js-attribute-display-wrapper" );
+                        dtDdParent.Attributes["data-attribute-id"] = attribute.Id.ToString();
+
                         HtmlGenericControl dt = new HtmlGenericControl( "dt" );
                         dt.InnerText = attribute.Name;
                         dtDdParent.Controls.Add( dt );
@@ -1325,6 +1328,27 @@ namespace Rock.Attribute
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the attributes that ended up getting displayed as a result of AddDisplayControls
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <returns></returns>
+        public static List<AttributeCache> GetDisplayedAttributes( Control parentControl )
+        {
+            List<AttributeCache> displayedAttributes = new List<AttributeCache>();
+            var attributeWrappers = parentControl.ControlsOfTypeRecursive<HtmlGenericControl>().Where( a => a.Attributes["class"]?.Contains( "js-attribute-display-wrapper" ) == true ).ToList();
+            foreach ( var attributeWrapper in attributeWrappers )
+            {
+                var attributeId = attributeWrapper.Attributes?["data-attribute-id"]?.AsIntegerOrNull();
+                if ( attributeId.HasValue )
+                {
+                    displayedAttributes.Add( AttributeCache.Get( attributeId.Value ) );
+                }
+            }
+
+            return displayedAttributes.Where( a => a != null ).ToList();
         }
 
         /// <summary>

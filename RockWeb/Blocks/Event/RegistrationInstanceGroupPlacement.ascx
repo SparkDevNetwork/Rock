@@ -2,7 +2,18 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <Rock:ButtonGroup ID="bgRegistrationTemplatePlacement" runat="server" Label="Select Placement Type" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="bgRegistrationTemplatePlacement_SelectedIndexChanged" />
+
+        <%-- Prompt for RegistrationTemplatePlacement. This will only be visible if using this as a standalone block (if RegistrationTemplatePlacementId isn't specified) --%>
+        <Rock:RockControlWrapper ID="rcwSelectRegistrationTemplatePlacement" runat="server" Label="Select Placement Type" Visible="false">
+            <ul class="nav nav-tabs margin-b-md">
+                <asp:Repeater ID="rptSelectRegistrationTemplatePlacement" runat="server" OnItemDataBound="rptSelectRegistrationTemplatePlacement_ItemDataBound">
+                    <ItemTemplate>
+                        <asp:Literal ID="lTabHtml" runat="server" />
+                    </ItemTemplate>
+                </asp:Repeater>
+            </ul>
+        </Rock:RockControlWrapper>
+
         <Rock:NotificationBox ID="nbConfigurationError" runat="server" />
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-group-placement">
 
@@ -186,9 +197,9 @@
 
                                                     <div class="panel-body padding-all-none js-group-details">
 
-                                                        <div class="panel-drawer">
+                                                        <asp:Panel Id="pnlGroupAttributes" runat="server" CssClass="panel-drawer">
                                                             <Rock:AttributeValuesContainer ID="avcGroupAttributes" runat="server" NumberOfColumns="2" />
-                                                        </div>
+                                                        </asp:Panel>
 
                                                         <asp:Repeater ID="rptPlacementGroupRole" runat="server" OnItemDataBound="rptPlacementGroupRole_ItemDataBound" Visible="true">
                                                             <ItemTemplate>

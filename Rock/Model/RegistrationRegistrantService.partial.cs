@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -143,6 +144,12 @@ namespace Rock.Model
             // and also get a queryable of PersonIds for the registration instance placement groups so we can determine if the registrant has been placed 
             IQueryable<InstancePlacementGroupPersonId> allInstancesPlacementGroupInfoQuery = null;
 
+            if ( !options.RegistrationInstanceId.HasValue && (options.RegistrationTemplateInstanceIds == null || !options.RegistrationTemplateInstanceIds.Any()) )
+            {
+                // if neither RegistrationInstanceId or RegistrationTemplateInstanceIds was specified, use all of the RegistrationTemplates instances
+                options.RegistrationTemplateInstanceIds = new RegistrationTemplateService( rockContext ).GetSelect( options.RegistrationTemplateId, s => s.Instances.Select( i => i.Id ) ).ToArray();
+            }
+
             if ( options.RegistrationInstanceId.HasValue )
             {
                 allInstancesPlacementGroupInfoQuery =
@@ -181,7 +188,7 @@ namespace Rock.Model
 
             if ( allInstancesPlacementGroupInfoQuery == null )
             {
-                return null;
+                throw new ArgumentNullException( "Registration Instance(s) must be specified" );
             }
 
             // select in a way to avoid lazy loading
