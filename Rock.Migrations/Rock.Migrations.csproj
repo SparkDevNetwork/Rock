@@ -73,6 +73,10 @@
     <Compile Include="Migrations\202002072121419_CodeGen_0207.Designer.cs">
       <DependentUpon>202002072121419_CodeGen_0207.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002132339276_AddFundraisingAllowDonationsUntil.cs" />
+    <Compile Include="Migrations\202002132339276_AddFundraisingAllowDonationsUntil.Designer.cs">
+      <DependentUpon>202002132339276_AddFundraisingAllowDonationsUntil.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.Designer.cs">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
@@ -1047,6 +1051,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202002072121419_CodeGen_0207.resx">
       <DependentUpon>202002072121419_CodeGen_0207.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002132339276_AddFundraisingAllowDonationsUntil.resx">
+      <DependentUpon>202002132339276_AddFundraisingAllowDonationsUntil.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.resx">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
