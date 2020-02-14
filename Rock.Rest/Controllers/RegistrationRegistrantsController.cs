@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Web.Http;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -15,7 +12,6 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class RegistrationRegistrantsController
     {
-
         #region Group Placement Related
 
         /// <summary>
@@ -30,7 +26,7 @@ namespace Rock.Rest.Controllers
         {
             var rockContext = new RockContext();
             var registrantService = new RegistrationRegistrantService( rockContext );
-            return registrantService.GetGroupPlacementRegistrants( options );
+            return registrantService.GetGroupPlacementRegistrants( options, this.GetPerson() );
         }
 
         #endregion Group Placement Related
