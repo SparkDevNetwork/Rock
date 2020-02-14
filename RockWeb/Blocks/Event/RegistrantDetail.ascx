@@ -60,7 +60,7 @@
             <div class="panel panel-block">
 
                 <div class="panel-heading">
-                    <h1 class="panel-title pull-left"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
+                    <h1 class="panel-title pull-left"><i class="fa fa-user"></i> <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlCost" runat="server" LabelType="Info" ToolTip="Cost" />
                     </div>
