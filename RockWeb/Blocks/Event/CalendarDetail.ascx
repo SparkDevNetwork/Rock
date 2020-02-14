@@ -77,7 +77,7 @@
 
                     <Rock:PanelWidget ID="wpEventAttributes" runat="server" Title="Event Attributes">
                         <div class="grid">
-                            <Rock:Grid ID="gEventAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Event Attribute" ShowConfirmDeleteDialog="false">
+                            <Rock:Grid ID="gEventAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Event Attribute" ShowConfirmDeleteDialog="false" HideDeleteButtonForIsSystem="false">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Name" HeaderText="Attribute" />
