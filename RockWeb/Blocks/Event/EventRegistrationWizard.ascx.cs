@@ -905,7 +905,7 @@ namespace RockWeb.Blocks.Event
                     var templateGroupType = groupTypeService.Get( registrationTemplate.GroupTypeId.Value );
                     var parentGroupType = groupTypeService.Get( parentGroup.GroupTypeId );
 
-                    bool isChildPermitted = parentGroupType.ChildGroupTypes.Contains( templateGroupType );
+                    bool isChildPermitted = parentGroupType.AllowAnyChildGroupType || parentGroupType.ChildGroupTypes.Contains( templateGroupType );
                     if ( !isChildPermitted )
                     {
                         nbNotPermitted.Text = string.Format( "Groups of type \"{0}\" are not permitted under the parent \"{1}\".", templateGroupType.Name, parentGroup.Name );

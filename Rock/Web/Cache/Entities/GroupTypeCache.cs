@@ -515,6 +515,16 @@ namespace Rock.Web.Cache
         public bool EnableGroupTag { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether [allow any child group type].
+        /// Use this along with <seealso cref="ChildGroupTypes"/> to determine if a child group can have a parent group of this group type
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow any child group type]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowAnyChildGroupType { get; private set; }
+
+        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>
@@ -592,7 +602,8 @@ namespace Rock.Web.Cache
         private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
-        /// Gets the child group types.
+        /// Gets the group types that are allowed for child groups.
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to determine if a child group can have a parent group of this group type
         /// </summary>
         /// <value>
         /// The child group types.
@@ -791,7 +802,7 @@ namespace Rock.Web.Cache
             ScheduleConfirmationEmailOffsetDays = groupType.ScheduleConfirmationEmailOffsetDays;
             ScheduleReminderEmailOffsetDays = groupType.ScheduleReminderEmailOffsetDays;
             RequiresReasonIfDeclineSchedule = groupType.RequiresReasonIfDeclineSchedule;
-
+            AllowAnyChildGroupType = groupType.AllowAnyChildGroupType;
 #pragma warning disable CS0618 // Type or member is obsolete
             ScheduleConfirmationSystemEmailId = groupType.ScheduleConfirmationSystemEmailId;
             ScheduleReminderSystemEmailId = groupType.ScheduleReminderSystemEmailId;
