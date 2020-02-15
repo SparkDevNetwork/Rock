@@ -141,9 +141,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fDiscounts_ApplyFilterClick( object sender, EventArgs e )
         {
-            fDiscounts.SaveUserPreference( UserPreferenceKey.GridFilter_DiscountDateRange, "Discount Date Range", sdrpDiscountDateRange.DelimitedValues );
-            fDiscounts.SaveUserPreference( UserPreferenceKey.GridFilter_DiscountCode, "Discount Code", ddlDiscountCode.SelectedItem.Text );
-            fDiscounts.SaveUserPreference( UserPreferenceKey.GridFilter_DiscountCodeSearch, "Discount Code Search", tbDiscountCodeSearch.Text );
+            fDiscounts.SaveUserPreference( UserPreferenceKeyBase.GridFilter_DiscountDateRange, "Discount Date Range", sdrpDiscountDateRange.DelimitedValues );
+            fDiscounts.SaveUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCode, "Discount Code", ddlDiscountCode.SelectedItem.Text );
+            fDiscounts.SaveUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCodeSearch, "Discount Code Search", tbDiscountCodeSearch.Text );
 
             BindDiscountsGrid();
         }
@@ -183,10 +183,10 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindDiscountsFilter()
         {
-            sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetUserPreference( UserPreferenceKey.GridFilter_DiscountDateRange );
+            sdrpDiscountDateRange.DelimitedValues = fDiscounts.GetUserPreference( UserPreferenceKeyBase.GridFilter_DiscountDateRange );
             PopulateDiscountCodeList();
-            ddlDiscountCode.SelectedIndex = ddlDiscountCode.Items.IndexOf( ddlDiscountCode.Items.FindByText( fDiscounts.GetUserPreference( UserPreferenceKey.GridFilter_DiscountCode ) ) );
-            tbDiscountCodeSearch.Text = fDiscounts.GetUserPreference( UserPreferenceKey.GridFilter_DiscountCodeSearch );
+            ddlDiscountCode.SelectedIndex = ddlDiscountCode.Items.IndexOf( ddlDiscountCode.Items.FindByText( fDiscounts.GetUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCode ) ) );
+            tbDiscountCodeSearch.Text = fDiscounts.GetUserPreference( UserPreferenceKeyBase.GridFilter_DiscountCodeSearch );
         }
 
         /// <summary>

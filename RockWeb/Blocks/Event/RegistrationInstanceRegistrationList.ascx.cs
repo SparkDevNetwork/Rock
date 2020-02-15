@@ -123,7 +123,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            AvailableRegistrationAttributeIdsForGrid = ViewState[ViewStateKey.AvailableRegistrationAttributeIdsForGrid] as int[];
+            AvailableRegistrationAttributeIdsForGrid = ViewState[ViewStateKeyBase.AvailableRegistrationAttributeIdsForGrid] as int[];
 
             // Don't set the dynamic control values if this is a postback from a grid 'ClearFilter'.
             bool setValues = this.Request.Params["__EVENTTARGET"] == null || !this.Request.Params["__EVENTTARGET"].EndsWith( "_lbClearFilter" );
@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ViewStateKey.AvailableRegistrationAttributeIdsForGrid] = AvailableRegistrationAttributeIdsForGrid;
+            ViewState[ViewStateKeyBase.AvailableRegistrationAttributeIdsForGrid] = AvailableRegistrationAttributeIdsForGrid;
 
             return base.SaveViewState();
         }
@@ -503,12 +503,12 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindRegistrationsFilter()
         {
-            sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegistrationsDateRange );
-            ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_PaymentStatus ) );
-            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegisteredByFirstName );
-            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegisteredByLastName );
-            tbRegistrationRegistrantFirstName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegistrantFirstName );
-            tbRegistrationRegistrantLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKey.GridFilter_RegistrantLastName );
+            sdrpRegistrationDateRange.DelimitedValues = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegistrationsDateRange );
+            ddlRegistrationPaymentStatus.SetValue( fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_PaymentStatus ) );
+            tbRegistrationRegisteredByFirstName.Text = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegisteredByFirstName );
+            tbRegistrationRegisteredByLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegisteredByLastName );
+            tbRegistrationRegistrantFirstName.Text = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegistrantFirstName );
+            tbRegistrationRegistrantLastName.Text = fRegistrations.GetUserPreference( UserPreferenceKeyBase.GridFilter_RegistrantLastName );
         }
 
         /// <summary>
