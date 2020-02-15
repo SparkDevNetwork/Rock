@@ -779,7 +779,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable proxy creation].
+        /// Gets or sets a value indicating whether [enable proxy creation]. This is needed if lazy loading is needed or Editing/Deleting an entity, etc
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable proxy creation]; otherwise, <c>false</c>.

@@ -55,7 +55,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Description = "The Lava used to generate the JSON object structure for the item list.",
         Key = AttributeKeys.ListTemplate,
         Order = 2,
-        EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         DefaultValue = defaultItemTemplate )]
 
     [CodeEditorField(
@@ -63,7 +63,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Description = "The XAML for the lists data template.",
         Key = AttributeKeys.ListDataTemplate,
         Order = 0,
-        EditorMode = Web.UI.Controls.CodeEditorMode.Xml,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         DefaultValue = defaultDataTemplate,
         Category = "custommobile" )]
 

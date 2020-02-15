@@ -266,15 +266,22 @@ namespace Rock.Utility
                     }
                     else
                     {
-                        // Special Case for GroupMember with Qualifier of 'GroupTypeId' (which is really Group.GroupTypeId)
+                        
                         if ( attributeCache.EntityTypeQualifierColumn == "GroupTypeId" && parameterExpression.Type == typeof( Rock.Model.GroupMember ) )
                         {
+                            // Special Case for GroupMember with Qualifier of 'GroupTypeId' (which is really Group.GroupTypeId)
                             qualifierParameterExpression = Expression.Property( parameterExpression, "Group" );
+                        }
+                        else if ( attributeCache.EntityTypeQualifierColumn == "RegistrationTemplateId" && parameterExpression.Type == typeof( Rock.Model.RegistrationRegistrant ) )
+                        {
+                            // Special Case for RegistrationRegistrant with Qualifier of 'RegistrationTemplateId' (which is really Registration.RegistrationInstance.RegistrationTemplateId)
+                            qualifierParameterExpression = Expression.Property( parameterExpression, "Registration" );
+                            qualifierParameterExpression = Expression.Property( qualifierParameterExpression, "RegistrationInstance" );
                         }
                         else
                         {
                             // Unable to determine how the EntityTypeQualiferColumn relates to the Entity. Probably will be OK, but spit out a debug message
-                            System.Diagnostics.Debug.WriteLine( $"Unable to determine how the EntityTypeQualiferColumn {attributeCache.EntityTypeQualifierColumn} on attribute {attributeCache.Name}:{attributeCache.Guid}" );
+                            System.Diagnostics.Debug.WriteLine( $"Unable to determine how the EntityTypeQualiferColumn {attributeCache.EntityTypeQualifierColumn} relates to entity {parameterExpression.Type} on attribute {attributeCache.Name}:{attributeCache.Guid}" );
                         }
                     }
 
