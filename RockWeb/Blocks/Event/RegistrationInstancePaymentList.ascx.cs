@@ -145,7 +145,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fPayments_ApplyFilterClick( object sender, EventArgs e )
         {
-            fPayments.SaveUserPreference( UserPreferenceKey.GridFilter_PaymentsDateRange, "Transaction Date Range", sdrpPaymentDateRange.DelimitedValues );
+            fPayments.SaveUserPreference( UserPreferenceKeyBase.GridFilter_PaymentsDateRange, "Transaction Date Range", sdrpPaymentDateRange.DelimitedValues );
 
             BindPaymentsGrid();
         }
@@ -288,7 +288,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void BindPaymentsFilter()
         {
-            sdrpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( UserPreferenceKey.GridFilter_PaymentsDateRange );
+            sdrpPaymentDateRange.DelimitedValues = fPayments.GetUserPreference( UserPreferenceKeyBase.GridFilter_PaymentsDateRange );
         }
 
         /// <summary>

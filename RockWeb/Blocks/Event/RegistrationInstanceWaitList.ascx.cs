@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            RegistrantFields = ViewState[ViewStateKey.RegistrantFields] as RegistrantFormField[];
+            RegistrantFields = ViewState[ViewStateKeyBase.RegistrantFields] as RegistrantFormField[];
 
             SetUserPreferencePrefix( RegistrationTemplateId.Value );
 
@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Event
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState[ViewStateKey.RegistrantFields] = RegistrantFields;
+            ViewState[ViewStateKeyBase.RegistrantFields] = RegistrantFields;
 
             return base.SaveViewState();
         }
@@ -302,9 +302,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fWaitList_ApplyFilterClick( object sender, EventArgs e )
         {
-            fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_DateRange, "Date Range", drpWaitListDateRange.DelimitedValues );
-            fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_FirstName, "First Name", tbWaitListFirstName.Text );
-            fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_LastName, "Last Name", tbWaitListLastName.Text );
+            fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_DateRange, "Date Range", drpWaitListDateRange.DelimitedValues );
+            fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_FirstName, "First Name", tbWaitListFirstName.Text );
+            fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_LastName, "Last Name", tbWaitListLastName.Text );
 
             if ( RegistrantFields != null )
             {
@@ -318,7 +318,7 @@ namespace RockWeb.Blocks.Event
                                 var ddlCampus = phWaitListFormFieldFilters.FindControl( "ddlWaitlistCampus" ) as RockDropDownList;
                                 if ( ddlCampus != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_HomeCampus, "Home Campus", ddlCampus.SelectedValue );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_HomeCampus, "Home Campus", ddlCampus.SelectedValue );
                                 }
 
                                 break;
@@ -327,7 +327,7 @@ namespace RockWeb.Blocks.Event
                                 var tbEmailFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistEmailFilter" ) as RockTextBox;
                                 if ( tbEmailFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_Email, "Email", tbEmailFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Email, "Email", tbEmailFilter.Text );
                                 }
 
                                 break;
@@ -336,7 +336,7 @@ namespace RockWeb.Blocks.Event
                                 var drpBirthdateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistBirthdateFilter" ) as DateRangePicker;
                                 if ( drpBirthdateFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_BirthdateRange, "Birthdate Range", drpBirthdateFilter.DelimitedValues );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_BirthdateRange, "Birthdate Range", drpBirthdateFilter.DelimitedValues );
                                 }
 
                                 break;
@@ -344,7 +344,7 @@ namespace RockWeb.Blocks.Event
                                 var tbMiddleNameFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMiddleNameFilter" ) as RockTextBox;
                                 if ( tbMiddleNameFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_MiddleName, "MiddleName", tbMiddleNameFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_MiddleName, "MiddleName", tbMiddleNameFilter.Text );
                                 }
 
                                 break;
@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Event
                                 var drpAnniversaryDateFilter = phWaitListFormFieldFilters.FindControl( "drpWaitlistAnniversaryDateFilter" ) as DateRangePicker;
                                 if ( drpAnniversaryDateFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_AnniversaryDateRange, "AnniversaryDate Range", drpAnniversaryDateFilter.DelimitedValues );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_AnniversaryDateRange, "AnniversaryDate Range", drpAnniversaryDateFilter.DelimitedValues );
                                 }
 
                                 break;
@@ -361,7 +361,7 @@ namespace RockWeb.Blocks.Event
                                 if ( gpGradeFilter != null )
                                 {
                                     int? gradeOffset = gpGradeFilter.SelectedValueAsInt( false );
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_Grade, "Grade", gradeOffset.HasValue ? gradeOffset.Value.ToString() : string.Empty );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Grade, "Grade", gradeOffset.HasValue ? gradeOffset.Value.ToString() : string.Empty );
                                 }
 
                                 break;
@@ -370,7 +370,7 @@ namespace RockWeb.Blocks.Event
                                 var ddlGenderFilter = phWaitListFormFieldFilters.FindControl( "ddlWaitlistGenderFilter" ) as RockDropDownList;
                                 if ( ddlGenderFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_Gender, "Gender", ddlGenderFilter.SelectedValue );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_Gender, "Gender", ddlGenderFilter.SelectedValue );
                                 }
 
                                 break;
@@ -379,7 +379,7 @@ namespace RockWeb.Blocks.Event
                                 var dvpMaritalStatusFilter = phWaitListFormFieldFilters.FindControl( "dvpWaitlistMaritalStatusFilter" ) as DefinedValuePicker;
                                 if ( dvpMaritalStatusFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_MaritalStatus, "Marital Status", dvpMaritalStatusFilter.SelectedValue );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_MaritalStatus, "Marital Status", dvpMaritalStatusFilter.SelectedValue );
                                 }
 
                                 break;
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Event
                                 var tbMobilePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistMobilePhoneFilter" ) as RockTextBox;
                                 if ( tbMobilePhoneFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_CellPhone, "Cell Phone", tbMobilePhoneFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_CellPhone, "Cell Phone", tbMobilePhoneFilter.Text );
                                 }
 
                                 break;
@@ -397,7 +397,7 @@ namespace RockWeb.Blocks.Event
                                 var tbWaitlistHomePhoneFilter = phWaitListFormFieldFilters.FindControl( "tbWaitlistHomePhoneFilter" ) as RockTextBox;
                                 if ( tbWaitlistHomePhoneFilter != null )
                                 {
-                                    fWaitList.SaveUserPreference( UserPreferenceKey.GridFilter_HomePhone, "Home Phone", tbWaitlistHomePhoneFilter.Text );
+                                    fWaitList.SaveUserPreference( UserPreferenceKeyBase.GridFilter_HomePhone, "Home Phone", tbWaitlistHomePhoneFilter.Text );
                                 }
 
                                 break;
@@ -814,9 +814,9 @@ namespace RockWeb.Blocks.Event
         /// <param name="instance">The instance.</param>
         private void BindWaitListFilter( RegistrationInstance instance )
         {
-            drpWaitListDateRange.DelimitedValues = fWaitList.GetUserPreference( UserPreferenceKey.GridFilter_DateRange );
-            tbWaitListFirstName.Text = fWaitList.GetUserPreference( UserPreferenceKey.GridFilter_FirstName );
-            tbWaitListLastName.Text = fWaitList.GetUserPreference( UserPreferenceKey.GridFilter_LastName );
+            drpWaitListDateRange.DelimitedValues = fWaitList.GetUserPreference( UserPreferenceKeyBase.GridFilter_DateRange );
+            tbWaitListFirstName.Text = fWaitList.GetUserPreference( UserPreferenceKeyBase.GridFilter_FirstName );
+            tbWaitListLastName.Text = fWaitList.GetUserPreference( UserPreferenceKeyBase.GridFilter_LastName );
         }
 
         /// <summary>

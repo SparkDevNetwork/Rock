@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Event
 
         #region UserPreferenceKeys
 
-        protected class UserPreferenceKey : RegistrationInstanceBlock.UserPreferenceKey
+        private static class UserPreferenceKey
         {
             public const string PlacementConfigurationJSON_RegistrationInstanceId = "PlacementConfigurationJSON_RegistrationInstanceId_{0}";
             public const string PlacementConfigurationJSON_RegistrationTemplateId = "PlacementConfigurationJSON_RegistrationTemplateId_{0}";
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Event
 
         #region ViewStateKeys
 
-        protected class ViewStateKey : RegistrationInstanceBlock.ViewStateKey
+        private static class ViewStateKey
         {
             public const string DataFilterJSON = "DataFilterJSON";
         }

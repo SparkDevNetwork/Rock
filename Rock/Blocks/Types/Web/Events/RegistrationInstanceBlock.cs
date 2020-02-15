@@ -93,7 +93,7 @@ namespace Rock.Blocks.Types.Web.Events
         /// <summary>
         /// Keys to use for ViewState
         /// </summary>
-        protected class ViewStateKey
+        protected static class ViewStateKeyBase
         {
             /// <summary>
             /// The registrant fields
@@ -114,7 +114,7 @@ namespace Rock.Blocks.Types.Web.Events
         /// Keys to use for User Preferences
         /// NOTE: This is a not a static class since RegistrationInstance blocks will need to be able to inherit from thois
         /// </summary>
-        protected class UserPreferenceKey
+        protected static class UserPreferenceKeyBase
         {
             /// <summary>
             /// The grid filter grade
@@ -439,7 +439,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        ddlCampus.SetValue( gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_HomeCampus ) );
+                                        ddlCampus.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_HomeCampus ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( ddlCampus );
@@ -460,7 +460,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbEmailFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Email );
+                                        tbEmailFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Email );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbEmailFilter );
@@ -484,7 +484,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        drpBirthdateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_BirthdateRange );
+                                        drpBirthdateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_BirthdateRange );
                                     }
 
                                     filterFieldsContainer.Controls.Add( drpBirthdateFilter );
@@ -508,7 +508,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbMiddleNameFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_MiddleName );
+                                        tbMiddleNameFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_MiddleName );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbMiddleNameFilter );
@@ -532,7 +532,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        drpAnniversaryDateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_AnniversaryDateRange );
+                                        drpAnniversaryDateFilter.DelimitedValues = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_AnniversaryDateRange );
                                     }
 
                                     filterFieldsContainer.Controls.Add( drpAnniversaryDateFilter );
@@ -561,7 +561,7 @@ namespace Rock.Blocks.Types.Web.Events
                                     // by not calling SetValue otherwise it will select 12th grade.
                                     if ( setValues )
                                     {
-                                        var groupPlacementsGradeUserPreference = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Grade ).AsIntegerOrNull();
+                                        var groupPlacementsGradeUserPreference = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Grade ).AsIntegerOrNull();
                                         if ( groupPlacementsGradeUserPreference != null )
                                         {
                                             gpGradeFilter.SetValue( groupPlacementsGradeUserPreference );
@@ -590,7 +590,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        ddlGenderFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_Gender ) );
+                                        ddlGenderFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_Gender ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( ddlGenderFilter );
@@ -615,7 +615,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        dvpMaritalStatusFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_MaritalStatus ) );
+                                        dvpMaritalStatusFilter.SetValue( gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_MaritalStatus ) );
                                     }
 
                                     filterFieldsContainer.Controls.Add( dvpMaritalStatusFilter );
@@ -642,7 +642,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbMobilePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_CellPhone );
+                                        tbMobilePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_CellPhone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbMobilePhoneFilter );
@@ -666,7 +666,7 @@ namespace Rock.Blocks.Types.Web.Events
 
                                     if ( setValues )
                                     {
-                                        tbHomePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKey.GridFilter_HomePhone );
+                                        tbHomePhoneFilter.Text = gridFilter.GetUserPreference( UserPreferenceKeyBase.GridFilter_HomePhone );
                                     }
 
                                     filterFieldsContainer.Controls.Add( tbHomePhoneFilter );
