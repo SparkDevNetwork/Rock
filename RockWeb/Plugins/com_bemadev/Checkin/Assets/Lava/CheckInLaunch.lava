@@ -12,6 +12,8 @@
 {% assign nextStepsURL = urlPattern %}
 {% assign nextStepsUnattendedURL = urlPattern %}
 {% assign campusEventsURL = urlPattern %}
+{% assign aGreatDateAdultURL = urlPattern %}
+{% assign aGreatDateFamilyURL = urlPattern %}
 
 {% assign motsURL = urlPattern %}
 
@@ -51,6 +53,8 @@
 {% assign nextStepsURL = nextStepsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'kioskId', unattendedCheckInGenericKioskId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'kioskId', studentMinCheckInKioskId %}
+{% assign aGreatDateAdultURL = aGreatDateAdultURL | Replace: 'kioskId', unattendedCheckInGenericKioskId %}
+{% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Replace: 'kioskId', attendedCheckInKioskId %}
 {% assign motsURL = motsURL | Replace: 'kioskId', attendedCheckInKioskId %}
 
 <!-- Use Check-In Config GroupType to find all ChildGroupTypeIDs-->
@@ -78,6 +82,11 @@
     {% assign campusEventsCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
 
+<!-- Needed because the Campus Events Check-In has a nested area under Campus Events -->
+{% grouptype where:'Name == "Campus Events" && Guid == "72b91dbb-c974-4b7a-9795-f719ae42fd7a"'%}
+    {% assign campusEventsAreaId = grouptype.Id %}
+{% endgrouptype %}
+
 {% grouptype where:'Name == "MOTS Check-in"'%}
     {% assign motsCheckinConfigId = grouptype.Id %}
 {% endgrouptype %}
@@ -93,6 +102,8 @@
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'checkInConfigId', nextStepsCheckinConfigId %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
+{% assign aGreatDateAdultURL = aGreatDateAdultURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
+{% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Replace: 'checkInConfigId', campusEventsCheckinConfigId %}
 {% assign motsURL = motsURL | Replace: 'checkInConfigId', motsCheckinConfigId %}
 
 {% sql %}
@@ -102,6 +113,7 @@ DECLARE @studentMinCheckInConfigId int = {{studentMinCheckinConfigId}}
 DECLARE @studentMinEventsCheckInConfigId int = {{studentMinEventsCheckinConfigId}}
 DECLARE @nextStepsCheckInConfigId int = {{nextStepsCheckinConfigId}}
 DECLARE @campusEventsCheckInConfigId int = {{campusEventsCheckinConfigId}}
+DECLARE @campusEventsAreaId int = {{campusEventsAreaId}}
 DECLARE @motsCheckInConfigId int = {{motsCheckinConfigId}}
 
 
@@ -115,10 +127,15 @@ WHERE [GroupTypeId] in (
     ,@studentMinEventsCheckInConfigId
     ,@nextStepsCheckInConfigId
     ,@campusEventsCheckInConfigId
+    ,@campusEventsAreaId
     ,@motsCheckInConfigId
 )
 {% endsql %}
-
+{% comment %} 
+{% for item in results %}
+    {{item.GroupTypeId}} | {{item.ChildGroupTypeId}} | {{item.Name}}<br/>
+{% endfor %}
+ {% endcomment %}
 
 <!--
 ------------------------------------------
@@ -198,11 +215,33 @@ Build up string of check-in areas
 <!-- Campus Events Areas -->
 {% assign campusEventsAreas = "" %}
 {% for item in results %}
-    {% if item.GroupTypeId == campusEventsCheckinConfigId %}
+    {% if item.GroupTypeId == campusEventsCheckinConfigId or item.GroupTypeId == campusEventsAreaId %}
         {% assign campusEventsAreas = campusEventsAreas | Append: "," | Append: item.ChildGroupTypeId %}
     {% endif %}
 {% endfor %}
 {% assign campusEventsAreas = campusEventsAreas | Split:',' | Join:',' %}
+
+<!-- A Great Date Adult Areas -->
+{% assign aGreatDateAdultAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == campusEventsCheckinConfigId or item.GroupTypeId == campusEventsAreaId %}
+        {% if item.Name == "Event Attendees" or item.Name == "Campus Events Volunteers" %}
+            {% assign aGreatDateAdultAreas = aGreatDateAdultAreas | Append: "," | Append: item.ChildGroupTypeId %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% assign aGreatDateAdultAreas = aGreatDateAdultAreas | Split:',' | Join:',' %}
+
+<!-- A Great Date Family Areas -->
+{% assign aGreatDateFamilyAreas = "" %}
+{% for item in results %}
+    {% if item.GroupTypeId == campusEventsCheckinConfigId or item.GroupTypeId == campusEventsAreaId %}
+        {% if item.Name == "Event Attendees" or item.Name == "Campus Events Volunteers" or item.Name == "Campus Events kidCare (6wks-Pre-K)" or item.Name == "Campus Events kidCare (K-4th)" or item.Name == "Campus Events kidCare (5th-6th)" or item.Name == "Campus Events kidCare Volunteers" %}
+            {% assign aGreatDateFamilyAreas = aGreatDateFamilyAreas | Append: "," | Append: item.ChildGroupTypeId %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% assign aGreatDateFamilyAreas = aGreatDateFamilyAreas | Split:',' | Join:',' %}
 
 <!-- MOTS Areas -->
 {% assign motsAreas = "" %}
@@ -224,6 +263,8 @@ Build up string of check-in areas
 {% assign nextStepsURL = nextStepsURL | Replace: 'checkInAreas', nextStepsAreas %}
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Replace: 'checkInAreas', nextStepsAreas %}
 {% assign campusEventsURL = campusEventsURL | Replace: 'checkInAreas', campusEventsAreas %}
+{% assign aGreatDateAdultURL = aGreatDateAdultURL | Replace: 'checkInAreas', aGreatDateAdultAreas %}
+{% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Replace: 'checkInAreas', aGreatDateFamilyAreas %}
 {% assign motsURL = motsURL | Replace: 'checkInAreas', motsAreas %}
 
 <!-- Themes -->
@@ -245,6 +286,8 @@ Build up string of check-in areas
 {% assign nextStepsURL = nextStepsURL | Append: genericLCBCTheme %}
 {% assign nextStepsUnattendedURL = nextStepsUnattendedURL | Append: genericLCBCTheme %}
 {% assign campusEventsURL = campusEventsURL | Append: genericLCBCTheme %}
+{% assign aGreatDateAdultURL = aGreatDateAdultURL | Append: genericLCBCTheme %}
+{% assign aGreatDateFamilyURL = aGreatDateFamilyURL | Append: kviTheme %}
 {% assign motsURL = motsURL | Append: genericLCBCTheme %}
 
 
@@ -365,6 +408,18 @@ Build up string of check-in areas
                     </a>
                 </li>
             {% endif %}
+            <li>
+                <a href="{{ aGreatDateAdultURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>A Great Date Adult Check-In</h3>
+                </a>
+            </li>
+            <li>
+                <a href="{{ aGreatDateFamilyURL }}">
+                <i class="fa fa-sign-in"></i>
+                <h3>A Great Date Family Check-In</h3>
+                </a>
+            </li>
         </ul>
     </div>
 </div>
@@ -413,6 +468,8 @@ Build up string of check-in areas
             First-Time Family Areas: {{ firstTimeFamilyAreas }}<br>
             Next Steps Areas: {{ nextStepsAreas }}<br>
             Campus Events Areas: {{ campusEventsAreas }}<br>
+            A Great Date Adult Areas: {{ aGreatDateAdultAreas }}<br>
+            A Great Date Family Areas: {{ aGreatDateFamilyAreas }}<br>
             MOTS Areas: {{ motsAreas }}<br><br>
 
             KVI Attended Check-In:          {{ kviAttendedCheckInURL }}<br>
@@ -428,6 +485,8 @@ Build up string of check-in areas
             Next Steps Assisted Check-In:   {{ nextStepsURL }}<br>
             Next Steps Self Check-In:       {{ nextStepsUnattendedURL }}<br>
             Campus Events Check-In:         {{ campusEventsURL }}<br>
+            A Great Date Adult Check-In:    {{ aGreatDateAdultURL }}<br>
+            A Great Date Family Check-In:   {{ aGreatDateFamilyURL }}<br>
             MOTS Check-In:                  {{ motsURL }}<br>
         </div>
       </div>
