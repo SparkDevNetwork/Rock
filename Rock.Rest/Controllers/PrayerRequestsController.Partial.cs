@@ -154,6 +154,7 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate, Secured]
         [HttpGet]
+        [EnableQuery]
         [System.Web.Http.Route( "api/PrayerRequests/GetForGroupMembersOfPersonInGroupTypes/{personId}" )]
         public IQueryable<PrayerRequest> GetForGroupMembersOfPersonInGroupTypes( bool excludePerson, string groupTypeIds, int personId )
         {
