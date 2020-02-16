@@ -131,11 +131,7 @@ WHERE [GroupTypeId] in (
     ,@motsCheckInConfigId
 )
 {% endsql %}
-{% comment %} 
-{% for item in results %}
-    {{item.GroupTypeId}} | {{item.ChildGroupTypeId}} | {{item.Name}}<br/>
-{% endfor %}
- {% endcomment %}
+
 
 <!--
 ------------------------------------------
@@ -236,7 +232,7 @@ Build up string of check-in areas
 {% assign aGreatDateFamilyAreas = "" %}
 {% for item in results %}
     {% if item.GroupTypeId == campusEventsCheckinConfigId or item.GroupTypeId == campusEventsAreaId %}
-        {% if item.Name == "Event Attendees" or item.Name == "Campus Events Volunteers" or item.Name == "Campus Events kidCare (6wks-Pre-K)" or item.Name == "Campus Events kidCare (K-4th)" or item.Name == "Campus Events kidCare (5th-6th)" or item.Name == "Campus Events kidCare Volunteers" %}
+        {% if item.Name == "Event Attendees" or item.Name == "Campus Events Volunteers" or item.Name == "Campus Events kidCare (6wks-Pre-K)" or item.Name == "Campus Events kidCare (K-4th)" or item.Name == "Campus Events kidCare (5th-6th)" or item.Name == "Campus Events kidCare Volunteers" or item.Name == "Campus Events kidCare - One Time Volunteers" %}
             {% assign aGreatDateFamilyAreas = aGreatDateFamilyAreas | Append: "," | Append: item.ChildGroupTypeId %}
         {% endif %}
     {% endif %}
