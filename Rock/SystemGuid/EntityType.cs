@@ -258,6 +258,11 @@ namespace Rock.SystemGuid
         public const string PERSON_ALIAS = "90F5E87B-F0D5-4617-8AE9-EB57E673F36F";
 
         /// <summary>
+        /// The guid for the Rock.Workflow.Action.PersonGetCampusTeamMember entity
+        /// </summary>
+        public const string PERSON_GET_CAMPUS_TEAM_MEMBER = "6A4F7FEC-3D49-4A31-882C-2D10DB84231E";
+
+        /// <summary>
         /// The guid for the Rock.Model.PersonSignal entity
         /// </summary>
         public const string PERSON_SIGNAL = "0FFF77A1-E92D-4A05-8B36-1D2B6D46660F";

@@ -69,6 +69,10 @@
     <Compile Include="Migrations\202002182232477_AddMissingGroupTypeAdministratorTerms.Designer.cs">
       <DependentUpon>202002182232477_AddMissingGroupTypeAdministratorTerms.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.cs" />
+    <Compile Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.Designer.cs">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1057,6 +1061,9 @@
     <EmbeddedResource Include="Migrations\202002182232477_AddMissingGroupTypeAdministratorTerms.resx">
       <DependentUpon>202002182232477_AddMissingGroupTypeAdministratorTerms.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.resx">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
     </EmbeddedResource>
@@ -1805,6 +1812,12 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\202002182236274_AddCampusTeamToAllCampuses_Down.sql">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202002182236274_AddCampusTeamToAllCampuses_Up.sql">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
