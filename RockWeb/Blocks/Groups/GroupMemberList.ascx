@@ -12,6 +12,8 @@
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>
 
+        <asp:HiddenField ID="hfCampusId" runat="server" />
+
         <asp:Panel ID="pnlContent" runat="server">
 
             <div id="pnlGroupMembers" runat="server">

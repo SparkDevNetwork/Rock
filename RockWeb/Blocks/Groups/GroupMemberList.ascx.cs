@@ -146,6 +146,30 @@ namespace RockWeb.Blocks.Groups
             if ( groupGuid == Guid.Empty )
             {
                 groupId = PageParameter( "GroupId" ).AsInteger();
+
+                /*
+                 * 1/15/2020 - JPH
+                 * Since we have established a relationship between Campuses and Groups (by way of the Campus.TeamGroup property),
+                 * it is now necessary keep a reference to any supplied "CampusId" query string parameter, so it can be passed to
+                 * any child Pages, in order for that child Page to pass the same value back to any parent Pages housing this Block.
+                 *
+                 * Reason: Campus Team Feature
+                 */
+                var campusId = PageParameter( "CampusId" ).AsIntegerOrNull();
+                hfCampusId.Value = campusId.ToString();
+
+                // if we don't yet have a groupId, and a CampusId PageParameter is defined, attempt to determine the groupId from the Campus.TeamGroupId property
+                if ( groupId == 0 && campusId.HasValue )
+                {
+                    int? campusTeamGroupId = new CampusService( new RockContext() )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( c => c.Id == campusId.Value )
+                        .Select( c => c.TeamGroupId )
+                        .FirstOrDefault();
+
+                    groupId = campusTeamGroupId ?? 0;
+                }
             }
 
             if ( !( groupId == 0 && groupGuid == Guid.Empty ) )
@@ -733,7 +757,21 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroupMembers_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", _group.Id );
+            if ( hfCampusId.Value.AsIntegerOrNull().HasValue )
+            {
+                var qryString = new Dictionary<string, string>()
+                {
+                    { "GroupMemberId", "0" },
+                    { "GroupId", _group.Id.ToString() },
+                    { "CampusId", hfCampusId.Value }
+                };
+
+                NavigateToLinkedPage( "DetailPage", qryString );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", 0, "GroupId", _group.Id );
+            }
         }
 
         /// <summary>
@@ -743,7 +781,16 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupMembers_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId );
+            var campusId = hfCampusId.Value.AsIntegerOrNull();
+
+            if ( campusId.HasValue )
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId, "CampusId", campusId.Value );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "GroupMemberId", e.RowKeyId );
+            }
         }
 
         /// <summary>

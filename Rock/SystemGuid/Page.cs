@@ -839,6 +839,12 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Group Member Detail page guid
+        /// ParentPage: Campus Detail
+        /// </summary>
+        public const string GROUP_MEMBER_DETAIL_CAMPUS_DETAIL = "EB135AE0-5BAC-458B-AD5B-47460C2BFD31";
+
+        /// <summary>
+        /// Gets the Group Member Detail page guid
         /// ParentPage: Group Viewer
         /// </summary>
         public const string GROUP_MEMBER_DETAIL_GROUP_VIEWER = "3905C63F-4D57-40F0-9721-C60A2F681911";

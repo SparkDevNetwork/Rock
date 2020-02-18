@@ -109,5 +109,10 @@ namespace Rock.SystemGuid
         /// The Services group type guid
         /// </summary>
         public const string GROUPTYPE_SERVICES = "235BAE2B-5760-4763-AADF-3938F34BA100";
+
+        /// <summary>
+        /// Campus Team group type guid
+        /// </summary>
+        public const string GROUPTYPE_CAMPUS_TEAM = "BADD7A6C-1FB3-4E11-A721-6D1377C6958C";
     }
 }
