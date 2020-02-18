@@ -8,7 +8,7 @@ IF EXISTS (
 GO
 
 -- EXECUTE [dbo].[spAnalytics_ETL_Campus] 
-CREATE PROCEDURE [dbo].spAnalytics_ETL_Campus
+CREATE PROCEDURE [dbo].[spAnalytics_ETL_Campus]
 AS
 BEGIN
 	DECLARE @RowsUpdated INT = 0
