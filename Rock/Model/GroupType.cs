@@ -41,18 +41,6 @@ namespace Rock.Model
     [DataContract]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupType"/> class.
-        /// </summary>
-        public GroupType()
-        {
-            ShowInGroupList = true;
-            ShowInNavigation = true;
-            GroupTerm = "Group";
-            GroupMemberTerm = "Member";
-            AdministratorTerm = "Administrator";
-        }
-
         #region Entity Properties
 
         /// <summary>
@@ -97,7 +85,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string GroupTerm { get; set; }
+        public string GroupTerm { get; set; } = "Group";
 
         /// <summary>
         /// Gets or sets the term that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> that belongs to this GroupType is called.
@@ -112,7 +100,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember]
-        public string GroupMemberTerm { get; set; }
+        public string GroupMemberTerm { get; set; } = "Member";
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupTypeRole"/> that a <see cref="Rock.Model.GroupMember"/> of a <see cref="Rock.Model.Group"/> belonging to this GroupType is given by default.
@@ -139,7 +127,7 @@ namespace Rock.Model
         ///   A <see cref="System.Boolean"/> value that is <c>true</c> if a <see cref="Rock.Model.Group"/> of this GroupType will be shown in the GroupList; otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ShowInGroupList { get; set; }
+        public bool ShowInGroupList { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a flag indicating if this GroupType and its <see cref="Rock.Model.Group">Groups</see> are shown in Navigation.
@@ -152,7 +140,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupType and Groups should be displayed in Navigation controls.
         /// </value>
         [DataMember]
-        public bool ShowInNavigation { get; set; }
+        public bool ShowInNavigation { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the icon CSS class name for a font vector based icon.
@@ -775,7 +763,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MaxLength( 100 )]
-        public string AdministratorTerm { get; set; }
+        public string AdministratorTerm { get; set; } = "Administrator";
 
         /// <summary>
         /// Gets or sets a value indicating whether administrator for the group of this GroupType will be shown.
