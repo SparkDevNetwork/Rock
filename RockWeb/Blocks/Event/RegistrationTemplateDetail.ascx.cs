@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -34,6 +35,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Event
@@ -357,6 +359,23 @@ namespace RockWeb.Blocks.Event
 {{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
+        #region ViewState Keys
+
+        private static class ViewStateKey
+        {
+            public const string FormStateJSON = "FormStateJSON";
+            public const string FormFieldsStateJSON = "FormFieldsStateJSON";
+            public const string RegistrationAttributesStateJSON = "RegistrationAttributesStateJSON";
+            public const string ExpandedForms = "ExpandedFormsJSON";
+            public const string DiscountStateJSON = "DiscountStateJSON";
+            public const string RegistrationTemplatePlacementStateJSON = "RegistrationTemplatePlacementStateJSON";
+            public const string RegistrationTemplatePlacementGuidGroupIdsStateJSON = "RegistrationTemplatePlacementGuidGroupIdsStateJSON";
+            public const string FeeStateJSON = "FeeStateJSON";
+            public const string FeeItemsEditStateJSON = "FeeItemsEditStateJSON";
+        }
+
+        #endregion ViewState Keys
+
         #region Properties
 
         private List<RegistrationTemplateForm> FormState { get; set; }
@@ -366,6 +385,16 @@ namespace RockWeb.Blocks.Event
         private List<Guid> ExpandedForms = new List<Guid>();
 
         private List<RegistrationTemplateDiscount> DiscountState { get; set; }
+
+        private List<RegistrationTemplatePlacement> RegistrationTemplatePlacementState { get; set; }
+
+        /// <summary>
+        /// The list of Placement GroupIds for each RegistrationTemplatePlacement
+        /// </summary>
+        /// <value>
+        /// The state of the registration template placement group.
+        /// </value>
+        private Dictionary<Guid, List<int>> RegistrationTemplatePlacementGuidGroupIdsState { get; set; }
 
         private List<RegistrationTemplateFee> FeeState { get; set; }
 
@@ -390,7 +419,7 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState["FormState"] as string;
+            string json = ViewState[ViewStateKey.FormStateJSON] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 FormState = new List<RegistrationTemplateForm>();
@@ -400,7 +429,7 @@ namespace RockWeb.Blocks.Event
                 FormState = JsonConvert.DeserializeObject<List<RegistrationTemplateForm>>( json );
             }
 
-            json = ViewState["FormFieldsState"] as string;
+            json = ViewState[ViewStateKey.FormFieldsStateJSON] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 FormFieldsState = new Dictionary<Guid, List<RegistrationTemplateFormField>>();
@@ -410,7 +439,7 @@ namespace RockWeb.Blocks.Event
                 FormFieldsState = JsonConvert.DeserializeObject<Dictionary<Guid, List<RegistrationTemplateFormField>>>( json );
             }
 
-            json = ViewState["RegistrationAttributesState"] as string;
+            json = ViewState[ViewStateKey.RegistrationAttributesStateJSON] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 RegistrationAttributesState = new List<Attribute>();
@@ -420,13 +449,13 @@ namespace RockWeb.Blocks.Event
                 RegistrationAttributesState = JsonConvert.DeserializeObject<List<Attribute>>( json );
             }
 
-            ExpandedForms = ViewState["ExpandedForms"] as List<Guid>;
+            ExpandedForms = ViewState[ViewStateKey.ExpandedForms] as List<Guid>;
             if ( ExpandedForms == null )
             {
                 ExpandedForms = new List<Guid>();
             }
 
-            json = ViewState["DiscountState"] as string;
+            json = ViewState[ViewStateKey.DiscountStateJSON] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 DiscountState = new List<RegistrationTemplateDiscount>();
@@ -436,7 +465,27 @@ namespace RockWeb.Blocks.Event
                 DiscountState = JsonConvert.DeserializeObject<List<RegistrationTemplateDiscount>>( json );
             }
 
-            json = ViewState["FeeState"] as string;
+            json = ViewState[ViewStateKey.RegistrationTemplatePlacementStateJSON] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                RegistrationTemplatePlacementState = new List<RegistrationTemplatePlacement>();
+            }
+            else
+            {
+                RegistrationTemplatePlacementState = JsonConvert.DeserializeObject<List<RegistrationTemplatePlacement>>( json );
+            }
+
+            json = ViewState[ViewStateKey.RegistrationTemplatePlacementGuidGroupIdsStateJSON] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                RegistrationTemplatePlacementGuidGroupIdsState = new Dictionary<Guid, List<int>>();
+            }
+            else
+            {
+                RegistrationTemplatePlacementGuidGroupIdsState = JsonConvert.DeserializeObject<Dictionary<Guid, List<int>>>( json );
+            }
+
+            json = ViewState[ViewStateKey.FeeStateJSON] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 FeeState = new List<RegistrationTemplateFee>();
@@ -446,7 +495,7 @@ namespace RockWeb.Blocks.Event
                 FeeState = JsonConvert.DeserializeObject<List<RegistrationTemplateFee>>( json );
             }
 
-            json = ViewState["FeeItemsEditState"] as string;
+            json = ViewState[ViewStateKey.FeeItemsEditStateJSON] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
                 FeeItemsEditState = new List<RegistrationTemplateFeeItem>();
@@ -490,6 +539,16 @@ namespace RockWeb.Blocks.Event
             gFees.Actions.AddClick += gFees_AddClick;
             gFees.GridRebind += gFees_GridRebind;
             gFees.GridReorder += gFees_GridReorder;
+
+            gPlacementConfigurations.DataKeyNames = new string[] { "Guid" };
+            gPlacementConfigurations.Actions.ShowAdd = true;
+            gPlacementConfigurations.Actions.AddClick += gPlacementConfigurations_AddClick;
+            gPlacementConfigurations.GridRebind += gPlacementConfigurations_GridRebind;
+            gPlacementConfigurations.GridReorder += gPlacementConfigurations_GridReorder;
+
+            gPlacementConfigurationSharedGroups.DataKeyNames = new string[] { "Id" };
+            gPlacementConfigurationSharedGroups.Actions.ShowAdd = true;
+            gPlacementConfigurationSharedGroups.Actions.AddClick += gPlacementConfigurationSharedGroups_AddClick;
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationTemplate ) ).Id;
 
@@ -611,14 +670,16 @@ The logged-in person's information will be used to complete the registrar inform
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["FormState"] = JsonConvert.SerializeObject( FormState, Formatting.None, jsonSetting );
-            ViewState["FormFieldsState"] = JsonConvert.SerializeObject( FormFieldsState, Formatting.None, jsonSetting );
-            ViewState["RegistrationAttributesState"] = JsonConvert.SerializeObject( RegistrationAttributesState, Formatting.None, jsonSetting );
-            ViewState["ExpandedForms"] = ExpandedForms;
-            ViewState["DiscountState"] = JsonConvert.SerializeObject( DiscountState, Formatting.None, jsonSetting );
-            ViewState["FeeState"] = JsonConvert.SerializeObject( FeeState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.FormStateJSON] = JsonConvert.SerializeObject( FormState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.FormFieldsStateJSON] = JsonConvert.SerializeObject( FormFieldsState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.RegistrationAttributesStateJSON] = JsonConvert.SerializeObject( RegistrationAttributesState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.ExpandedForms] = ExpandedForms;
+            ViewState[ViewStateKey.DiscountStateJSON] = JsonConvert.SerializeObject( DiscountState, Formatting.None, jsonSetting );
 
-            ViewState["FeeItemsEditState"] = JsonConvert.SerializeObject( FeeItemsEditState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.RegistrationTemplatePlacementStateJSON] = JsonConvert.SerializeObject( RegistrationTemplatePlacementState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.RegistrationTemplatePlacementGuidGroupIdsStateJSON] = JsonConvert.SerializeObject( RegistrationTemplatePlacementGuidGroupIdsState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.FeeStateJSON] = JsonConvert.SerializeObject( FeeState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.FeeItemsEditStateJSON] = JsonConvert.SerializeObject( FeeItemsEditState, Formatting.None, jsonSetting );
 
             return base.SaveViewState();
         }
@@ -848,14 +909,14 @@ The logged-in person's information will be used to complete the registrar inform
                 }
             }
 
-            var service = new RegistrationTemplateService( rockContext );
+            var registrationTemplateService = new RegistrationTemplateService( rockContext );
 
             RegistrationTemplate registrationTemplate = null;
 
             int? registrationTemplateId = hfRegistrationTemplateId.Value.AsIntegerOrNull();
             if ( registrationTemplateId.HasValue )
             {
-                registrationTemplate = service.Get( registrationTemplateId.Value );
+                registrationTemplate = registrationTemplateService.Get( registrationTemplateId.Value );
             }
 
             bool newTemplate = false;
@@ -891,7 +952,6 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.AddPersonNote = cbAddPersonNote.Checked;
             registrationTemplate.LoginRequired = cbLoginRequired.Checked;
             registrationTemplate.AllowExternalRegistrationUpdates = cbAllowExternalUpdates.Checked;
-            registrationTemplate.AllowGroupPlacement = cbAllowGroupPlacement.Checked;
             registrationTemplate.AllowMultipleRegistrants = cbMultipleRegistrants.Checked;
             registrationTemplate.MaxRegistrants = cbMultipleRegistrants.Checked ? nbMaxRegistrants.Text.AsIntegerOrNull() : null;
             registrationTemplate.RegistrantsSameFamily = rblRegistrantsInSameFamily.SelectedValueAsEnum<RegistrantsSameFamily>();
@@ -996,7 +1056,7 @@ The logged-in person's information will be used to complete the registrar inform
                 // Save the entity field changes to registration template
                 if ( registrationTemplate.Id.Equals( 0 ) )
                 {
-                    service.Add( registrationTemplate );
+                    registrationTemplateService.Add( registrationTemplate );
                 }
 
                 rockContext.SaveChanges();
@@ -1008,6 +1068,7 @@ The logged-in person's information will be used to complete the registrar inform
                 var registrationTemplateFeeService = new RegistrationTemplateFeeService( rockContext );
                 var registrationTemplateFeeItemService = new RegistrationTemplateFeeItemService( rockContext );
                 var registrationRegistrantFeeService = new RegistrationRegistrantFeeService( rockContext );
+                var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
 
                 var groupService = new GroupService( rockContext );
 
@@ -1073,11 +1134,23 @@ The logged-in person's information will be used to complete the registrar inform
                     registrationTemplateFeeService.Delete( fee );
                 }
 
+                // delete placements that aren't assigned in the UI anymore
+                var registrationTemplatePlacementGuids = RegistrationTemplatePlacementState.Select( u => u.Guid ).ToList();
+                var deletedRegistrationTemplatePlacements = registrationTemplatePlacementService
+                    .Queryable()
+                    .Where( d =>
+                        d.RegistrationTemplateId == registrationTemplate.Id &&
+                        !registrationTemplatePlacementGuids.Contains( d.Guid ) )
+                    .ToList();
+
+                foreach ( var deletedRegistrationTemplatePlacement in deletedRegistrationTemplatePlacements )
+                {
+                    registrationTemplatePlacementService.Delete( deletedRegistrationTemplatePlacement );
+                }
+
                 int? registrationRegistrantEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.RegistrationRegistrant ) ).Id;
                 var registrationRegistrantAttributeQualifierColumn = "RegistrationTemplateId";
                 var registrationRegistrantAttributeQualifierValue = registrationTemplate.Id.ToString();
-
-                // Get the registrant attributes still in the UI
                 var registrantAttributesUI = FormFieldsState
                     .SelectMany( s =>
                         s.Value.Where( a =>
@@ -1239,6 +1312,33 @@ The logged-in person's information will be used to complete the registrar inform
                     fee.Order = feeUI.Order;
                     fee.IsActive = feeUI.IsActive;
                     fee.IsRequired = feeUI.IsRequired;
+                }
+
+                // Add/Update Registration Placements
+                foreach ( var registrationTemplatePlacementUI in RegistrationTemplatePlacementState )
+                {
+                    var registrationTemplatePlacement = registrationTemplate.Placements.FirstOrDefault( a => a.Guid.Equals( registrationTemplatePlacementUI.Guid ) );
+                    if ( registrationTemplatePlacement == null )
+                    {
+                        registrationTemplatePlacement = new RegistrationTemplatePlacement();
+                        registrationTemplatePlacement.Guid = registrationTemplatePlacementUI.Guid;
+                        registrationTemplate.Placements.Add( registrationTemplatePlacement );
+                    }
+
+                    registrationTemplatePlacement.Name = registrationTemplatePlacementUI.Name;
+                    registrationTemplatePlacement.GroupTypeId = registrationTemplatePlacementUI.GroupTypeId;
+                    registrationTemplatePlacement.IconCssClass = registrationTemplatePlacementUI.IconCssClass;
+                    registrationTemplatePlacement.Order = registrationTemplatePlacementUI.Order;
+                    registrationTemplatePlacement.AllowMultiplePlacements = registrationTemplatePlacementUI.AllowMultiplePlacements;
+
+                    var sharedPlacementGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid ) ?? new List<int>();
+                    var sharedPlacementGroups = groupService.GetByIds( sharedPlacementGroupIds ).ToList();
+                    if ( registrationTemplatePlacement.Id == 0 )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
+                    registrationTemplatePlacementService.SetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement, sharedPlacementGroups );
                 }
 
                 registrationTemplate.ModifiedByPersonAliasId = CurrentPersonAliasId;
@@ -2284,6 +2384,10 @@ The logged-in person's information will be used to complete the registrar inform
                     .ThenBy( a => a.Name )
                     .ToList();
 
+                var registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
+
+                RegistrationTemplatePlacementState = registrationTemplate.Placements.ToList();
+                RegistrationTemplatePlacementGuidGroupIdsState = registrationTemplate.Placements.ToDictionary( k => k.Guid, v => registrationTemplatePlacementService.GetRegistrationTemplatePlacementPlacementGroups( v ).Select( a => a.Id ).ToList() );
             }
             else
             {
@@ -2292,6 +2396,7 @@ The logged-in person's information will be used to complete the registrar inform
                 DiscountState = new List<RegistrationTemplateDiscount>();
                 FeeState = new List<RegistrationTemplateFee>();
                 RegistrationAttributesState = new List<Attribute>();
+                RegistrationTemplatePlacementState = new List<RegistrationTemplatePlacement>();
             }
         }
 
@@ -2357,7 +2462,6 @@ The logged-in person's information will be used to complete the registrar inform
             cbAddPersonNote.Checked = registrationTemplate.AddPersonNote;
             cbLoginRequired.Checked = registrationTemplate.LoginRequired;
             cbAllowExternalUpdates.Checked = registrationTemplate.AllowExternalRegistrationUpdates;
-            cbAllowGroupPlacement.Checked = registrationTemplate.AllowGroupPlacement;
             cbMultipleRegistrants.Checked = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Visible = registrationTemplate.AllowMultipleRegistrants;
             nbMaxRegistrants.Text = registrationTemplate.MaxRegistrants.ToString();
@@ -2572,12 +2676,16 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void LoadDropDowns( RockContext rockContext )
         {
-            gtpGroupType.GroupTypes = new GroupTypeService( rockContext )
+            var groupTypeList = new GroupTypeService( rockContext )
                 .Queryable().AsNoTracking()
                 .Where( t => t.ShowInNavigation )
                 .OrderBy( t => t.Order )
                 .ThenBy( t => t.Name )
                 .ToList();
+
+            gtpGroupType.GroupTypes = groupTypeList;
+            gtpPlacementConfigurationGroupTypeEdit.GroupTypes = groupTypeList;
+
             ddlGroupMemberStatus.BindToEnum<GroupMemberStatus>();
             rblRegistrantsInSameFamily.BindToEnum<RegistrantsSameFamily>();
 
@@ -2661,6 +2769,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             BindDiscountsGrid();
             BindFeesGrid();
+            BindPlacementConfigurationsGrid();
         }
 
         /// <summary>
@@ -2901,7 +3010,7 @@ The logged-in person's information will be used to complete the registrar inform
 
             // If this is a RegistrantAttribute, the ShowOnGrid is determined by the Attribute's ShowOnGrid, so we don't need to show the top ShowOnGrid option
             // Also, if this is a GroupMemberAttribute, we'll hide the ShowOnGrid and they'll have to go the GroupMemberList block to see those
-            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute && fieldSource != RegistrationFieldSource.GroupMemberAttribute );
+            cbShowOnGrid.Visible = ( fieldSource != RegistrationFieldSource.RegistrantAttribute ) && ( fieldSource != RegistrationFieldSource.GroupMemberAttribute );
             cbRequireInInitialEntry.Visible = fieldSource != RegistrationFieldSource.RegistrantAttribute;
 
             edtRegistrantAttribute.Visible = fieldSource == RegistrationFieldSource.RegistrantAttribute;
@@ -3310,8 +3419,8 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="registrationFeeType">Type of the registration fee.</param>
         private void BindFeeItemsControls( List<RegistrationTemplateFeeItem> feeItems, RegistrationFeeType registrationFeeType )
         {
-            rcwFeeItemsSingle.Visible = ( registrationFeeType == RegistrationFeeType.Single );
-            rcwFeeItemsMultiple.Visible = ( registrationFeeType == RegistrationFeeType.Multiple );
+            rcwFeeItemsSingle.Visible = registrationFeeType == RegistrationFeeType.Single;
+            rcwFeeItemsMultiple.Visible = registrationFeeType == RegistrationFeeType.Multiple;
             nbFeeItemsConfigurationWarning.Visible = false;
 
             if ( registrationFeeType == RegistrationFeeType.Single )
@@ -3350,7 +3459,7 @@ The logged-in person's information will be used to complete the registrar inform
                         return;
                     }
                 }
-                     
+
                 if ( singleFeeItem == null )
                 {
                     singleFeeItem = new RegistrationTemplateFeeItem();
@@ -3465,7 +3574,6 @@ The logged-in person's information will be used to complete the registrar inform
             return feeItemsHtml.AsDelimited( ", " );
         }
 
-
         #endregion Fee Methods
 
         #region Dialog Methods
@@ -3510,6 +3618,296 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion Dialog Methods
 
+        #region Placement Configuration Related
 
+        /// <summary>
+        /// Binds the placement configurations grid.
+        /// </summary>
+        private void BindPlacementConfigurationsGrid()
+        {
+            if ( RegistrationTemplatePlacementState != null )
+            {
+                gPlacementConfigurations.DataSource = RegistrationTemplatePlacementState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+                gPlacementConfigurations.DataBind();
+            }
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gPlacementConfigurations_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            RegistrationTemplatePlacement registrationTemplatePlacement = e.Row.DataItem as RegistrationTemplatePlacement;
+            if ( registrationTemplatePlacement == null )
+            {
+                return;
+            }
+
+            Literal lPlacementName = e.Row.FindControl( "lPlacementName" ) as Literal;
+            lPlacementName.Text = registrationTemplatePlacement.Name;
+
+            Literal lGroupTypeName = e.Row.FindControl( "lGroupTypeName" ) as Literal;
+            lGroupTypeName.Text = GroupTypeCache.Get( registrationTemplatePlacement.GroupTypeId ).Name;
+            Literal lSharedGroupNames = e.Row.FindControl( "lSharedGroupNames" ) as Literal;
+            var sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationTemplatePlacement.Guid );
+            var sharedGroupNameList = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).Select( a => a.Name ).ToList();
+
+            lSharedGroupNames.Text = sharedGroupNameList.AsDelimited( ", ", " and " );
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void gPlacementConfigurations_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindPlacementConfigurationsGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        private void gPlacementConfigurations_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            ParseControls();
+
+            var movedItem = RegistrationTemplatePlacementState.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
+            if ( movedItem != null )
+            {
+                if ( e.NewIndex < e.OldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in RegistrationTemplatePlacementState.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in RegistrationTemplatePlacementState.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = e.NewIndex;
+            }
+
+            // make sure Order is cleaned up with no gaps, etc
+            int order = 0;
+            RegistrationTemplatePlacementState.OrderBy( d => d.Order ).ToList().ForEach( d => d.Order = order++ );
+
+            BuildControls();
+        }
+
+        /// <summary>
+        /// Handles the AddClick event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gPlacementConfigurations_AddClick( object sender, EventArgs e )
+        {
+            gPlacementConfigurationsAddEdit( Guid.NewGuid(), true );
+        }
+
+        /// <summary>
+        /// gs the placement configurations add edit.
+        /// </summary>
+        /// <param name="registrationPlacementConfigurationGuid">The registration placement configuration unique identifier.</param>
+        /// <param name="addingNewPlacementConfiguration">if set to <c>true</c> [adding new placement configuration].</param>
+        private void gPlacementConfigurationsAddEdit( Guid registrationPlacementConfigurationGuid, bool addingNewPlacementConfiguration )
+        {
+            hfRegistrationPlacementConfigurationGuid.Value = registrationPlacementConfigurationGuid.ToString();
+
+            var registrationTemplatePlacement = RegistrationTemplatePlacementState.FirstOrDefault( a => a.Guid == registrationPlacementConfigurationGuid );
+            if ( registrationTemplatePlacement == null )
+            {
+                registrationTemplatePlacement = new RegistrationTemplatePlacement();
+                registrationTemplatePlacement.Guid = registrationPlacementConfigurationGuid;
+            }
+            
+            tbPlacementConfigurationName.Text = registrationTemplatePlacement.Name;
+            gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId = registrationTemplatePlacement.GroupTypeId;
+
+            var groupType = GroupTypeCache.Get( registrationTemplatePlacement.GroupTypeId );
+            if ( groupType != null )
+            {
+                lPlacementConfigurationGroupTypeReadOnly.Text = groupType.Name;
+            }
+
+            gtpPlacementConfigurationGroupTypeEdit.Visible = addingNewPlacementConfiguration;
+            lPlacementConfigurationGroupTypeReadOnly.Visible = !addingNewPlacementConfiguration;
+
+            cbPlacementConfigurationAllowMultiple.Checked = registrationTemplatePlacement.AllowMultiplePlacements;
+            tbPlacementConfigurationIconCssClass.Text = registrationTemplatePlacement.IconCssClass;
+
+            List<int> sharedGroupIds = RegistrationTemplatePlacementGuidGroupIdsState.GetValueOrNull( registrationPlacementConfigurationGuid ) ?? new List<int>();
+            hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
+
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gPlacementConfigurationSharedGroups.DataBind();
+
+            dlgPlacementConfiguration.Show();
+        }
+
+        /// <summary>
+        /// Handles the EditClick event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gPlacementConfigurations_EditClick( object sender, RowEventArgs e )
+        {
+            gPlacementConfigurationsAddEdit( ( Guid ) e.RowKeyValue, false );
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the gPlacementConfigurations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gPlacementConfigurations_DeleteClick( object sender, RowEventArgs e )
+        {
+            var registrationTemplatePlacement = RegistrationTemplatePlacementState.FirstOrDefault( a => a.Guid == ( Guid ) e.RowKeyValue );
+            if ( registrationTemplatePlacement != null )
+            {
+                RegistrationTemplatePlacementState.Remove( registrationTemplatePlacement );
+
+                BindPlacementConfigurationsGrid();
+            }
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgPlacementConfiguration control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgPlacementConfiguration_SaveClick( object sender, EventArgs e )
+        {
+            var registrationTemplatePlacementGuid = hfRegistrationPlacementConfigurationGuid.Value.AsGuid();
+            var registrationTemplatePlacement = this.RegistrationTemplatePlacementState.Where( a => a.Guid == registrationTemplatePlacementGuid ).FirstOrDefault();
+            if ( registrationTemplatePlacement == null )
+            {
+                registrationTemplatePlacement = new RegistrationTemplatePlacement();
+                registrationTemplatePlacement.Guid = registrationTemplatePlacementGuid;
+                registrationTemplatePlacement.Order = RegistrationTemplatePlacementState.Any() ? RegistrationTemplatePlacementState.Max( d => d.Order ) + 1 : 0;
+                this.RegistrationTemplatePlacementState.Add( registrationTemplatePlacement );
+            }
+
+            registrationTemplatePlacement.Name = tbPlacementConfigurationName.Text;
+            registrationTemplatePlacement.GroupTypeId = gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.Value;
+            registrationTemplatePlacement.IconCssClass = tbPlacementConfigurationIconCssClass.Text;
+            registrationTemplatePlacement.AllowMultiplePlacements = cbPlacementConfigurationAllowMultiple.Checked;
+            RegistrationTemplatePlacementGuidGroupIdsState.AddOrReplace( registrationTemplatePlacement.Guid, hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList() );
+            dlgPlacementConfiguration.Hide();
+
+            BindPlacementConfigurationsGrid();
+        }
+
+        /// <summary>
+        /// Handles the AddClick event of the gPlacementConfigurationSharedGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void gPlacementConfigurationSharedGroups_AddClick( object sender, EventArgs e )
+        {
+            pnlPlacementConfigurationAddSharedGroup.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the gPlacementConfigurationSharedGroups control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gPlacementConfigurationSharedGroups_DeleteClick( object sender, RowEventArgs e )
+        {
+            var sharedGroupIds = hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList();
+            var selectedGroupId = e.RowKeyId;
+            if ( sharedGroupIds.Contains( selectedGroupId ) )
+            {
+                sharedGroupIds.Remove( selectedGroupId );
+                hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
+            }
+
+            BindPlacementConfigurationSharedGroups( sharedGroupIds );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPlacementConfigurationAddSharedGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnPlacementConfigurationAddSharedGroup_Click( object sender, EventArgs e )
+        {
+            nbAddPlacementGroupWarning.Visible = false;
+            var sharedGroupIds = hfPlacementConfigurationSharedGroupIdList.Value.SplitDelimitedValues().AsIntegerList();
+            var selectedGroupId = gpPlacementConfigurationAddSharedGroup.GroupId;
+            if ( selectedGroupId.HasValue )
+            {
+
+                GroupTypeCache groupType = null;
+                if ( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.HasValue )
+                {
+                    groupType = GroupTypeCache.Get( gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId.Value );
+                }
+
+                if ( groupType == null )
+                {
+                    nbAddPlacementGroupWarning.Text = "Please select a group type before adding a group";
+                    nbAddPlacementGroupWarning.Visible = true;
+                    return;
+                }
+
+                var placementGroup = new GroupService( new RockContext() ).Get( selectedGroupId.Value );
+
+                if ( groupType.Id != placementGroup.GroupTypeId )
+                {
+                    nbAddPlacementGroupWarning.Visible = true;
+                    nbAddPlacementGroupWarning.Text = "Group must have group type of " + groupType.Name + ".";
+                    return;
+                }
+
+
+                if ( !sharedGroupIds.Contains( selectedGroupId.Value ) )
+                {
+                    sharedGroupIds.Add( selectedGroupId.Value );
+                    hfPlacementConfigurationSharedGroupIdList.Value = sharedGroupIds.AsDelimited( "," );
+                }
+            }
+
+            pnlPlacementConfigurationAddSharedGroup.Visible = false;
+
+            BindPlacementConfigurationSharedGroups( sharedGroupIds );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPlacementConfigurationAddSharedGroupCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnPlacementConfigurationAddSharedGroupCancel_Click( object sender, EventArgs e )
+        {
+            
+            pnlPlacementConfigurationAddSharedGroup.Visible = false;
+        }
+
+        /// <summary>
+        /// Binds the placement configuration shared groups.
+        /// </summary>
+        /// <param name="sharedGroupIds">The shared group ids.</param>
+        private void BindPlacementConfigurationSharedGroups( List<int> sharedGroupIds )
+        {
+            gPlacementConfigurationSharedGroups.DataSource = new GroupService( new RockContext() ).GetByIds( sharedGroupIds ).OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gPlacementConfigurationSharedGroups.DataBind();
+        }
+
+        #endregion
+
+        
     }
 }

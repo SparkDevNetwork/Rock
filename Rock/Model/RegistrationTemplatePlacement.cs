@@ -14,13 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -75,7 +77,8 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon CSS class.
+        /// Gets or sets the icon CSS class that is defined for the RegistrationTemplatePlacement.
+        /// Use <see cref="GetIconCssClass"/> to get the IconCssClass to use since that GroupType.IconCssClass should be used if this isn't defined
         /// </summary>
         /// <value>
         /// The icon CSS class.
@@ -94,19 +97,13 @@ namespace Rock.Model
         public bool AllowMultiplePlacements { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [is internal].
+        /// Gets or sets a value indicating whether is limited to administration purposes.
         /// </summary>
         /// <value>
         /// <c>true</c> if this registration template placement is internal; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsInternal
-        {
-            get { return _isInternal; }
-            set { _isInternal = value; }
-        }
-        private bool _isInternal = true;
-
+        public bool IsInternal { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the cost.
@@ -140,6 +137,26 @@ namespace Rock.Model
         public virtual GroupType GroupType { get; set; }
 
         #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the Icon CSS class from either <see cref="IconCssClass"/> or from <see cref="GroupType.IconCssClass" />
+        /// </summary>
+        /// <returns></returns>
+        public string GetIconCssClass()
+        {
+            if ( this.IconCssClass.IsNotNullOrWhiteSpace() )
+            {
+                return this.IconCssClass;
+            }
+            else
+            {
+                return GroupTypeCache.Get( this.GroupTypeId ).IconCssClass;
+            }
+        }
+
+        #endregion Methods
     }
 
     #region Entity Configuration
@@ -154,9 +171,8 @@ namespace Rock.Model
         /// </summary>
         public RegistrationTemplatePlacementConfiguration()
         {
-            this.HasRequired( i => i.RegistrationTemplate ).WithMany().HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( false );
+            this.HasRequired( i => i.RegistrationTemplate ).WithMany( t => t.Placements ).HasForeignKey( i => i.RegistrationTemplateId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.GroupType ).WithMany().HasForeignKey( p => p.GroupTypeId ).WillCascadeOnDelete( false );
-
         }
     }
 
