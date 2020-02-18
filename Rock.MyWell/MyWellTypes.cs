@@ -1090,7 +1090,7 @@ namespace Rock.MyWell
             {
                 if ( Data?.IsResponseCodeSuccess() != true )
                 {
-                    return FriendlyMessageHelper.GetFriendlyMessage( Data?.Status );
+                    return FriendlyMessageHelper.GetFriendlyMessage( Data?.Status ?? this.ApiMessage );
                 }
                 else
                 {
@@ -2382,7 +2382,7 @@ namespace Rock.MyWell
         /// <summary>
         /// Status codes that seem to indicate a failure. As of 2020/02/05, not officially documented yet, but see note in <seealso cref="IsFailure"/>
         /// </summary>
-        private static readonly string[] FailureStatusCodes = { "declined", "returned", "late_return", "reversed"};
+        private static readonly string[] FailureStatusCodes = { "declined", "returned", "late_return", "reversed", "voided", "refunded" };
 
         /// <summary>
         /// Determines whether this instance is failure based on <see cref="Status"/> (<seealso cref="FailureStatusCodes"/>) and <see cref="ResponseCode"/>
@@ -2752,9 +2752,12 @@ namespace Rock.MyWell
         ach
     }
 
-    
 
 
+
+    /// <summary>
+    /// 
+    /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum TransactionStatus
     {

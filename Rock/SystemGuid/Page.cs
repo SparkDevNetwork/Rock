@@ -541,7 +541,6 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the Email Analytics page guid
         /// </summary>
-        [RockObsolete("1.10")]
         public const string EMAIL_ANALYTICS = "DF014200-72A3-48A0-A953-E594E5410E36";
 
         /// <summary>
@@ -609,6 +608,74 @@ namespace Rock.SystemGuid
         /// ParentPage: Event Registration
         /// </summary>
         public const string REGISTRATION_INSTANCE = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
+
+        /// <summary>
+        /// Gets the Registration Instance - Discounts page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_DISCOUNTS = "6EE74759-D11B-4911-9BC8-CF23DE5534B2";
+
+        /// <summary>
+        /// Gets the Registration Instance - Fees page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_FEES = "B0576A70-CCB3-4E98-B6C4-3D758DD5F609";
+
+        /// <summary>
+        /// Gets the Registration Instance - Linkages page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_LINKAGES = "8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5";
+
+        /// <summary>
+        /// Gets the Registration Instance - Payments page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_PAYMENTS = "562D6252-D614-4ED4-B602-D8160066611D";
+
+        /// <summary>
+        /// Gets the Registration Instance - Placement Groups page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_PLACEMENT_GROUPS = "0CD950D7-033D-42B1-A53E-108F311DC5BF";
+
+        /// <summary>
+        /// Gets the Registration Instance - Registrants page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_REGISTRANTS = "6138DA76-BD9A-4373-A55C-F88F155E1B13";
+
+        /// <summary>
+        /// Gets the Registration Instance - Registrations page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_REGISTRATIONS = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
+
+        /// <summary>
+        /// Gets the Registration Instance - Wait List page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_WAIT_LIST = "E17883C2-6442-4AE5-B561-2C783F7F89C9";
+
+        /// <summary>
+        /// The registration detail
+        /// </summary>
+        public const string REGISTRATION_DETAIL = "FC81099A-2F98-4EBA-AC5A-8300B2FE46C4";
+
+        /// <summary>
+        /// The registration instance linkage
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_LINKAGE = "DE4B12F0-C3E6-451C-9E35-7E9E66A01F4E";
+
+        /// <summary>
+        /// The registration send payment reminders
+        /// </summary>
+        public const string REGISTRATION_SEND_PAYMENT_REMINDERS = "2828BBCF-B3FC-4707-B063-086748853978";
+
+        /// <summary>
+        /// The registration wait list confirmation
+        /// </summary>
+        public const string REGISTRATION_WAIT_LIST_CONFIRMATION = "4BF84D3F-DE7B-4F8B-814A-1E728E69C105";
 
         /// <summary>
         /// Gets the Exception Detail page guid

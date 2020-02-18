@@ -225,7 +225,7 @@ $('.js-date-rollover').tooltip();
             if ( this.Visible )
             {
                 // panel-drawer div
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-drawer rock-panel-drawer " + CssClass + ( Expanded ? "open" : string.Empty ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-drawer rock-panel-drawer " + CssClass + ( Expanded ? "open" : string.Empty ) );
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

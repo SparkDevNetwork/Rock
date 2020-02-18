@@ -797,7 +797,7 @@ namespace RockWeb
                                                     {
                                                         sqlTxn.Rollback();
                                                     }
-                                                    throw new Exception( string.Format( "Plugin Migration error occurred in {0}, {1}",
+                                                    throw new Exception( string.Format( "##Plugin Migration error occurred in {0}, {1}##",
                                                         assemblyMigrations.Key, migrationType.Value.Name ), ex );
                                                 }
                                             }

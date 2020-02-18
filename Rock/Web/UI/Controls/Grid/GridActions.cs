@@ -53,8 +53,9 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private List<Control> _customActions;
-        private Panel _pnlCustomActions;
+        private PlaceHolder _pnlCustomActions;
         private LinkButton _lbPersonMerge;
+        private LinkButton _lbBusinessMerge;
         private LinkButton _lbBulkUpdate;
         private LinkButton _lbCommunicate;
         private HtmlGenericControl _aAdd;
@@ -264,7 +265,7 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            _pnlCustomActions = new Panel();
+            _pnlCustomActions = new PlaceHolder();
 
             Controls.Add( _pnlCustomActions );
 
@@ -275,6 +276,20 @@ namespace Rock.Web.UI.Controls
                     _pnlCustomActions.Controls.Add( control );
                 }
             }
+
+            // control for person merge
+            _lbBusinessMerge = new LinkButton();
+            Controls.Add( _lbBusinessMerge );
+            _lbBusinessMerge.ID = "lbBusinessMerge";
+            _lbBusinessMerge.CssClass = "btn btn-grid-action btn-merge btn-default btn-sm";
+            _lbBusinessMerge.ToolTip = "Merge Person Records";
+            _lbBusinessMerge.Click += lbPersonMerge_Click;
+            _lbBusinessMerge.CausesValidation = false;
+            _lbBusinessMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbBusinessMerge );
+            HtmlGenericControl iBusinessMerge = new HtmlGenericControl( "i" );
+            iBusinessMerge.Attributes.Add( "class", "fa fa-sign-in-alt fa-fw" );
+            _lbBusinessMerge.Controls.Add( iBusinessMerge );
 
             // control for communicate
             _lbCommunicate = new LinkButton();
@@ -402,7 +417,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the control but only renders custom actions in the once, in the actionFooterRow.
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="renderAsMirrored">if set to <c>true</c> [render as mirrored].</param>
@@ -429,7 +444,8 @@ namespace Rock.Web.UI.Controls
         {
             var rockPage = Page as RockPage;
 
-            _lbPersonMerge.Visible = ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbPersonMerge.Visible = !_parentGrid.IsBusiness && ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbBusinessMerge.Visible = _parentGrid.IsBusiness && ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.BusinessMergePageRoute );
             _lbBulkUpdate.Visible = ShowBulkUpdate && _parentGrid.CanViewTargetPage( _parentGrid.BulkUpdatePageRoute );
 
             if ( ShowCommunicate )

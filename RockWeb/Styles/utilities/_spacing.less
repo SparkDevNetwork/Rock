@@ -261,7 +261,8 @@
 .util-mix-spacing(@breakpoint:"base") {
   .setInfix(@bp) when (@bp = "base") {
     @infix: ~"";
-    .display-order(@infix);
+    .display-spacing-margin(@infix);
+    .display-spacing-padding(@infix);
   }
 
   .setInfix(@bp) when (default()) {
