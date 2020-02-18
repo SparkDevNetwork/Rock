@@ -421,18 +421,18 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 bool saveEmptyValues = primaryFamily != null;
 
                 // Save the adults
-                var adultIds = new List<int>();
-                SaveAdult( ref primaryFamily, adultIds, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dpBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
-                SaveAdult( ref primaryFamily, adultIds, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dpBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
+                var adults = new List<Person>();
+                SaveAdult( ref primaryFamily, adults, 1, hfAdultGuid1, tbFirstName1, tbLastName1, dvpSuffix1, ddlGender1, dpBirthDate1, dvpMaritalStatus1, tbEmail1, pnMobilePhone1, phAttributes1 );
+                SaveAdult( ref primaryFamily, adults, 2, hfAdultGuid2, tbFirstName2, tbLastName2, dvpSuffix2, ddlGender2, dpBirthDate2, dvpMaritalStatus2, tbEmail2, pnMobilePhone2, phAttributes2 );
+
+                bool isNewFamily = false;
 
                 // If two adults were entered, let's check to see if we should assume they're married
-                if ( adultIds.Count == 2 )
+                if ( adults.Count == 2 )
                 {
                     var marriedStatusValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
                     if ( marriedStatusValue != null )
                     {
-                        var adults = personService.Queryable().Where( p => adultIds.Contains( p.Id ) ).ToList();
-
                         // as long as neither of the adults has a marital status
                         if ( !adults.Any( a => a.MaritalStatusValueId.HasValue ) )
                         {
@@ -458,6 +458,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 {
                     // Otherwise, create a new family and save it
                     primaryFamily = CreateNewFamily( familyGroupType.Id, ( tbLastName1.Text.IsNotNullOrWhiteSpace() ? tbLastName1.Text : tbLastName2.Text ) );
+                    isNewFamily = true;
                     groupService.Add( primaryFamily );
                     saveEmptyValues = true;
                 }
@@ -466,18 +467,23 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 _rockContext.SaveChanges();
 
                 // Make sure adults are part of the primary family, and if not, add them.
-                foreach( int id in adultIds )
+                foreach( Person adult in adults )
                 {
-                    var currentFamilyMember = primaryFamily.Members.FirstOrDefault( m => m.PersonId == id );
+                    var currentFamilyMember = primaryFamily.Members.FirstOrDefault( m => m.PersonId == adult.Id );
                     if ( currentFamilyMember == null )
                     {
                         currentFamilyMember = new GroupMember
                         {
                             GroupId = primaryFamily.Id,
-                            PersonId = id,
+                            PersonId = adult.Id,
                             GroupRoleId = adultRoleId,
                             GroupMemberStatus = GroupMemberStatus.Active
                         };
+
+                        if ( isNewFamily )
+                        {
+                            adult.GivingGroupId = primaryFamily.Id;
+                        }
 
                         groupMemberService.Add( currentFamilyMember );
 
@@ -538,6 +544,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 primaryFamily.SaveAttributeValues( _rockContext );
 
                 // Get the adult known relationship groups
+                var adultIds = adults.Select( a => a.Id ).ToList();
                 var knownRelationshipGroupIds = groupMemberService.Queryable()
                     .Where( m =>
                         m.GroupRole.Guid == knownRelationshipOwnerRoleGuid &&
@@ -1244,7 +1251,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
             }
         }
 
-        private void SaveAdult( ref Group primaryFamily, List<int> adultIds, int adultNumber,
+        private void SaveAdult( ref Group primaryFamily, List<Person> adults, int adultNumber,
             HiddenField hfAdultGuid,
             RockTextBox tbFirstName,
             RockTextBox tbLastName,
@@ -1379,7 +1386,7 @@ ORDER BY [Text]", false, "", "Child Relationship", 2, "CanCheckinRelationships" 
                 GetAdultAttributeValues( phAttributes, adult, adultNumber, saveEmptyValues );
                 adult.SaveAttributeValues( _rockContext );
 
-                adultIds.Add( adult.Id );
+                adults.Add( adult );
             }
 
         }
