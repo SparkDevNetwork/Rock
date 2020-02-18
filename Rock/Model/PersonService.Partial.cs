@@ -4020,8 +4020,8 @@ FROM (
 			,p2.[BirthDay]
 		) pf
 	WHERE (
-			p.GivingLeaderId IS NULL
-			OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
+			p.GivingLeaderId = 0
+			OR (p.GivingLeaderId != ISNULL(pf.CalculatedGivingLeaderId, p.Id))
 			)" );
 
             if ( personId.HasValue )
