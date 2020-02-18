@@ -39,11 +39,6 @@ BEGIN
     DECLARE @cADULT_ROLE_GUID UNIQUEIDENTIFIER = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42'
     DECLARE @cTRANSACTION_TYPE_CONTRIBUTION UNIQUEIDENTIFIER = '2D607262-52D6-4724-910D-5C6E8FB89ACC';
     -- --------- END CONFIGURATION --------------
-    DECLARE @ActiveRecordStatusValueId INT = (
-            SELECT TOP 1 [Id]
-            FROM [DefinedValue]
-            WHERE [Guid] = @cACTIVE_RECORD_STATUS_VALUE_GUID
-            )
     DECLARE @PersonRecordTypeValueId INT = (
             SELECT TOP 1 [Id]
             FROM [DefinedValue]
@@ -188,8 +183,7 @@ BEGIN
             AND g.[GroupTypeId] = @FamilyGroupTypeId
         LEFT OUTER JOIN [AttributeValue] era ON era.[EntityId] = p.[Id]
             AND era.[AttributeId] = @IsEraAttributeId
-        WHERE [RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
-            AND [RecordTypeValueId] = @PersonRecordTypeValueId -- person record type (not business)
+        WHERE [RecordTypeValueId] = @PersonRecordTypeValueId -- person record type (not business)
         ) AS t
     WHERE (
             ([IsEra] = 1)

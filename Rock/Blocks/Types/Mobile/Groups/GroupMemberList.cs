@@ -246,7 +246,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// </summary>
         /// <seealso cref="Rock.Web.RockCustomSettingsProvider" />
         [TargetType( typeof( GroupMemberList ) )]
-        public class GroupMemberListCustomSettingsProvider : Web.RockCustomSettingsProvider
+        public class GroupMemberListCustomSettingsProvider : Rock.Web.RockCustomSettingsProvider
         {
             /// <summary>
             /// Gets the custom settings title. Used when displaying tabs or links to these settings.

@@ -14,15 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -49,21 +45,22 @@ namespace Rock.Model
         public int SourceEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId of the <see cref="Rock.Model.EntityType"/> of the source.
+        /// Gets or sets the EntityId of the <see cref="Rock.Model.EntityType" /> of the source.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
+        /// The source entity identifier.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Range( 1, int.MaxValue, ErrorMessage = "SourceEntityId must be greater than zero" )]
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 2 )]
         public int SourceEntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of target entity.
+        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType" /> of target entity.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the target entity.
+        /// The target entity type identifier.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -71,12 +68,13 @@ namespace Rock.Model
         public int TargetEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the EntityId of the <see cref="Rock.Model.EntityType"/> of the target.
+        /// Gets or sets the EntityId of the <see cref="Rock.Model.EntityType" /> of the target.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int32"/> representing the EntityTypeId of the <see cref="Rock.Model.EntityType"/> that this DataView reports on.
+        /// The target entity identifier.
         /// </value>
         [Required]
+        [Range( 1, int.MaxValue, ErrorMessage = "TargetEntityId must be greater than zero" )]
         [DataMember( IsRequired = true )]
         [Index( "IDX_SourceEntityTypeIdSourceEntityIdTargetEntityTypeIdTargetEntityIdPurposeKey", IsUnique = true, Order = 4 )]
         public int TargetEntityId { get; set; }
@@ -144,6 +142,22 @@ namespace Rock.Model
         public virtual EntityType TargetEntityType { get; set; }
 
         #endregion
+    }
+
+    /// <summary>
+    /// see <see cref="RelatedEntity.PurposeKey" />
+    /// </summary>
+    public static class RelatedEntityPurposeKey
+    {
+        /// <summary>
+        /// The group placement for a Registration Instance
+        /// </summary>
+        public const string RegistrationInstanceGroupPlacement = "PLACEMENT";
+
+        /// <summary>
+        /// The group placement for a Registration Template (shared for all of the RegistrationTemplate's Registration Instances)
+        /// </summary>
+        public const string RegistrationTemplateGroupPlacementTemplate = "PLACEMENT-TEMPLATE";
     }
 
     #region Entity Configuration
