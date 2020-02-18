@@ -2752,9 +2752,12 @@ namespace Rock.MyWell
         ach
     }
 
-    
 
 
+
+    /// <summary>
+    /// 
+    /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum TransactionStatus
     {
