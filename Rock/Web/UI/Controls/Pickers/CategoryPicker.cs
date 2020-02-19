@@ -37,7 +37,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
             this.IconCssClass = "fa fa-folder-open";
-            this.AllowCategorySelection = true;
+            this.UseCategorySelection = true;
             base.OnInit( e );
         }
 

@@ -30,6 +30,15 @@
                 });
             });
 
+               // handle onkeypress for the account amount input boxes
+            function handleSearchKeyPress(element, keyCode) {
+                // if Enter was pressed, click the Go button.
+                if (keyCode == 13) {
+                    $('#<%=btnGo.ClientID%>')[0].click();
+                    return false;
+                }
+            }
+
             function isDirty() {
                 if ($('#<%= hfAttendanceDirty.ClientID %>').val() == 'true' || $('#<%= hfPersonDirty.ClientID %>').val() == 'true') {
                     if (confirm('You have not saved your changes. Are you sure you want to continue?')) {
@@ -51,92 +60,6 @@
             }
 
         </script>
-
-        <style>
-        .d-flex {
-            display: flex !important;
-        }
-
-        .position-relative {
-            position: relative !important;
-        }
-
-        .align-items-center {
-            align-items: center !important;
-        }
-
-        .w-100 {
-            width: 100% !important;
-        }
-
-        .flex-column {
-            flex-direction: column !important;
-        }
-
-        .h-100 {
-            height: 100% !important;
-        }
-
-        .flex-grow-1 {
-            flex-grow: 1 !important;
-        }
-
-        .flex-shrink-1 {
-            flex-shrink: 1 !important;
-        }
-
-        .overflow-auto {
-            overflow: auto !important;
-        }
-
-        .d-inline {
-            display: inline !important;
-        }
-
-        .header {
-            background: #f3f3f3;
-            border-bottom: 1px solid #dbdbdb;
-        }
-
-        .sidebar {
-            border-right: 1px solid #dbdbdb;
-        }
-
-        .no-gutters {
-            margin-right: 0;
-            margin-left: 0;
-        }
-
-        .no-gutters > .col,
-        .no-gutters > [class*='col-'] {
-            padding-right: 0;
-            padding-left: 0;
-        }
-
-        .scroll-list {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            overflow: auto;
-        }
-
-        .family-select {
-            padding: 15px 18px;
-            margin-bottom: 12px;
-            border: 1px solid #dbdbdb;
-            color: #484848;
-        }
-
-        .family-select.active {
-            border-color: var(--brand-color);
-        }
-
-        .family-select a {
-            color: #484848 !important;
-        }
-        </style>
 
         <asp:Panel ID="pnlStart" runat="server" Visible="false">
             <div class="panel panel-block">
@@ -177,11 +100,11 @@
                 </div>
                 <div>
                     <asp:HiddenField ID="hfPersonGuid" runat="server" />
-                    <div class="header">
+                    <div class="panel-inline-heading">
                         <div class="row d-flex no-gutters">
-                            <div class="col-md-3 d-flex align-items-center sidebar">
-                                <div class="d-flex w-100 padding-all-sm">
-                                    <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="resource-search js-resource-search flex-grow-1" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" />
+                            <div class="col-md-3 d-flex align-items-center panel-sidebar">
+                                <div class="d-flex width-full padding-all-sm">
+                                    <Rock:RockTextBox ID="tbSearch" runat="server" CssClass="resource-search js-resource-search flex-grow-1" PrependText="<i class='fa fa-search'></i>" Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
                                     <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
                                 </div>
                             </div>
@@ -200,31 +123,34 @@
                     </div>
 
                     <div class="row d-flex no-gutters">
-                        <div class="col-md-3 sidebar styled-scroll">
+                        <div class="col-md-3 panel-sidebar styled-scroll">
                             <div class="d-flex flex-column h-100">
                                 <div class="position-relative flex-column overflow-auto flex-shrink-1 flex-grow-1 h-100">
-                                <div class="scroll-list padding-all-sm">
+                                <div class="abs-scroll-list padding-all-sm">
                                     <asp:Repeater ID="rptResults" runat="server" OnItemCommand="rptResults_ItemCommand">
                                         <ItemTemplate>
-                                            <div class="family-select <%# (bool)Eval("IsActive") ? "" :"is-inactive" %> <%# SelectedPersonId.HasValue && (int)Eval("Id") == SelectedPersonId.Value ? "active" :"" %>">
+                                            <div class="family-select-item <%# (bool)Eval("IsActive") ? "" :"is-inactive" %> <%# SelectedPersonId.HasValue && (int)Eval("Id") == SelectedPersonId.Value ? "active" :"" %>">
                                                 <asp:LinkButton ID="lbPerson" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" CssClass="js-main-event">
                                                 <div>
-                                                        <h5 class="strong d-inline"><%# Eval("Name") %></h5> <%# Eval("Age") %>
+                                                        <h5 class="strong d-inline"><%# Eval("Name") %></h5> <span class="age"><%# Eval("Age") %></span>
+
                                                         <% if ( IsAttendanceEnabled )
                                                             { %>   <i class="fa fa-circle <%# (bool)Eval("IsAttended") ? "text-success":"text-muted" %> pull-right" aria-hidden="true"></i> <% } %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "<span class='label label-campus pull-right margin-r-sm'>"+ Eval("CampusName").ToString() +"</span>" :"" %>
                                                 </div>
-                                                        <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ? Eval("FamilyMemberNames").ToString() +"<br/>" :"" %>
-                                                        <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "Campus: "+ Eval("CampusName").ToString() +"<br/>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ?  "<span class='family-member-names'>"+Eval("FamilyMemberNames").ToString() +"</span>" :"" %>
+                                                    <div class="margin-t-sm small">
                                                         <%# !string.IsNullOrEmpty((string)Eval("Email")) ? Eval("Email").ToString() +"<br/>" :"" %>
                                                         <%# Eval("Address") != null ? Eval("Address.FormattedAddress").ToString() +"<br/>" :"" %>
-                                                        <%# !string.IsNullOrEmpty((string)Eval("Mobile")) ? "M:"+Eval("Mobile").ToString() +"<br/>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("Mobile")) ? "M: "+Eval("Mobile").ToString() +"<br/>" :"" %>
+                                                    </div>
                                                 </asp:LinkButton>
                                             </div>
                                         </ItemTemplate>
                                     </asp:Repeater>
                                     </div>
                                 </div>
-                                <div class="actions mt-auto padding-all-sm">
+                                <div class="actions padding-all-sm padding-t-md">
                                     <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-default btn-block js-main-event" OnClick="lbAddFamily_Click"><i class="fa fa-users"></i> Add Family</asp:LinkButton>
                                 </div>
                             </div>
@@ -272,7 +198,7 @@
                                             <Rock:RockCheckBox ID="cbIsPublic" Label="Public" runat="server" />
                                         </asp:Panel>
                                         <div class="col-md-4">
-                                            <Rock:ButtonDropDownList ID="bddlCategory" runat="server" Label="Prayer Category"></Rock:ButtonDropDownList>
+                                            <Rock:CategoryPicker ID="cpPrayerCategory" runat="server" Label="Prayer Category"  EntityTypeName="Rock.Model.PrayerRequest" />
                                         </div>
                                     </div>
                                 </asp:Panel>
@@ -281,7 +207,7 @@
                                     CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" Text="Save Contact Items" OnClick="bbtnSaveContactItems_Click" />
                                 </div>
                         </asp:Panel>
-                        <asp:Panel ID="pnlEditFamily" runat="server" Visible="false">
+                        <asp:Panel ID="pnlEditFamily" CssClass="padding-all-md" runat="server" Visible="false">
                                 <fieldset>
                                     <h4>Family Edit</h4>
                                     <div class="clearfix">

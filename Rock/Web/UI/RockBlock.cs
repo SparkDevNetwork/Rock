@@ -746,6 +746,26 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Return the current page URL plus any additional parameters
+        /// </summary>
+        /// <param name="additionalQueryParameters">The additional query parameters.</param>
+        /// <returns></returns>
+        public virtual string GetCurrentPageUrl( Dictionary<string, string> additionalQueryParameters = null )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+            if ( additionalQueryParameters != null )
+            {
+                foreach ( var qryParam in additionalQueryParameters )
+                {
+                    pageReference.QueryString[qryParam.Key] = qryParam.Value;
+                }
+            }
+
+            return pageReference.BuildUrl();
+        }
+
+        /// <summary>
         /// If this Attribute is a reference to a PageRoute, this will return the Route, otherwise it will return the normal URL
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
@@ -1275,7 +1295,7 @@ namespace Rock.Web.UI
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}", BlockCache.Id, BlockCache.BlockType.Name ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}&CurrentPageId={2}", BlockCache.Id, BlockCache.BlockType.Name, this.PageCache?.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );

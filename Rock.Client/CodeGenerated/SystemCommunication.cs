@@ -47,6 +47,9 @@ namespace Rock.Client
         public string Cc { get; set; }
 
         /// <summary />
+        public bool CssInliningEnabled { get; set; } = true;
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -63,6 +66,9 @@ namespace Rock.Client
 
         /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public string LavaFieldsJson { get; set; } = @"{}";
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -130,12 +136,14 @@ namespace Rock.Client
             this.Body = source.Body;
             this.CategoryId = source.CategoryId;
             this.Cc = source.Cc;
+            this.CssInliningEnabled = source.CssInliningEnabled;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.From = source.From;
             this.FromName = source.FromName;
             this.IsActive = source.IsActive;
             this.IsSystem = source.IsSystem;
+            this.LavaFieldsJson = source.LavaFieldsJson;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.PushMessage = source.PushMessage;
             this.PushSound = source.PushSound;
@@ -162,6 +170,9 @@ namespace Rock.Client
     {
         /// <summary />
         public Category Category { get; set; }
+
+        /// <summary />
+        public Dictionary<string, string> LavaFields { get; set; }
 
         /// <summary />
         public DefinedValue SMSFromDefinedValue { get; set; }

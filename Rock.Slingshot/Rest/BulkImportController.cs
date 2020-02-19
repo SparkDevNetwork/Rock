@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using Rock.Rest.Filters;
+using Rock.Model;
 
 namespace Rock.Slingshot.Rest.Controllers
 {
@@ -55,6 +56,7 @@ namespace Rock.Slingshot.Rest.Controllers
         public System.Net.Http.HttpResponseMessage GroupImport( [FromBody]List<Rock.Slingshot.Model.GroupImport> groupImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkGroupImport( groupImports, foreignSystemKey );
+            AttributeValueService.UpdateAllValueAsDateTimeFromTextValue();
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
 
@@ -115,6 +117,21 @@ namespace Rock.Slingshot.Rest.Controllers
         }
 
         /// <summary>
+        /// Bulk Import of Business records
+        /// </summary>
+        /// <param name="businessImports">The business imports.</param>
+        /// <returns></returns>
+        [System.Web.Http.Route( "api/BulkImport/BusinessImport" )]
+        [HttpPost]
+        [Authenticate, Secured]
+        public System.Net.Http.HttpResponseMessage BusinessImport( [FromBody]List<Rock.Slingshot.Model.PersonImport> businessImports, string foreignSystemKey )
+        {
+            var responseText = new Slingshot.BulkImporter().BulkBusinessImport( businessImports, foreignSystemKey );
+            AttributeValueService.UpdateAllValueAsDateTimeFromTextValue();
+            return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
+        }
+
+        /// <summary>
         /// Bulk Import of Person records
         /// </summary>
         /// <param name="personImports">The person imports.</param>
@@ -125,9 +142,9 @@ namespace Rock.Slingshot.Rest.Controllers
         public System.Net.Http.HttpResponseMessage PersonImport( [FromBody]List<Rock.Slingshot.Model.PersonImport> personImports, string foreignSystemKey )
         {
             var responseText = new Slingshot.BulkImporter().BulkPersonImport( personImports, foreignSystemKey );
+            AttributeValueService.UpdateAllValueAsDateTimeFromTextValue();
             return ControllerContext.Request.CreateResponse<string>( HttpStatusCode.Created, responseText );
         }
-
         /// <summary>
         /// Bulk Import of Family or Person Photo records
         /// </summary>
@@ -174,7 +191,7 @@ namespace Rock.Slingshot.Rest.Controllers
         /// Bulk Import of Notes
         /// </summary>
         /// <param name="noteImports">The note imports.</param>
-        /// <param name="entityTypeId">The entity type identifier. NOTE: If this is for Rock.Model.Group, make sure to set groupEntityIsFamily if it is a Family GroupType</param>
+        /// <param name="entityTypeId">The entity type identifier. NOTE: If this is for <see cref="Group"/>, make sure to set groupEntityIsFamily if it is a Family GroupType</param>
         /// <param name="foreignSystemKey">The foreign system key.</param>
         /// <param name="groupEntityIsFamily">if set to <c>true</c> [group entity is family]. Only applies if EntityTypeId refers to Rock.Model.Group</param>
         /// <returns></returns>

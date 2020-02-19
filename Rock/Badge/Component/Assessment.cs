@@ -224,6 +224,8 @@ namespace Rock.Badge.Component
 
                     if ( assessmentTest.Status == AssessmentRequestStatus.Pending && previouslyCompletedAssessmentTest == null )
                     {
+                        badgeIcons.AppendLine( $@"<div class='badge {assessmentTypeClass} {assessmentStatusClass}'>" );
+
                         // set the request string and requested datetime to the merged lava
                         mergedBadgeSummaryLava = $"Requested: {assessmentTest.RequestedDateTime.ToShortDateString()}";
                     }

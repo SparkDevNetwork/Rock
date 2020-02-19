@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( StreakTypeAchievementType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<StreakTypeAchievementTypePrerequisite>( Context ).Queryable().Any( a => a.PrerequisiteStreakTypeAchievementTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", StreakTypeAchievementType.FriendlyTypeName, StreakTypeAchievementTypePrerequisite.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

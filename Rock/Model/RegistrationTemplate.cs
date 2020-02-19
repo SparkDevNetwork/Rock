@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
@@ -447,6 +449,8 @@ namespace Rock.Model
         ///   <c>true</c> if [allow group placement]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.10" )]
+        [Obsolete( "No longer used. Replaced by Group Placement feature (RegistrationTemplatePlacement, etc)" )]
         public bool AllowGroupPlacement { get; set; }
 
         /// <summary>
@@ -631,6 +635,21 @@ namespace Rock.Model
         private ICollection<RegistrationTemplateDiscount> _discounts;
 
         /// <summary>
+        /// Gets or sets the placements.
+        /// </summary>
+        /// <value>
+        /// The placements.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<RegistrationTemplatePlacement> Placements
+        {
+            get { return _placements ?? ( _placements = new Collection<RegistrationTemplatePlacement>() ); }
+            set { _placements = value; }
+        }
+
+        private ICollection<RegistrationTemplatePlacement> _placements;
+
+        /// <summary>
         /// Gets or sets the fees.
         /// </summary>
         /// <value>
@@ -700,6 +719,22 @@ namespace Rock.Model
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
+        {
+            if ( state == EntityState.Deleted )
+            {
+                new RegistrationTemplateService( dbContext as RockContext ).RelatedEntities.DeleteRelatedEntities( this );
+            }
+
+            base.PreSaveChanges( dbContext, entry, state );
+        }
 
         /// <summary>
         /// Returns a <see cref="string"/> that represents this instance.

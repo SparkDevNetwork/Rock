@@ -22,6 +22,7 @@
                 // uses https://github.com/uxsolutions/bootstrap-datepicker
                 var datePicker = $datePickerInputGroup.datepicker({
                     format: dateFormat,
+                    assumeNearbyYear: 10,
                     autoclose: true,
                     todayBtn: "linked",
                     forceParse: options.forceParse,
@@ -29,7 +30,8 @@
                     endDate: options.endDate || new Date(8640000000000000),
                     startView: options.startView,
                     showOnFocus: options.showOnFocus,
-                    todayHighlight: options.todayHighlight
+                    todayHighlight: options.todayHighlight,
+                    zIndexOffset: 1050
                 });
 
                 // note: using 'change' instead of datePicker's 'changeDate' so that both manual entry and picking from calender works
