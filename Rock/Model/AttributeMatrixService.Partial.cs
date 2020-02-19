@@ -39,7 +39,9 @@ namespace Rock.Model
 
                 SELECT am.*
                     FROM [dbo].[AttributeMatrix] AS am
+                    LEFT JOIN [dbo].[ConnectionRequest] AS cr ON cr.AssignedGroupMemberAttributeValues LIKE ('%' + CONVERT(nvarchar(36), am.[Guid]) + '%')
                     WHERE (am.[CreatedDateTime] < GETDATE() -1 ) 
+                    AND cr.Id IS NULL -- Not linked to a connection request via AssignedGroupMemberAttributeValues JSON
 	                AND ( NOT (CONVERT(nvarchar(36), am.[Guid]) IN (
 		                SELECT av.[Value] AS [Value]
 		                FROM  [dbo].[AttributeValue] AS av
