@@ -368,10 +368,8 @@ namespace Rock.Jobs
             }
 
             var recipient = new RockSMSMessageRecipient( person, smsNumber, lavaMergeFields );
-            var message = new RockSMSMessage();
+            var message = new RockSMSMessage( reminder );
             message.SetRecipients( new List<RockSMSMessageRecipient>() { recipient } );            
-            message.FromNumber = DefinedValueCache.Get( reminder.SMSFromDefinedValueId.Value );
-            message.Message = reminder.SMSMessage;
             message.Send( out List<string> smsErrors );
 
             if ( !smsErrors.Any() )
