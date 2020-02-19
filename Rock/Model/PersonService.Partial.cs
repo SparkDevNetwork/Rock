@@ -4071,7 +4071,7 @@ FROM (
                 {
                     IsSystem = false,
                     RecordTypeValueId = 1,
-                    RecordStatusReasonValueId = 3,
+                    RecordStatusValueId = 3,
                     ConnectionStatusValueId = 203,
                     IsDeceased = false,
                     FirstName = "Giver",
