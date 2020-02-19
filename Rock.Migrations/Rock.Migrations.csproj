@@ -73,6 +73,10 @@
     <Compile Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.Designer.cs">
       <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002191553196_RegistrationInstanceGroupPlacement.cs" />
+    <Compile Include="Migrations\202002191553196_RegistrationInstanceGroupPlacement.Designer.cs">
+      <DependentUpon>202002191553196_RegistrationInstanceGroupPlacement.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1063,6 +1067,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.resx">
       <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002191553196_RegistrationInstanceGroupPlacement.resx">
+      <DependentUpon>202002191553196_RegistrationInstanceGroupPlacement.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
