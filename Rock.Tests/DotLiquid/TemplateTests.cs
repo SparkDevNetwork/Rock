@@ -8,7 +8,7 @@ namespace Rock.Tests.DotLiquidTests
 {
     public class TemplateTests
     {
-        [Theory]
+        [Theory( Skip = "Outcome dependent upon system resources" )]
         [InlineData(false)]
         [InlineData(true)]
         public void Render_IsThreadSafePropertyValue_DictatesThreadSafety( bool isThreadSafe )
