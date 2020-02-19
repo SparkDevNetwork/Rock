@@ -1183,36 +1183,9 @@ AND [Schedule].[ForeignKey] = '{0}'
                 }
             }
 
+            // WARNING:  Using BulkInsert on AttributeValues will circumvent tgrAttributeValue_InsertUpdate trigger, so
+            // AttributeValueService.UpdateAllValueAsDateTimeFromTextValue() should be executed before we're done.
             rockContext.BulkInsert( attributeValuesToInsert );
-
-            if ( attributeValuesToInsert.Any() )
-            {
-                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-                rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime =
-		CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END
-        where (CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END) is not null
-        and ValueAsDateTime is null
-" );
-            }
 
             // Addresses
             var locationsToInsert = new List<Location>();
@@ -1299,6 +1272,10 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                     {
                         group.ParentGroupId = parentGroupId;
                         groupsUpdated = true;
+                    }
+                    else if ( group.ParentGroupId == parentGroupId )
+                    {
+                        // The group's ParentGroupId is already set correctly, so ignore this.
                     }
                     else
                     {
@@ -1517,20 +1494,23 @@ WHERE gta.GroupTypeId IS NULL" );
                     var personId = personIdLookup.GetValueOrNull( groupMemberImport.PersonForeignId );
                     GroupMember groupMember = group.Members.Where( m => m.Person.ForeignId == groupMemberImport.PersonForeignId && m.Person.ForeignKey == foreignSystemKey ).FirstOrDefault();
 
-                    if ( groupMember == null )
+                    if ( personId != null )
                     {
-                        groupMember = new GroupMember();
-                        groupMember.GroupId = group.Id;
-                        groupMember.GroupRoleId = groupRoleId.Value;
-                        groupMember.PersonId = personId.Value;
-                        groupMember.CreatedDateTime = importDateTime;
-                        groupMember.ModifiedDateTime = importDateTime;
-                        groupMemberService.Add( groupMember );
-                    }
-                    else
-                    {
-                        groupMember.GroupRoleId = groupRoleId.Value;
-                        groupMember.ModifiedDateTime = importDateTime;
+                        if ( groupMember == null )
+                        {
+                            groupMember = new GroupMember();
+                            groupMember.GroupId = group.Id;
+                            groupMember.GroupRoleId = groupRoleId.Value;
+                            groupMember.PersonId = personId.Value;
+                            groupMember.CreatedDateTime = importDateTime;
+                            groupMember.ModifiedDateTime = importDateTime;
+                            groupMemberService.Add( groupMember );
+                        }
+                        else
+                        {
+                            groupMember.GroupRoleId = groupRoleId.Value;
+                            groupMember.ModifiedDateTime = importDateTime;
+                        }
                     }
                 }
 
@@ -1630,6 +1610,18 @@ WHERE gta.GroupTypeId IS NULL" );
         private string _defaultPhoneCountryCode = null;
         private int _recordTypePersonId;
 
+        public class PersonImportResult
+        {
+            public int PersonUpdatesCount;
+            public int PersonUpdatesTime;
+            public int PersonUpdatesCheckTime;
+            public int PersonImportsCount;
+            public int FamilyImportsCount;
+            public int GroupMemberImportsCount;
+            public int PersonImportsTime;
+            public bool ClientDisconnected = false;
+        }
+
         /// <summary>
         /// Bulks the import.
         /// </summary>
@@ -1637,6 +1629,57 @@ WHERE gta.GroupTypeId IS NULL" );
         /// <returns></returns>
         public string BulkPersonImport( List<PersonImport> personImports, string foreignSystemKey )
         {
+            var result = BulkPersonImport( personImports, foreignSystemKey, 0, 0, new PersonImportResult() );
+            return ParsePersonImportResult( result );
+        }
+
+        /// <summary>
+        /// Translates a <see cref="PersonImportResult"/> into a user readable string.
+        /// </summary>
+        /// <param name="result">The <see cref="PersonImportResult"/>.</param>
+        /// <returns>A string suitable for display to users.</returns>
+        public string ParsePersonImportResult( PersonImportResult result )
+        {
+            if ( result.ClientDisconnected )
+            {
+                return "Client Disconnected";
+            }
+
+            StringBuilder sbStats = new StringBuilder();
+            if ( result.PersonUpdatesCount > 0 )
+            {
+                sbStats.AppendLine( $"Check for Person Updates [{result.PersonUpdatesCheckTime}ms]" );
+                sbStats.AppendLine( $"Updated {result.PersonUpdatesCount} Person records [{result.PersonUpdatesTime}ms]" );
+            }
+            else if ( result.PersonImportsCount == 0 )
+            {
+                sbStats.AppendLine( $"Check for Person Updates [{result.PersonUpdatesCheckTime}ms]" );
+                sbStats.AppendLine( $"No Person records need to be updated [{result.PersonUpdatesTime}ms]" );
+            }
+            else if ( result.PersonImportsCount > 0 || result.GroupMemberImportsCount > 0 || result.FamilyImportsCount > 0 )
+            {
+                sbStats.AppendLine( $"Imported {result.PersonImportsCount} People and {result.FamilyImportsCount} Families [{result.PersonImportsTime}ms] and {result.GroupMemberImportsCount} family members");
+            }
+            else
+            {
+                sbStats.AppendLine($"No People were imported or updated. [{result.PersonImportsTime}ms]");
+            }
+
+            return sbStats.ToString();
+        }
+
+        /// <summary>
+        /// Bulks the import.
+        /// </summary>
+        /// <param name="personImports">The person imports.</param>
+        /// <returns></returns>
+        public PersonImportResult BulkPersonImport( List<PersonImport> personImports, string foreignSystemKey, int recordsAlreadyProcessed, int totalRecords, PersonImportResult currentResults )
+        {
+            if ( totalRecords == 0 )
+            {
+                totalRecords = personImports.Count();
+            }
+
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -1651,8 +1694,6 @@ WHERE gta.GroupTypeId IS NULL" );
             int familyChildRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Id;
             _recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             int personSeachKeyTypeAlternateId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
-
-            StringBuilder sbStats = new StringBuilder();
 
             Dictionary<int, Group> familiesLookup = groupService.Queryable().AsNoTracking().Where( a => a.GroupTypeId == familyGroupTypeId && a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey )
                 .ToList().ToDictionary( k => k.ForeignId.Value, v => v );
@@ -1688,21 +1729,20 @@ WHERE gta.GroupTypeId IS NULL" );
 
             int personUpdatesCount = 0;
             long personUpdatesMS = 0;
-            int progress = 0;
-            int total = personImports.Count();
+            int progress = recordsAlreadyProcessed + 0;
 
             foreach ( var personImport in personImports )
             {
                 progress++;
                 if ( progress % 100 == 0 && personUpdatesMS > 0 )
                 {
-                    if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
+                    if (initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true)
                     {
                         // if this was called from a WebRequest (versus a job or utility), quit if the client has disconnected
-                        return "Client Disconnected";
+                        return new PersonImportResult() { ClientDisconnected = true }; //"Client Disconnected"
                     }
 
-                    OnProgress?.Invoke( $"Bulk Importing Person {progress} of {total}..." );
+                    OnProgress?.Invoke( $"Bulk Importing Person {progress} of {totalRecords}..." );
                 }
 
                 Group family = null;
@@ -1769,15 +1809,9 @@ WHERE gta.GroupTypeId IS NULL" );
             if ( personUpdatesMS > 0 || personUpdatesCount > 0 )
             {
                 stopwatch.Stop();
-                sbStats.AppendLine( $"Check for Person Updates [{stopwatch.ElapsedMilliseconds - personUpdatesMS}ms]" );
-                if ( personUpdatesCount > 0 )
-                {
-                    sbStats.AppendLine( $"Updated {personUpdatesCount} Person records [{personUpdatesMS}ms]" );
-                }
-                else
-                {
-                    sbStats.AppendLine( $"No Person records need to be updated [{personUpdatesMS}ms]" );
-                }
+                currentResults.PersonUpdatesCheckTime += ( int ) ( stopwatch.ElapsedMilliseconds - personUpdatesMS );
+                currentResults.PersonUpdatesTime += ( int ) personUpdatesMS;
+                currentResults.PersonUpdatesTime += personUpdatesCount;
                 stopwatch.Restart();
             }
 
@@ -1985,38 +2019,9 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
+            // WARNING:  Using BulkInsert on AttributeValues will circumvent tgrAttributeValue_InsertUpdate trigger, so
+            // AttributeValueService.UpdateAllValueAsDateTimeFromTextValue() should be executed before we're done.
             rockContext.BulkInsert( attributeValuesToInsert );
-
-            if ( attributeValuesToInsert.Any() )
-            {
-                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-                var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime =
-		CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END
-        where (CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END) is not null
-        and ValueAsDateTime is null
-" );
-
-                Debug.WriteLine( "ValueAsDateTime RowsUpdated: " + rowsUpdated.ToString() );
-            }
 
             // since we bypassed Rock SaveChanges when Inserting Person records, sweep thru and ensure the AgeClassification, PrimaryFamily, and GivingLeaderId is set
             PersonService.UpdatePersonAgeClassificationAll( rockContext );
@@ -2024,18 +2029,15 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             PersonService.UpdateGivingLeaderIdAll( rockContext );
 
             stopwatchTotal.Stop();
+            currentResults.PersonImportsTime += ( int ) stopwatchTotal.ElapsedMilliseconds;
             if ( personsToInsert.Any() || groupMemberRecordsToInsertList.Any() || familiesToInsert.Any() )
             {
-                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms] and {groupMemberRecordsToInsertList.Count} family members" );
-            }
-            else
-            {
-                sbStats.AppendLine( $"No People were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+                currentResults.PersonImportsCount += personsToInsert.Count;
+                currentResults.FamilyImportsCount += familiesToInsert.Count;
+                currentResults.GroupMemberImportsCount += groupMemberRecordsToInsertList.Count;
             }
 
-            var responseText = sbStats.ToString();
-
-            return responseText;
+            return currentResults;
         }
 
         /// <summary>
@@ -2600,38 +2602,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                 }
             }
 
+            // WARNING:  Using BulkInsert on AttributeValues will circumvent tgrAttributeValue_InsertUpdate trigger, so
+            // AttributeValueService.UpdateAllValueAsDateTimeFromTextValue() should be executed before we're done.
             rockContext.BulkInsert( attributeValuesToInsert );
-
-            if ( attributeValuesToInsert.Any() )
-            {
-                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-                var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime =
-		CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END
-        where (CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END) is not null
-        and ValueAsDateTime is null
-" );
-
-                Debug.WriteLine( "ValueAsDateTime RowsUpdated: " + rowsUpdated.ToString() );
-            }
 
             // since we bypassed Rock SaveChanges when Inserting Person records, sweep thru and ensure the AgeClassification, PrimaryFamily, and GivingLeaderId is set
             PersonService.UpdatePersonAgeClassificationAll( rockContext );
