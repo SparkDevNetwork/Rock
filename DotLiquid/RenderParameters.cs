@@ -33,8 +33,15 @@ namespace DotLiquid
 			List<Hash> environments = new List<Hash>();
 			if (LocalVariables != null)
 				environments.Add(LocalVariables);
-			environments.Add(template.Assigns);
-			context = new Context(environments, template.InstanceAssigns, template.Registers, RethrowErrors);
+			if (template.IsThreadSafe)
+            {
+                context = new Context(environments, new Hash(), new Hash(), RethrowErrors);
+            }
+            else
+            {
+                environments.Add(template.Assigns);
+                context = new Context(environments, template.InstanceAssigns, template.Registers, RethrowErrors);
+            }
             context.ValueTypeTransformers = ValueTypeTransformers;
 			registers = Registers;
 			filters = Filters;
