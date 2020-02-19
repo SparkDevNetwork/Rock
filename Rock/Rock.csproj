@@ -538,6 +538,7 @@
     <Compile Include="Utility\ExtensionMethods\HttpContextExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
