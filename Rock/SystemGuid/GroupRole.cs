@@ -200,5 +200,19 @@ namespace Rock.SystemGuid
         public const string GROUPROLE_FUNDRAISINGOPPORTUNITY_PARTICIPANT = "F82DF077-9664-4DA8-A3D9-7379B690124D";
 
         #endregion
+
+        #region GROUPTYPE_CAMPUSTEAM
+
+        /// <summary>
+        /// The Administrator group member role for a Campus Team
+        /// </summary>
+        public const string GROUPROLE_CAMPUS_TEAM_ADMINISTRATOR = "07F857ED-C0D7-47B4-AB6C-9AFDFAE2ADD9";
+
+        /// <summary>
+        /// The Pastor group member role for a Campus Team
+        /// </summary>
+        public const string GROUPROLE_CAMPUS_TEAM_PASTOR = "F8C6289B-0E68-4121-A595-A51369404EBA";
+
+        #endregion
     }
 }
