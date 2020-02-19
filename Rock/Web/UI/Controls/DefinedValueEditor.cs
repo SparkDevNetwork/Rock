@@ -332,9 +332,12 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             // Title Row
-            writer.RenderBeginTag( HtmlTextWriterTag.Legend );
-            _lActionTitleDefinedValue.RenderControl( writer );
-            writer.RenderEndTag(); // row 2
+            if ( !string.IsNullOrWhiteSpace( _lActionTitleDefinedValue.Text ) )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Legend );
+                _lActionTitleDefinedValue.RenderControl( writer );
+                writer.RenderEndTag(); // row 2
+            }
 
             // Start FieldSet
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );

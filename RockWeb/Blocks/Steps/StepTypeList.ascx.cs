@@ -641,8 +641,8 @@ namespace RockWeb.Blocks.Steps
                 stepTypesQry = stepTypesQry.Where( a => a.HasEndDate == hasDuration.Value );
             }
 
-            // Sort by: Order
-            stepTypesQry = stepTypesQry.OrderBy( b => b.Order );
+            // Sort by: Order, Id.
+            stepTypesQry = stepTypesQry.OrderBy( b => b.Order ).ThenBy( b => b.Id );
 
             // Retrieve the Step Type data models and create corresponding view models to display in the grid.
             var stepService = new StepService( dataContext );

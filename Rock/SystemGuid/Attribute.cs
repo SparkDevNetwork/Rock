@@ -518,5 +518,29 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_JWT_SEARCH_KEY = "DEECB6D1-E596-4A15-B0DB-B2947B5DB784";
 
         #endregion JWT Config Attributes
+
+        #region Workflow Action Attributes
+
+        /// <summary>
+        /// The Campus workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS = "B07F920E-8450-4D1F-985D-6241E4F5E5CB";
+
+        /// <summary>
+        /// The Campus Role workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_ROLE = "5F8F5E6B-5888-4834-B47B-36664FB3A96C";
+
+        /// <summary>
+        /// The Campus Team Member workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_TEAM_MEMBER = "7CFEDCB2-EA8F-421F-BA5E-B0D8BD10EA92";
+
+        /// <summary>
+        /// The Person workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_PERSON = "C10C4C89-2B91-4D9A-8D5F-A3E65758A878";
+
+        #endregion Workflow Action Attributes
     }
 }

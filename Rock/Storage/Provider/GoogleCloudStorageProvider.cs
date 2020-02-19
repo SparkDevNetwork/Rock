@@ -128,17 +128,16 @@ namespace Rock.Storage.Provider
         /// <returns></returns>
         public override Stream GetContentStream( BinaryFile file )
         {
-            var bucketName = GetBucketName();
             var googleObject = TranslateBinaryFileToGoogleObject( file );
+            var stream = new MemoryStream();
 
             using ( var client = GetStorageClient() )
             {
-                var stream = new MemoryStream();
                 client.DownloadObject( googleObject, stream );
-                stream.Position = 0;
-
-                return stream;
             }
+
+            stream.Position = 0;
+            return stream;
         }
 
         #endregion Provider Component
@@ -148,12 +147,12 @@ namespace Rock.Storage.Provider
         /// <summary>
         /// Gets the path.
         /// </summary>
-        /// <param name="binaryFile">The file.</param>
+        /// <param name="file">The file.</param>
         /// <returns></returns>
-        public override string GetPath( BinaryFile binaryFile )
+        public override string GetPath( BinaryFile file )
         {
             var rootFolder = GetRootFolder();
-            return $"{rootFolder}{binaryFile.FileName}";
+            return $"{rootFolder}{file.Guid}_{file.FileName}";
         }
 
         /// <summary>
@@ -230,7 +229,7 @@ namespace Rock.Storage.Provider
         private GoogleObject TranslateBinaryFileToGoogleObject( BinaryFile binaryFile )
         {
             var bucketName = GetBucketName();
-            var name = GetPath( binaryFile );
+            var name = binaryFile.Path.IsNullOrWhiteSpace() ? GetPath( binaryFile ) : binaryFile.Path;
 
             return new GoogleObject
             {

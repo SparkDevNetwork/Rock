@@ -230,13 +230,12 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Key = AttributeKey.DefaultAllowComments,
         Order = 7 )]
-    [CategoryField(
-        "Category Selection",
-        entityTypeName: "Rock.Model.PrayerRequest",
-        Description = "A top level category. This controls which categories the person can choose from when entering their prayer request.",
+    [BooleanField(
+        "Enable Category Selection",
+        Description = "If enabled, it will allow the individual to choose/change the selected category for the prayer request.  If not enabled, the category selection will not be shown and the default category will be used instead.",
         Category = "Prayer",
-        IsRequired = false,
-        Key = AttributeKey.CategorySelection,
+        DefaultBooleanValue = true,
+        Key = AttributeKey.EnableCategorySelection,
         Order = 8 )]
     #endregion Prayer Block Attribute Settings
     #region Workflows Block Attribute Settings
@@ -401,7 +400,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string DefaultCategory = "DefaultCategory";
             public const string DisplayToPublic = "DisplayToPublic";
             public const string DefaultAllowComments = "DefaultAllowComments";
-            public const string CategorySelection = "CategorySelection";
+            public const string EnableCategorySelection = "CategorySelection";
         }
 
         #endregion Atrribute Keys
@@ -705,7 +704,7 @@ namespace RockWeb.Blocks.CheckIn
                 prayerRequest.ExpirationDate = RockDateTime.Now.AddDays( expireDays );
 
                 Category category = null;
-                int? categoryId = bddlCategory.SelectedValueAsInt();
+                int? categoryId = cpPrayerCategory.SelectedValueAsInt();
                 Guid defaultCategoryGuid = GetAttributeValue( AttributeKey.DefaultCategory ).AsGuid();
                 if ( categoryId == null && !defaultCategoryGuid.IsEmpty() )
                 {
@@ -1610,7 +1609,7 @@ namespace RockWeb.Blocks.CheckIn
                         a.Occurrence.LocationId == groupLocation.LocationId &&
                         a.Occurrence.ScheduleId == _attendanceSettingState.ScheduleId );
 
-                hlAttendance.Text = string.Format( "{0} - {1} - {2}", groupLocation.Location, schedule.Name, _attendanceSettingState.AttendanceDate.ToShortDateString() );
+                hlAttendance.Text = string.Format( "{0} - {1} - {2}", groupLocation.Group.Name, schedule.Name, _attendanceSettingState.AttendanceDate.ToShortDateString() );
                 if ( GetAttributeValue( AttributeKey.AttendanceListPage ).IsNotNullOrWhiteSpace() )
                 {
                     var qryParams = new Dictionary<string, string>();
@@ -1664,6 +1663,12 @@ namespace RockWeb.Blocks.CheckIn
                 attendedPersonIds = GetAttendedPersonIds( rockContext, personIds );
             }
 
+            bool includeCampusName = false;
+            if ( CampusCache.All( false ).Count > 1 )
+            {
+                includeCampusName = true;
+            }
+
             _searchResultsState = new List<SearchResult>();
             foreach ( var person in persons )
             {
@@ -1681,7 +1686,7 @@ namespace RockWeb.Blocks.CheckIn
                         Age = person.Age
                     };
 
-                    if ( person.PrimaryFamily.Campus != null )
+                    if ( includeCampusName && person.PrimaryFamily.Campus != null )
                     {
                         searchResult.CampusName = person.PrimaryFamily.Campus.Name;
                     }
@@ -1770,6 +1775,7 @@ namespace RockWeb.Blocks.CheckIn
             pnlEditFamily.Visible = false;
             pnlMainEntry.Visible = SelectedPersonId.HasValue;
             ShowFamilyActionButton( SelectedPersonId.HasValue );
+            lFamilyDetail.Text = string.Empty;
             if ( SelectedPersonId.HasValue )
             {
                 var searchResult = _searchResultsState.FirstOrDefault( a => a.Id == SelectedPersonId );
@@ -1926,43 +1932,20 @@ namespace RockWeb.Blocks.CheckIn
 
                 tbPrayerRequest.Text = string.Empty;
 
-                var categoryGuid = GetAttributeValue( AttributeKey.CategorySelection );
-                if ( !string.IsNullOrEmpty( categoryGuid ) )
+                cpPrayerCategory.Visible = GetAttributeValue( AttributeKey.EnableCategorySelection ).AsBoolean();
+                if ( cpPrayerCategory.Visible )
                 {
-                    BindPrayerCategories( categoryGuid );
-
                     // set the default category
                     if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DefaultCategory ) ) )
                     {
-
                         Guid defaultCategoryGuid = GetAttributeValue( AttributeKey.DefaultCategory ).AsGuid();
                         var defaultCategoryId = CategoryCache.Get( defaultCategoryGuid ).Id;
-
-                        bddlCategory.SetValue( defaultCategoryId );
+                        cpPrayerCategory.SetValue( defaultCategoryId );
                     }
-                }
-                else
-                {
-                    bddlCategory.Visible = false;
                 }
             }
 
             bbtnSaveContactItems.Visible = pnlPrayerRequest.Visible || rcbWorkFlowTypes.Visible || rcwNotes.Visible;
-        }
-
-        /// <summary>
-        /// Bind the prayer category selector to the correct set of categories.
-        /// </summary>
-        private void BindPrayerCategories( string categoryGuid )
-        {
-            Guid guid = new Guid( categoryGuid );
-
-            var prayerRequestEntityTypeId = EntityTypeCache.GetId( new PrayerRequest().GetType().FullName );
-            bddlCategory.DataSource = new CategoryService( new RockContext() ).GetByEntityTypeId( prayerRequestEntityTypeId )
-                .Where( c => ( c.ParentCategory != null && c.ParentCategory.Guid == guid ) ).AsQueryable().ToList();
-            bddlCategory.DataTextField = "Name";
-            bddlCategory.DataValueField = "Id";
-            bddlCategory.DataBind();
         }
 
         /// <summary>

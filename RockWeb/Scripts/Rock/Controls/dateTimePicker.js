@@ -22,10 +22,12 @@
                 // uses https://github.com/uxsolutions/bootstrap-datepicker
                 $dateTimePickerInputGroup.datepicker({
                     format: dateFormat,
+                    assumeNearbyYear: 10,
                     autoclose: true,
                     todayBtn: "linked",
                     startView: options.startView || 'month',
-                    todayHighlight: options.todayHighlight || true
+                    todayHighlight: options.todayHighlight || true,
+                    zIndexOffset: 1050
                 });
 
                 // if the guest clicks the addon select all the text in the input

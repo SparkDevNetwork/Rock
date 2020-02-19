@@ -1090,7 +1090,7 @@ namespace Rock.MyWell
             {
                 if ( Data?.IsResponseCodeSuccess() != true )
                 {
-                    return FriendlyMessageHelper.GetFriendlyMessage( Data?.Status );
+                    return FriendlyMessageHelper.GetFriendlyMessage( Data?.Status ?? this.ApiMessage );
                 }
                 else
                 {
@@ -2380,30 +2380,90 @@ namespace Rock.MyWell
         }
 
         /// <summary>
-        /// Determines whether this instance is failure.
+        /// Status codes that seem to indicate a failure. As of 2020/02/05, not officially documented yet, but see note in <seealso cref="IsFailure"/>
+        /// </summary>
+        private static readonly string[] FailureStatusCodes = { "declined", "returned", "late_return", "reversed", "voided", "refunded" };
+
+        /// <summary>
+        /// Determines whether this instance is failure based on <see cref="Status"/> (<seealso cref="FailureStatusCodes"/>) and <see cref="ResponseCode"/>
         /// </summary>
         /// <returns>
         ///   <c>true</c> if this instance is failure; otherwise, <c>false</c>.
         /// </returns>
         public bool IsFailure()
         {
-            /* from https://sandbox.gotnpgateway.com/docs/api/#response-codes
+            /* MDP 2020/02/05
+             
+            Failure is implemented by looking at combination of ResponseCode and Status.
+            Email discussion with MyWell helped us reach that conclusion.
+
+            from https://sandbox.gotnpgateway.com/docs/api/#response-codes
                 Response Codes are grouped as follows:
                     100 thru 199 are Approvals and Partial Approvals.
                     200 thru 299 are Declined via the processor.
                     300 thru 399 are Gateway Declines.
                     400 thru 499 are processor rejection errors.
-            */
 
-            if ( this.ResponseCode >= 100 && this.ResponseCode < 200 )
+            and status is the actual result of whether the transaction was settled, failed, pending, etc
+           */
+
+            /* MP 2020/02/06
+
+            From an Email. Here are all the possible response codes and description. They aren't documented yet, but here is what the email said:
+
+            unknown
+                We did not receive a response from the processor's endpoint.
+
+            declined
+              Transaction was not approved.
+
+            authorized
+              An auth only transaction was processed, not yet captured.
+
+            pending_settlement
+              Transaction not yet batch settled.
+
+            settled
+              Transaction has been batch settled.
+
+            voided
+             Transaction was voided before settlement. We initiate an auth reversal behind the scenes on processors that support it.
+
+            reversed
+              Not used.
+
+            refunded
+              Transaction was refunded for the full amount of the sale or captured authorization.
+
+            partially_refunded
+              Transaction was partially refunded for a partial amount of the sale or captured authorization.
+
+            returned
+              ACH transaction did not clear, no settlement.
+
+            late_return
+              ACH transaction was returned after settlement. */
+
+            bool isFailure;
+
+            if ( this.ResponseCode >= 200 )
             {
-                // Response codes 100-199 are considered successful, everything else is a fail
-                return false;
+                // if ResponseCode is 200+ it is a failure, regardless of 'status' (status could be 'settled', but with a ResponseCode of 200+ (decline))
+                // in the Dev sandbox, an example is https://sandbox.gotnpgateway.com/merchant/transaction/detail/bhrgr79erttu0kh14bs0
+                isFailure = true;
+            }
+            else if ( FailureStatusCodes.Contains(this.Status, StringComparer.OrdinalIgnoreCase) )
+            {
+                // if ResponseCode is less than 200, but has a fail status code, it is also a failure
+                isFailure  =  true;
             }
             else
             {
-                return true;
+                // if response_code < 200 and status is not is fail status code, then we can consider transaction as not failed
+                isFailure = false;
             }
+
+            return isFailure;
         }
 
         /// <summary>
@@ -2417,7 +2477,8 @@ namespace Rock.MyWell
 
         /// <summary>
         /// Gets or sets the response code.
-        /// https://sandbox.gotnpgateway.com/docs/api/#response-codes
+        /// Note, this is just the Gateway's initial response code. To get the settle status look at <seealso cref="Status"/>.
+        /// List of response codes is listed at https://sandbox.gotnpgateway.com/docs/api/#response-codes
         /// </summary>
         /// <value>
         /// The response code.
@@ -2679,6 +2740,26 @@ namespace Rock.MyWell
     /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum MyWellPaymentType
+    {
+        /// <summary>
+        /// The card
+        /// </summary>
+        card,
+
+        /// <summary>
+        /// The ach
+        /// </summary>
+        ach
+    }
+
+
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [JsonConverter( typeof( StringEnumConverter ) )]
+    public enum TransactionStatus
     {
         /// <summary>
         /// The card

@@ -199,7 +199,7 @@
                                     SourceTypeName="Rock.Model.StepType, Rock"
                                     PropertyName="AllowManualEditing"
                                     Label="Allow Manual Edit"
-                                    Help="Can the details of this step achievement be modified by the participant?"
+                                    Help="Can the step be manually added or edited?"
                                     Checked="false"
                                     Text="Yes" />
                             </div>

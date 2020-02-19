@@ -686,11 +686,7 @@ namespace Rock.Model
                 var person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
 
                 var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
-                errorMessage = string.Format(
-                    "{0} already belongs to the {1} role for this {2}, and cannot be added again with the same role",
-                    person,
-                    groupRole.Name.ToLower(),
-                    groupType.GroupTerm.ToLower() );
+                errorMessage = $"{person} already belongs to the {groupRole.Name.ToLower()} role for this {groupType.GroupTerm.ToLower()}, and cannot be added again with the same role";
 
                 return false;
             }
@@ -774,12 +770,7 @@ namespace Rock.Model
                 // throw error if above max.. do not proceed
                 if ( roleMembershipAboveMax )
                 {
-                    errorMessage = string.Format(
-                        "The number of {0} for this {1} is above its maximum allowed limit of {2:N0} active {3}.",
-                        groupRole.Name.Pluralize().ToLower(),
-                        groupType.GroupTerm.ToLower(),
-                        groupRole.MaxCount,
-                        groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ) ).ToLower();
+                    errorMessage = $"The number of {groupRole.Name.Pluralize().ToLower()} for this {groupType.GroupTerm.ToLower()} is above its maximum allowed limit of {groupRole.MaxCount:N0} active {groupType.GroupMemberTerm.Pluralize( groupRole.MaxCount == 1 ).ToLower()}.";
                     return false;
                 }
             }
@@ -901,14 +892,13 @@ namespace Rock.Model
                     var entry = rockContext.Entry( this );
                     if ( entry != null )
                     {
-                        var originalActiveStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
-                        var newActiveStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );
+                        var originalStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).OriginalValues["GroupMemberStatus"] );
+                        var newStatus = ( ( GroupMemberStatus? ) rockContext.Entry( this ).CurrentValues["GroupMemberStatus"] );
 
                         hasChanged = rockContext.Entry( this ).Property( "PersonId" )?.IsModified == true
                         || rockContext.Entry( this ).Property( "GroupRoleId" )?.IsModified == true
                         || ( rockContext.Entry( this ).Property( "IsArchived" )?.IsModified == true && !rockContext.Entry( this ).Property( "IsArchived" ).ToStringSafe().AsBoolean() )
-                        || ( rockContext.Entry( this ).Property( "GroupMemberStatus" )?.IsModified == true && !rockContext.Entry( this ).Property( "GroupMemberStatus" ).ToStringSafe().AsBoolean() )
-                        || originalActiveStatus != GroupMemberStatus.Active && newActiveStatus == GroupMemberStatus.Active;
+                        || ( originalStatus != GroupMemberStatus.Active && newStatus == GroupMemberStatus.Active );
                     }
                 }
 
