@@ -1331,6 +1331,8 @@ namespace RockWeb.Blocks.Communication
                                           .OrderBy( x => x.Name )
                                           .ToList();
 
+            cblProperties.Items.Clear();
+
             foreach ( var column in columns )
             {
                 cblProperties.Items.Add( new ListItem { Text = column.Name, Value = column.Key } );
@@ -1347,6 +1349,8 @@ namespace RockWeb.Blocks.Communication
             var columns = availableColumns.Where( x => x.ContentType == PersonDataSourceColumnSourceSpecifier.Attribute )
                                           .OrderBy( x => x.Name )
                                           .ToList();
+
+            lbAttributes.Items.Clear();
 
             foreach ( var column in columns )
             {
