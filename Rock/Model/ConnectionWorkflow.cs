@@ -16,7 +16,9 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -132,7 +134,44 @@ namespace Rock.Model
 
         #endregion
 
+        #region Public Methods
 
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="state">The state.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
+        {
+            if ( state == EntityState.Deleted )
+            {
+                DeleteConnectionRequestWorkflows( dbContext );
+            }
+
+            base.PreSaveChanges( dbContext, state );
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Deletes any connection request workflows tied to this connection workflow.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private void DeleteConnectionRequestWorkflows( Data.DbContext dbContext )
+        {
+            var rockContext = ( RockContext ) dbContext;
+            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
+            var connectionRequestWorkflows = connectionRequestWorkflowService.Queryable().Where( c => c.ConnectionWorkflowId == this.Id );
+
+            if ( connectionRequestWorkflows.Any() )
+            {
+                dbContext.BulkDelete( connectionRequestWorkflows );
+            }
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
