@@ -25,20 +25,14 @@
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
                                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" AutoPostBack="true" EnhanceForLongLists="true" />
-                                    </div>
-                                    <div class="col-md-6">
-                                        <Rock:RockCheckBox ID="cbIncludeDeceased" runat="server" Label="Include Deceased" Visible="false" />
-                                    </div>
-                                </div>
+                                <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged" AutoPostBack="true" EnhanceForLongLists="true" />
                             </div>
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
                                 <Rock:NumberBox ID="nbPersistedScheduleIntervalMinutes" runat="server" NumberType="Integer" Required="false" Label="Persisted Schedule Interval" MinimumValue="1" MaxLength="9" CssClass="input-width-sm"
                                     Help="To persist this dataview, enter how often this dataview should be persisted (in minutes). A persisted dataview can improve performance by writing the filtered results to the database, especially for complex dataviews. Leave this blank to not persist this dataview." />
+                                <Rock:RockCheckBox ID="cbIncludeDeceased" runat="server" Label="Include Deceased" Visible="false" />
                             </div>
                         </div>
 
