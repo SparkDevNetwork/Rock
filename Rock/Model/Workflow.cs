@@ -582,6 +582,11 @@ namespace Rock.Model
                 this.WorkflowIdNumber = maxNumber + 1;
             }
 
+            if ( state == EntityState.Deleted )
+            {
+                DeleteConnectionRequestWorkflows( dbContext );
+            }
+
             base.PreSaveChanges( dbContext, state );
         }
 
@@ -622,6 +627,22 @@ namespace Rock.Model
 
             errorMessages = new List<string>();
             return false;
+        }
+        
+        /// <summary>
+        /// Deletes any connection request workflows tied to this workflow.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private void DeleteConnectionRequestWorkflows( Data.DbContext dbContext )
+        {
+            var rockContext = ( RockContext ) dbContext;
+            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
+            var connectionRequestWorkflows = connectionRequestWorkflowService.Queryable().Where( c => c.WorkflowId == this.Id );
+
+            if ( connectionRequestWorkflows.Any() )
+            {
+                dbContext.BulkDelete( connectionRequestWorkflows );
+            }
         }
 
         #endregion
