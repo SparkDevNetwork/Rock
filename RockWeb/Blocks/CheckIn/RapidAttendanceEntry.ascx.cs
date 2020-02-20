@@ -663,10 +663,17 @@ namespace RockWeb.Blocks.CheckIn
                 var personId = rcbAttendance.Items[i].Value.AsInteger();
                 var person = personService.Get( personId );
 
-                var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.CampusId );
-                if ( !rcbAttendance.Items[i].Selected )
+                if ( rcbAttendance.Items[i].Selected )
                 {
-                    attendance.DidAttend = false;
+                    var attendance = attendanceService.AddOrUpdate( person.PrimaryAliasId.Value, _attendanceSettingState.AttendanceDate, group.Id, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.CampusId );
+                }
+                else
+                {
+                    var attendance = attendanceService.Get( _attendanceSettingState.AttendanceDate, groupLocation.LocationId, _attendanceSettingState.ScheduleId, group.Id, person.Id );
+                    if ( attendance != null )
+                    {
+                        attendanceService.Delete( attendance );
+                    }
                 }
             }
 
