@@ -218,20 +218,14 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            // Initialize JSON Data properties to empty, to prevent syntax errors in the page script.
-            LineChartDataLabelsJSON = "[]";
-            LineChartDataOpensJSON = "[]";
-            LineChartDataClicksJSON = "[]";
-            LineChartDataUnOpenedJSON = "[]";
-            PieChartDataOpenClicksJSON = "[]";
-            PieChartDataClientLabelsJSON = "[]";
-            PieChartDataClientCountsJSON = "[]";
-            SeriesColorsJSON = "[]";
+            InitializeAnalyticsPanelControls();
 
             InitializeInteractionsList();
             InitializeRecipientsList();
 
             InitializeRecipientsFilter();
+
+            InitializeChartScripts();
 
             _EditingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
 
@@ -267,27 +261,48 @@ namespace RockWeb.Blocks.Communication
 
             if ( Page.IsPostBack )
             {
-                // Set the tab page to the parent of the postback control.
-                var targetControl = GetPostBackControl();
+                var argument = Request.Params.Get( "__EVENTARGUMENT" );
 
-                if ( targetControl != null )
+                if ( argument == "ShowPendingRecipients" )
                 {
-                    var parentTab = targetControl.FindFirstParentWhere( x => ( x is WebControl ) && ( ( WebControl ) x ).CssClass == "tab-panel" ) as WebControl;
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Pending );
+                }
+                else if ( argument == "ShowDeliveredRecipients" )
+                {
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Delivered );
+                }
+                else if ( argument == "ShowFailedRecipients" )
+                {
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Failed );
+                }
+                else if ( argument == "ShowCancelledRecipients" )
+                {
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Cancelled );
+                }
+                else
+                {
+                    // Set the tab page to the parent of the postback control.
+                    var targetControl = GetPostBackControl();
 
-                    if ( parentTab != null )
+                    if ( targetControl != null )
                     {
-                        var panelToTabMap = this.GetPanelControlToTabNameMap();
+                        var parentTab = targetControl.FindFirstParentWhere( x => ( x is WebControl ) && ( ( WebControl ) x ).CssClass == "tab-panel" ) as WebControl;
 
-                        if ( _PanelControlToTabNameMap.ContainsKey( parentTab.UniqueID ) )
+                        if ( parentTab != null )
                         {
-                            var panelName = _PanelControlToTabNameMap[parentTab.UniqueID];
+                            var panelToTabMap = this.GetPanelControlToTabNameMap();
 
-                            SetActivePanel( panelName );
+                            if ( _PanelControlToTabNameMap.ContainsKey( parentTab.UniqueID ) )
+                            {
+                                var panelName = _PanelControlToTabNameMap[parentTab.UniqueID];
+
+                                SetActivePanel( panelName );
+                            }
                         }
                     }
-                }
 
-                ShowDialog();
+                    ShowDialog();
+                }
             }
             else
             {
@@ -1012,8 +1027,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The e.</param>
         private void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            SaveRecipientsFilterSettings();
-
             e.Value = GetRecipientsFilterValueDescription( e.Key );
         }
 
@@ -1211,16 +1224,16 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void InitializeRecipientsFilter()
         {
+            // Hook up the filter event handlers.
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
+            rFilter.ClearFilterClick += rFilter_ClearFilterClick;
+
             // If this is a full page load, initialize the filter control and load the filter values.
             if ( !Page.IsPostBack )
             {
                 BindRecipientsFilter();
             }
-
-            // Hook up the filter event handlers.
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
-            rFilter.ClearFilterClick += rFilter_ClearFilterClick;
         }
 
         /// <summary>
@@ -1263,6 +1276,28 @@ namespace RockWeb.Blocks.Communication
             }
 
             return queryParams;
+        }
+
+        /// <summary>
+        /// Initialize controls on the Analytics Pane.
+        /// </summary>
+        private void InitializeAnalyticsPanelControls()
+        {
+            // Initialize Chart Data properties to empty, to prevent syntax errors in the page script.
+            LineChartDataLabelsJSON = "[]";
+            LineChartDataOpensJSON = "[]";
+            LineChartDataClicksJSON = "[]";
+            LineChartDataUnOpenedJSON = "[]";
+            PieChartDataOpenClicksJSON = "[]";
+            PieChartDataClientLabelsJSON = "[]";
+            PieChartDataClientCountsJSON = "[]";
+            SeriesColorsJSON = "[]";
+
+            // Add handlers for postback events.
+            pnlPendingSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlPendingSummary, "ShowPendingRecipients" );
+            pnlDeliveredSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlDeliveredSummary, "ShowDeliveredRecipients" );
+            pnlCancelledSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlCancelledSummary, "ShowCancelledRecipients" );
+            pnlFailedSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlFailedSummary, "ShowFailedRecipients" );
         }
 
         /// <summary>
@@ -1394,10 +1429,10 @@ namespace RockWeb.Blocks.Communication
             {
                 PopulatePersonPropertiesSelectionItems();
                 PopulatePersonAttributesSelectionItems();
-                LoadRecipientListPreferences();
-
-                BindRecipientsGrid();
                 PopulateRecipientFilterSelectionLists();
+
+                LoadRecipientListPreferences();
+                BindRecipientsGrid();
             }
 
             SetActivePanel( _ActivePanel );
@@ -2916,6 +2951,34 @@ namespace RockWeb.Blocks.Communication
             }
 
             return _PanelControlToTabNameMap;
+        }
+
+        /// <summary>
+        /// Display the Recipients List filtered by the specified delivery status.
+        /// </summary>
+        /// <param name="status"></param>
+        private void ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus status )
+        {
+            SetActivePanel( CommunicationDetailPanels.RecipientDetails );
+
+            InitializeActiveCommunication();
+
+            PopulatePersonPropertiesSelectionItems();
+            PopulatePersonAttributesSelectionItems();
+            PopulateRecipientFilterSelectionLists();
+
+            LoadRecipientListPreferences();
+
+            // Set the filter.
+            var settings = GetRecipientsFilterSettings();
+
+            settings[FilterSettingName.DeliveryStatus] = status.ConvertToInt().ToString();
+
+            ApplyRecipientsFilterSettings( settings );
+
+            SaveRecipientsFilterSettings();
+
+            BindRecipientsGrid();
         }
 
         #endregion
