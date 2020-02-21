@@ -39,7 +39,7 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     public abstract class ModelCache<T, TT> : EntityCache<T, TT>, ISecured, IHasAttributes, Lava.ILiquidizable where T : IEntityCache, new()
-        where TT : Model<TT>, ICacheable, new()
+        where TT : Model<TT>, new()
     {
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use SetFromEntity instead")]
+        [Obsolete("Use SetFromEntity instead", true )]
         public virtual void CopyFromModel( Rock.Data.IEntity model )
         {
             this.SetFromEntity( model );
@@ -351,7 +351,7 @@ namespace Rock.Web.Cache
         /// Reloads the attribute values.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed. The Attributes will get reloaded automatically." )]
+        [Obsolete( "No longer needed. The Attributes will get reloaded automatically.", true )]
         public virtual void ReloadAttributeValues()
         {
             using ( var rockContext = new RockContext() )
@@ -383,7 +383,7 @@ namespace Rock.Web.Cache
         /// Loads the attributes.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically." )]
+        [Obsolete( "No longer needed on Cached items. The Attributes will get loaded automatically.", true )]
         public void LoadAttributes()
         {
             ReloadAttributeValues();

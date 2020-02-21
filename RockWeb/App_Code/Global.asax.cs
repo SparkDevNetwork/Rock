@@ -471,7 +471,7 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
-            Context.Items.Add( "Request_Start_Time", RockDateTime.Now );
+            Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
         }
 
         /// <summary>
@@ -797,7 +797,7 @@ namespace RockWeb
                                                     {
                                                         sqlTxn.Rollback();
                                                     }
-                                                    throw new Exception( string.Format( "Plugin Migration error occurred in {0}, {1}",
+                                                    throw new Exception( string.Format( "##Plugin Migration error occurred in {0}, {1}##",
                                                         assemblyMigrations.Key, migrationType.Value.Name ), ex );
                                                 }
                                             }
@@ -807,6 +807,7 @@ namespace RockWeb
                                 catch ( Exception ex )
                                 {
                                     // If an exception occurs in an an assembly, log the error, and continue with next assembly
+                                    System.Diagnostics.Debug.WriteLine( ex.Message );
                                     LogError( ex, null );
                                 }
                             }
@@ -1113,7 +1114,7 @@ namespace RockWeb
 
                             if ( recipients.Any() )
                             {
-                                var message = new RockEmailMessage( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
+                                var message = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.CONFIG_EXCEPTION_NOTIFICATION.AsGuid() );
                                 message.SetRecipients( recipients );
                                 message.Send();
                             }
@@ -1174,26 +1175,7 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-
-                while ( RockQueue.TransactionQueue.Count != 0 )
-                {
-                    ITransaction transaction;
-                    if ( RockQueue.TransactionQueue.TryDequeue( out transaction ) )
-                    {
-                        if ( transaction != null )
-                        {
-                            try
-                            {
-                                transaction.Execute();
-                            }
-                            catch ( Exception ex )
-                            {
-                                LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", transaction.GetType().Name ), ex ), null );
-                            }
-                        }
-                    }
-                }
-
+                RockQueue.Drain( ( ex ) => LogError( ex, null ) );
                 Global.QueueInUse = false;
             }
         }

@@ -1,0 +1,49 @@
+.util-mix-order(@breakpoint:"base") {
+
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .display-order(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .display-order(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+.display-order(@infix) {
+  .order@{infix}-first {
+    order: -1 !important;
+  }
+
+  .order@{infix}-0 {
+    order: 0 !important;
+  }
+
+  .order@{infix}-1 {
+    order: 1 !important;
+  }
+
+  .order@{infix}-2 {
+    order: 2 !important;
+  }
+
+  .order@{infix}-3 {
+    order: 3 !important;
+  }
+
+  .order@{infix}-4 {
+    order: 4 !important;
+  }
+
+  .order@{infix}-5 {
+    order: 5 !important;
+  }
+
+  .order@{infix}-last {
+    order: 6 !important;
+  }
+}

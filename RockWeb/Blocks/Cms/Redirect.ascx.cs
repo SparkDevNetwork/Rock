@@ -26,11 +26,45 @@ namespace RockWeb.Blocks.Cms
     [DisplayName("Redirect")]
     [Category("CMS")]
     [Description("Redirects the page to the URL provided.")]
-    [TextField( "Url", "The path to redirect to <span class='tip tip-lava'></span>.", order:0 )]
-    [CustomDropdownListField("Redirect When", "When the redirect will occur.", "1^Always,2^When On Provided Network,3^When NOT On Provided Network", true, "1", order:1)]
-    [TextField("Network", "The network to compare to in the format of '192.168.0.0/24'. See http://www.ipaddressguide.com/cidr for assistance in calculating CIDR addresses.", false, "", order:2)]
+
+    #region Block Attributes
+
+    [TextField(
+        "Url",
+        Description = "The path to redirect to <span class='tip tip-lava'></span>.",
+        Order = 0,
+        Key = AttributeKey.Url )]
+
+    [CustomDropdownListField(
+        "Redirect When",
+        Description = "When the redirect will occur.",
+        ListSource = "1^Always,2^When On Provided Network,3^When NOT On Provided Network",
+        IsRequired = true,
+        DefaultValue = "1",
+        Order = 1,
+        Key = AttributeKey.RedirectWhen )]
+
+    [TextField(
+        "Network",
+        Description = "The network to compare to in the format of '192.168.0.0/24'. See http://www.ipaddressguide.com/cidr for assistance in calculating CIDR addresses.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.Network )]
+
+    #endregion
     public partial class Redirect : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string Url = "Url";
+            public const string RedirectWhen = "RedirectWhen";
+            public const string Network = "Network";
+        }
+
+        #endregion Attribute Keys
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -54,16 +88,16 @@ namespace RockWeb.Blocks.Cms
         {
             RefreshContent();
         }
-        
+
         private void RefreshContent()
         {
-            string url = GetAttributeValue( "Url" );
-            int redirectOption = GetAttributeValue( "RedirectWhen" ).AsInteger();
-            
+            string url = GetAttributeValue( AttributeKey.Url );
+            int redirectOption = GetAttributeValue( AttributeKey.RedirectWhen ).AsInteger();
+
 
             if ( !string.IsNullOrEmpty( url ) )
             {
-                // if always redirect 
+                // if always redirect
                 if (redirectOption == 1 )
                 {
                     RedirectToUrl( url );
@@ -71,7 +105,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 // check network to determine redirect
-                string network = GetAttributeValue( "Network" );
+                string network = GetAttributeValue( AttributeKey.Network );
 
                 if ( network.IsNullOrWhiteSpace() )
                 {
@@ -94,11 +128,11 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 return;
-                
+
             }
             else
             {
-                nbAlert.Text = "Missing Url value for redirect!";
+                nbAlert.Text = "Missing URL value for redirect!";
             }
         }
 

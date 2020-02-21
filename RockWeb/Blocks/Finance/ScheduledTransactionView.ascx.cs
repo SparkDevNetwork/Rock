@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Finance
 
             base.OnInit( e );
             string script = @"
-    $('a.js-cancel-txn').click(function( e ){
+    $('a.js-cancel-txn').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to cancel this scheduled transaction?', function (result) {
             if (result) {
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Finance
         });
     });
 
-    $('a.js-reactivate-txn').click(function( e ){
+    $('a.js-reactivate-txn').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to reactivate this scheduled transaction?', function (result) {
             if (result) {

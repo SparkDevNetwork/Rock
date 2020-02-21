@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.GroupScheduling
     [BooleanField( "Require Decline Note", "If checked, a custom note response will be required in order to save their decline status.", false, "", 6 )]
 
     [TextField( "Decline Note Title", "A custom title for the decline elaboration note.", false, "Please elaborate on why you cannot attend.", "", 7 )]
-    [SystemEmailField( "Scheduling Response Email", "The system email that will be used for sending responses back to the scheduler.", false, Rock.SystemGuid.SystemEmail.SCHEDULING_RESPONSE, "", 8, "SchedulingResponseEmail" )]
+    [SystemCommunicationField( "Scheduling Response Email", "The system email that will be used for sending responses back to the scheduler.", false, Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE, "", 8, "SchedulingResponseEmail" )]
     [ContextAware( typeof( Rock.Model.Person ) )]
 
     public partial class GroupScheduleConfirmation : Rock.Web.UI.RockBlock
@@ -178,7 +178,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var attendance = e.Item.DataItem as Attendance;
 
             lPendingOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lPendingOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lPendingOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
             btnConfirmAttending.CommandName = "AttendanceId";
             btnConfirmAttending.CommandArgument = attendance.Id.ToString();
             btnDeclineAttending.CommandName = "AttendanceId";
@@ -542,13 +542,13 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
-        /// Gets the occurrence time.
+        /// Gets the occurrence schedule's name.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        /// <returns></returns>
-        protected string GetOccurrenceTime( Attendance attendance )
+        /// <returns>The name of the schedule</returns>
+        protected string GetOccurrenceScheduleName( Attendance attendance )
         {
-            return attendance.Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString();
+            return attendance.Occurrence.Schedule.Name;
         }
 
         /// <summary>

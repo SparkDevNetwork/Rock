@@ -42,31 +42,74 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
 
-    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, order: 0 )]
-    [LinkedPage( "Workflow Detail Page", "Page used to display details about a workflow.", order: 1 )]
-    [LinkedPage( "Workflow Entry Page", "Page used to launch a new workflow of the selected type.", order: 2 )]
-    [LinkedPage( "Group Detail Page", "Page used to display group details.", order: 3 )]
+    #region Block Attributes
 
     [LinkedPage(
-        name:"SMS Link Page",
-        description: "Page that will be linked for SMS enabled phones.",
-        key: AttributeKey.SmsLinkPage,
-        defaultValue: Rock.SystemGuid.Page.NEW_COMMUNICATION,
-        order: 4 )]
-
-    [BadgesField( "Badges", "The badges to display in this block.", false, "", "", 0 )]
+        "Person Profile Page",
+        Description = "Page used for viewing a person's profile. If set a view profile button will show for each group member.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKeys.PersonProfilePage )]
+    [LinkedPage(
+        "Workflow Detail Page",
+        Description = "Page used to display details about a workflow.",
+        Order = 1,
+        Key = AttributeKeys.WorkflowDetailPage )]
+    [LinkedPage(
+        "Workflow Entry Page",
+        Description = "Page used to launch a new workflow of the selected type.",
+        Order = 2,
+        Key = AttributeKeys.WorkflowEntryPage )]
+    [LinkedPage(
+        "Group Detail Page",
+        Description = "Page used to display group details.",
+        Order = 3,
+        Key = AttributeKeys.GroupDetailPage )]
+    [LinkedPage(
+        "SMS Link Page",
+        Description = "Page that will be linked for SMS enabled phones.",
+        Order = 4,
+        DefaultValue = Rock.SystemGuid.Page.NEW_COMMUNICATION,
+        Key = AttributeKeys.SmsLinkPage )]
+    [BadgesField(
+        "Badges",
+        Description = "The badges to display in this block.",
+        IsRequired = false,
+        Order = 5,
+        Key = AttributeKeys.Badges )]
+    [CodeEditorField(
+        "Lava Heading Template",
+        IsRequired = false,
+        Key = AttributeKeys.LavaHeadingTemplate,
+        EditorMode = CodeEditorMode.Lava,
+        Description = "The HTML Content to render above the person’s name. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
+        Order = 6 )]
+    [CodeEditorField(
+        "Lava Badge Bar",
+        IsRequired = false,
+        Key = AttributeKeys.LavaBadgeBar,
+        EditorMode = CodeEditorMode.Lava,
+        Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
+        Order = 7 )]
+    #endregion Block Attributes
     public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
     {
-        /// <summary>
-        /// Keys for the block attributes
-        /// </summary>
-        private static class AttributeKey
+
+        #region Attribute Keys
+
+        private static class AttributeKeys
         {
-            /// <summary>
-            /// Key for the SMS Link Page
-            /// </summary>
+            public const string PersonProfilePage = "PersonProfilePage";
+            public const string WorkflowDetailPage = "WorkflowDetailPage";
+            public const string WorkflowEntryPage = "WorkflowEntryPage";
+            public const string GroupDetailPage = "GroupDetailPage";
             public const string SmsLinkPage = "SmsLinkPage";
+            public const string Badges = "Badges";
+            public const string LavaBadgeBar = "LavaBadgeBar";
+            public const string LavaHeadingTemplate = "LavaHeadingTemplate";
         }
+
+        #endregion Attribute Keys
 
         #region Fields
 
@@ -117,6 +160,8 @@ namespace RockWeb.Blocks.Connection
         {
             base.OnInit( e );
 
+            this.BlockUpdated += Block_BlockUpdated;
+
             gConnectionRequestActivities.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestActivities.Actions.ShowAdd = true;
             gConnectionRequestActivities.Actions.AddClick += gConnectionRequestActivities_Add;
@@ -130,7 +175,7 @@ namespace RockWeb.Blocks.Connection
             rptSearchResult.ItemCommand += rptSearchResult_ItemCommand;
 
             string confirmConnectScript = @"
-    $('a.js-confirm-connect').click(function( e ){
+    $('a.js-confirm-connect').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('This person does not currently meet all of the requirements of the group. Are you sure you want to add them to the group?', function (result) {
             if (result) {
@@ -144,7 +189,7 @@ namespace RockWeb.Blocks.Connection
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.AddConfigurationUpdateTrigger( upDetail );
 
-            string badgeList = GetAttributeValue( "Badges" );
+            string badgeList = GetAttributeValue( AttributeKeys.Badges );
             if ( !string.IsNullOrWhiteSpace( badgeList ) )
             {
                 pnlBadges.Visible = true;
@@ -266,6 +311,16 @@ namespace RockWeb.Blocks.Connection
         #region Events
 
         #region View/Edit Panel Events
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            ShowDetail( PageParameter( "ConnectionRequestId" ).AsInteger(), PageParameter( "ConnectionOpportunityId" ).AsIntegerOrNull() );
+        }
 
         /// <summary>
         /// Handles the Click event of the lbEdit control.
@@ -603,7 +658,7 @@ namespace RockWeb.Blocks.Connection
 
                     ddlTransferOpportunity.Items.Clear();
                     foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
-                        .Where( o => o.Id != connectionRequest.ConnectionOpportunityId ).OrderBy( o => o.Name ) )
+                        .OrderBy( o => o.Name ) )
                     {
                         ddlTransferOpportunity.Items.Add( new ListItem( opportunity.Name, opportunity.Id.ToString().ToUpper() ) );
                     }
@@ -614,7 +669,7 @@ namespace RockWeb.Blocks.Connection
                     rbTransferNoConnector.Checked = false;
 
                     rbTransferCurrentConnector.Text = string.Format( "Current Connector: {0}", connectionRequest.ConnectorPersonAlias != null ? connectionRequest.ConnectorPersonAlias.ToString() : "No Connector" );
-
+                    ddlTransferOpportunity.SetValue( connectionRequest.ConnectionOpportunityId );
                     ddlTransferOpportunity_SelectedIndexChanged( null, null );
                 }
             }
@@ -666,7 +721,7 @@ namespace RockWeb.Blocks.Connection
 
             int? defaultConnectorPersonId = null;
             var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( hfConnectionRequestId.ValueAsInt() );
-            if ( connectionRequest != null )
+            if ( connectionRequest != null && connectionOpportunity != null )
             {
                 defaultConnectorPersonId = connectionOpportunity.GetDefaultConnectorPersonId( connectionRequest.CampusId );
                 if ( defaultConnectorPersonId.HasValue )
@@ -1443,9 +1498,18 @@ namespace RockWeb.Blocks.Connection
 
                 lbConnect.Visible = editAllowed;
                 lbEdit.Visible = editAllowed;
-                lbTransfer.Visible = editAllowed;
                 gConnectionRequestActivities.IsDeleteEnabled = editAllowed;
                 gConnectionRequestActivities.Actions.ShowAdd = editAllowed;
+
+                // Only show transfer if there are other Opportunities
+                if ( connectionOpportunity.ConnectionType.ConnectionOpportunities.Count > 1)
+                {
+                    lbTransfer.Visible = editAllowed;
+                }
+                else
+                {
+                    lbTransfer.Visible = false;
+                }
 
                 if ( !editAllowed )
                 {
@@ -1493,6 +1557,11 @@ namespace RockWeb.Blocks.Connection
                 lbTransfer.Visible = false;
             }
 
+            if ( connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities.Count <= 1 )
+            {
+                lbTransfer.Visible = false;
+            }
+
             lContactInfo.Text = string.Empty;
 
             Person person = null;
@@ -1504,15 +1573,15 @@ namespace RockWeb.Blocks.Connection
             if ( person != null && ( person.PhoneNumbers.Any() || !String.IsNullOrWhiteSpace( person.Email ) ) )
             {
                 List<String> contactList = new List<string>();
-                var hasSmsLink = GetAttributeValue( AttributeKey.SmsLinkPage ).IsNotNullOrWhiteSpace();
-                
+                var hasSmsLink = GetAttributeValue( AttributeKeys.SmsLinkPage ).IsNotNullOrWhiteSpace();
+
                 foreach ( PhoneNumber phoneNumber in person.PhoneNumbers )
                 {
                     var smsAnchor = string.Empty;
 
                     if ( hasSmsLink && phoneNumber.IsMessagingEnabled )
                     {
-                        var smsLink = LinkedPageUrl( AttributeKey.SmsLinkPage, new Dictionary<string, string> {
+                        var smsLink = LinkedPageUrl( AttributeKeys.SmsLinkPage, new Dictionary<string, string> {
                             { "Person", person.Id.ToString() } } );
                         smsAnchor = string.Format( @"<a href=""{0}""><i class=""fa fa-comments""></i></a>", smsLink );
                     }
@@ -1529,20 +1598,20 @@ namespace RockWeb.Blocks.Connection
                     contactList.Add( emailTag );
                 }
 
-                lContactInfo.Text = contactList.AsDelimited( "</br>" );
+                lContactInfo.Text = contactList.AsDelimited( "<br>" );
             }
             else
             {
                 lContactInfo.Text = "No contact Info";
             }
 
-            if ( person != null && !string.IsNullOrWhiteSpace( GetAttributeValue( "PersonProfilePage" ) ) )
+            if ( person != null && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKeys.PersonProfilePage ) ) )
             {
                 lbProfilePage.Visible = true;
 
                 Dictionary<string, string> queryParms = new Dictionary<string, string>();
                 queryParms.Add( "PersonId", person.Id.ToString() );
-                lbProfilePage.PostBackUrl = LinkedPageUrl( "PersonProfilePage", queryParms );
+                lbProfilePage.NavigateUrl = LinkedPageUrl( "PersonProfilePage", queryParms );
             }
             else
             {
@@ -1670,6 +1739,17 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
+                // Resolve the text field merge fields
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
+                mergeFields.Add( "ConnectionRequest", connectionRequest );
+                if ( person != null )
+                {
+                    mergeFields.Add( "Person", person );
+                }
+
+                lHeading.Text = GetAttributeValue( AttributeKeys.LavaHeadingTemplate ).ResolveMergeFields( mergeFields );
+                lBadgeBar.Text = GetAttributeValue( AttributeKeys.LavaBadgeBar ).ResolveMergeFields( mergeFields );
+
                 avcAttributesReadOnly.AddDisplayControls( connectionRequest, Rock.Security.Authorization.VIEW, this.CurrentPerson );
 
                 BindConnectionRequestActivitiesGrid( connectionRequest, new RockContext() );
@@ -1794,7 +1874,7 @@ namespace RockWeb.Blocks.Connection
                 // Build list of groups
                 var groups = new List<Group>();
 
-                // First add any groups specifically configured for the opportunity 
+                // First add any groups specifically configured for the opportunity
                 var opportunityGroupIds = connectionRequest.ConnectionOpportunity.ConnectionOpportunityGroups.Select( o => o.Id ).ToList();
                 if ( opportunityGroupIds.Any() )
                 {
@@ -2271,7 +2351,7 @@ namespace RockWeb.Blocks.Connection
                 if ( connectionRequest != null &&
                     connectionRequest.ConnectionOpportunity != null )
                 {
-                    // Parse the attribute filters 
+                    // Parse the attribute filters
                     SearchAttributes = new List<AttributeCache>();
 
                     int entityTypeId = new ConnectionOpportunity().TypeId;

@@ -549,7 +549,7 @@
                 });
 
                 // add autoscroll capabilities during dragging
-                $(window).mousemove(function (e) {
+                $(window).on('mousemove', function (e) {
                     if (self.resourceListDrake.dragging) {
                         // editor scrollbar
                         // automatically scroll the editor (inner scrollbar) if the mouse gets within 10% of the top or 10% of the bottom while dragger

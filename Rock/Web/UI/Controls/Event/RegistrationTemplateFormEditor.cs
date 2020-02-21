@@ -133,7 +133,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // activity animation
-$('.template-form > header').click(function () {
+$('.template-form > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -144,12 +144,12 @@ $('.template-form > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
-$('.template-form a.js-activity-delete').click(function (event) {
+$('.template-form a.js-activity-delete').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event
-$('.template-form a.template-form-reorder').click(function (event) {
+$('.template-form a.template-form-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 

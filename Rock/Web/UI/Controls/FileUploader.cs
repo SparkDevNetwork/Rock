@@ -451,7 +451,7 @@ namespace Rock.Web.UI.Controls
         Bindable( true ),
         Category( "Behavior" ),
         DefaultValue( "true" ),
-        Description( "The Url where files will be uploaded to" )
+        Description( "The URL where files will be uploaded to" )
         ]
         public string UploadUrl
         {
@@ -472,6 +472,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the upload button text.
+        /// </summary>
+        /// <value>
+        /// The upload button text.
+        /// </value>
         public string UploadButtonText
         {
             get

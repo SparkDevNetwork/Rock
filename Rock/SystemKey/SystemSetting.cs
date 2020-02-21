@@ -19,10 +19,21 @@ using System;
 namespace Rock.SystemKey
 {
     /// <summary>
-    /// System file types.  
+    /// This class holds Rock's well known System Setting keys.
     /// </summary>
     public class SystemSetting
     {
+        /// <summary>
+        /// This system setting's guid represents a unique identifier for each installation of Rock.
+        /// The value it stores is the current version of Rock for that installation.
+        /// </summary>
+        public const string ROCK_INSTANCE_ID = "RockInstanceId";
+
+        /// <summary>
+        /// Holds the System Setting key for the sample data load date/time.
+        /// </summary>
+        public const string SAMPLEDATA_DATE = "com.rockrms.sampledata.datetime";
+
         /// <summary>
         /// Percent Confidence threshold for automatically setting gender based on a name
         /// </summary>
@@ -89,6 +100,11 @@ namespace Rock.SystemKey
         public const string ENABLE_MULTI_TIME_ZONE_SUPPORT = "core_EnableMultiTimeZoneSupport";
 
         /// <summary>
+        /// The day of the week that is considered the 'Start Day' (First Day Of week). This is used to compute 'SundayDate'. Default is Monday.
+        /// </summary>
+        public const string START_DAY_OF_WEEK = "core_StartDayOfWeek";
+
+        /// <summary>
         /// Enable a redis cache cluster
         /// </summary>
         public const string REDIS_ENABLE_CACHE_CLUSTER = "EnableRedisCacheCluster";
@@ -97,7 +113,7 @@ namespace Rock.SystemKey
         /// The redis connection string
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.")]
+        [Obsolete("Use REDIS_ENDPOINT_LIST, REDIS_PASSWORD, and REDIS_DATABASE_NUMBER instead.", true )]
         public const string REDIS_CONNECTION_STRING = "RedisConnectionString";
 
         /// <summary>

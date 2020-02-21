@@ -40,20 +40,60 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
+    /// The main Person Profile block the main information about a person
     /// </summary>
     [DisplayName( "Edit Person" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to edit a person." )]
-    [SecurityAction( "EditFinancials", "The roles and/or users that can edit financial information for the selected person." )]
-    [SecurityAction( "EditSMS", "The roles and/or users that can edit the SMS Enabled properties for the selected person." )]
-    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected person." )]
-    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected person." )]
-    [BooleanField( "Hide Grade", "Should the Grade (and Graduation Year) fields be hidden?", false, "", 0 )]
-    [BooleanField( "Hide Anniversary Date", "Should the Anniversary Date field be hidden?", false, "", 1 )]
-    [CustomEnhancedListField( "Search Key Types", "Optional list of search key types to limit the display in search keys grid. No selection will show all.", @"
+
+    [SecurityAction( SecurityActionKey.EditFinancials, "The roles and/or users that can edit financial information for the selected person." )]
+    [SecurityAction( SecurityActionKey.EditSMS, "The roles and/or users that can edit the SMS Enabled properties for the selected person." )]
+    [SecurityAction( SecurityActionKey.EditConnectionStatus, "The roles and/or users that can edit the connection status for the selected person." )]
+    [SecurityAction( SecurityActionKey.EditRecordStatus, "The roles and/or users that can edit the record status for the selected person." )]
+
+    #region Block Attributes
+
+    [BooleanField(
+        "Hide Grade",
+        Key = AttributeKey.HideGrade,
+        Description = "Should the Grade (and Graduation Year) fields be hidden?",
+        DefaultBooleanValue = false,
+        Order = 0 )]
+
+    [BooleanField(
+        "Hide Anniversary Date",
+        Key = AttributeKey.HideAnniversaryDate,
+        Description = "Should the Anniversary Date field be hidden?",
+        DefaultBooleanValue = false,
+        Order = 1 )]
+
+    [CustomEnhancedListField(
+        "Search Key Types",
+        Key = AttributeKey.SearchKeyTypes,
+        Description = "Optional list of search key types to limit the display in search keys grid. No selection will show all.",
+        ListSource = ListSource.SearchKeyTypes,
+        IsRequired = false,
+        Order = 2 )]
+
+    #endregion Block Attributes
+
+    public partial class EditPerson : Rock.Web.UI.PersonBlock
+    {
+
+        #region Attribute Keys and Values
+
+        private static class AttributeKey
+        {
+            public const string HideGrade = "HideGrade";
+            public const string HideAnniversaryDate = "HideAnniversaryDate";
+            public const string SearchKeyTypes = "SearchKeyTypes";
+        }
+
+        private static class ListSource
+        {
+            public const string SearchKeyTypes = @"
         DECLARE @AttributeId int = (
-	        SELECT [Id] 
+	        SELECT [Id]
 	        FROM [Attribute]
 	        WHERE [Guid] = '15C419AA-76A9-4105-AB99-8384AB0E9B44'
         )
@@ -62,17 +102,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	        V.[Value] AS [Text]
         FROM [DefinedType] T
         INNER JOIN [DefinedValue] V ON V.[DefinedTypeId] = T.[Id]
-        LEFT OUTER JOIN [AttributeValue] AV 
+        LEFT OUTER JOIN [AttributeValue] AV
 	        ON AV.[EntityId] = V.[Id]
 	        AND AV.[AttributeId] = @AttributeId
 	        AND AV.[Value] = 'False'
         WHERE T.[Guid] = '61BDD0E3-173D-45AB-9E8C-1FBB9FA8FDF3'
         AND AV.[Id] IS NULL
         ORDER BY V.[Order]
-",
-        false, "", "", 2 )]
-    public partial class EditPerson : Rock.Web.UI.PersonBlock
-    {
+";
+        }
+
+        #endregion Attribute Keys and Values
+
         #region Security Actions
 
         /// <summary>
@@ -80,7 +121,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private static class SecurityActionKey
         {
+            public const string EditFinancials = "EditFinancials";
             public const string EditSMS = "EditSMS";
+            public const string EditConnectionStatus = "EditConnectionStatus";
+            public const string EditRecordStatus = "EditRecordStatus";
         }
 
         #endregion
@@ -109,13 +153,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dvpRecordStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ).Id;
             dvpReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
 
-            pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( "EditFinancials" );
+            pnlGivingGroup.Visible = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditFinancials );
 
-            bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            bool canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditConnectionStatus );
             dvpConnectionStatus.Visible = canEditConnectionStatus;
             lConnectionStatusReadOnly.Visible = !canEditConnectionStatus;
 
-            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            bool canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditRecordStatus );
             dvpRecordStatus.Visible = canEditRecordStatus;
             lRecordStatusReadOnly.Visible = !canEditRecordStatus;
 
@@ -136,7 +180,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
             string smsScript = @"
-    $('.js-sms-number').click(function () {
+    $('.js-sms-number').on('click', function () {
         if ($(this).is(':checked')) {
             $('.js-sms-number').not($(this)).prop('checked', false);
         }
@@ -155,8 +199,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             gSearchKeys.Actions.ShowAdd = true;
             gSearchKeys.Actions.AddClick += gSearchKeys_AddClick;
 
-            pnlGradeGraduation.Visible = !GetAttributeValue( "HideGrade" ).AsBoolean();
-            dpAnniversaryDate.Visible = !GetAttributeValue( "HideAnniversaryDate" ).AsBoolean();
+            pnlGradeGraduation.Visible = !GetAttributeValue( AttributeKey.HideGrade ).AsBoolean();
+            dpAnniversaryDate.Visible = !GetAttributeValue( AttributeKey.HideAnniversaryDate ).AsBoolean();
         }
 
         /// <summary>
@@ -650,7 +694,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( dt != null )
             {
                 var values = dt.DefinedValues;
-                var searchTypesList = this.GetAttributeValue( "SearchKeyTypes" ).SplitDelimitedValues().AsGuidList();
+                var searchTypesList = this.GetAttributeValue( AttributeKey.SearchKeyTypes ).SplitDelimitedValues().AsGuidList();
                 if ( searchTypesList.Any() )
                 {
                     values = values.Where( v => searchTypesList.Contains( v.Guid ) ).ToList();
@@ -991,7 +1035,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         protected void ShowAnniversaryDate()
         {
-            if ( GetAttributeValue( "HideAnniversaryDate" ).AsBoolean() == true )
+            if ( GetAttributeValue( AttributeKey.HideAnniversaryDate ).AsBoolean() == true )
             {
                 dpAnniversaryDate.Visible = false;
             }

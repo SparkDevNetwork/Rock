@@ -41,9 +41,40 @@ namespace RockWeb.Blocks.Crm
     [Category("CMS")]
     [Description("Displays the details for a specific short link.")]
 
-    [IntegerField( "Minimum Token Length", "The minimum number of characters for the token.", false, 7, "", 0 )]
+    #region Block Attributes
+
+    [IntegerField(
+        "Minimum Token Length",
+        Key = AttributeKey.MinimumTokenLength,
+        Description = "The minimum number of characters for the token.",
+        IsRequired = false,
+        DefaultIntegerValue = 7,
+        Order = 0)]
+
+    #endregion Block Attributes
     public partial class ShortLinkDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string MinimumTokenLength = "MinimumTokenLength";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string ShortLinkId = "ShortLinkId";
+        }
+
+        #endregion Page Parameter Keys
+
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -69,7 +100,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "ShortLinkId" ).AsInteger() );
+                ShowDetail( PageParameter( PageParameterKey.ShortLinkId ).AsInteger() );
             }
         }
 
@@ -126,7 +157,7 @@ namespace RockWeb.Blocks.Crm
                         errors.Add( "Please select a valid site." );
                     }
 
-                    int minTokenLength = GetAttributeValue( "MinimumTokenLength" ).AsIntegerOrNull() ?? 7;
+                    int minTokenLength = GetAttributeValue( AttributeKey.MinimumTokenLength ).AsIntegerOrNull() ?? 7;
                     if ( token.IsNullOrWhiteSpace() || token.Length < minTokenLength )
                     {
                         errors.Add( string.Format( "Please enter a token that is a least {0} characters long.", minTokenLength ) );

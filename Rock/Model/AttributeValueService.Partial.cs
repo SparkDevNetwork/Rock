@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Linq;
+using Rock.Data;
 
 namespace Rock.Model
 {
@@ -77,6 +78,61 @@ namespace Rock.Model
                     !v.EntityId.HasValue )
                 .FirstOrDefault();
         }
+
+        #region Static Methods
+
+        /// <summary>
+        /// Updates all AttributeValues to move date values from the [Value] field to the [ValueAsDateTime] field.  Temporarily adjusts the
+        /// RockContext.Database.CommandTimeout property to ensure that the command completes without a timeout.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        /// <param name="commandTimeout">The CommandTimeout property to set (default 120).</param>
+        /// <returns>The number of records affected.</returns>
+        public static int UpdateAllValueAsDateTimeFromTextValue( RockContext rockContext = null, int commandTimeout = 120 )
+        {
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+            }
+
+            var updateSql = @"
+                -- Disable trigger before updating the table, or else SQL will update each column twice.
+                DISABLE TRIGGER [tgrAttributeValue_InsertUpdate] ON [AttributeValue];
+
+                -- Update the [ValueAsDateTime] field for every row that has a date value in the [Value] field, but has a NULL value in the [ValueAsDateTime] field.
+                UPDATE	[AttributeValue]
+                SET		[AttributeValue].[ValueAsDateTime] =
+	                CASE WHEN [Value] LIKE '____-__-__T%__:__:%' THEN
+		                ISNULL(TRY_CAST(TRY_CAST(LEFT([Value],19) AS DATETIMEOFFSET) AS DATETIME) , TRY_CAST([Value] AS DATETIME))
+	                ELSE
+		                TRY_CAST([Value] AS DATETIME)
+	                END
+                FROM	[AttributeValue]
+                WHERE	[ValueAsDateTime] IS NULL
+	                AND	[Value] IS NOT NULL
+	                AND [Value] <> ''
+	                AND	LEN([Value]) < 50
+	                AND	ISNUMERIC([Value]) = 0
+	                AND ([Value] LIKE '____-__-__T%__:__:%' OR TRY_CAST([Value] AS DATETIME) IS NOT NULL);
+
+                -- Reenable the trigger.
+                ENABLE TRIGGER [tgrAttributeValue_InsertUpdate] ON [AttributeValue];
+            ";
+
+            // Store current CommandTimeout setting and change it to 120 seconds.
+            var currentTimeoutSetting = rockContext.Database.CommandTimeout;
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            // Execute SQL command.
+            var recordsAffected =  rockContext.Database.ExecuteSqlCommand( updateSql );
+
+            // Return CommandTimeout to previous setting.
+            rockContext.Database.CommandTimeout = currentTimeoutSetting;
+
+            return recordsAffected;
+        }
+
+        #endregion Static Methods
 
     }
 }

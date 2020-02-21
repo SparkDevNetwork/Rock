@@ -62,6 +62,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_100_ATTRIBUTEVALUE_VALUEASNUMERIC = "0A7573C9-D977-4A7E-BDD6-66DD36CBF6F3";
 
         /// <summary>
+        /// The Job to run Post v10.0 Data Migrations for SundayDate
+        /// </summary>
+        public const string DATA_MIGRATIONS_100_SUNDAYDATE = "CC263453-B290-4393-BB91-1C1C87CAE291";
+
+        /// <summary>
         /// The Job to run Post v9 Data Migrations to convert Scheduled Transaction Notes to History
         /// </summary>
         public const string DATA_MIGRATIONS_90_SCHEDULEDTRANSACTIONNOTESTOHISTORY = "6707AA98-7CF8-4258-A75A-0881CD68B0D9";
@@ -77,22 +82,13 @@ namespace Rock.SystemGuid
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
 
         /// <summary>
-        /// The Job to Migrate pre-v7.0 PageViews and Communication Recipient Activity to Interactions
-        /// </summary>
-        public static string MIGRATE_INTERACTIONS_DATA = "189AE3F1-92E9-4394-ACC5-0F244967F32E";
-
-        /// <summary>
-        /// The job to migrate pre-v7.0 Communication Medium data from JSON to regular fields
-        /// </summary>
-        public static string MIGRATE_COMMUNICATION_MEDIUM_DATA = "E7C54AAB-451E-4E89-8083-CF398D37416E";
-
-        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";
 
         /// <summary>
-        /// The Job to Rebuild a Sequence.
+        /// The Job to Rebuild a Sequence. This job has been deleted and replaced with
+        /// <see cref="Rock.Transactions.StreakTypeRebuildTransaction" />
         /// </summary>
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
 

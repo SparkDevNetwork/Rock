@@ -115,11 +115,11 @@ namespace RockWeb.Blocks.Prayer
         {
             // script for handling the "+add" note button.
             string script = @"
-    $('a.add-note').click(function () {
+    $('a.add-note').on('click', function () {
         $(this).parent().siblings('.widget-content').children('.note-entry').slideToggle(""slow"");
     });
-    
-    $('a.add-note-cancel').click(function () {
+
+    $('a.add-note-cancel').on('click', function () {
         $(this).parent().siblings('.note').children('textarea').val('');
         $(this).parent().parent().slideToggle(""slow"");
     });

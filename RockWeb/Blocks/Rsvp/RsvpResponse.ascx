@@ -3,10 +3,10 @@
 <asp:UpdatePanel ID="pnlContent" runat="server">
     <ContentTemplate>
 
-        <div class="panel panel-block">
+        <div class="panel panel-default">
 
             <asp:Panel ID="pnlHeading" runat="server" CssClass="panel-heading">
-                <h1 class="panel-title pull-left">
+                <h1 class="panel-title">
                     <i class="fa fa-user-check"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="RSVP for Event" />
                 </h1>
@@ -23,6 +23,8 @@
                         Sorry, this event RSVP is no longer active.
                     </Rock:NotificationBox>
                 </asp:Panel>
+
+                <asp:ValidationSummary ID="valSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
 
                 <asp:Panel ID="pnlForm" runat="server" Visible="false">
                     <div class="row">
@@ -87,7 +89,7 @@
 
                     <asp:Repeater ID="rptrValues" runat="server" OnItemDataBound="rptrValues_ItemDataBound">
                         <ItemTemplate>
-                            <div class="defined-type-checklist">
+                            <div class="js-rsvp-item">
                                 <article class="panel panel-widget checklist-item">
                                     <header class="panel-heading clearfix">
                                         <asp:HiddenField ID="hfOccurrenceId" runat="server" Value='<%# Eval("OccurrenceId") %>' />

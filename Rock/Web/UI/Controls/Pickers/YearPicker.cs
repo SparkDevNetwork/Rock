@@ -20,7 +20,7 @@ using System.Web.UI;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a year
     /// </summary>
     public class YearPicker : RockTextBox
     {

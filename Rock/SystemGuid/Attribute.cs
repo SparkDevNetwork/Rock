@@ -342,7 +342,7 @@ namespace Rock.SystemGuid
         /// </summary>
         ///
         [RockObsolete( "1.8" )]
-        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.")]
+        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.", true )]
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
         #region eRA Attributes
@@ -412,6 +412,25 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Communication Module
+
+        /// <summary>
+        /// Communication Entry Wizard Block configuration setting.
+        /// </summary>
+        public const string COMMUNICATION_ENTRY_WIZARD_DEFAULT_AS_BULK = "23C883A6-AD9B-4C91-BAE6-16E0076C5D67";
+
+        /// <summary>
+        /// Communication Entry Block configuration setting.
+        /// </summary>
+        public const string COMMUNICATION_ENTRY_DEFAULT_AS_BULK = "679E5FBB-AB03-4DE4-BB24-1C7CEFEACD3E";
+
+        /// <summary>
+        /// System Communication List/Detail Page configuration setting.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST_DETAIL_PAGE = "9880C186-F079-4113-99B6-EF53AB4FE92D";
+
+        #endregion
+
         #region Communication List (group) attributes
 
         /// <summary>
@@ -432,6 +451,15 @@ namespace Rock.SystemGuid
         /// The groupmember (of a communication list) preferred communication medium
         /// </summary>
         public const string GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM = "D7941908-1F65-CC9B-416C-CCFABE4221B9";
+
+        #endregion
+
+        #region Device Type Attributes
+
+        /// <summary>
+        /// The defined value attribute for storing if a device type supports cameras.
+        /// </summary>
+        public const string DEFINED_VALUE_DEVICE_TYPE_SUPPORTS_CAMERAS = "79D1D843-4641-458D-A20B-37E0D7B4AEBE";
 
         #endregion
 
@@ -490,5 +518,29 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_JWT_SEARCH_KEY = "DEECB6D1-E596-4A15-B0DB-B2947B5DB784";
 
         #endregion JWT Config Attributes
+
+        #region Workflow Action Attributes
+
+        /// <summary>
+        /// The Campus workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS = "B07F920E-8450-4D1F-985D-6241E4F5E5CB";
+
+        /// <summary>
+        /// The Campus Role workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_ROLE = "5F8F5E6B-5888-4834-B47B-36664FB3A96C";
+
+        /// <summary>
+        /// The Campus Team Member workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_TEAM_MEMBER = "7CFEDCB2-EA8F-421F-BA5E-B0D8BD10EA92";
+
+        /// <summary>
+        /// The Person workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_PERSON = "C10C4C89-2B91-4D9A-8D5F-A3E65758A878";
+
+        #endregion Workflow Action Attributes
     }
 }

@@ -35,9 +35,23 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows a list of all interactions for a personal device." )]
 
-    [IntegerField( "Currently Present Interval", "The number of minutes to use to determine is someone is still present. For example if set to 5 the system will consider the device present if their interaction records end date/time is within the last 5 minutes.", true, 5, order: 0 )]
+    [IntegerField(
+        "Currently Present Interval",
+        Key = AttributeKey.CurrentlyPresentInterval,
+        Description = "The number of minutes to use to determine is someone is still present. For example if set to 5 the system will consider the device present if their interaction records end date/time is within the last 5 minutes.",
+        IsRequired = true,
+        DefaultIntegerValue = 5,
+        Order = 0 )]
+
     public partial class PersonalDeviceInteractions : RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string CurrentlyPresentInterval = "CurrentlyPresentInterval";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private int? _personalDeviceId = null;
@@ -83,7 +97,7 @@ namespace RockWeb.Blocks.Crm
                 cbShowUnassignedDevices.Visible = false;
             }
             
-            _currentlyPresentInterval = GetAttributeValue( "CurrentlyPresentInterval" ).AsInteger();
+            _currentlyPresentInterval = GetAttributeValue( AttributeKey.CurrentlyPresentInterval ).AsInteger();
 
         }
 

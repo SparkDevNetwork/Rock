@@ -4,23 +4,23 @@
 
     function pageLoad() {
 
-        $('#show-cache-objects').click(function () {
-            $('#cache-objects').toggle('slow', function () {
+        $('#show-cache-objects').off('click').on('click', function () {
+            $('#cache-objects').toggle(0, function () {
                 Rock.controls.modal.updateSize();
             });
         });
 
-        $('#show-routes').click(function () {
-            $('#routes').toggle('slow', function () {
+        $('#show-routes').off('click').on('click', function () {
+            $('#routes').toggle(0, function () {
                 Rock.controls.modal.updateSize();
             });
         });
 
-        $('a.show-pill').click(function () {
+        $('a.show-pill').off('click').on('click', function () {
     	    $('ul.nav-pills > li').attr('class', '');
     	    $(this).parent().attr('class', 'active');
-    	    $('div.tabContent > div').hide('slow');
-    	    $('#' + $(this).attr('pill')).show('slow', function () {
+    	    $('div.tabContent > div').hide();
+    	    $('#' + $(this).attr('pill')).show(0, function () {
     	        Rock.controls.modal.updateSize();
     	    });
         });
@@ -51,7 +51,7 @@
 
         <p><strong>Client Culture Setting: </strong>
             <asp:Literal ID="lClientCulture" runat="server"></asp:Literal></p>
-        
+
         <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Success" Title="Success" Visible="false" Text=""></Rock:NotificationBox>
 
         <div class="actions margin-t-xl">
@@ -62,25 +62,25 @@
     </div>
 
     <div id="diagnostics-tab" style="display:none">
-        
+
         <h4>Details</h4>
         <p>
            <strong>Database:</strong><br />
            <asp:Literal ID="lDatabase" runat="server"></asp:Literal>
         </p>
-        
+
         <p>
             <strong>System Date Time:</strong><br />
             <asp:Literal ID="lSystemDateTime" runat="server" />
         </p>
 
         <p>
-            <strong>Rock Time:</strong><br /> 
+            <strong>Rock Time:</strong><br />
             <asp:Literal ID="lRockTime" runat="server" />
         </p>
 
         <p>
-            <strong>Process Start Time:</strong><br /> 
+            <strong>Process Start Time:</strong><br />
             <asp:Literal ID="lProcessStartTime" runat="server" />
         </p>
 

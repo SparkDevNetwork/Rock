@@ -74,6 +74,9 @@ namespace Rock.Client
         public bool EnabledForShortening { get; set; } = true;
 
         /// <summary />
+        public bool EnableExclusiveRoutes { get; set; }
+
+        /// <summary />
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
@@ -99,7 +102,7 @@ namespace Rock.Client
 
         /// <summary />
         // Made Obsolete in Rock "1.8"
-        [Obsolete( "Moved to Theme", false )]
+        [Obsolete( "Moved to Theme", true )]
         public Rock.Client.Enums.IconCssWeight IconCssWeight { get; set; }
 
         /// <summary />
@@ -213,6 +216,7 @@ namespace Rock.Client
             this.DefaultPageRouteId = source.DefaultPageRouteId;
             this.Description = source.Description;
             this.EnabledForShortening = source.EnabledForShortening;
+            this.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
             this.EnablePageViews = source.EnablePageViews;
             this.ErrorPage = source.ErrorPage;
@@ -221,9 +225,6 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
-            #pragma warning disable 612, 618
-            this.IconCssWeight = source.IconCssWeight;
-            #pragma warning restore 612, 618
             this.IndexStartingLocation = source.IndexStartingLocation;
             this.IsActive = source.IsActive;
             this.IsIndexEnabled = source.IsIndexEnabled;

@@ -25,7 +25,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Base control that can be used to build treeview pickers
     /// </summary>
     public abstract class ItemPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
@@ -296,13 +296,26 @@ namespace Rock.Web.UI.Controls
                     _hfItemId.Value = Constants.None.IdValue;
                 }
 
+                if ( UseCategorySelection )
+                {
+                    return _hfItemId.Value.Replace( CategoryPrefix, string.Empty );
+                }
+
                 return _hfItemId.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                _hfItemId.Value = value;
+
+                if ( UseCategorySelection )
+                {
+                    _hfItemId.Value = CategoryPrefix + value;
+                }
+                else
+                {
+                    _hfItemId.Value = value;
+                }
             }
         }
 
@@ -321,7 +334,14 @@ namespace Rock.Web.UI.Controls
 
                 if ( !string.IsNullOrWhiteSpace( _hfItemId.Value ) )
                 {
-                    ids.AddRange( _hfItemId.Value.Split( ',' ) );
+                    if ( UseCategorySelection )
+                    {
+                        ids.AddRange( _hfItemId.Value.Split( ',' ).Select( a => a.Replace( CategoryPrefix, string.Empty ) ) );
+                    }
+                    else
+                    {
+                        ids.AddRange( _hfItemId.Value.Split( ',' ) );
+                    }
                 }
 
                 return ids;
@@ -330,7 +350,15 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                _hfItemId.Value = string.Join( ",", value );
+
+                if ( UseCategorySelection )
+                {
+                    _hfItemId.Value = string.Join( ",", value.Select( a => CategoryPrefix + a ) );
+                }
+                else
+                {
+                    _hfItemId.Value = string.Join( ",", value );
+                }
             }
         }
 
@@ -461,7 +489,22 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [allow category selection]; otherwise, <c>false</c>.
         /// </value>
-        public bool AllowCategorySelection { get; set; } = false;
+        [RockObsolete( "1.11" )]
+        [Obsolete( "ItemPicker no longer supports selection of both items and categories concurrently.", false )]
+        public bool AllowCategorySelection
+        {
+            get => UseCategorySelection;
+            set => UseCategorySelection = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether category selection is used.
+        /// If set to true then the user will be allowed to select a Category but not Items.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if category selection is used; otherwise, <c>false</c>.
+        /// </value>
+        public bool UseCategorySelection { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether [show select children].
@@ -502,6 +545,15 @@ namespace Rock.Web.UI.Controls
         ///   <c>true</c> if [hide picker label]; otherwise, <c>false</c>.
         /// </value>
         public bool HidePickerLabel { get; set; }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The category prefix used when <see cref="UseCategorySelection"/> is true.
+        /// </summary>
+        private const string CategoryPrefix = "C";
 
         #endregion
 
@@ -558,7 +610,8 @@ $@"Rock.controls.itemPicker.initialize({{
     controlId: '{this.ClientID}',
     restUrl: '{this.ResolveUrl( ItemRestUrl )}',
     allowMultiSelect: {this.AllowMultiSelect.ToString().ToLower()},
-    allowCategorySelection: {this.AllowCategorySelection.ToString().ToLower()},
+    allowCategorySelection: {this.UseCategorySelection.ToString().ToLower()},
+    categoryPrefix: '{CategoryPrefix}',
     defaultText: '{this.DefaultText}',
     restParams: $('#{_hfItemRestUrlExtraParams.ClientID}').val(),
     expandedIds: [{this.InitialItemParentIds}],

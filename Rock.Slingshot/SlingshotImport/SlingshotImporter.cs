@@ -307,6 +307,15 @@ namespace Rock.Slingshot
         public int? PhotoBatchSizeMB { get; set; }
 
         /// <summary>
+        /// Gets or sets the size of the person chunk.
+        /// Just in case the Target size reports a Timeout from the SqlBulkImport API.
+        /// </summary>
+        /// <value>
+        /// The size of the person chunk.
+        /// </value>
+        public int? PersonChunkSize { get; set; }
+
+        /// <summary>
         /// Gets or sets the size of the financial transaction chunk.
         /// Just in case the Target size reports a Timeout from the SqlBulkImport API.
         /// </summary>
@@ -402,6 +411,9 @@ namespace Rock.Slingshot
 
             // Family Notes
             SubmitEntityNotesImport<Rock.Model.Group>( this.SlingshotFamilyNoteList, true );
+
+            // Update any new AttributeValues to set the [ValueAsDateTime] field.
+            AttributeValueService.UpdateAllValueAsDateTimeFromTextValue();
         }
 
         private const string PREPARE_PHOTO_DATA = "Prepare Photo Data:";
@@ -1056,9 +1068,18 @@ namespace Rock.Slingshot
             }
 
             int postChunkSize = this.FinancialTransactionChunkSize ?? int.MaxValue;
+            int chunkCounter = 0;
+            int totalRecords = financialTransactionImportList.Count();
 
             while ( financialTransactionImportList.Any() )
             {
+                int recordsAlreadyProcessed = 0;
+                if ( this.PersonChunkSize.HasValue )
+                {
+                    recordsAlreadyProcessed = chunkCounter * PersonChunkSize.Value;
+                }
+                chunkCounter++;
+
                 var postChunk = financialTransactionImportList.Take( postChunkSize ).ToList();
                 this.ReportProgress( 0, "Bulk Importing FinancialTransactions..." );
                 var result = BulkImporter.BulkFinancialTransactionImport( postChunk, this.ForeignSystemKey );
@@ -1521,12 +1542,47 @@ namespace Rock.Slingshot
 
             this.ReportProgress( 0, "Bulk Importing Person..." );
 
-            var result = BulkImporter.BulkPersonImport( personImportList, this.ForeignSystemKey );
+            //var result = BulkImporter.BulkPersonImport( personImportList, this.ForeignSystemKey );
 
-            Results.Add( "Person Import", result );
+
+            int postChunkSize = this.PersonChunkSize ?? int.MaxValue;
+            int chunkCounter = 0;
+            int totalRecords = personImportList.Count();
+
+            var importResult = new BulkImporter.PersonImportResult();
+            while ( personImportList.Any() )
+            {
+                int recordsAlreadyProcessed = 0;
+                if ( this.PersonChunkSize.HasValue )
+                {
+                    recordsAlreadyProcessed = chunkCounter * PersonChunkSize.Value;
+                }
+                chunkCounter++;
+
+                var postChunk = personImportList.Take( postChunkSize ).ToList();
+                this.ReportProgress( 0, "Bulk Importing Person...");
+                importResult = BulkImporter.BulkPersonImport( postChunk, this.ForeignSystemKey, recordsAlreadyProcessed, totalRecords, importResult );
+
+                if ( this.PersonChunkSize.HasValue )
+                {
+                    
+                    if ( personImportList.Count < postChunkSize )
+                    {
+                        personImportList.Clear();
+                    }
+                    else
+                    {
+                        personImportList.RemoveRange( 0, postChunkSize );
+                    }
+                }
+                else
+                {
+                    personImportList.Clear();
+                }
+            }
+
+            Results.Add( "Person Import", BulkImporter.ParsePersonImportResult( importResult ) );
         }
-
-
 
         /// <summary>
         /// Bulks the importer on progress.

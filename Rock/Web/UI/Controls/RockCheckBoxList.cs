@@ -464,7 +464,7 @@ namespace Rock.Web.UI.Controls
 
             }}
 
-        $( "".checklist .checkbox input[type=checkbox]"").click( function() {{
+        $( "".checklist .checkbox input[type=checkbox]"").on('click', function() {{
                 StrikeOffCheckbox($( this ) );
             }})
 

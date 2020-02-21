@@ -39,10 +39,33 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Send Photo Request" )]
     [Category( "CRM > PhotoRequest" )]
     [Description( "Block for selecting criteria to build a list of people who should receive a photo request." )]
-    [CommunicationTemplateField( "Photo Request Template", "The template to use with this block to send requests.", true, "B9A0489C-A823-4C5C-A9F9-14A206EC3B88" )]
-    [IntegerField( "Maximum Recipients", "The maximum number of recipients allowed before communication will need to be approved", false, 300 )]
+
+    [CommunicationTemplateField(
+        "Photo Request Template",
+        Key = AttributeKey.PhotoRequestTemplate,
+        Description = "The template to use with this block to send requests.",
+        IsRequired = true,
+        DefaultValue = "B9A0489C-A823-4C5C-A9F9-14A206EC3B88",
+        Order = 0 )]
+
+    [IntegerField(
+        "Maximum Recipients",
+        Key = AttributeKey.MaximumRecipients,
+        Description = "The maximum number of recipients allowed before communication will need to be approved.",
+        IsRequired = false,
+        DefaultIntegerValue = 300,
+        Order = 1 )]
+
     public partial class PhotoSendRequest : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string PhotoRequestTemplate = "PhotoRequestTemplate";
+            public const string MaximumRecipients = "MaximumRecipients";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         // used for private variables
@@ -294,7 +317,7 @@ namespace RockWeb.Blocks.Crm
         private bool CheckApprovalRequired( int numberOfRecipients )
         {
             int maxRecipients = int.MaxValue;
-            int.TryParse( GetAttributeValue( "MaximumRecipients" ), out maxRecipients );
+            int.TryParse( GetAttributeValue( AttributeKey.MaximumRecipients ), out maxRecipients );
             bool approvalRequired = numberOfRecipients > maxRecipients;
 
             btnSendConfirmed.Text = ( approvalRequired && !IsUserAuthorized( "Approve" ) ? "Confirm and Submit" : "Confirm and Send" ) + " Communication";
@@ -424,7 +447,7 @@ namespace RockWeb.Blocks.Crm
         /// <exception cref="System.Exception">Missing communication template configuration.</exception>
         private bool GetTemplateData()
         {
-            if ( string.IsNullOrWhiteSpace( GetAttributeValue( "PhotoRequestTemplate" ) ) )
+            if ( string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.PhotoRequestTemplate ) ) )
             {
                 nbError.Title = "Configuration Error";
                 nbError.Text = "Missing communication template configuration.";
@@ -432,7 +455,7 @@ namespace RockWeb.Blocks.Crm
                 return false;
             }
 
-            var template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( "PhotoRequestTemplate" ).AsGuid() );
+            var template = new CommunicationTemplateService( new RockContext() ).Get( GetAttributeValue( AttributeKey.PhotoRequestTemplate ).AsGuid() );
             if ( template == null )
             {
                 nbError.Title = "Configuration Error";

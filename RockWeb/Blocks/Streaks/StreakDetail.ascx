@@ -2,9 +2,10 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        var left = $('.chart-container').outerWidth() - $('.chart-scroll-container').width();
-        console.log(left);
-        $('.chart-container').scrollLeft(left);
+        $('.js-member-note').tooltip();
+
+        // data view sync list popover
+        $('.js-sync-popover').popover();
     });
 </script>
 
@@ -27,7 +28,7 @@
                 <div id="pnlViewDetails" runat="server">
 
                     <div class="row">
-                        <div class="col-md-12">                            
+                        <div class="col-md-12">
                             <ul class="streak-chart margin-b-md">
                                 <asp:Literal ID="lStreakChart" runat="server" />
                             </ul>
@@ -35,12 +36,20 @@
                     </div>
 
                     <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="margin-b-lg"><asp:Literal ID="lPersonHtml" runat="server" /></h4>
+                        </div>
+                        <div class="col-md-6 text-right margin-t-md">
+                            <asp:LinkButton ID="btnAttempts" runat="server" CssClass="btn btn-default" OnClick="btnAttempts_Click" CausesValidation="false"></asp:LinkButton>
+                            <asp:LinkButton runat="server" ID="btnRebuild" CausesValidation="false" OnClick="btnRebuild_Click" CssClass="btn btn-danger" Text="Rebuild" />
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-lg-6">
-                            <h5 id="h5Left" runat="server">This Enrollment</h5>                            
                             <asp:Literal ID="lEnrollmentDescription" runat="server" />
                         </div>
                         <div class="col-lg-6">
-                            <h5 id="h5Right" runat="server">Aggregate Data</h5>
                             <asp:Literal ID="lStreakData" runat="server" />
                         </div>
                     </div>
@@ -49,9 +58,6 @@
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" CausesValidation="false" OnClick="btnDelete_Click" />
-                        <span class="pull-right">
-                            <asp:LinkButton runat="server" ID="btnRebuild" CausesValidation="false" OnClick="btnRebuild_Click" CssClass="btn btn-danger btn-sm margin-l-md" Text="Rebuild" />
-                        </span>
                     </div>
                 </div>
 
@@ -59,6 +65,12 @@
                     <div class="row">
                         <div class="col-sm-6 col-md-4">
                             <Rock:PersonPicker ID="rppPerson" runat="server" SourceTypeName="Rock.Model.Streak, Rock" PropertyName="PersonAliasId" Required="true" Label="Person" />
+                            <div class="form-group" id="divPerson" runat="server">
+                                <label class="control-label" for="ctl00_main_ctl25_ctl01_ctl06_rppPerson">Person</label>
+                                <div class="control-wrapper">
+                                    <asp:Literal ID="lPersonName" runat="server" />
+                                </div>
+                            </div>
                         </div>
                         <div class="col-sm-6 col-md-4">
                             <Rock:LocationPicker ID="rlpLocation" runat="server" AllowedPickerModes="Named" SourceTypeName="Rock.Model.Streak, Rock" PropertyName="LocationId" Label="Location" />
@@ -77,3 +89,49 @@
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>
+
+<script>
+    Sys.Application.add_load(function () {
+        $("div.photo-icon").lazyload({
+            effect: "fadeIn"
+        });
+
+        // person-link-popover
+        $('.js-person-popover').popover({
+            placement: 'right',
+            trigger: 'manual',
+            delay: 500,
+            html: true,
+            content: function () {
+                var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' + $(this).attr('personid') + '/false';
+
+                var result = $.ajax({
+                    type: 'GET',
+                    url: dataUrl,
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    async: false
+                }).responseText;
+
+                var resultObject = JSON.parse(result);
+
+                return resultObject.PickerItemDetailsHtml;
+
+            }
+        }).on('mouseenter', function () {
+            var _this = this;
+            $(this).popover('show');
+            $(this).siblings('.popover').on('mouseleave', function () {
+                $(_this).popover('hide');
+            });
+        }).on('mouseleave', function () {
+            var _this = this;
+            setTimeout(function () {
+                if (!$('.popover:hover').length) {
+                    $(_this).popover('hide')
+                }
+            }, 100);
+        });
+
+    });
+</script>

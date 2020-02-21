@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text;
 using Quartz;
- 
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -53,13 +53,13 @@ namespace Rock.Jobs
         DefaultValue = "Online Giving",
         Order = 2 )]
 
-    [SystemEmailField( "Receipt Email",
+    [SystemCommunicationField( "Receipt Email",
         Key = AttributeKey.ReceiptEmail,
         Description = "The system email to use to send the receipts.",
         IsRequired = false,
         Order = 3 )]
 
-    [SystemEmailField(
+    [SystemCommunicationField(
         "Failed Payment Email",
         Key = AttributeKey.FailedPaymentEmail,
         Description = "The system email to use to send a notice about a scheduled payment that failed.",
@@ -159,6 +159,7 @@ namespace Rock.Jobs
             TimeSpan daysBackTimeSpan = new TimeSpan( daysBack, 0, 0, 0 );
 
             string batchNamePrefix = dataMap.GetString( AttributeKey.BatchNamePrefix );
+            Dictionary<FinancialGateway, string> processedPaymentsSummary = new Dictionary<FinancialGateway, string>();
 
 
             using ( var rockContext = new RockContext() )
@@ -182,7 +183,7 @@ namespace Rock.Jobs
                         {
                             continue;
                         }
-                        
+
                         DateTime endDateTime = today.Add( financialGateway.GetBatchTimeOffset() );
 
                         // If the calculated end time has not yet occurred, use the previous day.
@@ -191,11 +192,12 @@ namespace Rock.Jobs
                         DateTime startDateTime = endDateTime.Subtract( daysBackTimeSpan );
 
                         string errorMessage = string.Empty;
-                        var payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
+                        List<Financial.Payment> payments = gateway.GetPayments( financialGateway, startDateTime, endDateTime, out errorMessage );
 
                         if ( string.IsNullOrWhiteSpace( errorMessage ) )
                         {
-                            FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
+                            var gatewayProcessPaymentsSummary = FinancialScheduledTransactionService.ProcessPayments( financialGateway, batchNamePrefix, payments, string.Empty, receiptEmail, failedPaymentEmail, failedPaymentWorkflowType );
+                            processedPaymentsSummary.Add( financialGateway, gatewayProcessPaymentsSummary );
                             scheduledPaymentsProcessed += payments.Count();
                         }
                         else
@@ -216,7 +218,13 @@ namespace Rock.Jobs
                 throw new Exception( "One or more exceptions occurred while downloading transactions..." + Environment.NewLine + exceptionMsgs.AsDelimited( Environment.NewLine ) );
             }
 
-            context.Result = string.Format( "{0} payments processed", scheduledPaymentsProcessed );
+            StringBuilder summary = new StringBuilder();
+            foreach ( var item in processedPaymentsSummary )
+            {
+                summary.AppendLine( $"Summary for {item.Key.Name}:<br/>{item.Value}" );
+            }
+
+            context.Result = summary.ToString();
         }
     }
 }

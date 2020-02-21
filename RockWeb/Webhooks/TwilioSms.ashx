@@ -205,10 +205,11 @@ class TwilioSmsResponseAsync : IAsyncResult
                 var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
                 var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
+                var twilioMessage = new Twilio.TwiML.Message();
+                var messagingResponse = new Twilio.TwiML.MessagingResponse();
 
                 if ( smsResponse != null )
                 {
-                    var twilioMessage = new Twilio.TwiML.Message();
                     if ( !string.IsNullOrWhiteSpace( smsResponse.Message ) )
                     {
                         twilioMessage.Body( smsResponse.Message );
@@ -222,11 +223,10 @@ class TwilioSmsResponseAsync : IAsyncResult
                         }
                     }
 
-                    var messagingResponse = new Twilio.TwiML.MessagingResponse();
                     messagingResponse.Message( twilioMessage );
-
-                    response.Write( messagingResponse.ToString() );
                 }
+
+                response.Write( messagingResponse.ToString() );
             }
         }
     }

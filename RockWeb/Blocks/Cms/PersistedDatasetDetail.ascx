@@ -33,7 +33,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.PersistedDataset, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        <Rock:CodeEditor ID="ceBuildScript" runat="server" EditorMode="Lava" Label="Build Script" Help="Lava Template to use for building the JSON that will be used as the cached dataset object." EditorHeight="300" />
+                        <Rock:CodeEditor ID="ceBuildScript" runat="server" EditorMode="Lava" Label="Build Script" Help="Lava Template to use for building JSON that will be used as the cached dataset object." EditorHeight="300" />
                     </div>
                 </div>
 
@@ -45,8 +45,8 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbRefreshIntervalHours" runat="server" Label="Refresh Interval (hours)" NumberType="Double" Required="true" Help="How often the dataset should be updated when running the Update Persisted Dataset job." />
-                        <Rock:NumberBox ID="nbMemoryCacheDurationHours" runat="server" Label="Memory Cache Duration (hours)" NumberType="Double" Help="How long the persisted object should be cached in memory. This is a sliding timeline, so each time the object is read the counter will reset. Leave blank to not cache the object in memory which will mean it will be deserialized into the object on each request (still fast). " />
+                        <Rock:NumberBox ID="nbRefreshIntervalHours" runat="server" Label="Refresh Interval" AppendText="Hour(s)" CssClass="input-width-md" NumberType="Double" Required="true" Help="How often the dataset should be updated by the Update Persisted Dataset job." />
+                        <Rock:NumberBox ID="nbMemoryCacheDurationHours" runat="server" Label="Memory Cache Duration" AppendText="Hour(s)" CssClass="input-width-md" NumberType="Double" Help="How long the persisted object should be cached in memory. This is a sliding timeline, so each time the object is read the counter will reset. Leave blank to not cache the object in memory which will mean it will be deserialized into the object on each request (still fast). " />
                         <Rock:DatePicker ID="dtpExpireDateTime" runat="server" Label="Expires on" Help="Set this to consider the dataset inactive after the specified date. This will mean that its value is no longer updated by the refresh job and that it will return empty when requested through Lava." />
                     </div>
                     <div class="col-md-6">

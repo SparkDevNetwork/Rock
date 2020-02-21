@@ -107,6 +107,7 @@ namespace Rock.Model
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
             target.EnabledForShortening = source.EnabledForShortening;
+            target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
             target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
@@ -115,9 +116,6 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
-            #pragma warning disable 612, 618
-            target.IconCssWeight = source.IconCssWeight;
-            #pragma warning restore 612, 618
             target.IndexStartingLocation = source.IndexStartingLocation;
             target.IsActive = source.IsActive;
             target.IsIndexEnabled = source.IsIndexEnabled;

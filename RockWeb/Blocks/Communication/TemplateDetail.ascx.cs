@@ -37,7 +37,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Template Detail" )]
     [Category( "Communication" )]
@@ -404,7 +404,7 @@ namespace RockWeb.Blocks.Communication
             nbTemplateHelp.InnerHtml = @"
 <p>An email template needs to be an html doc with some special divs to support the communication wizard.</p>
 <br/>
-<p>The template needs to have at least one div with a 'dropzone' class in the BODY</p> 
+<p>The template needs to have at least one div with a 'dropzone' class in the BODY</p>
 <br/>
 <pre>
 &lt;div class=""dropzone""&gt;
@@ -412,7 +412,7 @@ namespace RockWeb.Blocks.Communication
 </pre>
 <br/>
 
-<p>A template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p> 
+<p>A template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p>
 <br/>
 <pre>
 &lt;div class=""structure-dropzone""&gt;
@@ -422,7 +422,7 @@ namespace RockWeb.Blocks.Communication
 </pre>
 <br/>
 
-<p>To have some starter text, include a 'component component-text' div within the 'dropzone' div</p> 
+<p>To have some starter text, include a 'component component-text' div within the 'dropzone' div</p>
 <br/>
 <pre>
 &lt;div class=""structure-dropzone""&gt;
@@ -832,7 +832,7 @@ namespace RockWeb.Blocks.Communication
                 var btnRevertLavaValue = new Literal { ID = "btnRevertLavaValue_" + keyValue.Key };
                 var defaultValue = lavaFieldsDefaultDictionary.GetValueOrNull( keyValue.Key );
                 var visibility = keyValue.Value != defaultValue ? "visible" : "hidden";
-                btnRevertLavaValue.Text = string.Format( "<i class='btn fa fa-times js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'></i>", lavaValueControl.ClientID, defaultValue, visibility );
+                btnRevertLavaValue.Text = string.Format( "<div class='btn js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'><i class='fa fa-times'></i></div>", lavaValueControl.ClientID, defaultValue, visibility );
                 rcwLavaValue.Controls.Add( btnRevertLavaValue );
             }
         }

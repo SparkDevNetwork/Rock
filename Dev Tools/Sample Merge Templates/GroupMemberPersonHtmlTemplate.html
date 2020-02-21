@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Html Merge</title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 </head>
 <body>
     <h1>People</h1>
@@ -18,7 +19,7 @@
             </address>
         </div>
         <div class="col-md-6">
-            <img src="{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ row.PhotoUrl }}" width="100" height="100" />
+            <img src="{{ 'Global' | Attribute:'InternalApplicationRoot' }}{{ row.PhotoUrl }}" width="100" height="100" alt="" />
         </div>
     </div>
 

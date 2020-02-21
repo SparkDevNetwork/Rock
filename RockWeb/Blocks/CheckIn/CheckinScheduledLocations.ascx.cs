@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.CheckIn
 
             var templateGroupPaths = new Dictionary<int, List<GroupTypePath>>();
             var currentAndDescendantGroupTypeIds = new List<int>();
-            foreach ( var groupType in groupTypeService.Queryable().Where( a => this.CurrentGroupTypeIds.Contains( a.Id ) ) )
+            foreach ( var groupType in groupTypeService.Queryable().Where( a => this.LocalDeviceConfig.CurrentGroupTypeIds.Contains( a.Id ) ) )
             {
                 foreach( var parentGroupType in groupType.ParentGroupTypes )
                 {

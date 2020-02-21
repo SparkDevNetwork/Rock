@@ -37,7 +37,7 @@ namespace Rock.Web.Cache
     [DataContract]
     public class GlobalAttributesCache : ItemCache<GlobalAttributesCache>
     {
-        #region Contants
+        #region Constants
 
         /// <summary>
         /// This setting is the guid for the organization's location record.
@@ -123,14 +123,6 @@ namespace Rock.Web.Cache
 
                 return attributes;
             }
-
-            set
-            {
-                lock ( _obj )
-                {
-                    _attributeIds = value?.Select( a => a.Id ).ToList();
-                }
-            }
         }
         private List<int> _attributeIds;
 
@@ -161,7 +153,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static GlobalAttributesCache Read()
         {
             return Get();
@@ -173,7 +165,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static GlobalAttributesCache Read( RockContext rockContext )
         {
             return Get();
@@ -348,7 +340,7 @@ namespace Rock.Web.Cache
         /// <param name="valueFactory">The value factory.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed")]
+        [Obsolete("No longer needed", true )]
         public new static GlobalAttributesCache GetOrAddExisting( string key, Func<GlobalAttributesCache> valueFactory )
         {
             // Note we still need the private method, we are just making the public method obsolete

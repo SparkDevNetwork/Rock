@@ -24,7 +24,7 @@ namespace Rock.Store
     public class StoreServiceBase
     {
         /// <summary>
-        /// Internal variable to store the url to the store.
+        /// Internal variable to store the URL to the store.
         /// </summary>
         protected string _rockStoreUrl = string.Empty;
 

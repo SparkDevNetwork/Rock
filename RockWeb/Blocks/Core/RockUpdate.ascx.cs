@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             string script = @"
-    $('#btn-restart').click(function () {
+    $('#btn-restart').on('click', function () {
         var btn = $(this);
         btn.button('loading');
         location = location.href;
@@ -367,7 +367,7 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Checks the .NET Framework version and returns Pass, Fail, or Unknown which can be 
+        /// Checks the .NET Framework version and returns Pass, Fail, or Unknown which can be
         /// used to determine if it's safe to proceed.
         /// </summary>
         /// <returns>One of the values of the VersionCheckResult enum.</returns>
@@ -481,7 +481,7 @@ namespace RockWeb.Blocks.Core
                 lSuccessVersion.Text = GetRockVersion( update.Version );
 
                 // Record the current version to the database
-                Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ROCK_INSTANCE_ID, version );
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, version );
 
                 // register any new REST controllers
                 try
@@ -809,18 +809,18 @@ namespace RockWeb.Blocks.Core
 
         /// <summary>
         /// Sends statistics to the SDN server but only if there are more than 100 person records
-        /// or the sample data has not been loaded. 
-        /// 
+        /// or the sample data has not been loaded.
+        ///
         /// The statistics are:
         ///     * Rock Instance Id
         ///     * Update Version
         ///     * IP Address - The IP address of your Rock server.
-        ///     
+        ///
         /// ...and we only send these if they checked the "Include Impact Statistics":
         ///     * Organization Name and Address
         ///     * Public Web Address
         ///     * Number of Active Records
-        ///     
+        ///
         /// As per http://www.rockrms.com/Rock/Impact
         /// </summary>
         /// <param name="version">the semantic version number</param>
@@ -831,7 +831,7 @@ namespace RockWeb.Blocks.Core
                 var rockContext = new RockContext();
                 int numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
-                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime().HasValue )
+                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE ).AsDateTime().HasValue )
                 {
                     string organizationName = string.Empty;
                     ImpactLocation organizationLocation = null;

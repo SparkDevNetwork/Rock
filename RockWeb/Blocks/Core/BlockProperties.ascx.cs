@@ -142,18 +142,23 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
-            if ( dialogPage != null )
-            {
-                dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-            }
-            
             try
             {
-                int blockId = PageParameter( "BlockId" ).AsInteger();
-                var _block = BlockCache.Get( blockId );
-                dialogPage.Title = _block.BlockType.Name;
-                dialogPage.SubTitle = string.Format("{0} / Id: {1}", _block.BlockType.Category, blockId);
+                int? blockId = PageParameter( "BlockId" ).AsIntegerOrNull();
+                if ( !blockId.HasValue )
+                {
+                    return;
+                }
+
+                var _block = BlockCache.Get( blockId.Value );
+
+                Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
+                if ( dialogPage != null )
+                {
+                    dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                    dialogPage.Title = _block.BlockType.Name;
+                    dialogPage.SubTitle = string.Format( "{0} / Id: {1}", _block.BlockType.Category, blockId );
+                }
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
@@ -233,8 +238,21 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Get( blockId );
+            Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
+            if ( dialogPage != null )
+            {
+                dialogPage.ValidationGroup = this.BlockValidationGroup;
+            }
+
+            valSummaryTop.ValidationGroup = this.BlockValidationGroup;
+
+            int? blockId = PageParameter( "BlockId" ).AsIntegerOrNull();
+            if ( !blockId.HasValue )
+            {
+                return;
+            }
+
+            BlockCache _block = BlockCache.Get( blockId.Value );
 
             var blockControlType = _block.BlockType.GetCompiledType();
 
@@ -304,7 +322,7 @@ namespace RockWeb.Blocks.Core
 
             base.OnLoad( e );
         }
-                
+
         /// <summary>
         /// Handles the Click event of the lbProperty control.
         /// </summary>
@@ -586,7 +604,7 @@ namespace RockWeb.Blocks.Core
         private void SaveCustomColumnsConfigToViewState()
         {
             this.CustomGridColumnsConfigState = new CustomGridColumnsConfig();
-            foreach ( var item in rptCustomGridColumns.Items.OfType<RepeaterItem>())
+            foreach ( var item in rptCustomGridColumns.Items.OfType<RepeaterItem>() )
             {
                 var columnConfig = new CustomGridColumnsConfig.ColumnConfig();
 
@@ -653,7 +671,7 @@ namespace RockWeb.Blocks.Core
                 nbRelativeOffset.Text = columnConfig.PositionOffset.ToString();
 
                 var ddlOffsetType = e.Item.FindControl( "ddlOffsetType" ) as RockDropDownList;
-                ddlOffsetType.SetValue( (int)columnConfig.PositionOffsetType );
+                ddlOffsetType.SetValue( ( int ) columnConfig.PositionOffsetType );
                 ddlOffsetType_SelectedIndexChanged( ddlOffsetType, null );
 
                 var tbHeaderText = e.Item.FindControl( "tbHeaderText" ) as RockTextBox;

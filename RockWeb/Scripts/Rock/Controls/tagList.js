@@ -28,7 +28,7 @@
             restUrl += '&ownerId=' + tagList.currentPersonId;
             restUrl += '&name=' + encodeURIComponent(tagName);
             restUrl += '&includeInactive' + tagList.includeInactive.toString();
-           
+
             if (tagList.entityQualifierColumn) {
                 restUrl += '&entityQualifier=' + tagList.entityQualifierColumn;
             }
@@ -143,14 +143,14 @@
                             return;
                         }
 
-                        Rock.dialogs.alert("Unable to remove tag: " + error);
+                        Rock.dialogs.alert('Unable to remove tag: ' + error);
 
                         // put the tag back in (in alpha order, case-insensitive)
                         var tagsCommaList = $(this.tagsInput).val() + ',' + this.tagName
 
-                        tagsCommaList = tagsCommaList.split(",").sort(function (a, b) {
+                        tagsCommaList = tagsCommaList.split(',').sort(function (a, b) {
                             return a.toLowerCase().localeCompare(b.toLowerCase());
-                        }).join(",");
+                        }).join(',');
 
                         $(this.tagsInput).importTags(tagsCommaList);
                         return false;
@@ -220,7 +220,7 @@
                 if (!options.entityTypeId) throw 'entityTypeId must be set.';
                 if (!options.currentPersonId) throw 'currentPersonId must be set';
                 if (!options.entityGuid) throw 'entityGuid must be set';
-                
+
                 var tagList = new TagList(options);
                 tagList.options = options;
                 exports.tagLists[options.controlId] = tagList;
