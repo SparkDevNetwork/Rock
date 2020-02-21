@@ -29,7 +29,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Workflow
+namespace RockWeb.Blocks.WorkFlow
 {
     /// <summary>
     /// Block that enables previewing an entity set and then launching a workflow for each item within the set. This block was designed to
