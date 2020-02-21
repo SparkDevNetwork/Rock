@@ -73,6 +73,12 @@ namespace Rock.Web.Cache
         /// </value>
         public bool ContinueAfterProcessing { get; set; }
 
+        /// <summary>
+        /// Gets or sets the SMS pipeline identifier.
+        /// </summary>
+        /// <value>
+        /// The SMS pipeline identifier.
+        /// </value>
         public int SmsPipelineId { get; set; }
 
         /// <summary>

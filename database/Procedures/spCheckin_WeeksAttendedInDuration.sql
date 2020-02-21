@@ -24,9 +24,11 @@ ALTER PROCEDURE [dbo].[spCheckin_WeeksAttendedInDuration]
 AS
 BEGIN
 	
-    DECLARE @LastSunday datetime 
+    DECLARE @startSunday datetime 
+    DECLARE @lastSunday datetime 
 
-    SET @LastSunday = [dbo].[ufnUtility_GetPreviousSundayDate]()
+    SET @lastSunday = [dbo].[ufnUtility_GetPreviousSundayDate]()
+    SET @startSunday = DATEADD(WEEK, ((@WeekDuration -1) * -1), @lastSunday)
 
     SELECT 
 	    COUNT(DISTINCT O.SundayDate )
@@ -36,7 +38,7 @@ BEGIN
 	    INNER JOIN [PersonAlias] pa ON pa.[Id] = a.[PersonAliasId]
     WHERE 
 	    O.[GroupId] IN (SELECT [Id] FROM [dbo].[ufnCheckin_WeeklyServiceGroups]())
-	    AND O.[OccurrenceDate] BETWEEN DATEADD(WEEK, ((@WeekDuration -1) * -1), @LastSunday) AND DATEADD(DAY, 1, @LastSunday)
+	    AND O.[SundayDate] BETWEEN @startSunday AND @lastSunday
 	    AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](@PersonId))
 		AND a.[DidAttend] = 1
 

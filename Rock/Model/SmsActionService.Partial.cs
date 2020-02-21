@@ -72,7 +72,10 @@ namespace Rock.Model
         /// Processes the incoming message.
         /// </summary>
         /// <param name="message">The message received by the communications component.</param>
-        /// <returns>If not null, identifies the response that should be sent back to the sender.</returns>
+        /// <param name="smsPipelineId">The SMS pipeline identifier.</param>
+        /// <returns>
+        /// If not null, identifies the response that should be sent back to the sender.
+        /// </returns>
         static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int smsPipelineId )
         {
             var errorMessage = string.Empty;

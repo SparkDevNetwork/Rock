@@ -217,12 +217,12 @@ namespace Rock.Model
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
-			// Check for duplicate
-			if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
-			{
-				var rockContext = ( RockContext ) dbContext;
-				var phoneNumberService = new PhoneNumberService( rockContext );
-				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
+            // Check for duplicate
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                var rockContext = ( RockContext ) dbContext;
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
 
                 // Make sure this number isn't considered a duplicate
                 if ( entry.State == EntityState.Modified )
@@ -231,25 +231,25 @@ namespace Rock.Model
                 }
 
                 if ( duplicates.Any() )
-				{
-					var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy(p => p.NumberTypeValue.Order).FirstOrDefault();
-					if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
-					{
+                {
+                    var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy( p => p.NumberTypeValue.Order ).FirstOrDefault();
+                    if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
+                    {
                         // Ensure that we preserve the PhoneNumber with the highest preference phone type
-						var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
-						if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
-						{
-							entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
-						}
-						else
-						{
-							phoneNumberService.DeleteRange( duplicates);
-						}
-					}
-				}
-			}
+                        var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
+                        if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
+                        {
+                            entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
+                        }
+                        else
+                        {
+                            phoneNumberService.DeleteRange( duplicates );
+                        }
+                    }
+                }
+            }
 
-			int personId = PersonId;
+            int personId = PersonId;
             PersonHistoryChanges = new Dictionary<int, History.HistoryChangeList> { { personId, new History.HistoryChangeList() } };
 
             switch ( entry.State )
@@ -258,8 +258,8 @@ namespace Rock.Model
                     {
 
                         History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsMessagingEnabled );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsMessagingEnabled );
                         break;
                     }
 
@@ -315,7 +315,7 @@ namespace Rock.Model
 
             // update the ModifiedDateTime on the Person that this phone number is associated with
             var currentDateTime = RockDateTime.Now;
-            var qryPersonsToUpdate = new PersonService( rockContext ).Queryable(true, true).Where( a => a.Id == this.PersonId );
+            var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == this.PersonId );
             rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
 
             base.PostSaveChanges( dbContext );
@@ -337,6 +337,20 @@ namespace Rock.Model
             {
                 return "Unlisted";
             }
+        }
+
+        /// <summary>
+        /// Converts the phone number to a string that is correctly formatted to be used as an SMS phone number.
+        /// </summary>
+        /// <returns></returns>
+        public string ToSmsNumber()
+        {
+            string smsNumber = this.Number;
+            if ( !string.IsNullOrWhiteSpace( this.CountryCode ) )
+            {
+                smsNumber = "+" + this.CountryCode + this.Number;
+            }
+            return smsNumber;
         }
 
         /// <summary>

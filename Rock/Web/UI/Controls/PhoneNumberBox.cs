@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -39,12 +40,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The text for the label." )
-        ]
+        [Bindable( true )]
+        [Category( "Appearance" )]
+        [DefaultValue( "" )]
+        [Description( "The text for the label." )]
         public string Label
         {
             get { return ViewState["Label"] as string ?? string.Empty; }
@@ -57,11 +56,9 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The form group class.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        Description( "The CSS class to add to the form-group div." )
-        ]
+        [Bindable( true )]
+        [Category( "Appearance" )]
+        [Description( "The CSS class to add to the form-group div." )]
         public string FormGroupCssClass
         {
             get { return ViewState["FormGroupCssClass"] as string ?? string.Empty; }
@@ -74,12 +71,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The help text.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The help block." )
-        ]
+        [Bindable( true )]
+        [Category( "Appearance" )]
+        [DefaultValue( "" )]
+        [Description( "The help block." )]
         public string Help
         {
             get
@@ -101,12 +96,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The warning text.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The warning block." )
-        ]
+        [Bindable( true )]
+        [Category( "Appearance" )]
+        [DefaultValue( "" )]
+        [Description( "The warning block." )]
         public string Warning
         {
             get
@@ -128,12 +121,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
+        [Bindable( true )]
+        [Category( "Behavior" )]
+        [DefaultValue( "false" )]
+        [Description( "Is the value required?" )]
         public bool Required
         {
             get { return ViewState["Required"] as bool? ?? false; }
@@ -171,7 +162,32 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+                // If the number is required then it has to be present and valid
+                if ( Required )
+                {
+                    bool isPhoneNumberValid = IsPhoneNumberValid();
+                    if ( !isPhoneNumberValid )
+                    {
+                        ShowErrorMessage( $"The phone number '{Number}' is not a valid phone number." );
+                    }
+
+                    return RequiredFieldValidator.IsValid && isPhoneNumberValid;
+                }
+
+                // If not requried then only check it if it has been entered.
+                if ( Number.IsNotNullOrWhiteSpace() )
+                {
+                    bool isPhoneNumberValid = IsPhoneNumberValid();
+                    if ( !isPhoneNumberValid )
+                    {
+                        ShowErrorMessage( $"The phone number '{Number}' is not a valid phone number." );
+                    }
+
+                    return isPhoneNumberValid;
+                }
+
+                // If not required and blank then it is valid.
+                return true;
             }
         }
 
@@ -314,11 +330,11 @@ namespace Rock.Web.UI.Controls
                     {
                         var definedValues = definedType.DefinedValues;
 
-                        foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value).Distinct() )
+                        foreach ( var countryCode in definedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct() )
                         {
                             sbScript.AppendFormat( "\t\t'{0}' : [\n", countryCode );
 
-                            foreach( var definedValue in definedValues.Where( v => v.Value == countryCode).OrderBy( v => v.Order))
+                            foreach ( var definedValue in definedValues.Where( v => v.Value == countryCode ).OrderBy( v => v.Order ) )
                             {
                                 string match = definedValue.GetAttributeValue( "MatchRegEx" );
                                 string replace = definedValue.GetAttributeValue( "FormatRegEx" );
@@ -350,11 +366,11 @@ namespace Rock.Web.UI.Controls
         }
     }
 
-    $('div.phone-number-box input.js-phone-format').on('change', function(e) {
+    $('div.phone-number-box input.js-phone-format').on('change blur', function(e) {
         phoneNumberBoxFormatNumber($(this));
     });
 
-    $('div.phone-number-box ul.dropdown-menu a').click( function(e) {
+    $('div.phone-number-box ul.dropdown-menu a').on('click', function(e) {
         e.preventDefault();
         $(this).closest('div.input-group').find('input:hidden').val($(this).html());
         $(this).closest('div.input-group-btn').find('button').html($(this).html() + ' <span class=""caret""></span>');
@@ -418,23 +434,25 @@ namespace Rock.Web.UI.Controls
         {
             string cssClass = this.CssClass;
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group phone-number-box" + cssClass );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group phone-number-box " + cssClass );
             if ( this.Style[HtmlTextWriterStyle.Display] == "none" )
             {
                 // render the display:none in the inputgroup div instead of the control itself
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 this.Style[HtmlTextWriterStyle.Display] = string.Empty;
             }
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                       
             this.CssClass = string.Empty;
 
-            bool renderCountryCodeButton = false;
-
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            IEnumerable<string> countryCodes = null;
+
+            var renderCountryCodeButton = false;
             if ( definedType != null )
             {
-                var countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct();
+                countryCodes = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => v.Value ).Distinct();
 
                 if ( countryCodes != null && countryCodes.Any() )
                 {
@@ -443,49 +461,17 @@ namespace Rock.Web.UI.Controls
                         CountryCode = countryCodes.FirstOrDefault();
                     }
 
-                    if ( countryCodes.Count() > 1 )
-                    {
-                        renderCountryCodeButton = true;
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-btn" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-default dropdown-toggle" );
-                        writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
-                        writer.AddAttribute( "data-toggle", "dropdown" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Button );
-
-                        writer.Write( CountryCode + " " );
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "caret" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                        writer.RenderEndTag();
-
-                        writer.RenderEndTag();  // Button
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "dropdown-menu" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Ul );
-
-                        foreach ( string countryCode in countryCodes )
-                        {
-                            writer.RenderBeginTag( HtmlTextWriterTag.Li );
-
-                            writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
-                            writer.RenderBeginTag( HtmlTextWriterTag.A );
-                            writer.Write( countryCode );
-                            writer.RenderEndTag();
-
-                            writer.RenderEndTag();  // Li
-                        }
-
-                        writer.RenderEndTag();      // Ul
-
-                        writer.RenderEndTag();      // div.input-group-btn
-                    }
+                    renderCountryCodeButton = countryCodes.Count() > 1;
                 }
             }
 
-            if ( !renderCountryCodeButton )
+            _hfCountryCode.RenderControl( writer );
+
+            if ( renderCountryCodeButton )
+            {
+                RenderCountryCodeButton( writer, countryCodes );
+            }
+            else
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-addon" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
@@ -493,9 +479,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            _hfCountryCode.RenderControl( writer );
-
-            ( (WebControl)this ).AddCssClass( "form-control js-phone-format" );
+            ( ( WebControl ) this ).AddCssClass( "form-control js-phone-format" );
             if ( !string.IsNullOrWhiteSpace( Placeholder ) )
             {
                 this.Attributes["placeholder"] = Placeholder;
@@ -503,11 +487,102 @@ namespace Rock.Web.UI.Controls
 
             this.Attributes["type"] = "tel";
 
-            ( ( WebControl ) this ).AddCssClass( cssClass );
-
             base.RenderControl( writer );
 
             writer.RenderEndTag();              // div.input-group
+        }
+
+        private void RenderCountryCodeButton( HtmlTextWriter writer, IEnumerable<string> countryCodes )
+        {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "input-group-btn" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-default dropdown-toggle" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
+            writer.AddAttribute( "data-toggle", "dropdown" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Button );
+
+            writer.Write( CountryCode + " " );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "caret" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();  // Button
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "dropdown-menu" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Ul );
+
+            foreach ( string countryCode in countryCodes )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Li );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
+                writer.RenderBeginTag( HtmlTextWriterTag.A );
+                writer.Write( countryCode );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();  // Li
+            }
+
+            writer.RenderEndTag();      // Ul
+
+            writer.RenderEndTag();      // div.input-group-btn
+        }
+
+
+        /// <summary>
+        ///   Determines whether the string in Number is a valid phone number.
+        ///   Uses the RegEx match string attributes in the defined values for the defined type Communication Phone Country Code.
+        ///   If there is nothing to match (Number is null or empty) or match with (Missing defined values or MatchRegEx attribute) then true is returned.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if Number is a valid phone number otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsPhoneNumberValid()
+        {
+            // No number is a valid number, let the required field validator handle this.
+            if ( Number.IsNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
+            // This is the list of valid phone number formats, it must match one of them.
+            var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+            if ( definedType == null )
+            {
+                // If there is nothing to match against then return true
+                return true;
+            }
+
+            foreach ( var definedValue in definedType.DefinedValues )
+            {
+                string matchRegEx = definedValue.GetAttributeValue( "MatchRegEx" );
+                if ( matchRegEx.IsNullOrWhiteSpace() )
+                {
+                    // No available pattern so move on
+                    continue;
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( Number.RemoveAllNonNumericCharacters(), matchRegEx ) )
+                {
+                    return true;
+                }
+            }
+
+            ShowErrorMessage( $"The phone number '{Number}' is not a valid phone number." );
+
+            return false;
+        }
+
+        /// <summary>
+        /// Shows the error message in the Required Field Validator.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public virtual void ShowErrorMessage( string errorMessage )
+        {
+            RequiredFieldValidator.ErrorMessage = errorMessage;
+            RequiredFieldValidator.IsValid = false;
         }
     }
 }

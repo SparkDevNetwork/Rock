@@ -52,6 +52,9 @@ namespace RockWeb.Blocks.Examples
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            RockPage.AddScriptLink( "~/Scripts/bootstrap-toc/bootstrap-toc.min.js" );
+            RockPage.AddCSSLink( "~/Scripts/bootstrap-toc/bootstrap-toc.css" );
+
             InitSyntaxHighlighting();
 
             gExample.DataKeyNames = new string[] { "Id" };

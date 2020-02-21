@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -7,8 +23,10 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -201,11 +219,6 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public HiddenField _hfValue;
 
-        /// <summary>
-        /// The hf disable VRM
-        /// </summary>
-        public HiddenField _hfValueDisableVrm;
-
         #endregion
 
         #region Properties
@@ -220,13 +233,9 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string lava = "{% include '~/Assets/Lava/editorjs-lava-parser.lava' %}";
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                mergeFields.Add( "data", HttpUtility.UrlDecode( this.StructuredContent ) );
-                return lava.ResolveMergeFields( mergeFields );
+                return GetHtmlContent( HttpUtility.UrlDecode( this.StructuredContent ) );
             }
         }
-
         /// <summary>
         /// Gets or sets the structured content.
         /// </summary>
@@ -245,6 +254,25 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _hfValue.Value = value;
 
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Structure Content Tool Id.
+        /// </summary>
+        /// <value>
+        /// The structure content tool value identifier.
+        /// </value>
+        public int? StructuredContentToolValueId
+        {
+            get
+            {
+                return ViewState["StructuredContentToolValueId"] as int?;
+            }
+
+            set
+            {
+                ViewState["StructuredContentToolValueId"] = value;
             }
         }
 
@@ -275,10 +303,6 @@ namespace Rock.Web.UI.Controls
 
             this.RequiredFieldValidator.InitialValue = "{}";
             this.RequiredFieldValidator.ControlToValidate = _hfValue.ID;
-
-            _hfValueDisableVrm = new HiddenField();
-            _hfValueDisableVrm.ID = _hfValue.ID + "_dvrm";
-            Controls.Add( _hfValueDisableVrm );
         }
 
         /// <summary>
@@ -331,12 +355,12 @@ namespace Rock.Web.UI.Controls
                 _hfValue.Value = "{}";
             }
             _hfValue.RenderControl( writer );
-            _hfValueDisableVrm.RenderControl( writer );
             writer.WriteLine();
 
             writer.AddStyleAttribute( HtmlTextWriterStyle.BackgroundColor, "#f7f7f7" );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();
             writer.WriteLine();
 
             // add script on demand only when there will be an htmleditor rendered
@@ -355,6 +379,25 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterJavascript()
         {
+            var structuredContentToolConfiguration = string.Empty;
+            if ( StructuredContentToolValueId.HasValue )
+            {
+                var structuredContentToolValue = DefinedValueCache.Get( StructuredContentToolValueId.Value );
+                if ( structuredContentToolValue != null )
+                {
+                    structuredContentToolConfiguration = structuredContentToolValue.Description; 
+                }
+            }
+
+            if ( structuredContentToolConfiguration.IsNullOrWhiteSpace() )
+            {
+                var structuredContentToolValue = DefinedValueCache.Get( SystemGuid.DefinedValue.STRUCTURE_CONTENT_EDITOR_DEFAULT );
+                if ( structuredContentToolValue != null )
+                {
+                    structuredContentToolConfiguration = structuredContentToolValue.Description;
+                }
+            }
+
             var script = string.Format( @"
 var fieldContent = $('#{1}').val();
  var output = document.getElementById('output');
@@ -364,59 +407,7 @@ var fieldContent = $('#{1}').val();
  */
 var editor = new EditorJS({{
 holderId: '{0}',
-tools: {{
-    header: {{
-    class: Header,
-    inlineToolbar: ['link'],
-    config: {{
-        placeholder: 'Header'
-    }},
-    shortcut: 'CMD+SHIFT+H'
-    }},
-    image: {{
-    class: ImageTool,
-    inlineToolbar: ['link'],
-    }},
-    list: {{
-    class: List,
-    inlineToolbar: true,
-    shortcut: 'CMD+SHIFT+L'
-    }},
-    checklist: {{
-    class: Checklist,
-    inlineToolbar: true,
-    }},
-    quote: {{
-    class: Quote,
-    inlineToolbar: true,
-    config: {{
-        quotePlaceholder: 'Enter a quote',
-        captionPlaceholder: 'Quote\'s author',
-    }},
-    shortcut: 'CMD+SHIFT+O'
-    }},
-    warning: Warning,
-    marker: {{
-    class:  Marker,
-    shortcut: 'CMD+SHIFT+M'
-    }},
-    code: {{
-    class:  CodeTool,
-    shortcut: 'CMD+SHIFT+C'
-    }},
-    delimiter: Delimiter,
-    inlineCode: {{
-    class: InlineCode,
-    shortcut: 'CMD+SHIFT+C'
-    }},
-    linkTool: LinkTool,
-    embed: Embed,
-    table: {{
-    class: Table,
-    inlineToolbar: true,
-    shortcut: 'CMD+ALT+T'
-    }}
-}},
+tools: {2},
 initialBlock: 'paragraph',
 data: JSON.parse(decodeURIComponent(fieldContent)),
 onChange: function() {{
@@ -427,8 +418,112 @@ onChange: function() {{
     }});
 }}
 }});
-", this.ClientID, _hfValue.ClientID );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "editor-script" + this.ClientID, script, true );
+", this.ClientID, _hfValue.ClientID, structuredContentToolConfiguration );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "structure-content-script" + this.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Gets or sets the Html Content.
+        /// </summary>
+        private string GetHtmlContent( string structureContentJson )
+        {
+            var structureContent = JsonConvert.DeserializeObject<Root>( structureContentJson );
+            StringBuilder html = new StringBuilder();
+
+            if ( StructuredContent == null )
+            {
+                return html.ToString();
+            }
+
+            foreach ( var item in structureContent.blocks )
+            {
+                switch ( item.type )
+                {
+                    case "header":
+                        {
+                            html.Append( $"<h{ item.data.level }>{ item.data.text }</h{ item.data.level }>" );
+                        }
+                        break;
+                    case "paragraph":
+                        {
+                            html.Append( $"{ item.data.text }" );
+                        }
+                        break;
+                    case "list":
+                        {
+                            string listTag = "ol";
+                            if ( item.data.style == "unordered" )
+                            {
+                                listTag = "ul";
+                            }
+
+                            html.Append( $"<{listTag}>" );
+                            if ( item.data.items != null )
+                            {
+                                foreach ( var li in item.data.items )
+                                {
+                                    html.Append( $"<li>{li}</li>" );
+                                }
+                            }
+                            html.Append( $"</{listTag}>" );
+                        }
+                        break;
+                    case "image":
+                        {
+                            html.Append( $"<img src='{item.data.url}' class='img-responsive'>" );
+                        }
+                        break;
+                    case "delimiter":
+                        {
+                            html.Append( $"<hr/>" );
+                        }
+                        break;
+                    case "table":
+                        {
+                            html.Append( $"<table>" );
+                            if ( item.data.content != null )
+                            {
+                                foreach ( var tr in item.data.content )
+                                {
+                                    html.Append( $"<tr>" );
+                                    foreach ( var td in tr )
+                                    {
+                                        html.Append( $"<td>{td}</td>" );
+                                    }
+                                    html.Append( $"</tr>" );
+                                }
+                                
+                            }
+                            html.Append( $"</table>" );
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return html.ToString();
+        }
+
+        private class Root
+        {
+            public List<Block> blocks { get; set; }
+        }
+
+        private class Data
+        {
+            public string level { get; set; }
+            public string text { get; set; }
+            public string style { get; set; }
+            public List<string> items { get; set; }
+            public List<List<string>> content { get; set; }
+            public string url { get; set; }
+        }
+
+        private class Block
+        {
+            public string type { get; set; }
+            public Data data { get; set; }
         }
     }
 }

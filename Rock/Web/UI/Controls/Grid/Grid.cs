@@ -67,6 +67,23 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
+        /// Gets or sets a value indicating whether [business].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [business]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Category( "Appearance" ),
+        DefaultValue( true ),
+        Description( "Is Business" )
+        ]
+        public virtual bool IsBusiness
+        {
+            get { return this.ViewState["IsBusiness"] as bool? ?? false; }
+            set { ViewState["IsBusiness"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [delete enabled].
         /// </summary>
         /// <value>
@@ -530,6 +547,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the business merge page route.
+        /// </summary>
+        /// <value>
+        /// The merge page route.
+        /// </value>
+        public virtual string BusinessMergePageRoute
+        {
+            get { return ViewState["BusinessMergePageRoute"] as string ?? "~/BusinessMerge/{0}"; }
+            set { ViewState["BusinessMergePageRoute"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the bulk update page route.
         /// </summary>
         /// <value>
@@ -880,7 +909,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             // render script for popovers
             string popoverScript = @"
     $('.grid-table tr').tooltip({html: true, container: 'body', delay: { show: 500, hide: 100 }});
-    $('.grid-table tr').click( function(){ $(this).tooltip('hide'); });;
+    $('.grid-table tr').on('click', function(){ $(this).tooltip('hide'); });;
 ";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "grid-popover", popoverScript, true );
@@ -1138,7 +1167,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         {
             if ( !dataBinding && AllowCustomPaging && PreDataBound && CurrentPageRows < PageSize )
             {
-                // When using a LinqDataSource (custom paging) and doing a postback from the last page of a grid that
+                // When using custom paging and doing a postback from the last page of a grid that
                 // has fewer rows, the default dummy data source used by Asp.Net to rebuild controls does not reflect the
                 // correct number of rows. Because we add custom paging and action rows to the end of the table, this results in
                 // header/body/footer ordering errors and/or viewstate errors. As a work-around a custom dummy data source
@@ -1323,6 +1352,19 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             else
             {
                 itemCount = 0;
+            }
+
+            // If custom paging is enabled, set the current page row count here to avoid viewstate errors on postback.
+            if ( this.AllowCustomPaging )
+            {
+                if ( itemCount > this.PageSize )
+                {
+                    CurrentPageRows = this.PageSize;
+                }
+                else
+                {
+                    CurrentPageRows = itemCount;
+                }
             }
 
             PagerTemplate pagerTemplate = this.PagerTemplate as PagerTemplate;
@@ -1585,7 +1627,14 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             int? entitySetId = GetPersonEntitySet( e );
             if ( entitySetId.HasValue )
             {
-                Page.Response.Redirect( string.Format( PersonMergePageRoute, entitySetId.Value ), false );
+                if ( IsBusiness )
+                {
+                    Page.Response.Redirect( string.Format( BusinessMergePageRoute, entitySetId.Value ), false );
+                }
+                else
+                {
+                    Page.Response.Redirect( string.Format( PersonMergePageRoute, entitySetId.Value ), false );
+                }
                 Context.ApplicationInstance.CompleteRequest();
             }
             else

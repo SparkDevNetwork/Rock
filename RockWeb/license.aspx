@@ -55,11 +55,11 @@
                         <ul>
                             <li><a href="#aspwebapi">ASP.net Web API</a> (Apache) - <a href="http://aspnetwebstack.codeplex.com/">Project Site</a> </li>
 
-                            <li><a href="http://twitter.github.io/bootstrap/">Bootstrap</a> (Apache)</li>
+                            <li><a href="https://github.com/twbs/bootstrap">Bootstrap</a> (MIT)</li>
                             <li><a href="https://github.com/aspnet/EntityFramework6">Entity Framework</a> (Apache)</li>
                             <li><a href="http://summernote.org/">Summernote</a> (MIT)</li>
                             <li><a href="https://github.com/facebook-csharp-sdk/facebook-csharp-sdk">Facebook C# SDK</a> (Apache 2)</li>
-                            <li><a href="http://fontawesome.github.io/Font-Awesome/">Font Awesome</a> (OFL)</li>
+                            <li><a href="https://github.com/FortAwesome/Font-Awesome/">Font Awesome</a> (OFL)</li>
                             <li><a href="http://json.codeplex.com/">JSON.Net</a> (MIT)</li>
                             <li><a href="http://nuget.codeplex.com/">Nuget</a> (Apache)</li>
                             <li><a href="http://nunit.org/index.php?p=license&r=2.6.2">Nunit</a> (Custom)</li>
@@ -136,6 +136,10 @@
                             <li><a href="https://github.com/vilppu/OpenHtmlToPdf">OpenHtmlToPdf</a> (Creative Commons - Attribution 3.0 Unported (CC BY 3.0))</li>
                             <li><a href="http://www.pdfsharp.net">PDF Sharp</a> (MIT)</li>
                             <li><a href="https://facebook.design/soundkit">Facebook Sound Kit</a> (Custom)</li>
+                            <li><a href="https://omnipotent.net/jquery.sparkline/">jQuery Sparklines</a> (BSD3)</li>
+                            <li><a href="https://github.com/nk-o/jarallax">Jarallax</a> (MIT)</li>
+                            <li><a href="https://github.com/bevacqua/dragula">Dragula</a> (MIT)</li>
+                            <li><a href="https://github.com/Modernizr/Modernizr">Modernizr</a> (MIT)</li>
                         </ul>
                     </div>
                 </div>

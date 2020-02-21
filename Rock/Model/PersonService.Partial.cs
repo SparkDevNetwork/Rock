@@ -263,7 +263,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindPersons instead.", false )]
+        [Obsolete( "Use FindPersons instead.", true )]
         public IEnumerable<Person> GetByMatch( string firstName, string lastName, string email, bool includeDeceased = false, bool includeBusinesses = false )
         {
             return this.FindPersons( firstName, lastName, email, includeDeceased, includeBusinesses );
@@ -783,7 +783,7 @@ namespace Rock.Model
         /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FindBusinesses instead.", false )]
+        [Obsolete( "Use FindBusinesses instead.", true )]
         public IEnumerable<Person> GetBusinessByMatch( string businessName, string email )
         {
             businessName = businessName ?? string.Empty;
@@ -2549,21 +2549,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="Rock.Model.Person" /> by their encrypted key value.
-        /// </summary>
-        /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
-        /// <param name="followMerges">if set to <c>true</c> [follow merges].</param>
-        /// <returns>
-        /// The <see cref="Rock.Model.Person" /> associated with the provided Key, otherwise null.
-        /// </returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use GetByEncryptedKey( string encryptedKey, bool followMerges, int? pageId ) instead", true )]
-        public Person GetByEncryptedKey( string encryptedKey, bool followMerges )
-        {
-            return GetByEncryptedKey( encryptedKey, true, true, null );
-        }
-
-        /// <summary>
         /// Special override of Entity.GetByEncryptedKey for Person. Gets the Person by impersonation token (rckipid) and validates it against a Rock.Model.PersonToken
         /// </summary>
         /// <param name="encryptedKey">A <see cref="System.String" /> containing an encrypted key value.</param>
@@ -2870,7 +2855,7 @@ namespace Rock.Model
         /// <param name="reasonNote">The reason note.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete]
+        [Obsolete( "", true ) ]
         public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
         {
             History.HistoryChangeList historyChangeList;
@@ -3353,16 +3338,20 @@ namespace Rock.Model
                 UPDATE Person
                     SET [BirthDate] = (
 		                    CASE 
-			                    WHEN (
-					                    [BirthYear] IS NOT NULL
-					                    AND [BirthYear] > 1800
-					                    )
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
 				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
 			                    ELSE NULL
 			                    END
 		                    )
                     FROM Person
-                    WHERE IsDeceased = 0
+                    WHERE [BirthDate] != (
+		                    CASE 
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    AND IsDeceased = 0
                     AND RecordStatusValueId <> {inactiveStatusId}";
 
             rockContext = rockContext ?? new RockContext();
@@ -3720,6 +3709,17 @@ namespace Rock.Model
         #endregion
 
         #region User Preferences
+
+        /// <summary>
+        /// Gets the prefix for a user preference key that includes the block id so that it specific to the specified block
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <returns></returns>
+        public static string GetBlockUserPreferenceKeyPrefix( int blockId )
+        {
+            return $"block-{blockId}-";
+        }
+
         /// <summary>
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
@@ -4224,6 +4224,31 @@ FROM (
         }
 
         /// <summary>
+        /// Ensures the GivingId is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateGivingIdAll( RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET GivingId = (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)
+WHERE GivingId IS NULL OR GivingId != (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)" );
+        }
+
+        /// <summary>
         /// Updates the person giving leader identifier for the specified person, or for all persons in the database if personId is null.
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -4257,8 +4282,8 @@ FROM (
 			,p2.[BirthDay]
 		) pf
 	WHERE (
-			p.GivingLeaderId IS NULL
-			OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
+			p.GivingLeaderId = 0
+			OR (p.GivingLeaderId != ISNULL(pf.CalculatedGivingLeaderId, p.Id))
 			)" );
 
             if ( personId.HasValue )
@@ -4279,5 +4304,54 @@ FROM (
         }
 
         #endregion
+
+        #region Anonymous Giver
+
+        /// <summary>
+        /// Gets or creates the anonymous giver person.
+        /// </summary>
+        /// <returns>A <see cref="Person"/> that matches the ystemGuid.Person.GIVER_ANONYMOUS Guid value.</returns>
+        public Person GetOrCreateAnonymousGiverPerson()
+        {
+            var anonymousGiver = Get( SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+            if ( anonymousGiver == null )
+            {
+                CreateAnonymousGiverPerson();
+                anonymousGiver = Get( SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+            }
+            return anonymousGiver;
+        }
+
+        /// <summary>
+        /// Creates the anonymous giver person.  Used by GetOrCreateAnonymousGiverPerson().
+        /// </summary>
+        private void CreateAnonymousGiverPerson()
+        {
+            using ( var anonymousGiverPersonRockContext = new RockContext() )
+            {
+                var anonymousGiver = new Person()
+                {
+                    IsSystem = false,
+                    RecordTypeValueId = 1,
+                    RecordStatusValueId = 3,
+                    ConnectionStatusValueId = 203,
+                    IsDeceased = false,
+                    FirstName = "Giver",
+                    NickName = "Giver",
+                    LastName = "Anonymous",
+                    Gender = Gender.Unknown,
+                    IsEmailActive = true,
+                    Guid = SystemGuid.Person.GIVER_ANONYMOUS.AsGuid(),
+                    EmailPreference = EmailPreference.EmailAllowed,
+                    CommunicationPreference = CommunicationType.Email
+                };
+
+                new PersonService( anonymousGiverPersonRockContext ).Add( anonymousGiver );
+                anonymousGiverPersonRockContext.SaveChanges();
+            }
+        }
+
+        #endregion Anonymous Giver
+
     }
 }

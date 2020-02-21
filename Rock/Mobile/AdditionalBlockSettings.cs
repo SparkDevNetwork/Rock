@@ -52,5 +52,29 @@ namespace Rock.Mobile
         /// The content when there is no network.
         /// </value>
         public string NoNetworkContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration of the cache.
+        /// </summary>
+        /// <value>
+        /// The duration of the cache.
+        /// </value>
+        public int CacheDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to process lava on the server.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if lava should be processed on the server; otherwise, <c>false</c>.
+        /// </value>
+        public bool ProcessLavaOnServer { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to process lava on the client.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if lava should be processed on the client; otherwise, <c>false</c>.
+        /// </value>
+        public bool ProcessLavaOnClient { get; set; }
     }
 }

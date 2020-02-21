@@ -22,7 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
-
+using System.Threading.Tasks;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -171,7 +171,7 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> indicating if the person attended. This value will be <c>true</c> if they did attend, otherwise <c>false</c>.
         /// </value>
         [DataMember]
-        public bool? DidAttend { get; set; }
+        public bool? DidAttend { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the processed.
@@ -417,19 +417,6 @@ namespace Rock.Model
 
         #region Obsolete Properties
 
-        // Keep track if any of the obsolete properties that were moved to AttendanceOccurrence were updated, then we'll deal with that on PreSaveChanges
-        private bool _updatedObsoleteGroupId = false;
-        private int? _updatedObsoleteGroupIdValue = null;
-
-        private bool _updatedObsoleteLocationId = false;
-        private int? _updatedObsoleteLocationIdValue = null;
-
-        private bool _updatedObsoleteScheduleId = false;
-        private int? _updatedObsoleteScheduleIdValue = null;
-
-        private bool _updatedObsoleteDidNotOccur = false;
-        private bool? _updatedObsoleteDidNotOccurValue = null;
-
         /// <summary>
         /// Gets the Id of the <see cref="Rock.Model.Group"/> that the <see cref="Rock.Model.Person"/> checked in to.
         /// </summary>
@@ -439,21 +426,17 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.GroupId instead", false )]
+        [Obsolete( "Use Occurrence.GroupId instead", true )]
         public int? GroupId
         {
             get
             {
-                return _updatedObsoleteGroupId ? _updatedObsoleteGroupIdValue : Occurrence?.GroupId;
+                return null;
             }
 
             set
             {
-                _updatedObsoleteGroupId = true;
-                _updatedObsoleteGroupIdValue = value;
 
-                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
-                ModifiedDateTime = RockDateTime.Now;
             }
         }
 
@@ -466,21 +449,16 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.LocationId instead", false )]
+        [Obsolete( "Use Occurrence.LocationId instead", true )]
         public int? LocationId
         {
             get
             {
-                return _updatedObsoleteLocationId ? _updatedObsoleteLocationIdValue : Occurrence?.LocationId;
+                return null;
             }
 
             set
             {
-                _updatedObsoleteLocationId = true;
-                _updatedObsoleteLocationIdValue = value;
-
-                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
-                ModifiedDateTime = RockDateTime.Now;
             }
         }
 
@@ -493,21 +471,16 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.ScheduleId instead", false )]
+        [Obsolete( "Use Occurrence.ScheduleId instead", true )]
         public int? ScheduleId
         {
             get
             {
-                return _updatedObsoleteScheduleId ? _updatedObsoleteScheduleIdValue : Occurrence?.ScheduleId;
+                return null;
             }
 
             set
             {
-                _updatedObsoleteScheduleId = true;
-                _updatedObsoleteScheduleIdValue = value;
-
-                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
-                ModifiedDateTime = RockDateTime.Now;
             }
         }
 
@@ -520,21 +493,16 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.DidNotOccur instead", false )]
+        [Obsolete( "Use Occurrence.DidNotOccur instead", true )]
         public bool? DidNotOccur
         {
             get
             {
-                return _updatedObsoleteDidNotOccur ? _updatedObsoleteDidNotOccurValue : Occurrence?.DidNotOccur;
+                return null;
             }
 
             set
             {
-                _updatedObsoleteDidNotOccur = true;
-                _updatedObsoleteDidNotOccurValue = value;
-
-                // Update ModifiedDateTime to ensure this record is Tracked in ChangeTracker
-                ModifiedDateTime = RockDateTime.Now;
             }
         }
 
@@ -547,7 +515,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.SundayDate instead", false )]
+        [Obsolete( "Use Occurrence.SundayDate instead", true )]
         public DateTime SundayDate
         {
             get
@@ -573,7 +541,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Group instead", false )]
+        [Obsolete( "Use Occurrence.Group instead", true )]
         public virtual Group Group
         {
             get
@@ -600,7 +568,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Location instead", false )]
+        [Obsolete( "Use Occurrence.Location instead", true )]
         public virtual Location Location
         {
             get
@@ -627,7 +595,7 @@ namespace Rock.Model
         [LavaInclude]
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Occurrence.Schedule instead", false )]
+        [Obsolete( "Use Occurrence.Schedule instead", true )]
         public virtual Schedule Schedule
         {
             get
@@ -656,6 +624,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
+            _isDeleted = entry.State == EntityState.Deleted;
             bool previousDidAttendValue;
 
             bool previouslyDeclined;
@@ -681,14 +650,11 @@ namespace Rock.Model
                 new Rock.Transactions.GroupAttendedTransaction( entry ).Enqueue();
             }
 
-#pragma warning disable 612, 618
-            ProcessObsoleteOccurrenceFields( entry );
-#pragma warning restore 612, 618
-
             base.PreSaveChanges( dbContext, entry );
         }
 
         private bool _declinedScheduledAttendance = false;
+        private bool _isDeleted = false;
 
         /// <summary>
         /// Method that will be called on an entity immediately after the item is saved by context
@@ -701,77 +667,13 @@ namespace Rock.Model
                 new GroupScheduleCancellationTransaction( this ).Enqueue();
             }
 
-            base.PostSaveChanges( dbContext );
-        }
-
-        /// <summary>
-        /// Processes the obsolete occurrence fields.
-        /// </summary>
-        /// <param name="entry">The entry.</param>
-        [RockObsolete( "1.8" )]
-        [Obsolete]
-        private void ProcessObsoleteOccurrenceFields( DbEntityEntry entry )
-        {
-            if ( entry.State == EntityState.Modified || entry.State == EntityState.Added )
+            if ( !_isDeleted )
             {
-                // NOTE: If they only changed StartDateTime, don't change the Occurrence record. We want to support letting StartDateTime be a different Date than the OccurrenceDate in that situation
-                if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId || _updatedObsoleteDidNotOccur )
-                {
-                    if ( _updatedObsoleteGroupId || _updatedObsoleteLocationId || _updatedObsoleteScheduleId )
-                    {
-                        // if they changed or set stuff related to AttendanceOccurrence (not including DidNotOccur or StartDateTime) thru obsolete properties, find or create a Matching AttendanceOccurrence Record
-                        using ( var attendanceOccurrenceRockContext = new RockContext() )
-                        {
-                            var attendanceOccurrenceService = new AttendanceOccurrenceService( attendanceOccurrenceRockContext );
-
-                            // if GroupId,LocationId, or ScheduleId changed, use StartDateTime's Date as the OccurrenceDate to look up AttendanceOccurrence since it is really a completely different Occurrence if Group,Location or Schedule changes
-                            var occurrenceDate = this.StartDateTime.Date;
-
-                            var attendanceOccurrence = attendanceOccurrenceService.Queryable().Where( a => a.GroupId == this.GroupId && a.LocationId == this.LocationId && a.ScheduleId == this.ScheduleId && a.OccurrenceDate == occurrenceDate ).FirstOrDefault();
-                            if ( attendanceOccurrence != null )
-                            {
-                                // found a matching attendanceOccurrence, so use that
-                                if ( _updatedObsoleteDidNotOccur && attendanceOccurrence.DidNotOccur != this.DidNotOccur )
-                                {
-                                    // If DidNotOccur also changed, update the DidNotOccur for the attendanceOccurrence
-                                    // NOTE: This will update *all* Attendances' DidNotOccur for this AttendanceOccurrence. That is OK. That is what we want to happen.
-                                    attendanceOccurrence.DidNotOccur = this.DidNotOccur;
-                                    attendanceOccurrenceRockContext.SaveChanges();
-                                }
-
-                                if ( attendanceOccurrence.Id != this.OccurrenceId )
-                                {
-                                    this.OccurrenceId = attendanceOccurrence.Id;
-                                }
-                            }
-                            else
-                            {
-                                // didn't find a matching attendanceOccurrence, so create and insert a new one
-                                attendanceOccurrence = new AttendanceOccurrence
-                                {
-                                    GroupId = this.GroupId,
-                                    LocationId = this.LocationId,
-                                    ScheduleId = this.ScheduleId,
-                                    DidNotOccur = this.DidNotOccur,
-                                    OccurrenceDate = occurrenceDate
-                                };
-
-                                attendanceOccurrenceService.Add( attendanceOccurrence );
-                                attendanceOccurrenceRockContext.SaveChanges();
-                                this.OccurrenceId = attendanceOccurrence.Id;
-                            }
-                        }
-                    }
-                    else if ( _updatedObsoleteDidNotOccur )
-                    {
-                        // if they only changed DidNotOccur, but not any of the other obsolete attendanceoccurrence properties, just change the DidNotOccur on the existing AttendanceOccurrence record
-                        if ( this.Occurrence != null )
-                        {
-                            this.Occurrence.DidNotOccur = _updatedObsoleteDidNotOccurValue;
-                        }
-                    }
-                }
+                // The data context save operation doesn't need to wait for this to complete
+                Task.Run( () => StreakTypeService.HandleAttendanceRecord( this ) );
             }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>

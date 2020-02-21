@@ -395,7 +395,7 @@ namespace Rock.Web.UI
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
+        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.", true )]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
             AddCacheItem( key, value, TimeSpan.MaxValue );
@@ -427,7 +427,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use RemoveCacheItem( string key ) instead.")]
+        [Obsolete("Use RemoveCacheItem( string key ) instead.", true )]
         protected virtual void FlushCacheItem( string key = "" )
         {
             RemoveCacheItem( key );
@@ -440,7 +440,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Method is no longer supported.")]
+        [Obsolete( "Method is no longer supported.", true )]
         protected virtual void FlushSharedBlock( int blockId )
         {
         }
@@ -756,6 +756,26 @@ namespace Rock.Web.UI
             {
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Return the current page URL plus any additional parameters
+        /// </summary>
+        /// <param name="additionalQueryParameters">The additional query parameters.</param>
+        /// <returns></returns>
+        public virtual string GetCurrentPageUrl( Dictionary<string, string> additionalQueryParameters = null )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+            if ( additionalQueryParameters != null )
+            {
+                foreach ( var qryParam in additionalQueryParameters )
+                {
+                    pageReference.QueryString[qryParam.Key] = qryParam.Value;
+                }
+            }
+
+            return pageReference.BuildUrl();
         }
 
         /// <summary>
@@ -1215,7 +1235,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return string.Format( "block-{0}-", this.BlockId );
+                return PersonService.GetBlockUserPreferenceKeyPrefix( this.BlockId );
             }
         }
 
@@ -1288,7 +1308,7 @@ namespace Rock.Web.UI
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}", BlockCache.Id, BlockCache.BlockType.Name ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}&CurrentPageId={2}", BlockCache.Id, BlockCache.BlockType.Name, this.PageCache?.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );

@@ -83,7 +83,7 @@ namespace Rock.CheckIn
         public bool RegistrationModeEnabled => Device.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean();
 
         /// <summary>
-        /// The group types associated with this kiosk
+        /// The group types (Checkin Areas) associated with this kiosk
         /// </summary>
         /// <value>
         /// The group types.
@@ -92,9 +92,9 @@ namespace Rock.CheckIn
         public List<KioskGroupType> KioskGroupTypes { get; set; }
 
         /// <summary>
-        /// Subset of the KioskGroupTypes
+        /// Subset of the KioskGroupTypes (Checkin Areas)
         /// </summary>
-        /// <param name="configuredGroupTypes">The current group types.</param>
+        /// <param name="configuredGroupTypes">The current group types (Checkin Areas).</param>
         /// <returns></returns>
         public List<KioskGroupType> FilteredGroupTypes( List<int> configuredGroupTypes )
         {
@@ -111,9 +111,9 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Subset of the KioskGroupTypes that are configured and currently active for check in.
+        /// Subset of the KioskGroupTypes (Checkin Areas) that are configured and currently active for check in.
         /// </summary>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
         /// <returns></returns>
         public List<KioskGroupType> ActiveGroupTypes( List<int> configuredGroupTypes )
         {
@@ -121,9 +121,9 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Subset of the KioskGroupTypes that are configured and currently active for check out.
+        /// Subset of the KioskGroupTypes (Checkin Areas) that are configured and currently active for check out.
         /// </summary>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
         /// <returns></returns>
         public List<KioskGroupType> ActiveForCheckOutGroupTypes( List<int> configuredGroupTypes )
         {
@@ -133,8 +133,12 @@ namespace Rock.CheckIn
         /// <summary>
         /// Gets a value indicating whether this instance has active locations.
         /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
+        /// <returns>
+        ///   <c>true</c> if the specified configured group types has locations; otherwise, <c>false</c>.
+        /// </returns>
         /// <value>
-        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
         /// </value>
         public bool HasLocations(List<int> configuredGroupTypes)
         {
@@ -144,8 +148,12 @@ namespace Rock.CheckIn
         /// <summary>
         /// Gets a value indicating whether this instance has active locations.
         /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
+        /// <returns>
+        ///   <c>true</c> if [has active locations] [the specified configured group types]; otherwise, <c>false</c>.
+        /// </returns>
         /// <value>
-        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
         /// </value>
         public bool HasActiveLocations(List<int> configuredGroupTypes)
         {
@@ -155,8 +163,12 @@ namespace Rock.CheckIn
         /// <summary>
         /// Gets a value indicating whether this instance has active locations for check-out.
         /// </summary>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
+        /// <returns>
+        ///   <c>true</c> if [has active check out locations] [the specified configured group types]; otherwise, <c>false</c>.
+        /// </returns>
         /// <value>
-        /// <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance has active locations; otherwise, <c>false</c>.
         /// </value>
         public bool HasActiveCheckOutLocations( List<int> configuredGroupTypes )
         {
@@ -166,7 +178,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// returns the locations for this Kiosk for the configured group types
         /// </summary>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types. (Checkin Areas)</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         public IEnumerable<Location> Locations( List<int> configuredGroupTypes, RockContext rockContext )
@@ -211,10 +223,10 @@ namespace Rock.CheckIn
         /// Reads the device by id.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead." )]
+        [Obsolete( "Use Get( int id, List<int> configuredGroupTypes ) instead.", true )]
         public static KioskDevice Read( int id, List<int> configuredGroupTypes )
         {
             return Get( id, configuredGroupTypes );
@@ -224,7 +236,7 @@ namespace Rock.CheckIn
         /// Reads the device by id.
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="configuredGroupTypes">The configured group types.</param>
+        /// <param name="configuredGroupTypes">The configured group types (Checkin Areas).</param>
         /// <returns></returns>
         public static KioskDevice Get( int id, List<int> configuredGroupTypes )
         {
@@ -233,6 +245,11 @@ namespace Rock.CheckIn
             return GetOrAddExisting( id, () => Create( id ), timespan );
         }
 
+        /// <summary>
+        /// Creates the specified identifier.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
         private static KioskDevice Create( int id )
         {
             using ( var rockContext = new RockContext() )
@@ -273,7 +290,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="id">The id.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( int id ) instead.")]
+        [Obsolete( "Use Remove( int id ) instead.", true )]
         public static void Flush( int id )
         {
             Remove( id );
@@ -283,7 +300,7 @@ namespace Rock.CheckIn
         /// Flushes all.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Clear() instead." )]
+        [Obsolete( "Use Clear() instead.", true )]
         public static void FlushAll()
         {
             Clear();

@@ -504,7 +504,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "toggle-container " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "btn-group btn-toggle" );
+            writer.AddAttribute( "class", $"btn-group btn-toggle {this.ButtonGroupCssClass}" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _btnOn.Attributes["class"] = "btn btn-default js-toggle-on " + this.ButtonSizeCssClass;

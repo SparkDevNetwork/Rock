@@ -44,7 +44,7 @@
                     search = function (term) {
 
                         // search for data elements in the search term
-                        var $dataEl = $("<p>" + term + "</p>").find("data:first");
+                        var $dataEl = $("<p>" + term + "</p>").find("data").first();
 
                         // see if this is a universal search by looking for return-type and return-id data params
                         var returnType = $dataEl.attr("return-type");
@@ -96,20 +96,20 @@
                 });
 
                 // Listen for the ENTER key being pressed while in the search box and trigger search when hit
-                this.$el.keydown(function (e) {
+                this.$el.on('keydown', function (e) {
                     if (e.keyCode === 13) {
                         e.preventDefault();
                         return false;
                     }
                 });
-                this.$el.keyup(function (e) {
+                this.$el.on('keyup', function (e) {
                     if (e.keyCode === 13 && "" !== $(this).val().trim() ) {
                         search($(this).val());
                     }
                 });
 
                 // Wire up "change" handler for search type "dropdown menu"
-                this.$el.parents('.smartsearch').find('.dropdown-menu a').click(function () {
+                this.$el.parents('.smartsearch').find('.dropdown-menu a').on('click', function () {
                     var $this = $(this),
                         text = $this.html();
 
@@ -133,7 +133,7 @@
                     settings = $.extend({}, exports.defaults, options);
 
                 if (!settings.controlId) throw 'controlId is required';
-                
+
                 if (!exports.controls[settings.controlId]) {
                     searchField = new SearchField(settings);
                     exports.controls[settings.controlId] = searchField;

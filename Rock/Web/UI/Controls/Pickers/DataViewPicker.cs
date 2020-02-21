@@ -29,10 +29,10 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a data view
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete("Use DataViewItemPicker instead")]
+    [Obsolete("Use DataViewItemPicker instead", true )]
     public class DataViewPicker : RockDropDownList
     {
 

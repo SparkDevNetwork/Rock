@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -33,59 +34,16 @@ namespace Rock.Web
     [DataContract]
     public class SystemSettings
     {
-        #region Constructors
-
-        private SystemSettings() { }
-
-        #endregion
-
         #region Properties
 
-        private readonly object _obj = new object();
-
         /// <summary>
-        /// Gets or sets the attributes.  Used to iterate all values when merging possible merge fields
+        /// Gets or sets the system settings values.
         /// </summary>
         /// <value>
-        /// The attributes.
+        /// The system settings values.
         /// </value>
-		[DataMember]
-        private List<AttributeCache> Attributes
-        {
-            get
-            {
-                var attributes = new List<AttributeCache>();
-
-                if ( _attributeIds == null )
-                {
-                    lock ( _obj )
-                    {
-                        if ( _attributeIds == null )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                _attributeIds = new AttributeService( rockContext )
-                                    .GetSystemSettings()
-                                    .Select( t => t.Id )
-                                    .ToList();
-                            }
-                        }
-                    }
-                }
-
-                foreach ( var id in _attributeIds )
-                {
-                    var attribute = AttributeCache.Get( id );
-                    if ( attribute != null )
-                    {
-                        attributes.Add( attribute );
-                    }
-                }
-
-                return attributes;
-            }
-        }
-        private List<int> _attributeIds;
+        [DataMember]
+        private ConcurrentDictionary<string, string> SystemSettingsValues { get; set; } = new ConcurrentDictionary<string, string>( StringComparer.OrdinalIgnoreCase );
 
         #endregion
 
@@ -110,28 +68,41 @@ namespace Rock.Web
         /// <returns>the Guid of this Rock instance</returns>
         public static Guid GetRockInstanceId()
         {
-            var settings = Get();
-            var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( SystemSettingKeys.ROCK_INSTANCE_ID, StringComparison.OrdinalIgnoreCase ) );
-            if ( attributeCache != null )
-            {
-                return attributeCache.Guid;
-            }
-
-            return new Guid(); // 0000-0000-0000...
+            return GetValue( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID ).AsGuidOrNull() ?? new Guid();
         }
 
         /// <summary>
-        /// Gets the Global Attribute values for the specified key.
+        /// Gets the configured Rock FirstDayOfWeek setting
+        /// </summary>
+        /// <value>
+        /// The start day of week.
+        /// </value>
+        public static DayOfWeek StartDayOfWeek
+        {
+            get
+            {
+                if ( startDayOfWeekCache == null )
+                {
+                    startDayOfWeekCache = GetValue( Rock.SystemKey.SystemSetting.START_DAY_OF_WEEK ).ConvertToEnumOrNull<DayOfWeek>() ?? RockDateTime.DefaultFirstDayOfWeek;
+                }
+
+                return startDayOfWeekCache.Value;
+            }
+        }
+
+        private static DayOfWeek? startDayOfWeekCache;
+
+        /// <summary>
+        /// Gets the System Settings values for the specified key.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
         public static string GetValue( string key )
         {
-            var settings = Get();
-            var attributeCache = settings.Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-            if ( attributeCache != null )
+            string result;
+            if ( Get().SystemSettingsValues.TryGetValue( key, out result ) )
             {
-                return attributeCache.DefaultValue;
+                return result;
             }
 
             return string.Empty;
@@ -147,7 +118,7 @@ namespace Rock.Web
             var rockContext = new Rock.Data.RockContext();
             var attributeService = new AttributeService( rockContext );
             var attribute = attributeService.GetSystemSetting( key );
-            
+
             if ( attribute == null )
             {
                 attribute = new Rock.Model.Attribute();
@@ -205,7 +176,7 @@ namespace Rock.Web
         /// Use this when saving multiple keys so a save is not called for each key.
         /// </summary>
         /// <param name="settings">The settings.</param>
-        public static void SetValueToWebConfig( Dictionary<string,string> settings )
+        public static void SetValueToWebConfig( Dictionary<string, string> settings )
         {
             bool changed = false;
             System.Configuration.Configuration rockWebConfig = null;
@@ -242,13 +213,27 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Returns Global Attributes from cache.  If they are not already in cache, they
-        /// will be read and added to cache
+        /// Loads/Reload the system settings from the database
         /// </summary>
         /// <returns></returns>
         private static SystemSettings LoadSettings()
         {
-            var systemSettings = new SystemSettings();
+            var systemSettings = new SystemSettings()
+            {
+                SystemSettingsValues = new ConcurrentDictionary<string, string>()
+            };
+
+            using ( var rockContext = new RockContext() )
+            {
+                var systemSettingAttributes = new AttributeService( rockContext ).GetSystemSettings().ToAttributeCacheList();
+                var keyValueLookup = systemSettingAttributes.ToDictionary( k => k.Key, v => v.DefaultValue );
+
+                // RockInstanceId is not the default value but the Guid. So we'll do that one seperately.
+                keyValueLookup.AddOrReplace( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, systemSettingAttributes.Where( s => s.Key == Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID ).Select( s => s.Guid ).FirstOrDefault().ToString() );
+
+                systemSettings.SystemSettingsValues = new ConcurrentDictionary<string, string>( keyValueLookup, StringComparer.OrdinalIgnoreCase );
+            }
+
             return systemSettings;
         }
 
@@ -256,7 +241,7 @@ namespace Rock.Web
         /// Flushes this instance.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove() method instead" )]
+        [Obsolete( "Use Remove() method instead", true )]
         public static void Flush()
         {
             Remove();
@@ -268,6 +253,9 @@ namespace Rock.Web
         public static void Remove()
         {
             RockCache.Remove( CacheKey );
+
+            // use startDayOfWeekCache to optimize how long it takes to get the StartDayOfWeek, since will be used for all .GetSundayDate() calls (1 millions calls was taking 15seconds, but this reduces that down to 25 ms)
+            startDayOfWeekCache = null;
         }
 
         #endregion

@@ -544,6 +544,15 @@ namespace Rock.Web.Cache
         public DateTime? LatestVersionDateTime { get; set; }
 
         /// <summary>
+        /// Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable exclusive routes]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableExclusiveRoutes { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
         /// <value>
@@ -624,6 +633,7 @@ namespace Rock.Web.Cache
             ThumbnailBinaryFileId = site.ThumbnailBinaryFileId;
             ThumbnailFileUrl = site.ThumbnailFileUrl;
             LatestVersionDateTime = site.LatestVersionDateTime;
+            EnableExclusiveRoutes = site.EnableExclusiveRoutes;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
             {
@@ -744,6 +754,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes this instance.
         /// </summary>
+        [Obsolete("This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.")]
+        [RockObsolete("1.10")]
         public static void RemoveSiteDomains()
         {
             _siteDomains = new ConcurrentDictionary<string, int?>();

@@ -187,8 +187,21 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get { return ViewState["ValidationGroup"] as string; }
-            set { ViewState["ValidationGroup"] = value; }
+            get
+            {
+                EnsureChildControls();
+                return _date.ValidationGroup;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                this.RequiredFieldValidator.ValidationGroup = value;
+                _date.ValidationGroup = value;
+                _time.ValidationGroup = value;
+                _cbCurrent.ValidationGroup = value;
+                _nbTimeOffset.ValidationGroup = value;
+            }
         }
 
         /// <summary>

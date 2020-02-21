@@ -156,6 +156,7 @@ namespace Rock.Model
             target.PhoneNumber = source.PhoneNumber;
             target.ServiceTimes = source.ServiceTimes;
             target.ShortCode = source.ShortCode;
+            target.TeamGroupId = source.TeamGroupId;
             target.TimeZoneId = source.TimeZoneId;
             target.Url = source.Url;
             target.CreatedDateTime = source.CreatedDateTime;

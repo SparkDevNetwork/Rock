@@ -38,9 +38,23 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Display the Ncoa History Record" )]
 
-    [IntegerField( "Result Count", "Number of result to display per page (default 20).", false, 20 )]
+    [IntegerField(
+        "Result Count",
+        Key = AttributeKey.ResultCount,
+        Description = "Number of result to display per page (default 20).",
+        IsRequired = false,
+        DefaultIntegerValue = 20,
+        Order = 0 )]
+
     public partial class NcoaResults : RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string ResultCount = "ResultCount";
+        }
+        #endregion Attribute Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -400,7 +414,7 @@ namespace RockWeb.Blocks.Crm
         {
             var rockContext = new RockContext();
 
-            int resultCount = Int32.Parse( GetAttributeValue( "ResultCount" ) );
+            int resultCount = Int32.Parse( GetAttributeValue( AttributeKey.ResultCount ) );
             int pageNumber = 0;
 
             if ( !String.IsNullOrEmpty( PageParameter( "page" ) ) )

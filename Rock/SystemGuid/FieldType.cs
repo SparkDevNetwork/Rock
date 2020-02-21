@@ -29,6 +29,11 @@ namespace Rock.SystemGuid
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
 
         /// <summary>
+        /// Assessment field type
+        /// </summary>
+        public const string ASSESSMENT_TYPE = "C263513A-30BE-4823-ABF1-AC12A56F9644";
+
+        /// <summary>
         /// Asset field type
         /// </summary>
         public const string ASSET = "FC27D395-8F57-467E-91FF-E648F807110E";
@@ -219,6 +224,11 @@ namespace Rock.SystemGuid
         /// Date Time field type
         /// </summary>
         public const string DATE_TIME = "FE95430C-322D-4B67-9C77-DFD1D4408725";
+
+        /// <summary>
+        /// DataView field type
+        /// </summary>
+        public const string DATA_VIEW = "BD72BBF1-0269-407E-BDBE-EEED4F1F207F";
 
         /// <summary>
         /// DataViews field type
@@ -446,6 +456,11 @@ namespace Rock.SystemGuid
         public const string MERGE_TEMPLATE = "890BAA33-5EBB-4343-A8AA-42E0E6C7467A";
 
         /// <summary>
+        /// Metric field type
+        /// </summary>
+        public const string METRIC = "AD52248B-B8C6-436E-9B57-E0BA4B42603E";
+
+        /// <summary>
         /// Metric Categories field type
         /// </summary>
         public const string METRIC_CATEGORIES = "F5334A8E-B7E2-415C-A6EC-A6D8FA5341C4";
@@ -574,6 +589,11 @@ namespace Rock.SystemGuid
         /// System Email field type
         /// </summary>
         public const string SYSTEM_EMAIL = "08F3003B-F3E2-41EC-BDF1-A2B7AC2908CF";
+
+        /// <summary>
+        /// System Communication field type
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION = "72ED40C7-4D64-4D60-9411-4FFB2B9E833E";
 
         /// <summary>
         /// Text field type

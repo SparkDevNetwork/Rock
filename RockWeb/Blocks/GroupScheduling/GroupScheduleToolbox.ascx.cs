@@ -359,13 +359,13 @@ $('#{0}').tooltip();
         }
 
         /// <summary>
-        /// Gets the occurrence time.
+        /// Gets the occurrence schedule's name.
         /// </summary>
         /// <param name="attendance">The attendance.</param>
-        /// <returns></returns>
-        protected string GetOccurrenceTime( Attendance attendance )
+        /// <returns>The name of the schedule</returns>
+        protected string GetOccurrenceScheduleName( Attendance attendance )
         {
-            return attendance.Occurrence.Schedule.GetCalendarEvent().DTStart.Value.TimeOfDay.ToTimeString();
+            return attendance.Occurrence.Schedule.Name;
         }
 
         /// <summary>
@@ -381,7 +381,7 @@ $('#{0}').tooltip();
             var attendance = e.Item.DataItem as Attendance;
 
             lConfirmedOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lConfirmedOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lConfirmedOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
 
             btnCancelConfirmAttending.CommandName = "AttendanceId";
             btnCancelConfirmAttending.CommandArgument = attendance.Id.ToString();
@@ -401,7 +401,7 @@ $('#{0}').tooltip();
             var attendance = e.Item.DataItem as Attendance;
 
             lPendingOccurrenceDetails.Text = GetOccurrenceDetails( attendance );
-            lPendingOccurrenceTime.Text = GetOccurrenceTime( attendance );
+            lPendingOccurrenceTime.Text = GetOccurrenceScheduleName( attendance );
             btnConfirmAttending.CommandName = "AttendanceId";
             btnConfirmAttending.CommandArgument = attendance.Id.ToString();
 
@@ -485,7 +485,7 @@ $('#{0}').tooltip();
         /// </summary>
         private void BindUpcomingSchedulesGrid()
         {
-            var currentDateTime = RockDateTime.Now;
+            var currentDateTime = RockDateTime.Now.Date;
             var rockContext = new RockContext();
 
             var qryConfirmedScheduled = new AttendanceService( rockContext ).GetConfirmedScheduled()
@@ -934,8 +934,15 @@ $('#{0}').tooltip();
             {
                 var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
                 var personScheduleExclusion = personScheduleExclusionService.Get( e.RowKeyId );
+
                 if ( personScheduleExclusion != null )
                 {
+                    var scheduleExclusionChildren = personScheduleExclusionService.Queryable().Where( x => x.ParentPersonScheduleExclusionId == personScheduleExclusion.Id );
+                    foreach ( var scheduleExclusionChild in scheduleExclusionChildren )
+                    {
+                        scheduleExclusionChild.ParentPersonScheduleExclusionId = null;
+                    }
+
                     personScheduleExclusionService.Delete( personScheduleExclusion );
                     rockContext.SaveChanges();
                     BindBlackoutDates();
@@ -962,11 +969,10 @@ $('#{0}').tooltip();
 
             using ( var rockContext = new RockContext() )
             {
-                List<int> familyMemberAliasIds = new PersonService( rockContext )
+                var familyMemberAliasIds = new PersonService( rockContext )
                     .GetFamilyMembers( this.SelectedPersonId, true )
-                    .Select( m => m.Person.Aliases.FirstOrDefault( a => a.PersonId == m.PersonId ) )
-                    .Select( a => a.Id )
-                    .ToList();
+                    .SelectMany( m => m.Person.Aliases )
+                    .Select( a => a.Id ).ToList();
 
                 var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
                 var personScheduleExclusions = personScheduleExclusionService
@@ -1234,13 +1240,17 @@ $('#{0}').tooltip();
             {
                 if ( availableSchedule.GroupId != currentGroupId )
                 {
-                    currentGroupId = availableSchedule.GroupId;
+                    if ( currentGroupId != -1 )
+                    {
+                        phSignUpSchedules.Controls.Add( new LiteralControl( "</div>" ) );
+                    }
+
                     CreateGroupHeader( availableSchedule.GroupName, availableSchedule.GroupType );
                 }
 
                 if ( availableSchedule.ScheduledDateTime.Date != currentOccurrenceDate.Date )
                 {
-                    if ( currentScheduleId != -1 )
+                    if ( currentScheduleId != -1 && availableSchedule.GroupId == currentGroupId )
                     {
                         phSignUpSchedules.Controls.Add( new LiteralControl( "</div>" ) );
                     }
@@ -1249,6 +1259,7 @@ $('#{0}').tooltip();
                     CreateDateHeader( currentOccurrenceDate );
                 }
 
+                currentGroupId = availableSchedule.GroupId;
                 currentScheduleId = availableSchedule.ScheduleId;
                 CreateScheduleSignUpRow( availableSchedule, availableGroupLocationSchedules );
             }
@@ -1392,7 +1403,7 @@ $('#{0}').tooltip();
                     var locationId = ddlSignupLocations.SelectedValue.AsIntegerOrNull();
                     var groupId = hfGroupId.Value.AsInteger();
                     var attendanceId = hfAttendanceId.Value.AsIntegerOrNull();
-                    AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrCreateAttendanceOccurrence( occurrenceDate, scheduleId, locationId, groupId );
+                    AttendanceOccurrence attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
                     var attendanceService = new AttendanceService( rockContext );
 
                     if ( attendanceId.HasValue )

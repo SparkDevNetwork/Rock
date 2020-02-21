@@ -669,28 +669,6 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
         /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use IsShowInGridVisible instead.", true )]
-        public bool ShowInGridVisible
-        {
-            get
-            {
-                EnsureChildControls();
-                return _cbShowInGrid.Visible;
-            }
-            set
-            {
-                EnsureChildControls();
-                _cbShowInGrid.Visible = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether Show in Grid option is displayed
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if Show in Grid option is visible; otherwise, <c>false</c>.
-        /// </value>
         public bool IsShowInGridVisible
         {
             get
@@ -1036,7 +1014,7 @@ namespace Rock.Web.UI.Controls
         /// The field type id.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead" )]
+        [Obsolete( "Use AttributeFieldTypeId or SetAttributeFieldType instead", true )]
         public int? FieldTypeId
         {
             get
@@ -1073,7 +1051,7 @@ namespace Rock.Web.UI.Controls
         /// The qualifiers.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead" )]
+        [Obsolete( "Use AttributeQualifiers or SetAttributeFieldType instead", true )]
         public Dictionary<string, ConfigurationValue> Qualifiers
         {
             get
@@ -1105,7 +1083,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the FieldType and Qualifiers 
+        /// Sets the FieldType and Qualifiers
         /// </summary>
         /// <param name="fieldTypeId">The field type identifier.</param>
         /// <param name="qualifiers">The qualifiers.</param>
@@ -1150,7 +1128,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the ViewState of the field type qualifiers 
+        /// Gets or sets the ViewState of the field type qualifiers
         /// </summary>
         /// <value>
         /// The state of the field type qualifier.
@@ -1296,7 +1274,7 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            // Get the FieldType that was selected in the postback 
+            // Get the FieldType that was selected in the postback
             // This will either come from ddlFieldType of hfFieldTypeId depending if the FieldType is editable
             int? postBackFieldTypeId = this.Page.Request[_ddlFieldType.UniqueID].AsIntegerOrNull() ?? this.Page.Request[_hfReadOnlyFieldTypeId.UniqueID].AsIntegerOrNull();
             int? fieldTypeIdState = ViewState["FieldTypeIdState"] as int?;
@@ -1415,7 +1393,7 @@ namespace Rock.Web.UI.Controls
             _cvKey.CssClass = "validation-error help-inline";
             _cvKey.ErrorMessage = "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
             Controls.Add( _cvKey );
-                       
+
 
             _cbRequired = new RockCheckBox();
             _cbRequired.ID = "cbRequired";
@@ -1468,7 +1446,7 @@ namespace Rock.Web.UI.Controls
             _pwAdvanced = new PanelWidget();
             _pwAdvanced.ID = "pwAdvanced";
             _pwAdvanced.Title = "Advanced Settings";
-            
+
             var pnlAdvancedTopRow = new Panel { CssClass = "row" };
             _pwAdvanced.Controls.Add( pnlAdvancedTopRow );
             var pnlAdvancedTopRowCol1 = new Panel { CssClass = "col-md-6" };
@@ -1550,7 +1528,7 @@ namespace Rock.Web.UI.Controls
             _btnCancel = new LinkButton();
             _btnCancel.ID = "btnCancel";
             _btnCancel.Text = "Cancel";
-            _btnCancel.CssClass = "btn btn-default";
+            _btnCancel.CssClass = "btn btn-link";
             _btnCancel.CausesValidation = false;
             _btnCancel.Click += btnCancel_Click;
             Controls.Add( _btnCancel );
@@ -1885,7 +1863,7 @@ namespace Rock.Web.UI.Controls
                 this.IsFieldTypeEditable = attribute.Id == 0 || attribute.FieldTypeId == 0;
 
                 var qualifiers = new Dictionary<string, ConfigurationValue>();
-                
+
                 var field = FieldTypeCache.Get( attribute.FieldTypeId )?.Field;
                 if ( field != null )
                 {
@@ -2080,12 +2058,12 @@ namespace Rock.Web.UI.Controls
 
             keyValue = $('#' + nameControlId).val().replace(/[^a-zA-Z0-9_.\-]/g, '');
             var newKeyValue = keyValue;
-        
+
             var i = 1;
             while ($.inArray(newKeyValue, reservedKeyNames) >= 0) {
                 newKeyValue = keyValue + i++;
             }
-            
+
             $keyControl.val(newKeyValue);
             $literalKeyControl.html(newKeyValue);
         }
@@ -2119,4 +2097,51 @@ namespace Rock.Web.UI.Controls
 
     }
 
+    #region Extension Methods
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class AttributeEditorExtensions
+    {
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        public static Rock.Model.Attribute SaveChangesToStateCollection( this AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
+        }
+    }
+
+    #endregion
 }

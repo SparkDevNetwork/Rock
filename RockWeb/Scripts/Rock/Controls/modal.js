@@ -104,7 +104,7 @@
                     }
                     else {
                         $('#rock-config-trigger-data').val(msg);
-                        $('#rock-config-trigger').click();
+                        $('#rock-config-trigger').trigger('click');
                     }
                 }
             },

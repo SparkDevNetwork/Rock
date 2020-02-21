@@ -100,15 +100,28 @@ namespace Rock.Model
         public bool? DidNotOccur { get; set; }
 
         /// <summary>
-        /// Gets or sets the sunday date.
+        /// Gets Sunday date.
         /// </summary>
         /// <value>
-        /// The sunday date.
+        /// The Sunday date.
         /// </value>
         [DataMember]
-        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
         [Column( TypeName = "Date" )]
-        public DateTime SundayDate { get; set; }
+        [Index( "IX_SundayDate" )]
+        public DateTime SundayDate
+        {
+            get
+            {
+                // NOTE: This is the In-Memory get, LinqToSql will get the value from the database.
+                // Also, on an Insert/Update this will be the value saved to the database
+                return OccurrenceDate.SundayDate();
+            }
+
+            set
+            {
+                // don't do anything here since EF uses this for loading, and we also want to ignore if somebody other than EF tries to set this 
+            }
+        }
 
         /// <summary>
         /// Gets or sets the notes.
@@ -163,10 +176,20 @@ namespace Rock.Model
         public string DeclineReasonValueIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurence is associated.
+        /// Gets or sets the Id of the <see cref="StepType"/> to which this occurrence is associated.
         /// </summary>
         [DataMember]
         public int? StepTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name.
+        /// </summary>
+        /// <value>
+        /// The name.
+        /// </value>
+        [MaxLength( 250 )]
+        [DataMember]
+        public string Name { get; set; }
 
         #endregion
 
@@ -241,7 +264,8 @@ namespace Rock.Model
         /// Gets the attendance rate.
         /// </summary>
         /// <value>
-        /// The attendance rate.
+        /// The attendance rate which is the number of attendance records marked as did attend
+        /// divided by the total number of attendance records for this occurrence.
         /// </value>
         public double AttendanceRate
         {
@@ -259,6 +283,32 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the percent members attended.
+        /// </summary>
+        /// <value>
+        /// The percent members attended is the number of attendance records marked as did attend
+        /// divided by the total number of members in the group.
+        /// </value>
+        public double PercentMembersAttended
+        {
+            get
+            {
+                var groupMemberCount = Group.Members
+                                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                    .Where( m => !m.IsArchived )
+                                    .Count();
+
+                if ( groupMemberCount > 0 )
+                {
+                    return ( double ) ( DidAttendCount ) / ( double ) groupMemberCount;
+                }
+                else
+                {
+                    return 0.0d;
+                }
+            }
+        }
         /// <summary>
         /// Gets or sets the Step Type.
         /// </summary>

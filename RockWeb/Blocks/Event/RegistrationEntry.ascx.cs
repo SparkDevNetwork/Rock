@@ -55,7 +55,11 @@ namespace RockWeb.Blocks.Event
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
     [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
     [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
-    [SystemEmailField( "Confirm Account Template", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, Category ="", Order = 7,
+
+    [SystemCommunicationField( "Confirm Account Template",
+        Description = "Confirm Account Email Template",
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT,
+        Order = 7,
         Key = AttributeKey.ConfirmAccountTemplate )]
 
     [TextField( "Family Term",
@@ -69,13 +73,19 @@ namespace RockWeb.Blocks.Event
         Description = "Force the email to be updated on the person's record.",
         DefaultBooleanValue = false,
         Order = 9,
-        Key =AttributeKey.ForceEmailUpdate )]
+        Key = AttributeKey.ForceEmailUpdate )]
 
     [BooleanField( "Show Field Descriptions",
         Description = "Show the field description as help text",
         DefaultBooleanValue = true,
         Order = 10,
         Key = AttributeKey.ShowFieldDescriptions )]
+
+    [BooleanField( "Enabled Saved Account",
+        Key = AttributeKey.EnableSavedAccount,
+        Description = "Set this to false to disable the using Saved Account as a payment option, and to also disable the option to create saved account for future use.",
+        DefaultBooleanValue = true,
+        Order = 11 )]
     public partial class RegistrationEntry : RockBlock
     {
         private static class AttributeKey
@@ -84,6 +94,7 @@ namespace RockWeb.Blocks.Event
             public const string FamilyTerm = "FamilyTerm";
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
+            public const string EnableSavedAccount = "EnableSavedAccount";
         }
 
         #region Fields
@@ -260,7 +271,7 @@ namespace RockWeb.Blocks.Event
         private decimal? minimumPayment { get; set; }
 
         /// <summary>
-        /// Gets or sets the default payment (combined for all registrants for this registration) 
+        /// Gets or sets the default payment (combined for all registrants for this registration)
         /// </summary>
         /// <value>
         /// The default payment.
@@ -1844,13 +1855,15 @@ namespace RockWeb.Blocks.Event
 
             if ( RegistrationState != null )
             {
-                // Calculate the available slots. If maxAttendees is 0 that means unlimited since this is not a nullable.
+                // Calculate the available slots. If maxAttendees is null that means unlimited registrants and RegistrationState.SlotsAvailable should not be calculated.
                 if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees.HasValue )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
-                    var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
+                    var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() )
+                        .Queryable()
                         .Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId && !a.Registration.IsTemporary )
-                        .Where( a => !existingRegistrantIds.Contains( a.Id ) ).Count();
+                        .Where( a => !existingRegistrantIds.Contains( a.Id ) )
+                        .Count();
 
                     int otherRegistrants = RegistrationInstanceState.Registrations
                         .Where( r => !r.IsTemporary )
@@ -3067,7 +3080,8 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            if ( familyId.HasValue && location != null )
+            // If we have family ID and a meaninful location then update that info
+            if ( familyId.HasValue && location != null && location.IsMinimumViableAddress() )
             {
                 var familyGroup = new GroupService( rockContext ).Get( familyId.Value );
                 var existingLocation = new LocationService( rockContext ).Get(
@@ -3080,7 +3094,7 @@ namespace RockWeb.Blocks.Event
                     familyGroup,
                     true,
                     false );
-                
+
                 var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 if ( homeLocationType != null && familyGroup != null )
                 {
@@ -3440,7 +3454,7 @@ namespace RockWeb.Blocks.Event
                     {
                         rockContext.SaveChanges();
                     }
-              
+
                     transaction.BatchId = batch.Id;
 
                     // use the financialTransactionService to add the transaction instead of batch.Transactions to avoid lazy-loading the transactions already associated with the batch
@@ -3630,12 +3644,13 @@ namespace RockWeb.Blocks.Event
                 RegistrationTemplate.RegistrationInstructions :
                 RegistrationInstanceState.RegistrationInstructions;
 
-            if ( !string.IsNullOrEmpty( instructions ) )
+            // Sanitize for empty check catches things like empty paragraph tags.
+            if ( !string.IsNullOrEmpty( instructions.SanitizeHtml() ) )
             {
                 lInstructions.Text = string.Format( "<div class='text-left'>{0}</div>", instructions );
             }
 
-            return instructions.IsNotNullOrWhiteSpace();
+            return instructions.SanitizeHtml().IsNotNullOrWhiteSpace();
         }
 
         /// <summary>
@@ -3674,7 +3689,7 @@ namespace RockWeb.Blocks.Event
                 {
                     max = RegistrationState.SlotsAvailable.Value;
                 }
-                
+
                 if ( max > MinRegistrants )
                 {
                     // If registration allows multiple registrants show the 'How Many' panel
@@ -3711,32 +3726,34 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ShowWaitingListNotice()
         {
-            if ( RegistrationTemplate.WaitListEnabled )
+            if ( !RegistrationTemplate.WaitListEnabled || !RegistrationState.SlotsAvailable.HasValue )
             {
-                nbWaitingList.Title = string.Format( "{0} Full", RegistrationTerm );
+                return;
+            }
 
-                if ( !RegistrationState.SlotsAvailable.HasValue || RegistrationState.SlotsAvailable.Value <= 0 )
+            nbWaitingList.Title = string.Format( "{0} Full", RegistrationTerm );
+
+            if ( RegistrationState.SlotsAvailable.Value <= 0 )
+            {
+                nbWaitingList.Text = string.Format( "<p>This {0} has reached its capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
+                nbWaitingList.Visible = true;
+            }
+            else
+            {
+                if ( numHowMany.Value > RegistrationState.SlotsAvailable )
                 {
-                    nbWaitingList.Text = string.Format( "<p>This {0} has reached its capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
+                    int slots = RegistrationState.SlotsAvailable.Value;
+                    int wait = numHowMany.Value - slots;
+                    nbWaitingList.Text = string.Format(
+                        "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
+                        RegistrationTerm.ToLower(),
+                        slots,
+                        RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(),
+                        slots > 1 ? slots.ToString() + " " : string.Empty,
+                        RegistrationInstanceState.Name,
+                        wait > 1 ? wait.ToString() + " " : string.Empty,
+                        RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
                     nbWaitingList.Visible = true;
-                }
-                else
-                {
-                    if ( numHowMany.Value > RegistrationState.SlotsAvailable )
-                    {
-                        int slots = RegistrationState.SlotsAvailable.Value;
-                        int wait = numHowMany.Value - slots;
-                        nbWaitingList.Text = string.Format(
-                            "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
-                            RegistrationTerm.ToLower(),
-                            slots,
-                            RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(),
-                            slots > 1 ? slots.ToString() + " " : string.Empty,
-                            RegistrationInstanceState.Name,
-                            wait > 1 ? wait.ToString() + " " : string.Empty,
-                            RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
-                        nbWaitingList.Visible = true;
-                    }
                 }
             }
         }
@@ -3817,6 +3834,22 @@ namespace RockWeb.Blocks.Event
                 var registrant = RegistrationState.Registrants[CurrentRegistrantIndex];
                 if ( registrant.OnWaitList )
                 {
+                    /*
+                        1/31/2020 - NA 
+                        This conditional if block below comes from SECC via PR #4071 (https://github.com/SparkDevNetwork/Rock/pull/4071).
+                        I attempted to reproduce the problem described in the PR but was unable.
+
+                        After talking this over with the product owner (JME), we decided to accept the Pull Request
+                        because SECC said they've been running with this change in their production environment
+                        "for a few months and it fixed our issues."
+
+                        Reason: Registration entry for waiting lists that have Signature Documents.
+                    */
+                    if ( CurrentFormIndex >= RegistrationTemplate.Forms.Count )
+                    {
+                        return false;
+                    }
+
                     var form = RegistrationTemplate.Forms.OrderBy( f => f.Order ).ToList()[CurrentFormIndex];
                     return form.Fields.Any( f => !f.IsInternal && f.ShowOnWaitlist );
                 }
@@ -4099,7 +4132,9 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( nbAmountPaid.Visible = true &&
+                var enableSavedAccount = this.GetAttributeValue( AttributeKey.EnableSavedAccount ).AsBoolean();
+
+                if ( enableSavedAccount && ( nbAmountPaid.Visible = true ) &&
                     nbAmountPaid.Text.AsDecimalOrNull().HasValue &&
                     nbAmountPaid.Text.AsDecimalOrNull().Value > 0.0M &&
                     ( rblSavedCC.Items.Count == 0 || ( rblSavedCC.SelectedValueAsId() ?? 0 ) == 0 ) )
@@ -4287,10 +4322,12 @@ namespace RockWeb.Blocks.Event
 
     // Detect credit card type
     $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
+    // Trigger the keyup event in situations where the user has clicked the Previous button and is returning to this page
+    $('.credit-card').keyup();
 
     // Toggle credit card display if saved card option is available
     $('div.radio-content').prev('div.radio-list').find('input:radio').unbind('click').on('click', function () {{
-        $content = $(this).parents('div.radio-list:first').next('.radio-content');
+        $content = $(this).parents('div.radio-list').first().next('.radio-content');
         var radioDisplay = $content.css('display');
         if ($(this).val() == 0 && radioDisplay == 'none') {{
             $content.slideToggle();
@@ -4768,7 +4805,7 @@ namespace RockWeb.Blocks.Event
                     foreach ( var fee in RegistrationTemplate.Fees )
                     {
                         List<FeeInfo> feeValues = fee.GetFeeInfoFromControls( phFees );
-                        if ( fee != null )
+                        if ( feeValues != null )
                         {
                             registrant.FeeValues.AddOrReplace( fee.Id, feeValues );
                         }
@@ -5327,12 +5364,12 @@ namespace RockWeb.Blocks.Event
                                 // default Payment is more than min and less than balance due, so we can use it
                                 RegistrationState.PaymentAmount = defaultPayment;
                             }
-                            else if (defaultPayment <= minimumPayment)
+                            else if ( defaultPayment <= minimumPayment )
                             {
                                 // default Payment is less than min, so use min instead
                                 RegistrationState.PaymentAmount = minimumPayment;
                             }
-                            else if (defaultPayment >= balanceDue)
+                            else if ( defaultPayment >= balanceDue )
                             {
                                 // default Payment is more than balance due, so use balance due
                                 RegistrationState.PaymentAmount = balanceDue;
@@ -5511,6 +5548,11 @@ namespace RockWeb.Blocks.Event
             var currentValue = rblSavedCC.SelectedValue;
 
             rblSavedCC.Items.Clear();
+
+            if ( this.GetAttributeValue( AttributeKey.EnableSavedAccount ).AsBoolean() == false )
+            {
+                return;
+            }
 
             if ( CurrentPerson != null )
             {

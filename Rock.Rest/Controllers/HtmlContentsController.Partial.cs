@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,10 +50,7 @@ namespace Rock.Rest.Controllers
                 if ( htmlContent != null )
                 {
                     htmlContent.Content = htmlContents.Content;
-                    if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                    {
-                        System.Web.HttpContext.Current.Items.Add( "CurrentPerson", person );
-                    }
+                    System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
 
                     Service.Context.SaveChanges();
 

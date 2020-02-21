@@ -40,17 +40,12 @@ namespace Rock.Jobs
         IsRequired = true,
         Order = 0 )]
 
-    [SystemEmailField( "Notification Email",
+    [SystemCommunicationField( "Notification Email",
         Key = AttributeKey.NotificationEmail,
         IsRequired = true,
         Order = 1 )]
 
-    [GroupRoleField(
-        Name = "Group Role Filter",
-        Key = AttributeKey.GroupRoleFilter,
-        Description = "Optional group role to filter the absent members by.To select the role you’ll need to select a group type.",
-        IsRequired = false,
-        Order = 2 )]
+    [GroupRoleField( null, "Group Role Filter", "Optional group role to filter the absent members by. To select the role you'll need to select a group type.", false, null, null, 2, AttributeKey.GroupRoleFilter )]
 
     [IntegerField( "Minimum Absences",
         Key = AttributeKey.MinimumAbsences,
@@ -126,9 +121,9 @@ namespace Rock.Jobs
             int minimumAbsences = dataMap.GetString( AttributeKey.MinimumAbsences ).AsInteger();
 
             // get system email
-            SystemEmailService emailService = new SystemEmailService( rockContext );
+            var emailService = new SystemCommunicationService( rockContext );
 
-            SystemEmail systemEmail = null;
+            SystemCommunication systemEmail = null;
             if ( !systemEmailGuid.HasValue || systemEmailGuid == Guid.Empty )
             {
                 context.Result = "Job failed. Unable to find System Email";

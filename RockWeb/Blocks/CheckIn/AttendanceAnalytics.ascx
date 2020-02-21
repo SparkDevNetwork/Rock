@@ -273,7 +273,7 @@
                                             <Rock:RockLiteralField HeaderText="First Visit" ID="lFirstVisitDate" SortExpression="FirstVisit.StartDateTime"/>
                                             <Rock:RockLiteralField HeaderText="Second Visit" ID="lSecondVisitDate" />
                                             <Rock:DateField DataField="LastVisit.StartDateTime" HeaderText="Last Visit" SortExpression="LastVisit.StartDateTime" />
-                                            <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.Campus.Name" />
+                                            <Rock:CampusField DataField="LastVisit.CampusId" HeaderText="Campus" SortExpression="LastVisit.CampusName" />
                                             <Rock:RockLiteralField HeaderText="Service Time" ID="lServiceTime" />
                                             <Rock:RockBoundField DataField="LastVisit.GroupName" HeaderText="Check-in Area" SortExpression="LastVisit.GroupName" />
                                             <Rock:RockBoundField DataField="LastVisit.LocationName" HeaderText="Location" SortExpression="LastVisit.LocationName" />

@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -119,13 +120,15 @@ namespace Rock.Model
         #region Update Hook
 
         /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
+        /// Perform tasks prior to saving changes to this entity.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
+        /// <param name="entry">The entry.</param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            StreakTypeService.UpdateEnrollmentStreakPropertiesAsync( StreakTypeId );
-            base.PostSaveChanges( dbContext );
+            // Add a transaction to process denormalized data refreshes
+            new StreakTypeExclusionChangeTransaction( entry ).Enqueue();
+            base.PreSaveChanges( dbContext, entry );
         }
 
         #endregion Update Hook

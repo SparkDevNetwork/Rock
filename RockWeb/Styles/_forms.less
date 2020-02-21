@@ -13,8 +13,6 @@
 // 1. Bootstrap Overrides / Additions
 // -------------------------
 
-
-
 .input-xs {
   .input-size(@input-height-xs; @padding-xs-vertical; @padding-xs-horizontal; @font-size-small; @line-height-small; @input-border-radius-small);
 }
@@ -180,19 +178,17 @@ a.aspNetDisabled {
     .form-group {
       display: -ms-flexbox;
       display: flex;
-      -ms-flex-wrap: wrap;
-      flex-wrap: wrap;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
       margin-right: -15px;
       margin-left: -15px;
-      -ms-flex-pack: end!important;
-      justify-content: flex-end!important;
 
-      label {
-        -ms-flex: 0 0 auto;
-        flex: 0 0 auto;
+      .control-label {
+        -ms-flex: 1 1 auto;
+        flex: 1 1 auto;
         width: auto;
-        max-width: 100%;
         min-width: 180px;
+        max-width: 100%;
       }
       .control-wrapper {
         -ms-flex: 0 0 auto;
@@ -303,6 +299,16 @@ dl:not(.dl-horizontal) {
   & > label {
     float: left;
     margin-top: 8px;
+  }
+
+  .form-group-auto & {
+    display: -ms-flexbox;
+    display: flex;
+
+    .form-control {
+      -ms-flex: 1 1 0;
+      flex: 1 1 0;
+    }
   }
 }
 

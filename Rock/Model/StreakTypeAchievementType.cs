@@ -14,14 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -31,9 +32,23 @@ namespace Rock.Model
     [RockDomain( "Streaks" )]
     [Table( "StreakTypeAchievementType" )]
     [DataContract]
-    public partial class StreakTypeAchievementType : Model<StreakTypeAchievementType>, IHasActiveFlag
+    public partial class StreakTypeAchievementType : Model<StreakTypeAchievementType>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
+
+        /// <summary>
+        /// Gets or sets the name of the achievement type. This property is required.
+        /// </summary>
+        [MaxLength( 250 )]
+        [DataMember( IsRequired = true )]
+        [Required]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a description of the achievement type.
+        /// </summary>
+        [DataMember]
+        public string Description { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="Model.StreakType"/> to which this StreakTypeAchievementType belongs. This property is required.
@@ -56,10 +71,16 @@ namespace Rock.Model
         public int? AchievementStartWorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="WorkflowType"/> to be triggered when an achievement is ended
+        /// Gets or sets the Id of the <see cref="WorkflowType"/> to be triggered when an achievement is successful
         /// </summary>
         [DataMember]
-        public int? AchievementEndWorkflowTypeId { get; set; }
+        public int? AchievementSuccessWorkflowTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the <see cref="WorkflowType"/> to be triggered when an achievement is failed (closed and not successful)
+        /// </summary>
+        [DataMember]
+        public int? AchievementFailureWorkflowTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the <see cref="StepType"/> of which a <see cref="Step"/> will be created when an achievement is completed
@@ -100,7 +121,7 @@ namespace Rock.Model
         /// </value>
         [Range( 1, int.MaxValue )]
         [DataMember]
-        public int MaxAccomplishmentsAllowed { get; set; } = 1;
+        public int? MaxAccomplishmentsAllowed { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets whether over achievement is allowed. This cannot be true if <see cref="MaxAccomplishmentsAllowed"/> is greater than 1.
@@ -135,6 +156,29 @@ namespace Rock.Model
 
         #endregion IHasActiveFlag
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return StreakTypeAchievementTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            StreakTypeAchievementTypeCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion
+
         #region Virtual Properties
 
         /// <summary>
@@ -156,10 +200,16 @@ namespace Rock.Model
         public virtual WorkflowType AchievementStartWorkflowType { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="WorkflowType"/> to be launched when the achievement ends.
+        /// Gets or sets the <see cref="WorkflowType"/> to be launched when the achievement is successful.
         /// </summary>
         [DataMember]
-        public virtual WorkflowType AchievementEndWorkflowType { get; set; }
+        public virtual WorkflowType AchievementSuccessWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="WorkflowType"/> to be launched when the achievement is failed (closed and not successful).
+        /// </summary>
+        [DataMember]
+        public virtual WorkflowType AchievementFailureWorkflowType { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="StepType"/> to be created when the achievement is completed.
@@ -193,6 +243,34 @@ namespace Rock.Model
         }
         private ICollection<StreakAchievementAttempt> _streakAchievementAttempts;
 
+        /// <summary>
+        /// Gets or sets the prerequisites.
+        /// </summary>
+        /// <value>
+        /// The prerequisites.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakTypeAchievementTypePrerequisite> Prerequisites
+        {
+            get => _prerequisites ?? ( _prerequisites = new Collection<StreakTypeAchievementTypePrerequisite>() );
+            set => _prerequisites = value;
+        }
+        private ICollection<StreakTypeAchievementTypePrerequisite> _prerequisites;
+
+        /// <summary>
+        /// Gets or sets the dependencies.
+        /// </summary>
+        /// <value>
+        /// The dependencies.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakTypeAchievementTypePrerequisite> Dependencies
+        {
+            get => _dependencies ?? ( _dependencies = new Collection<StreakTypeAchievementTypePrerequisite>() );
+            set => _dependencies = value;
+        }
+        private ICollection<StreakTypeAchievementTypePrerequisite> _dependencies;
+
         #endregion Virtual Properties
 
         #region Entity Configuration
@@ -209,11 +287,12 @@ namespace Rock.Model
             {
                 HasRequired( stat => stat.StreakType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.StreakTypeId ).WillCascadeOnDelete( true );
                 HasRequired( stat => stat.AchievementEntityType ).WithMany().HasForeignKey( stat => stat.AchievementEntityTypeId ).WillCascadeOnDelete( true );
-                HasRequired( stat => stat.AchievementStartWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementStartWorkflowTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementEndWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementEndWorkflowTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementStepType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
-                HasRequired( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
 
+                HasOptional( stat => stat.AchievementStartWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementStartWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementSuccessWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementSuccessWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementFailureWorkflowType ).WithMany().HasForeignKey( stat => stat.AchievementFailureWorkflowTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementStepType ).WithMany( st => st.StreakTypeAchievementTypes ).HasForeignKey( stat => stat.AchievementStepTypeId ).WillCascadeOnDelete( false );
+                HasOptional( stat => stat.AchievementStepStatus ).WithMany().HasForeignKey( stat => stat.AchievementStepStatusId ).WillCascadeOnDelete( false );
                 HasOptional( stat => stat.Category ).WithMany().HasForeignKey( stat => stat.CategoryId ).WillCascadeOnDelete( false );
             }
         }

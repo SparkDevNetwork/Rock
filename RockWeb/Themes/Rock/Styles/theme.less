@@ -34,13 +34,11 @@
 
 html {
   -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
 
 // Temporary Fix for Safari 13 Select Rendering Bug
 select {
-  text-rendering: auto;
   -webkit-font-smoothing: none;
 }
 // End Temporary Fix
@@ -292,7 +290,7 @@ textarea,
 .grid-filter {
   border: 0;
 
-  .btn-link {
+  .btn-filter-toggle {
     margin: 5px 0 0 7px;
   }
 }
@@ -548,7 +546,7 @@ td.grid-actions {
 }
 
 .grid-actions {
-  .btn {
+  .btn-grid-action {
     padding: 5px 7px;
     font-size: 1.125em;
     color: @ui-5;

@@ -35,10 +35,10 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
-        public int? AchievementEndWorkflowTypeId { get; set; }
+        public int AchievementEntityTypeId { get; set; }
 
         /// <summary />
-        public int AchievementEntityTypeId { get; set; }
+        public int? AchievementFailureWorkflowTypeId { get; set; }
 
         /// <summary />
         public string AchievementIconCssClass { get; set; }
@@ -53,6 +53,9 @@ namespace Rock.Client
         public int? AchievementStepTypeId { get; set; }
 
         /// <summary />
+        public int? AchievementSuccessWorkflowTypeId { get; set; }
+
+        /// <summary />
         public bool AllowOverAchievement { get; set; }
 
         /// <summary />
@@ -60,6 +63,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? CategoryId { get; set; }
+
+        /// <summary />
+        public string Description { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -71,12 +77,15 @@ namespace Rock.Client
         public bool IsActive { get; set; }
 
         /// <summary />
-        public int MaxAccomplishmentsAllowed { get; set; } = 1;
+        public int? MaxAccomplishmentsAllowed { get; set; } = 1;
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
 
         /// <summary />
         public string ResultsLavaTemplate { get; set; }
@@ -117,20 +126,23 @@ namespace Rock.Client
         public void CopyPropertiesFrom( StreakTypeAchievementType source )
         {
             this.Id = source.Id;
-            this.AchievementEndWorkflowTypeId = source.AchievementEndWorkflowTypeId;
             this.AchievementEntityTypeId = source.AchievementEntityTypeId;
+            this.AchievementFailureWorkflowTypeId = source.AchievementFailureWorkflowTypeId;
             this.AchievementIconCssClass = source.AchievementIconCssClass;
             this.AchievementStartWorkflowTypeId = source.AchievementStartWorkflowTypeId;
             this.AchievementStepStatusId = source.AchievementStepStatusId;
             this.AchievementStepTypeId = source.AchievementStepTypeId;
+            this.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
             this.AllowOverAchievement = source.AllowOverAchievement;
             this.BadgeLavaTemplate = source.BadgeLavaTemplate;
             this.CategoryId = source.CategoryId;
+            this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;
             this.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.Name = source.Name;
             this.ResultsLavaTemplate = source.ResultsLavaTemplate;
             this.StreakTypeId = source.StreakTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -149,10 +161,10 @@ namespace Rock.Client
     public partial class StreakTypeAchievementType : StreakTypeAchievementTypeEntity
     {
         /// <summary />
-        public WorkflowType AchievementEndWorkflowType { get; set; }
+        public EntityType AchievementEntityType { get; set; }
 
         /// <summary />
-        public EntityType AchievementEntityType { get; set; }
+        public WorkflowType AchievementFailureWorkflowType { get; set; }
 
         /// <summary />
         public WorkflowType AchievementStartWorkflowType { get; set; }
@@ -164,7 +176,16 @@ namespace Rock.Client
         public StepType AchievementStepType { get; set; }
 
         /// <summary />
+        public WorkflowType AchievementSuccessWorkflowType { get; set; }
+
+        /// <summary />
         public Category Category { get; set; }
+
+        /// <summary />
+        public ICollection<StreakTypeAchievementTypePrerequisite> Dependencies { get; set; }
+
+        /// <summary />
+        public ICollection<StreakTypeAchievementTypePrerequisite> Prerequisites { get; set; }
 
         /// <summary />
         public ICollection<StreakAchievementAttempt> StreakAchievementAttempts { get; set; }

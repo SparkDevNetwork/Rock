@@ -36,8 +36,8 @@ namespace Rock.Jobs
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisallowConcurrentExecution]
-    [SystemEmailField( "Note Watch Notification Email", "", defaultSystemEmailGuid: Rock.SystemGuid.SystemEmail.NOTEWATCH_NOTIFICATION, required: false, order: 1 )]
-    [SystemEmailField( "Note Approval Notification Email", "", defaultSystemEmailGuid: Rock.SystemGuid.SystemEmail.NOTE_APPROVAL_NOTIFICATION, required: false, order: 2 )]
+    [SystemCommunicationField( "Note Watch Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION, required: false, order: 1 )]
+    [SystemCommunicationField( "Note Approval Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_APPROVAL_NOTIFICATION, required: false, order: 2 )]
     [IntegerField( "Cutoff Days", "Just in case the Note Notification service hasn't run for a while, this is the max number of days between the note edited date and the notification.", required: true, defaultValue: 7, order: 3 )]
     public class SendNoteNotifications : IJob
     {

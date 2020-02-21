@@ -209,7 +209,10 @@ namespace Rock.Net
                 // Determine the the entity type in question.
                 //
                 var entityName = kvp.Key.Substring( 16 );
-                var type = EntityTypeCache.All().FirstOrDefault( a => a.Name == entityName )?.GetEntityType();
+                var type = EntityTypeCache.All()
+                    .Where( a => a.IsEntity )
+                    .FirstOrDefault( a => a.FriendlyName.Equals( entityName, StringComparison.InvariantCultureIgnoreCase ) )
+                    ?.GetEntityType();
                 string entityKey = kvp.Value.First();
 
                 //
@@ -341,7 +344,7 @@ namespace Rock.Net
 
             if ( Headers != null && Headers.ContainsKey( "X-Rock-DeviceData" ) )
             {
-                mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Mobile.Common.DeviceData>() );
+                mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );
             }
 
             return mergeFields;

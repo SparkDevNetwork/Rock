@@ -1,0 +1,101 @@
+// stylelint-disable property-blacklist, declaration-no-important
+
+//
+// Border
+//
+
+@border-color: #000;
+@border-width: 1px;
+
+.border         { border: @border-width solid @border-color !important; }
+.border-top     { border-top: @border-width solid @border-color !important; }
+.border-right   { border-right: @border-width solid @border-color !important; }
+.border-bottom  { border-bottom: @border-width solid @border-color !important; }
+.border-left    { border-left: @border-width solid @border-color !important; }
+
+.border-0        { border: 0 !important; }
+.border-top-0    { border-top: 0 !important; }
+.border-right-0  { border-right: 0 !important; }
+.border-bottom-0 { border-bottom: 0 !important; }
+.border-left-0   { border-left: 0 !important; }
+
+.border-primary {
+  border-color: @brand-primary !important;
+}
+
+.border-success {
+  border-color: @brand-success !important;
+}
+
+.border-danger {
+  border-color: @brand-danger !important;
+}
+
+.border-warning {
+  border-color: @brand-warning !important;
+}
+
+.border-info {
+  border-color: @brand-info !important;
+}
+
+.border-white {
+  border-color: #fff !important;
+}
+
+.border-transparent {
+  border-color: transparent !important;
+}
+
+//
+// Border-radius
+//
+
+.rounded {
+  border-radius: @border-radius-base !important;
+}
+
+//
+// Border Radius Sizes
+//
+
+.rounded-sm {
+  border-radius: @border-radius-small !important;
+}
+
+.rounded-lg {
+  border-radius: @border-radius-large !important;
+}
+
+.rounded-circle {
+  border-radius: 50% !important;
+}
+
+// TODO: Rounded Pill
+// .rounded-pill {
+//   border-radius: $rounded-pill !important;
+// }
+
+.rounded-0 {
+  border-radius: 0 !important;
+}
+
+.rounded-top {
+  border-top-left-radius: @border-radius-base !important;
+  border-top-right-radius: @border-radius-base !important;
+}
+
+.rounded-right {
+  border-top-right-radius: @border-radius-base !important;
+  border-bottom-right-radius: @border-radius-base !important;
+}
+
+.rounded-bottom {
+  border-bottom-right-radius: @border-radius-base !important;
+  border-bottom-left-radius: @border-radius-base !important;
+}
+
+.rounded-left {
+  border-top-left-radius: @border-radius-base !important;
+  border-bottom-left-radius: @border-radius-base !important;
+}

@@ -16,8 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+
+using Rock.Common.Mobile.Enums;
 using Rock.DownhillCss;
-using Rock.Mobile.Common.Enums;
 
 namespace Rock.Mobile
 {
@@ -82,7 +83,7 @@ namespace Rock.Mobile
         /// <value>
         /// The type of the shell.
         /// </value>
-        public ShellType? ShellType { get; set; } = Common.Enums.ShellType.Flyout;
+        public ShellType? ShellType { get; set; } = Rock.Common.Mobile.Enums.ShellType.Flyout;
 
         /// <summary>
         /// Gets or sets the tab location.
@@ -179,5 +180,21 @@ namespace Rock.Mobile
         /// The downhill settings.
         /// </value>
         public DownhillSettings DownhillSettings { get; set; } = new DownhillSettings();
+
+        /// <summary>
+        /// Gets or sets the navigation bar action xaml.
+        /// </summary>
+        /// <value>
+        /// The navigation bar action xaml.
+        /// </value>
+        public string NavigationBarActionXaml { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the campus filter data view identifier.
+        /// </summary>
+        /// <value>
+        /// The campus filter data view identifier.
+        /// </value>
+        public int? CampusFilterDataViewId { get; set; }
     }
 }

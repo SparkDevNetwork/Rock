@@ -425,10 +425,18 @@ $('.js-panel-toggle').on('click', function (e) {
                         }
 
                         bool showInEditor = false;
+                        bool expandPanel = false;
                         if ( title.Contains( "*show in editor*" ) )
                         {
                             showInEditor = true;
+                            expandPanel = true;
                             title = title.Replace( "*show in editor*", string.Empty );
+
+                            if ( title.Contains( "*advanced options*" ) )
+                            {
+                                expandPanel = false;
+                                title = title.Replace( "*advanced options*", string.Empty );
+                            }
                         }
 
                         if ( showInEditor )
@@ -437,9 +445,19 @@ $('.js-panel-toggle').on('click', function (e) {
 
                             content.Append( "<div class='panel panel-widget'>" );
                             content.Append( "<div class='panel-heading'>" );
-                            content.Append( string.Format( "<h1 class='panel-title'>{0}<div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
-                            content.Append( "</div>" );
-                            content.Append( "<div class='panel-body'>" );
+
+                            if ( expandPanel )
+                            {
+                                content.Append( string.Format( "<h1 class='panel-title'>{0}<div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-up'></i></a></div></h1>", title ) );
+                                content.Append( "</div>" );
+                                content.Append( "<div class='panel-body'>" );
+                            }
+                            else
+                            {
+                                content.Append( string.Format( "<h1 class='panel-title'>{0}<div class='pull-right'><a class='btn btn-link btn-xs js-panel-toggle'><i class='fa fa-chevron-down'></i></a></div></h1>", title ) );
+                                content.Append( "</div>" );
+                                content.Append( "<div class='panel-body' style='display:none;'>" );
+                            }
 
                             Literal header = new Literal();
                             header.Text = content.ToString();
@@ -474,14 +492,14 @@ $('.js-panel-toggle').on('click', function (e) {
                         }
 
                         // get variable name
-                        string variableName = variableParts[0].Replace( "@", string.Empty ).Replace( "-", " " ).Titleize();
+                        string variableName = variableParts[0].Replace( "@", string.Empty ).Replace( "-", " " ).Titleize().Replace( "Url", "URL" );
                         string variableKey = variableParts[0].Replace( "@", string.Empty );
 
                         // get variable value
                         string variableValue = string.Empty;
                         if ( variableParts.Length > 1 )
                         {
-                            variableValue = variableParts[1].Trim();
+                            variableValue = variableParts[1].Replace( "\"\"", string.Empty ).Replace( "''", string.Empty ).Trim();
                         }
 
                         Literal overrideControl = new Literal();
@@ -502,7 +520,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                             colorPicker.Text = overrides[variableKey];
 
                                             // add restore logic
-                                            overrideControl.Text = string.Format( "<i class='fa fa-times margin-l-sm js-color-override variable-override pull-left' style='margin-top: 34px; cursor: pointer;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
+                                            overrideControl.Text = string.Format( "<i class='fa fa-times js-color-override variable-override' style='opacity: 1;' data-control='{0}' data-original-value='{1}'></i>", variableKey, variableValue );
                                         }
                                         else
                                         {
@@ -515,7 +533,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                         }
 
                                         colorPicker.RequiredFieldValidator = null;
-                                        colorPicker.FormGroupCssClass = "pull-left";
+                                        colorPicker.FormGroupCssClass = "clearable-input";
 
                                         Literal beginWrapper = new Literal();
                                         beginWrapper.Text = "<div class='clearfix'>";

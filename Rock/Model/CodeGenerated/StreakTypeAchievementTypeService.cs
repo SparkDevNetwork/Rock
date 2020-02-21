@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( StreakTypeAchievementType item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<StreakTypeAchievementTypePrerequisite>( Context ).Queryable().Any( a => a.PrerequisiteStreakTypeAchievementTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", StreakTypeAchievementType.FriendlyTypeName, StreakTypeAchievementTypePrerequisite.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -88,19 +94,22 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this StreakTypeAchievementType target, StreakTypeAchievementType source )
         {
             target.Id = source.Id;
-            target.AchievementEndWorkflowTypeId = source.AchievementEndWorkflowTypeId;
             target.AchievementEntityTypeId = source.AchievementEntityTypeId;
+            target.AchievementFailureWorkflowTypeId = source.AchievementFailureWorkflowTypeId;
             target.AchievementIconCssClass = source.AchievementIconCssClass;
             target.AchievementStartWorkflowTypeId = source.AchievementStartWorkflowTypeId;
             target.AchievementStepStatusId = source.AchievementStepStatusId;
             target.AchievementStepTypeId = source.AchievementStepTypeId;
+            target.AchievementSuccessWorkflowTypeId = source.AchievementSuccessWorkflowTypeId;
             target.AllowOverAchievement = source.AllowOverAchievement;
             target.BadgeLavaTemplate = source.BadgeLavaTemplate;
             target.CategoryId = source.CategoryId;
+            target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.MaxAccomplishmentsAllowed = source.MaxAccomplishmentsAllowed;
+            target.Name = source.Name;
             target.ResultsLavaTemplate = source.ResultsLavaTemplate;
             target.StreakTypeId = source.StreakTypeId;
             target.CreatedDateTime = source.CreatedDateTime;

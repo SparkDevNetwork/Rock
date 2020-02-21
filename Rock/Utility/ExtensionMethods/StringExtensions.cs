@@ -154,6 +154,7 @@ namespace Rock
                 return encodedString;
             }
         }
+
         /// <summary>
         /// Joins and array of strings using the provided separator.
         /// </summary>
@@ -163,6 +164,37 @@ namespace Rock
         public static string JoinStrings( this IEnumerable<string> source, string separator )
         {
             return string.Join( separator, source.ToArray() );
+        }
+
+        /// <summary>
+        /// Joins an array of English strings together with commas plus "and" for last element.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <returns>Concatenated string.</returns>
+        public static string JoinStringsWithCommaAnd( this IEnumerable<String> source )
+        {
+            if ( source == null || source.Count() == 0  )
+            {
+                return string.Empty;
+            }
+
+            var output = string.Empty;
+
+            var list = source.ToList();
+
+            if ( list.Count > 1 )
+            {
+                var delimited = string.Join( ", ", list.Take( list.Count - 1 ) );
+
+                output = string.Concat( delimited, " and ", list.LastOrDefault() );
+            }
+            else
+            {
+                // only one element, just use it
+                output = list[0];
+            }
+
+            return output;
         }
 
         /// <summary>
@@ -216,6 +248,25 @@ namespace Rock
         public static string RemoveAllNonAlphaNumericCharacters( this string str )
         {
             return string.Concat( str.Where( c => char.IsLetterOrDigit( c ) ) );
+        }
+
+        /// <summary>
+        /// Removes all non numeric characters.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string RemoveAllNonNumericCharacters( this string str )
+        {
+            Regex digitsOnly = new Regex( @"[^\d]" );
+
+            if ( !string.IsNullOrEmpty( str ) )
+            {
+                return digitsOnly.Replace( str, string.Empty );
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
 
         /// <summary>
@@ -647,6 +698,18 @@ namespace Rock
         /// <returns></returns>
         public static string Truncate( this string str, int maxLength )
         {
+            return Truncate( str, maxLength, true );
+        }
+
+        /// <summary>
+        /// Truncates a string after a max length with an option to add an ellipsis at the end.  Truncation will occur at first space prior to maxLength.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="maxLength">The maximum length of the return value, including the ellipsis if added.</param>
+        /// <param name="addEllipsis">if set to <c>true</c> add an ellipsis to the end of the truncated string.</param>
+        /// <returns></returns>
+        public static string Truncate( this string str, int maxLength, bool addEllipsis )
+        {
             if ( str == null )
             {
                 return null;
@@ -657,7 +720,9 @@ namespace Rock
                 return str;
             }
 
-            maxLength -= 3;
+            // If adding an ellipsis then reduce the maxlength by three to allow for the additional characters
+            maxLength = addEllipsis ? maxLength - 3 : maxLength;
+
             var truncatedString = str.Substring( 0, maxLength );
             var lastSpace = truncatedString.LastIndexOf( ' ' );
             if ( lastSpace > 0 )
@@ -665,7 +730,7 @@ namespace Rock
                 truncatedString = truncatedString.Substring( 0, lastSpace );
             }
 
-            return truncatedString + "...";
+            return addEllipsis ? truncatedString + "..." : truncatedString;
         }
 
         /// <summary>

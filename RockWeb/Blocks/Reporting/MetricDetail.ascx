@@ -59,6 +59,9 @@
                             <Rock:RockCheckBox ID="cbIsCumulative" runat="server" Label="Cumulative" Help="Helps to calculate year to date metrics." />
                             <Rock:RockCheckBox ID="cbEnableAnalytics" runat="server" Label="Enable Analytics" Help="If this is enabled, a SQL View named 'AnalyticsFactMetric{{Metric.Name}}' will be made available that can be used by Analytic tools, such as Power BI" />
                         </div>
+                        <div class="col-xs-12">
+                            <Rock:AttributeValuesContainer ID="avcEditAttributeValues" runat="server" />
+                        </div>
                     </div>
 
                     <div class="well">
@@ -126,6 +129,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <asp:Literal ID="lblMainDetails" runat="server" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <Rock:AttributeValuesContainer ID="avcDisplayAttributeValues" runat="server" />
                         </div>
                     </div>
 

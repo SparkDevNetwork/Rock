@@ -169,6 +169,32 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Gets items associated with a campus uisng the EntityCampusFilter model. The Entity must implement ICampusFilterable.
+        /// </summary>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [ActionName( "GetByCampus" )]
+        [EnableQuery]
+        public virtual IQueryable<T> GetByCampus( [FromUri]int campusId )
+        {
+            if ( !typeof( T ).GetInterfaces().Contains( typeof( ICampusFilterable ) ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The model does not support campus filtering." );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            var rockContext = Service.Context as RockContext;
+            var result = Service
+                .Queryable()
+                .AsNoTracking()
+                .WhereCampus( rockContext, campusId );
+
+            return result;
+        }
+
+        /// <summary>
         /// POST endpoint. Use this to INSERT a new record
         /// </summary>
         /// <param name="value">The value.</param>
@@ -195,10 +221,7 @@ namespace Rock.Rest
                     string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-            }
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             Service.Context.SaveChanges();
 
@@ -238,10 +261,7 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
-                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-                }
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }
@@ -364,10 +384,7 @@ namespace Rock.Rest
             // Verify model is valid before saving
             if ( targetModel.IsValid )
             {
-                if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-                }
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }
@@ -762,7 +779,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable proxy creation].
+        /// Gets or sets a value indicating whether [enable proxy creation]. This is needed if lazy loading is needed or Editing/Deleting an entity, etc
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable proxy creation]; otherwise, <c>false</c>.

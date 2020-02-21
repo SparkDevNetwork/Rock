@@ -44,6 +44,7 @@ namespace Rock.Tests.Integration
         public const string Steps = "Steps";
 
         public const string Communications = "Communications";
+        public const string Groups = "Groups";
 
     }
 

@@ -40,9 +40,23 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Lists content channels." )]
 
-    [LinkedPage( "Detail Page" )]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    #endregion Block Attributes
     public partial class ContentChannelList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
 
         #region Control Methods
 
@@ -144,7 +158,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentChannels_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentChannelId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "contentChannelId", 0 );
         }
 
         /// <summary>
@@ -154,7 +168,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gContentChannels_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentChannelId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "contentChannelId", e.RowKeyId );
         }
 
         /// <summary>
@@ -174,7 +188,7 @@ namespace RockWeb.Blocks.Cms
                 string errorMessage;
                 if ( !contentChannelService.CanDelete( contentChannel, out errorMessage ) )
                 {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                    mdGridWarning.Show( errorMessage, ModalAlertType.Warning );
                     return;
                 }
 

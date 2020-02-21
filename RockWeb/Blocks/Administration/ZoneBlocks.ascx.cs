@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Zone Blocks" )]
     [Category( "Administration" )]
@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Administration
         /// </value>
         protected bool PageUpdated
         {
-            get 
+            get
             {
                 DialogPage dialogPage = this.Page as DialogPage;
                 if ( dialogPage != null )
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
                 }
                 return false;
             }
-            set 
+            set
             {
                 DialogPage dialogPage = this.Page as DialogPage;
                 if ( dialogPage != null )
@@ -129,9 +129,9 @@ namespace RockWeb.Blocks.Administration
                 string script = string.Format(
                     @"Sys.Application.add_load(function () {{
                     $('div.modal-header h3').html('{0} Zone');
-                    $('#{1} a').click(function() {{ $('#{4}').val('Page'); }});
-                    $('#{2} a').click(function() {{ $('#{4}').val('Layout'); }});
-                    $('#{3} a').click(function() {{ $('#{4}').val('Site'); }});
+                    $('#{1} a').on('click', function() {{ $('#{4}').val('Page'); }});
+                    $('#{2} a').on('click', function() {{ $('#{4}').val('Layout'); }});
+                    $('#{3} a').on('click', function() {{ $('#{4}').val('Site'); }});
                 }});",
                     _ZoneName,
                     liPage.ClientID,
@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Administration
                 rockContext.SaveChanges();
             }
 
-            PageCache.RemoveSiteBlocks( _Page.SiteId );
+            PageCache.FlushPagesForSite( _Page.SiteId );
             PageUpdated = true;
 
             BindGrids();
@@ -258,7 +258,7 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    PageCache.RemoveSiteBlocks( _Page.SiteId );
+                    PageCache.FlushPagesForSite( _Page.SiteId );
                     PageUpdated = true;
                 }
             }
@@ -301,9 +301,9 @@ namespace RockWeb.Blocks.Administration
                 rockContext.SaveChanges();
             }
 
-            PageCache.RemoveLayoutBlocks( _Page.LayoutId );
+            PageCache.FlushPagesForLayout( _Page.LayoutId );
             PageUpdated = true;
-            
+
             BindGrids();
         }
 
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    PageCache.RemoveLayoutBlocks( _Page.LayoutId );
+                    PageCache.FlushPagesForLayout( _Page.LayoutId );
                     PageUpdated = true;
                 }
             }
@@ -376,7 +376,8 @@ namespace RockWeb.Blocks.Administration
                 rockContext.SaveChanges();
             }
 
-            _Page.RemoveBlocks();
+            //_Page.RemoveBlocks();
+            PageCache.Remove( _Page.Id );
             PageUpdated = true;
 
             BindGrids();
@@ -408,7 +409,8 @@ namespace RockWeb.Blocks.Administration
                     blockService.Delete( block );
                     rockContext.SaveChanges();
 
-                    _Page.RemoveBlocks();
+                    //_Page.RemoveBlocks();
+                    PageCache.Remove( _Page.Id );
                     PageUpdated = true;
                 }
             }
@@ -497,7 +499,7 @@ namespace RockWeb.Blocks.Administration
                             block.SiteId = null;
                             break;
                     }
-                    
+
 
                     block.Zone = _ZoneName;
 
@@ -526,11 +528,12 @@ namespace RockWeb.Blocks.Administration
 
                 if ( block.Layout != null )
                 {
-                    PageCache.RemoveLayoutBlocks( _Page.LayoutId );
+                    PageCache.FlushPagesForLayout( _Page.LayoutId );
                 }
                 else
                 {
-                    _Page.RemoveBlocks();
+                    //_Page.RemoveBlocks();
+                    PageCache.Remove( _Page.Id );
                 }
             }
 
@@ -620,7 +623,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadBlockTypes( bool registerBlockTypes )
         {
-            if ( registerBlockTypes ) 
+            if ( registerBlockTypes )
             {
                 // Add any unregistered blocks
                 try

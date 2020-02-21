@@ -181,7 +181,7 @@ namespace Rock.Model
         /// <c>true</c> if this schedule is currently active; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", false )]
+        [Obsolete( "Use WasScheduleActive( DateTime time ) method instead.", true )]
         public virtual bool IsScheduleActive
         {
             get
@@ -197,7 +197,7 @@ namespace Rock.Model
         ///  A <see cref="System.Boolean"/> that is  <c>true</c> if Check-in is currently active for this Schedule ; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", false )]
+        [Obsolete( "Use WasCheckInActive( DateTime time ) method instead.", true )]
         public virtual bool IsCheckInActive
         {
             get
@@ -213,7 +213,7 @@ namespace Rock.Model
         /// <c>true</c> if this instance is schedule or checkin active; otherwise, <c>false</c>.
         /// </value>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", false )]
+        [Obsolete( "Use WasScheduleOrCheckInActive( DateTime time ) method instead.", true )]
         public virtual bool IsScheduleOrCheckInActive
         {
             get
@@ -253,7 +253,7 @@ namespace Rock.Model
         [NotMapped]
         [LavaInclude]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead." )]
+        [Obsolete( "Use GetNextStartDateTime( DateTime currentDateTime ) instead.", true )]
         public virtual DateTime? NextStartDateTime
         {
             get
@@ -336,6 +336,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the duration in minutes.
+        /// </summary>
+        /// <value>
+        /// The duration in minutes.
+        /// </value>
+        [LavaInclude]
+        public virtual int DurationInMinutes
+        {
+            get
+            {
+                DDay.iCal.Event calendarEvent = this.GetCalendarEvent();
+                if ( calendarEvent != null && calendarEvent.DTStart != null && calendarEvent.DTEnd != null )
+                {
+                    return ( int ) calendarEvent.DTEnd.Subtract( calendarEvent.DTStart ).TotalMinutes;
+                }
+
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
@@ -396,35 +417,62 @@ namespace Rock.Model
         /// <returns></returns>
         internal bool EnsureEffectiveStartEndDates()
         {
+            /*
+             * 12/6/2019 BJW
+             *
+             * There was an issue in this code because DateTime.MaxValue was being used to represent [no end date]. Because EffectiveEndDate
+             * is a Date only in SQL, the time portion gets dropped.  Because 12/31/9999 11:59 != 12/31/9999 00:00, this caused false readings
+             * when testing for schedules with no end dates. When there was no end date, Rock was calculating all occurrences with
+             * GetOccurrences( DateTime.MinValue, DateTime.MaxValue ) which caused timeouts.  We should only call that GetOccurrences method
+             * like that when we know there are a reasonable number of occurrences. 
+             */
+
             var calEvent = GetCalendarEvent();
             if ( calEvent == null )
             {
                 return false;
             }
 
-            DateTime? originalEffectiveStartDate = EffectiveStartDate;
             var originalEffectiveEndDate = EffectiveEndDate;
-
+            var originalEffectiveStartDate = EffectiveStartDate;
             EffectiveStartDate = calEvent.DTStart?.Value.Date;
 
+            // In Rock it is possible to set a rule with an end date, no end date (which is actually end date of max value) or a number
+            // of occurrences. The count property in the iCal rule refers to the count of occurrences.
+            var endDateRules = calEvent.RecurrenceRules.Where( rule => rule.Count <= 0 );
+            var countRules = calEvent.RecurrenceRules.Where( rule => rule.Count > 0 );
+            var endDateRuleApplied = false;
+
             // If there are any recurrence rules with no end date, the Effective End Date is infinity
-            if ( calEvent.RecurrenceRules.Count > 0 )
+            // iCal rule.Until will be min value date if it is representing no end date (backwards from Rock using max value)
+            if ( endDateRules.Any( rule => RockDateTime.IsMinDate( rule.Until ) ) )
             {
-                if ( calEvent.RecurrenceRules.Any( rule => rule.Until == DateTime.MinValue && rule.Count <= 0 ) )
-                {
-                    EffectiveEndDate = DateTime.MaxValue;
-                }
+                EffectiveEndDate = DateTime.MaxValue;
+                endDateRuleApplied = true;
+            }
+            else if ( endDateRules.Any() )
+            {
+                EffectiveEndDate = endDateRules.Max( rule => rule.Until );
+                endDateRuleApplied = true;
             }
 
-            // If this isn't a perpetually recurring event, set the EffectiveEndDate to the actual end date/time of the last occurrence of this event
-            if ( EffectiveEndDate != DateTime.MaxValue )
+            if ( countRules.Any( rule => rule.Count > 999 ) && !endDateRuleApplied )
             {
+                // If there is a count rule greater than 999 (limit in the UI), and no end date rule was applied,
+                // we don't want to calculate occurrences because it will be too costly. Treat this as no end date.
+                EffectiveEndDate = DateTime.MaxValue;
+            }
+            else if ( countRules.Any() )
+            {
+                // This case means that there are count rules and they are <= 999. Go ahead and calculate the actual occurrences
+                // to get the EffectiveEndDate.
                 var occurrences = GetOccurrences( DateTime.MinValue, DateTime.MaxValue );
+
                 if ( occurrences.Any() )
                 {
                     EffectiveEndDate = occurrences.Any() // It is possible for an event to have no occurrences
-                                           ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
-                                           : EffectiveStartDate;
+                        ? occurrences.OrderByDescending( o => o.Period.StartTime.Date ).First().Period.EndTime.Date
+                        : EffectiveStartDate;
                 }
             }
 
@@ -778,11 +826,13 @@ namespace Rock.Model
                             }
                             else if ( rrule.ByDay.Count > 0 )
                             {
-                                // The Nth <DayOfWeekName> (we only support one day in the ByDay list)
+                                // The Nth <DayOfWeekName>.  We only support one *day* in the ByDay list, but multiple *offsets*.
+                                // So, it can be the "The first and third Monday" of every month.
                                 IWeekDay bydate = rrule.ByDay[0];
-                                if ( NthNames.ContainsKey( bydate.Offset ) )
+                                var offsetNames = NthNamesAbbreviated.Where( a => rrule.ByDay.Select( o=>o.Offset ).Contains( a.Key ) ).Select( a => a.Value );
+                                if ( offsetNames != null )
                                 {
-                                    result = string.Format( "The {0} {1} of every month", NthNames[bydate.Offset], bydate.DayOfWeek.ConvertToString() );
+                                    result = string.Format( "The {0} {1} of every month", offsetNames.JoinStringsWithCommaAnd(), bydate.DayOfWeek.ConvertToString() );
                                 }
                                 else
                                 {
@@ -1051,7 +1101,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region consts
+        #region Constants
 
         /// <summary>
         /// The "nth" names for DayName of Month (First, Second, Third, Forth, Last)
@@ -1062,6 +1112,17 @@ namespace Rock.Model
             {3, "Third"},
             {4, "Fourth"},
             {-1, "Last"}
+        };
+
+        /// <summary>
+        /// The abbreviated "nth" names for DayName of Month (1st, 2nd, 3rd, 4th, last)
+        /// </summary>
+        private static readonly Dictionary<int, string> NthNamesAbbreviated = new Dictionary<int, string> {
+            {1, "1st"},
+            {2, "2nd"},
+            {3, "3rd"},
+            {4, "4th"},
+            {-1, "last"}
         };
 
         #endregion

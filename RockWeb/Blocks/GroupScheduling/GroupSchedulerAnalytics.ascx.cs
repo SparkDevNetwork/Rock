@@ -670,14 +670,14 @@ var barChart = new Chart(barCtx, {{
         protected void CreateBarChartGroupedByWeek( int daysCount, DateTime firstDateTime, List<Attendance> attendances )
         {
             List<SchedulerSummaryData> barchartdata = attendances
-                .GroupBy( a => new { StartWeek = a.StartDateTime.StartOfWeek( DayOfWeek.Monday ) } )
+                .GroupBy( a => new { StartWeek = a.StartDateTime.StartOfWeek( RockDateTime.FirstDayOfWeek ) } )
                 .Select( a => new SchedulerSummaryData( a.Key.StartWeek, a.ToList() ) )
                 .ToList();
 
             var weeks = Enumerable.Range( 0, ( int ) Math.Ceiling( ( daysCount / 7.0 ) + 1 ) )
                 .Select( x => new
                 {
-                    date = firstDateTime.StartOfWeek( DayOfWeek.Monday ).AddDays( x * 7 )
+                    date = firstDateTime.StartOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( x * 7 )
                 } );
 
             var groupedByDate = weeks

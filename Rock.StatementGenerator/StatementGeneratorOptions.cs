@@ -218,13 +218,18 @@ namespace Rock.StatementGenerator
     public enum OrderBy
     {
         /// <summary>
-        /// The postal code
+        /// Sort by postal code
         /// </summary>
         PostalCode = 0,
         
         /// <summary>
-        /// The last name
+        /// Sort by Last Name
         /// </summary>
-        LastName = 1
+        LastName = 1,
+
+        /// <summary>
+        /// Sort by Page Count
+        /// </summary>
+        PageCount = 2
     }
 }

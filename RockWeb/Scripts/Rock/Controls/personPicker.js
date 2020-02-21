@@ -40,7 +40,7 @@
 
             var includeBusinesses = $pickerControl.find('.js-include-businesses').val() == '1' ? 'true' : 'false';
             var includeDeceased = $pickerControl.find('.js-include-deceased').val() == '1' ? 'true' : 'false';
-            var includeDetails = 'false';
+            var includeDetails = 'true';
 
             var promise = null;
             var lastSelectedPersonId = null;
@@ -93,10 +93,10 @@
                             + "&includeDetails=" + includeDetails
                             + "&includeBusinesses=" + includeBusinesses
                             + "&includeDeceased=" + includeDeceased,
-                        timeout: 20000, 
+                        timeout: 20000,
                         dataType: 'json'
                     });
-                    
+
                     // if it takes more than 1.5 seconds for the search to complete, show a wait indicator
                     if ($('.js-searching-notification').length == 0) {
                         $searchResults.prepend('<i class="fa fa-refresh fa-spin margin-l-md js-searching-notification" style="display: none; opacity: .4;"></i>');
@@ -143,20 +143,23 @@
                     if (!item.IsActive && item.RecordStatus) {
                         inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
                     }
+                    if (item.IsDeceased) {
+                        inactiveWarning = " <small class=\"text-danger\">(Deceased)</small>";
+                    }
 
                     var quickSummaryInfo = "";
-                    if (item.FormattedAge || item.SpouseName) {
+                    if (item.FormattedAge || item.SpouseNickName) {
                         quickSummaryInfo = " <small class='rollover-item text-muted'>";
                         if (item.FormattedAge) {
                             quickSummaryInfo += "Age: " + item.FormattedAge;
                         }
 
-                        if (item.SpouseName) {
+                        if (item.SpouseNickName) {
                             if (item.FormattedAge) {
                                 quickSummaryInfo += "; ";
                             }
 
-                            quickSummaryInfo += "Spouse: " + item.SpouseName;
+                            quickSummaryInfo += "Spouse: " + item.SpouseNickName;
                         }
 
                         quickSummaryInfo += "</small>";
@@ -181,17 +184,21 @@
 
                         $resultSection = $(this.options.appendTo);
 
-                    if (item.PickerItemDetailsHtml) {
-                        $(item.PickerItemDetailsHtml).appendTo($li);
+                    var $itemDetailsDiv = $('<div/>')
+                        .addClass('picker-select-item-details js-picker-select-item-details clearfix');
+
+                    if (item.SearchDetailsHtml) {
+                        $itemDetailsDiv.attr('data-has-details', true).html(item.SearchDetailsHtml);
                     }
                     else {
-                        var $itemDetailsDiv = $('<div/>')
-                            .addClass('picker-select-item-details js-picker-select-item-details clearfix')
-                            .attr('data-has-details', false)
-                            .hide();
-
-                        $itemDetailsDiv.appendTo($li);
+                        $itemDetailsDiv.attr('data-has-details', false);
                     }
+
+                    if (includeDetails === 'false') {
+                        $itemDetailsDiv.hide();
+                    }
+
+                    $itemDetailsDiv.appendTo($li);
 
                     if (!item.IsActive) {
                         $li.addClass('is-inactive');
@@ -217,12 +224,12 @@
                 autoComplete._renderItem = autoCompleteCustomRenderItem;
             });
 
-            $pickerToggle.click(function (e) {
+            $pickerToggle.on('click', function (e) {
                 e.preventDefault();
                 $(this).toggleClass("active");
                 $pickerMenu.toggle(0, function () {
                     exports.personPickers[controlId].updateScrollbar();
-                    $searchFieldName.focus();
+                    $searchFieldName.trigger('focus');
                 });
             });
 
@@ -243,23 +250,33 @@
 
                     if (selectedPersonId == lastSelectedPersonId && e.type == 'click') {
                         // if they are clicking the same person twice in a row (and the details are done expanding), assume that's the one they want to pick
-                        $pickerSelect[0].click();
+                        var selectedText = $selectedItem.attr('data-person-name');
+
+                        setSelectedPerson(selectedPersonId, selectedText);
+
+                        // Fire the postBack for the Select button.
+                        var postBackUrl = $pickerSelect.prop('href');
+                        if (postBackUrl) {
+                            window.location = postBackUrl;
+                        }
                     } else {
 
                         // if it is already visible but isn't the same one twice, just leave it open
                     }
                 }
 
-                // hide other open details
-                $('.js-picker-select-item-details', $pickerControl).filter(':visible').each(function () {
-                    var $el = $(this),
-                        currentPersonId = $el.closest('.js-picker-select-item').attr('data-person-id');
+                if (includeDetails === 'false') {
+                    // hide other open details
+                    $('.js-picker-select-item-details', $pickerControl).filter(':visible').each(function () {
+                        var $el = $(this),
+                            currentPersonId = $el.closest('.js-picker-select-item').attr('data-person-id');
 
-                    if (currentPersonId != selectedPersonId) {
-                        $el.slideUp();
-                        exports.personPickers[controlId].updateScrollbar();
-                    }
-                });
+                        if (currentPersonId != selectedPersonId) {
+                            $el.slideUp();
+                            exports.personPickers[controlId].updateScrollbar();
+                        }
+                    });
+                }
 
                 lastSelectedPersonId = selectedPersonId;
 
@@ -291,25 +308,25 @@
                 }
             }
 
-            $pickerControl.hover(
+            $pickerControl.on('mouseenter',
                 function () {
 
                     // only show the X if there is something picked
                     if (($pickerPersonId.val() || '0') !== '0') {
                         $pickerSelectNone.stop().show();
                     }
-                },
+                }).on('mouseleave',
                 function () {
                     $pickerSelectNone.fadeOut(500);
                 });
 
-            $pickerCancel.click(function () {
+            $pickerCancel.on('click', function () {
                 $pickerMenu.slideUp(function () {
                     exports.personPickers[controlId].updateScrollbar();
                 });
             });
 
-            $pickerSelectNone.click(function (e) {
+            $pickerSelectNone.on('click', function (e) {
 
                 var selectedValue = '0',
                     selectedText = defaultText;
@@ -330,7 +347,7 @@
                 $pickerMenu.slideUp();
             }
 
-            $pickerSelect.click(function () {
+            $pickerSelect.on('click', function () {
                 var $radInput = $pickerControl.find('input:checked'),
                     selectedValue = $radInput.val(),
                     selectedText = $radInput.closest('.js-picker-select-item').attr('data-person-name');

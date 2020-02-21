@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -44,20 +43,15 @@ namespace RockWeb.Blocks.Event
     {
         #region Fields
 
-        // used for private variables
         private RegistrationInstance _registrationInstance = null;
 
         #endregion
 
         #region Properties
 
-        // used for public / protected properties
-
         #endregion
 
         #region Base Control Methods
-
-        //  overrides of the base RockBlock methods (i.e. OnInit, OnLoad)
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.

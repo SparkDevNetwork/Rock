@@ -11,6 +11,11 @@
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
+
+                    <Rock:GridFilter ID="gfFilter" runat="server" OnApplyFilterClick="gfFilter_ApplyFilterClick">
+                        <Rock:RockCheckBox ID="cbIncludeIgnored" runat="server" Label="Include Ignored Suggestions" />
+                    </Rock:GridFilter>
+
                     <Rock:Grid ID="gSuggestions" runat="server" AllowSorting="true" RowItemText="Suggestions" EmptyDataText="You do not have any pending suggestions">
                         <Columns>
                             <Rock:SelectField />

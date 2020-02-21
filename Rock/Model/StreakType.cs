@@ -52,7 +52,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the attendance association (<see cref="Rock.Model.StreakStructureType"/>). If not set, this streak type
-        /// will account for any attendance record.
+        /// will not be associated with attendance.
         /// </summary>
         [DataMember]
         public StreakStructureType? StructureType { get; set; }
@@ -97,6 +97,16 @@ namespace Rock.Model
             set => _startDate = value.Date;
         }
         private DateTime _startDate = RockDateTime.Now;
+
+        /// <summary>
+        /// Gets or sets the first day of the week for <see cref="StreakOccurrenceFrequency.Weekly"/> streak type calculations.
+        /// Leave this null to assume the system setting, which is accessed via <see cref="RockDateTime.FirstDayOfWeek"/>.
+        /// </summary>
+        /// <value>
+        /// The first day of week.
+        /// </value>
+        [DataMember]
+        public DayOfWeek? FirstDayOfWeek { get; set; }
 
         /// <summary>
         /// The sequence of bits that represent occurrences where engagement was possible. The least significant bit (right side) is
@@ -180,20 +190,6 @@ namespace Rock.Model
         private ICollection<StreakTypeAchievementType> _streakTypeAchievementTypes;
 
         #endregion Virtual Properties
-
-        #region Update Hook
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( Data.DbContext dbContext )
-        {
-            StreakTypeService.UpdateEnrollmentStreakPropertiesAsync( Id );
-            base.PostSaveChanges( dbContext );
-        }
-
-        #endregion Update Hook
     }
 
     #region Enumerations
@@ -203,6 +199,11 @@ namespace Rock.Model
     /// </summary>
     public enum StreakStructureType
     {
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with any attendance record.
+        /// </summary>
+        AnyAttendance = 0,
+
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance to a single group.
         /// </summary>
@@ -221,7 +222,22 @@ namespace Rock.Model
         /// <summary>
         /// The <see cref="StreakType"/> is associated with attendance specified by a check-in configuration.
         /// </summary>
-        CheckInConfig = 4
+        CheckInConfig = 4,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions in a certain channel.
+        /// </summary>
+        InteractionChannel = 5,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions in a certain component.
+        /// </summary>
+        InteractionComponent = 6,
+
+        /// <summary>
+        /// The <see cref="StreakType"/> is associated with interactions over a certain.
+        /// </summary>
+        InteractionMedium = 7
     }
 
     /// <summary>

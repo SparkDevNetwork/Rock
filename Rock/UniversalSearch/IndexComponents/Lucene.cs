@@ -66,7 +66,7 @@ namespace Rock.UniversalSearch.IndexComponents
         private static IndexSearcher _indexSearcher = null;
         private static FSDirectory _directory;
         private static Timer _timer = null;
-        private static readonly string _path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
+        private static readonly string _path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/LuceneSearchIndex" );
         private static readonly object _lockWriter = new object();
         #endregion
 

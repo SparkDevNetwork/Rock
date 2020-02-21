@@ -63,7 +63,7 @@ namespace Rock.Web.UI.Controls
         public override object GetExportValue( GridViewRow row, DataControlFieldCell dataControlFieldCell )
         {
             var literal = dataControlFieldCell.FindControl( this.ID ) as Literal;
-            return literal?.Text;
+            return literal?.Text.StripHtml();
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace Rock.Data
     /// Helper class to set view cache
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Does nothing. No longer needed," )]
+    [Obsolete( "Does nothing. No longer needed,", true )]
     public static class RockInteractiveViews
     {
         /// <summary>
@@ -38,7 +38,7 @@ namespace Rock.Data
         /// </summary>
         /// <param name="path">The path.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Does nothing. No longer needed,")]
+        [Obsolete("Does nothing. No longer needed,", true )]
         public static void SetViewFactory( string path )
         {
         }
@@ -676,6 +676,14 @@ namespace Rock.Data
         /// The devices.
         /// </value>
         public DbSet<Device> Devices { get; set; }
+
+        /// <summary>
+        /// Gets or sets the entity campus filters.
+        /// </summary>
+        /// <value>
+        /// The entity campus filters.
+        /// </value>
+        public DbSet<EntityCampusFilter> EntityCampusFilters { get; set; }
 
         /// <summary>
         /// Gets or sets the entity sets.
@@ -1558,6 +1566,22 @@ namespace Rock.Data
         public DbSet<RegistrationTemplateFormField> RegistrationTemplateFormFields { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration template placements.
+        /// </summary>
+        /// <value>
+        /// The registration template placements.
+        /// </value>
+        public DbSet<RegistrationTemplatePlacement> RegistrationTemplatePlacements { get; set; }
+
+        /// <summary>
+        /// Gets or sets the related entities.
+        /// </summary>
+        /// <value>
+        /// The related entities.
+        /// </value>
+        public DbSet<RelatedEntity> RelatedEntities { get; set; }
+
+        /// <summary>
         /// Gets or sets the reports.
         /// </summary>
         /// <value>
@@ -1766,6 +1790,14 @@ namespace Rock.Data
         public DbSet<StreakTypeAchievementType> StreakTypeAchievementTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the streak type achievement type prerequisites.
+        /// </summary>
+        /// <value>
+        /// The streak type achievement type prerequisites.
+        /// </value>
+        public DbSet<StreakTypeAchievementTypePrerequisite> StreakTypeAchievementTypePrerequisites { get; set; }
+
+        /// <summary>
         /// Gets or sets the StreakTypeExclusions.
         /// </summary>
         /// <value>
@@ -1779,7 +1811,17 @@ namespace Rock.Data
         /// <value>
         /// The system emails.
         /// </value>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use SystemCommunications instead." )]
         public DbSet<SystemEmail> SystemEmails { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system emails.
+        /// </summary>
+        /// <value>
+        /// The system emails.
+        /// </value>
+        public DbSet<SystemCommunication> SystemCommunications { get; set; }
 
         /// <summary>
         /// Gets or sets the Tags.

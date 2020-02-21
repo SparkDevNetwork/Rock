@@ -24,11 +24,12 @@ using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a page
     /// </summary>
     public class PagePicker : ItemPicker
     {
@@ -66,7 +67,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( ViewState["PromptForPageRoute"] != null )
                 {
-                    return (bool)ViewState["PromptForPageRoute"];
+                    return ( bool ) ViewState["PromptForPageRoute"];
                 }
 
                 // default to true
@@ -174,17 +175,17 @@ namespace Rock.Web.UI.Controls
         {
             string scriptFormat = @"
 
-                $('#{0}').click(function () {{
+                $('#{0}').on('click', function () {{
                     $('#page-route-picker_{3}').find('.js-page-route-picker-menu').toggle(0, function () {{
                         Rock.dialogs.updateModalScrollBar('page-route-picker_{3}');
                     }});
                 }});
 
-                $('#{1}').click(function () {{
+                $('#{1}').on('click', function () {{
                     $(this).closest('.picker-menu').slideUp();
                 }});
 
-                $('#{2}').click(function () {{
+                $('#{2}').on('click', function () {{
                     $(this).closest('.picker-menu').slideUp();
                 }});";
 
@@ -484,10 +485,14 @@ namespace Rock.Web.UI.Controls
             {
                 // if the BlockProperties block is the current block, we'll treat the page that this block properties is for as the current page
                 int blockId = rockBlock.PageParameter( "BlockId" ).AsInteger();
-                var block = new BlockService( new RockContext() ).Get( blockId );
-                if ( block != null )
+                var block = BlockCache.Get( blockId );
+                if ( block?.PageId != null )
                 {
                     pageId = block.PageId;
+                }
+                else
+                {
+                    pageId = rockBlock.PageParameter( "CurrentPageId" ).AsIntegerOrNull();
                 }
             }
             else

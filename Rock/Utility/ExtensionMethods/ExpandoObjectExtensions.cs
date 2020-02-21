@@ -28,6 +28,7 @@ namespace Rock
 
         /// <summary>
         /// Creates a shallow clone of the original object.
+        /// From https://stackoverflow.com/a/40470282/1755417 and https://stackoverflow.com/a/22828054/1755417
         /// </summary>
         /// <param name="original">The original.</param>
         /// <returns>A shallow clone of the original.</returns>

@@ -119,9 +119,6 @@
     display: flex;
     -ms-flex-direction: column;
     flex-direction: column;
-    min-height: 610px;
-    max-height: ~"calc(100vh - 210px)";
-    overflow-y: auto;
 
     .header {
       -ms-flex: 1 1 auto;
@@ -129,15 +126,23 @@
     }
 
     .body {
-      overflow-x: hidden;
-      overflow-y: auto;
       -ms-flex: 1 1 auto;
       flex: 1 1 auto;
-      min-height: 303px;
     }
 
     .picker .picker-menu {
       margin-top: -149px;
+    }
+  }
+
+  &.is-fullscreen {
+    .transaction-matching-details {
+      max-height: ~"calc(100vh - 145px)";
+      overflow-y: auto;
+    }
+
+    .actions {
+      margin-top: 15px;
     }
   }
 }
@@ -221,17 +226,13 @@
     text-align: center;
   }
 
-  .btn-give-now {
-    display: block;
-  }
-
   .toggle-container {
     margin-bottom: 8px;
   }
 
   .navigate-actions {
-    text-align: center;
     margin-top: 15px;
+    text-align: center;
   }
 }
 
@@ -275,15 +276,5 @@
     &-lg {
       font-size: 60px;
     }
-  }
-
-  &::first-letter {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: inline-block;
-    padding-right: 4px;
-    font-size: 32px;
-    vertical-align: top !important;
   }
 }

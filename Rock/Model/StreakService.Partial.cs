@@ -14,10 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Dynamic;
 using System.Threading.Tasks;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -49,43 +52,78 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Start an async task to calculate steak data and then copy it to the enrollment model
+        /// Deletes the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Delete( Streak item )
+        {
+            // Since Entity Framework cannot cascade delete achievement attempts because of a possible circular reference,
+            // we need to delete them here
+            var attemptService = new StreakAchievementAttemptService( Context as RockContext );
+            var attempts = attemptService.Queryable().Where( a => a.StreakId == item.Id );
+            attemptService.DeleteRange( attempts );
+
+            // Now we can delete the streak as normal
+            return base.Delete( item );
+        }
+
+        /// <summary>
+        /// Start an async task to do things that should run after a streak has been updated
         /// </summary>
         /// <param name="streakId"></param>
-        public static void RefreshStreakDenormalizedPropertiesAsync( int streakId )
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use the HandlePostSaveChanges method instead.", false )]
+        public static void HandlePostSaveChangesAsync( int streakId )
         {
-            Task.Run( () =>
+            Task.Run( () => HandlePostSaveChanges( streakId ) );
+        }
+
+        /// <summary>
+        /// Complete tasks that should be done after a streak or related data has been changed
+        /// </summary>
+        /// <param name="streakId"></param>
+        public static void HandlePostSaveChanges( int streakId )
+        {
+            RefreshStreakDenormalizedProperties( streakId );
+            ProcessAchievements( streakId );
+        }
+
+        /// <summary>
+        /// Start an async task to calculate steak data and then copy it to the enrollment model
+        /// </summary>
+        /// <param name="streakId">The streak identifier.</param>
+        public static void RefreshStreakDenormalizedProperties( int streakId )
+        {
+            var rockContext = new RockContext();
+            var streakService = new StreakService( rockContext );
+            var streakTypeService = new StreakTypeService( rockContext );
+
+            // Get the streak data and validate it
+            var streakData = streakTypeService.GetStreakData( streakId, out var errorMessage );
+
+            if ( !errorMessage.IsNullOrWhiteSpace() )
             {
-                var rockContext = new RockContext();
-                var streakService = new StreakService( rockContext );
-                var streakTypeService = new StreakTypeService( rockContext );
+                ExceptionLogService.LogException( errorMessage );
+                return;
+            }
 
-                // Get the streak data and validate it
-                var streakData = streakTypeService.GetStreakData( streakId, out var errorMessage );
+            if ( streakData == null )
+            {
+                ExceptionLogService.LogException( "Streak Data was null, but no error was specified" );
+                return;
+            }
 
-                if ( !errorMessage.IsNullOrWhiteSpace() )
-                {
-                    ExceptionLogService.LogException( errorMessage );
-                    return;
-                }
+            // Get the streak and apply updated information to it
+            var streak = streakService.Get( streakId );
+            if ( streak == null )
+            {
+                ExceptionLogService.LogException( $"The streak with id {streakId} was not found (it may have been deleted)" );
+                return;
+            }
 
-                if ( streakData == null )
-                {
-                    ExceptionLogService.LogException( "Streak Data was null, but no error was specified" );
-                    return;
-                }
-
-                // Get the streak and apply updated information to it
-                var streak = streakService.Get( streakId );
-                if ( streak == null )
-                {
-                    ExceptionLogService.LogException( "The streak was null" );
-                    return;
-                }
-
-                CopyStreakDataToStreakModel( streakData, streak );
-                rockContext.SaveChanges();
-            } );
+            CopyStreakDataToStreakModel( streakData, streak );
+            rockContext.SaveChanges( true );
         }
 
         /// <summary>
@@ -93,7 +131,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="source"></param>
         /// <param name="target"></param>
-        public static void CopyStreakDataToStreakModel( StreakData source, Streak target )
+        private static void CopyStreakDataToStreakModel( StreakData source, Streak target )
         {
             if ( source == null || target == null )
             {
@@ -108,6 +146,43 @@ namespace Rock.Model
 
             target.CurrentStreakCount = source.CurrentStreakCount;
             target.CurrentStreakStartDate = source.CurrentStreakStartDate;
+        }
+
+        /// <summary>
+        /// Check for achievements that may have been earned
+        /// </summary>
+        /// <param name="streakId">The streak identifier.</param>
+        private static void ProcessAchievements( int streakId )
+        {
+            var rockContext = new RockContext();
+            var streakService = new StreakService( rockContext );
+            var streak = streakService.Get( streakId );
+
+            if ( streak == null )
+            {
+                ExceptionLogService.LogException( $"The streak with id {streakId} was not found (it may have been deleted)" );
+                return;
+            }
+
+            var streakTypeCache = StreakTypeCache.Get( streak.StreakTypeId );
+
+            /*
+             * 2019-01-13 BJW
+             *
+             * Achievements need to be processed in order according to dependencies (prerequisites). Prerequisites should be processed first so that,
+             * if the prerequisite becomes completed, the dependent achievement will be processed at this time as well. Furthermore, each achievement
+             * needs to be processed and changes saved to the database so that subsequent achievements will see the changes (for example: now met
+             * prerequisites).
+             */ 
+            var sortedAchievementTypes = StreakTypeAchievementTypeService.SortAccordingToPrerequisites( streakTypeCache.StreakTypeAchievementTypes );
+
+            foreach ( var streakTypeAchievementTypeCache in sortedAchievementTypes )
+            {
+                var loopRockContext = new RockContext();
+                var component = streakTypeAchievementTypeCache.AchievementComponent;
+                component.Process( loopRockContext, streakTypeAchievementTypeCache, streak );
+                loopRockContext.SaveChanges();
+            }
         }
     }
 }

@@ -444,6 +444,15 @@ namespace Rock.Model
         public DateTime? LatestVersionDateTime { get; set; }
 
         /// <summary>
+        /// Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable exclusive routes]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableExclusiveRoutes { get; set; }
+
+        /// <summary>
         /// Gets or sets the configuration mobile file path.
         /// </summary>
         /// <value>
@@ -500,7 +509,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Moved to Theme" )]
+        [Obsolete( "Moved to Theme", true )]
         public IconCssWeight IconCssWeight { get; set; }
 
         #endregion
@@ -945,7 +954,7 @@ namespace Rock.Model
     /// Font Awesome Icon CSS Weight
     /// </summary>
     [RockObsolete( "1.8" )]
-    [Obsolete( "Moved to Theme" )]
+    [Obsolete( "Moved to Theme", true )]
     public enum IconCssWeight
     {
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Field.Types;
 
 namespace Rock.Attribute
@@ -39,7 +40,46 @@ namespace Rock.Attribute
         public DataViewFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string entityTypeName = "", string category = "", int order = 0, string key = null ) : 
             base( name, description, required, defaultValue, category, order, key, typeof( DataViewFieldType ).FullName )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
+            if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
+            {
+                FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the entity type <seealso cref="EntityType"/>
+        /// </summary>
+        public string EntityTypeName
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( value ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the entity for this Attribute Category
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public Type EntityType
+        {
+            get
+            {
+                string entityTypeName = this.EntityTypeName;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
+            }
+
+            set
+            {
+                this.EntityTypeName = value.FullName;
+            }
         }
     }
 }

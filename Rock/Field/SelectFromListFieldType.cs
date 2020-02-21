@@ -149,7 +149,8 @@ namespace Rock.Field.Types
             RockCheckBoxList editControl = new RockCheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
-            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) )
+            // Fixed bug preventing what was is stated in the 'Columns' help text: "If blank or 0 then 4 columns..."
+            if ( configurationValues.ContainsKey( REPEAT_COLUMNS ) && configurationValues[REPEAT_COLUMNS].Value.AsInteger() != 0 )
             {
                 editControl.RepeatColumns = configurationValues[REPEAT_COLUMNS].Value.AsInteger();
             }
@@ -203,7 +204,7 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 List<string> values = new List<string>();
-                values.AddRange( value.Split( ',' ) );
+                values.AddRange( value.SplitDelimitedValues() );
 
                 if ( control != null && control is RockCheckBoxList )
                 {
