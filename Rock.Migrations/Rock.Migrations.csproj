@@ -229,30 +229,6 @@
     <Compile Include="Migrations\201909251734505_SecurePresence.Designer.cs">
       <DependentUpon>201909251734505_SecurePresence.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201911141852532_EntityDocuments.cs" />
-    <Compile Include="Migrations\201911141852532_EntityDocuments.Designer.cs">
-      <DependentUpon>201911141852532_EntityDocuments.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202001231750363_AddedSmsPipelineAndUpdatedSmsAction.cs" />
-    <Compile Include="Migrations\202001231750363_AddedSmsPipelineAndUpdatedSmsAction.Designer.cs">
-      <DependentUpon>202001231750363_AddedSmsPipelineAndUpdatedSmsAction.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202002041536333_AddedIncludeDeceasedToDataView.cs" />
-    <Compile Include="Migrations\202002041536333_AddedIncludeDeceasedToDataView.Designer.cs">
-      <DependentUpon>202002041536333_AddedIncludeDeceasedToDataView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202002052231500_GridLaunchWorkflows.cs" />
-    <Compile Include="Migrations\202002052231500_GridLaunchWorkflows.Designer.cs">
-      <DependentUpon>202002052231500_GridLaunchWorkflows.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202002102130226_AutomateStepsFromDataview.cs" />
-    <Compile Include="Migrations\202002102130226_AutomateStepsFromDataview.Designer.cs">
-      <DependentUpon>202002102130226_AutomateStepsFromDataview.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202002141444362_CreateDefaultSmsPipeline.cs" />
-    <Compile Include="Migrations\202002141444362_CreateDefaultSmsPipeline.Designer.cs">
-      <DependentUpon>202002141444362_CreateDefaultSmsPipeline.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.cs" />
     <Compile Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.Designer.cs">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
@@ -984,24 +960,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201909251734505_SecurePresence.resx">
       <DependentUpon>201909251734505_SecurePresence.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201911141852532_EntityDocuments.resx">
-      <DependentUpon>201911141852532_EntityDocuments.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202001231750363_AddedSmsPipelineAndUpdatedSmsAction.resx">
-      <DependentUpon>202001231750363_AddedSmsPipelineAndUpdatedSmsAction.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202002041536333_AddedIncludeDeceasedToDataView.resx">
-      <DependentUpon>202002041536333_AddedIncludeDeceasedToDataView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202002052231500_GridLaunchWorkflows.resx">
-      <DependentUpon>202002052231500_GridLaunchWorkflows.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202002102130226_AutomateStepsFromDataview.resx">
-      <DependentUpon>202002102130226_AutomateStepsFromDataview.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202002141444362_CreateDefaultSmsPipeline.resx">
-      <DependentUpon>202002141444362_CreateDefaultSmsPipeline.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 9.0\Version 1.9.0\201907082136571_Rollup0708.resx">
       <DependentUpon>201907082136571_Rollup0708.cs</DependentUpon>
