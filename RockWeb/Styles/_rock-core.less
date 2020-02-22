@@ -269,6 +269,10 @@ th[align="right"] {
 
 .control-label {
   font-weight: @control-label-weight;
+
+  .label-hidden > & {
+    display: none;
+  }
 }
 
 // add badge colors back to BS3
@@ -400,7 +404,7 @@ th[align="right"] {
 
     .panel-labels {
       float: right;
-      margin-top: -2px;
+      margin-top: -(round(@font-size-base * 0.3125, 1));
 
       .panel-text {
         float: left;

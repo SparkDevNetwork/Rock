@@ -319,6 +319,7 @@
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
+    <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
@@ -463,6 +464,7 @@
     <Compile Include="Data\RelatedEntityHelper.cs" />
     <Compile Include="Field\Types\BlockTemplateFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
+    <Compile Include="Field\Types\DocumentTypeFieldType.cs" />
     <Compile Include="Field\Types\MetricFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
@@ -470,6 +472,7 @@
     <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\LavaItemList.cs" />
     <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
+    <Compile Include="Jobs\StepsAutomation.cs" />
     <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
     <Compile Include="Jobs\ConnectionRequestWorkflowTriggers.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
@@ -494,12 +497,14 @@
     <Compile Include="Model\CodeGenerated\GroupDemographicTypeService.cs" />
     <Compile Include="Model\CodeGenerated\GroupDemographicValueService.cs" />
     <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\CodeGenerated\SmsPipelineService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\CodeGenerated\RelatedEntityService.cs" />
     <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
+    <Compile Include="Model\DocumentTypeService.Partial.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationInstanceService.partial.cs" />
     <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
@@ -512,6 +517,7 @@
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
+    <Compile Include="Model\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
@@ -1444,7 +1450,8 @@
     <Compile Include="Model\CodeGenerated\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
-    <Compile Include="Model\SystemEmailService.cs" />
+    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
+    <Compile Include="Model\SystemEmailService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
     <Compile Include="Model\CodeGenerated\TagService.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
@@ -2005,6 +2012,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
     <Compile Include="Web\UI\Controls\DefinedValueEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAdd.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddSingleSelect.cs" />
@@ -2026,6 +2034,9 @@
     <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepTypePicker.cs" />
     <Compile Include="Web\UI\Controls\StructureContentEditor.cs" />
+    <Compile Include="Web\UI\Controls\Switch.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
     <Compile Include="Web\UI\Controls\AccordionPanel.cs" />
     <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
@@ -2807,13 +2818,7 @@ if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(Solut
 if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
-
-if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
 </PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
