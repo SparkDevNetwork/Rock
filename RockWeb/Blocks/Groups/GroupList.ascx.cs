@@ -887,7 +887,9 @@ namespace RockWeb.Blocks.Groups
             }
 
             gGroups.DataSource = groupList;
-            gGroups.EntityTypeId = EntityTypeCache.Get<Group>().Id;
+            gGroups.EntityTypeId = GroupListGridMode == GridListGridMode.GroupList ?
+                EntityTypeCache.Get<Group>().Id :
+                EntityTypeCache.Get<GroupMember>().Id;
             gGroups.DataBind();
 
             // hide the group type column if there's only one type; must come after DataBind()

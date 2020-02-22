@@ -1,12 +1,64 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SmsPipeline.ascx.cs" Inherits="RockWeb.Blocks.Communication.SmsPipeline" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SmsPipelineDetail.ascx.cs" Inherits="RockWeb.Blocks.Communication.SmsPipelineDetail" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <asp:LinkButton ID="lbDragCommand" runat="server" CssClass="hidden" />
 
-        <div class="panel panel-block sms-main-panel">
+        <div class="panel panel-block js-pipeline-panel">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-sms"></i>&nbsp;SMS Pipeline</h1>
+                <h1 class="panel-title pull-left"><i class="fa fa-sms"></i>&nbsp;SMS Pipeline Detail</h1>
+
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlInactive" runat="server" CssClass="js-inactivepipeline-label" LabelType="Danger" Text="Inactive" />
+                </div>
+            </div>
+            <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+            <div class="panel-body" runat="server" id="divEditDetails">
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbPipelineName" runat="server" SourceTypeName="Rock.Model.SmsPipeline, Rock" PropertyName="Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbPipelineIsActive" runat="server" Label="Active" CssClass="js-isactivepipeline" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbPipelineDescription" runat="server" SourceTypeName="Rock.Model.SmsPipeline, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                    </div>
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
+                </div>
+            </div>
+
+            <div class="panel-body" runat="server" id="divReadOnlyDetails">
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockLiteral ID="lSmsName" runat="server" Label="Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockLiteral ID="lWebhookUrl" runat="server" Label="Webhook Url" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:RockLiteral ID="lSmsPipelineDescription" runat="server" Label="Description" />
+                    </div>
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-block sms-main-panel" runat="server" id="divSmsActionsPanel" ClientIDMode="Static">
+            <div class="panel-heading">
+                <h1 class="panel-title"><i class="fa fa-sms"></i>&nbsp;SMS Pipeline Actions</h1>
 
                 <div class="panel-labels">
                     <a href="#" class="btn btn-xs btn-square btn-default" onclick="$('.js-test-results').slideToggle( function () { $('#hfIsTestingDrawerOpen').val( $('#divTestingDrawer').css('display') !== 'none' ) } )">
@@ -19,15 +71,16 @@
             <div runat="server" ClientIDMode="Static" id="divTestingDrawer" class="js-test-results panel-drawer" style="display: none">
                 <div class="drawer-content">
                     <div class="alert alert-info" role="alert">
-                        Test the results of your SMS Pipeline. While this message originates and ends here in this testing block, the actions that it triggers may have non-testing consequences.
+                        <p>Using the form below will allow you to test your pipeline without having to use your SMS Provider.</p>
+                        <p>While this message originates and ends here in this testing block, there could be side effects such as running a workflow, creating a conversation, or sending additional SMS messages.</p>
                     </div>
 
                     <div class="row">
                         <div class="col-sm-6">
-                            <Rock:RockTextBox ID="tbFromNumber" runat="server" Label="From Number" />
+                            <Rock:RockTextBox ID="tbFromNumber" runat="server" Label="From Number" Placeholder="+16235553322" Help="This is the number for the person sending the text. The number must be formatted correctly. (ex: +16235553322)" />
                         </div>
                         <div class="col-sm-6">
-                            <Rock:RockTextBox ID="tbToNumber" runat="server" Label="To Number" />
+                            <Rock:RockTextBox ID="tbToNumber" runat="server" Label="To Number" Placeholder="+15559991234" Help="This will probably be the number linked to your SMS provider. The number must be formatted correctly. (ex: +15559991234)" />
                         </div>
                     </div>
 
@@ -193,6 +246,25 @@
                 show: 800,
                 hide: 100
             }
+        });
+
+        function setIsActiveControls(activeCheckbox) {
+
+            var $inactiveLabel = $(activeCheckbox).closest(".js-pipeline-panel").find('.js-inactivepipeline-label');
+            if ($(activeCheckbox).is(':checked')) {
+                $inactiveLabel.hide();
+            }
+            else {
+                $inactiveLabel.show();
+            }
+        }
+
+        $('.js-isactivepipeline').on('click', function () {
+            setIsActiveControls(this);
+        });
+
+        $('.js-isactivepipeline').each(function (i) {
+            setIsActiveControls(this);
         });
     });
 </script>

@@ -297,6 +297,7 @@ $(document).ready(function() {
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
+            dataView.IncludeDeceased = cbIncludeDeceased.Checked;
             dataView.PersistedScheduleIntervalMinutes = GetPersistedScheduleIntervalMinutes();
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
@@ -696,6 +697,7 @@ $(document).ready(function() {
             BindDataTransformations( rockContext );
             ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
+            BindIncludeDeceasedControl( dataView.EntityTypeId, dataView.IncludeDeceased );
             CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true, rockContext );
         }
 
@@ -731,6 +733,11 @@ $(document).ready(function() {
             if ( dataView.TransformEntityType != null )
             {
                 descriptionListMain.Add( "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
+            }
+
+            if ( dataView.IncludeDeceased )
+            {
+                descriptionListMain.Add( "Include Deceased", dataView.IncludeDeceased.ToYesNo() );
             }
 
             lblMainDetails.Text = descriptionListMain.Html;
@@ -1230,7 +1237,36 @@ $(document).ready(function() {
             emptyFilter.Guid = Guid.NewGuid();
             dataViewFilter.ChildFilters.Add( emptyFilter );
 
+            BindIncludeDeceasedControl( etpEntityType.SelectedEntityTypeId );
+
             CreateFilterControl( etpEntityType.SelectedEntityTypeId, dataViewFilter, true, rockContext );
+        }
+
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// /// <param name="sender">The source of the event.</param>
+        /// <param name="filteredEntityTypeId">The filtered entity type identifier.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [editable].</param>
+        private void BindIncludeDeceasedControl( int? filteredEntityTypeId, bool includeDeceased = false )
+        {
+            if ( filteredEntityTypeId.HasValue )
+            {
+                var filteredEntityType = EntityTypeCache.Get( filteredEntityTypeId.Value );
+                if ( filteredEntityType != null )
+                {
+                    var isPersonDataView = filteredEntityType.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
+                    cbIncludeDeceased.Visible = isPersonDataView;
+                    if ( isPersonDataView )
+                    {
+                        cbIncludeDeceased.Checked = includeDeceased;
+                    }
+                    else
+                    {
+                        cbIncludeDeceased.Checked = false;
+                    }
+                }
+            }
         }
 
         #endregion

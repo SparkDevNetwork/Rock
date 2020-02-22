@@ -108,6 +108,8 @@ namespace Rock.Attribute
                 if ( customGridOptionsBlock )
                 {
                     entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+                    entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
+                    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
                 }
 
                 bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
