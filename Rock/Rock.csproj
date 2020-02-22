@@ -2796,7 +2796,14 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
+    <PreBuildEvent>REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches
+REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable
+if "$(ConfigurationName)" == "Debug" (
+ echo "setting VBCSCOMPILER_TTL to 10 seconds"
+"$(SolutionDir)Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
+)
+
+REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
@@ -2817,8 +2824,11 @@ if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll" del "$(SolutionDir
 if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
-</PreBuildEvent>
+if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
