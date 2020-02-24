@@ -15,9 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -49,7 +51,7 @@ namespace RockWeb.Blocks.Core
 
         #region Fields
 
-        private static readonly string _readOnlyIncludes = "LeaderPersonAlias,LeaderPersonAlias.Person,TeamGroup";
+        private static readonly string _readOnlyIncludes = "LeaderPersonAlias,LeaderPersonAlias.Person,Location,TeamGroup";
 
         #endregion
 
@@ -160,6 +162,11 @@ namespace RockWeb.Blocks.Core
                 return;
             }
 
+            if ( !IsFormValid() )
+            {
+                return;
+            }
+
             Campus campus;
             var rockContext = new RockContext();
             var campusService = new CampusService( rockContext );
@@ -188,8 +195,8 @@ namespace RockWeb.Blocks.Core
             campus.Description = tbDescription.Text;
             campus.CampusStatusValueId = dvpCampusStatus.SelectedValueAsInt();
             campus.CampusTypeValueId = dvpCampusType.SelectedValueAsInt();
-            campus.Url = tbUrl.Text;
-            campus.PhoneNumber = tbPhoneNumber.Text;
+            campus.Url = urlCampus.Text;
+            campus.PhoneNumber = pnbPhoneNumber.Number;
             campus.LocationId = lpLocation.Location.Id;
             campus.ShortCode = tbCampusCode.Text;
             campus.TimeZoneId = ddlTimeZone.SelectedValue;
@@ -214,7 +221,7 @@ namespace RockWeb.Blocks.Core
                 campus.SaveAttributeValues( rockContext );
             } );
 
-            NavigateToParentPage();
+            NavigateToCurrentPage( new Dictionary<string, string> { { "CampusId", campus.Id.ToString() } } );
         }
 
         /// <summary>
@@ -350,19 +357,40 @@ namespace RockWeb.Blocks.Core
                 dl.Add( "Status", DefinedValueCache.GetValue( campus.CampusStatusValueId ) );
             }
 
+            if ( !string.IsNullOrWhiteSpace( campus.ShortCode ) )
+            {
+                dl.Add( "Code", campus.ShortCode );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( campus.TimeZoneId ) )
+            {
+                dl.Add( "Time Zone", campus.TimeZoneId );
+            }
+            
+            if ( campus.LeaderPersonAlias != null )
+            {
+                dl.Add( "Campus Leader", campus.LeaderPersonAlias.Person.FullName );
+            }
+
+            var serviceTimes = GetReadOnlyServiceTimes( campus );
+            if ( !string.IsNullOrWhiteSpace( serviceTimes ) )
+            {
+                dl.Add( "Service Times", serviceTimes );
+            }
+            
+            lMainDetailsLeft.Text = dl.Html;
+
+            // right column (col-md-6)
+            dl = new DescriptionList();
+            
             if ( campus.CampusTypeValueId.HasValue )
             {
                 dl.Add( "Type", DefinedValueCache.GetValue( campus.CampusTypeValueId ) );
             }
 
-            lMainDetailsLeft.Text = dl.Html;
-
-            // right column (col-md-6)
-            dl = new DescriptionList();
-
-            if ( campus.LeaderPersonAlias != null )
+            if ( !string.IsNullOrWhiteSpace( campus.Url ) )
             {
-                dl.Add( "Campus Leader", campus.LeaderPersonAlias.Person.NickName );
+                dl.Add( "Url", campus.Url );
             }
 
             if ( !string.IsNullOrWhiteSpace( campus.PhoneNumber ) )
@@ -370,11 +398,9 @@ namespace RockWeb.Blocks.Core
                 dl.Add( "Phone Number", campus.PhoneNumber );
             }
 
-            Uri uriTest;
-            if ( Uri.TryCreate( campus.Url, UriKind.Absolute, out uriTest )
-                && ( uriTest.Scheme == Uri.UriSchemeHttp || uriTest.Scheme == Uri.UriSchemeHttps ) )
+            if ( campus.Location != null )
             {
-                dl.Add( "Url", string.Format( "<a href='{0}' target='_blank'>{0}</a>", campus.Url ) );
+                dl.Add( "Location", campus.Location.Name );
             }
 
             lMainDetailsRight.Text = dl.Html;
@@ -403,11 +429,7 @@ namespace RockWeb.Blocks.Core
             }
 
             SetEditMode( true );
-
-            if ( !IsPostBack )
-            {
-                LoadDropDowns();
-            }
+            LoadDropDowns();
 
             tbCampusName.Text = campus.Name;
             cbIsActive.Checked = !campus.IsActive.HasValue || campus.IsActive.Value;
@@ -415,8 +437,8 @@ namespace RockWeb.Blocks.Core
             dvpCampusStatus.SetValue( campus.CampusStatusValueId );
             dvpCampusType.SetValue( campus.CampusTypeValueId );
             tbCampusCode.Text = campus.ShortCode;
-            tbUrl.Text = campus.Url;
-            tbPhoneNumber.Text = campus.PhoneNumber;
+            urlCampus.Text = campus.Url;
+            pnbPhoneNumber.Number = campus.PhoneNumber;
             lpLocation.Location = campus.Location;
 
             ddlTimeZone.SetValue( campus.TimeZoneId );
@@ -471,6 +493,61 @@ namespace RockWeb.Blocks.Core
                 hlStatus.Text = "Inactive";
                 hlStatus.LabelType = LabelType.Danger;
             }
+        }
+
+        /// <summary>
+        /// Determines whether validatable controls are valid.
+        /// </summary>
+        private bool IsFormValid()
+        {
+            // trigger validation checks on relevant controls
+            var phoneNumberIsValid = pnbPhoneNumber.IsValid;
+            var urlIsValid = urlCampus.IsValid;
+
+            return phoneNumberIsValid && urlIsValid;
+        }
+
+        /// <summary>
+        /// Gets the service times formatted for read only view.
+        /// </summary>
+        /// <param name="campus">The campus.</param>
+        /// <returns></returns>
+        private string GetReadOnlyServiceTimes( Campus campus )
+        {
+            if ( campus == null || string.IsNullOrWhiteSpace( campus.ServiceTimes ) )
+            {
+                return null;
+            }
+
+            var sbServiceTimes = new StringBuilder();
+            string[] serviceTimes = campus.ServiceTimes.Split( '|' );
+
+            for ( int i = 0; i < serviceTimes.Length; i++ )
+            {
+                string[] dayTimeParts = serviceTimes[i].Split( '^' );
+                string day = string.IsNullOrWhiteSpace( dayTimeParts[0] ) ? string.Empty : dayTimeParts[0].Trim();
+
+                string time = null;
+                if ( dayTimeParts.Length > 1 )
+                {
+                    time = string.IsNullOrWhiteSpace( dayTimeParts[1] ) ? string.Empty : dayTimeParts[1].Trim();
+                }
+
+                if ( string.IsNullOrWhiteSpace( day ) && string.IsNullOrWhiteSpace( time ))
+                {
+                    continue;
+                }
+
+                if ( i > 0 )
+                {
+                    sbServiceTimes.Append( "<br>" );
+                }
+
+                string space = string.IsNullOrWhiteSpace( day ) || string.IsNullOrWhiteSpace( time ) ? string.Empty : " ";
+                sbServiceTimes.AppendFormat( "{0}{1}{2}", day, space, time );
+            }
+
+            return sbServiceTimes.ToString();
         }
 
         #endregion
