@@ -28,6 +28,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
+            /*
+            Commented these out as they are going to be included in the EF migration.
+             */
             //ShowCameraSupportAttributeOnGrid();
             //MobileRollups();
             //IPadCameraCheckinUpdate();

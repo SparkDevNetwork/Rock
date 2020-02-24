@@ -453,10 +453,14 @@
     <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupView.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
+    <Compile Include="Blocks\Types\Web\Events\RegistrationInstanceBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
     <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
     <Compile Include="Data\ICampusFilterable.cs" />
+    <Compile Include="Data\RelatedEntityHelper.cs" />
     <Compile Include="Field\Types\BlockTemplateFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
     <Compile Include="Field\Types\MetricFieldType.cs" />
@@ -496,7 +500,10 @@
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
+    <Compile Include="Model\RegistrationInstanceService.partial.cs" />
+    <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
     <Compile Include="Model\RegistrationTemplatePlacement.cs" />
+    <Compile Include="Model\RegistrationTemplatePlacementService.partial.cs" />
     <Compile Include="Model\RelatedEntity.cs" />
     <Compile Include="Model\GroupDemographicType.cs" />
     <Compile Include="Model\GroupDemographicValue.cs" />
@@ -517,7 +524,10 @@
     <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
     <Compile Include="Plugin\HotFixes\094_AchievementPagesAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
+    <Compile Include="Plugin\HotFixes\100_MigrationRollupsFor10_2_1.cs" />
     <Compile Include="Plugin\HotFixes\099_MigrationRollupsFor10_2_0.cs" />
+    <Compile Include="Plugin\HotFixes\102_RapidAttendanceEntry.cs" />
+    <Compile Include="Plugin\HotFixes\101_RegistrationInstanceGroupPlacement.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
@@ -536,6 +546,7 @@
     <Compile Include="Reporting\ReportOutputBuilder.cs" />
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\HttpContextExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Utility\SingleOrArrayJsonConverter.cs" />
     <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
@@ -2531,6 +2542,7 @@
     <Compile Include="Workflow\Action\People\GetPersonFromFields.cs" />
     <Compile Include="Workflow\Action\People\PersonAddressUpdate.cs" />
     <Compile Include="Workflow\Action\People\PersonFollowAdd.cs" />
+    <Compile Include="Workflow\Action\People\PersonGetCampusTeamMember.cs" />
     <Compile Include="Workflow\Action\People\PersonGetHeadOfHousehold.cs" />
     <Compile Include="Workflow\Action\People\PersonGetSpouse.cs" />
     <Compile Include="Workflow\Action\People\PersonInDataView.cs" />

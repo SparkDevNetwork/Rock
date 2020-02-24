@@ -86,7 +86,7 @@ namespace Rock.Rest.Controllers
                 tag.TaggedItems.Add( taggedItem );
             }
 
-            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", person );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             Service.Context.SaveChanges();
 
             return ControllerContext.Request.CreateResponse( HttpStatusCode.Created, tag.Id );

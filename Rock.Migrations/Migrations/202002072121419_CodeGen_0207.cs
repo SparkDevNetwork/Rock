@@ -22,7 +22,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class Rollup_0220 : Rock.Migrations.RockMigration
+    public partial class CodeGen_0207 : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -30,9 +30,6 @@ namespace Rock.Migrations
         public override void Up()
         {
             CodeGenMigrationsUp();
-            ShowCameraSupportAttributeOnGrid();
-            MobileRollups();
-            IPadCameraCheckinUpdate();
         }
         
         /// <summary>
@@ -43,7 +40,7 @@ namespace Rock.Migrations
             CodeGenMigrationsDown();
         }
 
-        /// <summary>
+                /// <summary>
         /// Script generated "Up" migrations for pages, blocks, and block attributes.
         /// </summary>
         private void CodeGenMigrationsUp()
@@ -479,70 +476,5 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType("FE004110-D090-4E13-8301-03DA73304BDC"); // Calendar View
         }
     
-        /// <summary>
-        /// JE/DH - Set Supports Camera Attribute to Show on Grid
-        /// </summary>
-        private void ShowCameraSupportAttributeOnGrid()
-        {
-            Sql( $@"UPDATE [Attribute]
-                SET[IsGridColumn] = 1
-                WHERE[Guid] = '{Rock.SystemGuid.Attribute.DEFINED_VALUE_DEVICE_TYPE_SUPPORTS_CAMERAS}'" );
-        }
-
-        /// <summary>
-        /// JE/DH - Mobile Roll-ups
-        /// </summary>
-        private void MobileRollups()
-        {
-             RockMigrationHelper.UpdateDefinedValue(
-                Rock.SystemGuid.DefinedType.TEMPLATE_BLOCK,
-                "Mobile Group Member List",
-                "",
-                Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST );
-
-            RockMigrationHelper.UpdateDefinedValue(
-                Rock.SystemGuid.DefinedType.TEMPLATE_BLOCK,
-                "Mobile Group Member View",
-                "",
-                Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_VIEW );
-
-            RockMigrationHelper.UpdateDefinedValue(
-                Rock.SystemGuid.DefinedType.TEMPLATE_BLOCK,
-                "Mobile Group View",
-                "",
-                Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_VIEW );
-
-            // Fix description of attribute.
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "E1BBB48E-9E9A-4B69-B25C-820ABD9DCDEE", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "iPad Camera Barcode Configuration", "CameraBarcodeConfiguration", "iPad Camera Barcode Configuration", @"Specifies if a camera on the device should be used for barcode scanning.", 7, @"Available", "B7BD8FDE-479E-4450-8DE7-F53A6C37F19F" );
-
-            // Enable Show On Grid for Block Template attribute.
-            Sql( "UPDATE [Attribute] SET [IsGridColumn] = 1 WHERE [Guid] = '0AAFF537-7EC6-4AA9-A987-68DA1FF8511D'" );
-        }
-
-        /// <summary>
-        /// JE/DH - iPad Camera Check-in Update
-        /// </summary>
-        private void IPadCameraCheckinUpdate()
-        {
-             string barcodeScanButtonTemplate = @"
-<div class='checkin-search-actions'>
-    {% if BarcodeScanEnabled == true %}
-    <a class='btn btn-default btn-barcode js-camera-button'>
-         <span>{{ BarcodeScanButtonText }}</span>
-    </a>
-    {% endif %}
-</div>
-";
-
-            Sql( $@"UPDATE [Attribute]
-                SET [DefaultValue] = [DefaultValue] + '{barcodeScanButtonTemplate.Replace( "'", "''" )}'
-                WHERE [Guid] = '5F242D2A-FD01-4508-9F4C-ED01124309E7'" );
-
-            Sql( $@"UPDATE AV
-                SET AV.[Value] = AV.[Value] + '{barcodeScanButtonTemplate.Replace( "'", "''" )}'
-                FROM [AttributeValue] AV
-                INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
-                WHERE A.[Guid] = '5F242D2A-FD01-4508-9F4C-ED01124309E7'" );
-        }
     }
 }

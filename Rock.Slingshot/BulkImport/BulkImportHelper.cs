@@ -717,7 +717,7 @@ namespace Rock.Slingshot
 
             RockContext rockContext = new RockContext();
 
-            int? giverAnonymousPersonAliasId = new PersonService( rockContext ).GetSelect( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid(), p => p.Aliases.Where( a => a.AliasPersonId == p.Id ).Select( a => a.Id ).FirstOrDefault() );
+            int? giverAnonymousPersonAliasId = new PersonService( rockContext ).GetOrCreateAnonymousGiverPerson().Aliases.FirstOrDefault().Id;
 
             var qryFinancialTransactionsWithForeignIds = new FinancialTransactionService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
 

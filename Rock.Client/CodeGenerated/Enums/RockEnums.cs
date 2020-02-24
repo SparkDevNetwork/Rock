@@ -127,6 +127,16 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum CameraBarcodeConfiguration
+    {
+        Off = 0x0,
+        Available = 0x1,
+        AlwaysOn = 0x2,
+        Passive = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ColorDepth
     {
         BlackWhite = 0x0,

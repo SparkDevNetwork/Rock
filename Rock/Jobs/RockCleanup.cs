@@ -337,11 +337,10 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var userLoginService = new UserLoginService( rockContext );
-                var anonymousGiver = new PersonService( rockContext ).Get( Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
-
+                var anonymousGiver = new PersonService( rockContext ).GetOrCreateAnonymousGiverPerson();
                 if ( anonymousGiver == null )
                 {
-                    return 0;
+                    return 0; // This shouldn't ever happen.
                 }
 
                 var logins = userLoginService.Queryable().Where( l => l.PersonId == anonymousGiver.Id ).ToList();

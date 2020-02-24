@@ -206,6 +206,8 @@ namespace RockWeb.Blocks.Cms
             int pageId = hfPageId.Value.AsInteger();
             var page = PageCache.Get( pageId );
 
+            hlInvalidZoneWarning.Visible = _invalidPageZones != null && _invalidPageZones.Contains( zoneName );
+
             lZoneTitle.Text = string.Format( "{0} Zone", zoneName );
             lZoneIcon.Text = "<i class='fa fa-th-large'></i>";
             if ( page != null )
@@ -231,6 +233,19 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        private string[] _invalidPageZones
+        {
+            get
+            {
+                return ViewState["_invalidPageZones"] as string[] ?? new string[0];
+            }
+
+            set
+            {
+                ViewState["_invalidPageZones"] = value;
+            }
+        }
+
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
@@ -243,6 +258,7 @@ namespace RockWeb.Blocks.Cms
             var page = PageCache.Get( pageId );
             if ( page != null )
             {
+                // get the valid zones from the Layout for this page
                 var zoneNames = FindZoneNames( page );
 
                 foreach ( var zoneName in zoneNames )
@@ -250,6 +266,14 @@ namespace RockWeb.Blocks.Cms
                     var zoneBlockCount = page.Blocks.Where( a => a.Zone.Equals( zoneName, StringComparison.OrdinalIgnoreCase ) ).Count();
                     ddlZones.Items.Add( new ListItem( string.Format( "{0} ({1})", zoneName, zoneBlockCount ), zoneName ) );
                     ddlMoveToZoneList.Items.Add( new ListItem( zoneName, zoneName ) );
+                }
+
+                // get any zones from blocks that have a zone that isn't part of the layout, then add those the list, but not the MoveToZoneList
+                _invalidPageZones = page.Blocks.Select( a => a.Zone ).ToList().Where( z => !zoneNames.Contains( z ) ).ToArray();
+                foreach ( var invalidPageZone in _invalidPageZones )
+                {
+                    var zoneBlockCount = page.Blocks.Where( a => a.Zone.Equals( invalidPageZone, StringComparison.OrdinalIgnoreCase ) ).Count();
+                    ddlZones.Items.Add( new ListItem( string.Format( "{0} ({1})", invalidPageZone, zoneBlockCount ), invalidPageZone ) );
                 }
 
                 // default to Main Zone (if there is one)

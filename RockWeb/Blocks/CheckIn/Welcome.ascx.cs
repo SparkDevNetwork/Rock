@@ -51,13 +51,13 @@ namespace RockWeb.Blocks.CheckIn
         IsRequired = false,
         Order = 6 )]
 
-    [CustomDropdownListField(
+    [EnumField(
         "iPad Camera Barcode Configuration",
-        "Specifies if a camera on the device should be used for barcode scanning.",
-        "Off,Available,Always On,Passive",
+        Description = "Specifies if a camera on the device should be used for barcode scanning.",
+        EnumSourceType = typeof( CameraBarcodeConfiguration ),
         Key = AttributeKey.CameraBarcodeConfiguration,
         IsRequired = true,
-        DefaultValue = "Available",
+        DefaultValue = "1",
         Order = 7 )]
 
     [TextField(
@@ -443,8 +443,13 @@ namespace RockWeb.Blocks.CheckIn
             //
             // Include the camera button if it is enabled and the device supports it.
             //
-            var cameraOption = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration );
-            if ( pnlActive.Visible && cameraOption != "Off" && CurrentCheckInState.Kiosk.Device.HasCamera )
+            var blockCameraMode = GetAttributeValue( AttributeKey.CameraBarcodeConfiguration ).ConvertToEnum<CameraBarcodeConfiguration>( CameraBarcodeConfiguration.Available );
+            var deviceHasCamera = CurrentCheckInState.Kiosk.Device.HasCamera;
+            var cameraMode = CurrentCheckInState.Kiosk.Device.CameraBarcodeConfigurationType ?? blockCameraMode;
+            cameraMode = deviceHasCamera ? cameraMode : CameraBarcodeConfiguration.Off;
+
+            hfCameraMode.Value = cameraMode.ToString();
+            if ( pnlActive.Visible && cameraMode != CameraBarcodeConfiguration.Off )
             {
                 var scanButtonText = GetAttributeValue( AttributeKey.ScanButtonText );
                 if ( scanButtonText.IsNullOrWhiteSpace() )

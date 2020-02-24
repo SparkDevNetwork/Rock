@@ -4020,8 +4020,8 @@ FROM (
 			,p2.[BirthDay]
 		) pf
 	WHERE (
-			p.GivingLeaderId IS NULL
-			OR (p.GivingLeaderId != pf.CalculatedGivingLeaderId)
+			p.GivingLeaderId = 0
+			OR (p.GivingLeaderId != ISNULL(pf.CalculatedGivingLeaderId, p.Id))
 			)" );
 
             if ( personId.HasValue )
@@ -4042,5 +4042,54 @@ FROM (
         }
 
         #endregion
+
+        #region Anonymous Giver
+
+        /// <summary>
+        /// Gets or creates the anonymous giver person.
+        /// </summary>
+        /// <returns>A <see cref="Person"/> that matches the ystemGuid.Person.GIVER_ANONYMOUS Guid value.</returns>
+        public Person GetOrCreateAnonymousGiverPerson()
+        {
+            var anonymousGiver = Get( SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+            if ( anonymousGiver == null )
+            {
+                CreateAnonymousGiverPerson();
+                anonymousGiver = Get( SystemGuid.Person.GIVER_ANONYMOUS.AsGuid() );
+            }
+            return anonymousGiver;
+        }
+
+        /// <summary>
+        /// Creates the anonymous giver person.  Used by GetOrCreateAnonymousGiverPerson().
+        /// </summary>
+        private void CreateAnonymousGiverPerson()
+        {
+            using ( var anonymousGiverPersonRockContext = new RockContext() )
+            {
+                var anonymousGiver = new Person()
+                {
+                    IsSystem = false,
+                    RecordTypeValueId = 1,
+                    RecordStatusReasonValueId = 3,
+                    ConnectionStatusValueId = 203,
+                    IsDeceased = false,
+                    FirstName = "Giver",
+                    NickName = "Giver",
+                    LastName = "Anonymous",
+                    Gender = Gender.Unknown,
+                    IsEmailActive = true,
+                    Guid = SystemGuid.Person.GIVER_ANONYMOUS.AsGuid(),
+                    EmailPreference = EmailPreference.EmailAllowed,
+                    CommunicationPreference = CommunicationType.Email
+                };
+
+                new PersonService( anonymousGiverPersonRockContext ).Add( anonymousGiver );
+                anonymousGiverPersonRockContext.SaveChanges();
+            }
+        }
+
+        #endregion Anonymous Giver
+
     }
 }

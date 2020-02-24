@@ -106,6 +106,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Device target, Device source )
         {
             target.Id = source.Id;
+            target.CameraBarcodeConfigurationType = source.CameraBarcodeConfigurationType;
             target.Description = source.Description;
             target.DeviceTypeValueId = source.DeviceTypeValueId;
             target.ForeignGuid = source.ForeignGuid;

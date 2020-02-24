@@ -605,7 +605,12 @@ namespace RockWeb.Blocks.Mobile
             ddlBlockTypeCategory.Items.Clear();
             foreach ( var c in categories.OrderBy( c => c ) )
             {
-                ddlBlockTypeCategory.Items.Add( c );
+                var text = c;
+                if ( c.StartsWith( "Mobile >" ) )
+                {
+                    text = c.Replace( "Mobile >", string.Empty ).Trim();
+                }
+                ddlBlockTypeCategory.Items.Add( new ListItem( text, c ) );
             }
             ddlBlockTypeCategory.SetValue( selectedCategory );
 

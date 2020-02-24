@@ -61,9 +61,41 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Migrations\202002042011136_Rollup_0220.cs" />
-    <Compile Include="Migrations\202002042011136_Rollup_0220.Designer.cs">
+    <Compile Include="Migrations\202002182206291_Rollup_0218.cs" />
+    <Compile Include="Migrations\202002182206291_Rollup_0218.Designer.cs">
+      <DependentUpon>202002182206291_Rollup_0218.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002182232477_AddMissingGroupTypeAdministratorTerms.cs" />
+    <Compile Include="Migrations\202002182232477_AddMissingGroupTypeAdministratorTerms.Designer.cs">
+      <DependentUpon>202002182232477_AddMissingGroupTypeAdministratorTerms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.cs" />
+    <Compile Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.Designer.cs">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002191553196_RegistrationInstanceGroupPlacement.cs" />
+    <Compile Include="Migrations\202002191553196_RegistrationInstanceGroupPlacement.Designer.cs">
+      <DependentUpon>202002191553196_RegistrationInstanceGroupPlacement.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002191605076_UpdateGivingAnalyticsStoredProcs.cs" />
+    <Compile Include="Migrations\202002191605076_UpdateGivingAnalyticsStoredProcs.Designer.cs">
+      <DependentUpon>202002191605076_UpdateGivingAnalyticsStoredProcs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
+    <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002072057059_DeviceCameraBarcodeConfiguration.cs" />
+    <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002072057059_DeviceCameraBarcodeConfiguration.Designer.cs">
+      <DependentUpon>202002072057059_DeviceCameraBarcodeConfiguration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002072121419_CodeGen_0207.cs" />
+    <Compile Include="Migrations\202002072121419_CodeGen_0207.Designer.cs">
+      <DependentUpon>202002072121419_CodeGen_0207.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002132339276_AddFundraisingAllowDonationsUntil.cs" />
+    <Compile Include="Migrations\202002132339276_AddFundraisingAllowDonationsUntil.Designer.cs">
+      <DependentUpon>202002132339276_AddFundraisingAllowDonationsUntil.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.Designer.cs">
@@ -1031,8 +1063,32 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202002042011136_Rollup_0220.resx">
+    <EmbeddedResource Include="Migrations\202002182206291_Rollup_0218.resx">
+      <DependentUpon>202002182206291_Rollup_0218.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002182232477_AddMissingGroupTypeAdministratorTerms.resx">
+      <DependentUpon>202002182232477_AddMissingGroupTypeAdministratorTerms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002182236274_AddCampusTeamToAllCampuses.resx">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002191553196_RegistrationInstanceGroupPlacement.resx">
+      <DependentUpon>202002191553196_RegistrationInstanceGroupPlacement.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002191605076_UpdateGivingAnalyticsStoredProcs.resx">
+      <DependentUpon>202002191605076_UpdateGivingAnalyticsStoredProcs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002072057059_DeviceCameraBarcodeConfiguration.resx">
+      <DependentUpon>202002072057059_DeviceCameraBarcodeConfiguration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002072121419_CodeGen_0207.resx">
+      <DependentUpon>202002072121419_CodeGen_0207.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002132339276_AddFundraisingAllowDonationsUntil.resx">
+      <DependentUpon>202002132339276_AddFundraisingAllowDonationsUntil.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge.resx">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
@@ -1770,6 +1826,12 @@
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x86\SqlServerSpatial110.dll">
       <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Migrations\202002182236274_AddCampusTeamToAllCampuses_Down.sql">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202002182236274_AddCampusTeamToAllCampuses_Up.sql">
+      <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>

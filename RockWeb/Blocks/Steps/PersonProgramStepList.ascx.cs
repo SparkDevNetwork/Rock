@@ -183,6 +183,12 @@ namespace RockWeb.Blocks.Steps
                 {
                     hfIsCardView.Value = isCardViewPref.ToString();
                 }
+                else
+                {
+                    // use the program's default view setting
+                    var program = GetStepProgram();
+                    hfIsCardView.Value = ( program.DefaultListView == StepProgram.ViewMode.Cards ).ToString();
+                }
             }
 
             RenderStepsPerRow();
@@ -213,7 +219,7 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Show the grid view
+        /// Show the grid view and save the user's preference.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -221,10 +227,11 @@ namespace RockWeb.Blocks.Steps
         {
             hfIsCardView.Value = false.ToString();
             RenderViewMode();
+            SetUserPreference( PreferenceKey.IsCardView, hfIsCardView.Value, true );
         }
 
         /// <summary>
-        /// Show the card view
+        /// Show the card view and save the user's preference.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -232,6 +239,7 @@ namespace RockWeb.Blocks.Steps
         {
             hfIsCardView.Value = true.ToString();
             RenderViewMode();
+            SetUserPreference( PreferenceKey.IsCardView, hfIsCardView.Value, true );
         }
 
         /// <summary>
@@ -252,8 +260,6 @@ namespace RockWeb.Blocks.Steps
 
             pnlCardView.Visible = isCardView;
             pnlGridView.Visible = !isCardView;
-
-            SetUserPreference( PreferenceKey.IsCardView, isCardView.ToString(), true );
         }
 
         /// <summary>
