@@ -132,11 +132,13 @@ namespace RockWeb.Blocks.Event
                 pageList = pageList.Where( a => a.Guid != groupPlacementToolPageGuid.Value ).ToList();
             }
 
-            var navigationPageInfoList = pageList.Select( a => new NavigationPageInfo
-            {
-                TabTitle = a.PageTitle,
-                PageReference = new PageReference( a.Id )
-            } ).ToList();
+            var navigationPageInfoList = pageList
+                .Where( a => a.DisplayInNavWhen != DisplayInNavWhen.Never )
+                .Select( a => new NavigationPageInfo
+                {
+                    TabTitle = a.PageTitle,
+                    PageReference = new PageReference( a.Id )
+                } ).ToList();
 
             if ( groupPlacementToolPageGuid.HasValue )
             {
