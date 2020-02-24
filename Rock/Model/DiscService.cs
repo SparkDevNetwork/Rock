@@ -361,9 +361,9 @@ namespace Rock.Model
         /// <returns>The DISC score, if one is saved. Otherwise, returns 0.</returns>
         private static int AttributeValueLookup( Person person, string attrib )
         {
-            int retVal = 0;
-            bool bCatch = int.TryParse( person.AttributeValues[attrib].Value, out retVal );
-            return retVal;
+            decimal retVal = 0;
+            bool bCatch = decimal.TryParse( person.AttributeValues[attrib].Value, out retVal );
+            return Convert.ToInt32( decimal.Round( retVal, 1 ) );
         }
 
         /// <summary>
