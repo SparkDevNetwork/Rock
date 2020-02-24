@@ -65,7 +65,7 @@
                     self.showRegistrantInstanceName = false;
                 }
 
-                self.showAllRegistrantDetails = false;
+                self.showAllRegistrantDetails = true;
                 self.highlightGenders = $('.js-options-highlight-genders', self.$groupPlacementTool).val() == 'true';
                 self.hideFullGroups = $('.js-options-hide-full-groups', self.$groupPlacementTool).val() == 'true';
 
@@ -363,7 +363,9 @@
                 $groupMemberDiv.attr('data-groupmember-id', groupMember.Id);
                 $groupMemberDiv.attr('data-person-id', groupMember.PersonId);
                 $groupMemberDiv.find('.js-person-id-anchor').prop('name', 'PersonId_' + groupMember.PersonId);
-                $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
+                if (self.highlightGenders) {
+                    $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
+                }
                 $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
                 var $editGroupMemberButton = $groupMemberDiv.find('.js-edit-group-member');
                 if ($editGroupMemberButton.length) {
