@@ -109,8 +109,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Family",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         Order = 2,
-        IsRequired = true
-        )]
+        IsRequired = true )]
     #endregion Family Block Attribute Settings
     #region Individual Block Attribute Settings
     [CodeEditorField(
@@ -121,8 +120,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Individual",
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Lava,
         Order = 1,
-        IsRequired = true
-        )]
+        IsRequired = true )]
     [DefinedValueField(
         "Adult Phone Types",
         Key = AttributeKey.AdultPhoneTypes,
@@ -131,8 +129,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Individual",
         Order = 2,
         IsRequired = false,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE
-        )]
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
     [AttributeField(
         "Adult Person Attributes",
         Key = AttributeKey.AdultPersonAttributes,
@@ -158,8 +155,7 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Individual",
         Order = 5,
         IsRequired = false,
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE
-        )]
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE )]
     [AttributeField(
         "Child Person Attributes",
         Key = AttributeKey.ChildPersonAttributes,
@@ -246,8 +242,7 @@ namespace RockWeb.Blocks.CheckIn
         Description = "The text to show above the workflow list. (For example: I'm Interested in.)",
         Category = "Workflow",
         Order = 0,
-        IsRequired = false
-        )]
+        IsRequired = false )]
     [WorkflowTypeField(
         "Workflow Types",
         AllowMultiple = true,
@@ -255,8 +250,7 @@ namespace RockWeb.Blocks.CheckIn
         Description = "A list of workflows to display as a checkbox that can be selected and fired on behalf of the selected person on save.",
         Category = "Workflow",
         IsRequired = false,
-        Order = 1
-        )]
+        Order = 1 )]
     #endregion Workflows Block Attribute Settings
     #region Notes Block Attribute Settings
     [NoteTypeField(
