@@ -206,6 +206,10 @@
                     method: "GET",
                     url: getBlockUserPreferenceUrl
                 }).done(function (expandDetails) {
+                    // if this user does not yet have this Block user preference defined, default to true
+                    if (!expandDetails) {
+                        expandDetails = 'true';
+                    }
                     self.populateRegistrants(self.$registrantList, expandDetails == 'true');
                 });
 
@@ -363,7 +367,9 @@
                 $groupMemberDiv.attr('data-groupmember-id', groupMember.Id);
                 $groupMemberDiv.attr('data-person-id', groupMember.PersonId);
                 $groupMemberDiv.find('.js-person-id-anchor').prop('name', 'PersonId_' + groupMember.PersonId);
-                $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
+                if (self.highlightGenders) {
+                    $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
+                }
                 $groupMemberDiv.find('.js-groupmember-name').text(groupMember.Person.NickName + ' ' + groupMember.Person.LastName);
                 var $editGroupMemberButton = $groupMemberDiv.find('.js-edit-group-member');
                 if ($editGroupMemberButton.length) {
