@@ -673,6 +673,11 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_SEND_PAYMENT_REMINDERS = "2828BBCF-B3FC-4707-B063-086748853978";
 
         /// <summary>
+        /// The Registration Template Placement page guid
+        /// </summary>
+        public const string REGISTRATION_TEMPLATE_PLACEMENT = "02E7D8EC-E0F1-4632-9641-77772144A4CA";
+
+        /// <summary>
         /// The registration wait list confirmation
         /// </summary>
         public const string REGISTRATION_WAIT_LIST_CONFIRMATION = "4BF84D3F-DE7B-4F8B-814A-1E728E69C105";
