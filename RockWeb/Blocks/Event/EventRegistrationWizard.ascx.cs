@@ -1037,7 +1037,7 @@ namespace RockWeb.Blocks.Event
                 divEvent.Visible = true;
                 divEventOccurrence.Visible = true;
 
-                ddlCampus.DataSource = CampusCache.All().Where( c => c.IsActive == true ).ToList();
+                ddlCampus.DataSource = CampusCache.All( includeInactive: false );
                 ddlCampus.DataBind();
                 ddlCampus.Items.Insert( 0, new ListItem( All.Text, string.Empty ) );
             }
