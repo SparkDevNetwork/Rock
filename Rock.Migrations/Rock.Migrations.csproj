@@ -93,6 +93,10 @@
     <Compile Include="Migrations\202002242353419_EmailAnalytics.Designer.cs">
       <DependentUpon>202002242353419_EmailAnalytics.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002251259222_CreateDefaultSmsPipeline.cs" />
+    <Compile Include="Migrations\202002251259222_CreateDefaultSmsPipeline.Designer.cs">
+      <DependentUpon>202002251259222_CreateDefaultSmsPipeline.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1098,6 +1102,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202002242353419_EmailAnalytics.resx">
       <DependentUpon>202002242353419_EmailAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002251259222_CreateDefaultSmsPipeline.resx">
+      <DependentUpon>202002251259222_CreateDefaultSmsPipeline.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
