@@ -38,18 +38,26 @@ namespace RockWeb.Blocks.Event
 
     #region Block Attributes
 
+    [RegistrationTemplateField(
+        "Registration Template",
+        Description = "If provided, this Registration Template will override any Registration Template specified in a URL parameter.",
+        Key = AttributeKey.RegistrationTemplate,
+        Order = 0,
+        IsRequired = false
+        )]
+
     [LinkedPage(
         "Group Detail Page",
         Key = AttributeKey.GroupDetailPage,
         DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
-        Order = 0
+        Order = 1
         )]
 
     [LinkedPage(
         "Group Member Detail Page",
         Key = AttributeKey.GroupMemberDetailPage,
         DefaultValue = Rock.SystemGuid.Page.GROUP_MEMBER_DETAIL_GROUP_VIEWER,
-        Order = 1
+        Order = 2
         )]
 
     #endregion Block Attributes
@@ -59,6 +67,7 @@ namespace RockWeb.Blocks.Event
 
         private static class AttributeKey
         {
+            public const string RegistrationTemplate = "RegistrationTemplate";
             public const string GroupDetailPage = "GroupDetailPage";
             public const string GroupMemberDetailPage = "GroupMemberDetailPage";
         }
@@ -112,7 +121,7 @@ namespace RockWeb.Blocks.Event
             public PlacementConfiguration()
             {
                 ShowRegistrationInstanceName = true;
-                ExpandRegistrantDetails = false;
+                ExpandRegistrantDetails = true;
                 IncludedRegistrationInstanceIds = new int[0];
                 DisplayedRegistrantAttributeIds = new int[0];
                 DisplayedGroupAttributeIds = new int[0];
@@ -288,7 +297,17 @@ namespace RockWeb.Blocks.Event
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
 
             int? registrationInstanceId = this.PageParameter( PageParameterKey.RegistrationInstanceId ).AsIntegerOrNull();
-            int? registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+
+            int? registrationTemplateId;
+            Guid? registrationTemplateGuid = GetAttributeValue( AttributeKey.RegistrationTemplate ).AsGuidOrNull();
+            if ( registrationTemplateGuid.HasValue )
+            {
+                registrationTemplateId = registrationTemplateService.GetId( registrationTemplateGuid.Value );
+            }
+            else
+            {
+                registrationTemplateId = this.PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+            }
 
             // in case a specific registrant is specified
             int? registrantId = this.PageParameter( PageParameterKey.RegistrantId ).AsIntegerOrNull();

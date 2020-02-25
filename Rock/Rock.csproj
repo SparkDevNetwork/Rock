@@ -535,6 +535,7 @@
     <Compile Include="Plugin\HotFixes\099_MigrationRollupsFor10_2_0.cs" />
     <Compile Include="Plugin\HotFixes\102_RapidAttendanceEntry.cs" />
     <Compile Include="Plugin\HotFixes\101_RegistrationInstanceGroupPlacement.cs" />
+    <Compile Include="Plugin\HotFixes\103_GroupPlacementUpdates.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
