@@ -65,7 +65,7 @@
                     self.showRegistrantInstanceName = false;
                 }
 
-                self.showAllRegistrantDetails = true;
+                self.showAllRegistrantDetails = false;
                 self.highlightGenders = $('.js-options-highlight-genders', self.$groupPlacementTool).val() == 'true';
                 self.hideFullGroups = $('.js-options-hide-full-groups', self.$groupPlacementTool).val() == 'true';
 
@@ -206,6 +206,10 @@
                     method: "GET",
                     url: getBlockUserPreferenceUrl
                 }).done(function (expandDetails) {
+                    // if this user does not yet have this Block user preference defined, default to true
+                    if (!expandDetails) {
+                        expandDetails = 'true';
+                    }
                     self.populateRegistrants(self.$registrantList, expandDetails == 'true');
                 });
 

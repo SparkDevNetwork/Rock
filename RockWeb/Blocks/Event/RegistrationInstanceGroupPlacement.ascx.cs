@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Event
             public PlacementConfiguration()
             {
                 ShowRegistrationInstanceName = true;
-                ExpandRegistrantDetails = false;
+                ExpandRegistrantDetails = true;
                 IncludedRegistrationInstanceIds = new int[0];
                 DisplayedRegistrantAttributeIds = new int[0];
                 DisplayedGroupAttributeIds = new int[0];
