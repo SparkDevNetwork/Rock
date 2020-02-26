@@ -706,6 +706,7 @@ namespace RockWeb.Blocks.Examples
             }
 
             RegistrationTemplateService registrationTemplateService = new RegistrationTemplateService( rockContext );
+            RegistrationTemplatePlacementService registrationTemplatePlacementService = new RegistrationTemplatePlacementService( rockContext );
 
             // Add a template for each...
             foreach ( var element in elemRegistrationTemplates.Elements( "registrationTemplate" ) )
@@ -803,7 +804,6 @@ namespace RockWeb.Blocks.Examples
                 registrationTemplateService.Add( registrationTemplate );
 
                 rockContext.SaveChanges();
-                var x = registrationTemplate.Id;
 
                 string name = element.Attribute( "name" ).Value.Trim();
                 bool allowExternalUpdatesToSavedRegistrations = element.Attribute( "allowExternalUpdatesToSavedRegistrations" ).Value.AsBoolean();
@@ -993,6 +993,48 @@ namespace RockWeb.Blocks.Examples
                         fee.DiscountApplies = feeElement.Attribute( "discountApplies" ).Value.AsBoolean();
                         fee.AllowMultiple = feeElement.Attribute( "enableQuantity" ).Value.AsBoolean();
                         fee.Order = feeOrder;
+                    }
+                }
+
+                //placement groups
+                int placementGroupOrder = 0;
+                if ( element.Elements( "placementGroups" ) != null )
+                {
+                    foreach ( var placemenetGroupElement in element.Elements( "placementGroups" ).Elements( "placementGroup" ) )
+                    {
+                        placementGroupOrder++;
+
+                        // Find the group type and 
+                        var placementGroupType = GroupTypeCache.Get( placemenetGroupElement.Attribute( "groupTypeGuid" ).Value.Trim().AsGuid() );
+
+                        var registrationTemplatePlacement = new RegistrationTemplatePlacement();
+                        registrationTemplatePlacement.Guid = Guid.NewGuid();
+                        registrationTemplatePlacement.RegistrationTemplateId = registrationTemplate.Id;
+                        registrationTemplatePlacementService.Add( registrationTemplatePlacement );
+                        registrationTemplatePlacement.Name = placemenetGroupElement.Attribute( "name" ).Value;
+                        registrationTemplatePlacement.Order = placementGroupOrder;
+                        registrationTemplatePlacement.GroupTypeId = placementGroupType.Id;
+                        registrationTemplatePlacement.IconCssClass = placemenetGroupElement.Attribute( "iconCssClass" ).Value;
+                        registrationTemplatePlacement.AllowMultiplePlacements = placemenetGroupElement.Attribute( "allowMultiple" ).Value.AsBoolean();
+                        rockContext.SaveChanges( disablePrePostProcessing: true );
+
+                        if ( placemenetGroupElement.Elements( "sharedGroups" ) != null )
+                        {
+                            var sharedPlacementGroupGuids = new List<Guid>();
+                            foreach ( var sharedGroupElement in placemenetGroupElement.Elements( "sharedGroups" ).Elements( "sharedGroup" ) )
+                            {
+                                sharedPlacementGroupGuids.Add( sharedGroupElement.Attribute( "groupGuid" ).Value.Trim().AsGuid() );
+                            }
+
+                            if ( sharedPlacementGroupGuids.Any() )
+                            {
+                                GroupService groupService = new GroupService( rockContext );
+                                var sharedPlacementGroups = groupService.GetByGuids( sharedPlacementGroupGuids ).ToList();
+                                registrationTemplatePlacementService.SetRegistrationTemplatePlacementPlacementGroups( registrationTemplatePlacement, sharedPlacementGroups );
+                                rockContext.SaveChanges( disablePrePostProcessing: true );
+                            }
+                        }
+                        
                     }
                 }
             }
@@ -1702,6 +1744,11 @@ namespace RockWeb.Blocks.Examples
                         group.GroupTypeId = groupType.Id;
                         roleId = groupType.DefaultGroupRoleId;
                         break;
+                    case "generalgroup":
+                        groupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_GENERAL.AsGuid() );
+                        group.GroupTypeId = groupType.Id;
+                        roleId = groupType.DefaultGroupRoleId;
+                        break;
                     default:
                         throw new NotSupportedException( string.Format( "unknown group type {0}", elemGroup.Attribute( "type" ).Value.Trim() ) );
                 }
@@ -1798,6 +1845,11 @@ namespace RockWeb.Blocks.Examples
 
                     groupMember.PersonId = _peopleDictionary[personGuid];
                     group.Members.Add( groupMember );
+                }
+
+                if ( elemGroup.Attribute( "groupCapacity" ) != null )
+                {
+                    group.GroupCapacity = elemGroup.Attribute( "groupCapacity" ).Value.AsIntegerOrNull();
                 }
 
                 groupService.Add( group );
