@@ -136,6 +136,7 @@ namespace Rock.Web.UI.Controls
                 if ( li != null )
                 {
                     li.Selected = true;
+                    this.SelectedValue = id.ToString();
                 }
                 else
                 {
