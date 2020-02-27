@@ -265,7 +265,7 @@ namespace Rock.Jobs
         {
             // Calculate correct date range from the RSVP Offset.
             DateTime startDate = DateTime.Today.AddDays( offsetDays );
-            DateTime endDate = startDate.AddDays( 1 ).AddMilliseconds( -1 );
+            DateTime endDate = startDate.AddDays( 1 );
 
             // This can't use WithNoTracking because the sms service tries to access the PrimaryAliasId
             // which links to the Aliases property, but when we try to at the Aliases property to the include list
@@ -277,7 +277,7 @@ namespace Rock.Jobs
                     .Queryable( "Attendees,Attendees.PersonAlias.Person" )
                     .Where( o => o.GroupId == group.Id )
                     .Where( o => o.OccurrenceDate >= startDate ) // OccurrenceDate must be greater than startDate (the beginning of the day from the offset).
-                    .Where( o => o.OccurrenceDate <= endDate ) // OccurrenceDate must be less than endDate (the end of the day from the offset).
+                    .Where( o => o.OccurrenceDate < endDate ) // OccurrenceDate must be less than endDate (the next day after the beginning of the offset).
                     .Where( o => o.Attendees.Where( a => a.RSVP == RSVP.Yes ).Any() ) // Occurrence must have attendees who responded "Yes".
                     .ToList();
 
