@@ -54,6 +54,14 @@ namespace Rock.Mobile
         public string NoNetworkContent { get; set; }
 
         /// <summary>
+        /// Gets or sets the CSS styles specific to this block.
+        /// </summary>
+        /// <value>
+        /// The CSS styles specific to this block.
+        /// </value>
+        public string CssStyles { get; set; }
+
+        /// <summary>
         /// Gets or sets the duration of the cache.
         /// </summary>
         /// <value>
