@@ -446,6 +446,7 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
