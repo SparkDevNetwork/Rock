@@ -354,6 +354,7 @@ namespace Rock.Mobile
                         PreXaml = block.PreHtml,
                         PostXaml = block.PostHtml,
                         CssClasses = block.CssClass,
+                        CssStyles = additionalBlockSettings.CssStyles,
                         ShowOnTablet = additionalBlockSettings.ShowOnTablet,
                         ShowOnPhone = additionalBlockSettings.ShowOnPhone,
                         RequiresNetwork = additionalBlockSettings.RequiresNetwork,
@@ -424,6 +425,7 @@ namespace Rock.Mobile
                     IconUrl = page.IconBinaryFileId.HasValue ? $"{ applicationRoot }GetImage.ashx?Id={ page.IconBinaryFileId.Value }" : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
+                    CssStyles = additionalPageSettings.CssStyles,
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) )
                 };
 
