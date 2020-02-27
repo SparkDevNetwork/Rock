@@ -367,7 +367,7 @@ namespace Rock.Web.UI.Controls
             // control for default launch workflow
             _lbDefaultLaunchWorkflow = new LinkButton();
             _lbDefaultLaunchWorkflow.ID = "lbDefaultLaunchWorkflow";
-            _lbDefaultLaunchWorkflow.CssClass = "btn-launch-workflow btn btn-default btn-sm";
+            _lbDefaultLaunchWorkflow.CssClass = "btn-grid-action btn-launch-workflow btn btn-default btn-sm";
             _lbDefaultLaunchWorkflow.ToolTip = "Launch Workflow";
             _lbDefaultLaunchWorkflow.Click += lbLaunchWorkflow_Click;
             _lbDefaultLaunchWorkflow.CausesValidation = false;
@@ -389,7 +389,7 @@ namespace Rock.Web.UI.Controls
                     _customActionButtons.Add( linkButton );
 
                     linkButton.ID = $"lbCustomAction-{index}";
-                    linkButton.CssClass = "btn-custom-action btn btn-default btn-sm";
+                    linkButton.CssClass = "btn-grid-action btn-custom-action btn btn-default btn-sm";
                     linkButton.ToolTip = config.HelpText.IsNullOrWhiteSpace() ? "Custom Action" : config.HelpText;
                     linkButton.CommandArgument = config.Route;
                     linkButton.CommandName = "Route";
