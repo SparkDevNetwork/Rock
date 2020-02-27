@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -1035,7 +1036,20 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { "PersonId" };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
+
+            /*
+             * 2020-02-27 - JPH
+             *
+             * The LinkedPageUrl() method now has logic to prevent JavaScript Injection attacks. See the following:
+             * https://app.asana.com/0/1121505495628584/1162600333693130/f
+             * https://github.com/SparkDevNetwork/Rock/commit/4d0a4917282121d8ea55064d4f660a9b1c476946#diff-4a0cf24007088762bcf634d2ca28f30a
+             *
+             * Because of this, the "###" we pass into this method below will be returned encoded.
+             * We now need to search for the encoded version within our usage of the Replace() method.
+             *
+             * Reason: XSS Prevention
+             */
+            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
             hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
