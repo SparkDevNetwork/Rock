@@ -340,7 +340,7 @@ namespace org.newpointe.eSpace.Utility
                 changed = true;
             }
 
-            var scheduleName = eSpaceOccurrence.EventName.Truncate( 50 );
+            var scheduleName = "";
             if ( schedule.Name != scheduleName )
             {
                 schedule.Name = scheduleName;
