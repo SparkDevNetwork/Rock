@@ -1435,8 +1435,10 @@ namespace Rock.Model
                 var personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
                 var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( attendanceOccurrenceId );
                 var scheduledDateTime = attendanceOccurrence.OccurrenceDate.Add( attendanceOccurrence.Schedule.StartTimeOfDay );
+                int? campusId = new LocationService( rockContext ).GetCampusIdForLocation( attendanceOccurrence.LocationId ) ?? new GroupService( rockContext ).Get( attendanceOccurrence.GroupId.Value ).CampusId;
                 scheduledAttendance = new Attendance
                 {
+                    CampusId = campusId,
                     PersonAliasId = personAliasId,
                     OccurrenceId = attendanceOccurrenceId,
                     ScheduledByPersonAliasId = scheduledByPersonAlias?.Id,
