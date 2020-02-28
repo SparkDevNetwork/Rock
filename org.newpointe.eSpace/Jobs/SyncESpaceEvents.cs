@@ -76,7 +76,7 @@ namespace org.newpointe.eSpace.Jobs
             client.SetCredentials( eSpaceUsername, eSpacePassword );
 
             // Get all future events
-            var eSpaceEvents = await client.GetEvents( new GetEventsOptions { StartDate = DateTime.Now } );
+            var eSpaceEvents = await client.GetEvents( new GetEventsOptions { StartDate = DateTime.Now, TopX = 2000 } );
 
             // Group by event id (the eSpace api returns "events" as a merged event and schedule)
             var eSpaceEventsById = eSpaceEvents.GroupBy( e => e.EventId );
