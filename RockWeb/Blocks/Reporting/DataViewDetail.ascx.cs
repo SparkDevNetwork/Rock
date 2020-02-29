@@ -341,8 +341,11 @@ $(document).ready(function() {
             {
                 try
                 {
+                    Stopwatch stopwatch = Stopwatch.StartNew();
                     dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                    stopwatch.Stop();
                     dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
+                    dataView.PersistedLastRunDuration = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
                     rockContext.SaveChanges();
                 }
                 catch ( Exception ex )
