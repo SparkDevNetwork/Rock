@@ -196,10 +196,10 @@ namespace Rock.Model
         public double? InteractionLength { get; set; }
 
         /// <summary>
-        /// Gets or sets the time to serve the interaction.
+        /// Gets or sets the time to serve the interaction in seconds.
         /// </summary>
         /// <value>
-        /// The time to serve the interaction.
+        /// The time to serve the interaction in seconds.
         /// </value>
         [DataMember]
         public double? InteractionTimeToServe { get; set; }

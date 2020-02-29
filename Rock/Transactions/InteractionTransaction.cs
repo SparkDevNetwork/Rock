@@ -163,6 +163,14 @@ namespace Rock.Transactions
             ///   <c>true</c> if [log crawlers]; otherwise, <c>false</c>.
             /// </value>
             public bool LogCrawlers { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time to serve the interaction.
+            /// </summary>
+            /// <value>
+            /// The time to serve the interaction.
+            /// </value>
+            public double? InteractionTimeToServe { get; set; }
         }
 
         /// <summary>
@@ -218,7 +226,20 @@ namespace Rock.Transactions
         /// <param name="channelEntity">The channel entity.</param>
         /// <param name="componentEntity">The component entity.</param>
         /// <param name="options">The options.</param>
-        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntity channelEntity, IEntity componentEntity, InteractionTransactionOptions options )
+        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntity channelEntity, IEntity componentEntity, InteractionTransactionOptions options ) :
+            this( channelMediumTypeValue, channelEntity, componentEntity, options, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractionTransaction" /> class.
+        /// </summary>
+        /// <param name="channelMediumTypeValue">The channel medium type value.</param>
+        /// <param name="channelEntity">The channel entity.</param>
+        /// <param name="componentEntity">The component entity.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="interactionTimeToServe">The interaction time to serve.</param>
+        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntity channelEntity, IEntity componentEntity, InteractionTransactionOptions options, double? interactionTimeToServe )
         {
             if ( channelEntity == null || componentEntity == null )
             {
@@ -233,6 +254,7 @@ namespace Rock.Transactions
                 ComponentEntityTypeId = channelEntity.TypeId,
                 ComponentEntityId = componentEntity.Id,
                 ComponentName = componentEntity.ToString(),
+                InteractionTimeToServe = interactionTimeToServe
             };
 
             Initialize( interactionInfo, options );
@@ -256,7 +278,20 @@ namespace Rock.Transactions
         /// <param name="channelEntity">The channel entity.</param>
         /// <param name="componentEntity">The component entity.</param>
         /// <param name="options">The options.</param>
-        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntityCache channelEntity, IEntityCache componentEntity, InteractionTransactionOptions options )
+        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntityCache channelEntity, IEntityCache componentEntity, InteractionTransactionOptions options ) :
+            this( channelMediumTypeValue, channelEntity, componentEntity, null, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractionTransaction" /> class.
+        /// </summary>
+        /// <param name="channelMediumTypeValue">The channel medium type value.</param>
+        /// <param name="channelEntity">The channel entity.</param>
+        /// <param name="componentEntity">The component entity.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="interactionTimeToServe">The interaction time to serve.</param>
+        public InteractionTransaction( DefinedValueCache channelMediumTypeValue, IEntityCache channelEntity, IEntityCache componentEntity, InteractionTransactionOptions options, double? interactionTimeToServe )
         {
             if ( channelEntity == null || componentEntity == null )
             {
@@ -271,7 +306,8 @@ namespace Rock.Transactions
                 ChannelName = channelEntity.ToString(),
                 ComponentEntityTypeId = channelEntity.CachedEntityTypeId,
                 ComponentEntityId = componentEntity.Id,
-                ComponentName = componentEntity.ToString()
+                ComponentName = componentEntity.ToString(),
+                InteractionTimeToServe = interactionTimeToServe
             };
 
             Initialize( interactionInfo, options );
@@ -428,7 +464,7 @@ namespace Rock.Transactions
                 interaction.InteractionSummary = interactionInfo.InteractionSummary;
                 interaction.PersonAliasId = interactionInfo.PersonAliasId;
                 interaction.InteractionDateTime = interactionInfo.InteractionDateTime;
-
+                interaction.InteractionTimeToServe = interactionInfo.InteractionTimeToServe;
                 interactionsToInsert.Add( interaction );
             }
 
