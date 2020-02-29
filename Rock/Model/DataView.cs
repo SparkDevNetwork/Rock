@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -139,6 +140,42 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IncludeDeceased { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// </summary>
+        /// <value>
+        /// The persisted last run duration in mulliseconds.
+        /// </value>
+        [DataMember]
+        public int? PersistedLastRunDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last run date time.
+        /// </summary>
+        /// <value>
+        /// The last run date time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// </summary>
+        /// <value>
+        /// The persisted last run duration in mulliseconds.
+        /// </value>
+        [DataMember]
+        public int? RunCount { get; set; }
+
+        /// <summary>
+        /// The amount of time in milliseconds that it took to run the <see cref="DataView"/>
+        /// </summary>
+        /// <value>
+        /// The time to run in ms.
+        /// </value>
+        [DataMember]
+        public double? TimeToRunMS { get; set; }
 
         #endregion
 
@@ -499,11 +536,11 @@ namespace Rock.Model
 
             using ( var dbContext = this.GetDbContext() )
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
 
                 // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
                 dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
-
                 var qry = this.GetQuery( null, dbContext, dataViewFilterOverrides, databaseTimeoutSeconds, out errorMessages );
                 if ( !errorMessages.Any() )
                 {
@@ -526,6 +563,13 @@ namespace Rock.Model
 
                     var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
                     var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
+                    
+                    stopwatch.Stop();
+                    var transaction = new Rock.Transactions.RunDataViewTransaction();
+                    transaction.DataViewId = this.Id;
+                    transaction.LastRunDate = RockDateTime.Now;
+                    transaction.TimeToRunMS = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
+                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
                     int removeCount = persistedValuesToRemove.Count();
                     if ( removeCount > 0 )

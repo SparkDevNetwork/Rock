@@ -105,6 +105,10 @@
     <Compile Include="Migrations\202002281154421_UpdateInteractionModels.Designer.cs">
       <DependentUpon>202002281154421_UpdateInteractionModels.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002291136340_AddColumnToDataViewAndReport.cs" />
+    <Compile Include="Migrations\202002291136340_AddColumnToDataViewAndReport.Designer.cs">
+      <DependentUpon>202002291136340_AddColumnToDataViewAndReport.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1119,6 +1123,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202002281154421_UpdateInteractionModels.resx">
       <DependentUpon>202002281154421_UpdateInteractionModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002291136340_AddColumnToDataViewAndReport.resx">
+      <DependentUpon>202002291136340_AddColumnToDataViewAndReport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
