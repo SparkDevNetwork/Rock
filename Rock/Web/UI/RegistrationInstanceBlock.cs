@@ -15,22 +15,21 @@
 // </copyright>
 //
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Web.UI.WebControls;
+
+using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Web.UI;
-using System.Collections.Generic;
-using Rock.Web;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using System.Web.UI.WebControls;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
 
-namespace Rock.Blocks.Types.Web.Events
+namespace Rock.Web.UI
 {
     /// <summary>
     /// Provides base functionality for a block that displays information about a registration instance.

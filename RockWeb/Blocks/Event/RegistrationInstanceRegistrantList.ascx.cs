@@ -27,7 +27,6 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Blocks.Types.Web.Events;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
