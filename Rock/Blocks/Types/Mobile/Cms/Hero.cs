@@ -34,7 +34,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Hero" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays an image with text overlay on the page." )]
-    [IconCssClass( "fa fa-mask" )]
+    [IconCssClass( "fa fa-heading" )]
 
     #region Block Attributes
 
