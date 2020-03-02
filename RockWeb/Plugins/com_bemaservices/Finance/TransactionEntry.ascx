@@ -51,6 +51,10 @@
                                             <Rock:ButtonDropDownList ID="btnFrequency" runat="server" Label="Frequency"
                                                 DataTextField="Value" DataValueField="Id" AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" />
                                             <Rock:DatePicker ID="dtpStartDate" runat="server" Label="First Gift" AutoPostBack="true" AllowPastDateSelection="false" OnTextChanged="btnFrequency_SelectionChanged" />
+
+                                            <!-- BEMA.FE3.Start -->
+                                            <Rock:DatePicker ID="dtpEndDate" runat="server" Label="End Date (Optional)" Visible="false" />
+                                            <!-- BEMA.FE3.End -->
                                         </div>
 
                                         <Rock:RockTextBox ID="txtCommentEntry" runat="server" Required="true" Label="Comment" />

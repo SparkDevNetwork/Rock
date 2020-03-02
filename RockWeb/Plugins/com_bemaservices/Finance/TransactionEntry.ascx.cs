@@ -40,6 +40,7 @@ using Rock.Web.UI.Controls;
  * Additional Features:
  * - FE1) Added Ability to make Comment Optional
  * - FE2) Added Ability to use the first name instead of the nickname
+ * - FE3) Added Ability to set an end date on Scheduled Transactions
  * 
  */
 
@@ -168,6 +169,10 @@ TransactionAccountDetails: [
     [BooleanField( "UseFirstName", "Should the block use a person's first name instead of their nickname.", false, "", 35, BemaAttributeKey.UseFirstName )]
     /* Bema.FE2.End */
 
+    /* Bema.FE3.Start */
+    [BooleanField( "Allow Scheduled End Date", "Should the block allow users to set an end date for their scheduled transactions.", false, "", 36, BemaAttributeKey.AllowScheduledEndDate )]
+    /* Bema.FE3.End */
+
     #endregion
 
     #region Advanced Block Attributes
@@ -194,6 +199,7 @@ TransactionAccountDetails: [
         {
             public const string CommentRequired = "CommentRequired";
             public const string UseFirstName = "UseFirstName";
+            public const string AllowScheduledEndDate = "AllowScheduledEndDate";
         }
 
         #endregion
@@ -655,6 +661,11 @@ TransactionAccountDetails: [
             if ( !oneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date <= RockDateTime.Today ) )
             {
                 dtpStartDate.SelectedDate = RockDateTime.Today.AddDays( 1 );
+                /* BEMA.FE3.Start */
+                if ( GetAttributeValue( BemaAttributeKey.AllowScheduledEndDate ).AsBoolean() )
+                {
+                    dtpEndDate.Visible = true;
+                }
             }
 
             if ( oneTime && dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate.Value.Date != RockDateTime.Today )
@@ -2136,6 +2147,16 @@ TransactionAccountDetails: [
                 {
                     errorMessages.Add( "Make sure the date is not in the past" );
                 }
+
+                /* BEMA.FE3.Start */
+                if ( GetAttributeValue( BemaAttributeKey.AllowScheduledEndDate ).AsBoolean() )
+                {
+                    if ( dtpEndDate.SelectedDate < dtpStartDate.SelectedDate )
+                    {
+                        errorMessages.Add( "Make sure the end date is not before your start day" );
+                    }
+                }
+                /* BEMA.FE3.End */
             }
 
             if ( txtFirstName.Visible == true )
@@ -2492,6 +2513,16 @@ TransactionAccountDetails: [
                 if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > RockDateTime.Today )
                 {
                     schedule.StartDate = dtpStartDate.SelectedDate.Value;
+
+                    /* BEMA.FE3.Start */
+                    if ( GetAttributeValue( BemaAttributeKey.AllowScheduledEndDate ).AsBoolean() )
+                    {
+                        if ( dtpEndDate.SelectedDate.HasValue )
+                        {
+                            schedule.EndDate = dtpEndDate.SelectedDate.Value;
+                        }
+                    }
+                    /* BEMA.FE3.End */
                 }
                 else
                 {
@@ -2779,6 +2810,16 @@ TransactionAccountDetails: [
             scheduledTransaction.StartDate = schedule.StartDate;
             scheduledTransaction.AuthorizedPersonAliasId = person.PrimaryAliasId.Value;
             scheduledTransaction.FinancialGatewayId = financialGateway.Id;
+
+            /* BEMA.FE3.Start */
+            if ( GetAttributeValue( BemaAttributeKey.AllowScheduledEndDate ).AsBoolean() )
+            {
+                if ( dtpEndDate.SelectedDate.HasValue )
+                {
+                    scheduledTransaction.EndDate = schedule.EndDate;
+                }
+            }
+            /* BEMA.FE3.End */
 
             if ( scheduledTransaction.FinancialPaymentDetail == null )
             {
