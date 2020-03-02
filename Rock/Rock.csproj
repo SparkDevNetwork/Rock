@@ -445,7 +445,7 @@
     <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupView.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
-    <Compile Include="Blocks\Types\Web\Events\RegistrationInstanceBlock.cs">
+    <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />

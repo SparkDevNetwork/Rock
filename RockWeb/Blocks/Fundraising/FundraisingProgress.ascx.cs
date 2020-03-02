@@ -100,7 +100,8 @@ namespace RockWeb.Blocks.Fundraising
             var rockContext = new RockContext();
             Group group = null;
             GroupMember groupMember = null;
-            int fundraisingOpportunityTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY ).Id;
+
+            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
 
             pnlView.Visible = true;
             hfGroupId.Value = groupId.ToStringSafe();
@@ -116,7 +117,7 @@ namespace RockWeb.Blocks.Fundraising
                 group = groupMember.Group;
             }
 
-            if ( group == null || group.GroupTypeId != fundraisingOpportunityTypeId )
+            if ( group == null || ( ! ( group.GroupTypeId == groupTypeIdFundraising || group.GroupType.InheritedGroupTypeId == groupTypeIdFundraising ) ) )
             {
                 pnlView.Visible = false;
                 return;
