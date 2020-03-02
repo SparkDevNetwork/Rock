@@ -40,6 +40,7 @@ using Rock.Web.UI.Controls;
  * Additional Features:
  * - FE1) Added Ability to make Comment Optional
  * - FE2) Added Ability to use the first name instead of the nickname
+ * 
  */
 
 namespace Rock.Plugins.com_bemaservices.Finance
@@ -152,16 +153,19 @@ TransactionAccountDetails: [
 ]</pre>", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, "Online Contribution", "", 28 )]
     [BooleanField( "Enable Comment Entry", "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment' setting)", false, "", 29 )]
     [TextField( "Comment Entry Label", "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).", false, "Comment", "", 30 )]
+
     /* Bema.FE1.Start */
-    [BooleanField( "Comment Required", "If Comment Entry is Allowed, should it be required", false, "", 31 )]
+    [BooleanField( "Comment Required", "If Comment Entry is Allowed, should it be required", false, "", 31, BemaAttributeKey.CommentRequired )]
     /* Bema.FE1.End */
-    /* Bema.FE1.Start The order Block attributes below has been updated.  But the Attributes are part of the core block*/
+
+    /* Bema.Start The order Block attributes below has been updated.  But the Attributes are part of the core block*/
     [BooleanField( "Enable Business Giving", "Should the option to give as a business be displayed", true, "", 32 )]
     [BooleanField( "Enable Anonymous Giving", "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.", false, "", 33 )]
-    [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", order: 34 )]
-    /* Bema.FE1. End */
+    [TextField( "Anonymous Giving Tooltip", "The tooltip for the 'Give Anonymously' checkbox.", false, "", "", 34 )]
+    /* Bema.End */
+
     /* Bema.FE2.Start */
-    [BooleanField( "UseFirstName", "Should the block use a person's first name instead of their nickname.", false, "", 31 )]
+    [BooleanField( "UseFirstName", "Should the block use a person's first name instead of their nickname.", false, "", 35, BemaAttributeKey.UseFirstName )]
     /* Bema.FE2.End */
 
     #endregion
@@ -184,6 +188,16 @@ TransactionAccountDetails: [
 
     public partial class TransactionEntry : Rock.Web.UI.RockBlock
     {
+        /* BEMA.Start */
+        #region Attribute Keys
+        private static class BemaAttributeKey
+        {
+            public const string CommentRequired = "CommentRequired";
+            public const string UseFirstName = "UseFirstName";
+        }
+
+        #endregion
+        /* BEMA.End */
         #region Fields
 
         private Person _targetPerson = null;
@@ -1387,7 +1401,7 @@ TransactionAccountDetails: [
             txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
             txtCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
             /* Bema.FE1.Start */
-            txtCommentEntry.Required = GetAttributeValue( "CommentRequired" ).AsBoolean();
+            txtCommentEntry.Required = GetAttributeValue( BemaAttributeKey.CommentRequired ).AsBoolean();
             /* Bema.FE1.End */
 
             // Set the payment method tabs
@@ -1613,7 +1627,7 @@ TransactionAccountDetails: [
                 txtCurrentName.Text = person.FullName;
 
                 /* BEMA.FE2.Start */
-                if ( GetAttributeValue( "UseFirstName" ).AsBoolean() )
+                if ( GetAttributeValue( BemaAttributeKey.UseFirstName ).AsBoolean() )
                 {
                     txtCurrentName.Text = Person.FormatFullName( person.FirstName, person.LastName, person.SuffixValueId );
                 }
