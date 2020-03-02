@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -461,15 +461,12 @@ namespace Rock.Web.UI.Controls
                             var imageUrl = string.Format( "~/GetImage.ashx?guid={0}", item.GetAttributeValue( "Icon" ).AsGuid() );
                             var imgSrc = string.Format( "<img src='{0}' width='100%'/>", ResolveUrl( imageUrl ) );
 
-                            string html = string.Format( @"<div class='col-md-4 col-sm-6'><div class='radio'><label><input type = 'radio' class='js-template-picker' name='template-id-{5}' id='{0}' value='{0}' {2} {3}><span class='label-text'><b>{1}</b></span>
-                                                </label>
-                                            </div>
-                                            <div class='row'>
-                                                <div class='col-xs-12'>
-                                                    {4}
-                                                </div>
-                                            </div>
-                                        </div>",
+                            string html = string.Format( @" <div class='col-md-2 col-sm-4 template-picker-item'>
+                                                                <div class='radio'>
+                                                                    <label><input type = 'radio' class='js-template-picker' name='template-id-{5}' id='{0}' value='{0}' {2} {3}><span class='label-text'><b>{1}</b></span></label>
+                                                                </div>
+                                                                {4}
+                                                            </div>",
                                             item.Guid,
                                             item.Value,
                                             _hfTemplateKey.Value.AsGuid() == item.Guid ? "checked" : "",
@@ -486,7 +483,7 @@ namespace Rock.Web.UI.Controls
 
             if ( optionCount > 0 )
             {
-                _pnlStandard.Controls.Add( new LiteralControl { Text = htmlBuilder.ToString() } );
+                row.Controls.Add( new LiteralControl { Text = htmlBuilder.ToString() } );
 
                 var actionDiv = new HtmlGenericControl( "div" );
                 _pnlStandard.Controls.Add( actionDiv );
