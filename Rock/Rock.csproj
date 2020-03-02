@@ -475,6 +475,7 @@
     <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
     <Compile Include="Jobs\StepsAutomation.cs" />
     <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
+    <Compile Include="Financial\HostedGatewayMode.cs" />
     <Compile Include="Jobs\ConnectionRequestWorkflowTriggers.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\SendRsvpReminders.cs" />

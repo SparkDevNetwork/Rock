@@ -46,9 +46,29 @@ namespace Rock.Attribute
             int order = 0, string key = null, bool isPassword = false, string fieldTypeClass = null  )
             : base( name, description, required, defaultValue, category, order, key, fieldTypeClass )
         {
-            var isPasswordValue = new Field.ConfigurationValue( isPassword.ToString() );
-            FieldConfigurationValues.Add( IS_PASSWORD_KEY, isPasswordValue );
+            
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this text field should use a password edit box
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is password; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPassword
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( IS_PASSWORD_KEY ).AsBooleanOrNull() ?? false;
+            }
+
+            set
+            {
+                var isPasswordValue = new Field.ConfigurationValue( value.ToString() );
+                FieldConfigurationValues.Add( IS_PASSWORD_KEY, isPasswordValue );
+            }
+        }
+
 
     }
 }

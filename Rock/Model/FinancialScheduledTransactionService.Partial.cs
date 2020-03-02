@@ -387,6 +387,17 @@ namespace Rock.Model
                                 transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = financialPaymentDetail.ExpirationMonthEncrypted;
                                 transaction.FinancialPaymentDetail.ExpirationYearEncrypted = financialPaymentDetail.ExpirationYearEncrypted;
                                 transaction.FinancialPaymentDetail.BillingLocationId = financialPaymentDetail.BillingLocationId;
+                                if ( financialPaymentDetail.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+                                {
+                                    // if Rock doesn't have the GatewayPersonIdentifier, get it from the downloaded payment (if it has a value)
+                                    transaction.FinancialPaymentDetail.GatewayPersonIdentifier = payment.GatewayPersonIdentifier;
+                                }
+                                else
+                                {
+                                    transaction.FinancialPaymentDetail.GatewayPersonIdentifier = financialPaymentDetail.GatewayPersonIdentifier;
+                                }
+
+                                transaction.FinancialPaymentDetail.FinancialPersonSavedAccountId = financialPaymentDetail.FinancialPersonSavedAccountId;
                             }
 
                             if ( currencyTypeValue != null )
