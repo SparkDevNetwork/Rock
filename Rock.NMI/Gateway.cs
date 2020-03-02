@@ -19,9 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
+using System.Web.UI;
 using System.Xml.Linq;
+
+using Newtonsoft.Json;
 
 using RestSharp;
 
@@ -29,6 +33,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.NMI.Controls;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -37,19 +42,101 @@ namespace Rock.NMI
     /// <summary>
     /// NMI Payment Gateway
     /// </summary>
-    [Description( "NMI Gateway" )]
+    [DisplayName( "NMI Gateway" )]
+    [Description( "" )]
+
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "NMI Gateway" )]
 
-    [TextField( "Security Key", "The API key", true, "", "", 0 )]
-    [TextField( "Admin Username", "The username of an NMI user", true, "", "", 1 )]
-    [TextField( "Admin Password", "The password of an NMI user", true, "", "", 2, "AdminPassword", true )]
-    [TextField( "Three Step API URL", "The URL of the NMI Three Step API", true, "https://secure.networkmerchants.com/api/v2/three-step", "", 3, "APIUrl" )]
-    [TextField( "Query API URL", "The URL of the NMI Query API", true, "https://secure.networkmerchants.com/api/query.php", "", 4, "QueryUrl" )]
-    [BooleanField( "Prompt for Name On Card", "Should users be prompted to enter name on the card", false, "", 5, "PromptForName" )]
-    [BooleanField( "Prompt for Billing Address", "Should users be prompted to enter billing address", false, "", 7, "PromptForAddress" )]
-    public class Gateway : GatewayComponent, IThreeStepGatewayComponent
+    [TextField(
+        "Security Key",
+        Key = AttributeKey.SecurityKey,
+        Description = "The API key",
+        IsRequired = true,
+        Order = 0
+        )]
+
+    [TextField(
+        "Admin Username",
+        Key = AttributeKey.AdminUsername,
+        Description = "The username of the NMI user",
+        IsRequired = true,
+        Order = 1 )]
+
+    [TextField( "Admin Password",
+        Key = AttributeKey.AdminPassword,
+        Description = "The password of the NMI user",
+        IsRequired = true,
+        IsPassword = true,
+        Order = 2 )]
+
+    [TextField(
+        "Three Step API URL",
+        Key = AttributeKey.ThreeStepAPIURL,
+        Description = "The URL of the NMI Three Step API",
+        IsRequired = true,
+        DefaultValue = "https://secure.networkmerchants.com/api/v2/three-step",
+        Order = 3 )]
+
+    [TextField(
+        "Query API URL",
+        Key = AttributeKey.QueryApiUrl,
+        Description = "The URL of the NMI Query API",
+        IsRequired = true,
+        DefaultValue = "https://secure.networkmerchants.com/api/query.php",
+        Order = 4 )]
+
+    [BooleanField(
+        "Prompt for Name On Card",
+        Key = AttributeKey.PromptForName,
+        Description = "Should users be prompted to enter name on the card. This only applies when using the Three Step API.",
+        DefaultBooleanValue = false,
+        Order = 5 )]
+
+    [BooleanField(
+        "Prompt for Billing Address",
+        Key = AttributeKey.PromptForAddress,
+        Description = "Should users be prompted to enter billing address. This only applies when using the Three Step API.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    [TextField( "Direct Post API URL",
+        Key = AttributeKey.DirectPostAPIUrl,
+        Description = "The URL of the NMI Direct Post Query API",
+        IsRequired = true,
+        DefaultValue = "https://secure.nmi.com/api/transact.php",
+        Order = 7 )]
+
+    [TextField( "Tokenization Key",
+        Key = AttributeKey.TokenizationKey,
+        Description = "The Public Security Key to use for Tokenization. This is required for when using the NMI Hosted Gateway.",
+        IsRequired = false,
+        DefaultValue = "",
+        Order = 8 )]
+    public class Gateway : GatewayComponent, IThreeStepGatewayComponent, IHostedGatewayComponent
     {
+        #region Attribute Keys
+
+        /// <summary>;
+        /// Keys to use for Component Attributes
+        /// </summary>
+        protected static class AttributeKey
+        {
+            public const string SecurityKey = "SecurityKey";
+            public const string AdminUsername = "AdminUsername";
+            public const string AdminPassword = "AdminPassword";
+
+            // NOTE: Lets call this ThreeStepAPIUrl but keep "APIUrl" for backwards compatibility 
+            public const string ThreeStepAPIURL = "APIUrl";
+
+            public const string QueryApiUrl = "QueryUrl";
+            public const string DirectPostAPIUrl = "DirectPostAPIUrl";
+            public const string TokenizationKey = "TokenizationKey";
+            public const string PromptForName = "PromptForName";
+            public const string PromptForAddress = "PromptForAddress";
+        }
+
+        #endregion Attribute Keys
 
         #region Gateway Component Implementation
 
@@ -75,7 +162,7 @@ namespace Rock.NMI
         /// </value>
         public override bool PromptForNameOnCard( FinancialGateway financialGateway )
         {
-            return GetAttributeValue( financialGateway, "PromptForName" ).AsBoolean();
+            return GetAttributeValue( financialGateway, AttributeKey.PromptForName ).AsBoolean();
         }
 
         /// <summary>
@@ -110,7 +197,7 @@ namespace Rock.NMI
         /// </value>
         public override bool PromptForBillingAddress( FinancialGateway financialGateway )
         {
-            return GetAttributeValue( financialGateway, "PromptForAddress" ).AsBoolean();
+            return GetAttributeValue( financialGateway, AttributeKey.PromptForAddress ).AsBoolean();
         }
 
         /// <summary>
@@ -139,7 +226,24 @@ namespace Rock.NMI
         /// <returns></returns>
         public override bool SupportsSavedAccount( bool isRepeating )
         {
-            return !isRepeating;
+            // NOTE: The NMI ThreeStep gateway doesn't seem to work with Saved account and scheduled transactions, but we'll deal with it by using the direct post api when in saved account mode???
+            return true;
+        }
+
+        /// <summary>
+        /// Flag indicating if the gateway supports modifying an existing schedule's payment method.
+        /// </summary>
+        public override bool IsUpdatingSchedulePaymentMethodSupported
+        {
+            get
+            {
+                /* 2020-03-02 MDP
+                 * the NMI Gateway supports editing the ScheduledPaymentMethod, but as of 2020-03-02, ScheduledTransactionEdit (unhosted) doesn't support using a ThreeGateway process.
+                 * However the new ScheduledTransactionEditV2 (the hosted gateways) does support editing a scheduled payment method
+                 * So, we'll return true, but we'll have ScheduledTransactionEdit prevent changing method for ThreeStepGateway (NMI)
+                 */
+                return true;
+            }
         }
 
         /// <summary>
@@ -155,19 +259,6 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Charges the specified payment info.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="paymentInfo">The payment info.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public override FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "The Payment Gateway only supports a three-step charge.";
-            return null;
-        }
-
-        /// <summary>
         /// Performs the first step of a three-step charge
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
@@ -176,7 +267,7 @@ namespace Rock.NMI
         /// <returns>
         /// Url to post the Step2 request to
         /// </returns>
-        /// <exception cref="System.ArgumentNullException">paymentInfo</exception>
+        /// <exception cref="ArgumentNullException">paymentInfo</exception>
         public string ChargeStep1( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -188,7 +279,7 @@ namespace Rock.NMI
                     throw new ArgumentNullException( "paymentInfo" );
                 }
 
-                var rootElement = GetRoot( financialGateway, "sale" );
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "sale" );
 
                 rootElement.Add(
                     new XElement( "ip-address", paymentInfo.IPAddress ),
@@ -198,11 +289,18 @@ namespace Rock.NMI
                     new XElement( "tax-amount", "0.00" ),
                     new XElement( "shipping-amount", "0.00" ) );
 
-                bool isReferencePayment = ( paymentInfo is ReferencePaymentInfo );
+                bool isReferencePayment = paymentInfo is ReferencePaymentInfo;
                 if ( isReferencePayment )
                 {
                     var reference = paymentInfo as ReferencePaymentInfo;
-                    rootElement.Add( new XElement( "customer-vault-id", reference.ReferenceNumber ) );
+                    string customerVaultId = reference.GatewayPersonIdentifier;
+                    if ( customerVaultId.IsNullOrWhiteSpace() )
+                    {
+                        // for backwards compatiblity for accounts created prior to v11
+                        customerVaultId = reference.ReferenceNumber;
+                    }
+
+                    rootElement.Add( new XElement( "customer-vault-id", customerVaultId ) );
                 }
 
                 if ( paymentInfo.AdditionalParameters != null )
@@ -219,40 +317,36 @@ namespace Rock.NMI
                     }
                 }
 
-                rootElement.Add( GetBilling( paymentInfo ) );
+                rootElement.Add( GetThreeStepBilling( paymentInfo ) );
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGateway( financialGateway, xdoc );
+                ThreeStepResponse threeStepResponse = PostToGatewayThreeStepAPI<ThreeStepResponse>( financialGateway, xdoc );
 
-                if ( result == null )
+                if ( threeStepResponse == null )
                 {
-                    errorMessage = "Invalid Response from NMI!";
+                    errorMessage = "Invalid Response from NMI";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
+                if ( threeStepResponse.Result != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepResponse.ResultText );
                     return null;
                 }
 
-                return result.GetValueOrNull( "form-url" );
-
+                return threeStepResponse.FormUrl;
             }
-
             catch ( WebException webException )
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
                 errorMessage = webException.Message + " - " + message;
                 return null;
             }
-
             catch ( Exception ex )
             {
                 errorMessage = ex.Message;
                 return null;
             }
-
         }
 
         /// <summary>
@@ -268,49 +362,61 @@ namespace Rock.NMI
 
             try
             {
-                var rootElement = GetRoot( financialGateway, "complete-action" );
-                rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
-                XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGateway( financialGateway, xdoc );
-
-                if ( result == null )
+                if ( resultQueryString.IsNullOrWhiteSpace() )
                 {
-                    errorMessage = "Invalid Response from NMI!";
+                    errorMessage = "invalid resultQueryString";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
-                {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "complete-action" );
+                rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
+                XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
+                var threeStepChangeStep3Response = PostToGatewayThreeStepAPI<ThreeStepChargeStep3Response>( financialGateway, xdoc );
 
-                    string resultCodeMessage = GetResultCodeMessage( result );
+                if ( threeStepChangeStep3Response == null )
+                {
+                    errorMessage = "Invalid Response from NMI";
+                    return null;
+                }
+
+                if ( threeStepChangeStep3Response.Result != "1" )
+                {
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepChangeStep3Response.ResultText );
+
+                    string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( threeStepChangeStep3Response.ResultCode?.AsInteger() ?? 0, errorMessage );
                     if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
                     {
-                        errorMessage += string.Format( " ({0})", resultCodeMessage );
+                        errorMessage += $" ({resultCodeMessage})";
                     }
 
                     // write result error as an exception
-                    ExceptionLogService.LogException( new Exception( $"Error processing NMI transaction. Result Code:  {result.GetValueOrNull( "result-code" )} ({resultCodeMessage}). Result text: {result.GetValueOrNull( "result-text" )}. Card Holder Name: {result.GetValueOrNull( "first-name" )} {result.GetValueOrNull( "last-name" )}. Amount: {result.GetValueOrNull( "total-amount" )}. Transaction id: {result.GetValueOrNull( "transaction-id" )}. Descriptor: {result.GetValueOrNull( "descriptor" )}. Order description: {result.GetValueOrNull( "order-description" )}." ) );
+                    ExceptionLogService.LogException( new Exception( $@"Error processing NMI transaction.
+Result Code:  {threeStepChangeStep3Response.ResultCode} ({resultCodeMessage}).
+Result text: {threeStepChangeStep3Response.ResultText}.
+Amount: {threeStepChangeStep3Response.Amount}.
+Transaction id: {threeStepChangeStep3Response.TransactionId}.
+                    Card Holder Name: {threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}." ) );
 
                     return null;
                 }
 
                 var transaction = new FinancialTransaction();
-                transaction.TransactionCode = result.GetValueOrNull( "transaction-id" );
-                transaction.ForeignKey = result.GetValueOrNull( "customer-vault-id" );
+                transaction.TransactionCode = threeStepChangeStep3Response.TransactionId;
+                transaction.ForeignKey = threeStepChangeStep3Response.CustomerVaultId;
                 transaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+                transaction.FinancialPaymentDetail.GatewayPersonIdentifier = threeStepChangeStep3Response.CustomerVaultId;
 
-                string ccNumber = result.GetValueOrNull( "billing_cc-number" );
+                string ccNumber = threeStepChangeStep3Response.Billing?.CcNumber;
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
                 {
                     // cc payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
-                    transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{result.GetValueOrNull( "billing_first-name" )} {result.GetValueOrNull( "billing_last-name" )}" );
+                    transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}" );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                     transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
-                    string mmyy = result.GetValueOrNull( "billing_cc-exp" );
+                    string mmyy = threeStepChangeStep3Response.Billing?.CcExp;
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                     {
                         transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
@@ -322,31 +428,24 @@ namespace Rock.NMI
                     // ach payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                    transaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account-number" ).Masked( true );
+                    transaction.FinancialPaymentDetail.AccountNumberMasked = threeStepChangeStep3Response.Billing?.AccountNumber.Masked( true );
                 }
 
-                transaction.AdditionalLavaFields = new Dictionary<string, object>();
-                foreach ( var keyVal in result )
-                {
-                    transaction.AdditionalLavaFields.Add( keyVal.Key, keyVal.Value );
-                }
+                transaction.AdditionalLavaFields = GetAdditionalLavaFields( threeStepChangeStep3Response );
 
                 return transaction;
             }
-
             catch ( WebException webException )
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
                 errorMessage = webException.Message + " - " + message;
                 return null;
             }
-
             catch ( Exception ex )
             {
                 errorMessage = ex.Message;
                 return null;
             }
-
         }
 
         /// <summary>
@@ -361,53 +460,43 @@ namespace Rock.NMI
         {
             errorMessage = string.Empty;
 
-            if ( origTransaction != null &&
-                !string.IsNullOrWhiteSpace( origTransaction.TransactionCode ) &&
-                origTransaction.FinancialGateway != null )
+            var financialGateway = origTransaction?.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( origTransaction.FinancialGatewayId ?? 0 );
+
+            if ( financialGateway == null )
             {
-                var rootElement = GetRoot( origTransaction.FinancialGateway, "refund" );
-                rootElement.Add( new XElement( "transaction-id", origTransaction.TransactionCode ) );
-                rootElement.Add( new XElement( "amount", amount.ToString( "0.00" ) ) );
-
-                XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGateway( origTransaction.FinancialGateway, xdoc );
-
-                if ( result == null )
-                {
-                    errorMessage = "Invalid Response from NMI!";
-                    return null;
-                }
-
-                if ( result.GetValueOrNull( "result" ) != "1" )
-                {
-                    errorMessage = result.GetValueOrNull( "result-text" );
-                    return null;
-                }
-
-                var transaction = new FinancialTransaction();
-                transaction.TransactionCode = result.GetValueOrNull( "transaction-id" );
-                return transaction;
-            }
-            else
-            {
-                errorMessage = "Invalid original transaction, transaction code, or gateway.";
+                throw new NullFinancialGatewayException();
             }
 
-            return null;
-        }
+            if ( origTransaction.TransactionCode.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "Invalid transaction code";
+                return null;
+            }
 
-        /// <summary>
-        /// Adds the scheduled payment.
-        /// </summary>
-        /// <param name="financialGateway">The financial gateway.</param>
-        /// <param name="schedule">The schedule.</param>
-        /// <param name="paymentInfo">The payment info.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "The Payment Gateway only supports adding scheduled payment using a three-step process.";
-            return null;
+            // https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#transaction_variables at 'Refund'
+            var queryParameters = new Dictionary<string, string>();
+            queryParameters.Add( "type", "refund" );
+            queryParameters.Add( "transactionid", origTransaction.TransactionCode );
+            queryParameters.Add( "amount", amount.ToString( "0.00" ) );
+
+            var refundResponse = PostToGatewayDirectPostAPI<RefundResponse>( financialGateway, queryParameters );
+
+            if ( refundResponse == null )
+            {
+                errorMessage = "Invalid Response from NMI";
+                return null;
+            }
+
+            if ( refundResponse.ResponseCode != "1" )
+            {
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( refundResponse.ResponseText );
+                return null;
+            }
+
+            // return a refund transaction
+            var transaction = new FinancialTransaction();
+            transaction.TransactionCode = refundResponse.TransactionId;
+            return transaction;
         }
 
         /// <summary>
@@ -418,7 +507,7 @@ namespace Rock.NMI
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">paymentInfo</exception>
+        /// <exception cref="ArgumentNullException">paymentInfo</exception>
         public string AddScheduledPaymentStep1( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
@@ -430,7 +519,7 @@ namespace Rock.NMI
                     throw new ArgumentNullException( "paymentInfo" );
                 }
 
-                var rootElement = GetRoot( financialGateway, "add-subscription" );
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "add-subscription" );
 
                 rootElement.Add(
                     new XElement( "start-date", schedule.StartDate.ToString( "yyyyMMdd" ) ),
@@ -438,9 +527,16 @@ namespace Rock.NMI
                     new XElement( "currency", "USD" ),
                     new XElement( "tax-amount", "0.00" ) );
 
-                bool isReferencePayment = ( paymentInfo is ReferencePaymentInfo );
+                bool isReferencePayment = paymentInfo is ReferencePaymentInfo;
+
                 if ( isReferencePayment )
                 {
+                    /* MDP 2020-02-28
+                     This doesn't work, and never has! When AddScheduledPaymentStep3 is called, a 'ccnumber ..' error occurs.
+                     We got around it by not allowing saved accounts for Scheduled Transactions.
+                     However, as of V11, we now use the DirectPost API (AddScheduledPayment) instead of AddScheduledPaymentStep3 to add a scheduled transaction 
+                     */
+
                     var reference = paymentInfo as ReferencePaymentInfo;
                     rootElement.Add( new XElement( "customer-vault-id", reference.ReferenceNumber ) );
                 }
@@ -454,41 +550,38 @@ namespace Rock.NMI
                     }
                 }
 
-                rootElement.Add( GetPlan( schedule, paymentInfo ) );
+                rootElement.Add( GetThreeStepPlan( schedule, paymentInfo ) );
 
-                rootElement.Add( GetBilling( paymentInfo ) );
+                rootElement.Add( GetThreeStepBilling( paymentInfo ) );
 
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGateway( financialGateway, xdoc );
+                var threeStepResponse = PostToGatewayThreeStepAPI<ThreeStepResponse>( financialGateway, xdoc );
 
-                if ( result == null )
+                if ( threeStepResponse == null )
                 {
-                    errorMessage = "Invalid Response from NMI!";
+                    errorMessage = "Invalid Response from NMI";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
+                if ( threeStepResponse.Result != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepResponse.ResultText );
                     return null;
                 }
 
-                return result.GetValueOrNull( "form-url" );
+                return threeStepResponse.FormUrl;
             }
-
             catch ( WebException webException )
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
                 errorMessage = webException.Message + " - " + message;
                 return null;
             }
-
             catch ( Exception ex )
             {
                 errorMessage = ex.Message;
                 return null;
             }
-
         }
 
         /// <summary>
@@ -498,37 +591,48 @@ namespace Rock.NMI
         /// <param name="resultQueryString">The result query string from step 2.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">tokenId</exception>
+        /// <exception cref="ArgumentNullException">tokenId</exception>
         public FinancialScheduledTransaction AddScheduledPaymentStep3( FinancialGateway financialGateway, string resultQueryString, out string errorMessage )
         {
             errorMessage = string.Empty;
 
             try
             {
-                var rootElement = GetRoot( financialGateway, "complete-action" );
+                var rootElement = CreateThreeStepRootDoc( financialGateway, "complete-action" );
                 rootElement.Add( new XElement( "token-id", resultQueryString.Substring( 10 ) ) );
                 XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGateway( financialGateway, xdoc );
+                var threeStepSubscriptionStep3Response = PostToGatewayThreeStepAPI<ThreeStepSubscriptionStep3Response>( financialGateway, xdoc );
 
-                if ( result == null )
+                if ( threeStepSubscriptionStep3Response == null )
                 {
-                    errorMessage = "Invalid Response from NMI!";
+                    errorMessage = "Invalid Response from NMI";
                     return null;
                 }
 
-                if ( result.GetValueOrNull( "result" ) != "1" )
+                if ( threeStepSubscriptionStep3Response.Result != "1" )
                 {
-                    errorMessage = result.GetValueOrNull( "result-text" );
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( threeStepSubscriptionStep3Response.ResultText );
                     return null;
                 }
 
                 var scheduledTransaction = new FinancialScheduledTransaction();
                 scheduledTransaction.IsActive = true;
-                scheduledTransaction.GatewayScheduleId = result.GetValueOrNull( "subscription-id" );
+                scheduledTransaction.GatewayScheduleId = threeStepSubscriptionStep3Response.SubscriptionId;
                 scheduledTransaction.FinancialGatewayId = financialGateway.Id;
+                scheduledTransaction.TransactionCode = threeStepSubscriptionStep3Response.TransactionId;
 
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
-                string ccNumber = result.GetValueOrNull( "billing_cc-number" );
+                scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = threeStepSubscriptionStep3Response.CustomerVaultId;
+
+                var customerId = threeStepSubscriptionStep3Response.CustomerVaultId;
+                if ( customerId.IsNullOrWhiteSpace() )
+                {
+                    var paymentInfo = new ReferencePaymentInfo();
+                    string createVaultErrorMessage;
+                    customerId = CreateCustomerVaultFromExistingScheduledTransaction( financialGateway, paymentInfo, scheduledTransaction, out createVaultErrorMessage );
+                }
+
+                string ccNumber = threeStepSubscriptionStep3Response.Billing?.CcNumber;
                 if ( !string.IsNullOrWhiteSpace( ccNumber ) )
                 {
                     // cc payment
@@ -537,7 +641,7 @@ namespace Rock.NMI
                     scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
-                    string mmyy = result.GetValueOrNull( "billing_cc-exp" );
+                    string mmyy = threeStepSubscriptionStep3Response.Billing?.CcExp;
                     if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
                     {
                         scheduledTransaction.FinancialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
@@ -549,114 +653,42 @@ namespace Rock.NMI
                     // ach payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
                     scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = result.GetValueOrNull( "billing_account_number" ).Masked( true );
+                    scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = threeStepSubscriptionStep3Response.Billing?.AccountNumber.Masked( true );
                 }
+
+                scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = customerId;
+                scheduledTransaction.TransactionCode = customerId;
 
                 GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
 
                 return scheduledTransaction;
             }
-
             catch ( WebException webException )
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
                 errorMessage = webException.Message + " - " + message;
                 return null;
             }
-
             catch ( Exception ex )
             {
                 errorMessage = ex.Message;
                 return null;
             }
-
-
         }
 
         /// <summary>
-        /// Flag indicating if gateway supports reactivating a scheduled payment.
-        /// </summary>
-        /// <returns></returns>
-        public override bool ReactivateScheduledPaymentSupported
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Reactivates the scheduled payment.
-        /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
-        {
-            errorMessage = "The payment gateway associated with this scheduled transaction (NMI) does not support reactivating scheduled transactions. A new scheduled transaction should be created instead.";
-            return false;
-        }
-
-        /// <summary>
-        /// Updates the scheduled payment supported.
-        /// </summary>
-        /// <returns></returns>
-        public override bool UpdateScheduledPaymentSupported
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Updates the scheduled payment.
-        /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        /// <param name="paymentInfo">The payment info.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public override bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage )
-        {
-            errorMessage = "The payment gateway associated with this scheduled transaction (NMI) does not support updating an existing scheduled transaction. A new scheduled transaction should be created instead.";
-            return false;
-        }
-
-        /// <summary>
-        /// Cancels the scheduled payment.
+        /// Cancels the scheduled payment using the ThreeStep API
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
+            var financialGateway = transaction.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( transaction.FinancialGatewayId.Value );
+            DeleteSubscription( financialGateway, transaction.GatewayScheduleId );
+            transaction.IsActive = false;
             errorMessage = string.Empty;
-
-            if ( transaction != null &&
-                !string.IsNullOrWhiteSpace( transaction.GatewayScheduleId ) &&
-                transaction.FinancialGateway != null )
-            {
-                var rootElement = GetRoot( transaction.FinancialGateway, "delete-subscription" );
-                rootElement.Add( new XElement( "subscription-id", transaction.GatewayScheduleId ) );
-
-                XDocument xdoc = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
-                var result = PostToGateway( transaction.FinancialGateway, xdoc );
-
-                if ( result == null )
-                {
-                    errorMessage = "Invalid Response from NMI!";
-                    return false;
-                }
-
-                if ( result.GetValueOrNull( "result" ) != "1" )
-                {
-                    errorMessage = result.GetValueOrNull( "result-text" );
-                    return false;
-                }
-
-                transaction.IsActive = false;
-                return true;
-            }
-            else
-            {
-                errorMessage = "Invalid original transaction, transaction code, or gateway.";
-            }
-
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -679,11 +711,11 @@ namespace Rock.NMI
             errorMessage = string.Empty;
             var financialGateway = new FinancialGatewayService( new RockContext() ).Get( transaction.FinancialGatewayId.Value );
 
-            var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
+            var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryApiUrl ) );
             var restRequest = new RestRequest( Method.GET );
 
-            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
-            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, AttributeKey.AdminPassword ) );
             restRequest.AddParameter( "report_type", "recurring" );
             restRequest.AddParameter( "subscription_id", transaction.GatewayScheduleId );
 
@@ -696,11 +728,15 @@ namespace Rock.NMI
                     var subscriptionNode = xdocResult.Root.Element( "subscription" );
                     if ( subscriptionNode == null )
                     {
-                        errorMessage = "unable to get subscription node";
+                        errorMessage = "subscription not found";
                         return false;
                     }
 
-                    var subscription_id = subscriptionNode.Element( "subscription_id" )?.Value;
+                    string subscriptionJson = JsonConvert.SerializeXNode( subscriptionNode );
+
+                    Subscription subscription = subscriptionJson.FromJsonOrNull<SubscriptionResult>()?.Subscription;
+
+                    var subscription_id = subscription?.SubscriptionId;
 
                     if ( subscription_id == null )
                     {
@@ -713,7 +749,7 @@ namespace Rock.NMI
                         return false;
                     }
 
-                    transaction.NextPaymentDate = subscriptionNode.Element( "next_charge_date" )?.Value.AsDateTime();
+                    transaction.NextPaymentDate = subscription.NextChargeDate;
                     transaction.LastStatusUpdateDateTime = RockDateTime.Now;
 
                     return true;
@@ -736,105 +772,120 @@ namespace Rock.NMI
         {
             errorMessage = string.Empty;
 
-            var txns = new List<Payment>();
+            var paymentList = new List<Payment>();
 
-            var restClient = new RestClient( GetAttributeValue( financialGateway, "QueryUrl" ) );
+            var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryApiUrl ) );
             var restRequest = new RestRequest( Method.GET );
 
-            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, "AdminUsername" ) );
-            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, "AdminPassword" ) );
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, AttributeKey.AdminPassword ) );
             restRequest.AddParameter( "start_date", startDate.ToString( "yyyyMMddHHmmss" ) );
             restRequest.AddParameter( "end_date", endDate.ToString( "yyyyMMddHHmmss" ) );
 
             try
             {
                 var response = restClient.Execute( restRequest );
-                if ( response != null )
+                if ( response == null )
                 {
-                    if ( response.StatusCode == HttpStatusCode.OK )
-                    {
-                        var xdocResult = GetXmlResponse( response );
-                        if ( xdocResult != null )
-                        {
-                            var errorResponse = xdocResult.Root.Element( "error_response" );
-                            if ( errorResponse != null )
-                            {
-                                errorMessage = errorResponse.Value;
-                            }
-                            else
-                            {
-                                foreach ( var xTxn in xdocResult.Root.Elements( "transaction" ) )
-                                {
-                                    Payment payment = new Payment();
-                                    payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
-                                    payment.Status = GetXElementValue( xTxn, "condition" ).FixCase();
-                                    payment.IsFailure =
-                                        payment.Status == "Failed" ||
-                                        payment.Status == "Abandoned" ||
-                                        payment.Status == "Canceled";
-                                    payment.TransactionCode = GetXElementValue( xTxn, "transaction_id" );
-                                    payment.GatewayScheduleId = GetXElementValue( xTxn, "original_transaction_id" ).Trim();
-
-                                    var statusMessage = new StringBuilder();
-                                    DateTime? txnDateTime = null;
-
-                                    foreach ( var xAction in xTxn.Elements( "action" ) )
-                                    {
-                                        DateTime? actionDate = ParseDateValue( GetXElementValue( xAction, "date" ) );
-                                        string actionType = GetXElementValue( xAction, "action_type" );
-                                        string responseText = GetXElementValue( xAction, "response_text" );
-
-                                        if ( actionDate.HasValue )
-                                        {
-                                            statusMessage.AppendFormat( "{0} {1}: {2}; Status: {3}",
-                                                actionDate.Value.ToShortDateString(), actionDate.Value.ToShortTimeString(),
-                                                actionType.FixCase(), responseText );
-                                            statusMessage.AppendLine();
-                                        }
-
-                                        decimal? txnAmount = GetXElementValue( xAction, "amount" ).AsDecimalOrNull();
-                                        if ( txnAmount.HasValue && actionDate.HasValue )
-                                        {
-                                            payment.Amount = txnAmount.Value;
-                                        }
-
-                                        if ( actionType == "sale" )
-                                        {
-                                            txnDateTime = actionDate.Value;
-                                        }
-
-                                        if ( actionType == "settle" )
-                                        {
-                                            payment.IsSettled = true;
-                                            payment.SettledGroupId = GetXElementValue( xAction, "processor_batch_id" ).Trim();
-                                            payment.SettledDate = actionDate;
-                                            txnDateTime = txnDateTime.HasValue ? txnDateTime.Value : actionDate.Value;
-                                        }
-                                    }
-
-                                    if ( txnDateTime.HasValue )
-                                    {
-                                        payment.TransactionDateTime = txnDateTime.Value;
-                                        payment.StatusMessage = statusMessage.ToString();
-                                        txns.Add( payment );
-                                    }
-                                }
-
-                            }
-                        }
-                        else
-                        {
-                            errorMessage = "Invalid XML Document Returned From Gateway!";
-                        }
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "Invalid Response from Gateway: [{0}] {1}", response.StatusCode.ConvertToString(), response.ErrorMessage );
-                    }
+                    errorMessage = "Empty response returned From gateway.";
+                    return paymentList;
                 }
-                else
+
+                if ( response.StatusCode != HttpStatusCode.OK )
                 {
-                    errorMessage = "Null Response From Gateway!";
+                    errorMessage = $"Status code of {response.StatusCode} returned From gateway.";
+                    return paymentList;
+                }
+
+                XDocument doc = XDocument.Parse( response.Content );
+
+                var responseNode = doc.Descendants( "nm_response" ).FirstOrDefault();
+                var jsonResponse = JsonConvert.SerializeXNode( responseNode );
+
+                QueryTransactionsResponse queryTransactionsResponse = jsonResponse.FromJsonOrNull<QueryTransactionsResponse>();
+                if ( queryTransactionsResponse == null )
+                {
+                    errorMessage = "Unexpected response returned From gateway.";
+                    return paymentList;
+                }
+
+                var errorResponse = queryTransactionsResponse?.TransactionListResult?.ErrorResponse;
+                if ( errorResponse != null )
+                {
+                    errorMessage = errorResponse;
+                    return paymentList;
+                }
+
+                var transactionList = queryTransactionsResponse?.TransactionListResult?.TransactionList;
+                if ( transactionList == null )
+                {
+                    errorMessage = "Unexpected transaction list response returned From gateway.";
+                    return paymentList;
+                }
+
+                foreach ( Transaction transaction in transactionList )
+                {
+                    Payment payment = new Payment();
+                    payment.TransactionCode = transaction.TransactionId;
+
+                    payment.Status = transaction.Condition?.FixCase();
+                    payment.IsFailure =
+                        payment.Status == "Failed" ||
+                        payment.Status == "Abandoned" ||
+                        payment.Status == "Canceled";
+                    payment.TransactionCode = transaction.TransactionId;
+
+                    payment.GatewayScheduleId = transaction.OriginalTransactionId;
+
+                    // NMI does include CustomerId sometimes
+                    payment.GatewayPersonIdentifier = transaction.CustomerId;
+
+                    var statusMessage = new StringBuilder();
+                    DateTime? transactionDateTime = null;
+
+                    var transactionAction = transaction.TransactionAction;
+                    DateTime? actionDate = transactionAction.ActionDate;
+                    string actionType = transactionAction.ActionType;
+
+                    string responseText = transactionAction.ResponseText;
+
+                    if ( actionDate.HasValue )
+                    {
+                        statusMessage.AppendFormat(
+                            "{0} {1}: {2}; Status: {3}",
+                            actionDate.Value.ToShortDateString(),
+                            actionDate.Value.ToShortTimeString(),
+                            actionType.FixCase(),
+                            responseText );
+
+                        statusMessage.AppendLine();
+                    }
+
+                    decimal? transactionAmount = transactionAction.Amount;
+                    if ( transactionAmount.HasValue && actionDate.HasValue )
+                    {
+                        payment.Amount = transactionAmount.Value;
+                    }
+
+                    if ( actionType == "sale" )
+                    {
+                        transactionDateTime = actionDate.Value;
+                    }
+
+                    if ( actionType == "settle" )
+                    {
+                        payment.IsSettled = true;
+                        payment.SettledGroupId = transactionAction.ProcessorBatchId.Trim();
+                        payment.SettledDate = actionDate;
+                        transactionDateTime = transactionDateTime.HasValue ? transactionDateTime.Value : actionDate.Value;
+                    }
+
+                    if ( transactionDateTime.HasValue )
+                    {
+                        payment.TransactionDateTime = transactionDateTime.Value;
+                        payment.StatusMessage = statusMessage.ToString();
+                        paymentList.Add( payment );
+                    }
                 }
             }
             catch ( WebException webException )
@@ -843,7 +894,7 @@ namespace Rock.NMI
                 throw new Exception( webException.Message + " - " + message );
             }
 
-            return txns;
+            return paymentList;
         }
 
         /// <summary>
@@ -855,7 +906,15 @@ namespace Rock.NMI
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return transaction.ForeignKey;
+            var customerVaultId = transaction?.FinancialPaymentDetail?.GatewayPersonIdentifier;
+
+            if ( customerVaultId.IsNullOrWhiteSpace() )
+            {
+                // older implementations of the NMI gateway only stored the customer vault id in transaction.ForeignKey
+                customerVaultId = transaction.ForeignKey;
+            }
+
+            return customerVaultId;
         }
 
         /// <summary>
@@ -867,7 +926,15 @@ namespace Rock.NMI
         public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-            return string.Empty;
+            var customerVaultId = scheduledTransaction?.FinancialPaymentDetail?.GatewayPersonIdentifier;
+
+            if ( customerVaultId.IsNullOrWhiteSpace() )
+            {
+                // older implementations of the NMI gateway might have stored the customer vault id in transaction.ForeignKey
+                customerVaultId = scheduledTransaction.ForeignKey;
+            }
+
+            return customerVaultId;
         }
 
         /// <summary>
@@ -876,11 +943,10 @@ namespace Rock.NMI
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="elementName">Name of the element.</param>
         /// <returns></returns>
-        private XElement GetRoot( FinancialGateway financialGateway, string elementName )
+        private XElement CreateThreeStepRootDoc( FinancialGateway financialGateway, string elementName )
         {
-            XElement rootElement = new XElement( elementName,
-                new XElement( "api-key", GetAttributeValue( financialGateway, "SecurityKey" ) )
-            );
+            XElement apiKeyElement = new XElement( "api-key", GetAttributeValue( financialGateway, AttributeKey.SecurityKey ) );
+            XElement rootElement = new XElement( elementName, apiKeyElement );
 
             return rootElement;
         }
@@ -890,7 +956,7 @@ namespace Rock.NMI
         /// </summary>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
-        private XElement GetBilling( PaymentInfo paymentInfo )
+        private XElement GetThreeStepBilling( PaymentInfo paymentInfo )
         {
             // If giving from a Business, FirstName will be blank
             // The Gateway might require a FirstName, so just put '-' if no FirstName was provided
@@ -899,7 +965,8 @@ namespace Rock.NMI
                 paymentInfo.FirstName = "-";
             }
 
-            XElement billingElement = new XElement( "billing",
+            XElement billingElement = new XElement(
+                "billing",
                 new XElement( "first-name", paymentInfo.FirstName ),
                 new XElement( "last-name", paymentInfo.LastName ),
                 new XElement( "address1", paymentInfo.Street1 ),
@@ -909,8 +976,7 @@ namespace Rock.NMI
                 new XElement( "postal", paymentInfo.PostalCode ),
                 new XElement( "country", paymentInfo.Country ),
                 new XElement( "phone", paymentInfo.Phone ),
-                new XElement( "email", paymentInfo.Email )
-            );
+                new XElement( "email", paymentInfo.Email ) );
 
             if ( paymentInfo is ACHPaymentInfo )
             {
@@ -928,7 +994,7 @@ namespace Rock.NMI
         /// <param name="schedule">The schedule.</param>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
-        private XElement GetPlan( PaymentSchedule schedule, PaymentInfo paymentInfo )
+        private XElement GetThreeStepPlan( PaymentSchedule schedule, PaymentInfo paymentInfo )
         {
             var selectedFrequencyGuid = schedule.TransactionFrequencyValue.Guid.ToString().ToUpper();
 
@@ -938,7 +1004,8 @@ namespace Rock.NMI
                 schedule.NumberOfPayments = 1;
             }
 
-            XElement planElement = new XElement( "plan",
+            XElement planElement = new XElement(
+                "plan",
                 new XElement( "payments", schedule.NumberOfPayments.HasValue ? schedule.NumberOfPayments.Value.ToString() : "0" ),
                 new XElement( "amount", paymentInfo.Amount.ToString() ) );
 
@@ -964,15 +1031,16 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Posts to gateway.
+        /// Posts to gateway using the 3-Step API.
+        /// https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#3step_methodology
         /// </summary>
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="data">The data.</param>
         /// <returns></returns>
-        /// <exception cref="System.Exception"></exception>
-        private Dictionary<string, string> PostToGateway( FinancialGateway financialGateway, XDocument data )
+        /// <exception cref="Exception"></exception>
+        private T PostToGatewayThreeStepAPI<T>( FinancialGateway financialGateway, XDocument data ) where T : class
         {
-            var restClient = new RestClient( GetAttributeValue( financialGateway, "APIUrl" ) );
+            var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.ThreeStepAPIURL ) );
             var restRequest = new RestRequest( Method.POST );
             restRequest.RequestFormat = DataFormat.Xml;
             restRequest.AddParameter( "text/xml", data.ToString(), ParameterType.RequestBody );
@@ -981,27 +1049,33 @@ namespace Rock.NMI
             {
                 var response = restClient.Execute( restRequest );
                 var xdocResult = GetXmlResponse( response );
-                if ( xdocResult != null )
+                if ( xdocResult == null )
                 {
-                    // Convert XML result to a dictionary
-                    var result = new Dictionary<string, string>();
-                    foreach ( XElement element in xdocResult.Root.Elements() )
-                    {
-                        if ( element.HasElements )
-                        {
-                            string prefix = element.Name.LocalName;
-                            foreach ( XElement childElement in element.Elements() )
-                            {
-                                result.AddOrIgnore( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
-                            }
-                        }
-                        else
-                        {
-                            result.AddOrIgnore( element.Name.LocalName, element.Value.Trim() );
-                        }
-                    }
-                    return result;
+                    return null;
                 }
+
+                var settings = new JsonSerializerSettings();
+
+                settings.Error += new EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs>( ( s, e ) =>
+                {
+                    System.Diagnostics.Debug.WriteLine( $"FromJSON Error: {e.ErrorContext?.Error?.Message}" );
+                    e.ErrorContext.Handled = true;
+                } );
+
+                string jsonResponse = JsonConvert.SerializeXNode( xdocResult.Root, Formatting.None, true );
+
+                T postResult;
+                if ( typeof( T ).Equals( typeof( string ) ) )
+                {
+                    // if caller just wants the response as a string, return the json
+                    postResult = jsonResponse as T;
+                }
+                else
+                {
+                    postResult = jsonResponse.FromJsonOrNull<T>();
+                }
+
+                return postResult;
             }
             catch ( WebException webException )
             {
@@ -1012,9 +1086,34 @@ namespace Rock.NMI
             {
                 throw ex;
             }
+        }
 
-            return null;
+        /// <summary>
+        /// Gets the additional lava fields in the form of a flatted out dictionary where child properties are delimited with '_' (Billing.Street1 becomes Billing_Street1)
+        /// </summary>
+        /// <param name="xdocResult">The xdoc result.</param>
+        /// <returns></returns>
+        private static Dictionary<string, object> GetAdditionalLavaFields<T>( T obj )
+        {
+            var xdocResult = JsonConvert.DeserializeXNode( obj.ToJson(), "root" );
+            var additionalLavaFields = new Dictionary<string, object>();
+            foreach ( XElement element in xdocResult.Root.Elements() )
+            {
+                if ( element.HasElements )
+                {
+                    string prefix = element.Name.LocalName;
+                    foreach ( XElement childElement in element.Elements() )
+                    {
+                        additionalLavaFields.AddOrIgnore( prefix + "_" + childElement.Name.LocalName, childElement.Value.Trim() );
+                    }
+                }
+                else
+                {
+                    additionalLavaFields.AddOrIgnore( element.Name.LocalName, element.Value.Trim() );
+                }
+            }
 
+            return additionalLavaFields;
         }
 
         /// <summary>
@@ -1035,144 +1134,6 @@ namespace Rock.NMI
         }
 
         /// <summary>
-        /// Gets the result code message.
-        /// </summary>
-        /// <param name="result">The result.</param>
-        /// <returns></returns>
-        private string GetResultCodeMessage( Dictionary<string, string> result )
-        {
-            switch ( result.GetValueOrNull( "result-code" ).AsInteger() )
-            {
-                case 100:
-                    {
-                        return "Transaction was approved.";
-                    }
-                case 200:
-                    {
-                        return "Transaction was declined by processor.";
-                    }
-                case 201:
-                    {
-                        return "Do not honor.";
-                    }
-                case 202:
-                    {
-                        return "Insufficient funds.";
-                    }
-                case 203:
-                    {
-                        return "Over limit.";
-                    }
-                case 204:
-                    {
-                        return "Transaction not allowed.";
-                    }
-                case 220:
-                    {
-                        return "Incorrect payment information.";
-                    }
-                case 221:
-                    {
-                        return "No such card issuer.";
-                    }
-                case 222:
-                    {
-                        return "No card number on file with issuer.";
-                    }
-                case 223:
-                    {
-                        return "Expired card.";
-                    }
-                case 224:
-                    {
-                        return "Invalid expiration date.";
-                    }
-                case 225:
-                    {
-                        return "Invalid card security code.";
-                    }
-                case 240:
-                    {
-                        return "Call issuer for further information.";
-                    }
-                case 250: // pickup card
-                case 251: // lost card
-                case 252: // stolen card
-                case 253: // fradulent card
-                    {
-                        // these are more sensitive declines so sanitize them a bit but provide a code for later lookup
-                        return string.Format( "This card was declined (code: {0}).", result.GetValueOrNull( "result-code" ) );
-                    }
-                case 260:
-                    {
-                        return string.Format( "Declined with further instructions available. ({0})", result.GetValueOrNull( "result-text" ) );
-                    }
-                case 261:
-                    {
-                        return "Declined-Stop all recurring payments.";
-                    }
-                case 262:
-                    {
-                        return "Declined-Stop this recurring program.";
-                    }
-                case 263:
-                    {
-                        return "Declined-Update cardholder data available.";
-                    }
-                case 264:
-                    {
-                        return "Declined-Retry in a few days.";
-                    }
-                case 300:
-                    {
-                        return "Transaction was rejected by gateway.";
-                    }
-                case 400:
-                    {
-                        return "Transaction error returned by processor.";
-                    }
-                case 410:
-                    {
-                        return "Invalid merchant configuration.";
-                    }
-                case 411:
-                    {
-                        return "Merchant account is inactive.";
-                    }
-                case 420:
-                    {
-                        return "Communication error.";
-                    }
-                case 421:
-                    {
-                        return "Communication error with issuer.";
-                    }
-                case 430:
-                    {
-                        return "Duplicate transaction at processor.";
-                    }
-                case 440:
-                    {
-                        return "Processor format error.";
-                    }
-                case 441:
-                    {
-                        return "Invalid transaction information.";
-                    }
-                case 460:
-                    {
-                        return "Processor feature not available.";
-                    }
-                case 461:
-                    {
-                        return "Unsupported card type.";
-                    }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Gets the response message.
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
@@ -1184,12 +1145,12 @@ namespace Rock.NMI
             StreamReader readStream = new StreamReader( receiveStream, encode );
 
             StringBuilder sb = new StringBuilder();
-            Char[] read = new Char[8192];
+            char[] read = new char[8192];
             int count = 0;
             do
             {
                 count = readStream.Read( read, 0, 8192 );
-                String str = new String( read, 0, count );
+                string str = new string( read, 0, count );
                 sb.Append( str );
             }
             while ( count > 0 );
@@ -1197,34 +1158,822 @@ namespace Rock.NMI
             return sb.ToString();
         }
 
-        private string GetXElementValue( XElement parentElement, string elementName )
-        {
-            var x = parentElement.Element( elementName );
-            if ( x != null )
-            {
-                return x.Value;
-            }
-            return string.Empty;
-        }
-
-        private DateTime? ParseDateValue( string dateString )
-        {
-            if ( !string.IsNullOrWhiteSpace( dateString ) && dateString.Length >= 14 )
-            {
-                int year = dateString.Substring( 0, 4 ).AsInteger();
-                int month = dateString.Substring( 4, 2 ).AsInteger();
-                int day = dateString.Substring( 6, 2 ).AsInteger();
-                int hour = dateString.Substring( 8, 2 ).AsInteger();
-                int min = dateString.Substring( 10, 2 ).AsInteger();
-                int sec = dateString.Substring( 12, 2 ).AsInteger();
-
-                return new DateTime( year, month, day, hour, min, sec );
-            }
-
-            return DateTime.MinValue;
-
-        }
         #endregion
 
+        #region DirectPost API related
+
+        /// <summary>
+        /// Posts to gateway using the Direct Post Api https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#methodology
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception"></exception>
+        private T PostToGatewayDirectPostAPI<T>( FinancialGateway financialGateway, Dictionary<string, string> queryParameters ) where T : class
+        {
+            var directPostApiURL = GetAttributeValue( financialGateway, AttributeKey.DirectPostAPIUrl );
+            var restClient = new RestClient( directPostApiURL );
+
+            var restRequest = new RestRequest( Method.POST );
+            restRequest.RequestFormat = DataFormat.Xml;
+            foreach ( var queryParameter in queryParameters )
+            {
+                restRequest.AddQueryParameter( queryParameter.Key, queryParameter.Value );
+            }
+
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, AttributeKey.AdminPassword ) );
+
+            try
+            {
+                var response = restClient.Execute( restRequest );
+                string jsonResponse;
+
+                // deal with either an XML response or QueryString style response
+                var xdocResult = GetXmlResponse( response );
+                if ( xdocResult != null )
+                {
+                    jsonResponse = JsonConvert.SerializeXNode( xdocResult.Root );
+                }
+                else
+                {
+                    // response in the form of response=3&responsetext=Plan Payments is required REFID:123456789&authcode=&transactionid=&avsresponse=&cvvresponse=&orderid=&type=&response_code=300&customer_vault_id=
+                    // so convert this to a dictionary
+                    var resultAsDictionary = response?.Content?.Split( '&' ).ToList().Select( s => s.Split( '=' ) ).Where( a => a.Length == 2 ).ToDictionary( k => k[0], v => v[1] );
+                    jsonResponse = resultAsDictionary.ToJson();
+                }
+
+                T postResult;
+                if ( typeof( T ).Equals( typeof( string ) ) )
+                {
+                    // if caller just wants the response as a string, return the json
+                    postResult = jsonResponse as T;
+                }
+                else
+                {
+                    postResult = jsonResponse.FromJsonOrNull<T>();
+                }
+
+                return postResult;
+            }
+            catch ( WebException webException )
+            {
+                string message = GetResponseMessage( webException.Response.GetResponseStream() );
+                throw new Exception( webException.Message + " - " + message );
+            }
+            catch ( Exception ex )
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Charges the specified payment info using the DirectPost API
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Charge( FinancialGateway financialGateway, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
+            if ( referencedPaymentInfo == null )
+            {
+                throw new ReferencePaymentInfoRequired();
+            }
+
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
+            }
+
+            var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
+            var tokenizerToken = referencedPaymentInfo.ReferenceNumber;
+            var amount = referencedPaymentInfo.Amount;
+
+            // https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#transaction_variables
+            var queryParameters = new Dictionary<string, string>();
+            queryParameters.Add( "type", "sale" );
+
+            // if both customerId and tokenizerToken are available, use customerId
+            if ( customerId.IsNotNullOrWhiteSpace() )
+            {
+                queryParameters.Add( "customer_vault_id", customerId );
+            }
+            else
+            {
+                queryParameters.Add( "payment_token", tokenizerToken );
+            }
+
+            queryParameters.Add( "amount", amount.ToString( "0.00" ) );
+
+            PopulateAddressParameters( referencedPaymentInfo, queryParameters );
+
+            StringBuilder stringBuilderDescription = new StringBuilder();
+            if ( referencedPaymentInfo.Description.IsNotNullOrWhiteSpace() )
+            {
+                stringBuilderDescription.AppendLine( referencedPaymentInfo.Description );
+            }
+
+            if ( referencedPaymentInfo.Comment1.IsNotNullOrWhiteSpace() )
+            {
+                stringBuilderDescription.AppendLine( referencedPaymentInfo.Comment1 );
+            }
+
+            if ( referencedPaymentInfo.Comment2.IsNotNullOrWhiteSpace() )
+            {
+                stringBuilderDescription.AppendLine( referencedPaymentInfo.Comment2 );
+            }
+
+            var description = stringBuilderDescription.ToString().Truncate( 255 );
+
+            queryParameters.Add( "order_description", description );
+            queryParameters.Add( "ipaddress", referencedPaymentInfo.IPAddress );
+
+            var chargeResponse = PostToGatewayDirectPostAPI<ChargeResponse>( financialGateway, queryParameters );
+
+            // NOTE: When debugging, you might get a Duplicate Transaction error if using the same CustomerVaultId and Amount within a short window ( maybe around 20 minutes? ) 
+            if ( chargeResponse.Response != "1" )
+            {
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( chargeResponse.ResponseText );
+
+                string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( chargeResponse.ResponseCode.AsInteger(), chargeResponse.ResponseText );
+                if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
+                {
+                    errorMessage += string.Format( " ({0})", resultCodeMessage );
+                }
+
+                // write result error as an exception
+                var exception = new Exception( $"Error processing NMI transaction. Result Code:  {chargeResponse.ResponseCode} ({resultCodeMessage}). Result text: {chargeResponse.ResponseText} " );
+                ExceptionLogService.LogException( exception );
+
+                return null;
+            }
+
+            var transaction = new FinancialTransaction();
+            transaction.TransactionCode = chargeResponse.TransactionId;
+            transaction.ForeignKey = chargeResponse.CustomerVaultId;
+
+            Customer customerInfo = this.GetCustomerVaultQueryResponse( financialGateway, customerId )?.CustomerVault.Customer;
+            transaction.FinancialPaymentDetail = PopulatePaymentInfo( customerInfo );
+
+            transaction.AdditionalLavaFields = GetAdditionalLavaFields( chargeResponse );
+
+            return transaction;
+        }
+
+        /// <summary>
+        /// Populates the payment information.
+        /// </summary>
+        /// <param name="customerInfo">The customer information.</param>
+        /// <returns></returns>
+        private FinancialPaymentDetail PopulatePaymentInfo( Customer customerInfo )
+        {
+            var financialPaymentDetail = new FinancialPaymentDetail();
+            financialPaymentDetail.GatewayPersonIdentifier = customerInfo.CustomerVaultId;
+
+            string ccNumber = customerInfo.CcNumber;
+            if ( !string.IsNullOrWhiteSpace( ccNumber ) )
+            {
+                // cc payment
+                var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
+                financialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{customerInfo.FirstName} {customerInfo.LastName}" );
+                financialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
+                financialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
+                financialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
+
+                string mmyy = customerInfo.CcExp;
+                if ( !string.IsNullOrWhiteSpace( mmyy ) && mmyy.Length == 4 )
+                {
+                    financialPaymentDetail.ExpirationMonthEncrypted = Encryption.EncryptString( mmyy.Substring( 0, 2 ) );
+                    financialPaymentDetail.ExpirationYearEncrypted = Encryption.EncryptString( mmyy.Substring( 2, 2 ) );
+                }
+            }
+            else
+            {
+                // ach payment
+                var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH );
+                financialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
+                financialPaymentDetail.AccountNumberMasked = customerInfo.CheckAccount;
+            }
+
+            return financialPaymentDetail;
+        }
+
+        /// <summary>
+        /// Adds the scheduled payment using the DirectPost API
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
+            if ( referencedPaymentInfo == null )
+            {
+                throw new ReferencePaymentInfoRequired();
+            }
+
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
+            }
+
+            var customerId = referencedPaymentInfo.GatewayPersonIdentifier;
+            var tokenizerToken = referencedPaymentInfo.ReferenceNumber;
+            var amount = referencedPaymentInfo.Amount;
+
+            // https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#recurring_variables @ Adding a Custom Subscription
+            var queryParameters = new Dictionary<string, string>();
+            queryParameters.Add( "recurring", "add_subscription" );
+
+            var selectedFrequencyGuid = schedule.TransactionFrequencyValue.Guid.ToString().ToUpper();
+
+            if ( selectedFrequencyGuid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME )
+            {
+                // Make sure number of payments is set to 1 for one-time future payments
+                schedule.NumberOfPayments = 1;
+            }
+
+            queryParameters.Add( "plan_payments", schedule.NumberOfPayments.HasValue ? schedule.NumberOfPayments.Value.ToString() : "0" );
+            queryParameters.Add( "plan_amount", amount.ToString( "0.00" ) );
+
+            switch ( selectedFrequencyGuid )
+            {
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
+                    queryParameters.Add( "month_frequency", "12" );
+                    queryParameters.Add( "day_of_month", schedule.StartDate.Day.ToString() );
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
+                    queryParameters.Add( "day_frequency", "7" );
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY:
+                    queryParameters.Add( "day_frequency", "14" );
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
+                    queryParameters.Add( "month_frequency", "1" );
+                    queryParameters.Add( "day_of_month", schedule.StartDate.Day.ToString() );
+                    break;
+            }
+
+            queryParameters.Add( "start_date", schedule.StartDate.ToString( "yyyyMMdd" ) );
+
+            if ( customerId.IsNotNullOrWhiteSpace() )
+            {
+                // this isn't documented in the recurring documention, but it is on the charge documentation. It does work.
+                queryParameters.Add( "customer_vault_id", customerId );
+            }
+            else
+            {
+                queryParameters.Add( "payment_token", tokenizerToken );
+            }
+
+            PopulateAddressParameters( referencedPaymentInfo, queryParameters );
+
+            // create a guid to include in the NMI Subscription Description so that we can refer back to it to ensure an orphaned subscription doesn't exist when an exception occurs
+            var descriptionGuid = Guid.NewGuid();
+
+            var subscriptionDescription = $"{referencedPaymentInfo.Description}|Subscription Ref: {descriptionGuid}";
+
+            queryParameters.Add( "order_description", subscriptionDescription );
+
+            try
+            {
+                errorMessage = string.Empty;
+
+                var addSubscriptionResponse = PostToGatewayDirectPostAPI<SubscriptionResponse>( financialGateway, queryParameters );
+
+                if ( addSubscriptionResponse.Response != "1" )
+                {
+                    errorMessage = FriendlyMessageHelper.GetFriendlyMessage( addSubscriptionResponse.ResponseText );
+
+                    string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( addSubscriptionResponse.ResponseCode.AsInteger(), addSubscriptionResponse.ResponseText );
+                    if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
+                    {
+                        errorMessage += string.Format( " ({0})", resultCodeMessage );
+                    }
+
+                    // write result error as an exception
+                    var exception = new Exception( $"Error processing NMI subscription. Result Code:  {addSubscriptionResponse.ResponseCode} ({resultCodeMessage}). Result text: {addSubscriptionResponse.ResponseText} " );
+                    ExceptionLogService.LogException( exception );
+
+                    return null;
+                }
+
+                // set the paymentInfo.TransactionCode to the subscriptionId so that we know what CreateSubsciption created.
+                // this might be handy in case we have an exception and need to know what the subscriptionId is
+                referencedPaymentInfo.TransactionCode = addSubscriptionResponse.TransactionId;
+
+                Customer customerInfo;
+                try
+                {
+                    customerInfo = this.GetCustomerVaultQueryResponse( financialGateway, customerId )?.CustomerVault.Customer;
+
+                    // NOTE: NMI updates the customer address when doing the AddSubscription request
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( $"Exception getting Customer Information for Scheduled Payment.", ex );
+                }
+
+                var scheduledTransaction = new FinancialScheduledTransaction();
+                scheduledTransaction.IsActive = true;
+                scheduledTransaction.GatewayScheduleId = addSubscriptionResponse.TransactionId;
+                scheduledTransaction.FinancialGatewayId = financialGateway.Id;
+                scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( customerInfo );
+                scheduledTransaction.TransactionCode = addSubscriptionResponse.TransactionId;
+
+                errorMessage = string.Empty;
+
+                try
+                {
+                    GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                }
+
+                return scheduledTransaction;
+            }
+            catch ( Exception )
+            {
+                // if there is an exception, Rock won't save this as a scheduled transaction, so make sure the subscription didn't get created so mystery scheduled transactions don't happen
+
+                // NOTE: NMI doesn't have a way to search subscriptions for a specific customer, so just get the last few of them and find the one we created and delete it
+                var subscriptionSearchResult = this.SearchSubscriptions( financialGateway, 10 );
+
+                var orphanedSubscription = subscriptionSearchResult?.SubscriptionsResult?.SubscriptionList?.FirstOrDefault( a => a.OrderDescription == subscriptionDescription );
+
+                if ( orphanedSubscription?.SubscriptionId != null )
+                {
+                    var subscriptionId = orphanedSubscription.SubscriptionId;
+                    var deleteSubscriptionResponse = this.DeleteSubscription( financialGateway, subscriptionId );
+                }
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Flag indicating if gateway supports reactivating a scheduled payment.
+        /// </summary>
+        /// <returns></returns>
+        public override bool ReactivateScheduledPaymentSupported
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Reactivates the scheduled payment.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override bool ReactivateScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
+        {
+            var referencePaymentInfo = new ReferencePaymentInfo();
+
+            // NOTE: If transaction.FinancialPaymentDetail.GatewayPersonIdentifier is blank, a new customervault will be created from the GatewayScheduleId. So it is ok if both GatewayPersonIdentifier and FinancialPersonSavedAccountId are unknown
+            referencePaymentInfo.GatewayPersonIdentifier = transaction.FinancialPaymentDetail.GatewayPersonIdentifier;
+            referencePaymentInfo.FinancialPersonSavedAccountId = transaction.FinancialPaymentDetail.FinancialPersonSavedAccountId;
+            referencePaymentInfo.Amount = transaction.TotalAmount;
+
+            return UpdateScheduledPayment( transaction, referencePaymentInfo, out errorMessage );
+        }
+
+        /// <summary>
+        /// Updates the scheduled payment supported.
+        /// </summary>
+        /// <returns></returns>
+        public override bool UpdateScheduledPaymentSupported
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Updates the scheduled payment. In the case of NMI, the scheduled payment will get deleted and a new one created to replace it.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override bool UpdateScheduledPayment( FinancialScheduledTransaction scheduledTransaction, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            var referencedPaymentInfo = paymentInfo as ReferencePaymentInfo;
+            if ( referencedPaymentInfo == null )
+            {
+                throw new ReferencePaymentInfoRequired();
+            }
+
+            PaymentSchedule paymentSchedule = new PaymentSchedule
+            {
+                TransactionFrequencyValue = DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId ),
+                StartDate = scheduledTransaction.StartDate,
+                EndDate = scheduledTransaction.EndDate,
+                NumberOfPayments = scheduledTransaction.NumberOfPayments,
+                PersonId = scheduledTransaction.AuthorizedPersonAlias.PersonId
+            };
+
+            var financialGateway = scheduledTransaction.FinancialGateway ?? new FinancialGatewayService( new RockContext() ).Get( scheduledTransaction.FinancialGatewayId.Value );
+
+            if ( referencedPaymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+            {
+                // if this scheduled transaction was created without saving the customerId to Rock data (from previous version) or unknown to Rock for some other reason, create a new customer vault record.
+                // Note: NMI doesn't support getting the CustomerVaultId from an existing subscription, but we get around that by create a new customer vault id from the existing transaction
+                referencedPaymentInfo.GatewayPersonIdentifier = CreateCustomerVaultFromExistingScheduledTransaction( financialGateway, referencedPaymentInfo, scheduledTransaction, out errorMessage );
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    return false;
+                }
+            }
+
+            // since we can't update a subscription in NMI, we'll have to Delete and Create a new one
+            DeleteSubscription( scheduledTransaction.FinancialGateway, scheduledTransaction.GatewayScheduleId );
+
+            // add the scheduled payment, but don't use the financialScheduledTransaction that was returned since we already have one
+            var dummyFinancialScheduledTransaction = AddScheduledPayment( scheduledTransaction.FinancialGateway, paymentSchedule, paymentInfo, out errorMessage );
+            if ( dummyFinancialScheduledTransaction != null )
+            {
+                scheduledTransaction.GatewayScheduleId = dummyFinancialScheduledTransaction.GatewayScheduleId;
+
+                scheduledTransaction.IsActive = true;
+                scheduledTransaction.FinancialGatewayId = financialGateway.Id;
+                scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, this, new RockContext() );
+
+                errorMessage = string.Empty;
+
+                try
+                {
+                    GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
+                }
+                catch ( Exception ex )
+                {
+                    throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Deletes the subscription using the DirectPost API
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="subscriptionId">The subscription identifier.</param>
+        private SubscriptionResponse DeleteSubscription( FinancialGateway financialGateway, string subscriptionId )
+        {
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
+            }
+
+            var queryParameters = new Dictionary<string, string>();
+            queryParameters.Add( "recurring", "delete_subscription" );
+            queryParameters.Add( "subscription_id", subscriptionId );
+
+            var deleteSubscriptionResponse = PostToGatewayDirectPostAPI<SubscriptionResponse>( financialGateway, queryParameters );
+
+            return deleteSubscriptionResponse;
+        }
+
+        /// <summary>
+        /// Searches the subscriptions.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="resultLimit">The result limit.</param>
+        /// <returns></returns>
+        private QuerySubscriptionsResponse SearchSubscriptions( FinancialGateway financialGateway, int resultLimit )
+        {
+            var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryApiUrl ) );
+            var restRequest = new RestRequest( Method.GET );
+
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, AttributeKey.AdminPassword ) );
+            restRequest.AddParameter( "source", "recurring" );
+            restRequest.AddParameter( "report_type", "recurring" );
+
+            /* MDP 2020-02-24 The 'recurring' query is very limited. For example, none of these options work
+             * customer_vault_id
+             * date_search
+             * start_date
+             * end_date
+             * order_description
+             *
+             * Also, the results are missing some fields that would be helpful to have. For example, these fields are not returrned
+             * customer_vault_id
+            */
+
+            // order from newest to oldest
+            restRequest.AddParameter( "result_order", "reverse" );
+            restRequest.AddParameter( "result_limit", resultLimit.ToString() );
+
+            var response = restClient.Execute( restRequest );
+            XDocument doc = XDocument.Parse( response.Content );
+
+            var responseNode = doc.Descendants( "nm_response" ).FirstOrDefault();
+            var jsonResponse = JsonConvert.SerializeXNode( responseNode );
+
+            QuerySubscriptionsResponse querySubscriptionsResponse = jsonResponse.FromJsonOrNull<QuerySubscriptionsResponse>();
+
+            return querySubscriptionsResponse;
+        }
+
+        /// <summary>
+        /// Gets the customer vault query response.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="customerVaultId">The customer vault identifier.</param>
+        /// <returns></returns>
+        private CustomerVaultQueryResponse GetCustomerVaultQueryResponse( FinancialGateway financialGateway, string customerVaultId )
+        {
+            var restClient = new RestClient( GetAttributeValue( financialGateway, AttributeKey.QueryApiUrl ) );
+            var restRequest = new RestRequest( Method.GET );
+
+            restRequest.AddParameter( "username", GetAttributeValue( financialGateway, AttributeKey.AdminUsername ) );
+            restRequest.AddParameter( "password", GetAttributeValue( financialGateway, AttributeKey.AdminPassword ) );
+            restRequest.AddParameter( "report_type", "customer_vault" );
+            restRequest.AddParameter( "customer_vault_id", customerVaultId );
+
+            var response = restClient.Execute( restRequest );
+            XDocument doc = XDocument.Parse( response.Content );
+
+            var customerVaultNode = doc.Descendants( "customer_vault" ).FirstOrDefault();
+            var jsonResponse = JsonConvert.SerializeXNode( customerVaultNode );
+
+            CustomerVaultQueryResponse customerVaultQueryResponse = jsonResponse.FromJsonOrNull<CustomerVaultQueryResponse>();
+            return customerVaultQueryResponse;
+        }
+
+        #endregion DirectPost API related
+
+        #region Exceptions
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="System.Exception" />
+        public class ReferencePaymentInfoRequired : Exception
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ReferencePaymentInfoRequired"/> class.
+            /// </summary>
+            public ReferencePaymentInfoRequired()
+                : base( "NMI gateway requires a token or customer reference" )
+            {
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="System.ArgumentNullException" />
+        public class NullFinancialGatewayException : ArgumentNullException
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="NullFinancialGatewayException"/> class.
+            /// </summary>
+            public NullFinancialGatewayException()
+                : base( "Unable to determine financial gateway" )
+            {
+            }
+        }
+
+        #endregion 
+
+        #region IHostedGatewayComponent
+
+        /// <summary>
+        /// Gets the URL that the Gateway Information UI will navigate to when they click the 'Configure' link
+        /// </summary>
+        /// <value>
+        /// The configure URL.
+        /// </value>
+        public string ConfigureURL => "https://www.nmi.com/";
+
+        /// <summary>
+        /// Gets the URL that the Gateway Information UI will navigate to when they click the 'Learn More' link
+        /// </summary>
+        /// <value>
+        /// The learn more URL.
+        /// </value>
+        public string LearnMoreURL => "https://www.nmi.com/";
+
+        /// <summary>
+        /// Gets the hosted gateway modes that this gateway has configured/supports. Use this to determine which mode to use (in cases where both are supported, like Scheduled Payments lists ).
+        /// If the Gateway supports both hosted and unhosted (and has Hosted mode configured), hosted mode should be preferred.
+        /// </summary>
+        /// <param name="financialGateway"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The hosted gateway modes that this gateway supports
+        /// </value>
+        public HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway )
+        {
+            // NMI Gateway supports Hosted mode if a TokenizationKey is configured. If so, Hosted gateway mode should be preferred
+            var hostedGatewayConfigured = this.GetAttributeValue( financialGateway, AttributeKey.TokenizationKey ).IsNotNullOrWhiteSpace();
+            if ( !hostedGatewayConfigured )
+            {
+                return new HostedGatewayMode[1] { HostedGatewayMode.Unhosted };
+            }
+            else
+            {
+                return new HostedGatewayMode[2] { HostedGatewayMode.Hosted, HostedGatewayMode.Unhosted };
+            }
+        }
+
+        /// <summary>
+        /// Gets the hosted payment information control which will be used to collect CreditCard, ACH fields
+        /// Note: A HostedPaymentInfoControl can optionally implement <seealso cref="T:Rock.Financial.IHostedGatewayPaymentControlTokenEvent" />
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="controlId">The control identifier.</param>
+        /// <param name="options">The options.</param>
+        /// <returns></returns>
+        public Control GetHostedPaymentInfoControl( FinancialGateway financialGateway, string controlId, HostedPaymentInfoControlOptions options )
+        {
+            NMIHostedPaymentControl nmiHostedPaymentControl = new NMIHostedPaymentControl { ID = controlId };
+            nmiHostedPaymentControl.NMIGateway = this;
+            List<NMIPaymentType> enabledPaymentTypes = new List<NMIPaymentType>();
+            if ( options?.EnableACH ?? true )
+            {
+                enabledPaymentTypes.Add( NMIPaymentType.ach );
+            }
+
+            if ( options?.EnableCreditCard ?? true )
+            {
+                enabledPaymentTypes.Add( NMIPaymentType.card );
+            }
+
+            nmiHostedPaymentControl.EnabledPaymentTypes = enabledPaymentTypes.ToArray();
+
+            nmiHostedPaymentControl.TokenizationKey = this.GetAttributeValue( financialGateway, AttributeKey.TokenizationKey );
+
+            return nmiHostedPaymentControl;
+        }
+
+        /// <summary>
+        /// Gets the JavaScript needed to tell the hostedPaymentInfoControl to get send the paymentInfo and get a token.
+        /// Have your 'Next' or 'Submit' call this so that the hostedPaymentInfoControl will fetch the token/response
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
+        /// <returns></returns>
+        public string GetHostPaymentInfoSubmitScript( FinancialGateway financialGateway, Control hostedPaymentInfoControl )
+        {
+            return $"Rock.NMI.controls.gatewayCollectJS.submitPaymentInfo('{hostedPaymentInfoControl.ClientID}');";
+        }
+
+        /// <summary>
+        /// Gets the paymentInfoToken that the hostedPaymentInfoControl returned (see also <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String)" />)
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="hostedPaymentInfoControl">The hosted payment information control.</param>
+        /// <param name="referencePaymentInfo">The reference payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        public void UpdatePaymentInfoFromPaymentControl( FinancialGateway financialGateway, Control hostedPaymentInfoControl, ReferencePaymentInfo referencePaymentInfo, out string errorMessage )
+        {
+            var nmiHostedPaymentControl = hostedPaymentInfoControl as NMIHostedPaymentControl;
+            errorMessage = null;
+            var tokenResponse = nmiHostedPaymentControl.PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
+            if ( tokenResponse?.IsSuccessStatus() != true )
+            {
+                if ( tokenResponse.HasValidationError() )
+                {
+                    errorMessage = tokenResponse.ValidationMessage;
+                }
+
+                errorMessage = tokenResponse?.ErrorMessage ?? "null response from GetHostedPaymentInfoToken";
+                referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( errorMessage );
+            }
+            else
+            {
+                referencePaymentInfo.ReferenceNumber = nmiHostedPaymentControl.PaymentInfoToken;
+            }
+        }
+
+        /// <summary>
+        /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.String,Rock.Financial.HostedPaymentInfoControlOptions)" />
+        /// and returns a customer account token that can be used for future transactions.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public string CreateCustomerAccount( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
+        {
+            return CreateCustomerVault( financialGateway, paymentInfo, out errorMessage );
+        }
+
+        /// <summary>
+        /// Creates the customer vault from existing scheduled transaction.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="financialScheduledTransaction">The financial scheduled transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private string CreateCustomerVaultFromExistingScheduledTransaction( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, FinancialScheduledTransaction financialScheduledTransaction, out string errorMessage )
+        {
+            // NOTE that *does* work even if the GatewayScheduleId is from a deleted subscription. NMI just soft-deletes subscriptions, and can get the customer vault from those too.
+            paymentInfo.TransactionCode = financialScheduledTransaction.GatewayScheduleId;
+            return CreateCustomerVault( financialGateway, paymentInfo, out errorMessage );
+        }
+
+        /// <summary>
+        /// Creates the customer vault.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private string CreateCustomerVault( FinancialGateway financialGateway, ReferencePaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            if ( financialGateway == null )
+            {
+                throw new NullFinancialGatewayException();
+            }
+
+            // see https://secure.tnbcigateway.com/merchants/resources/integration/integration_portal.php?#cv_variables
+            var queryParameters = new Dictionary<string, string>();
+            queryParameters.Add( "customer_vault", "add_customer" );
+
+            if ( paymentInfo.ReferenceNumber.IsNotNullOrWhiteSpace() )
+            {
+                queryParameters.Add( "payment_token", paymentInfo.ReferenceNumber );
+            }
+            else
+            {
+                queryParameters.Add( "source_transaction_id", paymentInfo.TransactionCode );
+            }
+
+            PopulateAddressParameters( paymentInfo, queryParameters );
+
+            var createCustomerResponse = PostToGatewayDirectPostAPI<CreateCustomerResponse>( financialGateway, queryParameters );
+
+            if ( createCustomerResponse.Response != "1" )
+            {
+                errorMessage = FriendlyMessageHelper.GetFriendlyMessage( createCustomerResponse.ResponseText );
+
+                string resultCodeMessage = FriendlyMessageHelper.GetResultCodeMessage( createCustomerResponse.ResponseCode.AsInteger(), errorMessage );
+                if ( resultCodeMessage.IsNotNullOrWhiteSpace() )
+                {
+                    errorMessage += $" ({resultCodeMessage})";
+                }
+
+                // write result error as an exception
+                var exception = new Exception( $"Error creating NMI customer. Result Code:  {createCustomerResponse.ResponseCode} ({resultCodeMessage}). Result text: {createCustomerResponse.ResponseText} " );
+                ExceptionLogService.LogException( exception );
+
+                return null;
+            }
+
+            return createCustomerResponse.CustomerVaultId;
+        }
+
+        /// <summary>
+        /// Populates the address parameters.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="queryParameters">The query parameters.</param>
+        private static void PopulateAddressParameters( ReferencePaymentInfo referencedPaymentInfo, Dictionary<string, string> queryParameters )
+        {
+            if ( !referencedPaymentInfo.IncludesAddressData() )
+            {
+                return;
+            }
+
+            queryParameters.Add( "first_name", referencedPaymentInfo.FirstName );
+            queryParameters.Add( "last_name", referencedPaymentInfo.LastName );
+            queryParameters.Add( "address1", referencedPaymentInfo.Street1 );
+            queryParameters.Add( "address2", referencedPaymentInfo.Street2 );
+            queryParameters.Add( "city", referencedPaymentInfo.City );
+            queryParameters.Add( "state", referencedPaymentInfo.State );
+            queryParameters.Add( "zip", referencedPaymentInfo.PostalCode );
+            queryParameters.Add( "country", referencedPaymentInfo.Country );
+            queryParameters.Add( "phone", referencedPaymentInfo.Phone );
+            queryParameters.Add( "email", referencedPaymentInfo.Email );
+            queryParameters.Add( "company", referencedPaymentInfo.BusinessName );
+        }
+
+        /// <summary>
+        /// Gets the earliest scheduled start date that the gateway will accept for the start date, based on the current local time.
+        /// </summary>
+        /// <param name="financialGateway">The financial gateway.</param>
+        /// <returns></returns>
+        public DateTime GetEarliestScheduledStartDate( FinancialGateway financialGateway )
+        {
+            return RockDateTime.Today.AddDays( 1 ).Date;
+        }
+
+        #endregion IHostedGatewayComponent
     }
 }
