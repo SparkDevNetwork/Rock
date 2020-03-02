@@ -166,7 +166,7 @@ TransactionAccountDetails: [
     /* Bema.End */
 
     /* Bema.FE2.Start */
-    [BooleanField( "UseFirstName", "Should the block use a person's first name instead of their nickname.", false, "", 35, BemaAttributeKey.UseFirstName )]
+    [BooleanField( "Use First Name", "Should the block use a person's first name instead of their nickname.", false, "", 35, BemaAttributeKey.UseFirstName )]
     /* Bema.FE2.End */
 
     /* Bema.FE3.Start */
