@@ -673,6 +673,7 @@ namespace RockWeb.Blocks.Mobile
             tbDescription.Text = page.Description;
             cbDisplayInNavigation.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
             ceEventHandler.Text = additionalSettings.LavaEventHandler;
+            ceCssStyles.Text = additionalSettings.CssStyles;
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
             //
@@ -723,6 +724,7 @@ namespace RockWeb.Blocks.Mobile
 
             var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
             additionalSettings.LavaEventHandler = ceEventHandler.Text;
+            additionalSettings.CssStyles = ceCssStyles.Text;
 
             page.InternalName = tbInternalName.Text;
             page.BrowserTitle = tbName.Text;
