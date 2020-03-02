@@ -22,7 +22,6 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Blocks.Types.Web.Events;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
