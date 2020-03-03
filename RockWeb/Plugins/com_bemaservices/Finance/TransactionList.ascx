@@ -128,9 +128,9 @@
                     <div class="col-sm-6">
                         <Rock:RockRadioButtonList ID="rblReassignBankAccounts" runat="server" Label="Reassign Bank Accounts" Required="true" ValidationGroup="Reassign"
                             Help="In addition to the selected transactions, how should all of the saved bank accounts for this person be reassigned?">
-                            <asp:ListItem Text="Move bank accounts to selected individual" Value="MOVE" Selected="True" />
+                            <asp:ListItem Text="Move bank accounts to selected individual" Value="MOVE" />
                             <asp:ListItem Text="Copy bank accounts to selected individual" Value="COPY" />
-                            <asp:ListItem Text="Do not adjust bank accounts" Value="NONE" />
+                            <asp:ListItem Text="Do not adjust bank accounts" Value="NONE"  Selected="True" />
                         </Rock:RockRadioButtonList>
                     </div>
                 </div>
