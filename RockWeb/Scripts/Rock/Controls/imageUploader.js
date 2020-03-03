@@ -7,6 +7,9 @@
         var _configure = function (options) {
             options.isBinaryFile = options.isBinaryFile || 'T';
 
+            var $contentFileSource = $('#' + options.hfContentFileSource);
+            var $binaryFileId = $('#' + options.hfFileId);
+
             // default setImageUrlOnUpload to true if not specified
             if (options.setImageUrlOnUpload == null) {
                 options.setImageUrlOnUpload = true;
@@ -51,7 +54,14 @@
                 },
                 done: function (e, data) {
                     var $el = $('#' + options.imgThumbnail);
-                    $('#' + options.hfFileId).val(data.response().result.Id);
+
+                    if ((options.isBinaryFile || 'T') == 'F') {
+                        $contentFileSource.val(data.response().result.FileName);
+                    }
+                    else {
+                        $binaryFileId.val(data.response().result.Id);
+                    }
+                    
                     var getImageUrl = Rock.settings.get('baseUrl')
                         + 'GetImage.ashx?'
                         + 'isBinaryFile=' + (options.isBinaryFile || 'T')
@@ -125,7 +135,8 @@
                 if (options.postbackRemovedScript) {
                     window.location = "javascript:" + options.postbackRemovedScript;
                 } else {
-                    $('#' + options.hfFileId).val('0');
+                    $binaryFileId.val('0');
+                    $contentFileSource.val('');
                 }
                 return false;
             });
