@@ -28,15 +28,87 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Filter block that passes the filter values as query string parameters." )]
 
-    [BooleanField( "Show Block Title", "Determines if the Block Title should be displayed", true, "CustomSetting", 1, AttributeKey.ShowBlockTitle )]
-    [TextField( "Block Title Text", "The text to display as the block title.", true, "BlockTitle", "CustomSetting", 2, AttributeKey.BlockTitleText )]
-    [TextField( "Block Title Icon CSS Class", "The css class name to use for the block title icon.", true, "fa fa-filter", "CustomSetting", 3, AttributeKey.BlockTitleIconCssClass )]
-    [IntegerField( "Filters Per Row", "The number of filters to have per row.  Maximum is 12.", true, 2, "CustomSetting", 4, AttributeKey.FiltersPerRow )]
-    [BooleanField( "Show Reset Filters Button", "Determines if the Reset Filters button should be displayed", true, "CustomSetting", 5, AttributeKey.ShowResetFiltersButton )]
-    [TextField( "Filter Button Text", "Sets the button text for the filter button.", true, "Filter", "CustomSetting", 6, AttributeKey.FilterButtonText )]
-    [CustomRadioListField( "Filter Button Size", "", "1^Normal, 2^Small, 3^Extra Small", true, "1", "CustomSetting", 7, AttributeKey.FilterButtonSize )]
-    [LinkedPage( "Redirect Page", "If set, the filter button will redirect to the selected page.", false, "", "CustomSetting", 8, AttributeKey.RedirectPage )]
-    [BooleanField( "Does Selection Cause Postback", "If set, selecting a filter will force a PostBack, recalculating the available selections. Useful for SQL values.", false, "CustomSetting", 9, AttributeKey.DoesSelectionCausePostback )]
+    #region Block Attributes
+    [BooleanField(
+        "Show Block Title",
+        Key = AttributeKey.ShowBlockTitle,
+        Description = "Determines if the Block Title should be displayed",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Order=1 )]
+
+    [TextField(
+        "Block Title Text",
+        Key = AttributeKey.BlockTitleText,
+        Description = "The text to display as the block title.",
+        IsRequired = true,
+        DefaultValue = "BlockTitle",
+        Category = "CustomSetting",
+        Order = 2 )]
+
+    [TextField(
+        "Block Title Icon CSS Class",
+        Key = AttributeKey.BlockTitleIconCssClass,
+        Description = "The css class name to use for the block title icon.",
+        IsRequired = true,
+        DefaultValue = "fa fa-filter",
+        Category = "CustomSetting",
+        Order = 3 )]
+
+    [IntegerField(
+        "Filters Per Row",
+        Key = AttributeKey.FiltersPerRow,
+        Description = "The number of filters to have per row.  Maximum is 12.",
+        IsRequired = true,
+        DefaultIntegerValue = 2,
+        Category = "CustomSetting",
+        Order = 4 )]
+
+    [BooleanField(
+        "Show Reset Filters Button",
+        Key = AttributeKey.ShowResetFiltersButton,
+        Description = "Determines if the Reset Filters button should be displayed",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Order = 5 )]
+
+    [TextField(
+        "Filter Button Text",
+        Key = AttributeKey.FilterButtonText,
+        Description = "Sets the button text for the filter button.",
+        IsRequired = true,
+        DefaultValue = "Filter",
+        Category = "CustomSetting",
+        Order = 6 )]
+
+    [CustomRadioListField(
+        "Filter Button Size",
+        Key = AttributeKey.FilterButtonSize,
+        Description = "",
+        ListSource = "1^Normal, 2^Small, 3^Extra Small",
+        IsRequired = true,
+        DefaultValue = "3",
+        Category = "CustomSetting",
+        Order = 7 )]
+
+    [LinkedPage(
+        "Redirect Page",
+        Key = AttributeKey.RedirectPage,
+        Description = "If set, the filter button will redirect to the selected page.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "CustomSetting",
+        Order = 8 )]
+
+    [BooleanField(
+        "Does Selection Cause Postback",
+        Key = AttributeKey.DoesSelectionCausePostback,
+        Description = "If set, selecting a filter will force a PostBack, recalculating the available selections. Useful for SQL values.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Order = 9  )]
+    #endregion
+
     public partial class PageParameterFilter : RockBlockCustomSettings, IDynamicAttributesBlock
     {
         #region Attribute Keys
