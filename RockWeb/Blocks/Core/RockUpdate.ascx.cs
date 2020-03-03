@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Core
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
         private int _numberOfAvailablePackages = 0;
         private bool _isOkToProceed = false;
+        private bool _hasSqlServer14OrHigher = false;
         #endregion
 
         #region Properties
@@ -172,6 +173,12 @@ namespace RockWeb.Blocks.Core
                             nbBackupMessage.Visible = false;
                         }
 
+                        _hasSqlServer14OrHigher = CheckSqlServerVersionGreaterThenSqlServer2012();
+                        if ( !_hasSqlServer14OrHigher )
+                        {
+                            nbSqlServerVersionIssue.Visible = true;
+                        }
+
                         _releases = GetReleasesList();
                         _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
                         if ( IsUpdateAvailable() )
@@ -213,6 +220,15 @@ namespace RockWeb.Blocks.Core
         /// <param name="version">the semantic version number</param>
         private void Update( string version )
         {
+            var targetVersion = new SemanticVersion( version );
+            if ( !CanInstallVersion( targetVersion ) )
+            {
+                nbErrors.Text = "<ul class='list-padded'><li>This version cannot be installed because not all requirements have been met.</li></ul>";
+                pnlError.Visible = true;
+                pnlUpdateSuccess.Visible = false;
+                return;
+            }
+
             WriteAppOffline();
             try
             {
@@ -239,6 +255,17 @@ namespace RockWeb.Blocks.Core
                 LogException( ex );
             }
             RemoveAppOffline();
+        }
+
+        private bool CanInstallVersion( SemanticVersion targetVersion )
+        {
+            var requiresSqlServer14OrHigher = targetVersion.Version.Major > 1 || targetVersion.Version.Minor > 10;
+            if( !requiresSqlServer14OrHigher )
+            {
+                return true;
+            }
+
+            return CheckSqlServerVersionGreaterThenSqlServer2012();
         }
 
         /// <summary>
@@ -282,7 +309,7 @@ namespace RockWeb.Blocks.Core
                         divPanel.AddCssClass( "panel-block" );
                     }
 
-                    if ( !_isOkToProceed )
+                    if ( !_isOkToProceed || !CanInstallVersion(package.Version) )
                     {
                         lbInstall.Enabled = false;
                         lbInstall.AddCssClass( "btn-danger" );
@@ -427,7 +454,7 @@ namespace RockWeb.Blocks.Core
         /// level to proceed.
         /// </summary>
         /// <returns></returns>
-        private bool CheckSqlServerVersion()
+        private bool CheckSqlServerVersionGreaterThenSqlServer2012()
         {
             bool isOk = false;
             string sqlVersion = "";
@@ -439,7 +466,7 @@ namespace RockWeb.Blocks.Core
                 int majorVersion = -1;
                 Int32.TryParse( versionParts[0], out majorVersion );
 
-                if ( majorVersion >= 11 )
+                if ( majorVersion > 11 )
                 {
                     isOk = true;
                 }
@@ -460,7 +487,6 @@ namespace RockWeb.Blocks.Core
         protected bool UpdateRockPackage( string version )
         {
             IEnumerable<string> errors = Enumerable.Empty<string>();
-
             try
             {
                 var update = NuGetService.SourceRepository.FindPackage( _rockPackageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
