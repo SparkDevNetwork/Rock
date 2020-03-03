@@ -2111,19 +2111,11 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                 Dictionary<BoundField, PropertyInfo> boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
                 var attributeFields = this.Columns.OfType<AttributeField>().ToList();
                 var lavaFields = new List<LavaField>();
-                var rockTemplateFields = new List<RockTemplateField>();
                 var visibleFields = new Dictionary<int, DataControlField>();
 
                 int fieldOrder = 0;
                 foreach ( DataControlField dataField in this.Columns )
                 {
-                    if ( dataField is LavaField )
-                    {
-                        var lavaField = dataField as LavaField;
-                        lavaFields.Add( lavaField );
-                        visibleFields.Add( fieldOrder++, lavaField );
-                    }
-
                     if ( dataField is BoundField )
                     {
                         var boundField = dataField as BoundField;
@@ -2133,27 +2125,29 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
                     if ( dataField is RockTemplateField )
                     {
                         var rockTemplateField = dataField as RockTemplateField;
-                        rockTemplateFields.Add( rockTemplateField );
                         if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
                         {
                             visibleFields.Add( fieldOrder++, rockTemplateField );
                         }
+
+                        /*
+                         * 2020-03-03 - JPH
+                         *
+                         * Since LavaField inherits from RockTemplateField, perform this LavaField check only
+                         * after determining that this dataField is of type RockTemplateField. This way, we
+                         * will add the dataField to the visibleFields collection only once, and only if its
+                         * ExcelExportBehavior dictates to do so.
+                         *
+                         * Reason: Issue #3950 (Lava report fields generate two columns in Excel exports)
+                         * https://github.com/SparkDevNetwork/Rock/issues/3950
+                         */
+                        if ( dataField is LavaField )
+                        {
+                            var lavaField = dataField as LavaField;
+                            lavaFields.Add( lavaField );
+                        }
                     }
                 }
-
-
-
-                if ( CustomColumns != null && CustomColumns.Any() )
-                {
-                    foreach ( var columnConfig in CustomColumns )
-                    {
-                        var column = columnConfig.GetGridColumn();
-                        lavaFields.Add( column );
-                        visibleFields.Add( fieldOrder++, column );
-                    }
-                }
-
-
 
                 if ( CustomColumns != null && CustomColumns.Any() )
                 {
