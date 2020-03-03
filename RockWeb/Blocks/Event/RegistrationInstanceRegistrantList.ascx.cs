@@ -837,14 +837,21 @@ namespace RockWeb.Blocks.Event
                     groupCountText = string.Empty;
                 }
 
-                placementsHtmlBuilder.AppendLine(
-                    string.Format(
-                        @"<a class='{0}' href='{1}' title='{2}'><i class='{3}'></i>{4}</a>",
-                        btnClass, // {0}
-                        groupPlacementUrl, // {1}
-                        toolTip, // {2}
-                        iconCssClass, // {3}
-                        groupCountText ) ); // {4}
+                if ( _isExporting )
+                {
+                    placementsHtmlBuilder.AppendLine( toolTip );
+                }
+                else
+                {
+                    placementsHtmlBuilder.AppendLine(
+                        string.Format(
+                            @"<a class='{0}' href='{1}' title='{2}'><i class='{3}'></i>{4}</a>",
+                            btnClass, // {0}
+                            groupPlacementUrl, // {1}
+                            toolTip, // {2}
+                            iconCssClass, // {3}
+                            groupCountText ) ); // {4}
+                }
             }
 
             lPlacements.Text = string.Format( "<div class='placement-list'>{0}</div>", placementsHtmlBuilder.ToString() );
