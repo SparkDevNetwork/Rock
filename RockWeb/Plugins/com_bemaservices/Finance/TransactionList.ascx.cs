@@ -978,11 +978,35 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                             .Where( t => txnsSelected.Contains( t.Id ) )
                             .ToList() )
                         {
+                            /* BEMA.FE1.Start */
+                            var oldPerson = new PersonAliasService( rockContext ).Get( txn.AuthorizedPersonAliasId.Value );
+                            var newPerson = new PersonAliasService( rockContext ).Get( personAliasId.Value );
+
+                            if ( oldPerson.Id != newPerson.Id )
+                            {
+                                string changes = string.Format( "Modified <span class='field-name'>Person</span>  value from <span class='field-name'>{0}</span> to <span class='field-name'>{1}</span> (Updated From Transaction List #{2}#)", oldPerson.Person.FullName, newPerson.Person.FullName, txn.Id );
+
+                                HistoryService.SaveChanges(
+                                    rockContext
+                                    , typeof( FinancialBatch )
+                                    , Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid()
+                                    , txn.BatchId.Value
+                                    , new List<string> { changes }
+                                    , string.Format( "Transaction Id:{0}", txn.Id )
+                                    , typeof( FinancialTransaction )
+                                    , txn.Id
+                                    , true
+                                    , CurrentPersonAliasId
+                                    );
+                            }
+                            /* BEMA.FE1.End */
+
                             txn.AuthorizedPersonAliasId = personAliasId.Value;
                         }
                         rockContext.SaveChanges();
 
                         /* BEMA.FE1.Start */
+
                         var txnDetailService = new FinancialTransactionDetailService( rockContext );
                         var txnsDetailsToUpdate = txnDetailService.Queryable()
                             .Where( t => txnsSelected.Contains( t.TransactionId ) )
@@ -1000,6 +1024,34 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                                 if ( txn.Account.PublicName != account.PublicName )
                                 {
+                                    string changes = string.Format( "Deleted <span class='field-name'>{0}</span> value of <span class='field-name'>{1}</span>. (Updated From Transaction List #{2}#)", txn.Account.PublicName, txn.Transaction.TotalAmount, txn.Account.Id );
+                                    HistoryService.SaveChanges(
+                                        rockContext
+                                        , typeof( FinancialBatch )
+                                        , Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid()
+                                        , txn.Transaction.BatchId.Value
+                                        , new List<string> { changes }
+                                        , string.Format( "Transaction Id:{0}", txn.Transaction.Id )
+                                        , typeof( FinancialTransaction )
+                                        , txn.Transaction.Id
+                                        , true
+                                        , CurrentPersonAliasId
+                                        );
+
+                                    changes = string.Format( "Added <span class='field-name'>{0}</span> value of <span class='field-name'>{1}</span>. (Updated From Transaction List #{2}#)", account.PublicName, txn.Transaction.TotalAmount, account.Id );
+
+                                    HistoryService.SaveChanges(
+                                            rockContext
+                                            , typeof( FinancialBatch )
+                                            , Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid()
+                                            , txn.Transaction.BatchId.Value
+                                            , new List<string> { changes }
+                                            , string.Format( "Transaction Id:{0}", txn.Transaction.Id )
+                                            , typeof( FinancialTransaction )
+                                            , txn.Transaction.Id
+                                            , true
+                                            , CurrentPersonAliasId
+                                            );
                                     idsToUpdate.Add( txn.Transaction.Id.ToString() );
                                 }
 
@@ -1007,32 +1059,29 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                             }
                         }
 
-                        if ( accountId != 0 )
+                        string joined = string.Join( ",", idsToUpdate );
+                        var person = new PersonAliasService( rockContext ).Get( ppReassign.PersonAliasId.Value );
+
+                        /* BEMA.FE2.Start */
+                        Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                        if ( workflowTypeGuid.HasValue )
                         {
+                            var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
 
-                            string joined = string.Join( ",", idsToUpdate );
-                            var person = new PersonAliasService( rockContext ).Get( ppReassign.PersonAliasId.Value );
-
-                            /* BEMA.FE2.Start */
-                            Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                            if ( workflowTypeGuid.HasValue )
+                            if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                             {
-                                var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-
-                                if ( workflowType != null && ( workflowType.IsActive ?? true ) )
-                                {
-                                    var workflow = Rock.Model.Workflow.Activate( workflowType, "Transaction Change - " + person.Person.FullName );
-                                    workflow.SetAttributeValue( "ContributionID", joined );
-                                    workflow.SetAttributeValue( "Person", person.Person.PrimaryAlias.Guid );
-                                    workflow.SetAttributeValue( "InitiatorPerson", CurrentPerson.PrimaryAlias.Guid );
+                                var workflow = Rock.Model.Workflow.Activate( workflowType, "Transaction Change - " + person.Person.FullName );
+                                workflow.SetAttributeValue( "ContributionID", joined );
+                                workflow.SetAttributeValue( "Person", person.Person.PrimaryAlias.Guid );
+                                workflow.SetAttributeValue( "InitiatorPerson", CurrentPerson.PrimaryAlias.Guid );
 
 
-                                    List<string> workflowErrors;
-                                    new WorkflowService( rockContext ).Process( workflow, out workflowErrors );
-                                }
+                                List<string> workflowErrors;
+                                new WorkflowService( rockContext ).Process( workflow, out workflowErrors );
                             }
-                            /* BEMA.FE2.End */
                         }
+                        /* BEMA.FE2.End */
+
                         /* BEMA.FE1.End */
 
                         string acctAction = rblReassignBankAccounts.SelectedValue;
@@ -1088,7 +1137,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                                 }
 
                                 var accountChanges = new History.HistoryChangeList();
-                                accountChanges.AddChange(History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
+                                accountChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
 
 
                                 HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), personId.Value,
