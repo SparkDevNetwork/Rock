@@ -2804,7 +2804,7 @@
 REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable
 if "$(ConfigurationName)" == "Debug" (
  echo "setting VBCSCOMPILER_TTL to 10 seconds"
-"$(SolutionDir)Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
+ call "$(SolutionDir)Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
 )
 
 REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
