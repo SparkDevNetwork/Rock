@@ -443,6 +443,13 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMerge_Click( object sender, EventArgs e )
         {
+            /*
+            01/02/2020 - SK
+            Similar code is used in ExpungePerson in PersonService class
+            https://github.com/SparkDevNetwork/Rock/blob/develop/Rock/Model/CodeGenerated/PersonService.cs
+            and might also to consider for any future changes made to current method.
+            */
+
             if ( MergeData.People.Count < 2 )
             {
                 nbPeople.Visible = true;

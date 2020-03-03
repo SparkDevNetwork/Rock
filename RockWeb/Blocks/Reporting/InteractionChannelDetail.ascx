@@ -53,6 +53,22 @@
                             <Rock:NumberBox ID="nbRetentionDuration" runat="server" Label="Retention Duration" NumberType="Integer" />
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbChannelCustom1Label" runat="server"
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="ChannelCustom1Label" />
+                        </div>
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbChannelCustom2Label" runat="server"
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="ChannelCustom2Label" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbChannelCustomIndexed1Label" runat="server"
+                                SourceTypeName="Rock.Model.InteractionChannel, Rock" PropertyName="ChannelCustomIndexed1Label" />
+                        </div>
+                    </div>
 
                     <Rock:CodeEditor ID="ceChannelList" Visible="True" runat="server" Label="Channel List Lava Template" EditorMode="Lava" EditorHeight="200"
                         Help="This Lava template will be used by the Interactions block when viewing channel list." />

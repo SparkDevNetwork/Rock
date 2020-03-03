@@ -38,6 +38,15 @@ namespace Rock.Client
         public string Campaign { get; set; }
 
         /// <summary />
+        public string ChannelCustom1 { get; set; }
+
+        /// <summary />
+        public string ChannelCustom2 { get; set; }
+
+        /// <summary />
+        public string ChannelCustomIndexed1 { get; set; }
+
+        /// <summary />
         public string Content { get; set; }
 
         /// <summary />
@@ -62,10 +71,16 @@ namespace Rock.Client
         public DateTime? InteractionEndDateTime { get; set; }
 
         /// <summary />
+        public double? InteractionLength { get; set; }
+
+        /// <summary />
         public int? InteractionSessionId { get; set; }
 
         /// <summary />
         public string InteractionSummary { get; set; }
+
+        /// <summary />
+        public double? InteractionTimeToServe { get; set; }
 
         /// <summary />
         public string Medium { get; set; }
@@ -130,6 +145,9 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Campaign = source.Campaign;
+            this.ChannelCustom1 = source.ChannelCustom1;
+            this.ChannelCustom2 = source.ChannelCustom2;
+            this.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
             this.Content = source.Content;
             this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
@@ -138,8 +156,10 @@ namespace Rock.Client
             this.InteractionData = source.InteractionData;
             this.InteractionDateTime = source.InteractionDateTime;
             this.InteractionEndDateTime = source.InteractionEndDateTime;
+            this.InteractionLength = source.InteractionLength;
             this.InteractionSessionId = source.InteractionSessionId;
             this.InteractionSummary = source.InteractionSummary;
+            this.InteractionTimeToServe = source.InteractionTimeToServe;
             this.Medium = source.Medium;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Operation = source.Operation;

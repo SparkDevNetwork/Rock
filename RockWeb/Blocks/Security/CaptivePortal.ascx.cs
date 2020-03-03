@@ -447,10 +447,8 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnConnect_Click( object sender, EventArgs e )
         {
-            if ( cbAcceptTAC.Visible && cbAcceptTAC.Checked == false )
+            if ( !ValidateForm() )
             {
-                nbAlert.Text = string.Format( "You must check \"{0}\" to continue.", GetAttributeValue( "AcceptanceLabel" ) );
-                nbAlert.Visible = true;
                 return;
             }
 
@@ -582,25 +580,32 @@ namespace RockWeb.Blocks.Security
         /// <returns>If any control is visible then true, else false.</returns>
         protected bool ShowControls( bool isEnabled = true )
         {
-            tbFirstName.Visible = GetAttributeValue( "ShowName" ).AsBoolean();
-            tbFirstName.Required = GetAttributeValue( "ShowName" ).AsBoolean();
+            bool showName = GetAttributeValue( "ShowName" ).AsBoolean();
+            tbFirstName.Visible = showName;
+            tbFirstName.Required = showName;
             tbFirstName.Enabled = isEnabled;
 
-            tbLastName.Visible = GetAttributeValue( "ShowName" ).AsBoolean();
-            tbLastName.Required = GetAttributeValue( "ShowName" ).AsBoolean();
+            tbLastName.Visible = showName;
+            tbLastName.Required = showName;
             tbLastName.Enabled = isEnabled;
 
-            tbMobilePhone.Visible = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
-            tbMobilePhone.Required = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
+            bool showMobilePhone = GetAttributeValue( "ShowMobilePhone" ).AsBoolean();
+            tbMobilePhone.Visible = showMobilePhone;
+            tbMobilePhone.Required = showMobilePhone;
             tbMobilePhone.Enabled = isEnabled;
 
-            tbEmail.Visible = GetAttributeValue( "ShowEmail" ).AsBoolean();
-            tbEmail.Required = GetAttributeValue( "ShowEmail" ).AsBoolean();
+            bool showEmail = GetAttributeValue( "ShowEmail" ).AsBoolean();
+            tbEmail.Visible = showEmail;
+            tbEmail.Required = showEmail;
             tbEmail.Enabled = isEnabled;
 
-            cbAcceptTAC.Visible = GetAttributeValue( "ShowAccept" ).AsBoolean();
-            cbAcceptTAC.Text = GetAttributeValue( "AcceptanceLabel" );
-            cbAcceptTAC.Enabled = isEnabled;
+            string acceptanceLabel = GetAttributeValue( "AcceptanceLabel" );
+            bool showAccept = GetAttributeValue( "ShowAccept" ).AsBoolean();
+            cblAcceptTAC.Visible = showAccept;
+            cblAcceptTAC.Required = showAccept;
+            cblAcceptTAC.Enabled = isEnabled;
+            cblAcceptTAC.Items.Add( acceptanceLabel );
+            cblAcceptTAC.RequiredErrorMessage = string.Format( @"You must check ""{0}"" to continue", acceptanceLabel );
 
             btnConnect.Text = isEnabled ? GetAttributeValue( "ButtonText" ) : "Unable to connect to Wi-Fi due to errors";
             btnConnect.Enabled = isEnabled;
@@ -610,7 +615,7 @@ namespace RockWeb.Blocks.Security
                 litLegalNotice.Text = GetAttributeValue( "LegalNote" ).ResolveMergeFields( Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage ) );
             }
 
-            if ( tbFirstName.Visible || tbLastName.Visible || tbMobilePhone.Visible || tbEmail.Visible || cbAcceptTAC.Visible || litLegalNotice.Visible )
+            if ( tbFirstName.Visible || tbLastName.Visible || tbMobilePhone.Visible || tbEmail.Visible || cblAcceptTAC.Visible || litLegalNotice.Visible )
             {
                 return true;
             }
@@ -651,6 +656,52 @@ namespace RockWeb.Blocks.Security
 
                 rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Validates that the visible form fields are not blank since all visible fields are required.
+        /// Client side validation does handle this but some browsers are not running the js for validation. So this server side validation
+        /// will handle the required fields in those cases.
+        /// </summary>
+        /// <returns></returns>
+        private bool ValidateForm()
+        {
+            bool isValid = true;
+
+            if ( tbFirstName.Visible )
+            {
+                if ( tbFirstName.Text.IsNullOrWhiteSpace() )
+                {
+                    tbFirstName.ShowErrorMessage( "First Name is required" );
+                    isValid = false;
+                }
+
+                if ( tbLastName.Text.IsNullOrWhiteSpace() )
+                {
+                    tbLastName.ShowErrorMessage( "Last Name is required" );
+                    isValid = false;
+                }
+            }
+
+            if ( tbMobilePhone.Visible && tbMobilePhone.Text.IsNullOrWhiteSpace() )
+            {
+                tbMobilePhone.ShowErrorMessage( "Mobile Number is required" );
+                isValid = false;
+            }
+
+            if ( tbEmail.Visible && tbEmail.Text.IsNullOrWhiteSpace() )
+            {
+                tbEmail.ShowErrorMessage( "Email Address is required" );
+                isValid = false;
+            }
+
+            if ( cblAcceptTAC.Visible && cblAcceptTAC.SelectedItem == null )
+            {
+                cblAcceptTAC.ShowErrorMessage( string.Format( @"You must check ""{0}"" to continue", GetAttributeValue( "AcceptanceLabel" ) ) );
+                isValid = false;
+            }
+
+            return isValid;
         }
     }
 }

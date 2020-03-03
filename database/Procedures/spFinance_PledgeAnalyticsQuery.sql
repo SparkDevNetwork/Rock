@@ -63,10 +63,10 @@ BEGIN
 
 		SET @Sql = @Sql + '
 		AND ( 
-			( [StartDate] BETWEEN ''' + CAST( @StartDate as varchar ) + ''' AND ''' + CAST( @EndDate as varchar ) + ''') OR
-			( [EndDate] BETWEEN ''' + CAST( @StartDate as varchar ) + ''' AND ''' + CAST( @EndDate as varchar ) + ''' ) OR
-			( [StartDate] <= ''' + CAST( @StartDate as varchar ) + ''' AND [EndDate] >= ''' + CAST( @StartDate as varchar ) + ''') OR
-			( [StartDate] <= ''' + CAST( @EndDate as varchar ) + ''' AND [EndDate] >= ''' + CAST( @EndDate as varchar ) + ''')
+			( [StartDate] >= ''' + CAST( @StartDate as varchar ) + ''' AND [StartDate] < ''' + CAST( @EndDate as varchar ) + ''') OR
+			( [EndDate] >= ''' + CAST( @StartDate as varchar ) + ''' AND [EndDate] < ''' + CAST( @EndDate as varchar ) + ''') OR
+			( ''' + CAST( @StartDate as varchar ) + ''' >= [StartDate] AND ''' + CAST( @StartDate as varchar ) + ''' < [EndDate]) OR
+			( ''' + CAST( @EndDate as varchar ) + ''' > [StartDate] AND ''' + CAST( @EndDate as varchar ) + ''' < [EndDate])
 		)'
 
 	SET @Sql = @Sql + '

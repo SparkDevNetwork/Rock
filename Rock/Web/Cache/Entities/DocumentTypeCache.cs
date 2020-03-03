@@ -208,6 +208,37 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the by entity.
+        /// </summary>
+        /// <param name="entityTypeid">The entity typeid.</param>
+        /// <param name="includeNonSelectable">if set to <c>true</c> [include non selectable].</param>
+        /// <returns></returns>
+        public static List<DocumentTypeCache> GetByEntity( int? entityTypeid, bool includeNonSelectable = false )
+        {
+            var allEntityDocumentTypes = EntityDocumentTypesCache.Get();
+
+            if ( allEntityDocumentTypes == null )
+                return new List<DocumentTypeCache>();
+
+            var matchingDocumentTypeIds = allEntityDocumentTypes.EntityDocumentTypes
+                .Where( a => a.EntityTypeId.Equals( entityTypeid ) )
+                .SelectMany( a => a.DocumentTypesIds )
+                .ToList();
+
+            var documentTypes = new List<DocumentTypeCache>();
+            foreach ( var documentTypeId in matchingDocumentTypeIds )
+            {
+                var documentType = Get( documentTypeId );
+                if ( documentType != null && ( includeNonSelectable || documentType.UserSelectable ) )
+                {
+                    documentTypes.Add( documentType );
+                }
+            }
+
+            return documentTypes;
+        }
+
+        /// <summary>
         /// Flushes the entity document types.
         /// </summary>
         public static void RemoveEntityDocumentTypes()

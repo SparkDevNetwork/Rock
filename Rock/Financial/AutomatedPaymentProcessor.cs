@@ -787,6 +787,8 @@ namespace Rock.Financial
             financialPaymentDetail.ExpirationYearEncrypted = _payment.ExpirationYearEncrypted;
             financialPaymentDetail.CreatedByPersonAliasId = _currentPersonAliasId;
             financialPaymentDetail.ForeignKey = _payment.ForeignKey;
+            financialPaymentDetail.GatewayPersonIdentifier = _financialPersonSavedAccount?.GatewayPersonIdentifier;
+            financialPaymentDetail.FinancialPersonSavedAccountId = _financialPersonSavedAccount?.Id;
 
             if ( _payment.CurrencyTypeValue != null )
             {

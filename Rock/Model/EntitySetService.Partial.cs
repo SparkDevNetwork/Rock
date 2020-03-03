@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-
+using System.Threading.Tasks;
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -37,7 +39,7 @@ namespace Rock.Model
         public IQueryable<IEntity> GetEntityQuery( int entitySetId )
         {
             var entitySet = this.Get( entitySetId );
-            if ( !entitySet.EntityTypeId.HasValue )
+            if ( entitySet?.EntityTypeId == null )
             {
                 // the EntitySet Items are not IEntity items
                 return null;
@@ -123,6 +125,20 @@ namespace Rock.Model
                 EntitySetId = a.EntitySetId,
                 Item = a.Item
             } );
+        }
+
+        /// <summary>
+        /// Launch a workflow for each item in the set using a Rock transaction.
+        /// </summary>
+        /// <param name="entitySetId">The entity set identifier.</param>
+        /// <param name="workflowTypeId">The workflow type identifier.</param>
+        public void LaunchWorkflows( int entitySetId, int workflowTypeId )
+        {
+            var query = GetEntityQuery( entitySetId ).AsNoTracking();
+            var entities = query.ToList();
+            var launchWorkflowDetails = entities.Select( e => new LaunchWorkflowDetails( e ) ).ToList();
+
+            new LaunchWorkflowsTransaction( workflowTypeId, launchWorkflowDetails ).Enqueue();
         }
 
         /// <summary>

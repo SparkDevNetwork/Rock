@@ -1307,6 +1307,7 @@ namespace RockWeb.Blocks.Connection
                     case ConnectionWorkflowTriggerType.RequestConnected:
                     case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                     case ConnectionWorkflowTriggerType.Manual:
+                    case ConnectionWorkflowTriggerType.FutureFollowupDateReached:
                         {
                             ddlPrimaryQualifier.Visible = false;
                             ddlPrimaryQualifier.Items.Clear();

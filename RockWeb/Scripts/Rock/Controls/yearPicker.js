@@ -19,7 +19,8 @@
                     autoclose: true,
                     startView: 2,
                     minViewMode: 2,
-                    startDate: earliestDate
+                    startDate: earliestDate,
+                    zIndexOffset: 1050
                 });
 
             }

@@ -203,6 +203,8 @@ namespace Rock.MyWell
                     payment.CurrencyTypeValue = DefinedValueCache.Get( paymentDetail.CurrencyTypeValueId.Value );
                 }
 
+                payment.GatewayPersonIdentifier = paymentDetail.GatewayPersonIdentifier;
+
                 return payment;
             }
             catch ( Exception e )
@@ -300,6 +302,21 @@ namespace Rock.MyWell
         /// The configure URL.
         /// </value>
         public string ConfigureURL => "https://www.mywell.org/get-started/";
+
+        /// <summary>
+        /// Gets the hosted gateway modes that this gateway has configured/supports. Use this to determine which mode to use (in cases where both are supported, like Scheduled Payments lists ).
+        /// If the Gateway supports both hosted and unhosted (and has Hosted mode configured), hosted mode should be preferred.
+        /// </summary>
+        /// <param name="financialGateway"></param>
+        /// <returns></returns>
+        /// <value>
+        /// The hosted gateway modes that this gateway supports
+        /// </value>
+        public HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway )
+        {
+            // MyWellGateway only supports Hosted mode
+            return new HostedGatewayMode[1] { HostedGatewayMode.Hosted };
+        }
 
         /// <summary>
         /// Creates the customer account using a token received from the HostedPaymentInfoControl <seealso cref="M:Rock.Financial.IHostedGatewayComponent.GetHostedPaymentInfoControl(Rock.Model.FinancialGateway,System.Boolean,System.String)" />
@@ -1012,6 +1029,8 @@ namespace Rock.MyWell
 
             var creditCardResponse = paymentMethodResponse?.Card;
             var achResponse = paymentMethodResponse?.ACH;
+            financialPaymentDetail.GatewayPersonIdentifier = ( paymentInfo as ReferencePaymentInfo )?.GatewayPersonIdentifier;
+            financialPaymentDetail.FinancialPersonSavedAccountId = ( paymentInfo as ReferencePaymentInfo )?.FinancialPersonSavedAccountId;
 
             if ( creditCardResponse != null )
             {
@@ -1070,7 +1089,6 @@ namespace Rock.MyWell
             // NOTE: If the transaction isn't settled yet, this will return an error. But that's OK
             TransactionVoidRefundResponse response = this.PostRefund( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), transactionId, amount );
 
-
             if ( response.IsSuccessStatus() )
             {
                 var transaction = new FinancialTransaction();
@@ -1123,12 +1141,12 @@ namespace Rock.MyWell
 
                 if ( SetSubscriptionBillingPlanParameters( subscriptionParameters, schedule.TransactionFrequencyValue.Guid, schedule.StartDate, out errorMessage ) )
                 {
-
                     var subscriptionResult = this.CreateSubscription( this.GetGatewayUrl( financialGateway ), this.GetPrivateApiKey( financialGateway ), subscriptionParameters );
                     subscriptionId = subscriptionResult.Data?.Id;
 
                     if ( subscriptionId.IsNullOrWhiteSpace() )
                     {
+                        // error from CreateSubscription
                         errorMessage = subscriptionResult.Message;
                         return null;
                     }
@@ -1212,10 +1230,14 @@ namespace Rock.MyWell
 
             SubscriptionRequestParameters subscriptionParameters = new SubscriptionRequestParameters
             {
-                Customer = new SubscriptionCustomer { Id = referencedPaymentInfo.GatewayPersonIdentifier },
                 Duration = 0,
                 Amount = referencedPaymentInfo.Amount
             };
+
+            if ( referencedPaymentInfo.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+            {
+                subscriptionParameters.Customer = new SubscriptionCustomer { Id = referencedPaymentInfo.GatewayPersonIdentifier };
+            }
 
             var transactionFrequencyGuid = DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId ).Guid;
 
@@ -1229,6 +1251,14 @@ namespace Rock.MyWell
 
                 gatewayUrl = this.GetGatewayUrl( financialGateway );
                 apiKey = this.GetPrivateApiKey( financialGateway );
+
+                if ( subscriptionParameters.Customer?.Id == null || referencedPaymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+                {
+                    // if GatewayPersonIdentifier wasn't known to Rock, get the CustomerId from MyWellGateway
+                    var subscription = GetSubscription( gatewayUrl, apiKey, subscriptionId );
+                    referencedPaymentInfo.GatewayPersonIdentifier = subscription?.Data.Customer?.Id;
+                    subscriptionParameters.Customer = new SubscriptionCustomer { Id = referencedPaymentInfo.GatewayPersonIdentifier };
+                }
 
                 var subscriptionResult = this.UpdateSubscription( gatewayUrl, apiKey, subscriptionId, subscriptionParameters );
                 if ( !subscriptionResult.IsSuccessStatus() )
@@ -1352,6 +1382,7 @@ namespace Rock.MyWell
                 if ( subscriptionInfo != null )
                 {
                     scheduledTransaction.NextPaymentDate = subscriptionInfo.NextBillDateUTC?.Date;
+                    scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier = subscriptionInfo.Customer?.Id;
                 }
 
                 scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
@@ -1408,11 +1439,8 @@ namespace Rock.MyWell
                 return paymentList;
             }
 
-
             foreach ( var transaction in searchResult.Data )
             {
-                var customerId = transaction.CustomerId;
-
                 var gatewayScheduleId = transaction.SubscriptionId;
                 var payment = new Payment
                 {
@@ -1422,6 +1450,7 @@ namespace Rock.MyWell
                     // We want datetimes that are stored in Rock to be in LocalTime, to convert from UTC to Local
                     TransactionDateTime = transaction.CreatedDateTimeUTC.Value.ToLocalTime(),
                     GatewayScheduleId = gatewayScheduleId,
+                    GatewayPersonIdentifier = transaction.CustomerId,
 
                     Status = transaction.Status,
                     IsFailure = transaction.IsFailure(),
@@ -1463,10 +1492,8 @@ namespace Rock.MyWell
         /// <returns></returns>
         public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
-            // MyWell Gateway uses either a MyWellGateway CustomerId for this, which is stored in FinancialPersonSavedAccount.GatewayPersonIdentifier, not a previously processed transaction
-            // Note: GatewayPersonIdentifer comes from CreateCustomerAccount
             errorMessage = string.Empty;
-            return string.Empty;
+            return transaction?.FinancialPaymentDetail?.GatewayPersonIdentifier;
         }
 
         /// <summary>
@@ -1477,10 +1504,8 @@ namespace Rock.MyWell
         /// <returns></returns>
         public override string GetReferenceNumber( FinancialScheduledTransaction scheduledTransaction, out string errorMessage )
         {
-            // we can figure out the customerId from scheduledTransaction.TransactionCode since
-            // that is what our implementation of MyWellGateway stores customerId (see AddScheduledPayment)
-            errorMessage = null;
-            return scheduledTransaction.TransactionCode;
+            errorMessage = string.Empty;
+            return scheduledTransaction?.FinancialPaymentDetail?.GatewayPersonIdentifier ?? scheduledTransaction.TransactionCode;
         }
 
         #endregion GatewayComponent implementation
@@ -1516,7 +1541,7 @@ namespace Rock.MyWell
                     var billingAddressId = customer.Data.BillingAddress.Id;
 
                     var customerBillingAddress = customer.Data.BillingAddress;
-                    customerBillingAddress.Email = "";
+                    customerBillingAddress.Email = string.Empty;
 
                     var restClient = new RestClient( gatewayUrl );
                     RestRequest restRequest = new RestRequest( $"api/customer/{customerId}/address/{billingAddressId}", Method.POST );
@@ -1537,10 +1562,10 @@ namespace Rock.MyWell
 
                 if ( progressTotal > 0 )
                 {
-                    var progressPercent = Math.Round( decimal.Divide(( progressCount * 100 ), progressTotal), 2 );
+                    var progressPercent = Math.Round( decimal.Divide( progressCount * 100, progressTotal ), 2 );
                     onProgress?.Invoke( this, string.Format( $"Updated {emailRemoveCount} emails. {progressPercent}%" ) );
                 }
-            };
+            }
 
             return emailRemoveCount;
         }

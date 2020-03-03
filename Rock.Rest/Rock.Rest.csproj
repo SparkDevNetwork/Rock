@@ -154,6 +154,7 @@
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
     <Compile Include="Controllers\CodeGenerated\SmsActionsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SmsPipelinesController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RelatedEntitiesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />

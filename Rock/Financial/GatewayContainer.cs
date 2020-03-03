@@ -17,8 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-
+using Rock.Data;
 using Rock.Extension;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -42,6 +43,26 @@ namespace Rock.Financial
         public static GatewayContainer Instance
         {
             get { return instance.Value; }
+        }
+
+        /// <summary>
+        /// Forces a reloading of all the components
+        /// </summary>
+        public override void Refresh()
+        {
+            base.Refresh();
+
+            // Create any attributes that need to be created
+            int financialGatewayEntityTypeId = EntityTypeCache.Get( typeof( Model.FinancialGateway ) ).Id;
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( var gatewayComponent in this.Components )
+                {
+                    Type gatewayComponentType = gatewayComponent.Value.Value.GetType();
+                    int gatewayComponentEntityTypeId = EntityTypeCache.Get( gatewayComponentType ).Id;
+                    Rock.Attribute.Helper.UpdateAttributes( gatewayComponentType, financialGatewayEntityTypeId, "EntityTypeId", gatewayComponentEntityTypeId.ToString(), rockContext );
+                }
+            }
         }
 
         /// <summary>
