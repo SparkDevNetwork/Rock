@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <%-- Prompt for RegistrationTemplatePlacement. This will only be visible if using this as a standalone block (if RegistrationTemplatePlacementId isn't specified) --%>
-        <Rock:RockControlWrapper ID="rcwSelectRegistrationTemplatePlacement" runat="server" Label="Select Placement Type" Visible="false">
+        <Rock:RockControlWrapper ID="rcwSelectRegistrationTemplatePlacement" runat="server" Visible="false">
             <ul class="nav nav-tabs margin-b-md">
                 <asp:Repeater ID="rptSelectRegistrationTemplatePlacement" runat="server" OnItemDataBound="rptSelectRegistrationTemplatePlacement_ItemDataBound">
                     <ItemTemplate>

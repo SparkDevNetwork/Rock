@@ -119,6 +119,33 @@ namespace Rock.Model
         [DataMember]
         public string QueryHint { get; set; }
 
+        /// <summary>
+        /// Gets or sets the last run date time.
+        /// </summary>
+        /// <value>
+        /// The last run date time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// </summary>
+        /// <value>
+        /// The persisted last run duration in mulliseconds.
+        /// </value>
+        [DataMember]
+        public int? RunCount { get; set; }
+
+        /// <summary>
+        /// The amount of time in milliseconds that it took to run the <see cref="DataView"/>
+        /// </summary>
+        /// <value>
+        /// The time to run in ms.
+        /// </value>
+        [DataMember]
+        public int? TimeToRunMS { get; set; }
+
         #endregion
 
         #region Virtual Properties

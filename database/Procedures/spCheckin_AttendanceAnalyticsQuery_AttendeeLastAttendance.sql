@@ -53,11 +53,11 @@ BEGIN
 	DECLARE @GroupTbl TABLE ( [Id] int )
 	INSERT INTO @GroupTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupIds,'') )
 
-	SELECT B.[PersonId], B.[CampusId], B.[GroupId], B.[GroupName], B.[ScheduleId], B.[StartDateTime], B.[LocationId], B.[RoleName], B.[LocationName] 
+	SELECT B.[PersonId], B.[CampusId], B.[CampusName], B.[GroupId], B.[GroupName], B.[ScheduleId], B.[StartDateTime], B.[LocationId], B.[RoleName], B.[LocationName] 
 	FROM
 	(
 		SELECT PA.[PersonId], ROW_NUMBER() OVER (PARTITION BY PA.[PersonId] ORDER BY A.[StartDateTime] DESC) AS PersonRowNumber,
-			A.[CampusId], O.[GroupId], G.[Name] AS [GroupName], O.[ScheduleId], A.[StartDateTime], O.[LocationId], R.[RoleName], L.[Name] AS [LocationName]
+			A.[CampusId], CA.[Name] AS [CampusName], O.[GroupId], G.[Name] AS [GroupName], O.[ScheduleId], A.[StartDateTime], O.[LocationId], R.[RoleName], L.[Name] AS [LocationName]
 		FROM [Attendance] A
 		INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
 		INNER JOIN [PersonAlias] PA ON PA.[Id] = A.[PersonAliasId]
@@ -77,6 +77,7 @@ BEGIN
 			ON L.[Id] = O.[LocationId]
 		LEFT OUTER JOIN @CampusTbl [C] ON [C].[id] = [A].[CampusId]
 		LEFT OUTER JOIN @ScheduleTbl [S] ON [S].[id] = [O].[ScheduleId]
+		LEFT OUTER JOIN [Campus] [CA] ON [A].[CampusId] = [CA].[Id]
 		WHERE o.[SundayDate] BETWEEN @startDateSundayDate AND @endDateSundayDate
 		AND [DidAttend] = 1
 		AND ( 

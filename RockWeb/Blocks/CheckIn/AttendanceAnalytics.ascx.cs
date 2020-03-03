@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.CheckIn
             noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
             noCampusListItem.Value = "null";
             clbCampuses.Items.Add( noCampusListItem );
-            foreach ( var campus in CampusCache.All( includeInactiveCampuses ).OrderBy( a => a.Name ) )
+            foreach ( var campus in CampusCache.All( includeInactiveCampuses ) )
             {
                 var listItem = new ListItem();
                 listItem.Text = campus.Name;
@@ -1546,6 +1546,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -1646,6 +1647,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -2584,6 +2586,8 @@ function(item) {
         public class PersonLastAttendance
         {
             public int? CampusId { get; set; }
+
+            public string CampusName { get; set; }
 
             public int? GroupId { get; set; }
 

@@ -90,8 +90,11 @@
                             <div class="navigation actions">
                                 <asp:LinkButton ID="btnGetPaymentInfoBack" runat="server" CssClass="btn btn-default" Text="Back" OnClick="btnGetPaymentInfoBack_Click" />
 
-                                <%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback --%>
-                                <a id="btnGetPaymentInfoNext" runat="server" class="btn btn-primary js-submit-hostedpaymentinfo pull-right">Next</a>
+
+								<%-- NOTE: btnGetPaymentInfoNext ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
+                               		Even though this is a LinkButton, btnGetPaymentInfoNext won't autopostback  (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
+                            	--%>
+                                <Rock:BootstrapButton ID="btnGetPaymentInfoNext" runat="server" Text="Next" CssClass="btn btn-primary js-submit-hostedpaymentinfo pull-right"  DataLoadingText="Processing..." />
                             </div>
                         </asp:Panel>
 
@@ -238,8 +241,13 @@
 
             Sys.Application.add_load(function () {
 
-                $('.js-submit-hostedpaymentinfo').off().on('click', function () {
+                $('.js-submit-hostedpaymentinfo').off().on('click', function (e) {
+                    // prevent the btnGetPaymentInfoNext autopostback event from firing by doing stopImmediatePropagation and returning false
+                    e.stopImmediatePropagation();
+
                     <%=HostPaymentInfoSubmitScript%>
+
+                    return false;
                 });
 
                 if ($('.js-save-account').length > 0) {

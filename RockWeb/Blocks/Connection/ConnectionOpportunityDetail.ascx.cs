@@ -348,7 +348,6 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-                ConnectionRequestWorkflowService connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
                 ConnectionOpportunityConnectorGroupService connectionOpportunityConnectorGroupsService = new ConnectionOpportunityConnectorGroupService( rockContext );
                 ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
                 ConnectionOpportunityGroupConfigService connectionOpportunityGroupConfigService = new ConnectionOpportunityGroupConfigService( rockContext );
@@ -392,12 +391,6 @@ namespace RockWeb.Blocks.Connection
                 var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
                 foreach ( var connectionWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
-                    foreach( var requestWorkflow in connectionRequestWorkflowService.Queryable()
-                        .Where( w => w.ConnectionWorkflowId == connectionWorkflow.Id ) )
-                    {
-                        connectionRequestWorkflowService.Delete( requestWorkflow );
-                    }
-
                     connectionOpportunity.ConnectionWorkflows.Remove( connectionWorkflow );
                     connectionWorkflowService.Delete( connectionWorkflow );
                 }
@@ -1513,6 +1506,7 @@ namespace RockWeb.Blocks.Connection
                 case ConnectionWorkflowTriggerType.RequestTransferred:
                 case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                 case ConnectionWorkflowTriggerType.Manual:
+                case ConnectionWorkflowTriggerType.FutureFollowupDateReached:
                     {
                         ddlPrimaryQualifier.Visible = false;
                         ddlPrimaryQualifier.Items.Clear();

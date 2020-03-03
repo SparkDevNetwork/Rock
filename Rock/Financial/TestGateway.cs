@@ -276,7 +276,8 @@ namespace Rock.Financial
                     CreditCardTypeValue = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE.AsGuid() ).DefinedValues.OrderBy( a => Guid.NewGuid() ).First(),
                     CurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
                     TransactionCode = Guid.NewGuid().ToString("N"),
-                    GatewayScheduleId = scheduledTransaction.GatewayScheduleId
+                    GatewayScheduleId = scheduledTransaction.GatewayScheduleId,
+                    GatewayPersonIdentifier = scheduledTransaction?.FinancialPaymentDetail?.GatewayPersonIdentifier
                 };
 
                 fakePayments.Add( fakePayment );

@@ -59,10 +59,16 @@ namespace Rock.Client
         public string ExpirationYearEncrypted { get; set; }
 
         /// <summary />
+        public int? FinancialPersonSavedAccountId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public string GatewayPersonIdentifier { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -116,8 +122,10 @@ namespace Rock.Client
             this.ExpirationMonthEncrypted = source.ExpirationMonthEncrypted;
             this.ExpirationYear = source.ExpirationYear;
             this.ExpirationYearEncrypted = source.ExpirationYearEncrypted;
+            this.FinancialPersonSavedAccountId = source.FinancialPersonSavedAccountId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.GatewayPersonIdentifier = source.GatewayPersonIdentifier;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NameOnCard = source.NameOnCard;
             this.NameOnCardEncrypted = source.NameOnCardEncrypted;
@@ -144,6 +152,9 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue CurrencyTypeValue { get; set; }
+
+        /// <summary />
+        public FinancialPersonSavedAccount FinancialPersonSavedAccount { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

@@ -285,8 +285,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The LiquidSelect DataSelect field for Reporting
         /// </summary>
-        public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";        
-        
+        public const string REPORTING_DATASELECT_LIQUIDSELECT = "C130DC52-CA31-45EE-A4F2-6C53A838EF3D";
+
         /// <summary>
         /// The guid for the Rock.Model.Schedule entity
         /// </summary>
@@ -346,5 +346,11 @@ namespace Rock.SystemGuid
         /// The MyWell financial gateway
         /// </summary>
         public const string MYWELL_FINANCIAL_GATEWAY = "E81ED723-E807-4BDE-ADF1-AB9686241637";
+
+
+        /// <summary>
+        /// The SMS Conversation Action
+        /// </summary>
+        public const string SMS_ACTION_CONVERSATION = "E808A9FD-06A7-4FB2-AD01-C826A53B0ABB";
     }
 }

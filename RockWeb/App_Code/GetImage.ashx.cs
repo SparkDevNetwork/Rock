@@ -147,11 +147,21 @@ namespace RockWeb
                         {
                             using ( var resizedStream = GetResized( context.Request.QueryString, fileContents ) )
                             {
+                                if ( resizedStream.CanSeek )
+                                {
+                                    resizedStream.Seek( 0, SeekOrigin.Begin );
+                                }
+
                                 resizedStream.CopyTo( context.Response.OutputStream );
                             }
                         }
                         else
                         {
+                            if ( fileContents.CanSeek )
+                            {
+                                fileContents.Seek( 0, SeekOrigin.Begin );
+                            }
+
                             fileContents.CopyTo( context.Response.OutputStream );
                         }
 
