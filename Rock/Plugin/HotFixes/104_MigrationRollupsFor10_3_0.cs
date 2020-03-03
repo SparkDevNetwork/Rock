@@ -33,6 +33,7 @@ namespace Rock.Plugin.HotFixes
             AttendanceAnalyticsSortAttendeesByCampus();
             UpdateSampleDataUrl();
             RemoveGlobalAttributeRouteDomainMatching();
+            Issue3478();
         }
 
         /// <summary>
@@ -199,6 +200,14 @@ END" );
             // This was reverted by MP https://github.com/sparkdevnetwork/rock/commit/7d5461970d2296170e57e676477dafd322b308c6 but could have been inserted from pre-alpha-release.
             // Remove the reverted Global Attribute : Enable Route Domain Matching
             RockMigrationHelper.DeleteAttribute( "0B7DD63E-AD00-445E-8E9D-047956FEAFB3" );    // Global Attribute : Enable Route Domain Matching
+        }
+
+        /// <summary>
+        /// MB: [Migration] Fixes Issue 3478
+        /// </summary>
+        private void Issue3478()
+        {
+            Sql( HotFixMigrationResource._104_MigrationRollupsFor10_3_0_spFinance_PledgeAnalyticsQuery );
         }
 
     }
