@@ -113,6 +113,10 @@
     <Compile Include="Migrations\202003021715471_FinancialPaymentDetailGatewayPersonId.Designer.cs">
       <DependentUpon>202003021715471_FinancialPaymentDetailGatewayPersonId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003031854249_Rollup_0303.cs" />
+    <Compile Include="Migrations\202003031854249_Rollup_0303.Designer.cs">
+      <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1134,6 +1138,9 @@
     <EmbeddedResource Include="Migrations\202003021715471_FinancialPaymentDetailGatewayPersonId.resx">
       <DependentUpon>202003021715471_FinancialPaymentDetailGatewayPersonId.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003031854249_Rollup_0303.resx">
+      <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
     </EmbeddedResource>
@@ -1889,6 +1896,9 @@
     <Content Include="Migrations\202002182236274_AddCampusTeamToAllCampuses_Up.sql">
       <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql" />
+    <Content Include="Migrations\202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql" />
+    <Content Include="Migrations\202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery.sql" />
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
     </Content>
