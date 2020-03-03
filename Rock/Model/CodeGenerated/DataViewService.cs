@@ -136,10 +136,15 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IncludeDeceased = source.IncludeDeceased;
             target.IsSystem = source.IsSystem;
+            target.LastRunDateTime = source.LastRunDateTime;
             target.Name = source.Name;
             target.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
+            target.PersistedLastRunDuration = source.PersistedLastRunDuration;
             target.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
+            target.RunCount = source.RunCount;
+            target.TimeToRunMS = source.TimeToRunMS;
             target.TransformEntityTypeId = source.TransformEntityTypeId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
