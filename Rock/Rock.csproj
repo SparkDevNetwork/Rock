@@ -2700,6 +2700,9 @@
     <Content Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
       <DependentUpon>104_MigrationRollupsFor10_3_0.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0_spFinance_PledgeAnalyticsQuery.sql">
+      <DependentUpon>104_MigrationRollupsFor10_3_0.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
