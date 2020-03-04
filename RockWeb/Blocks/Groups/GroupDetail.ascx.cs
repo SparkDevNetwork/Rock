@@ -1183,14 +1183,8 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
 
                     newGroup.LoadAttributes( rockContext );
-                    if ( group.Attributes != null && group.Attributes.Any() )
-                    {
-                        foreach ( var attributeKey in group.Attributes.Select( a => a.Key ) )
-                        {
-                            string value = group.GetAttributeValue( attributeKey );
-                            newGroup.SetAttributeValue( attributeKey, value );
-                        }
-                    }
+
+                    Rock.Attribute.Helper.CopyAttributes( group, newGroup, rockContext );
 
                     newGroup.SaveAttributeValues( rockContext );
 
