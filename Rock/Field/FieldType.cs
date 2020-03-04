@@ -324,6 +324,10 @@ namespace Rock.Field
             return true;
         }
 
+        public virtual string GetCopyValue( string originalValue, RockContext rockContext )
+        {
+            return originalValue;
+        }
         #endregion
 
         #region Filter Control
