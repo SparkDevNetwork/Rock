@@ -207,6 +207,30 @@ WHERE SundayDate IS NULL
         }
 
         /// <summary>
+        /// Determines whether the given date is a max date value. This discards the time portion to accommodate dates that have dropped it.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>
+        ///   <c>true</c> if [is maximum date] [the specified date time]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsMaxDate( DateTime dateTime )
+        {
+            return dateTime.Date == DateTime.MaxValue.Date;
+        }
+
+        /// <summary>
+        /// Determines whether the given date is a min date value. This discards the time portion to accommodate dates that have dropped it.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>
+        ///   <c>true</c> if [is minimum date] [the specified date time]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsMinDate( DateTime dateTime )
+        {
+            return dateTime.Date == DateTime.MinValue.Date;
+        }
+
+        /// <summary>
         /// Converts the local date time to rock date time.
         /// Use this to convert a local datetime (for example, the datetime of a file stored on the server) to the Rock OrgTimeZone
         /// </summary>
