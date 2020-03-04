@@ -1409,7 +1409,7 @@ $(document).ready(function() {
                 bgPersistedScheduleUnit.SelectedValue = _PersistedScheduleUnit.ConvertToInt().ToString();
             }
 
-            cbPersistDataView.Checked = _PersistenceIsEnabled;
+            swPersistDataView.Checked = _PersistenceIsEnabled;
             pnlSpeedSettings.Visible = _PersistenceIsEnabled;
 
             if ( _PersistenceIsEnabled )
@@ -1426,7 +1426,7 @@ $(document).ready(function() {
         /// <returns></returns>
         private int? GetPersistedScheduleIntervalMinutes()
         {
-            bool isEnabled = cbPersistDataView.Checked;
+            bool isEnabled = swPersistDataView.Checked;
 
             if ( !isEnabled )
             {
@@ -1459,7 +1459,7 @@ $(document).ready(function() {
         {
             _PersistedScheduleUnit = bgPersistedScheduleUnit.SelectedValueAsEnum<DataViewPersistenceIntervalSpecifier>( DataViewPersistenceIntervalSpecifier.None );
             _PersistedScheduleIntervalCurrentValue = rsPersistedScheduleInterval.SelectedValue.GetValueOrDefault( 12 );
-            _PersistenceIsEnabled = cbPersistDataView.Checked;
+            _PersistenceIsEnabled = swPersistDataView.Checked;
         }
 
         /// <summary>
@@ -1481,11 +1481,11 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the cbPersistDataView control.
+        /// Handles the CheckedChanged event of the swPersistDataView control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void cbPersistDataView_CheckedChanged( object sender, EventArgs e )
+        protected void swPersistDataView_CheckedChanged( object sender, EventArgs e )
         {
             SetPersistedScheduleEnabledState( _PersistenceIsEnabled );
         }
