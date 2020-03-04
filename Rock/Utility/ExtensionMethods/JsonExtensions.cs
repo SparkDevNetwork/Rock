@@ -93,6 +93,25 @@ namespace Rock
         {
             try
             {
+                return val.FromJsonOrThrow<T>();
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( ex.Message );
+                return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Attempts to deserialize a JSON string into T. If it can't be deserialized, it will throw an exception
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="val">The value.</param>
+        /// <returns></returns>
+        public static T FromJsonOrThrow<T>( this string val )
+        {
+            try
+            {
                 if ( string.IsNullOrWhiteSpace( val ) )
                 {
                     return default( T );
@@ -104,8 +123,7 @@ namespace Rock
             }
             catch ( Exception ex )
             {
-                System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to {typeof( T ).Name}. {ex}" );
-                return default( T );
+                throw new Exception( $"Unable to deserialize to {typeof( T ).Name}. {ex}", ex );
             }
         }
 
