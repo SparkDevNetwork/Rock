@@ -50,6 +50,9 @@ namespace Rock.Plugin.HotFixes
         private void AddUpgradeSQLServerMessage()
         {
             Sql( @"
+                IF NOT EXISTS(SELECT 1 FROM [dbo].[DefinedValue] WHERE [Guid] = '0b16bd4b-f55b-4adb-a744-fc4751731a7d')
+                BEGIN
+
                 -- Get Defined Type Id
                 DECLARE @DefinedTypeId AS INT
                 SELECT @DefinedTypeId = Id
@@ -121,7 +124,8 @@ namespace Rock.Plugin.HotFixes
                     ,@IsCompleted
                     ,'125EB24D-7BFC-4440-AD8C-014FB49EB95E'
                     ,GETDATE()
-                    ,GETDATE())"
+                    ,GETDATE())
+                END"
             );
         }
 
