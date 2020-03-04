@@ -203,6 +203,11 @@
                         <Rock:RockCheckBox ID="cbIsDefault" runat="server" Label="Is Default" ValidationGroup="ConnectionStatus" />
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbAutoInactivateState" runat="server" Label="Auto-Inactivate State" ValidationGroup="ConnectionStatus" Help="Selecting this status will change the state to Inactive." />
+                    </div>
+                </div>
             </Content>
         </Rock:ModalDialog>
 
