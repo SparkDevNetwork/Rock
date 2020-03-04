@@ -160,6 +160,7 @@
                                             <asp:Panel ID="pnlPlacementGroup" runat="server" CssClass="placement-group js-placement-group">
                                                 <Rock:HiddenFieldWithClass ID="hfPlacementGroupId" runat="server" CssClass="js-placement-group-id" />
                                                 <Rock:HiddenFieldWithClass ID="hfPlacementGroupCapacity" runat="server" CssClass="js-placement-capacity" />
+                                                <Rock:HiddenFieldWithClass ID="hfPlacementGroupRegistrationInstanceId" runat="server" CssClass="js-placement-group-registrationinstanceid" />
 
                                                 <div class="panel panel-block placement-group">
                                                     <div class="alert alert-danger js-alert js-placement-group-error" style="display: none">
