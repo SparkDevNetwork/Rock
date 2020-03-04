@@ -945,6 +945,15 @@ namespace RockWeb.Blocks.Event
             {
                 hlInstanceName.Text = new RegistrationInstanceService( new RockContext() ).GetByIds( groupRegistrationInstanceIds ).Select( a => a.Name ).ToList().AsDelimited( ",", "and" );
                 hlInstanceName.Visible = true;
+
+                // if there is exactly one registration instance that has this as a placement group, set what instance this group placement is associated with
+                // If there are multiple, leave this blank
+                if ( groupRegistrationInstanceIds.Count() == 1 )
+                {
+                    var hfPlacementGroupRegistrationInstanceId = e.Item.FindControl( "hfPlacementGroupRegistrationInstanceId" ) as HiddenFieldWithClass;
+                    int groupRegistrationInstanceId = groupRegistrationInstanceIds[0];
+                    hfPlacementGroupRegistrationInstanceId.Value = groupRegistrationInstanceId.ToString();
+                }
             }
 
             if ( _registrationTemplatePlacementGroupIds.Contains( placementGroup.Id ) )

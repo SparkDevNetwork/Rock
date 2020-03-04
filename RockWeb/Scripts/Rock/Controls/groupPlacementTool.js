@@ -228,21 +228,42 @@
                     $sourceContainer.removeClass("empty");
                 }
             },
+            /** Shows or Hides the registrants for the specified personId, and placementGroupRegistrationInstanceId (if it is a instance specific placementgroup)
+             *  this is only needed when AllowMultiplePlacements = false
+             */
+            setRegistrantVisibility: function (personId, placementGroupRegistrationInstanceId, setVisible) {
+                var self = this;
+                var registrantSelector = '[data-person-id=' + personId + ']';
+                if (placementGroupRegistrationInstanceId != '') {
+                    registrantSelector += '[data-registrant-registrationinstanceid=' + placementGroupRegistrationInstanceId + ']';
+                }
+
+                if (setVisible) {
+                    // if the group member has been removed from the group, and the registrant is hidden due to 'allow multiple placements=false', we can show it again since they are no longer in a group
+                    var $registrantsToShow = self.$registrantList.find(registrantSelector);
+                    $registrantsToShow.attr('allow-search', 'true');
+                    $registrantsToShow.show();
+                } else {
+                    // hide any registrants (person) that are already placed
+                    var $registrantsToHide = self.$registrantList.find(registrantSelector);
+                    $registrantsToHide.attr('allow-search', 'false');
+                    $registrantsToHide.hide();
+                }
+            },
             /** Removes the groupMember and repopulates the UI */
             removeGroupMember: function ($groupMember, $groupRoleMembers) {
                 var self = this;
                 var groupMemberId = $groupMember.attr('data-groupmember-id');
                 var groupMembersURI = Rock.settings.get('baseUrl') + 'api/GroupMembers';
                 var personId = $groupMember.attr('data-person-id');
+                var placementGroupRegistrationInstanceId = $groupMember.attr('data-placementgroup-registrationinstanceid');
 
                 $.ajax({
                     method: "DELETE",
                     url: groupMembersURI + '/' + groupMemberId
                 }).done(function (deleteResult) {
                     // if the group member has been removed from the group, and the registrant is hidden due to 'allow multiple placements=false', we can show it again since they are no longer in a group
-                    var $registrantsToShow = self.$registrantList.find('[data-person-id=' + personId + ']');
-                    $registrantsToShow.attr('allow-search', 'true');
-                    $registrantsToShow.show();
+                    self.setRegistrantVisibility(personId, placementGroupRegistrationInstanceId, true);
 
                     self.populateGroupRoleMembers($groupRoleMembers);
                     self.checkVisibleRegistrants();
@@ -268,6 +289,11 @@
 
                 var getGroupMembersUrl = Rock.settings.get('baseUrl') + 'api/GroupMembers';
                 var $placementGroup = $groupRoleMembers.closest('.js-placement-group');
+
+                // If this placement group is just for a specific registration instance, this will be the instance id
+                // If this is a shared group, placementGroupRegistrationInstanceId will be null.
+                var placementGroupRegistrationInstanceId = $placementGroup.find('.js-placement-group-registrationinstanceid').val();
+
                 var $groupRoleContainer = $groupRoleMembers.find('.js-group-role-container');
 
                 var groupId = $placementGroup.find('.js-placement-group-id').val();
@@ -291,7 +317,7 @@
                         var groupMember = groupMembers[i];
 
                         var $groupMemberDiv = self.$groupMemberTemplate.clone();
-                        self.populateGroupMember($groupMemberDiv, groupMember);
+                        self.populateGroupMember($groupMemberDiv, groupMember, placementGroupRegistrationInstanceId);
                         $groupRoleContainer.append($groupMemberDiv);
                     });
 
@@ -361,11 +387,17 @@
              * Populates the group member div with the groupMember data
              * @param {any} $groupMemberDiv
              * @param {any} groupMember
+             * @param {any} placementGroupRegistrationInstanceId
              */
-            populateGroupMember: function ($groupMemberDiv, groupMember) {
+            populateGroupMember: function ($groupMemberDiv, groupMember, placementGroupRegistrationInstanceId) {
                 var self = this;
                 $groupMemberDiv.attr('data-groupmember-id', groupMember.Id);
                 $groupMemberDiv.attr('data-person-id', groupMember.PersonId);
+
+                // If this placement group is just for a specific registration instance, this will be the instance id
+                // If this is a shared group, placementGroupRegistrationInstanceId will be null.
+                $groupMemberDiv.attr('data-placementgroup-registrationinstanceid', placementGroupRegistrationInstanceId);
+
                 $groupMemberDiv.find('.js-person-id-anchor').prop('name', 'PersonId_' + groupMember.PersonId);
                 if (self.highlightGenders) {
                     $groupMemberDiv.attr('data-person-gender', groupMember.Person.Gender);
@@ -378,8 +410,7 @@
 
                 if (self.allowMultiplePlacements == false) {
                     // hide any registrants (person) that are already placed
-                    var $registrantsToHide = self.$registrantList.find('[data-person-id=' + groupMember.PersonId + ']');
-                    $registrantsToHide.hide();
+                    self.setRegistrantVisibility(groupMember.PersonId, placementGroupRegistrationInstanceId, false);
                 }
 
                 // NOTE: AttributeValues are already filtered to the configured displayed attributes when doing the REST call
@@ -478,6 +509,7 @@
                     $registrantDiv.attr('data-person-gender', registrant.PersonGender);
                 }
                 $registrantDiv.attr('data-registrant-id', registrant.RegistrantId);
+                $registrantDiv.attr('data-registrant-registrationinstanceid', registrant.RegistrationInstanceId);
 
                 $registrantDiv.find('.js-registrant-name').text(registrant.PersonName);
 
