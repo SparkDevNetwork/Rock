@@ -734,7 +734,16 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
                     string subscriptionJson = JsonConvert.SerializeXNode( subscriptionNode );
 
-                    Subscription subscription = subscriptionJson.FromJsonOrNull<SubscriptionResult>()?.Subscription;
+                    Subscription subscription;
+                    try
+                    {
+                        subscription = subscriptionJson.FromJsonOrThrow<SubscriptionResult>()?.Subscription;
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                        subscription = null;
+                    }
 
                     var subscription_id = subscription?.SubscriptionId;
 
@@ -802,7 +811,17 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 var responseNode = doc.Descendants( "nm_response" ).FirstOrDefault();
                 var jsonResponse = JsonConvert.SerializeXNode( responseNode );
 
-                QueryTransactionsResponse queryTransactionsResponse = jsonResponse.FromJsonOrNull<QueryTransactionsResponse>();
+                QueryTransactionsResponse queryTransactionsResponse;
+                try
+                {
+                    queryTransactionsResponse = jsonResponse.FromJsonOrThrow<QueryTransactionsResponse>();
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    queryTransactionsResponse = null;
+                }
+
                 if ( queryTransactionsResponse == null )
                 {
                     errorMessage = "Unexpected response returned From gateway.";
@@ -842,49 +861,50 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
                     var statusMessage = new StringBuilder();
                     DateTime? transactionDateTime = null;
-
-                    var transactionAction = transaction.TransactionAction;
-                    DateTime? actionDate = transactionAction.ActionDate;
-                    string actionType = transactionAction.ActionType;
-
-                    string responseText = transactionAction.ResponseText;
-
-                    if ( actionDate.HasValue )
+                    foreach ( var transactionAction in transaction.TransactionActions )
                     {
-                        statusMessage.AppendFormat(
-                            "{0} {1}: {2}; Status: {3}",
-                            actionDate.Value.ToShortDateString(),
-                            actionDate.Value.ToShortTimeString(),
-                            actionType.FixCase(),
-                            responseText );
+                        DateTime? actionDate = transactionAction.ActionDate;
+                        string actionType = transactionAction.ActionType;
 
-                        statusMessage.AppendLine();
-                    }
+                        string responseText = transactionAction.ResponseText;
 
-                    decimal? transactionAmount = transactionAction.Amount;
-                    if ( transactionAmount.HasValue && actionDate.HasValue )
-                    {
-                        payment.Amount = transactionAmount.Value;
-                    }
+                        if ( actionDate.HasValue )
+                        {
+                            statusMessage.AppendFormat(
+                                "{0} {1}: {2}; Status: {3}",
+                                actionDate.Value.ToShortDateString(),
+                                actionDate.Value.ToShortTimeString(),
+                                actionType.FixCase(),
+                                responseText );
 
-                    if ( actionType == "sale" )
-                    {
-                        transactionDateTime = actionDate.Value;
-                    }
+                            statusMessage.AppendLine();
+                        }
 
-                    if ( actionType == "settle" )
-                    {
-                        payment.IsSettled = true;
-                        payment.SettledGroupId = transactionAction.ProcessorBatchId.Trim();
-                        payment.SettledDate = actionDate;
-                        transactionDateTime = transactionDateTime.HasValue ? transactionDateTime.Value : actionDate.Value;
-                    }
+                        decimal? transactionAmount = transactionAction.Amount;
+                        if ( transactionAmount.HasValue && actionDate.HasValue )
+                        {
+                            payment.Amount = transactionAmount.Value;
+                        }
 
-                    if ( transactionDateTime.HasValue )
-                    {
-                        payment.TransactionDateTime = transactionDateTime.Value;
-                        payment.StatusMessage = statusMessage.ToString();
-                        paymentList.Add( payment );
+                        if ( actionType == "sale" )
+                        {
+                            transactionDateTime = actionDate.Value;
+                        }
+
+                        if ( actionType == "settle" )
+                        {
+                            payment.IsSettled = true;
+                            payment.SettledGroupId = transactionAction.ProcessorBatchId.Trim();
+                            payment.SettledDate = actionDate;
+                            transactionDateTime = transactionDateTime.HasValue ? transactionDateTime.Value : actionDate.Value;
+                        }
+
+                        if ( transactionDateTime.HasValue )
+                        {
+                            payment.TransactionDateTime = transactionDateTime.Value;
+                            payment.StatusMessage = statusMessage.ToString();
+                            paymentList.Add( payment );
+                        }
                     }
                 }
             }
@@ -1072,7 +1092,15 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
                 else
                 {
-                    postResult = jsonResponse.FromJsonOrNull<T>();
+                    try
+                    {
+                        postResult = jsonResponse.FromJsonOrThrow<T>();
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                        postResult = null;
+                    }
                 }
 
                 return postResult;
@@ -1211,7 +1239,15 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
                 else
                 {
-                    postResult = jsonResponse.FromJsonOrNull<T>();
+                    try
+                    {
+                        postResult = jsonResponse.FromJsonOrThrow<T>();
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                        postResult = null;
+                    }
                 }
 
                 return postResult;
@@ -1679,7 +1715,17 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             var responseNode = doc.Descendants( "nm_response" ).FirstOrDefault();
             var jsonResponse = JsonConvert.SerializeXNode( responseNode );
 
-            QuerySubscriptionsResponse querySubscriptionsResponse = jsonResponse.FromJsonOrNull<QuerySubscriptionsResponse>();
+            QuerySubscriptionsResponse querySubscriptionsResponse;
+
+            try
+            {
+                querySubscriptionsResponse = jsonResponse.FromJsonOrThrow<QuerySubscriptionsResponse>();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                querySubscriptionsResponse = null;
+            }
 
             return querySubscriptionsResponse;
         }
@@ -1706,7 +1752,17 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             var customerVaultNode = doc.Descendants( "customer_vault" ).FirstOrDefault();
             var jsonResponse = JsonConvert.SerializeXNode( customerVaultNode );
 
-            CustomerVaultQueryResponse customerVaultQueryResponse = jsonResponse.FromJsonOrNull<CustomerVaultQueryResponse>();
+            CustomerVaultQueryResponse customerVaultQueryResponse;
+            try
+            {
+                customerVaultQueryResponse = jsonResponse.FromJsonOrThrow<CustomerVaultQueryResponse>();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                customerVaultQueryResponse = null;
+            }
+
             return customerVaultQueryResponse;
         }
 
@@ -1840,7 +1896,17 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         {
             var nmiHostedPaymentControl = hostedPaymentInfoControl as NMIHostedPaymentControl;
             errorMessage = null;
-            var tokenResponse = nmiHostedPaymentControl.PaymentInfoTokenRaw.FromJsonOrNull<TokenizerResponse>();
+            TokenizerResponse tokenResponse;
+            try
+            {
+                tokenResponse = nmiHostedPaymentControl.PaymentInfoTokenRaw.FromJsonOrThrow<TokenizerResponse>();
+            }
+            catch (Exception ex)
+            {
+                ExceptionLogService.LogException( ex );
+                tokenResponse = null;
+            }
+
             if ( tokenResponse?.IsSuccessStatus() != true )
             {
                 if ( tokenResponse.HasValidationError() )

@@ -1272,7 +1272,8 @@ namespace Rock.NMI
         /// The transaction action.
         /// </value>
         [JsonProperty( "action" )]
-        public TransactionAction TransactionAction { get; set; }
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<TransactionAction> ) )]
+        public TransactionAction[] TransactionActions { get; set; }
 
         /// <summary>
         /// Gets or sets the partial payment identifier.
