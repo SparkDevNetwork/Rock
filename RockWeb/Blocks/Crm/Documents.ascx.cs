@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Crm
             }
 
             nbMessage.Visible = false;
-            pnlList.Visible = true;
+            pnlList.Visible = pnlAddEdit.Visible == false;
             return true;
         }
 
