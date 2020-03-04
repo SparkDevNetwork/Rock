@@ -298,6 +298,8 @@ TransactionAccountDetails: [
         {
             base.OnInit( e );
 
+            this.BlockUpdated += TransactionEntry_BlockUpdated;
+
             _allowAccountsInUrl = GetAttributeValue( "AllowAccountsInURL" ).AsBoolean( false );
             _onlyPublicAccountsInUrl = GetAttributeValue( "OnlyPublicAccountsInURL" ).AsBoolean( true );
 
@@ -338,6 +340,17 @@ TransactionAccountDetails: [
             }
 
             RegisterScript();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the TransactionEntry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void TransactionEntry_BlockUpdated( object sender, EventArgs e )
+        {
+            // if block settings have changed, reload the page
+            this.NavigateToCurrentPageReference();
         }
 
         /// <summary>
