@@ -603,7 +603,15 @@ namespace RockWeb.Blocks.Mobile
                 }
             }
             ddlBlockTypeCategory.Items.Clear();
-            categories.ForEach( c => ddlBlockTypeCategory.Items.Add( c ) );
+            foreach ( var c in categories.OrderBy( c => c ) )
+            {
+                var text = c;
+                if ( c.StartsWith( "Mobile >" ) )
+                {
+                    text = c.Replace( "Mobile >", string.Empty ).Trim();
+                }
+                ddlBlockTypeCategory.Items.Add( new ListItem( text, c ) );
+            }
             ddlBlockTypeCategory.SetValue( selectedCategory );
 
             BindBlockTypeRepeater();
@@ -665,6 +673,7 @@ namespace RockWeb.Blocks.Mobile
             tbDescription.Text = page.Description;
             cbDisplayInNavigation.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
             ceEventHandler.Text = additionalSettings.LavaEventHandler;
+            ceCssStyles.Text = additionalSettings.CssStyles;
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
             //
@@ -715,6 +724,7 @@ namespace RockWeb.Blocks.Mobile
 
             var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
             additionalSettings.LavaEventHandler = ceEventHandler.Text;
+            additionalSettings.CssStyles = ceCssStyles.Text;
 
             page.InternalName = tbInternalName.Text;
             page.BrowserTitle = tbName.Text;
@@ -875,36 +885,22 @@ namespace RockWeb.Blocks.Mobile
 
             var markup = new StringBuilder();
 
-            // The following item will be moved to additional settings soon and will need to be updated.
-            var lavaLocation = block.GetAttributeValue( "LavaRenderLocation" );
-            if ( lavaLocation.IsNotNullOrWhiteSpace() )
+            if ( additionalSettings.ProcessLavaOnServer && additionalSettings.ProcessLavaOnClient )
             {
-                switch ( lavaLocation )
-                {
-                    case "On Device":
-                        {
-                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
-                            break;
-                        }
-                    case "On Server":
-                        {
-                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-info color-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
-                            break;
-                        }
-                    default:
-                        {
-                            markup.Append( "<i class='fa fa-fire-alt margin-r-sm color-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
-                            break;
-                        }
-                }
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-danger' data-toggle='tooltip' data-placement='top' title='Lava will run on both the server and then again on the client.'></i>" );
             }
-            
-
-            // The following item will be moved to additional settings soon and will need to be updated.
-            var cacheDuration = block.GetAttributeValue( "CacheDuration" ).AsIntegerOrNull();
-            if ( cacheDuration.HasValue && cacheDuration != 0  )
+            else if ( additionalSettings.ProcessLavaOnServer )
             {
-                markup.Append( string.Format("<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", cacheDuration ) );
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-primary' data-toggle='tooltip' data-placement='top' title='Lava will run on server.'></i>" );
+            }
+            else if ( additionalSettings.ProcessLavaOnClient )
+            {
+                markup.Append( "<i class='fa fa-fire-alt margin-r-sm text-success' data-toggle='tooltip' data-placement='top' title='Lava will run on client.'></i>" );
+            }
+
+            if ( additionalSettings.CacheDuration != 0  )
+            {
+                markup.Append( string.Format("<i class='fa fa-memory margin-r-sm' data-toggle='tooltip' data-placement='top' title='Cache is set to {0} seconds.'></i> ", additionalSettings.CacheDuration ) );
             }
             else
             {
@@ -936,7 +932,7 @@ namespace RockWeb.Blocks.Mobile
             {
                 if ( additionalSettings.NoNetworkContent.IsNullOrWhiteSpace() )
                 {
-                    markup.Append( "<i class='fa fa-wifi margin-r-sm color-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
+                    markup.Append( "<i class='fa fa-wifi margin-r-sm text-warning' data-toggle='tooltip' data-placement='top' title='Requires internet, but no warning content is provided.'></i> " );
                 }
                 else
                 {

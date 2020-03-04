@@ -118,17 +118,7 @@ namespace Rock.Financial
                 financialGateway.LoadAttributes();
             }
 
-            var values = financialGateway.AttributeValues;
-            if ( values != null && values.ContainsKey( key ) )
-            {
-                var keyValues = values[key];
-                if ( keyValues != null )
-                {
-                    return keyValues.Value;
-                }
-            }
-
-            return string.Empty;
+            return financialGateway.GetAttributeValue( key );
         }
 
         /// <summary>
@@ -370,6 +360,7 @@ namespace Rock.Financial
 
         /// <summary>
         /// Calculates the next payment date based off of frequency and last transaction date.
+        /// Use this if the gateway doesn't support getting the next payment date from the gateway provider.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="lastTransactionDate">The last transaction date.</param>
@@ -388,8 +379,10 @@ namespace Rock.Financial
                 return scheduledTransaction.StartDate;
             }
 
+            var transactionFrequencyValue = DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId );
+
             // If scheduled transaction does not have a frequency, just return null
-            if ( scheduledTransaction.TransactionFrequencyValue == null )
+            if ( transactionFrequencyValue == null )
             {
                 return null;
             }
@@ -403,7 +396,7 @@ namespace Rock.Financial
 
             // Calculate the next payment date based on the frequency
             DateTime? nextPayment = null;
-            switch ( scheduledTransaction.TransactionFrequencyValue.Guid.ToString().ToUpper() )
+            switch ( transactionFrequencyValue.Guid.ToString().ToUpper() )
             {
                 case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
                     nextPayment = startDate.AddDays( 7 );
@@ -413,6 +406,17 @@ namespace Rock.Financial
                     break;
                 case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
                     nextPayment = startDate.AddDays( 15 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH:
+                    if ( startDate.Day > 15 )
+                    {
+                        var nextMonth = startDate.AddMonths( 1 );
+                        nextPayment = new DateTime( nextMonth.Year, nextMonth.Month, 1 );
+                    }
+                    else
+                    {
+                        nextPayment = new DateTime( startDate.Year, startDate.Month, 15 );
+                    }
                     break;
                 case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
                     nextPayment = startDate.AddMonths( 1 );

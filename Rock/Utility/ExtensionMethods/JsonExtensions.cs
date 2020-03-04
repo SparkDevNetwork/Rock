@@ -47,18 +47,40 @@ namespace Rock
         }
 
         /// <summary>
-        /// To the JSON.
+        /// Converts object to JSON string
         /// </summary>
-        /// <param name="obj">The object.</param>
+        /// <param name="obj">Object.</param>
         /// <param name="format">The format.</param>
         /// <returns></returns>
         public static string ToJson( this object obj, Formatting format )
         {
-            return JsonConvert.SerializeObject( obj, format,
-                new JsonSerializerSettings()
+            return ToJson( obj, format, false );
+        }
+
+        /// <summary>
+        /// Converts object to JSON string with an option to ignore errors
+        /// </summary>
+        /// <param name="obj">Object.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="ignoreErrors">if set to <c>true</c> [ignore errors].</param>
+        /// <returns></returns>
+        public static string ToJson( this object obj, Formatting format, bool ignoreErrors )
+        {
+            var settings = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Formatting = format
+            };
+
+            if ( ignoreErrors )
+            {
+                settings.Error += new EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs>( ( s, e ) =>
                 {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    e.ErrorContext.Handled = true;
                 } );
+            }
+
+            return JsonConvert.SerializeObject( obj, settings );
         }
 
         /// <summary>
@@ -68,6 +90,25 @@ namespace Rock
         /// <param name="val">The value.</param>
         /// <returns></returns>
         public static T FromJsonOrNull<T>( this string val )
+        {
+            try
+            {
+                return val.FromJsonOrThrow<T>();
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( ex.Message );
+                return default( T );
+            }
+        }
+
+        /// <summary>
+        /// Attempts to deserialize a JSON string into T. If it can't be deserialized, it will throw an exception
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="val">The value.</param>
+        /// <returns></returns>
+        public static T FromJsonOrThrow<T>( this string val )
         {
             try
             {
@@ -82,8 +123,7 @@ namespace Rock
             }
             catch ( Exception ex )
             {
-                System.Diagnostics.Debug.WriteLine( $"Unable to deserialize to {typeof( T ).Name}. {ex}" );
-                return default( T );
+                throw new Exception( $"Unable to deserialize to {typeof( T ).Name}. {ex}", ex );
             }
         }
 

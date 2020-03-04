@@ -9,7 +9,14 @@
 
 :root {
   --focus-state-border: 1px solid @input-border-focus;
+  --focus-state-border-color: @input-border-focus;
   --focus-state-shadow: @input-focus-box-shadow;
+  --input-bg-disabled: @input-bg-disabled;
+  --input-border: @input-border;
+  --input-border-radius: @input-border-radius;
+  --input-height-base: @input-height-base;
+  --input-padding: @padding-base-vertical @padding-base-horizontal;
+  --input-placeholder: @input-color-placeholder;
 }
 
 // 1. Imports
@@ -24,7 +31,8 @@
 @import "./chosen/bootstrap-chosen.less";
 
 .fa-font-face( @fa-theme-weight-name, @fa-edition );
-.fa-font-face( 'brands' );
+// Single quotes are required for LESS compilation in Rock
+.fa-font-face( "brands" );
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.css";
@@ -169,6 +177,12 @@ a.warning {
 .dropdown-menu {
   .box-shadow(@shadow-overlay);
 
+  // Added to Support Right Aligned Dropdowns
+  .dropdown-right & {
+    right: 0;
+    left: auto;
+  }
+
   .dropdown-item-danger {
     color: @brand-danger;
     &:hover {
@@ -262,6 +276,10 @@ th[align="right"] {
 
 .control-label {
   font-weight: @control-label-weight;
+
+  .label-hidden > & {
+    display: none;
+  }
 }
 
 // add badge colors back to BS3
@@ -304,7 +322,7 @@ th[align="right"] {
     padding: 8px 14px;
     margin: -9px -14px 8px;
     font-size: @font-size-base;
-    font-weight: normal;
+    font-weight: @font-weight-normal;
     line-height: 18px;
     background-color: @popover-title-bg;
     border-bottom: 1px solid darken(@popover-title-bg, 5%);
@@ -322,7 +340,7 @@ th[align="right"] {
       float: left;
       margin: 0 0 0 6px;
       font-size: 18px;
-      font-weight: normal;
+      font-weight: @font-weight-normal;
 
       small {
         display: block;
@@ -393,7 +411,7 @@ th[align="right"] {
 
     .panel-labels {
       float: right;
-      margin-top: -2px;
+      margin-top: -(round(@font-size-base * 0.3125, 1));
 
       .panel-text {
         float: left;
@@ -577,6 +595,15 @@ th[align="right"] {
       }
     }
   }
+
+  .panel-inline-heading {
+    background: @panel-heading-bg;
+    border-bottom: 1px solid @panel-border;
+  }
+
+  .panel-sidebar {
+    border-right: 1px solid @panel-border;
+  }
 }
 
 .panel-analytics {
@@ -668,6 +695,21 @@ th[align="right"] {
   }
 }
 
+.badge {
+  .fa-square::before,
+  .fa-circle::before {
+    display: block;
+    width: 1em;
+    height: 1em;
+    content: " ";
+    background: currentColor;
+  }
+
+  .fa-circle::before {
+    border-radius: 50%;
+  }
+}
+
 // paneleditor is used to provide a small edit surface in a panel header.
 // example: threshold editor on checkin manager for locations
 
@@ -715,7 +757,7 @@ th[align="right"] {
     color: #fff;
     background-color: #3d5a96;
 
-    &.facebook::before {
+    &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
@@ -727,7 +769,7 @@ th[align="right"] {
     color: #fff;
     background-color: #ed4e23;
 
-    &.google::before {
+    &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
@@ -739,7 +781,7 @@ th[align="right"] {
     color: #fff;
     background-color: #2aa3ef;
 
-    &.twitter::before {
+    &::before {
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
@@ -841,7 +883,7 @@ th[align="right"] {
 
 // list extensions
 
-ul.list-padded {
+.list-padded {
   margin-top: 12px;
 
   li {

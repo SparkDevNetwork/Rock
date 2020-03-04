@@ -13,7 +13,7 @@
                 <Rock:NotificationBox ID="nbMessage" runat="server" NotificationBoxType="Info" />
 
                 <div class="well">
-                    <Rock:SlidingDateRangePicker runat="server" ID="sdrpDateRange" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
+                    <Rock:SlidingDateRangePicker runat="server" ID="sdrpDateRange" FormGroupCssClass="margin-b-sm" EnabledSlidingDateRangeUnits="Day, Week, Month, Year" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange" />
                     <asp:LinkButton ID="btnRefresh" runat="server" CssClass="btn btn-xs btn-default" ToolTip="Refresh" OnClick="btnRefresh_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
                 </div>
 

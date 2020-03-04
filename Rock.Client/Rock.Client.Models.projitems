@@ -210,6 +210,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFeeItem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateForm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplateFormField.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RegistrationTemplatePlacement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RelatedEntity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Report.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\ReportField.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\RestAction.cs" />
@@ -226,6 +228,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsPipeline.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Step.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepProgram.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepStatus.cs" />

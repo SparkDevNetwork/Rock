@@ -77,6 +77,9 @@ namespace RockWeb.Blocks.Core
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gDefinedType.Actions.ShowAdd = canAddEditDelete;
             gDefinedType.IsDeleteEnabled = canAddEditDelete;
+
+            var securityField = gDefinedType.ColumnsOfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Get( typeof( DefinedType ) ).Id;
         }
 
         /// <summary>

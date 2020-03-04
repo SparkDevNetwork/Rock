@@ -24,6 +24,8 @@
 
         <Rock:HiddenFieldWithClass ID="hfLocalDeviceConfiguration" runat="server" CssClass="js-local-device-configuration" />
 
+        <Rock:HiddenFieldWithClass ID="hfCameraMode" runat="server" CssClass="js-camera-mode" />
+
         <script>
 
             Sys.WebForms.PageRequestManager.getInstance().add_pageLoading(function () {
@@ -93,7 +95,7 @@
                         timeout: 10000,
                         data: localDeviceConfiguration,
                         success: function (data) {
-                            
+
                             var localConfigurationStatus = data;
 
                             if ($configurationHash.val() != localConfigurationStatus.ConfigurationHash) {
@@ -199,16 +201,46 @@
                     window.location = "javascript:__doPostBack('<%=upContent.ClientID%>', 'StartClick')";
                 });
 
+                // Install function the host-app can call to pass the scanned barcode.
+                window.PerformScannedCodeSearch = function (code) {
+                    if (!swipeProcessing) {
+                        $('#hfSearchEntry').val(code);
+                        swipeProcessing = true;
+                        console.log('processing');
+                        window.location = "javascript:__doPostBack('hfSearchEntry', 'Wedge_Entry')";
+                    }
+                }
+
+                // handle click of scan button
+                $('.js-camera-button').on('click', function (a) {
+                    a.preventDefault();
+                    if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined') {
+                        // Reset the swipe processing as it may have failed silently.
+                        swipeProcessing = false;
+                        window.RockCheckinNative.StartCamera(false);
+                    }
+                });
+
+                // auto-show or auto-enable camera if configured to do so.
+                if (typeof window.RockCheckinNative !== 'undefined' && typeof window.RockCheckinNative.StartCamera !== 'undefined') {
+                    if ($('.js-camera-mode').val() === 'AlwaysOn') {
+                        window.RockCheckinNative.StartCamera(false);
+                    }
+                    else if ($('.js-camera-mode').val() === 'Passive') {
+                        window.RockCheckinNative.StartCamera(true);
+                    }
+                }
+
                 if ($('.js-manager-login').length) {
-                    $('.tenkey a.digit').click(function () {
+                    $('.tenkey a.digit').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val() + $(this).html());
                     });
-                    $('.tenkey a.back').click(function () {
+                    $('.tenkey a.back').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val($phoneNumber.val().slice(0, -1));
                     });
-                    $('.tenkey a.clear').click(function () {
+                    $('.tenkey a.clear').on('click', function () {
                         $phoneNumber = $("input[id$='tbPIN']");
                         $phoneNumber.val('');
                     });
@@ -217,7 +249,7 @@
                     var isTouchDevice = 'ontouchstart' in document.documentElement;
                     if (!isTouchDevice) {
                         if ($('.checkin-phone-entry').length) {
-                            $('.checkin-phone-entry').focus();
+                            $('.checkin-phone-entry').trigger('focus');
                         }
                     }
                 }

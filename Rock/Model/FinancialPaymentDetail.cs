@@ -113,6 +113,26 @@ namespace Rock.Model
         [DataMember]
         public int? BillingLocationId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Gateway Person Identifier.
+        /// This would indicate id the customer vault information on the gateway.
+        /// </summary>
+        /// <value>
+        /// A <see cref="string"/> representing the Gateway Person Identifier of the account.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial person saved account id that was used for this transaction (if there was one)
+        /// </summary>
+        /// <value>
+        /// The financial person saved account.
+        /// </value>
+        [DataMember]
+        public int? FinancialPersonSavedAccountId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -228,6 +248,15 @@ namespace Rock.Model
         public virtual Location BillingLocation { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial person saved account that was used for this transaction (if there was one)
+        /// </summary>
+        /// <value>
+        /// The financial person saved account.
+        /// </value>
+        [DataMember]
+        public virtual FinancialPersonSavedAccount FinancialPersonSavedAccount { get; set; }
+
+        /// <summary>
         /// Gets the type of the currency and credit card.
         /// </summary>
         /// <value>
@@ -263,7 +292,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList" )]
+        [Obsolete( "Use HistoryChangeList", true )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -296,26 +325,15 @@ namespace Rock.Model
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="changes">The changes.</param>
-        [RockObsolete( "1.7.1" )]
-        [Obsolete( "Use other SetFromPaymentInfo", true )]
-        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext, List<string> changes )
-        {
-            this.SetFromPaymentInfo( paymentInfo, paymentGateway, rockContext );
-        }
-
-        /// <summary>
-        /// Sets from payment information.
-        /// </summary>
-        /// <param name="paymentInfo">The payment information.</param>
-        /// <param name="paymentGateway">The payment gateway.</param>
-        /// <param name="rockContext">The rock context.</param>
         public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext ) 
         {
             if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
             {
                 AccountNumberMasked = paymentInfo.MaskedNumber;
             }
+
+            GatewayPersonIdentifier = ( paymentInfo as ReferencePaymentInfo )?.GatewayPersonIdentifier;
+            FinancialPersonSavedAccountId = ( paymentInfo as ReferencePaymentInfo )?.FinancialPersonSavedAccountId;
 
             if ( !CurrencyTypeValueId.HasValue && paymentInfo.CurrencyTypeValue != null )
             {
@@ -478,6 +496,9 @@ namespace Rock.Model
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.BillingLocation ).WithMany().HasForeignKey( t => t.BillingLocationId ).WillCascadeOnDelete( false );
+
+            // NOTE: Migration for this makes this a 'ON DELETE SET NULL' cascade
+            this.HasOptional( t => t.FinancialPersonSavedAccount ).WithMany().HasForeignKey( t => t.FinancialPersonSavedAccountId ).WillCascadeOnDelete( true );
 
             // This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
             // even though they are ignored at the database level

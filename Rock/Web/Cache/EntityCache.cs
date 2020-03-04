@@ -233,7 +233,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead")]
+        [Obsolete("Use Get instead", true )]
         public static T Read( int id, RockContext rockContext = null )
         {
             return Get( id, rockContext );
@@ -246,7 +246,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static T Read( Guid guid, RockContext rockContext = null )
         {
             return Get( guid, rockContext );
@@ -258,7 +258,7 @@ namespace Rock.Web.Cache
         /// <param name="model">The model.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get instead" )]
+        [Obsolete( "Use Get instead", true )]
         public static T Read( TT model )
         {
             return Get( model );
@@ -269,7 +269,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="id">The identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use FlushItem or Remove instead" )]
+        [Obsolete( "Use FlushItem or Remove instead", true )]
         public static void Flush( int id )
         {
             Remove( id );

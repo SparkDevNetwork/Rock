@@ -18,9 +18,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -30,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Streaks" )]
     [Table( "StreakTypeAchievementType" )]
     [DataContract]
-    public partial class StreakTypeAchievementType : Model<StreakTypeAchievementType>, IHasActiveFlag
+    public partial class StreakTypeAchievementType : Model<StreakTypeAchievementType>, IHasActiveFlag, ICacheable
     {
         #region Entity Properties
 
@@ -154,6 +156,29 @@ namespace Rock.Model
 
         #endregion IHasActiveFlag
 
+        #region ICacheable
+
+        /// <summary>
+        /// Gets the cache object associated with this Entity
+        /// </summary>
+        /// <returns></returns>
+        public IEntityCache GetCacheObject()
+        {
+            return StreakTypeAchievementTypeCache.Get( this.Id );
+        }
+
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
+        {
+            StreakTypeAchievementTypeCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion
+
         #region Virtual Properties
 
         /// <summary>
@@ -217,6 +242,34 @@ namespace Rock.Model
             set => _streakAchievementAttempts = value;
         }
         private ICollection<StreakAchievementAttempt> _streakAchievementAttempts;
+
+        /// <summary>
+        /// Gets or sets the prerequisites.
+        /// </summary>
+        /// <value>
+        /// The prerequisites.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakTypeAchievementTypePrerequisite> Prerequisites
+        {
+            get => _prerequisites ?? ( _prerequisites = new Collection<StreakTypeAchievementTypePrerequisite>() );
+            set => _prerequisites = value;
+        }
+        private ICollection<StreakTypeAchievementTypePrerequisite> _prerequisites;
+
+        /// <summary>
+        /// Gets or sets the dependencies.
+        /// </summary>
+        /// <value>
+        /// The dependencies.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<StreakTypeAchievementTypePrerequisite> Dependencies
+        {
+            get => _dependencies ?? ( _dependencies = new Collection<StreakTypeAchievementTypePrerequisite>() );
+            set => _dependencies = value;
+        }
+        private ICollection<StreakTypeAchievementTypePrerequisite> _dependencies;
 
         #endregion Virtual Properties
 

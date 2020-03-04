@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.Entity.Infrastructure.Interception;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -168,7 +169,8 @@ namespace Rock
                     {
                         if ( p.SqlDbType == System.Data.SqlDbType.NVarChar )
                         {
-                            return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, p.SqlValue.ToString().Replace( "'", "''" ) );
+                            var sqlValue = ( (SqlString)p.SqlValue ).Value.Truncate( 255 );
+                            return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, sqlValue?.Replace( "'", "''" ) );
                         }
 
                         if ( p.SqlDbType == System.Data.SqlDbType.Int )

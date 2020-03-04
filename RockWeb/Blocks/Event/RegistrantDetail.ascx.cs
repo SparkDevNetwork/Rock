@@ -50,13 +50,26 @@ namespace RockWeb.Blocks.Event
     {
         #region Properties
 
-        /// <summary>
-        /// Gets or sets the TemplateState
-        /// </summary>
-        /// <value>
-        /// The state of the template.
-        /// </value>
-        private RegistrationTemplate TemplateState { get; set; }
+        private RegistrationTemplate RegistrationTemplate
+        {
+            get
+            {
+                if ( _registrationTemplate == null )
+                {
+                    _registrationTemplate = new RegistrationTemplateService( new RockContext() )
+                        .Queryable().Where( a => a.Id == this.RegistrationTemplateId )
+                        .Include( a => a.FinancialGateway )
+                        .Include( a => a.Discounts )
+                        .Include( a => a.Fees )
+                        .Include( a => a.Forms )
+                        .FirstOrDefault();
+                }
+
+                return _registrationTemplate;
+            }
+        }
+
+        private RegistrationTemplate _registrationTemplate = null;
 
         /// <summary>
         /// Gets or sets the RegistrantSate
@@ -72,7 +85,37 @@ namespace RockWeb.Blocks.Event
         /// <value>
         /// The registration instance identifier.
         /// </value>
-        private int RegistrationInstanceId { get; set; }
+        private int RegistrationInstanceId
+        {
+            get
+            {
+                return ViewState["RegistrationInstanceId"] as int? ?? 0;
+            }
+
+            set
+            {
+                ViewState["RegistrationInstanceId"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the registration template identifier.
+        /// </summary>
+        /// <value>
+        /// The registration template identifier.
+        /// </value>
+        private int RegistrationTemplateId
+        {
+            get
+            {
+                return ViewState["RegistrationTemplateId"] as int? ?? 0;
+            }
+
+            set
+            {
+                ViewState["RegistrationTemplateId"] = value;
+            }
+        }
 
         #endregion
 
@@ -86,19 +129,11 @@ namespace RockWeb.Blocks.Event
         {
             base.LoadViewState( savedState );
 
-            string json = ViewState["Template"] as string;
-            if ( !string.IsNullOrWhiteSpace( json ) )
-            {
-                TemplateState = JsonConvert.DeserializeObject<RegistrationTemplate>( json );
-            }
-
-            json = ViewState["Registrant"] as string;
+            var json = ViewState["Registrant"] as string;
             if ( !string.IsNullOrWhiteSpace( json ) )
             {
                 RegistrantState = JsonConvert.DeserializeObject<RegistrantInfo>( json );
             }
-
-            RegistrationInstanceId = ViewState["RegistrationInstanceId"] as int? ?? 0;
 
             BuildControls( false );
         }
@@ -151,9 +186,7 @@ namespace RockWeb.Blocks.Event
                 ContractResolver = new Rock.Utility.IgnoreUrlEncodedKeyContractResolver()
             };
 
-            ViewState["Template"] = JsonConvert.SerializeObject( TemplateState, Formatting.None, jsonSetting );
             ViewState["Registrant"] = JsonConvert.SerializeObject( RegistrantState, Formatting.None, jsonSetting );
-            ViewState["RegistrationInstanceId"] = RegistrationInstanceId;
             return base.SaveViewState();
         }
 
@@ -236,7 +269,7 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                // Remove/delete any registrant fees that are no longer in UI with quantity 
+                // Remove/delete any registrant fees that are no longer in UI with quantity
                 foreach ( var dbFee in registrant.Fees.ToList() )
                 {
                     if ( !RegistrantState.FeeValues.Keys.Contains( dbFee.RegistrationTemplateFeeId ) ||
@@ -305,7 +338,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( TemplateState.RequiredSignatureDocumentTemplate != null )
+                if ( this.RegistrationTemplate.RequiredSignatureDocumentTemplate != null )
                 {
                     var person = new PersonService( rockContext ).Get( personId.Value );
 
@@ -325,12 +358,12 @@ namespace RockWeb.Blocks.Event
                         var instance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
 
                         document = new SignatureDocument();
-                        document.SignatureDocumentTemplateId = TemplateState.RequiredSignatureDocumentTemplate.Id;
+                        document.SignatureDocumentTemplateId = this.RegistrationTemplate.RequiredSignatureDocumentTemplate.Id;
                         document.AppliesToPersonAliasId = registrant.PersonAliasId.Value;
                         document.AssignedToPersonAliasId = registrant.PersonAliasId.Value;
                         document.Name = string.Format(
                             "{0}_{1}",
-                            instance != null ? instance.Name : TemplateState.Name,
+                            instance != null ? instance.Name : this.RegistrationTemplate.Name,
                             person != null ? person.FullName.RemoveSpecialCharacters() : string.Empty );
                         document.Status = SignatureDocumentStatus.Signed;
                         document.LastStatusDate = RockDateTime.Now;
@@ -366,7 +399,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( !registrant.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
@@ -378,7 +411,7 @@ namespace RockWeb.Blocks.Event
                     registrant.LoadAttributes();
                     // NOTE: We will only have Registration Attributes displayed and editable on Registrant Detail.
                     // To Edit Person or GroupMember Attributes, they will have to go the PersonDetail or GroupMemberDetail blocks
-                    foreach ( var field in TemplateState.Forms
+                    foreach ( var field in this.RegistrationTemplate.Forms
                         .SelectMany( f => f.Fields
                             .Where( t =>
                                 t.FieldSource == RegistrationFieldSource.RegistrantAttribute &&
@@ -421,7 +454,7 @@ namespace RockWeb.Blocks.Event
                     registrant.SaveAttributeValues( rockContext );
                 } );
 
-                if ( newRegistrant && TemplateState.GroupTypeId.HasValue && ppPerson.PersonId.HasValue )
+                if ( newRegistrant && this.RegistrationTemplate.GroupTypeId.HasValue && ppPerson.PersonId.HasValue )
                 {
                     using ( var newRockContext = new RockContext() )
                     {
@@ -429,10 +462,10 @@ namespace RockWeb.Blocks.Event
                         if ( reloadedRegistrant != null &&
                             reloadedRegistrant.Registration != null &&
                             reloadedRegistrant.Registration.Group != null &&
-                            reloadedRegistrant.Registration.Group.GroupTypeId == TemplateState.GroupTypeId.Value )
+                            reloadedRegistrant.Registration.Group.GroupTypeId == this.RegistrationTemplate.GroupTypeId.Value )
                         {
-                            int? groupRoleId = TemplateState.GroupMemberRoleId.HasValue ?
-                                TemplateState.GroupMemberRoleId.Value :
+                            int? groupRoleId = this.RegistrationTemplate.GroupMemberRoleId.HasValue ?
+                                this.RegistrationTemplate.GroupMemberRoleId.Value :
                                 reloadedRegistrant.Registration.Group.GroupType.DefaultGroupRoleId;
                             if ( groupRoleId.HasValue )
                             {
@@ -450,7 +483,7 @@ namespace RockWeb.Blocks.Event
                                     groupMember.GroupId = reloadedRegistrant.Registration.Group.Id;
                                     groupMember.PersonId = ppPerson.PersonId.Value;
                                     groupMember.GroupRoleId = groupRoleId.Value;
-                                    groupMember.GroupMemberStatus = TemplateState.GroupMemberStatus;
+                                    groupMember.GroupMemberStatus = this.RegistrationTemplate.GroupMemberStatus;
                                     groupMemberService.Add( groupMember );
 
                                     newRockContext.SaveChanges();
@@ -492,7 +525,7 @@ namespace RockWeb.Blocks.Event
                     null,
                     null );
             }
-            
+
             NavigateToRegistration();
         }
 
@@ -515,12 +548,12 @@ namespace RockWeb.Blocks.Event
         {
             var qryParams = new Dictionary<string, string>();
             var pageCache = PageCache.Get( RockPage.PageId );
-            if ( pageCache != null && 
-                pageCache.ParentPage != null && 
+            if ( pageCache != null &&
+                pageCache.ParentPage != null &&
                 pageCache.ParentPage.ParentPage != null &&
                 pageCache.ParentPage.ParentPage.ParentPage != null )
             {
-                qryParams.Add( "RegistrationTemplateId", TemplateState != null ? TemplateState.Id.ToString() : "0" );
+                qryParams.Add( "RegistrationTemplateId", this.RegistrationTemplateId.ToString() );
                 NavigateToPage( pageCache.ParentPage.ParentPage.ParentPage.Guid, qryParams );
             }
         }
@@ -578,7 +611,7 @@ namespace RockWeb.Blocks.Event
             if ( RegistrantState.Id > 0 && RegistrantState.GroupMemberId.HasValue )
             {
                 string editScript = string.Format( @"
-    $('a.js-edit-registrant').click(function( e ){{
+    $('a.js-edit-registrant').on('click', function( e ){{
         e.preventDefault();
         if( $('#{2} .js-person-id').val() !=='{1}'){{
         var  newPerson = $('#{2} .js-person-name' ).val();
@@ -613,7 +646,11 @@ namespace RockWeb.Blocks.Event
                 if ( registrantId.HasValue && registrantId.Value != 0 )
                 {
                     registrant = new RegistrationRegistrantService( rockContext )
-                        .Queryable( "Registration.RegistrationInstance.RegistrationTemplate.Forms.Fields,Registration.RegistrationInstance.RegistrationTemplate.Fees,PersonAlias.Person,Fees" ).AsNoTracking()
+                        .Queryable().AsNoTracking()
+                        .Include(a => a.Registration.RegistrationInstance.RegistrationTemplate.Forms)
+                        .Include( a => a.Registration.RegistrationInstance.RegistrationTemplate.Fees )
+                        .Include( a => a.PersonAlias.Person )
+                        .Include(a => a.Fees)
                         .Where( r => r.Id == registrantId.Value )
                         .FirstOrDefault();
 
@@ -623,9 +660,10 @@ namespace RockWeb.Blocks.Event
                         registrant.Registration.RegistrationInstance.RegistrationTemplate != null )
                     {
                         RegistrantState = new RegistrantInfo( registrant, rockContext );
-                        TemplateState = registrant.Registration.RegistrationInstance.RegistrationTemplate; 
-                        
-                        RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
+                        this.RegistrationTemplateId = registrant.Registration.RegistrationInstance.RegistrationTemplateId;
+                        this.RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
+
+                        lTitle.Text = registrant.ToString();
 
                         lWizardTemplateName.Text = registrant.Registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = registrant.Registration.RegistrationInstance.Name;
@@ -636,10 +674,14 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( TemplateState == null && registrationId.HasValue && registrationId.Value != 0 )
+                if ( this.RegistrationTemplate == null && registrationId.HasValue && registrationId.Value != 0 )
                 {
                     var registration = new RegistrationService( rockContext )
-                        .Queryable( "RegistrationInstance.RegistrationTemplate.Forms.Fields,RegistrationInstance.RegistrationTemplate.Fees" ).AsNoTracking()
+                        .Queryable().AsNoTracking()
+                        .Include( a => a.RegistrationInstance.RegistrationTemplate )
+                        .Include( a => a.RegistrationInstance.RegistrationTemplate.Forms )
+                        .Include( a => a.RegistrationInstance.RegistrationTemplate.Fees )
+                        .Include( a => a.PersonAlias.Person )
                         .Where( r => r.Id == registrationId.Value )
                         .FirstOrDefault();
 
@@ -647,9 +689,10 @@ namespace RockWeb.Blocks.Event
                         registration.RegistrationInstance != null &&
                         registration.RegistrationInstance.RegistrationTemplate != null )
                     {
-                        TemplateState = registration.RegistrationInstance.RegistrationTemplate;
-                        
-                        RegistrationInstanceId = registration.RegistrationInstanceId;
+                        this.RegistrationTemplateId = registration.RegistrationInstance.RegistrationTemplateId;
+                        this.RegistrationInstanceId = registration.RegistrationInstanceId;
+
+                        lTitle.Text = "Add Registrant";
 
                         lWizardTemplateName.Text = registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = registration.RegistrationInstance.Name;
@@ -658,16 +701,16 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                if ( TemplateState != null )
+                if ( this.RegistrationTemplate != null )
                 {
-                    tglWaitList.Visible = TemplateState.WaitListEnabled;
+                    tglWaitList.Visible = this.RegistrationTemplate.WaitListEnabled;
                 }
 
-                if ( TemplateState != null && RegistrantState == null )
+                if ( this.RegistrationTemplate != null && RegistrantState == null )
                 {
                     RegistrantState = new RegistrantInfo();
                     RegistrantState.RegistrationId = registrationId ?? 0;
-                    if ( TemplateState.SetCostOnInstance.HasValue && TemplateState.SetCostOnInstance.Value )
+                    if ( this.RegistrationTemplate.SetCostOnInstance.HasValue && this.RegistrationTemplate.SetCostOnInstance.Value )
                     {
                         var instance = new RegistrationInstanceService( rockContext ).Get( RegistrationInstanceId );
                         if ( instance != null )
@@ -677,7 +720,7 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        RegistrantState.Cost = TemplateState.Cost;
+                        RegistrantState.Cost = this.RegistrationTemplate.Cost;
                     }
                 }
 
@@ -690,12 +733,12 @@ namespace RockWeb.Blocks.Event
                     ppPerson.SetValue( null );
                 }
 
-                if ( TemplateState != null && TemplateState.RequiredSignatureDocumentTemplate != null )
+                if ( this.RegistrationTemplate != null && this.RegistrationTemplate.RequiredSignatureDocumentTemplate != null )
                 {
-                    fuSignedDocument.Label = TemplateState.RequiredSignatureDocumentTemplate.Name;
-                    if ( TemplateState.RequiredSignatureDocumentTemplate.BinaryFileType != null )
+                    fuSignedDocument.Label = this.RegistrationTemplate.RequiredSignatureDocumentTemplate.Name;
+                    if ( this.RegistrationTemplate.RequiredSignatureDocumentTemplate.BinaryFileType != null )
                     {
-                        fuSignedDocument.BinaryFileTypeGuid = TemplateState.RequiredSignatureDocumentTemplate.BinaryFileType.Guid;
+                        fuSignedDocument.BinaryFileTypeGuid = this.RegistrationTemplate.RequiredSignatureDocumentTemplate.BinaryFileType.Guid;
                     }
 
                     if ( ppPerson.PersonId.HasValue )
@@ -703,7 +746,7 @@ namespace RockWeb.Blocks.Event
                         var signatureDocument = new SignatureDocumentService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( d =>
-                                d.SignatureDocumentTemplateId == TemplateState.RequiredSignatureDocumentTemplateId.Value &&
+                                d.SignatureDocumentTemplateId == this.RegistrationTemplate.RequiredSignatureDocumentTemplateId.Value &&
                                 d.AppliesToPersonAlias != null &&
                                 d.AppliesToPersonAlias.PersonId == ppPerson.PersonId &&
                                 d.LastStatusDate.HasValue &&
@@ -755,7 +798,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         private void BuildControls( bool setValues )
         {
-            if ( RegistrantState != null && TemplateState != null )
+            if ( RegistrantState != null && this.RegistrationTemplate != null )
             {
                 BuildFields( setValues );
                 BuildFees( setValues );
@@ -770,12 +813,12 @@ namespace RockWeb.Blocks.Event
         {
             phFields.Controls.Clear();
 
-            if ( TemplateState.Forms == null )
+            if ( this.RegistrationTemplate.Forms == null )
             {
                 return;
             }
 
-            foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
+            foreach ( var form in this.RegistrationTemplate.Forms.OrderBy( f => f.Order ) )
             {
                 if ( form.Fields == null )
                 {
@@ -868,11 +911,11 @@ namespace RockWeb.Blocks.Event
             phFees.Controls.Clear();
             var registrationInstance = new RegistrationInstanceService( new RockContext() ).GetNoTracking( RegistrationInstanceId );
 
-            if ( TemplateState.Fees != null && TemplateState.Fees.Any() )
+            if ( this.RegistrationTemplate.Fees != null && this.RegistrationTemplate.Fees.Any() )
             {
                 divFees.Visible = true;
 
-                foreach ( var fee in TemplateState.Fees.OrderBy( f => f.Order ) )
+                foreach ( var fee in this.RegistrationTemplate.Fees.OrderBy( f => f.Order ) )
                 {
                     var feeValues = GetFeeValues( fee );
                     fee.AddFeeControl( phFees, registrationInstance, true, feeValues, null );
@@ -893,7 +936,7 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ParseControls ()
         {
-            if ( RegistrantState != null && TemplateState != null )
+            if ( RegistrantState != null && this.RegistrationTemplate != null )
             {
                 ParseFields();
                 ParseFees();
@@ -905,9 +948,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ParseFields()
         {
-            if ( TemplateState.Forms != null )
+            if ( this.RegistrationTemplate.Forms != null )
             {
-                foreach ( var form in TemplateState.Forms.OrderBy( f => f.Order ) )
+                foreach ( var form in this.RegistrationTemplate.Forms.OrderBy( f => f.Order ) )
                 {
                     if ( form.Fields != null )
                     {
@@ -951,9 +994,9 @@ namespace RockWeb.Blocks.Event
         /// </summary>
         private void ParseFees()
         {
-            if ( TemplateState.Fees != null )
+            if ( this.RegistrationTemplate.Fees != null )
             {
-                foreach ( var fee in TemplateState.Fees.OrderBy( f => f.Order ) )
+                foreach ( var fee in this.RegistrationTemplate.Fees.OrderBy( f => f.Order ) )
                 {
                     List<FeeInfo> feeValues = fee.GetFeeInfoFromControls( phFees );
                     if ( fee != null )

@@ -105,32 +105,6 @@ namespace Rock.Model
                     int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
                     int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId )
         {
-            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId, searchTypeValueId, searchValue,
-                searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId, true );
-        }
-
-        /// <summary>
-        /// Adds or updates an attendance record and will create the occurrence if needed
-        /// </summary>
-        /// <param name="personAliasId">The person alias identifier.</param>
-        /// <param name="checkinDateTime">The check-in date time.</param>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="scheduleId">The schedule identifier.</param>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="searchTypeValueId">The search type value identifier.</param>
-        /// <param name="searchValue">The search value.</param>
-        /// <param name="searchResultGroupId">The search result group identifier.</param>
-        /// <param name="attendanceCodeId">The attendance code identifier.</param>
-        /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
-        /// <param name="syncMatchingStreaks">Should matching <see cref="StreakType"/> models be synchronized.</param>
-        /// <returns></returns>
-        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
-                int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
-                int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId,
-                bool syncMatchingStreaks )
-        {
             // Check to see if an occurrence exists already
             var occurrenceService = new AttendanceOccurrenceService( ( RockContext ) Context );
             var occurrence = occurrenceService.GetOrAdd( checkinDateTime.Date, groupId, locationId, scheduleId, "Attendees" );
@@ -179,13 +153,35 @@ namespace Rock.Model
             attendance.StartDateTime = checkinDateTime;
             attendance.DidAttend = true;
 
-            // Sync this attendance to any matching streaks
-            if ( syncMatchingStreaks )
-            {
-                StreakTypeService.HandleAttendanceRecordAsync( attendance );
+            return attendance;
             }
 
-            return attendance;
+        /// <summary>
+        /// Adds or updates an attendance record and will create the occurrence if needed
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <param name="checkinDateTime">The check-in date time.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="locationId">The location identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="campusId">The campus identifier.</param>
+        /// <param name="deviceId">The device identifier.</param>
+        /// <param name="searchTypeValueId">The search type value identifier.</param>
+        /// <param name="searchValue">The search value.</param>
+        /// <param name="searchResultGroupId">The search result group identifier.</param>
+        /// <param name="attendanceCodeId">The attendance code identifier.</param>
+        /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
+        /// <param name="syncMatchingStreaks">Should matching <see cref="StreakType"/> models be synchronized.</param>
+        /// <returns></returns>
+        [Obsolete( "The syncMatchingStreaks param is no longer used" )]
+        [RockObsolete( "1.10" )]
+        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
+                int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
+                int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId,
+                bool syncMatchingStreaks )
+        {
+            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId, searchTypeValueId,
+                searchValue, searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId );
         }
 
         /// <summary>
@@ -665,9 +661,9 @@ namespace Rock.Model
                 && a.PersonAlias.Person.IsEmailActive );
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
+            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
             {
-                ScheduleConfirmationSystemEmailId = s.Key.Value,
+                ScheduleConfirmationSystemCommunicationId = s.Key.Value,
                 Attendances = s.ToList()
             } ).ToList();
 
@@ -677,7 +673,7 @@ namespace Rock.Model
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
-                var scheduleConfirmationSystemEmail = new SystemEmailService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemEmailId );
+                var scheduleConfirmationSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemCommunicationId );
 
                 var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
                 {
@@ -742,9 +738,9 @@ namespace Rock.Model
         {
             int emailsSent = 0;
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
+            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
             {
-                ScheduleReminderSystemEmailId = s.Key.Value,
+                ScheduleReminderSystemCommunicationId = s.Key.Value,
                 Attendances = s.ToList()
             } ).ToList();
 
@@ -752,7 +748,7 @@ namespace Rock.Model
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
-                var scheduleReminderSystemEmail = new SystemEmailService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemEmailId );
+                var scheduleReminderSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemCommunicationId );
 
                 var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
                 {
@@ -819,7 +815,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of available the scheduler resources (people) based on the options specified in schedulerResourceParameters 
+        /// Gets a list of available resources (people) based on the options specified in schedulerResourceParameters
+        /// <para>If the source of resources is a group, only active group members will be included</para>
         /// </summary>
         /// <param name="schedulerResourceParameters">The scheduler resource parameters.</param>
         /// <returns></returns>
@@ -867,7 +864,9 @@ namespace Rock.Model
 
             if ( schedulerResourceParameters.ResourceGroupId.HasValue )
             {
-                groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == schedulerResourceParameters.ResourceGroupId.Value );
+                groupMemberQry = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == schedulerResourceParameters.ResourceGroupId.Value )
+                    .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
 
                 var resourceGroup = groupService.GetNoTracking( schedulerResourceParameters.ResourceGroupId.Value );
                 if ( resourceGroup?.SchedulingMustMeetRequirements == true )
@@ -1436,8 +1435,10 @@ namespace Rock.Model
                 var personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId );
                 var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( attendanceOccurrenceId );
                 var scheduledDateTime = attendanceOccurrence.OccurrenceDate.Add( attendanceOccurrence.Schedule.StartTimeOfDay );
+                int? campusId = new LocationService( rockContext ).GetCampusIdForLocation( attendanceOccurrence.LocationId ) ?? new GroupService( rockContext ).Get( attendanceOccurrence.GroupId.Value ).CampusId;
                 scheduledAttendance = new Attendance
                 {
+                    CampusId = campusId,
                     PersonAliasId = personAliasId,
                     OccurrenceId = attendanceOccurrenceId,
                     ScheduledByPersonAliasId = scheduledByPersonAlias?.Id,

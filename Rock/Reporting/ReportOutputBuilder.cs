@@ -184,9 +184,35 @@ namespace Rock.Reporting
             // Build the query definition.
             var qryErrors = new List<string>();
 
-            dynamic qry = GetQueryableForReport( _Report, _ReportEntityType, _SelectedEntityFields, _SelectedAttributes, _SelectedComponents, whereExpression, parameterExpression, sortProperty, out qryErrors, _DataContext, pageIndex, pageSize );
+            dynamic qryCount = GetQueryableForReport( _Report,
+                _ReportEntityType,
+                _SelectedEntityFields,
+                _SelectedAttributes,
+                _SelectedComponents,
+                whereExpression,
+                parameterExpression,
+                sortProperty,
+                out qryErrors,
+                _DataContext,
+                null,
+                null );
+
+            dynamic qryData = GetQueryableForReport( _Report,
+                _ReportEntityType,
+                _SelectedEntityFields,
+                _SelectedAttributes,
+                _SelectedComponents,
+                whereExpression,
+                parameterExpression,
+                sortProperty,
+                out qryErrors,
+                _DataContext,
+                pageSize,
+                pageIndex );
 
             _ErrorMessages.AddRange( qryErrors );
+
+            int totalRowCount;
 
             try
             {
@@ -196,12 +222,16 @@ namespace Rock.Reporting
                 {
                     using ( new QueryHintScope( _DataContext as RockContext, _Report.QueryHint ) )
                     {
-                        AddDataTableRowsFromList( _DataTable, qry, _ReportFieldMaps );
+                        totalRowCount = Queryable.Count( qryCount );
+
+                        AddDataTableRowsFromList( _DataTable, qryData, _ReportFieldMaps );
                     }
                 }
                 else
                 {
-                    AddDataTableRowsFromList( _DataTable, qry, _ReportFieldMaps );
+                    totalRowCount = Queryable.Count( qryCount );
+
+                    AddDataTableRowsFromList( _DataTable, qryData, _ReportFieldMaps );
                 }
 
                 // Format the data retrieved from the data source.
@@ -222,6 +252,23 @@ namespace Rock.Reporting
 
             result.Data = _DataTable;
             result.ReportFieldToDataColumnMap = _ReportFieldMaps.ToDictionary( k => k.ReportFieldGuid, v => v.TableColumnName );
+
+            result.ReportRowCount = totalRowCount;
+
+            if ( pageSize == null )
+            {
+                result.PageIndex = 0;
+                result.PageSize = totalRowCount;
+                result.PageCount = 1;
+            }
+            else
+            {
+                result.PageIndex = pageIndex.GetValueOrDefault();
+                result.PageSize = pageSize.GetValueOrDefault();
+
+                result.PageCount = totalRowCount % result.PageSize != 0 ? totalRowCount / result.PageSize + 1 : totalRowCount / result.PageSize;
+            }
+
 
             return result;
         }
@@ -1310,12 +1357,12 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Contains the result of the build process for a tabular report.
+        /// Contains a single page of output from a tabular report.
         /// </summary>
         public class TabularReportOutputResult
         {
             /// <summary>
-            /// A table containing the columns and rows of data representing the report output.
+            /// A table containing the columns and rows of data representing a single page of report output.
             /// </summary>
             public DataTable Data { get; set; }
 
@@ -1323,6 +1370,26 @@ namespace Rock.Reporting
             /// A dictionary containing entries to map Report Template Field unique identifiers to DataTable column names.
             /// </summary>
             public Dictionary<Guid, string> ReportFieldToDataColumnMap { get; set; }
+
+            /// <summary>
+            /// The index of this result page in the total set of pages in the report.
+            /// </summary>
+            public int PageIndex { get; set; }
+
+            /// <summary>
+            /// The number of rows requested for this page of results.
+            /// </summary>
+            public int PageSize { get; set; }
+
+            /// <summary>
+            /// The total number of pages available in the report.
+            /// </summary>
+            public int PageCount { get; set; }
+
+            /// <summary>
+            /// The total number of rows available in the report.
+            /// </summary>
+            public int? ReportRowCount { get; set; }
         }
 
         /// <summary>

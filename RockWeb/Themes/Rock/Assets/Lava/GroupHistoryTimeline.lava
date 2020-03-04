@@ -295,12 +295,12 @@
                                         {%- assign showSummaryEntity = true -%}
                                     {%- endif -%}
                                 {%- when 'ADD' -%}
-                                    created a {{  historySummaryListByEntityTypeAndVerb.EntityTypeName | Downcase }} called <a href="#">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].HistoryList[0].NewValue }}</a>
+                                    created a {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | Downcase }} called <a href="#">{{ historySummaryListByEntityTypeAndVerb.HistorySummaryList[0].HistoryList[0].NewValue }}</a>
                                     {%- assign showHistoryDetails = true %}
                                     {%- comment -%} When doing an 'ADD' summary, first history record is the same as the summary, so we can skip it {%- endcomment -%}
                                     {%- assign historySkipOffset = 2 %}
                                 {%- when 'DELETE' -%}
-                                    {{  historySummaryListByEntityTypeAndVerb.EntityTypeName }} Deleted
+                                    {{ historySummaryListByEntityTypeAndVerb.EntityTypeName }} Deleted
                                 {%- else -%}
                                     {%- comment -%} Some Verb that hasn't been implemented in this template yet, or some unexpected Verb {%- endcomment -%}
                                     {{ historySummaryListByEntityTypeAndVerb.Verb }}

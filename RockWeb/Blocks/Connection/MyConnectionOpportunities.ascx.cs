@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Connection
             this.AddConfigurationUpdateTrigger( upnlContent );
 
             string deleteScript = @"
-    $('table.js-grid-requests a.grid-delete-button').click(function( e ){
+    $('table.js-grid-requests a.grid-delete-button').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this connection request? All of the activities for this request will also be deleted, and any existing workflow associations will be lost!', function (result) {
             if (result) {
@@ -1043,7 +1043,7 @@ namespace RockWeb.Blocks.Connection
                         Group = r.AssignedGroup != null ? r.AssignedGroup.Name : "",
                         GroupStatus = r.AssignedGroupMemberStatus != null ? r.AssignedGroupMemberStatus.ConvertToString() : "",
                         GroupRole = r.AssignedGroupMemberRoleId.HasValue ? roles[r.AssignedGroupMemberRoleId.Value] : "",
-                        Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullName : "",
+                        Connector = r.ConnectorPersonAlias != null ? r.ConnectorPersonAlias.Person.FullNameReversed : "",
                         LastActivity = FormatActivity( r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).FirstOrDefault() ),
                         LastActivityDateTime = r.ConnectionRequestActivities.OrderByDescending( a => a.CreatedDateTime ).Select( a => a.CreatedDateTime ).FirstOrDefault(),
                         LastActivityNote = lastActivityNoteBoundField != null && lastActivityNoteBoundField.Visible ? r.ConnectionRequestActivities.OrderByDescending(

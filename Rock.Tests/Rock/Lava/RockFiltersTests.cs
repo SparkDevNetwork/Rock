@@ -115,6 +115,26 @@ namespace Rock.Tests.Rock.Lava
         }
 
         /// <summary>
+        /// For use in Lava -- should return all matching patterns in the string.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatchValues_ShouldReturnMatchValues()
+        {
+            var output = RockFilters.RegExMatchValues( "Group 12345 has 54321 members", @"\d+" );
+            Assert.Equal( new List<string> { "12345", "54321" }, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should not match and should return nothing.
+        /// </summary>
+        [Fact]
+        public void Text_RegExMatchValues_ShouldNotMatchValues()
+        {
+            var output = RockFilters.RegExMatchValues( "Group Decker has no members", @"\d+" );
+            Assert.Equal( new List<string>(), output );
+        }
+
+        /// <summary>
         /// Verfies that the StripHtml filter handles standard HTML tags.
         /// </summary>
         [Fact]

@@ -347,14 +347,14 @@ namespace RockWeb.Blocks.Connection
                 if ( opportunity == null )
                 {
                     pnlSignup.Visible = false;
-                    ShowError( "Incorrect Opportunity Type", "The requested opportunity does not exist." );
+                    ShowError( "Sorry", "The requested opportunity does not exist." );
                     return;
                 }
 
-                if ( !opportunity.IsActive )
+                if ( !( opportunity.IsActive && opportunity.ConnectionType.IsActive ) )
                 {
                     pnlSignup.Visible = false;
-                    ShowError( "Inactive Opportunity Type", "The opportunity is not currently active." );
+                    ShowError( "Inactive", "The opportunity is not currently active." );
                     return;
                 }
 
@@ -389,9 +389,9 @@ namespace RockWeb.Blocks.Connection
 
                 if ( registrant != null )
                 {
-                    tbFirstName.Text = registrant.FirstName.EncodeHtml();
-                    tbLastName.Text = registrant.LastName.EncodeHtml();
-                    tbEmail.Text = registrant.Email.EncodeHtml();
+                    tbFirstName.Text = registrant.FirstName;
+                    tbLastName.Text = registrant.LastName;
+                    tbEmail.Text = registrant.Email;
 
                     if ( pnHome.Visible && _homePhone != null )
                     {
@@ -417,7 +417,6 @@ namespace RockWeb.Blocks.Connection
                 // load campus dropdown
                 var campuses = CampusCache.All().Where( c => ( c.IsActive ?? false ) && opportunity.ConnectionOpportunityCampuses.Any( o => o.CampusId == c.Id ) ).ToList();
                 cpCampus.Campuses = campuses;
-                cpCampus.Visible = campuses.Count > 1;
 
                 bool campusSelected = false;
 

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Rock.Utility;
 
 //// <summary>
 //// from JSON structures on https://sandbox.gotnpgateway.com/docs/api/
@@ -132,7 +133,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the update date time.
@@ -141,7 +142,7 @@ namespace Rock.MyWell
         /// The update date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdateDateTime { get; set; }
+        public DateTime? UpdateDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -359,7 +360,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -368,7 +369,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -628,7 +629,7 @@ namespace Rock.MyWell
         public string Country { get; set; }
 
         /// <summary>
-        /// Gets or sets the email.
+        /// Gets or sets the email. Leave this blank to avoid getting emails for subscription transactions.
         /// </summary>
         /// <value>
         /// The email.
@@ -661,7 +662,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -670,7 +671,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -735,7 +736,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -749,7 +750,8 @@ namespace Rock.MyWell
         public int AmountCents { get; set; }
 
         /// <summary>
-        /// Gets or sets the next bill date in UTC time
+        /// Gets or sets the next bill date in UTC time.
+        /// Note that this field is just called "next_bill_date", but it is really in UTC time.
         /// </summary>
         /// <value>
         /// The next bill date.
@@ -845,7 +847,7 @@ namespace Rock.MyWell
         /// <returns>
         ///   <c>true</c> if [is success status]; otherwise, <c>false</c>.
         /// </returns>
-        public bool IsSuccessStatus()
+        public virtual bool IsSuccessStatus()
         {
             return this.Status == "success";
         }
@@ -929,7 +931,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1066,6 +1068,38 @@ namespace Rock.MyWell
     public class CreateTransactionResponse : BaseResponseData
     {
         /// <summary>
+        /// Determines whether [is success status].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is success status]; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool IsSuccessStatus()
+        {
+            return base.IsSuccessStatus() && ( Data?.IsResponseCodeSuccess() == true );
+        }
+
+        /// <summary>
+        /// Gets the Friendly message (see <see cref="FriendlyMessageHelper.FriendlyMessageMap" />) associated with <see cref="T:ApiMessage" /> or transaction status
+        /// </summary>
+        /// <value>
+        /// The friendly message.
+        /// </value>
+        public override string Message
+        {
+            get
+            {
+                if ( Data?.IsResponseCodeSuccess() != true )
+                {
+                    return FriendlyMessageHelper.GetFriendlyMessage( Data?.Status ?? this.ApiMessage );
+                }
+                else
+                {
+                    return base.Message;
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the data.
         /// </summary>
         /// <value>
@@ -1107,7 +1141,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1296,7 +1330,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1305,7 +1339,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -1338,7 +1372,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1373,15 +1407,23 @@ namespace Rock.MyWell
     #region Transaction Status
 
     /// <summary>
-    /// 
+    /// https://sandbox.gotnpgateway.com/docs/api/#get-transaction-status
     /// </summary>
-    /// <seealso cref="Rock.MyWell.BaseResponseData" />
     public class TransactionStatusResponse : BaseResponseData
     {
         /// <summary>
-        /// The data
-        /// </summary>
+        /// The information about the transaction
+        /// </summary>  
+        /// <value>
+        /// The data.
+        /// </value>
+        /// <remarks>
+        /// We are using SingleOrArrayJsonConverter because the JSON response will have this as a single item
+        /// or as array of items, depending on <see cref="TotalCount"></see>
+        /// Also, the documentation says this will be an array, but sometimes it really isn't
+        /// </remarks>
         [JsonProperty( "data" )]
+        [JsonConverter( typeof( SingleOrArrayJsonConverter<TransactionStatusResponseData> ) )]
         public TransactionStatusResponseData[] Data { get; set; }
 
         /// <summary>
@@ -1486,7 +1528,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1542,7 +1584,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1551,7 +1593,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
     }
 
     /// <summary>
@@ -1694,7 +1736,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -1760,7 +1802,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -1769,7 +1811,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -1795,7 +1837,14 @@ namespace Rock.MyWell
         /// <param name="customerId">The customer identifier.</param>
         public QueryCustomerSubscriptionsRequest( string customerId )
         {
-            CustomerIdSearch = new QuerySearchCustomerId( customerId );
+            if ( customerId.IsNullOrWhiteSpace() )
+            {
+                CustomerIdSearch = null;
+            }
+            else
+            {
+                CustomerIdSearch = new QuerySearchCustomerId( customerId );
+            }
         }
 
         /// <summary>
@@ -1990,12 +2039,12 @@ namespace Rock.MyWell
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryDateTimeRange"/> class.
         /// </summary>
-        /// <param name="startDateTime">The start date time.</param>
-        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="startDateTime">The start date time (in local time).</param>
+        /// <param name="endDateTime">The end date time (in local time).</param>
         public QueryDateTimeRange( DateTime? startDateTime, DateTime? endDateTime )
         {
-            UTCStartDateTime = startDateTime?.ToUniversalTime();
-            UTCEndDateTime = endDateTime?.ToUniversalTime();
+            StartDateTimeUTC = startDateTime?.ToUniversalTime();
+            EndDateTimeUTC = endDateTime?.ToUniversalTime();
         }
 
         /// <summary>
@@ -2006,7 +2055,7 @@ namespace Rock.MyWell
         /// </value>
         [JsonConverter( typeof( MyWellGatewayUTCIsoDateTimeConverter ) )]
         [JsonProperty( "start_date" )]
-        public DateTime? UTCStartDateTime { get; set; }
+        public DateTime? StartDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the end date (in UTC time).
@@ -2016,7 +2065,7 @@ namespace Rock.MyWell
         /// </value>
         [JsonConverter( typeof( MyWellGatewayUTCIsoDateTimeConverter ) )]
         [JsonProperty( "end_date" )]
-        public DateTime? UTCEndDateTime { get; set; }
+        public DateTime? EndDateTimeUTC { get; set; }
     }
 
     #endregion
@@ -2106,7 +2155,7 @@ namespace Rock.MyWell
         [JsonIgnore]
         public decimal Amount
         {
-            get => AmountCents / 100;
+            get => Decimal.Divide( AmountCents, 100 );
             set => AmountCents = ( int ) ( value * 100 );
         }
 
@@ -2331,6 +2380,93 @@ namespace Rock.MyWell
         }
 
         /// <summary>
+        /// Status codes that seem to indicate a failure. As of 2020/02/05, not officially documented yet, but see note in <seealso cref="IsFailure"/>
+        /// </summary>
+        private static readonly string[] FailureStatusCodes = { "declined", "returned", "late_return", "reversed", "voided", "refunded" };
+
+        /// <summary>
+        /// Determines whether this instance is failure based on <see cref="Status"/> (<seealso cref="FailureStatusCodes"/>) and <see cref="ResponseCode"/>
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is failure; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsFailure()
+        {
+            /* MDP 2020/02/05
+             
+            Failure is implemented by looking at combination of ResponseCode and Status.
+            Email discussion with MyWell helped us reach that conclusion.
+
+            from https://sandbox.gotnpgateway.com/docs/api/#response-codes
+                Response Codes are grouped as follows:
+                    100 thru 199 are Approvals and Partial Approvals.
+                    200 thru 299 are Declined via the processor.
+                    300 thru 399 are Gateway Declines.
+                    400 thru 499 are processor rejection errors.
+
+            and status is the actual result of whether the transaction was settled, failed, pending, etc
+           */
+
+            /* MP 2020/02/06
+
+            From an Email. Here are all the possible response codes and description. They aren't documented yet, but here is what the email said:
+
+            unknown
+                We did not receive a response from the processor's endpoint.
+
+            declined
+              Transaction was not approved.
+
+            authorized
+              An auth only transaction was processed, not yet captured.
+
+            pending_settlement
+              Transaction not yet batch settled.
+
+            settled
+              Transaction has been batch settled.
+
+            voided
+             Transaction was voided before settlement. We initiate an auth reversal behind the scenes on processors that support it.
+
+            reversed
+              Not used.
+
+            refunded
+              Transaction was refunded for the full amount of the sale or captured authorization.
+
+            partially_refunded
+              Transaction was partially refunded for a partial amount of the sale or captured authorization.
+
+            returned
+              ACH transaction did not clear, no settlement.
+
+            late_return
+              ACH transaction was returned after settlement. */
+
+            bool isFailure;
+
+            if ( this.ResponseCode >= 200 )
+            {
+                // if ResponseCode is 200+ it is a failure, regardless of 'status' (status could be 'settled', but with a ResponseCode of 200+ (decline))
+                // in the Dev sandbox, an example is https://sandbox.gotnpgateway.com/merchant/transaction/detail/bhrgr79erttu0kh14bs0
+                isFailure = true;
+            }
+            else if ( FailureStatusCodes.Contains(this.Status, StringComparer.OrdinalIgnoreCase) )
+            {
+                // if ResponseCode is less than 200, but has a fail status code, it is also a failure
+                isFailure  =  true;
+            }
+            else
+            {
+                // if response_code < 200 and status is not is fail status code, then we can consider transaction as not failed
+                isFailure = false;
+            }
+
+            return isFailure;
+        }
+
+        /// <summary>
         /// Gets or sets the response.
         /// </summary>
         /// <value>
@@ -2341,7 +2477,8 @@ namespace Rock.MyWell
 
         /// <summary>
         /// Gets or sets the response code.
-        /// https://sandbox.gotnpgateway.com/docs/api/#response-codes
+        /// Note, this is just the Gateway's initial response code. To get the settle status look at <seealso cref="Status"/>.
+        /// List of response codes is listed at https://sandbox.gotnpgateway.com/docs/api/#response-codes
         /// </summary>
         /// <value>
         /// The response code.
@@ -2374,7 +2511,7 @@ namespace Rock.MyWell
         /// The created date time.
         /// </value>
         [JsonProperty( "created_at" )]
-        public DateTime? CreatedDateTime { get; set; }
+        public DateTime? CreatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Gets or sets the updated date time.
@@ -2383,7 +2520,7 @@ namespace Rock.MyWell
         /// The updated date time.
         /// </value>
         [JsonProperty( "updated_at" )]
-        public DateTime? UpdatedDateTime { get; set; }
+        public DateTime? UpdatedDateTimeUTC { get; set; }
 
         /// <summary>
         /// Searches by captured_at between the provided start_date and end_date. Dates in UTC "YYYY-MM-DDTHH:II:SSZ"
@@ -2392,7 +2529,18 @@ namespace Rock.MyWell
         /// The captured date time.
         /// </value>
         [JsonProperty( "captured_at" )]
-        public DateTime? CapturedDateTime { get; set; }
+        public DateTime? CapturedDateTimeUTC { get; set; }
+
+        /// <summary>
+        /// Determines whether this instance is settled.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is settled; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsSettled()
+        {
+            return this?.Status.Equals( "settled", StringComparison.OrdinalIgnoreCase ) == true;
+        }
 
         /// <summary>
         /// Searches by settled_at between the provided start_date and end_date. Dates in UTC "YYYY-MM-DDTHH:II:SSZ"
@@ -2401,7 +2549,16 @@ namespace Rock.MyWell
         /// The settled date time.
         /// </value>
         [JsonProperty( "settled_at" )]
-        public DateTime? SettledDateTime { get; set; }
+        public DateTime? SettledDateTimeUTC { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settlement batch identifier.
+        /// </summary>
+        /// <value>
+        /// The settlement batch identifier.
+        /// </value>
+        [JsonProperty( "settlement_batch_id" )]
+        public string SettlementBatchId { get; set; }
 
         /// <summary>
         /// Newtonsoft.Json.JsonExtensionData instructs the Newtonsoft.Json.JsonSerializer to deserialize properties with no
@@ -2430,9 +2587,6 @@ namespace Rock.MyWell
         /// <returns></returns>
         internal static string GetFriendlyMessage( string apiMessage )
         {
-            System.Diagnostics.Debug.WriteLine( apiMessage );
-
-
             if ( apiMessage.IsNullOrWhiteSpace() )
             {
                 return string.Empty;
@@ -2472,12 +2626,14 @@ namespace Rock.MyWell
             { "Invalid card expiration - to far in the future", "Invalid Expiration Date" },
             { "Invalid card expiration - expired", "Card is expired" },
             { "Invalid routing_number", "Invalid Routing Number" },
-            { "Invalid account_number", "Invalid Account Number" }
+            { "Invalid account_number", "Invalid Account Number" },
+            { "decline", "Declined" }
         };
     }
 
     /// <summary>
     /// see DateFormat spec https://sandbox.gotnpgateway.com/docs/api/#create-a-subscription
+    /// this is mostly just needed for JSON Payloads that are POST'd to the gateway
     /// </summary>
     /// <seealso cref="Rock.MyWell.MyWellGatewayUTCIsoDateTimeConverter" />
     internal class MyWellGatewayUTCIsoDateConverter : MyWellGatewayUTCIsoDateTimeConverter
@@ -2493,6 +2649,7 @@ namespace Rock.MyWell
 
     /// <summary>
     /// see DateFormats specs from https://sandbox.gotnpgateway.com/docs/api/#query-transactions
+    /// this is mostly just needed for JSON Payloads that are POST'd to the gateway
     /// </summary>
     /// <seealso cref="Newtonsoft.Json.Converters.IsoDateTimeConverter" />
     internal class MyWellGatewayUTCIsoDateTimeConverter : Newtonsoft.Json.Converters.IsoDateTimeConverter
@@ -2583,6 +2740,26 @@ namespace Rock.MyWell
     /// </summary>
     [JsonConverter( typeof( StringEnumConverter ) )]
     public enum MyWellPaymentType
+    {
+        /// <summary>
+        /// The card
+        /// </summary>
+        card,
+
+        /// <summary>
+        /// The ach
+        /// </summary>
+        ach
+    }
+
+
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [JsonConverter( typeof( StringEnumConverter ) )]
+    public enum TransactionStatus
     {
         /// <summary>
         /// The card

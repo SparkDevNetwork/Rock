@@ -405,13 +405,13 @@ namespace Rock.Model
                 }
             }
 
-            if ( groupTypeIncludedIds.Any() )
+            if ( groupTypeIncludedIds != null && groupTypeIncludedIds.Any() )
             {
                 // if groupTypeIncludedIds is specified, only get grouptypes that are in the groupTypeIncludedIds
                 // NOTE: no need to factor in groupTypeExcludedIds since included would take precendance and the excluded ones would already not be included
                 qry = qry.Where( a => groupTypeIncludedIds.Contains( a.GroupTypeId ) );
             }
-            else if (groupTypeExcludedIds.Any() )
+            else if ( groupTypeExcludedIds != null && groupTypeExcludedIds.Any() )
             {
                 qry = qry.Where( a => !groupTypeExcludedIds.Contains( a.GroupTypeId ) );
             }
@@ -598,21 +598,6 @@ namespace Rock.Model
             }
 
             return group.Members.Where( m => m.PersonId == personId ).Any();
-        }
-
-        /// <summary>
-        /// Groups the members not meeting requirements.
-        /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
-        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead", true )]
-        public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
-        {
-            var group = new GroupService( this.Context as RockContext ).Get( groupId );
-            return GroupMembersNotMeetingRequirements( group, includeWarnings, includeInactive );
         }
 
         /// <summary>

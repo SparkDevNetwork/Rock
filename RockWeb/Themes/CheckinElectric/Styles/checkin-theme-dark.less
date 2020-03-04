@@ -1,0 +1,63 @@
+/*
+
+     Electric Check-in Theme
+     Crafted by: Spark Development Network
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+@import (reference) "../../../Styles/Bootstrap/bootstrap.less";
+@import (reference) "../../../Styles/_checkin-core.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+:root {
+  --checkin-footer-background: @dark-checkin-footer-background;
+  --input-color: @dark-text-color;
+  --input-bg: @dark-background-color;
+  --input-border-focus: #fff;
+  --btn-checkinselect-bg: transparent !important;
+  --btn-checkinselect-color: #fff !important;
+  --btn-checkinselect-disabled-bg: rgba(0,0,0,0.5);
+  --btn-default-color: #fff;
+  --btn-default-border: #f7fafc;
+  --btn-default-bg: transparent;
+  --btn-default-active-bg: #383838;
+  --btn-default-active-color: #fff;
+}
+
+body {
+  background-color: @dark-background-color;
+  color: @dark-text-color;
+
+  & when not (@dark-logo-image-url = ~"") {
+    &::before {
+      background: url(@dark-logo-image-url);
+      border-bottom: 1px solid #E2E8F0;
+    }
+  }
+}
+
+select option {
+  background: var(--input-bg);
+}
+
+a,
+.btn-link {
+  color: @dark-link-color;
+}
+
+h1,
+.checkin-messages li, .checkin-summary li,
+.checkin-header .checkin-sub-title {
+  color: @dark-text-color;
+}
+
+.checkinBackground () {
+}
+
+.checkinBackgroundRetina() {
+}
+

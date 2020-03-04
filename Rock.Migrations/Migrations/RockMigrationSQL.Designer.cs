@@ -1738,5 +1738,226 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_201910281713564_CustomSundayDate_ufnUtility_GetSundayDateRange", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_TransactionData]
+        ///	  @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @AccountIds varchar(max) = NULL
+        ///	, @CurrencyTypeIds varchar(max) = NULL
+        ///	, @SourceTypeIds varchar(max) = NULL
+        ///	, @TransactionTypeIds varchar(max) = NULL
+        ///	WITH RECOMPILE
+        ///AS
+        ///
+        ///BEGIN
+        ///
+        ///	SET @StartDate = COALESCE( CONVERT( date, @StartDate ), &apos;1900-01-01&apos; )
+        ///	SET @EndDate = COALESCE( @EndDate, &apos;2100-01-01&apos; )
+        ///
+        ///	DECLARE @AccountTbl TABLE ( [Id] int )
+        ///	INSERT INTO @Accoun [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201911010002535_CustomSundayDate_GivingAnalytics_spFinance_GivingAnalyticsQuery_TransactionData {
+            get {
+                return ResourceManager.GetString("_201911010002535_CustomSundayDate_GivingAnalytics_spFinance_GivingAnalyticsQuery_" +
+                        "TransactionData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201911122101551_PergeMerge_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_201911122101551_PergeMerge_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Parameters]=N&apos;fillcolor^rgba(5,155,255,.6)|bordercolor^#059BFF|borderwidth^0|legendposition^bottom|legendshow^false|chartheight^400px|chartwidth^100%|tooltipshow^true|fontcolor^#777|fontfamily^sans-serif|tooltipbackgroundcolor^#000|type^bar|pointradius^3|pointcolor^#059BFF|pointbordercolor^#059BFF|pointborderwidth^0|pointhovercolor^rgba(5,155,255,.6)|pointhoverbordercolor^rgba(5,155,255,.6)|borderdash^|curvedlines^true|filllinearea^false|labels^|tooltipfontcolor^#fff|pointhoverra [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201912042320379_Rollup_1204_chartjsfix {
+            get {
+                return ResourceManager.GetString("_201912042320379_Rollup_1204_chartjsfix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///VALUES (N&apos;Easy Pie Chart&apos;, N&apos;Lightweight plugin to render simple, animated and retina optimized pie charts.&apos;, N&apos;&lt;p&gt;Easy Pie Chart is the perfect solution when you need to display a single percentage value on a chart. In fact it&apos;&apos;s as simple as &lt;code&gt;{[easypie value:&apos;&apos;60&apos;&apos;]}{[endeasypie]}&lt;/code&gt;&lt;/p&gt;
+        ///&lt;p&gt;&lt;img src=&quot;https://rockrms.blob.core.w [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202001071827547_Rollup_0107_EasyPieChartShortcodeMigration {
+            get {
+                return ResourceManager.GetString("_202001071827547_Rollup_0107_EasyPieChartShortcodeMigration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF ( SELECT COUNT(*) FROM [LavaShortCode] WHERE [Guid] = &apos;E7AC1E9B-0200-49AF-967F-0A9D2DD0F968&apos; ) = 0
+        ///BEGIN
+        ///INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters],[Guid])
+        ///VALUES (N&apos;Sparkline Chart&apos;, N&apos;Generate small inline charts with just a single line of Lava.&apos;, N&apos;&lt;p&gt;Creating Sparklines with Lava is ridiculously easy with this shortcode. Basic examples for each type are shown below.&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202001071827547_Rollup_0107_SparklineShortcodeMigration {
+            get {
+                return ResourceManager.GetString("_202001071827547_Rollup_0107_SparklineShortcodeMigration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- un-link any &apos;Team Group&apos; Groups from all existing Campuses
+        ///UPDATE [Campus]
+        ///SET [TeamGroupId] = NULL;
+        ///GO
+        ///
+        ///-- delete all Groups of GroupType &apos;TeamGroup&apos;
+        ///DECLARE @GroupTypeId [int] = (SELECT [Id] FROM [GroupType] WHERE [Guid] = &apos;BADD7A6C-1FB3-4E11-A721-6D1377C6958C&apos;);
+        ///
+        ///IF (@GroupTypeId IS NOT NULL)
+        ///BEGIN
+        ///    DELETE FROM [Group]
+        ///    WHERE ([GroupTypeId] = @GroupTypeId);
+        ///END
+        ///.
+        /// </summary>
+        public static string _202002182236274_AddCampusTeamToAllCampuses_Down {
+            get {
+                return ResourceManager.GetString("_202002182236274_AddCampusTeamToAllCampuses_Down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- add and assign a Group of GroupType &apos;Campus Team&apos; to all existing Campuses
+        ///
+        ///IF OBJECT_ID(&apos;tempdb..#campusTemp&apos;) IS NOT NULL
+        ///BEGIN
+        ///    DROP TABLE #campusTemp;
+        ///END
+        ///
+        ///CREATE TABLE #campusTemp (
+        ///    [Id] [int] IDENTITY(1,1) NOT NULL
+        ///    , [CampusId] [int] NOT NULL
+        ///    , [CampusName] [nvarchar](100) NOT NULL
+        ///    , CONSTRAINT [pk_campusTemp] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ///);
+        ///
+        ///-- collect all existing Campuses (that don&apos;t already have a TeamGroup assigned)
+        ///INSERT INTO #campusTemp
+        ///SELECT [Id]
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202002182236274_AddCampusTeamToAllCampuses_Up {
+            get {
+                return ResourceManager.GetString("_202002182236274_AddCampusTeamToAllCampuses_Up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;dateti [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance {
+            get {
+                return ResourceManager.GetString("_202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAtten" +
+                        "dance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * PersonId 
+        ///        * SundayDate - Last time attended
+        ///    &lt;/returns&gt;
+        ///    &lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///    &lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///    &lt;p [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery {
+            get {
+                return ResourceManager.GetString("_202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery", resourceCulture);
+            }
+        }
     }
 }

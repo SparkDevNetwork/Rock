@@ -41,6 +41,8 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PAGE_MENU = "CACB9D1A-A820-4587-986A-D66A69EE9948";
 
+        #region Communication Block Types
+
         /// <summary>
         /// Communication Detail Block Type Guid
         /// </summary>
@@ -55,6 +57,23 @@ namespace Rock.SystemGuid
         /// The Communication Entry (Wizard) Block Type Guid
         /// </summary>
         public const string COMMUNICATION_ENTRY_WIZARD = "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0";
+
+        /// <summary>
+        /// System Communication List Block Type Guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST = "13BD5FCC-8F03-46B4-B193-E9C0987D2F20";
+
+        /// <summary>
+        /// System Communication Detail Block Type Guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_DETAIL = "8713F91A-8738-453D-AF13-3ED57F74137E";
+
+        #endregion
+
+        /// <summary>
+        /// The connection opportunity signup Block Type GUID
+        /// </summary>
+        public const string CONNECTION_OPPORTUNITY_SIGNUP = "C7FCE3B7-704B-43C0-AF96-5A70EB7F70D9";
 
         /// <summary>
         /// Content Channel View Block Type Guid
@@ -80,6 +99,20 @@ namespace Rock.SystemGuid
         /// The PowerBI Account Registration Block Type Guid
         /// </summary>
         public const string POWERBI_ACCOUNT_REGISTRATION = "EA20D87E-ED46-3DAA-4C4D-4156C399B1C2";
+
+        #region Event Block Types
+
+        /// <summary>
+        /// Event category Registration Group Placement block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_GROUP_PLACEMENT = "9AF434D2-FB9B-43D7-8550-DD0B92B7A70A";
+
+        /// <summary>
+        /// Event category Registration Template Detail block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_TEMPLATE_DETAIL = "91354899-304E-44C7-BD0D-55F42E6505D3";
+
+        #endregion
 
         #region Finance Block Types
 
@@ -129,20 +162,34 @@ namespace Rock.SystemGuid
 
         #endregion Assessment Block Types
 
-        #region Group RSVP Block Types
+        #region Groups Block Types
 
         /// <summary>
-        /// Group RSVP List block type guid.
+        /// Groups category Group Member Detail block type guid
+        /// </summary>
+        public const string GROUPS_GROUP_MEMBER_DETAIL = "AAE2E5C3-9279-4AB0-9682-F4D19519D678";
+
+        /// <summary>
+        /// Groups category Group Member List block type guid
+        /// </summary>
+        public const string GROUPS_GROUP_MEMBER_LIST = "88B7EFA9-7419-4D05-9F88-38B936E61EDD";
+
+        #endregion
+
+        #region RSVP Block Types
+
+        /// <summary>
+        /// RSVP category List block type guid.
         /// </summary>
         public const string RSVP_LIST = "16CE8B41-FD1B-43F2-8C8E-4E878470E8BD";
 
         /// <summary>
-        /// Group RSVP Detail block type guid.
+        /// RSVP category Detail block type guid.
         /// </summary>
         public const string RSVP_DETAIL = "2BC5CC6B-3618-4848-BCD9-1796AA35E7FD";
 
         /// <summary>
-        /// Group RSVP Response block type guid.
+        /// RSVP category Response block type guid.
         /// </summary>
         public const string RSVP_RESPONSE = "EEFD83FB-6EE1-44F4-A012-7569F979CD6B";
 

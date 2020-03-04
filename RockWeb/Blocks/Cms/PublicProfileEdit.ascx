@@ -63,7 +63,7 @@
                                 <asp:Repeater ID="rptPersonAttributes" runat="server">
                                     <ItemTemplate>
                                         <div class="col-md-6">
-                                            <b><%# Eval("Name") %></b></br><small><%# Eval("Value") %></small>
+                                            <b><%# Eval("Name") %></b><br><small><%# Eval("Value") %></small>
                                         </div>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -75,7 +75,7 @@
                                 <asp:Repeater ID="rptGroupAttributes" runat="server">
                                     <ItemTemplate>
                                         <div class="col-md-6">
-                                            <b><%# Eval("Name") %></b></br><small><%# Eval("Value") %></small>
+                                            <b><%# Eval("Name") %></b><br><small><%# Eval("Value") %></small>
                                         </div>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -130,7 +130,7 @@
                                         <asp:Repeater ID="rptGroupMemberAttributes" runat="server">
                                             <ItemTemplate>
                                                 <div class="col-md-6">
-                                                    <b><%# Eval("Name") %></b></br><small><%# Eval("Value") %></small>
+                                                    <b><%# Eval("Name") %></b><br><small><%# Eval("Value") %></small>
                                                 </div>
                                             </ItemTemplate>
                                         </asp:Repeater>

@@ -431,7 +431,7 @@ namespace Rock.Rest.Controllers
             }
 
             // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
-            var personAliasIds = new PersonAliasService( ( RockContext ) this.Service.Context ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id ).ToList();
+            var personAliasIds = new PersonAliasService( ( RockContext ) this.Service.Context ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
 
             // get the transactions for the person or all the members in the person's giving group (Family)
             return Get().Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );
@@ -486,6 +486,33 @@ namespace Rock.Rest.Controllers
             var rockContext = new RockContext();
             var financialTransactionService = new FinancialTransactionService( rockContext );
             return financialTransactionService.GetFinancialTransactionExport( page, actualPageSize, exportOptions );
+        }
+
+        /// <summary>
+        /// Gets the giving history for the person (and giving group) during the year specified.
+        /// </summary>
+        /// <param name="year">Defaults to the current year.</param>
+        /// <param name="includeGivingGroup">Should transactions belonging to anyone in the person's giving group be included</param>
+        /// <param name="transactionTypeGuid">The guid of the defined value of the transaction type to include. If omitted, all transaction types will be included</param>
+        /// <param name="excludedStatus">Transactions of this status will be excluded. If omitted, all transaction statuses will be included</param>
+        /// <param name="excludedSourceTypeGuid">The unique identifier of a <see cref="FinancialTransaction.SourceTypeValue" /> to exclude from the results</param>
+        /// <returns></returns>
+        /// <exception cref="HttpResponseException"></exception>
+        [Authenticate, Secured]
+        [HttpGet]
+        [System.Web.Http.Route( "api/FinancialTransactions/GivingHistory" )]
+        public virtual List<Gift> GetGivingHistoryForTheCurrentPerson( [FromUri]int? year = null, [FromUri]bool includeGivingGroup = true, [FromUri]Guid? transactionTypeGuid = null,
+            [FromUri]string excludedStatus = null, [FromUri]Guid? excludedSourceTypeGuid = null )
+        {
+            var personAliasId = GetPersonAliasId( Service.Context as RockContext );
+
+            if ( !personAliasId.HasValue )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The person alias id for the current user did not resolve" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            return GetGivingHistory( personAliasId.Value, year, includeGivingGroup, transactionTypeGuid, excludedStatus, excludedSourceTypeGuid );
         }
 
         /// <summary>

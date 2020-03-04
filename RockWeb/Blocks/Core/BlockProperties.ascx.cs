@@ -19,7 +19,6 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -45,6 +44,31 @@ namespace RockWeb.Blocks.Core
     {
         #region Fields
 
+        /// <summary>
+        /// Gets or sets the state of the custom launchers configuration.
+        /// </summary>
+        /// <value>
+        /// The state of the custom launchers configuration.
+        /// </value>
+        private List<CustomActionConfig> CustomActionsConfigState
+        {
+            get
+            {
+                return ( ViewState["CustomLaunchersConfigState"] as List<CustomActionConfig> ) ?? new List<CustomActionConfig>();
+            }
+
+            set
+            {
+                ViewState["CustomLaunchersConfigState"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the state of the custom grid columns configuration.
+        /// </summary>
+        /// <value>
+        /// The state of the custom grid columns configuration.
+        /// </value>
         private CustomGridColumnsConfig CustomGridColumnsConfigState
         {
             get
@@ -118,18 +142,23 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
-            if ( dialogPage != null )
-            {
-                dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
-            }
-            
             try
             {
-                int blockId = PageParameter( "BlockId" ).AsInteger();
-                var _block = BlockCache.Get( blockId );
-                dialogPage.Title = _block.BlockType.Name;
-                dialogPage.SubTitle = string.Format("{0} / Id: {1}", _block.BlockType.Category, blockId);
+                int? blockId = PageParameter( "BlockId" ).AsIntegerOrNull();
+                if ( !blockId.HasValue )
+                {
+                    return;
+                }
+
+                var _block = BlockCache.Get( blockId.Value );
+
+                Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
+                if ( dialogPage != null )
+                {
+                    dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                    dialogPage.Title = _block.BlockType.Name;
+                    dialogPage.SubTitle = string.Format( "{0} / Id: {1}", _block.BlockType.Category, blockId );
+                }
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
@@ -209,8 +238,21 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Get( blockId );
+            Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
+            if ( dialogPage != null )
+            {
+                dialogPage.ValidationGroup = this.BlockValidationGroup;
+            }
+
+            valSummaryTop.ValidationGroup = this.BlockValidationGroup;
+
+            int? blockId = PageParameter( "BlockId" ).AsIntegerOrNull();
+            if ( !blockId.HasValue )
+            {
+                return;
+            }
+
+            BlockCache _block = BlockCache.Get( blockId.Value );
 
             var blockControlType = _block.BlockType.GetCompiledType();
 
@@ -249,7 +291,7 @@ namespace RockWeb.Blocks.Core
                 tbCacheDuration.Visible = false;
                 //tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
 
-                rcwCustomGridColumns.Visible = this.ShowCustomGridColumns;
+                pwCustomGridColumns.Visible = this.ShowCustomGridColumns;
                 tglEnableStickyHeader.Visible = this.ShowCustomGridOptions;
 
                 if ( this.ShowCustomGridColumns )
@@ -265,6 +307,14 @@ namespace RockWeb.Blocks.Core
                 if ( this.ShowCustomGridOptions )
                 {
                     tglEnableStickyHeader.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                    tglEnableDefaultWorkflowLauncher.Checked = _block.GetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean();
+
+                    CustomActionsConfigState = _block.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ).FromJsonOrNull<List<CustomActionConfig>>();
+                    BindCustomActionsConfig();
+                }
+                else
+                {
+                    CustomActionsConfigState = null;
                 }
 
                 ShowSelectedPane();
@@ -272,7 +322,7 @@ namespace RockWeb.Blocks.Core
 
             base.OnLoad( e );
         }
-                
+
         /// <summary>
         /// Handles the Click event of the lbProperty control.
         /// </summary>
@@ -362,6 +412,40 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
+                // Save the custom action configs
+                SaveCustomActionsConfigToViewState();
+
+                if ( CustomActionsConfigState != null && CustomActionsConfigState.Any() )
+                {
+                    if ( !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ) )
+                    {
+                        block.Attributes.Add( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, null );
+                    }
+
+                    var json = CustomActionsConfigState.ToJson();
+
+                    if ( block.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ) != json )
+                    {
+                        block.SetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, json );
+
+                        // if the actions changed, reload the whole page so that we can avoid issues with launchers changing between postbacks
+                        reloadPage = true;
+                    }
+                }
+                else
+                {
+                    if ( block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ) )
+                    {
+                        if ( block.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ) != null )
+                        {
+                            // if the actions were removed, reload the whole page so that we can avoid issues with launchers changing between postbacks
+                            reloadPage = true;
+                        }
+
+                        block.SetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, null );
+                    }
+                }
+
                 if ( tglEnableStickyHeader.Checked )
                 {
                     if ( !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ) )
@@ -375,6 +459,22 @@ namespace RockWeb.Blocks.Core
                     block.SetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, tglEnableStickyHeader.Checked.ToTrueFalse() );
 
                     // if EnableStickyHeaders changed, reload the page
+                    reloadPage = true;
+                }
+
+                // Save the default launcher enabled setting
+                var isDefaultLauncherEnabled = tglEnableDefaultWorkflowLauncher.Checked;
+
+                if ( isDefaultLauncherEnabled && !block.Attributes.Any( a => a.Key == CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ) )
+                {
+                    block.Attributes.Add( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, null );
+                }
+
+                if ( block.GetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean() != isDefaultLauncherEnabled )
+                {
+                    block.SetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, isDefaultLauncherEnabled.ToTrueFalse() );
+
+                    // since the setting changed, reload the page
                     reloadPage = true;
                 }
 
@@ -504,7 +604,7 @@ namespace RockWeb.Blocks.Core
         private void SaveCustomColumnsConfigToViewState()
         {
             this.CustomGridColumnsConfigState = new CustomGridColumnsConfig();
-            foreach ( var item in rptCustomGridColumns.Items.OfType<RepeaterItem>())
+            foreach ( var item in rptCustomGridColumns.Items.OfType<RepeaterItem>() )
             {
                 var columnConfig = new CustomGridColumnsConfig.ColumnConfig();
 
@@ -571,7 +671,7 @@ namespace RockWeb.Blocks.Core
                 nbRelativeOffset.Text = columnConfig.PositionOffset.ToString();
 
                 var ddlOffsetType = e.Item.FindControl( "ddlOffsetType" ) as RockDropDownList;
-                ddlOffsetType.SetValue( (int)columnConfig.PositionOffsetType );
+                ddlOffsetType.SetValue( ( int ) columnConfig.PositionOffsetType );
                 ddlOffsetType_SelectedIndexChanged( ddlOffsetType, null );
 
                 var tbHeaderText = e.Item.FindControl( "tbHeaderText" ) as RockTextBox;
@@ -616,5 +716,102 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
+
+        #region Custom Actions
+
+        /// <summary>
+        /// Binds the custom actions configuration.
+        /// </summary>
+        private void BindCustomActionsConfig()
+        {
+            var blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+            var _block = BlockCache.Get( blockId );
+
+            rptCustomActions.DataSource = CustomActionsConfigState;
+            rptCustomActions.DataBind();
+        }
+
+        /// <summary>
+        /// Saves the state of the custom action configuration to view.
+        /// </summary>
+        private void SaveCustomActionsConfigToViewState()
+        {
+            CustomActionsConfigState = new List<CustomActionConfig>();
+
+            foreach ( var item in rptCustomActions.Items.OfType<RepeaterItem>() )
+            {
+                var rtbRoute = item.FindControl( "rtbRoute" ) as RockTextBox;
+                var rtbIcon = item.FindControl( "rtbIcon" ) as RockTextBox;
+                var rtbHelp = item.FindControl( "rtbHelp" ) as RockTextBox;
+
+                var config = new CustomActionConfig {
+                    Route = rtbRoute.Text,
+                    IconCssClass = rtbIcon.Text,
+                    HelpText = rtbHelp.Text
+                };
+
+                CustomActionsConfigState.Add( config );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddCustomAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddCustomAction_Click( object sender, EventArgs e )
+        {
+            SaveCustomActionsConfigToViewState();
+            CustomActionsConfigState.Add( new CustomActionConfig() );
+            BindCustomActionsConfig();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeleteCustomAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnDeleteCustomAction_Click( object sender, EventArgs e )
+        {
+            SaveCustomActionsConfigToViewState();
+            var index = ( sender as LinkButton ).CommandArgument.AsIntegerOrNull();
+
+            if ( index.HasValue )
+            {
+                CustomActionsConfigState.RemoveAt( index.Value );
+            }
+
+            BindCustomActionsConfig();
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptCustomActions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptCustomActions_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var config = e.Item.DataItem as CustomActionConfig;
+
+            if ( config == null )
+            {
+                return;
+            }
+
+            var rtbRoute = e.Item.FindControl( "rtbRoute" ) as RockTextBox;
+            rtbRoute.Text = config.Route;
+
+            var rtbIcon = e.Item.FindControl( "rtbIcon" ) as RockTextBox;
+            rtbIcon.Text = config.IconCssClass;
+
+            var rtbHelp = e.Item.FindControl( "rtbHelp" ) as RockTextBox;
+            rtbHelp.Text = config.HelpText;
+
+            var btnDeleteLauncher = e.Item.FindControl( "btnDeleteCustomAction" ) as LinkButton;
+            btnDeleteLauncher.CommandName = "Index";
+            btnDeleteLauncher.CommandArgument = e.Item.ItemIndex.ToString();
+        }
+
+        #endregion Custom Workflow Launchers
     }
 }

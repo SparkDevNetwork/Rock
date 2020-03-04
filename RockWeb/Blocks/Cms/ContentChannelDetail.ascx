@@ -62,10 +62,11 @@
                                     </Rock:Grid>
                                 </div>
                             </Rock:RockControlWrapper>
+                            <Rock:RockCheckBox ID="cbIsStructuredContent" runat="server" Label="Is Structured Content" AutoPostBack="true" OnCheckedChanged="cbIsStructuredContent_CheckedChanged"/>
+                            <Rock:DefinedValuePicker ID="dvEditorTool" runat="server" Label="Editor Tool Configuration" />
                             <Rock:RockDropDownList ID="ddlContentControlType" runat="server" Label="Default Content Control" Required="true" AutoPostBack="true" OnSelectedIndexChanged="ddlContentControlType_SelectedIndexChanged" />
                             <Rock:RockTextBox ID="tbRootImageDirectory" runat="server" Label="Root Image Directory" Help="The path to use for the HTML editor's image folder root (e.g. '~/content/my_channel_images' ) " />
                             <Rock:RockCheckBox ID="cbRequireApproval" runat="server" Label="Items Require Approval" Text="Yes" />
-
                             <Rock:RockCheckBox ID="cbIndexChannel" runat="server" Label="Indexing Enabled" Text="Yes" />
                             <Rock:RockTextBox ID="tbContentChannelItemPublishingPoint" runat="server" Label="Content Channel Item Publishing Point" Help="Lava template to the URL that the content item can be viewed (Keys: 'Id', 'Title', 'ContentChannelId', 'Slug')." />
 
@@ -82,10 +83,10 @@
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" Label="Icon CSS Class" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="IconCssClass" />
                             <Rock:DynamicPlaceHolder ID="phAttributes" runat="server" />
                             <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" Text="Yes" CssClass="js-content-channel-enable-rss" />
-                            <div id="divRss" runat="server" class="js-content-channel-rss"> 
-                                <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel Url" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl" />
-                                <Rock:DataTextBox ID="tbItemUrl" runat="server" Label="Item Url" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ItemUrl" />
-                                <Rock:NumberBox ID="nbTimetoLive" runat="server" Label="Time to Live (TTL)" NumberType="Integer" MinimumValue="0" 
+                            <div id="divRss" runat="server" class="js-content-channel-rss">
+                                <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel URL" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl" />
+                                <Rock:DataTextBox ID="tbItemUrl" runat="server" Label="Item URL" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ItemUrl" />
+                                <Rock:NumberBox ID="nbTimetoLive" runat="server" Label="Time to Live (TTL)" NumberType="Integer" MinimumValue="0"
                                     Help="The number of minutes a feed can stay cached before it is refreshed from the source."/>
                             </div>
                             <Rock:RockCheckBox ID="cbEnableTag" runat="server" Label="Enable Tagging" Help="When enabled, items can be tagged by editors however if categories (below) are used, the category must have 'Tag' security rights for people to use existing organizational tags." CssClass="js-content-channel-enable-tags" />
@@ -131,7 +132,7 @@
                             <asp:Literal ID="lDetailsRight" runat="server" />
                         </div>
                     </div>
-                    
+
                     <div class="actions">
                         <asp:LinkButton ID="lbEdit" runat="server" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="lbEdit_Click" />
                         <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security pull-right" />
@@ -142,7 +143,7 @@
             </div>
 
         </asp:Panel>
-        
+
         <Rock:ModalAlert ID="modalAlert" runat="server" />
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />

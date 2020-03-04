@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Finance
 
             base.OnInit( e );
             string script = @"
-    $('a.js-cancel-txn').click(function( e ){
+    $('a.js-cancel-txn').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to cancel this scheduled transaction?', function (result) {
             if (result) {
@@ -184,7 +184,7 @@ namespace RockWeb.Blocks.Finance
         });
     });
 
-    $('a.js-reactivate-txn').click(function( e ){
+    $('a.js-reactivate-txn').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to reactivate this scheduled transaction?', function (result) {
             if (result) {
@@ -232,7 +232,8 @@ namespace RockWeb.Blocks.Finance
                 queryParams.Add( PageParameterKey.ScheduledTransactionId, financialScheduledTransaction.Id.ToString() );
                 queryParams.Add( PageParameterKey.Person, financialScheduledTransaction.AuthorizedPersonAlias.Person.UrlEncodedKey );
 
-                if ( financialScheduledTransaction.FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent )
+                var hostedGatewayComponent = financialScheduledTransaction.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                if ( hostedGatewayComponent != null && hostedGatewayComponent.GetSupportedHostedGatewayModes( financialScheduledTransaction.FinancialGateway ).Contains( HostedGatewayMode.Hosted ) )
                 {
                     NavigateToLinkedPage( AttributeKey.UpdatePageHosted, queryParams );
                 }
@@ -270,7 +271,16 @@ namespace RockWeb.Blocks.Finance
                         }
                         else
                         {
-                            ShowErrorMessage( errorMessage );
+                            if ( financialScheduledTransaction.IsActive == false )
+                            {
+                                // if GetStatus failed, but the scheduled transaction is inactive, just show Schedule is Inactive
+                                // This takes care of dealing with gateways that delete the scheduled payment vs inactivating them on the gateway side
+                                ShowErrorMessage( "Schedule is inactive" );
+                            }
+                            else
+                            {
+                                ShowErrorMessage( errorMessage );
+                            }
                         }
 
                         ShowView( financialScheduledTransaction );

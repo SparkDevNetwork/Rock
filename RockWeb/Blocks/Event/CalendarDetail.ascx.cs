@@ -89,6 +89,7 @@ namespace RockWeb.Blocks.Event
             gEventAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
             gEventAttributes.GridRebind += gEventAttributes_GridRebind;
             gEventAttributes.GridReorder += gEventAttributes_GridReorder;
+            gEventAttributes.RowDataBound += gEventAttributes_RowDataBound;
 
             gContentChannels.DataKeyNames = new string[] { "Guid" };
             gContentChannels.Actions.ShowAdd = UserCanAdministrate;
@@ -494,32 +495,47 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the RowDataBound event of the gEventAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gEventAttributes_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var attribute = e.Row.DataItem as Attribute;
+            if ( attribute == null )
+            {
+                return;
+            }
+
+            bool isEditAuthorized = attribute.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            ( ( LinkButton ) e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is EditField ).Controls[0] ).Enabled = isEditAuthorized;
+            ( ( LinkButton ) e.Row.Cells.OfType<DataControlFieldCell>().First( a => a.ContainingField is DeleteField ).Controls[0] ).Enabled = isEditAuthorized;
+
+            string fieldTypeName = FieldTypeCache.GetName( attribute.FieldTypeId );
+            ( ( Literal ) e.Row.FindControl( "lFieldType" ) ).Text = fieldTypeName;
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the dlgAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgEventAttribute_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtEventAttributes.GetAttributeProperties( attribute );
+#pragma warning disable 0618 // Type or member is obsolete
+            var attribute = SaveChangesToStateCollection( edtEventAttributes, EventAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
             {
                 return;
             }
-
-            if ( EventAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = EventAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                EventAttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = EventAttributesState.Any() ? EventAttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-
-            EventAttributesState.Add( attribute );
 
             ReOrderEventAttributes( EventAttributesState );
 
@@ -884,17 +900,6 @@ namespace RockWeb.Blocks.Event
             gEventAttributes.DataSource = EventAttributesState
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
-                .Select( a => new
-                {
-                    a.Id,
-                    a.Guid,
-                    a.Name,
-                    a.Description,
-                    FieldType = FieldTypeCache.GetName( a.FieldTypeId ),
-                    a.IsRequired,
-                    a.IsGridColumn,
-                    a.AllowSearch
-                } )
                 .ToList();
             gEventAttributes.DataBind();
         }
@@ -973,6 +978,50 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion
+
+        #endregion
+
+        #region Obsolete Code
+
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
+        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
+        }
 
         #endregion
     }

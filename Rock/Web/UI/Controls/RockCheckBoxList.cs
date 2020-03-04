@@ -464,7 +464,7 @@ namespace Rock.Web.UI.Controls
 
             }}
 
-        $( "".checklist .checkbox input[type=checkbox]"").click( function() {{
+        $( "".checklist .checkbox input[type=checkbox]"").on('click', function() {{
                 StrikeOffCheckbox($( this ) );
             }})
 
@@ -529,6 +529,16 @@ namespace Rock.Web.UI.Controls
             {
                 return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Text ).ToList();
             }
+        }
+
+        /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public virtual void ShowErrorMessage( string errorMessage )
+        {
+            this.CustomValidator.ErrorMessage = errorMessage;
+            this.CustomValidator.IsValid = false;
         }
     }
 }

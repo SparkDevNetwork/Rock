@@ -167,18 +167,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? AllowGuests { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether a group member can only be added if all the GroupRequirements have been met
-        /// </summary>
-        /// <value>
-        /// The must meet requirements to add member.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
-        [NotMapped]
-        public bool? MustMeetRequirementsToAddMember { get; set; }
-
+       
         /// <summary>
         /// Gets or sets a value indicating whether the group should be shown in group finders
         /// </summary>
@@ -291,6 +280,52 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual int? GroupAdministratorPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive reason value identifier.
+        /// </summary>
+        /// <value>
+        /// The inactive reason value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? InactiveReasonValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive reason note.
+        /// </summary>
+        /// <value>
+        /// The inactive reason note.
+        /// </value>
+        [DataMember]
+        public string InactiveReasonNote  { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication object.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderOffsetDays { get; set; }
 
         #endregion
 
@@ -500,7 +535,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use HistoryChangeList instead" )]
+        [Obsolete( "Use HistoryChangeList instead", true )]
         public virtual List<string> HistoryChanges { get; set; }
 
         /// <summary>
@@ -528,6 +563,14 @@ namespace Rock.Model
         /// The schedule cancellation person alias.
         /// </value>
         public virtual PersonAlias ScheduleCancellationPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive group reason.
+        /// </summary>
+        /// <value>
+        /// The inactive group reason.
+        /// </value>
+        public virtual DefinedValue InactiveReasonValue { get; set; }
 
         #endregion
 
@@ -591,45 +634,67 @@ namespace Rock.Model
             // Check to see if user is authorized using normal authorization rules
             bool authorized = base.IsAuthorized( action, person );
 
-            // If the user is not authorized for group through normal security roles, and this is a logged
-            // in user trying to view or edit, check to see if they should be allowed based on their role
-            // in the group.
-            if ( !authorized && person != null && ( action == Authorization.VIEW || action == Authorization.MANAGE_MEMBERS || action == Authorization.EDIT ) )
+            if ( authorized || person == null )
             {
-                // Get the cached group type
-                var groupType = GroupTypeCache.Get( this.GroupTypeId );
-                if ( groupType != null )
+                return authorized;
+            }
+
+            var groupType = GroupTypeCache.Get( this.GroupTypeId );
+
+            if ( groupType == null )
+            {
+                return authorized;
+            }
+
+            // if the person isn't authorized through normal security roles, check if the person has a group role that authorizes them
+            // First, check if there are any roles that could authorized them. If not, we can avoid a database lookup.
+            List<int> checkMemberRoleIds = new List<int>();
+            if ( action == Authorization.VIEW )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.MANAGE_MEMBERS )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanManageMembers ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.EDIT )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
+            }
+
+            if ( !checkMemberRoleIds.Any() )
+            {
+                return authorized;
+            }
+
+            // For each occurrence of this person in this group for the roles that might grant them auth,
+            // check to see if their role is valid for the group type and if the role grants them authorization
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( int roleId in new GroupMemberService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( m =>
+                        m.PersonId == person.Id &&
+                        m.GroupId == this.Id &&
+                        m.GroupMemberStatus == GroupMemberStatus.Active )
+                    .Select( m => m.GroupRoleId ) )
                 {
-                    // For each occurrence of this person in this group, check to see if their role is valid
-                    // for the group type and if the role grants them authorization
-                    using ( var rockContext = new RockContext() )
+                    var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
+                    if ( role != null )
                     {
-                        foreach ( int roleId in new GroupMemberService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( m =>
-                                m.PersonId == person.Id &&
-                                m.GroupId == this.Id &&
-                                m.GroupMemberStatus == GroupMemberStatus.Active )
-                            .Select( m => m.GroupRoleId ) )
+                        if ( action == Authorization.VIEW && role.CanView )
                         {
-                            var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
-                            if ( role != null )
-                            {
-                                if ( action == Authorization.VIEW && role.CanView )
-                                {
-                                    return true;
-                                }
+                            return true;
+                        }
 
-                                if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
-                                {
-                                    return true;
-                                }
+                        if ( action == Authorization.MANAGE_MEMBERS && ( role.CanEdit || role.CanManageMembers ) )
+                        {
+                            return true;
+                        }
 
-                                if ( action == Authorization.EDIT && role.CanEdit )
-                                {
-                                    return true;
-                                }
-                            }
+                        if ( action == Authorization.EDIT && role.CanEdit )
+                        {
+                            return true;
                         }
                     }
                 }
@@ -646,22 +711,6 @@ namespace Rock.Model
         public IQueryable<GroupRequirement> GetGroupRequirements( RockContext rockContext )
         {
             return new GroupRequirementService( rockContext ).Queryable().Include( a => a.GroupRequirementType ).Where( a => ( a.GroupId.HasValue && a.GroupId == this.Id ) || ( a.GroupTypeId.HasValue && a.GroupTypeId == this.GroupTypeId ) );
-        }
-
-        /// <summary>
-        /// Persons the meets group requirements.
-        /// </summary>
-        /// <param name="personId">The person identifier.</param>
-        /// <param name="groupRoleId">The group role identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use PersonMeetsGroupRequirements(rockContext, personId, groupRoleId) instead", true )]
-        public IEnumerable<PersonGroupRequirementStatus> PersonMeetsGroupRequirements( int personId, int? groupRoleId )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                return this.PersonMeetsGroupRequirements( rockContext, personId, groupRoleId );
-            }
         }
 
         /// <summary>
@@ -882,7 +931,10 @@ namespace Rock.Model
                 return;
             }
 
-            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.Id );
+            // IMPORTANT: When dealing with Archived Groups or GroupMembers, we always need to get
+            // a query without the "filter" (AsNoFilter) that comes from the GroupConfiguration and/or
+            // GroupMemberConfiguration because otherwise the query will not include archived items.
+            var groupMemberQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.GroupId == this.Id );
 
             if ( newIsArchived )
             {
@@ -910,7 +962,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Data.DbContext dbContext )
         {
-            var dataContext = (RockContext)dbContext;
+            var dataContext = ( RockContext ) dbContext;
 
             if ( HistoryChangeList != null && HistoryChangeList.Any() )
             {
@@ -1177,6 +1229,8 @@ namespace Rock.Model
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.StatusValue ).WithMany().HasForeignKey( p => p.StatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCancellationPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Group queries.

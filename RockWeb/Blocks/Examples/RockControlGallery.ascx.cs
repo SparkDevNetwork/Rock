@@ -52,6 +52,9 @@ namespace RockWeb.Blocks.Examples
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            RockPage.AddScriptLink( "~/Scripts/bootstrap-toc/bootstrap-toc.min.js" );
+            RockPage.AddCSSLink( "~/Scripts/bootstrap-toc/bootstrap-toc.css" );
+
             InitSyntaxHighlighting();
 
             gExample.DataKeyNames = new string[] { "Id" };
@@ -194,9 +197,11 @@ namespace RockWeb.Blocks.Examples
                 rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
+                liExample.Value = "[{'Value':'Small'},{'Value':'Medium'},{'Value':'Large'}]";
+
                 campExample.Campuses = CampusCache.All();
                 campsExample.Campuses = CampusCache.All();
-                
+
                 var rockContext = new RockContext();
                 var allGroupTypes = new GroupTypeService( rockContext ).Queryable().OrderBy( a => a.Name ).ToList();
                 gpGroupType.GroupTypes = allGroupTypes;
@@ -271,7 +276,7 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class ExampleDataItem
         {

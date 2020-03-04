@@ -25,7 +25,7 @@
 
     Sys.Application.add_load(function () {
         $('ul[id$=cblRoleActionList]').hide();
-        $('a.show-action-list').click(function () {
+        $('a.show-action-list').on('click', function () {
             $('ul[id$=cblRoleActionList]').toggle('fast');
             return false;
         });
@@ -35,7 +35,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        
+
         <div id="divActions" runat="server" class="well well-pillwrap">
             <ul class="nav nav-pills">
                 <asp:Repeater ID="rptActions" runat="server">
@@ -48,7 +48,7 @@
                 <li class="pull-right pill-help"><a data-toggle="collapse" href="#security-details" class=""><i class="fa fa-question-circle"></i></a></li>
             </ul>
         </div>
-        
+
 
         <div id="divContent" runat="server" class="tab-content">
 
@@ -68,9 +68,9 @@
                                     <HeaderStyle HorizontalAlign="Left" />
                                     <ItemStyle Wrap="false" HorizontalAlign="Left" />
                                     <ItemTemplate>
-                                        <!-- 
-                                        Note: when using a RadioButtonList in a Grid, make sure to set Grid.EnableResponseTable 
-                                        to False since radiobuttons don't work in responsive grids 
+                                        <!--
+                                        Note: when using a RadioButtonList in a Grid, make sure to set Grid.EnableResponseTable
+                                        to False since radiobuttons don't work in responsive grids
                                         -->
                                         <asp:RadioButtonList ID="rblAllowDeny" runat="server" RepeatDirection="Horizontal" CssClass="inputs-list"
                                             OnSelectedIndexChanged="rblAllowDeny_SelectedIndexChanged" AutoPostBack="true">

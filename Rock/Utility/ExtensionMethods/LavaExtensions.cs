@@ -48,7 +48,7 @@ namespace Rock
             //
             // Register any 3rd party library classes that are safe to use.
             //
-            Template.RegisterSafeType( typeof( Mobile.Common.DeviceData ), typeof( Mobile.Common.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
+            Template.RegisterSafeType( typeof( Common.Mobile.DeviceData ), typeof( Common.Mobile.DeviceData ).GetProperties().Select( p => p.Name ).ToArray() );
         }
 
         #endregion

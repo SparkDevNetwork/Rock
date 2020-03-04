@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting radio button options from an enum.
+    /// Field Attribute for selecting radio button options from an enum. Value is stored as the numeric value of the Enum.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EnumFieldAttribute : SelectFieldAttribute
@@ -36,6 +36,8 @@ namespace Rock.Attribute
         public EnumFieldAttribute( string name )
             : base( name )
         {
+            FieldTypeClass = typeof( Rock.Field.Types.SelectSingleFieldType ).FullName;
+            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>

@@ -103,7 +103,7 @@ namespace Rock.Migrations
         ([LocationId],[GroupId],[IsMailingLocation],[IsMappedLocation], [Guid])
         SELECT [LocationId], @GroupId, 0 , 0, NEWID()
         FROM [Campus] 
-        WHERE [IsActive] = 1
+        WHERE [IsActive] = 1 AND [LocationId] IS NOT NULL
         GROUP BY [LocationId] ORDER BY MAX([Name])
     END
 ", new GroupType().GroupViewLavaTemplate.Replace( "'", "''" ) ) );

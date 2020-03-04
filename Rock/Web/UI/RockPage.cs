@@ -248,7 +248,7 @@ namespace Rock.Web.UI
                     _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
                     if ( _CurrentUser != null )
                     {
-                        Context.Items.Add( "CurrentUser", _CurrentUser );
+                        Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
                     }
                 }
 
@@ -267,7 +267,7 @@ namespace Rock.Web.UI
 
                 if ( _CurrentUser != null )
                 {
-                    Context.Items.Add( "CurrentUser", _CurrentUser );
+                    Context.AddOrReplaceItem( "CurrentUser", _CurrentUser );
                     CurrentPerson = _CurrentUser.Person;
                 }
                 else
@@ -311,7 +311,7 @@ namespace Rock.Web.UI
                 _currentPerson = value;
                 if ( _currentPerson != null )
                 {
-                    Context.Items.Add( "CurrentPerson", value );
+                    Context.AddOrReplaceItem( "CurrentPerson", value );
                 }
 
                 _currentPersonAlias = null;
@@ -560,22 +560,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Find the <see cref="Rock.Web.UI.Controls.Zone"/> for the specified zone name.  Looks in the
-        /// <see cref="Zones"/> property to see if it has been defined.  If an existing zone
-        /// <see cref="Rock.Web.UI.Controls.Zone"/> cannot be found, the <see cref="HtmlForm"/> control
-        /// is returned
-        /// </summary>
-        /// <param name="zoneName">A <see cref="System.String"/> representing the name of the zone.</param>
-        /// <returns>The <see cref="System.Web.UI.Control"/> for the zone, if the zone is not found, the form control is returned.</returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete("Use the other FindZone()", true )]
-        protected virtual Control FindZone( string zoneName )
-        {
-            // Find the zone, or use the Form if not found
-            return FindZone( zoneName, this.Form );
-        }
-
-        /// <summary>
         /// Find the <see cref="Rock.Web.UI.Controls.Zone" /> for the specified zone name.  Looks in the
         /// <see cref="Zones" /> property to see if it has been defined.  If an existing zone
         /// <see cref="Rock.Web.UI.Controls.Zone" /> cannot be found, the defaultZone will be returned
@@ -685,9 +669,26 @@ namespace Rock.Web.UI
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>( scriptManager_Navigate );
 
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebForms.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebForms.js" });
+			_scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebUIValidation.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebUIValidation.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "MenuStandards.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/MenuStandards.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "Focus.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/Focus.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "GridView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/GridView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "DetailsView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/DetailsView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "TreeView.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/TreeView.js" });
+            _scriptManager.Scripts.Add(new ScriptReference
+				{ Name = "WebParts.js", Assembly = "System.Web", Path = "~/Scripts/WebForms/WebParts.js" });
+
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
-            _scriptManager.Scripts.Add( new ScriptReference( "~/Bundles/WebFormsJs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/WebFormsJs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
@@ -1307,6 +1308,7 @@ namespace Rock.Web.UI
                         Page.Trace.Warn( "Adding admin footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
+                        adminFooter.AddCssClass( "js-cms-admin-footer" );
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         this.Form.Controls.Add( adminFooter );
 
@@ -1339,9 +1341,9 @@ namespace Rock.Web.UI
                         {
                             HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aBlockConfig );
-                            aBlockConfig.Attributes.Add( "class", "btn block-config" );
+                            aBlockConfig.Attributes.Add( "class", "btn block-config js-block-config" );
                             aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
-                            aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                            aBlockConfig.Attributes.Add( "Title", "Block Configuration (Alt-B)" );
                             HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                             aBlockConfig.Controls.Add( iBlockConfig );
                             iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
@@ -1354,9 +1356,9 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aPageProperties );
                             aPageProperties.ID = "aPageProperties";
                             aPageProperties.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aPageProperties.Attributes.Add( "class", "btn properties" );
+                            aPageProperties.Attributes.Add( "class", "btn properties js-page-properties" );
                             aPageProperties.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
-                            aPageProperties.Attributes.Add( "Title", "Page Properties" );
+                            aPageProperties.Attributes.Add( "Title", "Page Properties (Alt+P)" );
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
                             iPageProperties.Attributes.Add( "class", "fa fa-cog" );
@@ -1369,9 +1371,9 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aChildPages );
                             aChildPages.ID = "aChildPages";
                             aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aChildPages.Attributes.Add( "class", "btn page-child-pages" );
+                            aChildPages.Attributes.Add( "class", "btn page-child-pages js-page-child-pages" );
                             aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", _pageCache.Id ) ) + "')" );
-                            aChildPages.Attributes.Add( "Title", "Child Pages" );
+                            aChildPages.Attributes.Add( "Title", "Child Pages (Alt+L)" );
                             HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                             aChildPages.Controls.Add( iChildPages );
                             iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
@@ -1379,9 +1381,9 @@ namespace Rock.Web.UI
                             // RockPage Zones
                             HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aPageZones );
-                            aPageZones.Attributes.Add( "class", "btn page-zones" );
+                            aPageZones.Attributes.Add( "class", "btn page-zones js-page-zones" );
                             aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
-                            aPageZones.Attributes.Add( "Title", "Page Zones" );
+                            aPageZones.Attributes.Add( "Title", "Page Zones (Alt+Z)" );
                             HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                             aPageZones.Controls.Add( iPageZones );
                             iPageZones.Attributes.Add( "class", "fa fa-columns" );
@@ -1399,7 +1401,7 @@ namespace Rock.Web.UI
                             aPageSecurity.Controls.Add( iPageSecurity );
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
-                            // ShorLink Properties
+                            // ShortLink Properties
                             HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aShortLink );
                             aShortLink.ID = "aShortLink";
@@ -1546,17 +1548,6 @@ namespace Rock.Web.UI
         protected override void OnLoadComplete( EventArgs e )
         {
             base.OnLoadComplete( e );
-
-            // create a page view transaction if enabled
-            // moved this from OnLoad so we could get the updated title (if Lava or the block changed it)
-            if ( !Page.IsPostBack && _pageCache != null )
-            {
-                if ( _pageCache.Layout.Site.EnablePageViews )
-                {
-                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache );
-                    pageViewTransaction.Enqueue();
-                }
-            }
         }
 
         /// <summary>
@@ -1720,10 +1711,22 @@ namespace Rock.Web.UI
         {
             base.OnSaveStateComplete( e );
 
+            TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
+
+            // create a page view transaction if enabled
+            // Earlier it was moved to OnLoadComplete from OnLoad so we could get the updated title (if Lava or the block changed it)
+            // Then it was moved from OnLoadComplete so we could get the Page Load Time
+            if ( !Page.IsPostBack && _pageCache != null )
+            {
+                if ( _pageCache.Layout.Site.EnablePageViews )
+                {
+                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, null, tsDuration.TotalSeconds );
+                    pageViewTransaction.Enqueue();
+                }
+            }
+
             if ( phLoadStats != null )
             {
-                TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-
                 var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
 
                 if ( customPersister != null )
@@ -2012,7 +2015,8 @@ Sys.Application.add_load(function () {
             string virtualPath = this.ResolveRockUrl( url );
             if ( Context.Request != null && Context.Request.Url != null )
             {
-                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+                string protocol = WebRequestHelper.IsSecureConnection(Context) ? "https" : Context.Request.Url.Scheme;
+                return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
             }
 
             return GlobalAttributesCache.Get().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();
@@ -2671,41 +2675,41 @@ Sys.Application.add_load(function () {
         {
             if ( page != null && page.Header != null )
             {
-                if ( !ReplaceExistingHtmlMeta( page, htmlMeta ) )
-                {
-                    // Find last meta element
-                    int index = 0;
-                    for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
-                    {
-                        if ( page.Header.Controls[i] is HtmlMeta )
-                        {
-                            index = i;
-                            break;
-                        }
-                    }
+                RemoveExistingHtmlMeta( page, htmlMeta );
 
-                    if ( index == page.Header.Controls.Count )
+                // Find last meta element
+                int index = 0;
+                for ( int i = page.Header.Controls.Count - 1; i >= 0; i-- )
+                {
+                    if ( page.Header.Controls[i] is HtmlMeta )
                     {
-                        page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.Add( htmlMeta );
-                    }
-                    else
-                    {
-                        page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
-                        page.Header.Controls.AddAt( ++index, htmlMeta );
+                        index = i;
+                        break;
                     }
                 }
+
+                if ( index == page.Header.Controls.Count )
+                {
+                    page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
+                    page.Header.Controls.Add( htmlMeta );
+                }
+                else
+                {
+                    page.Header.Controls.AddAt( ++index, new LiteralControl( "\n\t" ) );
+                    page.Header.Controls.AddAt( ++index, htmlMeta );
+                }
+
             }
         }
 
         /// <summary>
-        /// Replaces an existing HtmlMeta control if all attributes match except for Content.
-        /// Returns <c>true</c> if the meta tag already exists and was replaced.
+        /// Removes an existing HtmlMeta control if all attributes match except for Content.
+        /// Returns <c>true</c> if the meta tag already exists and was removed.
         /// </summary>
         /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
-        /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for..</param>
+        /// <param name="newMeta">The <see cref="System.Web.UI.HtmlControls.HtmlMeta"/> tag to check for.</param>
         /// <returns>A <see cref="System.Boolean"/> that is <c>true</c> if the meta tag already exists; otherwise <c>false</c>.</returns>
-        private static bool ReplaceExistingHtmlMeta( Page page, HtmlMeta newMeta )
+        private static bool RemoveExistingHtmlMeta( Page page, HtmlMeta newMeta )
         {
             bool existsAlready = false;
 
@@ -2715,20 +2719,15 @@ Sys.Application.add_load(function () {
                 {
                     if ( control is HtmlMeta )
                     {
-                        HtmlMeta existingMeta = (HtmlMeta)control;
+                        HtmlMeta existingMeta = ( HtmlMeta )control;
 
                         bool sameAttributes = true;
-                        bool hasContentAttribute_NewMeta = false;
                         bool hasContentAttribute_ExistingMeta = ( existingMeta.Attributes["Content"] != null );
 
                         foreach ( string attributeKey in newMeta.Attributes.Keys )
                         {
-                            if ( attributeKey.ToLower() == "content" )
+                            if ( attributeKey.ToLower() != "content" ) // ignore content attribute.
                             {
-                                hasContentAttribute_NewMeta = true;
-                            }
-                            else
-                            { 
                                 if ( existingMeta.Attributes[attributeKey] == null ||
                                     existingMeta.Attributes[attributeKey].ToLower() != newMeta.Attributes[attributeKey].ToLower() )
                                 {
@@ -2740,25 +2739,7 @@ Sys.Application.add_load(function () {
 
                         if ( sameAttributes )
                         {
-                            if ( hasContentAttribute_NewMeta )
-                            {
-                                if ( hasContentAttribute_ExistingMeta )
-                                {
-                                    existingMeta.Attributes["Content"] = newMeta.Attributes["Content"];
-                                }
-                                else
-                                {
-                                    existingMeta.Attributes.Add( "Content", newMeta.Attributes["Content"] );
-                                }
-                            }
-                            else
-                            {
-                                if ( hasContentAttribute_ExistingMeta )
-                                {
-                                    existingMeta.Attributes.Remove( "Content" );
-                                }
-                            }
-
+                            page.Header.Controls.Remove( existingMeta );
                             existsAlready = true;
                             break;
                         }
@@ -2952,7 +2933,7 @@ Sys.Application.add_load(function () {
         public static void AddScriptLink( Page page, string path, bool fingerprint = true )
         {
             var scriptManager = ScriptManager.GetCurrent( page );
-             
+
             if ( fingerprint )
             {
                 path = Fingerprint.Tag( page.ResolveUrl( path ) );
@@ -3014,17 +2995,92 @@ Sys.Application.add_load(function () {
         /// <param name="src">The source.</param>
         public static void AddScriptSrcToHead( Page page, string scriptId, string src )
         {
+            AddScriptSrcToHead( page, scriptId, src, null );
+        }
+
+        /// <summary>
+        /// Adds a script tag with the specified id, source, and attributes to head (if it doesn't already exist)
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="scriptId">The script identifier.</param>
+        /// <param name="src">The source.</param>
+        /// <param name="additionalAttributes">The additional attributes.</param>
+        public static void AddScriptSrcToHead( Page page, string scriptId, string src, Dictionary<string, string> additionalAttributes )
+        {
             if ( page != null && page.Header != null )
             {
                 var header = page.Header;
 
                 if ( !header.Controls.OfType<Literal>().Any( a => a.ID == scriptId ) )
                 {
-                    Literal l = new Literal {
-                        ID = scriptId,
-                        Text = $"<script id='{scriptId}' src='{src}'></script>"
+                    Literal l = new Literal
+                    {
+                        ID = scriptId
                     };
 
+                    StringBuilder sbScriptTagHTML = new StringBuilder();
+                    sbScriptTagHTML.Append( $"<script id='{scriptId}' src='{src}'" );
+                    string additionalAttributesHtml = additionalAttributes?.Select( a => $"{a.Key}='{a.Value}'" ).ToList().AsDelimited( " " );
+                    if ( additionalAttributesHtml.IsNotNullOrWhiteSpace() )
+                    {
+                        sbScriptTagHTML.Append( $" {additionalAttributesHtml}" );
+                    }
+
+                    sbScriptTagHTML.Append( "></script>" );
+                    l.Text = sbScriptTagHTML.ToString();
+                    header.Controls.Add( l );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId and css
+        /// </summary>
+        /// <param name="styleTagId">The script identifier.</param>
+        /// <param name="src">The source.</param>
+        public void AddStyleToHead( string styleTagId, string src )
+        {
+            RockPage.AddStyleToHead( this.Page, styleTagId, src );
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId and css
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="styleTagId">The style tag identifier.</param>
+        /// <param name="css">The CSS.</param>
+        public static void AddStyleToHead( Page page, string styleTagId, string css )
+        {
+            AddStyleToHead( page, styleTagId, css, null );
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId, css, and attributes to head (if it doesn't already exist)
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="styleTagId">The style tag identifier.</param>
+        /// <param name="css">The CSS.</param>
+        /// <param name="additionalAttributes">The additional attributes.</param>
+        public static void AddStyleToHead( Page page, string styleTagId, string css, Dictionary<string, string> additionalAttributes )
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                if ( !header.Controls.OfType<Literal>().Any( a => a.ID == styleTagId ) )
+                {
+                    Literal l = new Literal
+                    {
+                        ID = styleTagId
+                    };
+                    StringBuilder sbStyleTagHTML = new StringBuilder();
+                    sbStyleTagHTML.Append( $"<style id='{styleTagId}'" );
+                    string additionalAttributesHtml = additionalAttributes?.Select( a => $"{a.Key}='{a.Value}'" ).ToList().AsDelimited( " " );
+                    if ( additionalAttributesHtml.IsNotNullOrWhiteSpace() )
+                    {
+                        sbStyleTagHTML.Append( $" {additionalAttributesHtml}" );
+                    }
+                    sbStyleTagHTML.Append( $">\n{css}\n</style>" );
+                    l.Text = sbStyleTagHTML.ToString();
                     header.Controls.Add( l );
                 }
             }

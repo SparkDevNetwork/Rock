@@ -28,75 +28,6 @@ namespace Rock.Model
     /// </summary>
     public partial class CommunicationService
     {
-
-        /// <summary>
-        /// Creates the email communication.
-        /// </summary>
-        /// <param name="recipientEmails">The recipient emails.</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="replyTo">The reply to.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="htmlMessage">The HTML message.</param>
-        /// <param name="textMessage">The text message.</param>
-        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>
-        /// <param name="recipientStatus">The recipient status.</param>
-        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use method without textMessage argument", true )]
-        public Communication CreateEmailCommunication
-        (
-            List<string> recipientEmails,
-            string fromName,
-            string fromAddress,
-            string replyTo,
-            string subject,
-            string htmlMessage,
-            string textMessage,
-            bool bulkCommunication,
-            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
-            int? senderPersonAliasId = null )
-        {
-            return CreateEmailCommunication( recipientEmails, fromName, fromAddress, replyTo, subject, htmlMessage, bulkCommunication, recipientStatus, senderPersonAliasId );
-        }
-
-        /// <summary>
-        /// Creates the email communication.
-        /// </summary>
-        /// <param name="recipientEmails">The recipient emails.</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="replyTo">The reply to.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="message">The message.</param>
-        /// <param name="bulkCommunication">if set to <c>true</c> [bulk communication].</param>
-        /// <param name="recipientStatus">The recipient status.</param>
-        /// <param name="senderPersonAliasId">The sender person alias identifier.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use method with send date time argument", true )]
-        public Communication CreateEmailCommunication
-        (
-            List<string> recipientEmails,
-            string fromName,
-            string fromAddress,
-            string replyTo,
-            string subject,
-            string message,
-            bool bulkCommunication,
-            CommunicationRecipientStatus recipientStatus = CommunicationRecipientStatus.Delivered,
-            int? senderPersonAliasId = null )
-        {
-            DateTime? sendDateTime = null;
-            if ( recipientStatus == CommunicationRecipientStatus.Delivered )
-            {
-                sendDateTime = RockDateTime.Now;
-            }
-
-            return CreateEmailCommunication( recipientEmails, fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
-        }
-
         /// <summary>
         /// Creates the email communication 
         /// </summary>
@@ -129,10 +60,9 @@ namespace Rock.Model
             var recipients = new PersonService( ( RockContext ) Context )
                 .Queryable()
                 .Where( p => recipientEmails.Contains( p.Email ) )
-                .Select( a => new RockEmailMessageRecipient( a, null ) )
                 .ToList();
 
-            return this.CreateEmailCommunication( recipients, fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
+            return this.CreateEmailCommunication( recipients.Select( a => new RockEmailMessageRecipient( a, null ) ).ToList(), fromName, fromAddress, replyTo, subject, message, bulkCommunication, sendDateTime, recipientStatus, senderPersonAliasId );
         }
 
         /// <summary>
@@ -327,6 +257,41 @@ namespace Rock.Model
 
             return queuedQry;
         }
-
     }
+
+    #region Extension Methods
+
+    public static partial class CommunicationExtensionMethods
+    {
+        /// <summary>
+        /// Communications that were not recently approved within since the given cutoffTime.
+        /// </summary>
+        /// <param name="communications">The communications.</param>
+        /// <param name="cutoffTime">The cutoff time.</param>
+        /// <returns></returns>
+        public static IQueryable<Communication> NotRecentlyApproved( this IQueryable<Communication> communications, DateTime cutoffTime )
+        {
+            // Make sure communication wasn't just recently approved
+            return communications.Where( c => !c.ReviewedDateTime.HasValue || c.ReviewedDateTime.Value < cutoffTime );
+        }
+
+        /// <summary>
+        /// Communications that were, if scheduled, are within the given window.
+        /// </summary>
+        /// <param name="communications">The communications.</param>
+        /// <param name="startWindow">The start window.</param>
+        /// <param name="endWindow">The end window.</param>
+        /// <returns></returns>
+        public static IQueryable<Communication> IfScheduledAreInWindow( this IQueryable<Communication> communications, DateTime startWindow, DateTime endWindow )
+        {
+            return communications.Where( c =>
+                (
+                    !c.FutureSendDateTime.HasValue ||
+                    ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= startWindow && c.FutureSendDateTime.Value <= endWindow )
+                )
+            );
+        }
+    }
+
+    #endregion
 }

@@ -5,6 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
+//
 // http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -168,7 +169,7 @@ $(document).ready(function() {
 
             if ( !Page.IsPostBack )
             {
-                this.ShowResults = GetUserPreference( _settingKeyShowResults ).AsBoolean(true);
+                this.ShowResults = GetUserPreference( _settingKeyShowResults ).AsBoolean( true );
 
                 string itemId = PageParameter( "DataViewId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
@@ -296,6 +297,7 @@ $(document).ready(function() {
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
+            dataView.IncludeDeceased = cbIncludeDeceased.Checked;
             dataView.PersistedScheduleIntervalMinutes = GetPersistedScheduleIntervalMinutes();
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
@@ -337,9 +339,41 @@ $(document).ready(function() {
 
             if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
             {
-                dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-                dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
-                rockContext.SaveChanges();
+                try
+                {
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                    stopwatch.Stop();
+                    dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
+                    dataView.PersistedLastRunDuration = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception ex )
+                {
+                    this.LogException( ex );
+                    Exception exception = ex;
+                    while ( exception != null )
+                    {
+                        if ( exception is System.Data.SqlClient.SqlException )
+                        {
+                            // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                            if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
+                            {
+                                nbPersistError.NotificationBoxType = NotificationBoxType.Warning;
+                                nbPersistError.Text = "This dataview did not persist in a timely manner. You can try again or adjust the timeout setting of this block.";
+                                return;
+                            }
+                            else
+                            {
+                                exception = exception.InnerException;
+                            }
+                        }
+                        else
+                        {
+                            exception = exception.InnerException;
+                        }
+                    }
+                }
             }
 
             if ( adding )
@@ -598,7 +632,7 @@ $(document).ready(function() {
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
                 btnDelete.Enabled = dataViewService.CanDelete( dataView, out errorMessage );
-                if (!btnDelete.Enabled)
+                if ( !btnDelete.Enabled )
                 {
                     btnDelete.ToolTip = errorMessage;
                     btnDelete.Attributes["onclick"] = null;
@@ -666,6 +700,7 @@ $(document).ready(function() {
             BindDataTransformations( rockContext );
             ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
+            BindIncludeDeceasedControl( dataView.EntityTypeId, dataView.IncludeDeceased );
             CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true, rockContext );
         }
 
@@ -701,6 +736,11 @@ $(document).ready(function() {
             if ( dataView.TransformEntityType != null )
             {
                 descriptionListMain.Add( "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
+            }
+
+            if ( dataView.IncludeDeceased )
+            {
+                descriptionListMain.Add( "Include Deceased", dataView.IncludeDeceased.ToYesNo() );
             }
 
             lblMainDetails.Text = descriptionListMain.Html;
@@ -799,7 +839,7 @@ $(document).ready(function() {
             {
                 foreach ( var groupSync in groupSyncs )
                 {
-                    string groupAndRole = string.Format( "{0} - {1}", (groupSync.Group != null ? groupSync.Group.Name : "(Id: " + groupSync.GroupId.ToStringSafe() + ")" ), groupSync.GroupTypeRole.Name );
+                    string groupAndRole = string.Format( "{0} - {1}", ( groupSync.Group != null ? groupSync.Group.Name : "(Id: " + groupSync.GroupId.ToStringSafe() + ")" ), groupSync.GroupTypeRole.Name );
 
                     if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
                     {
@@ -844,7 +884,7 @@ $(document).ready(function() {
                 if ( dataView.EntityTypeId.HasValue )
                 {
                     var entityTypeCache = EntityTypeCache.Get( dataView.EntityTypeId.Value, rockContext );
-                    if (entityTypeCache != null)
+                    if ( entityTypeCache != null )
                     {
                         gReport.RowItemText = entityTypeCache.FriendlyName;
                     }
@@ -956,7 +996,7 @@ $(document).ready(function() {
                 }
             }
 
-            var errorBox = ( grid == gPreview) ? nbPreviewError : nbGridError;
+            var errorBox = ( grid == gPreview ) ? nbPreviewError : nbGridError;
 
             if ( errorMessages.Any() )
             {
@@ -1147,7 +1187,7 @@ $(document).ready(function() {
                         }
                         catch ( Exception ex )
                         {
-                            this.LogException( new Exception("Exception setting selection for DataViewFilter: " + filter.Guid, ex));
+                            this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
                         }
                     }
 
@@ -1200,7 +1240,36 @@ $(document).ready(function() {
             emptyFilter.Guid = Guid.NewGuid();
             dataViewFilter.ChildFilters.Add( emptyFilter );
 
+            BindIncludeDeceasedControl( etpEntityType.SelectedEntityTypeId );
+
             CreateFilterControl( etpEntityType.SelectedEntityTypeId, dataViewFilter, true, rockContext );
+        }
+
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// /// <param name="sender">The source of the event.</param>
+        /// <param name="filteredEntityTypeId">The filtered entity type identifier.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [editable].</param>
+        private void BindIncludeDeceasedControl( int? filteredEntityTypeId, bool includeDeceased = false )
+        {
+            if ( filteredEntityTypeId.HasValue )
+            {
+                var filteredEntityType = EntityTypeCache.Get( filteredEntityTypeId.Value );
+                if ( filteredEntityType != null )
+                {
+                    var isPersonDataView = filteredEntityType.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
+                    cbIncludeDeceased.Visible = isPersonDataView;
+                    if ( isPersonDataView )
+                    {
+                        cbIncludeDeceased.Checked = includeDeceased;
+                    }
+                    else
+                    {
+                        cbIncludeDeceased.Checked = false;
+                    }
+                }
+            }
         }
 
         #endregion
@@ -1340,7 +1409,7 @@ $(document).ready(function() {
                 bgPersistedScheduleUnit.SelectedValue = _PersistedScheduleUnit.ConvertToInt().ToString();
             }
 
-            cbPersistDataView.Checked = _PersistenceIsEnabled;
+            swPersistDataView.Checked = _PersistenceIsEnabled;
             pnlSpeedSettings.Visible = _PersistenceIsEnabled;
 
             if ( _PersistenceIsEnabled )
@@ -1357,7 +1426,7 @@ $(document).ready(function() {
         /// <returns></returns>
         private int? GetPersistedScheduleIntervalMinutes()
         {
-            bool isEnabled = cbPersistDataView.Checked;
+            bool isEnabled = swPersistDataView.Checked;
 
             if ( !isEnabled )
             {
@@ -1390,14 +1459,14 @@ $(document).ready(function() {
         {
             _PersistedScheduleUnit = bgPersistedScheduleUnit.SelectedValueAsEnum<DataViewPersistenceIntervalSpecifier>( DataViewPersistenceIntervalSpecifier.None );
             _PersistedScheduleIntervalCurrentValue = rsPersistedScheduleInterval.SelectedValue.GetValueOrDefault( 12 );
-            _PersistenceIsEnabled = cbPersistDataView.Checked;
+            _PersistenceIsEnabled = swPersistDataView.Checked;
         }
 
         /// <summary>
         /// Set the enabled state of the persisted schedule.
         /// </summary>
         /// <param name="isEnabled"></param>
-        private void SetPersistedScheduleEnabledState(bool isEnabled)
+        private void SetPersistedScheduleEnabledState( bool isEnabled )
         {
             SetPersistenceScheduleFromInterval( isEnabled, _PersistedScheduleIntervalCurrentValue, _PersistedScheduleUnit );
         }
@@ -1412,11 +1481,11 @@ $(document).ready(function() {
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the cbPersistDataView control.
+        /// Handles the CheckedChanged event of the swPersistDataView control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void cbPersistDataView_CheckedChanged( object sender, EventArgs e )
+        protected void swPersistDataView_CheckedChanged( object sender, EventArgs e )
         {
             SetPersistedScheduleEnabledState( _PersistenceIsEnabled );
         }

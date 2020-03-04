@@ -51,14 +51,14 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show Notes", "Should the notes field be displayed?", true, "", 9 )]
     [TextField( "Attendance Note Label", "The text to use to describe the notes", true, "Notes", "", 10 )]
     [EnumsField( "Send Summary Email To", "", typeof( SendSummaryEmailType ), false, "", "", 11 )]
-    [SystemEmailField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemEmail.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
+    [SystemCommunicationField( "Attendance Email", "The System Email to use to send the attendance", false, Rock.SystemGuid.SystemCommunication.ATTENDANCE_NOTIFICATION, "", 12, "AttendanceEmailTemplate" )]
     [BooleanField( "Allow Sorting", "Should the block allow sorting the Member's list by First Name or Last Name?", true, "", 13 )]
     public partial class GroupAttendanceDetail : RockBlock
     {
         #region Fields
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum SendSummaryEmailType
         {
@@ -581,7 +581,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( scheduleId == null )
             {
-                // if no specific schedule was specified in the URL, use the group's scheduleId 
+                // if no specific schedule was specified in the URL, use the group's scheduleId
                 scheduleId = _group.ScheduleId;
             }
 
@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.Groups
                 occurrence = occurrenceService.Get( occurrenceDate.Value.Date, _group.Id, locationId, scheduleId );
             }
 
-            // If an occurrence date was included, but no occurrence was found with that date, and new 
+            // If an occurrence date was included, but no occurrence was found with that date, and new
             // occurrences can be added, create a new one
             if ( occurrence == null && _allowAdd )
             {
@@ -921,7 +921,7 @@ namespace RockWeb.Blocks.Groups
             $('div.js-roster').hide();
         }}
 
-        $('#{0}').click(function () {{
+        $('#{0}').on('click', function () {{
             if ($(this).is(':checked')) {{
                 $('div.js-roster').hide('fast');
             }} else {{
@@ -929,13 +929,13 @@ namespace RockWeb.Blocks.Groups
             }}
         }});
 
-        $('.js-add-member').click(function ( e ) {{
+        $('.js-add-member').on('click', function ( e ) {{
             e.preventDefault();
             var $a = $(this);
             var memberName = $(this).parent().find('span').html();
             Rock.dialogs.confirm('Add ' + memberName + ' to your group?', function (result) {{
                 if (result) {{
-                    window.location = $a.prop('href');                    
+                    window.location = $a.prop('href');
                 }}
             }});
         }});
@@ -1065,14 +1065,14 @@ cbDidNotMeet.ClientID );
                             }
                             else
                             {
-                                // Otherwise, only record that they attended -- don't change their attendance startDateTime 
+                                // Otherwise, only record that they attended -- don't change their attendance startDateTime
                                 attendance.DidAttend = attendee.Attended;
                             }
                         }
                     }
                 }
 
-                rockContext.SaveChanges();                
+                rockContext.SaveChanges();
 
                 if ( occurrence.LocationId.HasValue )
                 {
@@ -1103,9 +1103,6 @@ cbDidNotMeet.ClientID );
                 }
 
                 _occurrence.Id = occurrence.Id;
-
-                // Sync attendance changes to the appropriate streaks
-                StreakTypeService.HandleAttendanceRecordsAsync( occurrence.Id );
             }
 
             return true;

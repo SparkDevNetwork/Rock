@@ -33,7 +33,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Follow
 {
     /// <summary>
-    /// Block for displaying people that current person follows.  
+    /// Block for displaying people that current person follows.
     /// </summary>
     [DisplayName( "Person Following List" )]
     [Category( "Follow" )]
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Follow
             gFollowings.Actions.AddCustomActionControl( lbUnfollow );
 
             string unfollowConfirmScript = @"
-    $('a.js-unfollow').click(function( e ){
+    $('a.js-unfollow').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to unfollow the selected people?', function (result) {
             if (result) {
@@ -227,11 +227,11 @@ namespace RockWeb.Blocks.Follow
                                 .Select( n => n.NumberFormatted )
                                 .FirstOrDefault(),
                             Spouse = p.Members
-                                .Where( m => 
+                                .Where( m =>
                                     p.MaritalStatusValue.Guid.Equals(marriedGuid) &&
                                     m.GroupRole.Guid.Equals(adultGuid))
                                 .SelectMany( m => m.Group.Members)
-                                .Where( m => 
+                                .Where( m =>
                                     m.PersonId != p.Id &&
                                     m.GroupRole.Guid.Equals(adultGuid) &&
                                     m.Person.MaritalStatusValue.Guid.Equals(marriedGuid) )

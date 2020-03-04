@@ -17,9 +17,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using System.Threading.Tasks;
 using Rock.Data;
 
 namespace Rock.Model
@@ -153,6 +155,55 @@ namespace Rock.Model
         [DataMember]
         public DateTime? InteractionEndDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel custom 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        public string ChannelCustom1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom 2.
+        /// </summary>
+        /// <value>
+        /// The channel custom 2.
+        /// </value>
+        [DataMember]
+        [MaxLength( 2000 )]
+        public string ChannelCustom2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom indexed 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom indexed 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        [Index( "IX_ChannelCustomIndexed1" )]
+        public string ChannelCustomIndexed1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction length.
+        /// </summary>
+        /// <value>
+        /// The interaction length.
+        /// </value>
+        [DataMember]
+        public double? InteractionLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time to serve the interaction in seconds.
+        /// </summary>
+        /// <value>
+        /// The time to serve the interaction in seconds.
+        /// </value>
+        [DataMember]
+        public double? InteractionTimeToServe { get; set; }
+
         #endregion
 
         #region Campaign Meta fields
@@ -256,8 +307,65 @@ namespace Rock.Model
         [LavaInclude]
         public virtual PersonalDevice PersonalDevice { get; set; }
 
-        #endregion
+        /// <summary>
+        /// Sets the utm fields from URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        public void SetUTMFieldsFromURL( string url )
+        {
+            if ( url.IsNotNullOrWhiteSpace() && url.IndexOf( "utm_", StringComparison.OrdinalIgnoreCase ) >= 0 )
+            {
+                var urlParams = System.Web.HttpUtility.ParseQueryString( url );
+                this.Source = urlParams.Get( "utm_source" ).Truncate( 25 );
+                this.Medium = urlParams.Get( "utm_medium" ).Truncate( 25 );
+                this.Campaign = urlParams.Get( "utm_campaign" ).Truncate( 50 );
+                this.Content = urlParams.Get( "utm_content" ).Truncate( 50 );
+                this.Term = urlParams.Get( "utm_term" ).Truncate( 50 );
+            }
+        }
 
+        /// <summary>
+        /// Sets the interaction data (for example, the URL of the request), and obfuscates sensitive data that might be in the interactionData
+        /// </summary>
+        /// <param name="interactionData">The interaction data.</param>
+        public void SetInteractionData( string interactionData )
+        {
+            this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
+        }
+
+        #endregion Virtual Properties
+
+        #region Public Methods
+
+        /// <summary>
+        /// Method that will be called on an entity immediately before the item is saved by context
+        /// </summary>
+        /// <param name="dbContext"></param>
+        /// <param name="entry"></param>
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
+        {
+            _isDeleted = entry.State == EntityState.Deleted;
+            base.PreSaveChanges( dbContext, entry );
+        }
+
+        private bool _isDeleted = false;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            if ( !_isDeleted )
+            {
+                // The data context save operation doesn't need to wait for this to complete
+                Task.Run( () => StreakTypeService.HandleInteractionRecord( this ) );
+            }
+
+            base.PostSaveChanges( dbContext );
+        }
+
+        #endregion Public Methods
     }
 
     #region Entity Configuration

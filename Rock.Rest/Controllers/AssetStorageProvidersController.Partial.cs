@@ -45,8 +45,10 @@ namespace Rock.Rest.Controllers
                 foreach ( var assetStorageProvider in assetStorageService.GetActiveNoTracking() )
                 {
                     var component = assetStorageProvider.GetAssetStorageComponent();
+                    var rootFolder = component.GetRootFolder( assetStorageProvider );
+
                     var treeViewItem = new TreeViewItem();
-                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{component.GetAttributeValue( assetStorageProvider,"RootFolder" )},{true}");
+                    treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProvider.Id.ToString()},{rootFolder},{true}");
                     treeViewItem.IconCssClass = component.IconCssClass;
                     treeViewItem.Name = assetStorageProvider.Name;
                     treeViewItem.HasChildren = true;

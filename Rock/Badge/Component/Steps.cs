@@ -234,7 +234,7 @@ $@"<script>
                             var color = isComplete ? (stepTypeData.HighlightColor || '#16c98d') : '#dbdbdb';
                             var iconClass = stepTypeData.IconCssClass || (isComplete ? 'fa fa-check' : 'fa fa-times');
 
-                            html.push('<div class=""badge badge-step"" data-tooltip-key=""{domElementKey}"" style=""color: #fff; background-color: ' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
+                            html.push('<div class=""badge badge-step"" data-tooltip-key=""{domElementKey}"" style=""color:' + color + '"" data-toggle=""tooltip"" data-original-title=""' + stepTypeData.StepTypeName + '"">');
                             html.push('    <i class=""badge-icon ' + iconClass + '""></i>');
 
                             if (stepTypeData.CompletionCount > 1 && stepTypeData.ShowCountOnBadge) {{

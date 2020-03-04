@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Event
             }
 
             string deleteScript = @"
-    $('table.js-grid-instances a.grid-delete-button').click(function( e ){
+    $('table.js-grid-instances a.grid-delete-button').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!', function (result) {
             if (result) {
@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
-        /// Rs the filter_ display filter value.
+        /// Gets the display value for a filter field.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
@@ -302,9 +302,9 @@ namespace RockWeb.Blocks.Event
                 }
 
                 string statusFilter = rFilter.GetUserPreference( "Active Status" );
-                if ( !string.IsNullOrWhiteSpace(statusFilter))
+                if ( !string.IsNullOrWhiteSpace( statusFilter ) )
                 {
-                    if ( statusFilter == "inactive")
+                    if ( statusFilter == "inactive" )
                     {
                         qry = qry.Where( i => i.IsActive == false );
                     }

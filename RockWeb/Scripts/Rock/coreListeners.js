@@ -22,8 +22,8 @@ $(document).on('enabledStickiness.stickyTableHeaders', function(event) {
         }
         $('.table-responsive').each(stickyRepaint);
     });
-    let offsetLeft = $(event.target).offset().left;
-    let twidth = $(event.target).parent('.table-responsive').width();
+    var offsetLeft = $(event.target).offset().left;
+    var twidth = $(event.target).parent('.table-responsive').width();
     $(event.target)
         .find('.tableFloatingHeaderOriginal')
         .css({ left: offsetLeft, right: $(window).width() - offsetLeft - twidth, clip: 'rect(0px, ' + (twidth + 2) + 'px, 140px, 0px)' });
@@ -34,9 +34,9 @@ $(document).on('enabledStickiness.stickyTableHeaders', function(event) {
 });
 
 function stickyRepaint() {
-    let twidth = $(this).width();
-    let scroll = $(this).scrollLeft();
-    let offsetLeft = $(this).offset().left;
+    var twidth = $(this).width();
+    var scroll = $(this).scrollLeft();
+    var offsetLeft = $(this).offset().left;
     $('.tableFloatingHeaderOriginal').css({
         left: offsetLeft - scroll,
         clip: 'rect(0px, ' + (scroll + twidth) + 'px, 140px, ' + scroll + 'px)'

@@ -37,7 +37,7 @@ using Rock.UniversalSearch;
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName("Content Channel Detail")]
     [Category("CMS")]
@@ -107,7 +107,9 @@ namespace RockWeb.Blocks.Cms
             gItemAttributes.GridReorder += gItemAttributes_GridReorder;
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannel ) ).Id;
-            
+
+            dvEditorTool.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS.AsGuid() ).Id;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -243,8 +245,8 @@ namespace RockWeb.Blocks.Cms
             if ( contentChannelId != 0 )
             {
                 channel = GetContentChannel( hfId.ValueAsInt() );
-                if (channel != null && 
-                    channel.ContentChannelTypeId.ToString() != ddlChannelType.SelectedValue && 
+                if (channel != null &&
+                    channel.ContentChannelTypeId.ToString() != ddlChannelType.SelectedValue &&
                     channel.Items.Any() )
                 {
                     maContentChannelWarning.Show( "Changing the content type will result in all of this channel's items losing any data that is specific to the original content type!", ModalAlertType.Warning );
@@ -273,7 +275,9 @@ namespace RockWeb.Blocks.Cms
             var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( contentChannelTypeId );
             if ( contentChannelType != null )
             {
-                ddlContentControlType.Visible = !contentChannelType.DisableContentField;
+                cbIsStructuredContent.Visible = !contentChannelType.DisableContentField;
+                ddlContentControlType.Visible = !contentChannelType.DisableContentField && !channel.IsStructuredContent;
+                dvEditorTool.Visible = !contentChannelType.DisableContentField && channel.IsStructuredContent;
                 cbRequireApproval.Visible = !contentChannelType.DisableStatus;
             }
         }
@@ -287,7 +291,7 @@ namespace RockWeb.Blocks.Cms
         {
             tbRootImageDirectory.Visible = ddlContentControlType.SelectedValueAsEnumOrNull<ContentControlType>() == ContentControlType.HtmlEditor;
         }
-        
+
         /// <summary>
         /// Handles the Click event of the lbSave control.
         /// </summary>
@@ -301,7 +305,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
 
             int contentChannelId = hfId.Value.AsInteger();
-             
+
             if ( contentChannelId == 0 )
             {
                 contentChannel = new ContentChannel { Id = 0 };
@@ -317,6 +321,8 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.Name = tbName.Text;
                 contentChannel.Description = tbDescription.Text;
                 contentChannel.ContentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
+                contentChannel.IsStructuredContent = cbIsStructuredContent.Checked;
+                contentChannel.StructuredContentToolValueId = dvEditorTool.SelectedDefinedValueId;
                 contentChannel.ContentControlType = ddlContentControlType.SelectedValueAsEnum<ContentControlType>();
                 contentChannel.RootImageDirectory = tbRootImageDirectory.Visible ? tbRootImageDirectory.Text : string.Empty;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
@@ -350,7 +356,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !Page.IsValid || !contentChannel.IsValid )
                 {
-                    // Controls will render the error messages                    
+                    // Controls will render the error messages
                     return;
                 }
 
@@ -361,9 +367,9 @@ namespace RockWeb.Blocks.Cms
 
                     foreach( var item in new ContentChannelItemService( rockContext )
                         .Queryable()
-                        .Where( i => 
+                        .Where( i =>
                             i.ContentChannelId == contentChannel.Id &&
-                            i.ContentChannelTypeId != contentChannel.ContentChannelTypeId 
+                            i.ContentChannelTypeId != contentChannel.ContentChannelTypeId
                         ))
                     {
                         item.ContentChannelTypeId = contentChannel.ContentChannelTypeId;
@@ -415,6 +421,21 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbIsStructuredContent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbIsStructuredContent_CheckedChanged( object sender, EventArgs e )
+        {
+            ddlContentControlType.Visible = !cbIsStructuredContent.Checked;
+            dvEditorTool.Visible = cbIsStructuredContent.Checked;
+            if ( !cbIsStructuredContent.Checked )
+            {
+                dvEditorTool.SelectedDefinedValueId = null;
+            }
+        }
+
         #region Item Attributes
 
         /// <summary>
@@ -458,7 +479,7 @@ namespace RockWeb.Blocks.Cms
                 edtItemAttributes.ActionTitle = ActionTitle.Edit( tbName.Text + " Item Attribute" );
             }
 
-        
+
             List<string> reservedKeys = ItemAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList();
             reservedKeys.AddRange( ItemInheritedKey );
             edtItemAttributes.ReservedKeyNames = reservedKeys;
@@ -534,25 +555,15 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgItemAttributes_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtItemAttributes.GetAttributeProperties( attribute );
+#pragma warning disable 0618 // Type or member is obsolete
+            var attribute = SaveChangesToStateCollection( edtItemAttributes, ItemAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
             {
                 return;
             }
-
-            if ( ItemAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = ItemAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                ItemAttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = ItemAttributesState.Any() ? ItemAttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-            ItemAttributesState.Add( attribute );
 
             BindItemAttributesGrid();
 
@@ -696,8 +707,8 @@ namespace RockWeb.Blocks.Cms
 
                 if ( contentChannel.EnableRss )
                 {
-                    descriptionListLeft.Add( "Channel Url", contentChannel.ChannelUrl );
-                    descriptionListRight.Add( "Item Url", contentChannel.ItemUrl );
+                    descriptionListLeft.Add( "Channel URL", contentChannel.ChannelUrl );
+                    descriptionListRight.Add( "Item URL", contentChannel.ItemUrl );
                 }
 
                 contentChannel.LoadAttributes();
@@ -741,6 +752,11 @@ namespace RockWeb.Blocks.Cms
                 tbName.Text = contentChannel.Name;
                 tbDescription.Text = contentChannel.Description;
                 ddlChannelType.SetValue( contentChannel.ContentChannelTypeId );
+                cbIsStructuredContent.Checked = contentChannel.IsStructuredContent;
+                if ( contentChannel.IsStructuredContent )
+                {
+                    dvEditorTool.SelectedDefinedValueId = contentChannel.StructuredContentToolValueId;
+                }
                 ddlContentControlType.SetValue( contentChannel.ContentControlType.ConvertToInt().ToString() );
                 tbRootImageDirectory.Text = contentChannel.RootImageDirectory;
                 tbRootImageDirectory.Visible = contentChannel.ContentControlType == ContentControlType.HtmlEditor;
@@ -767,7 +783,7 @@ namespace RockWeb.Blocks.Cms
 
                 UpdateControlsForContentChannelType( contentChannel );
 
-                // load attribute data 
+                // load attribute data
                 ItemAttributesState = new List<Attribute>();
                 AttributeService attributeService = new AttributeService( new RockContext() );
 
@@ -780,7 +796,7 @@ namespace RockWeb.Blocks.Cms
                     .ToList()
                     .ForEach( a => ItemAttributesState.Add( a ) );
 
-                // Set order 
+                // Set order
                 int newOrder = 0;
                 ItemAttributesState.ForEach( a => a.Order = newOrder++ );
 
@@ -1049,6 +1065,49 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
+        #region Obsolete Code
+
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
+        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
+        }
+
+        #endregion
 
     }
 }

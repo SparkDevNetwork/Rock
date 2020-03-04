@@ -3,7 +3,7 @@
     Sys.Application.add_load(function () {
 
         // Initialize NoteEditor and NoteContainer events
-        $('.js-notecontainer .js-addnote,.js-editnote,.js-replynote').click(function (e) {
+        $('.js-notecontainer .js-addnote,.js-editnote,.js-replynote').on('click', function (e) {
             var addNote = $(this).hasClass('js-addnote');
             var editNote = $(this).hasClass('js-editnote');
             var replyNote = $(this).hasClass('js-replynote');
@@ -119,11 +119,11 @@
             }
             else {
                 // slide the noteeditor into view
-                $noteEditor.slideDown().find('textarea').focus();
+                $noteEditor.slideDown().find('textarea').trigger("focus");
             }
         });
 
-        $('.js-notecontainer .js-notesecurity').click(function (e) {
+        $('.js-notecontainer .js-notesecurity').on('click', function (e) {
             var $securityBtn = $(this);
             var entityTypeId = $securityBtn.data('entitytype-id');
             var title = $securityBtn.data('title');
@@ -132,7 +132,7 @@
             Rock.controls.modal.show($securityBtn, securityUrl);
         });
 
-        $('.js-notecontainer .js-editnote-cancel').click(function (e) {
+        $('.js-notecontainer .js-editnote-cancel').on('click', function (e) {
             var $noteContainer = $(this).closest('.js-notecontainer');
             var $noteEditor = $noteContainer.find('.js-note-editor');
             $noteEditor.slideUp();
@@ -141,7 +141,7 @@
             $noteEditor.parent().find('.js-noteviewitem').slideDown();
         });
 
-        $('.js-notecontainer .js-removenote').click(function (e) {
+        $('.js-notecontainer .js-removenote').on('click', function (e) {
             var $currentNote = $(this).closest('.js-noteviewitem');
             var currentNoteId = $currentNote.attr('data-note-id');
             var $noteContainer = $(this).closest('.js-notecontainer');
@@ -155,11 +155,11 @@
             });
         });
 
-        $('.js-expandreply').click(function (e) {
+        $('.js-expandreply').on('click', function (e) {
             var $noteContainer = $(this).closest('.js-notecontainer');
 
             var $currentNote = $(this).closest('.js-note');
-            var $childNotesContainer = $currentNote.find('.js-childnotes:first');
+            var $childNotesContainer = $currentNote.find('.js-childnotes').first();
             $childNotesContainer.slideToggle(function (x) {
 
                 // get a list of noteIds that have their child items visible, so that we can maintain that expansion after a postback

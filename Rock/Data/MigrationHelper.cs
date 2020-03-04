@@ -2151,6 +2151,26 @@ WHERE [Guid] = '{pageGuid}';";
         /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core attribute for the entity, specify the key with a 'core.' prefix</param>
         public void UpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key = null )
         {
+            UpdateEntityAttribute( entityTypeName, fieldTypeGuid, entityTypeQualifierColumn, entityTypeQualifierValue, name, description, order, defaultValue, guid, key, null );
+        }
+
+        /// <summary>
+        /// Updates the Entity Attribute for the given EntityType, FieldType, and name (key).
+        /// otherwise it inserts a new record.
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="fieldTypeGuid">The field type unique identifier.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="key">The key.  Defaults to Name without Spaces. If this is a core attribute for the entity, specify the key with a 'core.' prefix</param>
+        /// <param name="isRequired"></param>
+        public void UpdateEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid, string key, bool? isRequired )
+        {
             EnsureEntityTypeExists( entityTypeName );
 
             if ( string.IsNullOrWhiteSpace( key ) )
@@ -2179,7 +2199,8 @@ WHERE [Guid] = '{pageGuid}';";
                         [Description] = '{4}',
                         [Order] = {5},
                         [DefaultValue] = '{6}',
-                        [Guid] = '{7}'
+                        [Guid] = '{7}',
+                        [IsRequired] = {10}
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = '{8}'
                     AND [EntityTypeQualifierValue] = '{9}'
@@ -2195,7 +2216,7 @@ WHERE [Guid] = '{pageGuid}';";
                     VALUES(
                         1,@FieldTypeId,@EntityTypeid,'{8}','{9}',
                         '{2}','{3}','{4}',
-                        {5},0,'{6}',0,0,
+                        {5},0,'{6}',0,{11},
                         '{7}')
                 END
 ",
@@ -2208,7 +2229,11 @@ WHERE [Guid] = '{pageGuid}';";
                     defaultValue?.Replace( "'", "''" ) ?? string.Empty,
                     guid,
                     entityTypeQualifierColumn,
-                    entityTypeQualifierValue )
+                    entityTypeQualifierValue,
+                    isRequired.HasValue ?
+                        ( isRequired.Value ? "1" : "0" ) :
+                        "[IsRequired]",
+                    isRequired == true ? "1" : "0" )
             );
         }
 
@@ -2717,7 +2742,10 @@ WHERE [Guid] = '{pageGuid}';";
         }
 
         /// <summary>
-        /// Adds the attribute qualifier.
+        /// Adds or updates the attribute qualifier.
+        /// IF an existing AttributeQualifier is found by guid Key and Value are updated.
+        /// If an existing AttributeQualifier is found by AttributeId and Key, Guid and Value are updated.
+        /// Any qualifier inserted or updated by this method will also set IsSystem to true.
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
         /// <param name="key">The key.</param>
@@ -2725,31 +2753,28 @@ WHERE [Guid] = '{pageGuid}';";
         /// <param name="guid">The unique identifier.</param>
         public void AddAttributeQualifier( string attributeGuid, string key, string value, string guid )
         {
-            Migration.Sql( string.Format( @"
+            string sql = $@"
+                DECLARE @AttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{attributeGuid}')
 
-                DECLARE @AttributeId int
-                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
-
-                IF NOT EXISTS(Select * FROM [AttributeQualifier] WHERE [Guid] = '{3}')
+                IF NOT EXISTS(SELECT * FROM [AttributeQualifier] WHERE [Guid] = '{guid}')
                 BEGIN
-                    INSERT INTO [AttributeQualifier] (
-                        [IsSystem],[AttributeId],[Key],[Value],[Guid])
-                    VALUES(
-                        1,@AttributeId,'{1}','{2}','{3}')
+	                -- It's possible that the qualifier exists with a different GUID so also check for AttributeId and Key
+	                DECLARE @guid UNIQUEIDENTIFIER = (SELECT [Guid] FROM [AttributeQualifier] WHERE AttributeId = @AttributeId AND [Key] = '{key}')
+	                IF @guid IS NOT NULL
+	                BEGIN
+		                UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Guid] = '{guid}', [Value] = '{value}' WHERE [Guid] = @guid
+	                END
+	                ELSE BEGIN
+		                INSERT INTO [AttributeQualifier] ([IsSystem], [AttributeId], [Key], [Value], [Guid])
+		                VALUES(1, @AttributeId, '{key}', '{value}', '{guid}')
+	                END
                 END
                 ELSE
                 BEGIN
-                    UPDATE [AttributeQualifier] SET
-                        [Key] = '{1}',
-                        [Value] = '{2}'
-                    WHERE [Guid] = '{3}'
-                END
-",
-                    attributeGuid, // {0}
-                    key, // {1}
-                    value, // {2}
-                    guid ) // {3}
-            );
+                    UPDATE [AttributeQualifier] SET [IsSystem] = 1, [Key] = '{key}', [Value] = '{value}' WHERE [Guid] = '{guid}'
+                END";
+
+            Migration.Sql( sql );
         }
 
         /// <summary>
@@ -5446,6 +5471,7 @@ END
         /// <param name="subject">The subject.</param>
         /// <param name="body">The body.</param>
         /// <param name="guid">The unique identifier.</param>
+        [RockObsolete( "1.10.2" )]
         public void UpdateSystemEmail( string category, string title, string from, string fromName, string to,
             string cc, string bcc, string subject, string body, string guid )
         {
@@ -5508,9 +5534,123 @@ END
         /// Deletes the SystemEmail.
         /// </summary>
         /// <param name="guid">The GUID.</param>
+        [RockObsolete( "1.10.2" )]
         public void DeleteSystemEmail( string guid )
         {
             DeleteByGuid( guid, "SystemEmail" );
+        }
+
+        /// <summary>
+        /// Updates or Inserts the SystemCommunication.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="from">From.</param>
+        /// <param name="fromName">From name.</param>
+        /// <param name="to">To.</param>
+        /// <param name="cc">The cc.</param>
+        /// <param name="bcc">The BCC.</param>
+        /// <param name="subject">The subject.</param>
+        /// <param name="body">The body.</param>
+        /// <param name="guid">The unique identifier.</param>
+        /// <param name="isActive">The IsActive value (default true).</param>
+        /// <param name="smsMessage">The SMS Message (default blank).</param>
+        /// <param name="smsFromDefinedValueId">The SMSFromDefinedValueId value (default null).</param>
+        /// <param name="pushTitle">The Push Title (default blank).</param>
+        /// <param name="pushMessage">The Push Message (default blank).</param>
+        /// <param name="pushSound">The Push Sound (default blank).</param>
+        public void UpdateSystemCommunication( string category, string title, string from, string fromName, string to,
+            string cc, string bcc, string subject, string body, string guid, bool isActive = true, string smsMessage = "",
+            int? smsFromDefinedValueId = null, string pushTitle = "", string pushMessage = "", string pushSound = "" )
+        {
+            string isActiveText = "0";
+            if ( isActive )
+            {
+                isActiveText = "1";
+            }
+
+            string smsFromDefinedValueIdText = "NULL";
+            if ( smsFromDefinedValueId.HasValue )
+            {
+                smsFromDefinedValueIdText = smsFromDefinedValueId.Value.ToString();
+            }
+
+            Migration.Sql( string.Format(@"
+
+                DECLARE @SystemCommunicationEntity int = (
+                    SELECT TOP 1 [Id]
+                    FROM [EntityType]
+                    WHERE [Name] = 'Rock.Model.SystemCommunication' )
+
+                DECLARE @CategoryId int = (
+                    SELECT TOP 1 [Id] FROM [Category]
+                    WHERE [EntityTypeId] = @SystemCommunicationEntity
+                    AND [Name] = '{0}' )
+
+                IF @CategoryId IS NULL AND @SystemCommunicationEntity IS NOT NULL
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[Order],[Guid] )
+                    VALUES( 0, @SystemCommunicationEntity,'{0}', 0, NEWID() )
+                    SET @CategoryId = SCOPE_IDENTITY()
+                END
+
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [SystemCommunication] WHERE [guid] = '{9}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [SystemCommunication] (
+                        [IsSystem],[CategoryId],[Title],[From],[FromName],[To],[cc],[Bcc],[Subject],[Body],[Guid],
+                        [IsActive], [SMSMessage], [SMSFromDefinedValueId], [PushTitle], [PushMessage], [PushSound])
+                    VALUES(
+                        1, @CategoryId,'{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}',{10},'{11}',{12},'{13}','{14}','{15}')
+                    END
+                ELSE
+                BEGIN
+                    UPDATE [SystemCommunication] SET
+                        [CategoryId] = @CategoryId,
+                        [Title] = '{1}',
+                        [From] = '{2}',
+                        [FromName] = '{3}',
+                        [To] = '{4}',
+                        [Cc] = '{5}',
+                        [Bcc] = '{6}',
+                        [Subject] = '{7}',
+                        [Body] = '{8}',
+                        [IsActive] = {10},
+                        [SMSMessage] = '{11}',
+                        [SMSFromDefinedValueId] = {12},
+                        [PushTitle] = '{13}',
+                        [PushMessage] = '{14}',
+                        [PushSound] = '{15}'
+                    WHERE [Guid] = '{9}'
+                END
+",
+                    category.Replace( "'", "''" ),
+                    title.Replace( "'", "''" ),
+                    from.Replace( "'", "''" ),
+                    fromName.Replace( "'", "''" ),
+                    to.Replace( "'", "''" ),
+                    cc.Replace( "'", "''" ),
+                    bcc.Replace( "'", "''" ),
+                    subject.Replace( "'", "''" ),
+                    body.Replace( "'", "''" ),
+                    guid,
+                    isActiveText,
+                    smsMessage.Replace( "'", "''" ),
+                    smsFromDefinedValueIdText,
+                    pushTitle.Replace( "'", "''" ),
+                    pushMessage.Replace( "'", "''" ),
+                    pushSound.Replace( "'", "''" )
+                    ) );
+        }
+
+        /// <summary>
+        /// Deletes the SystemCommunication.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteSystemCommunication( string guid )
+        {
+            DeleteByGuid( guid, "SystemCommunication");
         }
 
         #endregion

@@ -20,12 +20,53 @@ using System.Collections.Generic;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting checkbox options from an enum.
+    /// Field Attribute for selecting checkbox options from an enum. Value is stored as a comma delimited list of the numeric value of the Enums.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EnumsFieldAttribute : SelectFieldAttribute
     {
         private const string VALUES = "values";
+        private const string ENUM_SOURCE_TYPE_KEY = "enumSourceTypeKey";
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnumFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public EnumsFieldAttribute( string name )
+            : base( name )
+        {
+            FieldTypeClass = typeof( Rock.Field.Types.SelectMultiFieldType ).FullName;
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the enum source.
+        /// FieldConfigurationValues["values"] is populated the a comma seperated string of the enum values
+        /// </summary>
+        /// <value>
+        /// The type of the enum source.
+        /// </value>
+        public Type EnumSourceType
+        {
+            get
+            {
+                string entityTypeName = FieldConfigurationValues.GetValueOrNull( ENUM_SOURCE_TYPE_KEY ) ?? string.Empty;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENUM_SOURCE_TYPE_KEY, new Field.ConfigurationValue( value.FullName ) );
+
+                var list = new List<string>();
+                foreach ( var enumValue in Enum.GetValues( value ) )
+                {
+                    list.Add( string.Format( "{0}^{1}", ( int ) enumValue, enumValue.ToString().SplitCase() ) );
+                }
+
+                var listSource = string.Join( ",", list );
+                FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnumFieldAttribute" /> class.
@@ -41,14 +82,7 @@ namespace Rock.Attribute
         public EnumsFieldAttribute( string name, string description, Type enumSourceType, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName )
         {
-            var list = new List<string>();
-            foreach ( var value in Enum.GetValues( enumSourceType ) )
-            {
-                list.Add( string.Format( "{0}^{1}", (int)value, value.ToString().SplitCase() ) );
-            }
-            
-            var listSource = string.Join( ",", list );
-            FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
+            EnumSourceType = enumSourceType;
         }
     }
 }

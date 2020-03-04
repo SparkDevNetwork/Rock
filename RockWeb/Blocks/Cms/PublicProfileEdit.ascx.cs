@@ -252,6 +252,15 @@ namespace RockWeb.Blocks.Cms
                 _RequiredPhoneNumberGuids = GetAttributeValue( AttributeKey.RequiredAdultPhoneTypes ).Split( ',' ).Select( Guid.Parse ).ToList();
             }
             rContactInfo.ItemDataBound += rContactInfo_ItemDataBound;
+
+            string smsScript = @"
+    $('.js-sms-number').click(function () {
+        if ($(this).is(':checked')) {
+            $('.js-sms-number').not($(this)).prop('checked', false);
+        }
+    });
+";
+            ScriptManager.RegisterStartupScript( rContactInfo, rContactInfo.GetType(), "sms-number-" + BlockId.ToString(), smsScript, true );
         }
 
         /// <summary>
@@ -1274,7 +1283,16 @@ namespace RockWeb.Blocks.Cms
                             if ( showCampus )
                             {
                                 cpCampus.Campuses = CampusCache.All( false );
-                                cpCampus.SetValue( person.GetCampus() );
+
+                                // Use the current person's campus if this a new person
+                                if ( personGuid == Guid.Empty )
+                                {
+                                    cpCampus.SetValue( CurrentPerson.PrimaryCampus );
+                                }
+                                else
+                                {
+                                    cpCampus.SetValue( person.GetCampus() );
+                                }
                             }
                         }
                         tbEmail.Text = person.Email;

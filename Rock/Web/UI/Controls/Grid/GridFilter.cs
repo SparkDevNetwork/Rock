@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [ToolboxData( "<{0}:GridFilter runat=server></{0}:GridFilter>" )]
     public class GridFilter : PlaceHolder, INamingContainer
@@ -121,9 +121,9 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the user preference key prefix.
-        /// Set this to add an additional prefix ( other than just block.Id ) on each UserPreference key for this filter. 
+        /// Set this to add an additional prefix ( other than just block.Id ) on each UserPreference key for this filter.
         /// For example, if this is a filter for a GroupMemberList, you might want the UserPreferenceKeyPrefix be `{{ GroupId }}-`
-        /// so that user preferences for this grid filter are per group instead of just per block. 
+        /// so that user preferences for this grid filter are per group instead of just per block.
         /// </summary>
         /// <value>
         /// The user preference key prefix.
@@ -175,7 +175,7 @@ namespace Rock.Web.UI.Controls
         {
             const string scriptKey = "grid-filter-script";
             const string script = @"
-    $('div.grid-filter header').click(function () {
+    $('div.grid-filter header').on('click', function () {
         $('i.toggle-filter', this).toggleClass('fa-chevron-down fa-chevron-up');
         var $hf = $('input', this).first();
         if($hf.val() != 'true') {
@@ -263,7 +263,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( "<header>" );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, visible ? "btn btn-link btn-xs is-open" : "btn btn-link btn-xs" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, visible ? "btn btn-link btn-xs btn-filter-toggle is-open" : "btn btn-link btn-xs btn-filter-toggle" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.Write( "Filter Options" );
 
@@ -591,12 +591,12 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Occurs when user clears a filter.
-        /// HINT: call gFilter.DeleteUserPreferences() then re-bind your filter controls 
+        /// HINT: call gFilter.DeleteUserPreferences() then re-bind your filter controls
         /// </summary>
         public event EventHandler ClearFilterClick;
 
         /// <summary>
-        /// Occurs when grid filter displays an existing filter value.  Key and Value can be 
+        /// Occurs when grid filter displays an existing filter value.  Key and Value can be
         /// updated to a more human-readable form if needed.
         /// </summary>
         public event EventHandler<DisplayFilterValueArgs> DisplayFilterValue;
@@ -630,33 +630,6 @@ namespace Rock.Web.UI.Controls
             /// The value.
             /// </value>
             public string Value { get; set; }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="DisplayFilterValueArgs" /> class.
-            /// </summary>
-            /// <param name="key">The key.</param>
-            /// <param name="name">The name.</param>
-            /// <param name="value">The value.</param>
-            [RockObsolete( "1.7.4" )]
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
-            public DisplayFilterValueArgs( string key, string name, string value )
-            {
-                Key = key;
-                Name = name;
-                Value = value;
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
-            /// </summary>
-            /// <param name="userPreference">The user preference.</param>
-            [RockObsolete( "1.7.4" )]
-            [Obsolete( "DisplayFilterValueArgs(userPreference, prefix) instead", true )]
-            public DisplayFilterValueArgs( UserPreference userPreference ) :
-                this( userPreference, null )
-            {
-                //
-            }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="DisplayFilterValueArgs"/> class.
