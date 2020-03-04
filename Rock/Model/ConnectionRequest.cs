@@ -273,18 +273,18 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately after the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
-        public override void PostSaveChanges( DbContext dbContext )
+        public override void PostSaveChanges( Rock.Data.DbContext dbContext )
         {
-            if (ConnectionStatus.AutoInactivateState && ConnectionState != ConnectionState.Inactive)
+            if ( ConnectionStatus.AutoInactivateState && ConnectionState != ConnectionState.Inactive )
             {
                 ConnectionState = ConnectionState.Inactive;
-                var rockContext = (RockContext)dbContext;
+                var rockContext = ( RockContext ) dbContext;
                 rockContext.SaveChanges();
             }
 
             base.PostSaveChanges( dbContext );
         }
-        
+
         /// <summary>
         /// Get a list of all inherited Attributes that should be applied to this entity.
         /// </summary>
@@ -312,7 +312,8 @@ namespace Rock.Model
             return null;
         }
 
-    #endregion
+        #endregion
+    }
 
     #region Entity Configuration
 
