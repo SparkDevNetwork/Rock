@@ -318,7 +318,15 @@ namespace RockWeb.Blocks.Cms
                 ( IsUserAuthorized( Authorization.EDIT ) || contentItem.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
             {
                 contentItem.Title = tbTitle.Text;
-                contentItem.Content = htmlContent.Text;
+                if ( htmlContent.Visible )
+                {
+                    contentItem.Content = htmlContent.Text;
+                }
+                else
+                {
+                    contentItem.StructuredContent = sceContent.StructuredContent;
+                    contentItem.Content = sceContent.HtmlContent;
+                }
                 contentItem.Priority = nbPriority.Text.AsInteger();
                 contentItem.ItemGlobalKey = contentItem.Id != 0 ? lblItemGlobalKey.Text : CreateItemGlobalKey();
 
@@ -953,23 +961,37 @@ namespace RockWeb.Blocks.Cms
                 rSlugs.DataSource =  contentItem.ContentChannelItemSlugs;
                 rSlugs.DataBind();
 
-                htmlContent.Visible = !contentItem.ContentChannelType.DisableContentField;
-                htmlContent.Text = contentItem.Content;
-                htmlContent.MergeFields.Clear();
-                htmlContent.MergeFields.Add( "GlobalAttribute" );
-                htmlContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
-                htmlContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
-                htmlContent.MergeFields.Add( "Campuses" );
-                htmlContent.MergeFields.Add( "RockVersion" );
-
-                if ( !string.IsNullOrWhiteSpace( contentItem.ContentChannel.RootImageDirectory ) )
+                htmlContent.Visible = false;
+                sceContent.Visible = false;
+                if ( !contentItem.ContentChannelType.DisableContentField )
                 {
-                    htmlContent.DocumentFolderRoot = contentItem.ContentChannel.RootImageDirectory;
-                    htmlContent.ImageFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                    if ( contentItem.ContentChannel.IsStructuredContent )
+                    {
+                        sceContent.StructuredContent = contentItem.StructuredContent;
+                        sceContent.StructuredContentToolValueId = contentItem.ContentChannel.StructuredContentToolValueId;
+                        sceContent.Visible = true;
+                    }
+                    else
+                    {
+                        htmlContent.Text = contentItem.Content;
+                        htmlContent.Visible = true;
+                        htmlContent.MergeFields.Clear();
+                        htmlContent.MergeFields.Add( "GlobalAttribute" );
+                        htmlContent.MergeFields.Add( "Rock.Model.ContentChannelItem|Current Item" );
+                        htmlContent.MergeFields.Add( "Rock.Model.Person|Current Person" );
+                        htmlContent.MergeFields.Add( "Campuses" );
+                        htmlContent.MergeFields.Add( "RockVersion" );
+
+                        if ( !string.IsNullOrWhiteSpace( contentItem.ContentChannel.RootImageDirectory ) )
+                        {
+                            htmlContent.DocumentFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                            htmlContent.ImageFolderRoot = contentItem.ContentChannel.RootImageDirectory;
+                        }
+
+                        htmlContent.StartInCodeEditorMode = contentItem.ContentChannel.ContentControlType == ContentControlType.CodeEditor;
+                    }
                 }
-
-                htmlContent.StartInCodeEditorMode = contentItem.ContentChannel.ContentControlType == ContentControlType.CodeEditor;
-
+               
                 if ( contentItem.ContentChannelType.IncludeTime )
                 {
                     dpStart.Visible = false;
