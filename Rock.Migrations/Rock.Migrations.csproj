@@ -121,6 +121,10 @@
     <Compile Include="Migrations\202003042320201_ConnectionStatus_AutoInactivateState.Designer.cs">
       <DependentUpon>202003042320201_ConnectionStatus_AutoInactivateState.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003051854011_AttendanceAnalyticsExports.cs" />
+    <Compile Include="Migrations\202003051854011_AttendanceAnalyticsExports.Designer.cs">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1148,6 +1152,9 @@
     <EmbeddedResource Include="Migrations\202003042320201_ConnectionStatus_AutoInactivateState.resx">
       <DependentUpon>202003042320201_ConnectionStatus_AutoInactivateState.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003051854011_AttendanceAnalyticsExports.resx">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
     </EmbeddedResource>
@@ -1911,6 +1918,18 @@
     </Content>
     <Content Include="Migrations\202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery.sql">
       <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_Attendees_down.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees_down.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
