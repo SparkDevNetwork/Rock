@@ -84,7 +84,7 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute(
         textLabel: "End Date",
         attributeLabel: "Attribute Value",
-        description: "The date that the step was ended.",
+        description: "The date that the step was ended. This will also be set as the step 'completed' date.",
         required: false,
         order: 4,
         key: AttributeKey.EndDate,
