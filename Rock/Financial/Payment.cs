@@ -72,6 +72,14 @@ namespace Rock.Financial
         public string GatewayScheduleId { get; set; }
 
         /// <summary>
+        /// Gets or sets the Gateway Person Identifier. Usually a reference to the gateway's saved customer info which the gateway would have previously collected payment info.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
+        /// </value>
+        public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether schedule is still active.
         /// </summary>
         public bool? ScheduleActive { get; set; }

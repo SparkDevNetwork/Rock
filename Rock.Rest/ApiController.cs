@@ -221,7 +221,7 @@ namespace Rock.Rest
                     string.Join( ",", value.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             Service.Context.SaveChanges();
 
@@ -261,7 +261,7 @@ namespace Rock.Rest
 
             if ( targetModel.IsValid )
             {
-                System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }
@@ -384,7 +384,7 @@ namespace Rock.Rest
             // Verify model is valid before saving
             if ( targetModel.IsValid )
             {
-                System.Web.HttpContext.Current.Items.AddOrReplace( "CurrentPerson", GetPerson() );
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                 Service.Context.SaveChanges();
             }
@@ -779,7 +779,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [enable proxy creation].
+        /// Gets or sets a value indicating whether [enable proxy creation]. This is needed if lazy loading is needed or Editing/Deleting an entity, etc
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable proxy creation]; otherwise, <c>false</c>.

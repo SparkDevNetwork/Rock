@@ -705,7 +705,7 @@ namespace RockWeb.Blocks.Groups
 
                 cblCampus.Label = GetAttributeValue( "CampusLabel" );
                 cblCampus.Visible = true;
-                cblCampus.DataSource = CampusCache.All().Where( c => c.IsActive == true );
+                cblCampus.DataSource = CampusCache.All( includeInactive: false ) ;
                 cblCampus.DataBind();
             }
             else

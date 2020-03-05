@@ -53,9 +53,12 @@ namespace Rock.Web.UI.Controls
         #region Controls
 
         private List<Control> _customActions;
-        private Panel _pnlCustomActions;
+        private PlaceHolder _pnlCustomActions;
         private LinkButton _lbPersonMerge;
+        private LinkButton _lbBusinessMerge;
         private LinkButton _lbBulkUpdate;
+        private LinkButton _lbDefaultLaunchWorkflow;
+        private List<LinkButton> _customActionButtons = new List<LinkButton>();
         private LinkButton _lbCommunicate;
         private HtmlGenericControl _aAdd;
         private LinkButton _lbAdd;
@@ -109,6 +112,35 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["ShowMergePerson"] = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show launch workflow].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show launch workflow]; otherwise, <c>false</c>.
+        /// </value>
+        private bool ShowDefaultLaunchWorkflowButton
+        {
+            get =>
+                _parentGrid.ShowWorkflowOrCustomActionButtons &&
+                _parentGrid.EnableDefaultLaunchWorkflow &&
+                _parentGrid.EntityTypeId.HasValue;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether [show custom action buttons].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show custom action buttons]; otherwise, <c>false</c>.
+        /// </value>
+        private bool ShowCustomActionButtons
+        {
+            get =>
+                _parentGrid.ShowWorkflowOrCustomActionButtons &&
+                _parentGrid.CustomActionConfigs != null &&
+                _parentGrid.CustomActionConfigs.Any() &&
+                _parentGrid.EntityTypeId.HasValue;
         }
 
         /// <summary>
@@ -264,7 +296,7 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            _pnlCustomActions = new Panel();
+            _pnlCustomActions = new PlaceHolder();
 
             Controls.Add( _pnlCustomActions );
 
@@ -275,6 +307,20 @@ namespace Rock.Web.UI.Controls
                     _pnlCustomActions.Controls.Add( control );
                 }
             }
+
+            // control for person merge
+            _lbBusinessMerge = new LinkButton();
+            Controls.Add( _lbBusinessMerge );
+            _lbBusinessMerge.ID = "lbBusinessMerge";
+            _lbBusinessMerge.CssClass = "btn btn-grid-action btn-merge btn-default btn-sm";
+            _lbBusinessMerge.ToolTip = "Merge Person Records";
+            _lbBusinessMerge.Click += lbPersonMerge_Click;
+            _lbBusinessMerge.CausesValidation = false;
+            _lbBusinessMerge.PreRender += lb_PreRender;
+            Controls.Add( _lbBusinessMerge );
+            HtmlGenericControl iBusinessMerge = new HtmlGenericControl( "i" );
+            iBusinessMerge.Attributes.Add( "class", "fa fa-sign-in-alt fa-fw" );
+            _lbBusinessMerge.Controls.Add( iBusinessMerge );
 
             // control for communicate
             _lbCommunicate = new LinkButton();
@@ -317,6 +363,50 @@ namespace Rock.Web.UI.Controls
             HtmlGenericControl iBulkUpdate = new HtmlGenericControl( "i" );
             iBulkUpdate.Attributes.Add( "class", "fa fa-truck fa-fw" );
             _lbBulkUpdate.Controls.Add( iBulkUpdate );
+
+            // control for default launch workflow
+            _lbDefaultLaunchWorkflow = new LinkButton();
+            _lbDefaultLaunchWorkflow.ID = "lbDefaultLaunchWorkflow";
+            _lbDefaultLaunchWorkflow.CssClass = "btn-grid-action btn-launch-workflow btn btn-default btn-sm";
+            _lbDefaultLaunchWorkflow.ToolTip = "Launch Workflow";
+            _lbDefaultLaunchWorkflow.Click += lbLaunchWorkflow_Click;
+            _lbDefaultLaunchWorkflow.CausesValidation = false;
+            _lbDefaultLaunchWorkflow.PreRender += lb_PreRender;
+            Controls.Add( _lbDefaultLaunchWorkflow );
+            var iLaunchWorkflow = new HtmlGenericControl( "i" );
+            iLaunchWorkflow.Attributes.Add( "class", "fa fa-cog fa-fw" );
+            _lbDefaultLaunchWorkflow.Controls.Add( iLaunchWorkflow );
+
+            // Build custom action buttons
+            if ( _parentGrid.CustomActionConfigs?.Any() == true )
+            {
+                var index = 1;
+                _customActionButtons = new List<LinkButton>();
+
+                foreach ( var config in _parentGrid.CustomActionConfigs )
+                {
+                    var linkButton = new LinkButton();
+                    _customActionButtons.Add( linkButton );
+
+                    linkButton.ID = $"lbCustomAction-{index}";
+                    linkButton.CssClass = "btn-grid-action btn-custom-action btn btn-default btn-sm";
+                    linkButton.ToolTip = config.HelpText.IsNullOrWhiteSpace() ? "Custom Action" : config.HelpText;
+                    linkButton.CommandArgument = config.Route;
+                    linkButton.CommandName = "Route";
+                    linkButton.Command += lbCustomAction_Click;
+                    linkButton.CausesValidation = false;
+                    linkButton.PreRender += lb_PreRender;
+                    Controls.Add( linkButton );
+
+                    var icon = new HtmlGenericControl( "i" );
+                    icon.Attributes.Add( "class", config.IconCssClass.IsNullOrWhiteSpace() ?
+                        "fa fa-cog fa-fw" :
+                        config.IconCssClass );
+
+                    linkButton.Controls.Add( icon );
+                    index++;
+                }
+            }
 
             // controls for excel export
             _aExcelExport = new HtmlGenericControl( "a" );
@@ -402,7 +492,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the control but only renders custom actions in the once, in the actionFooterRow.
         /// </summary>
         /// <param name="writer">The writer.</param>
         /// <param name="renderAsMirrored">if set to <c>true</c> [render as mirrored].</param>
@@ -429,8 +519,22 @@ namespace Rock.Web.UI.Controls
         {
             var rockPage = Page as RockPage;
 
-            _lbPersonMerge.Visible = ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbPersonMerge.Visible = !_parentGrid.IsBusiness && ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.PersonMergePageRoute );
+            _lbBusinessMerge.Visible = _parentGrid.IsBusiness && ShowMergePerson && _parentGrid.CanViewTargetPage( _parentGrid.BusinessMergePageRoute );
             _lbBulkUpdate.Visible = ShowBulkUpdate && _parentGrid.CanViewTargetPage( _parentGrid.BulkUpdatePageRoute );
+
+            var defaultLaunchWorkflowRoute = _parentGrid.DefaultLaunchWorkflowPageRoute;
+            var canViewDefaultLaunchWorkflowRoute = _parentGrid.CanViewTargetPage( defaultLaunchWorkflowRoute );
+            _lbDefaultLaunchWorkflow.Visible = ShowDefaultLaunchWorkflowButton && canViewDefaultLaunchWorkflowRoute;
+
+            foreach ( var customLaunchWorkflowButton in _customActionButtons )
+            {
+                var customRoute = customLaunchWorkflowButton.CommandArgument.ToStringSafe();
+                var hasCustomRoute = !customRoute.IsNullOrWhiteSpace();
+
+                customLaunchWorkflowButton.Visible = ShowCustomActionButtons &&
+                    ( hasCustomRoute ? _parentGrid.CanViewTargetPage( customRoute ) : canViewDefaultLaunchWorkflowRoute );
+            }
 
             if ( ShowCommunicate )
             {
@@ -516,6 +620,26 @@ namespace Rock.Web.UI.Controls
             {
                 BulkUpdateClick( sender, e );
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbBulkUpdate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbLaunchWorkflow_Click( object sender, EventArgs e )
+        {
+            WorkflowOrCustomActionClick?.Invoke( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbCustomAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void lbCustomAction_Click( object sender, EventArgs e )
+        {
+            WorkflowOrCustomActionClick?.Invoke( sender, e );
         }
 
         /// <summary>
@@ -605,6 +729,11 @@ namespace Rock.Web.UI.Controls
         /// Occurs when bulk update action is clicked.
         /// </summary>
         public event EventHandler BulkUpdateClick;
+
+        /// <summary>
+        /// Occurs when [workflow or custom action click].
+        /// </summary>
+        public event EventHandler WorkflowOrCustomActionClick;
 
         /// <summary>
         /// Occurs when communicate action is clicked.

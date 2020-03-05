@@ -113,6 +113,26 @@ namespace Rock.Model
         [DataMember]
         public int? BillingLocationId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Gateway Person Identifier.
+        /// This would indicate id the customer vault information on the gateway.
+        /// </summary>
+        /// <value>
+        /// A <see cref="string"/> representing the Gateway Person Identifier of the account.
+        /// </value>
+        [DataMember]
+        [MaxLength( 50 )]
+        public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial person saved account id that was used for this transaction (if there was one)
+        /// </summary>
+        /// <value>
+        /// The financial person saved account.
+        /// </value>
+        [DataMember]
+        public int? FinancialPersonSavedAccountId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -228,6 +248,15 @@ namespace Rock.Model
         public virtual Location BillingLocation { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial person saved account that was used for this transaction (if there was one)
+        /// </summary>
+        /// <value>
+        /// The financial person saved account.
+        /// </value>
+        [DataMember]
+        public virtual FinancialPersonSavedAccount FinancialPersonSavedAccount { get; set; }
+
+        /// <summary>
         /// Gets the type of the currency and credit card.
         /// </summary>
         /// <value>
@@ -302,6 +331,9 @@ namespace Rock.Model
             {
                 AccountNumberMasked = paymentInfo.MaskedNumber;
             }
+
+            GatewayPersonIdentifier = ( paymentInfo as ReferencePaymentInfo )?.GatewayPersonIdentifier;
+            FinancialPersonSavedAccountId = ( paymentInfo as ReferencePaymentInfo )?.FinancialPersonSavedAccountId;
 
             if ( !CurrencyTypeValueId.HasValue && paymentInfo.CurrencyTypeValue != null )
             {
@@ -464,6 +496,9 @@ namespace Rock.Model
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.BillingLocation ).WithMany().HasForeignKey( t => t.BillingLocationId ).WillCascadeOnDelete( false );
+
+            // NOTE: Migration for this makes this a 'ON DELETE SET NULL' cascade
+            this.HasOptional( t => t.FinancialPersonSavedAccount ).WithMany().HasForeignKey( t => t.FinancialPersonSavedAccountId ).WillCascadeOnDelete( true );
 
             // This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
             // even though they are ignored at the database level

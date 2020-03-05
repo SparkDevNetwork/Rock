@@ -1065,11 +1065,11 @@ mission. We are so grateful for your commitment.</p>
             }
 
             // get the FinancialGateway's GatewayComponent so we can show a warning if they have an unsupported gateway.
-            bool unsupportedGateway = ( FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent ) == false;
+            var hostedGatewayComponent = FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
 
             var testGatewayGuid = Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY.AsGuid();
 
-            if ( unsupportedGateway )
+            if ( hostedGatewayComponent == null )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Unsupported Gateway", "This block only support Gateways that have a hosted payment interface." );
                 pnlTransactionEntry.Visible = false;
@@ -1986,6 +1986,7 @@ mission. We are so grateful for your commitment.</p>
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             personService.AddContactToBusiness( business.Id, contactPerson.Id );
+            rockContext.SaveChanges();
 
             return business;
         }
@@ -2007,6 +2008,7 @@ mission. We are so grateful for your commitment.</p>
             newPersonOrBusiness.FirstName = firstName;
             newPersonOrBusiness.LastName = lastName;
 
+            newPersonOrBusiness.Email = email;
             newPersonOrBusiness.IsEmailActive = true;
             newPersonOrBusiness.EmailPreference = EmailPreference.EmailAllowed;
             if ( createBusiness )
@@ -2045,16 +2047,23 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="business">The business.</param>
         private void UpdateBusinessFromInputInformation( Person business )
         {
-            _updatePersonOrBusinessFromInputInformation( business, true );
+            _updatePersonOrBusinessFromInputInformation( business, PersonInputSource.Business );
         }
 
         /// <summary>
         /// Updates the person from input information collected (Phone, Email, Address) and saves changes (if any) to the database..
         /// </summary>
         /// <param name="person">The person.</param>
-        private void UpdatePersonFromInputInformation( Person person )
+        private void UpdatePersonFromInputInformation( Person person, PersonInputSource personInputSource )
         {
-            _updatePersonOrBusinessFromInputInformation( person, false );
+            _updatePersonOrBusinessFromInputInformation( person, personInputSource );
+        }
+
+        private enum PersonInputSource
+        {
+            Person,
+            Business,
+            BusinessContact
         }
 
         /// <summary>
@@ -2062,7 +2071,7 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         /// <param name="person">The person.</param>
         /// <param name="paymentInfo">The payment information.</param>
-        private void _updatePersonOrBusinessFromInputInformation( Person personOrBusiness, bool updateFromBusinessSelection )
+        private void _updatePersonOrBusinessFromInputInformation( Person personOrBusiness, PersonInputSource personInputSource )
         {
             var promptForEmail = this.GetAttributeValue( AttributeKey.PromptForEmail ).AsBoolean();
             var promptForPhone = this.GetAttributeValue( AttributeKey.PromptForPhone ).AsBoolean();
@@ -2072,26 +2081,42 @@ mission. We are so grateful for your commitment.</p>
             Guid locationTypeGuid;
             AddressControl acAddress;
 
-            if ( updateFromBusinessSelection )
+            switch ( personInputSource )
             {
-                tbEmail = tbEmailBusiness;
-                pnbPhone = pnbPhoneBusiness;
-                numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
-                locationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
-                acAddress = acAddressBusiness;
-            }
-            else
-            {
-                tbEmail = tbEmailIndividual;
-                pnbPhone = pnbPhoneIndividual;
-                numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
-                locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
-                acAddress = acAddressIndividual;
-            }
+                
+                case PersonInputSource.Business:
+                    {
+                        tbEmail = tbEmailBusiness;
+                        pnbPhone = pnbPhoneBusiness;
+                        numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+                        locationTypeGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid();
+                        acAddress = acAddressBusiness;
+                        break;
+                    }
+                case PersonInputSource.BusinessContact:
+                    {
+                        tbEmail = tbBusinessContactEmail;
+                        pnbPhone = pnbBusinessContactPhone;;
+                        numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                        locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
+                        acAddress = null;
+                        break;
 
-            if ( promptForEmail )
-            {
-                personOrBusiness.Email = tbEmail.Text;
+                    }
+                case PersonInputSource.Person:
+                    {
+                        // PersonInput
+                        tbEmail = tbEmailIndividual;
+                        pnbPhone = pnbPhoneIndividual;
+                        numberTypeId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                        locationTypeGuid = GetAttributeValue( AttributeKey.PersonAddressType ).AsGuid();
+                        acAddress = acAddressIndividual;
+                        break;
+                    }
+                default:
+                    {
+                        throw new Exception( "Unexpected PersonInputSource" );
+                    }
             }
 
             if ( promptForPhone )
@@ -2106,7 +2131,6 @@ mission. We are so grateful for your commitment.</p>
                         phone.NumberTypeValueId = numberTypeId;
                     }
 
-                    // TODO, verify if an unlisted home phone could get overwritten by their cell phone number if the home phone is unlisted
                     phone.CountryCode = PhoneNumber.CleanNumber( pnbPhone.CountryCode );
                     phone.Number = PhoneNumber.CleanNumber( pnbPhone.Number );
                 }
@@ -2121,17 +2145,20 @@ mission. We are so grateful for your commitment.</p>
                 // fetch primaryFamily using rockContext so that any changes will get saved
                 primaryFamily = new GroupService( rockContext ).Get( primaryFamily.Id );
 
-                GroupService.AddNewGroupAddress(
-                    rockContext,
-                    primaryFamily,
-                    locationTypeGuid.ToString(),
-                    acAddress.Street1,
-                    acAddress.Street2,
-                    acAddress.City,
-                    acAddress.State,
-                    acAddress.PostalCode,
-                    acAddress.Country,
-                    true );
+                if ( acAddress != null )
+                {
+                    GroupService.AddNewGroupAddress(
+                        rockContext,
+                        primaryFamily,
+                        locationTypeGuid.ToString(),
+                        acAddress.Street1,
+                        acAddress.Street2,
+                        acAddress.City,
+                        acAddress.State,
+                        acAddress.PostalCode,
+                        acAddress.Country,
+                        true );
+                }
             }
         }
 
@@ -2399,7 +2426,7 @@ mission. We are so grateful for your commitment.</p>
                 hfTargetPersonId.Value = targetPerson.Id.ToString();
             }
 
-            UpdatePersonFromInputInformation( targetPerson );
+            UpdatePersonFromInputInformation( targetPerson, givingAsBusiness ? PersonInputSource.BusinessContact : PersonInputSource.Person );
 
             if ( givingAsBusiness )
             {
@@ -2562,6 +2589,8 @@ mission. We are so grateful for your commitment.</p>
                 paymentInfo.FirstName = tbFirstName.Text;
                 paymentInfo.LastName = tbLastName.Text;
             }
+
+            paymentInfo.FinancialPersonSavedAccountId = ddlPersonSavedAccount.SelectedValueAsId();
 
             // get the payment comment
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
@@ -2905,6 +2934,7 @@ mission. We are so grateful for your commitment.</p>
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
             nbProcessTransactionError.Visible = false;
+            nbPaymentTokenError.Visible = false;
 
             if ( this.IsScheduledTransaction() )
             {

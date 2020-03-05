@@ -268,8 +268,10 @@ $(function() {{
     $('#{this.ClientID}').datepicker({{
         format: '{dateFormat}',
         todayHighlight: true,
+        assumeNearbyYear: 10,
         autoclose: true,
-        inputs: $('#{this.ClientID} .form-control')
+        inputs: $('#{this.ClientID} .form-control'),
+        zIndexOffset: 1050
     }});
 }});
 
