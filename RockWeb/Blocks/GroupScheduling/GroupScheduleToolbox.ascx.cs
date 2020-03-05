@@ -355,6 +355,21 @@ $('#{0}').tooltip();
         /// <returns></returns>
         protected string GetOccurrenceDetails( Attendance attendance )
         {
+            if ( attendance.Occurrence.GroupId == null && attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
+            if ( attendance.Occurrence.GroupId == null )
+            {
+                return string.Format( "{0} - {1}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Location );
+            }
+
+            if ( attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
             return string.Format( "{0} - {1} - {2}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Group.Name, attendance.Occurrence.Location );
         }
 
