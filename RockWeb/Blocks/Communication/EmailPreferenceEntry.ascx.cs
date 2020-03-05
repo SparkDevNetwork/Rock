@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Communication
     [MemoField( "No Mass Emails Text", "Text to display for the 'No Mass Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not wish to receive mass emails (personal emails are fine).", "", 3, null, 3, true )]
     [MemoField( "No Emails Text", "Text to display for the 'No Emails' option.", false, "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not want to receive emails of ANY kind.", "", 4, null, 3, true )]
     [MemoField( "Not Involved Text", "Text to display for the 'Not Involved' option.", false, " I am no longer involved with {{ 'Global' | Attribute:'OrganizationName' }}.", "", 5, null, 3, true )]
-    [WorkflowTypeField( "Unsubscribe Workflow", "The workflow type to launch for person who wants to unsubscribe.", false, required: false )]
+    [WorkflowTypeField( "Unsubscribe from List Workflow", "The workflow type to launch for person who wants to unsubscribe from one or more Communication Lists. The person will be passed in as the Entity and the communication list Ids will be passed as a comma delimited string to the workflow 'CommunicationListIds' attribute if it exists.", false, required: false, key: "UnsubscribeWorkflow" )]
     [MemoField( "Success Text", "Text to display after user submits selection.", false, "<h4>Thank You</h4>We have saved your email preference.", "", 6, null, 3, true )]
     [CodeEditorField( "Unsubscribe Success Text", "Text to display after user unsubscribes from communication lists.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, UNSUBSCRIBE_SUCCESS_TEXT_DEFAULT_VALUE, order: 7 )]
     [TextField( "Reasons to Exclude", "A delimited list of the Inactive Reasons to exclude from Reason list", false, "No Activity,Deceased", "", 8 )]
@@ -238,15 +238,19 @@ We have unsubscribed you from the following lists:
                 WorkflowTypeCache workflowType = null;
                 var workflowService = new WorkflowService( rockContext );
 
-                if (workflowGuid != null)
+                if ( workflowGuid != null )
                 {
                     workflowType = WorkflowTypeCache.Get( workflowGuid.Value );
                 }
 
                 // Start workflow for this person
-                if (workflowType != null)
+                if ( workflowType != null )
                 {
                     Dictionary<string, string> attributes = new Dictionary<string, string>();
+                    if ( cblUnsubscribeFromLists.SelectedValuesAsInt.Any() )
+                    {
+                        attributes.Add( "CommunicationListIds", cblUnsubscribeFromLists.SelectedValues.ToList().AsDelimited( "," ) );
+                    }
                     StartWorkflow( workflowService, workflowType, attributes, string.Format( "{0}", _person.FullName ), _person );
                 }
                 UnsubscribeFromLists();
