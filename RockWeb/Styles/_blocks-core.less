@@ -137,8 +137,10 @@
   width: 32px;
   height: 32px;
   overflow: hidden;
+  font-size: 24px;
   line-height: 1;
-  color: #fafafa;
+  color: @text-muted;
+  text-align: center;
   vertical-align: middle;
   border-radius: 50%;
 
@@ -155,16 +157,23 @@
   &-lg {
     width: 48px;
     height: 48px;
+    font-size: 32px;
+
+    &.avatar-icon {
+      padding-top: 5px;
+    }
   }
 
   &-sm {
     width: 24px;
     height: 24px;
+    font-size: 20px;
   }
 
   &-xs {
     width: 20px;
     height: 20px;
+    font-size: 16px;
   }
 
   &::after {
@@ -179,40 +188,6 @@
     border-radius: 50%;
   }
 }
-
-.icon {
-  position: relative;
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-  overflow: hidden;
-  font-size: 24px;
-  line-height: 1;
-  color: @text-muted;
-  text-align: center;
-  vertical-align: middle;
-  border-radius: 50%;
-
-  &-lg {
-    width: 48px;
-    height: 48px;
-    padding-top: 5px;
-    font-size: 32px;
-  }
-
-  &-sm {
-    width: 24px;
-    height: 24px;
-    font-size: 20px;
-  }
-
-  &-xs {
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-  }
-}
-
 
 .meta {
   display: -webkit-box;
