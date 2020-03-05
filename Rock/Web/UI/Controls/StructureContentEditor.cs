@@ -357,7 +357,7 @@ namespace Rock.Web.UI.Controls
             _hfValue.RenderControl( writer );
             writer.WriteLine();
 
-            writer.AddStyleAttribute( HtmlTextWriterStyle.BackgroundColor, "#f7f7f7" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "structured-content-container" );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
@@ -385,7 +385,7 @@ namespace Rock.Web.UI.Controls
                 var structuredContentToolValue = DefinedValueCache.Get( StructuredContentToolValueId.Value );
                 if ( structuredContentToolValue != null )
                 {
-                    structuredContentToolConfiguration = structuredContentToolValue.Description; 
+                    structuredContentToolConfiguration = structuredContentToolValue.Description;
                 }
             }
 
@@ -492,7 +492,7 @@ onChange: function() {{
                                     }
                                     html.Append( $"</tr>" );
                                 }
-                                
+
                             }
                             html.Append( $"</table>" );
                         }
