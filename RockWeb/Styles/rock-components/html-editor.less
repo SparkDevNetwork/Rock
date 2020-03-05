@@ -125,11 +125,12 @@ iframe.file-browser {
 }
 
 .structured-content-container {
+  min-height: 378px;
+  overflow: hidden;
+  background: @input-bg;
   border: 1px solid @input-border;
   border-radius: @border-radius-base;
-  min-height: 378px;
-  background: @input-bg;
-  overflow: hidden;
+
   @media (min-width: @screen-md) {
     background: lighten(@input-group-addon-bg, 7%);
   }
@@ -145,16 +146,17 @@ iframe.file-browser {
   }
 
   .codex-editor {
-    background: @input-bg;
-    margin: 0 auto;
     max-width: 800px;
+    margin: 0 auto;
+    background: @input-bg;
+
     @media (min-width: @screen-sm) {
       padding: 20px;
     }
 
     @media (min-width: @screen-lg) {
       padding: 50px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, .1), 0 10px 10px -5px rgba(0, 0, 0, .04);
     }
   }
 }
