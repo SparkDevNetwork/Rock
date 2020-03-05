@@ -1579,7 +1579,10 @@ namespace Rock.Model
                 .Where( a => a.DidAttend != true )
                 .Where( a => a.Occurrence.OccurrenceDate >= currentDate )
                 // RSVP.Maybe is not used by the Group Scheduler. But, just in case, treat it as that the person has not responded.
-                .Where( a => a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown );
+                .Where( a => a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown )
+                // Explicitly include Group and Location objects to prevent issues with lazy loading after databinding (e.g., in GroupScheduleToolbox block).
+                .Include( a => a.Occurrence.Group )
+                .Include( a => a.Occurrence.Location );
         }
 
         /// <summary>
