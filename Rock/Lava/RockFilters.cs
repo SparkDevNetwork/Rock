@@ -5452,6 +5452,36 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Translates a cached object into a fully database-backed entity object.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input cached object to be translated.</param>
+        /// <returns>An <see cref="IEntity"/> object or the original <paramref name="input"/>.</returns>
+        public static object EntityFromCachedObject( DotLiquid.Context context, object input )
+        {
+            //
+            // Ensure the input is a cached object.
+            //
+            if ( input == null || !( input is IEntityCache cache ) )
+            {
+                return input;
+            }
+
+            //
+            // Ensure the cache object actually inherits from EntityCache.
+            //
+            var entityCacheType = typeof( EntityCache<,> );
+            if ( !cache.GetType().IsDescendentOf( entityCacheType ) )
+            {
+                return input;
+            }
+
+            var entityType = cache.GetType().GetGenericArgumentsOfBaseType( entityCacheType )[1];
+
+            return Rock.Reflection.GetIEntityForEntityType( entityType, cache.Id );
+        }
+
+        /// <summary>
         /// Gets the current person.
         /// </summary>
         /// <param name="context">The context.</param>

@@ -30,6 +30,7 @@
                             <div class="col-md-6">
                                 <Rock:RockDropDownList ID="ddlTransform" runat="server" Label="Post-filter Transformation" />
                                 <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.DataView" Label="Category" Required="true" />
+                                <Rock:RockCheckBox ID="cbIncludeDeceased" runat="server" Label="Include Deceased" Visible="false" />
 
                                 <%-- Persistence Schedule Settings --%>
                                 <asp:UpdatePanel runat="server" UpdateMode="Conditional">

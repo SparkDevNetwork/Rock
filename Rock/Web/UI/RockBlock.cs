@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
@@ -515,6 +516,18 @@ namespace Rock.Web.UI
                 foreach ( var grid in gridsOnBlock )
                 {
                     grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                    grid.EnableDefaultLaunchWorkflow = this.GetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean();
+
+                    var userDefinedCustomActions = this.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ).FromJsonOrNull<List<CustomActionConfig>>();
+
+                    if ( userDefinedCustomActions != null && userDefinedCustomActions.Any() )
+                    {
+                        // This is coded this way because the getter might return a new list if the property was null. And if there are any existing
+                        // configs (from the developer perhaps), these user defined configs should supplement, not overwrite
+                        var customActionConfigs = grid.CustomActionConfigs;
+                        customActionConfigs.AddRange( userDefinedCustomActions );
+                        grid.CustomActionConfigs = customActionConfigs;
+                    }
                 }
             }
         }

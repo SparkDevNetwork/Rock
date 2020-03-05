@@ -107,7 +107,20 @@ namespace Rock.Web.Cache
 
         private static LavaTemplateCache Load( string content )
         {
-            var lavaTemplate = new LavaTemplateCache { Template = Template.Parse( content ) };
+            var template = Template.Parse( content );
+
+            /* 
+             * 2/19/2020 - JPH
+             * The DotLiquid library's Template object was not originally designed to be thread safe, but a PR has since
+             * been merged into that repository to add this functionality (https://github.com/dotliquid/dotliquid/pull/220).
+             * We have cherry-picked the PR's changes into our DotLiquid project, allowing the Template to operate safely
+             * in a multithreaded context, which can happen often with our cached Template instances.
+             *
+             * Reason: Rock Issue #4084, Weird Behavior with Lava Includes
+             */
+            template.MakeThreadSafe();
+
+            var lavaTemplate = new LavaTemplateCache { Template = template };
             return lavaTemplate;
         }
 

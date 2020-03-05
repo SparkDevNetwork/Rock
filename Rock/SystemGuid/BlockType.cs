@@ -100,6 +100,20 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string POWERBI_ACCOUNT_REGISTRATION = "EA20D87E-ED46-3DAA-4C4D-4156C399B1C2";
 
+        #region Event Block Types
+
+        /// <summary>
+        /// Event category Registration Group Placement block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_GROUP_PLACEMENT = "9AF434D2-FB9B-43D7-8550-DD0B92B7A70A";
+
+        /// <summary>
+        /// Event category Registration Template Detail block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_TEMPLATE_DETAIL = "91354899-304E-44C7-BD0D-55F42E6505D3";
+
+        #endregion
+
         #region Finance Block Types
 
         /// <summary>

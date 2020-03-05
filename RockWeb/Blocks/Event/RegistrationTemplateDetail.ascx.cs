@@ -43,6 +43,14 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Template Detail" )]
     [Category( "Event" )]
     [Description( "Displays the details of the given registration template." )]
+
+    [LinkedPage(
+        "Registration Template Placement Page",
+        Key = AttributeKey.RegistrationTemplatePlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_TEMPLATE_PLACEMENT + "," + Rock.SystemGuid.PageRoute.REGISTRATION_TEMPLATE_PLACEMENT,
+        Order = 0
+        )]
+
     [CodeEditorField( "Default Confirmation Email", "The default Confirmation Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 
@@ -130,7 +138,7 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 0 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
     [CodeEditorField( "Default Reminder Email", "The default Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
@@ -188,7 +196,7 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 1 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 2 )]
     [CodeEditorField( "Default Success Text", "The success text default to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 
 {% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
@@ -267,7 +275,7 @@ namespace RockWeb.Blocks.Event
 <p>
     A confirmation email has been sent to {{ Registration.ConfirmationEmail }}. If you have any questions
     please contact {{ RegistrationInstance.ContactPersonAlias.Person.FullName }} at {{ RegistrationInstance.ContactEmail }}.
-</p>", "", 2 )]
+</p>", "", 3 )]
     [CodeEditorField( "Default Payment Reminder Email", "The default Payment Reminder Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
@@ -318,7 +326,7 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 4 )]
     [CodeEditorField( "Default Wait List Transition Email", "The default Wait List Transition Email Template value to use for a new template", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"{{ 'Global' | Attribute:'EmailHeader' }}
 {% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
 {% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
@@ -356,9 +364,33 @@ namespace RockWeb.Blocks.Event
     If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
 </p>
 
-{{ 'Global' | Attribute:'EmailFooter' }}", "", 3 )]
+{{ 'Global' | Attribute:'EmailFooter' }}", "", 5 )]
     public partial class RegistrationTemplateDetail : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string RegistrationTemplatePlacementPage = "RegistrationTemplatePlacementPage";
+            public const string DefaultConfirmationEmail = "DefaultConfirmationEmail";
+            public const string DefaultReminderEmail = "DefaultReminderEmail";
+            public const string DefaultSuccessText = "DefaultSuccessText";
+            public const string DefaultPaymentReminderEmail = "DefaultPaymentReminderEmail";
+            public const string DefaultWaitListTransitionEmail = "DefaultWaitListTransitionEmail";
+        }
+
+        #endregion
+
+        #region PageParameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string ParentCategoryId = "ParentCategoryId";
+            public const string RegistrationTemplateId = "RegistrationTemplateId";
+        }
+
+        #endregion
+
         #region ViewState Keys
 
         private static class ViewStateKey
@@ -641,7 +673,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationTemplateId = PageParameter( pageReference, "RegistrationTemplateId" ).AsIntegerOrNull();
+            int? registrationTemplateId = PageParameter( pageReference, PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
             if ( registrationTemplateId.HasValue )
             {
                 RegistrationTemplate registrationTemplate = GetRegistrationTemplate( registrationTemplateId.Value );
@@ -754,6 +786,23 @@ The logged-in person's information will be used to complete the registrar inform
             // reload page
             var qryParams = new Dictionary<string, string>();
             NavigateToPage( RockPage.Guid, qryParams );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnPlacements control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnPlacements_Click( object sender, EventArgs e )
+        {
+            var queryParams = new Dictionary<string, string>();
+
+            if ( hfRegistrationTemplateId.Value.AsIntegerOrNull().HasValue )
+            {
+                queryParams.Add( PageParameterKey.RegistrationTemplateId, hfRegistrationTemplateId.Value );
+            }
+
+            NavigateToLinkedPage( AttributeKey.RegistrationTemplatePlacementPage, queryParams );
         }
 
         /// <summary>
@@ -893,16 +942,18 @@ The logged-in person's information will be used to complete the registrar inform
 
             var rockContext = new RockContext();
 
-            // validate gateway
             int? gatewayId = fgpFinancialGateway.SelectedValueAsInt();
+
+            // validate gateway
             if ( gatewayId.HasValue )
             {
                 var financialGateway = new FinancialGatewayService( rockContext ).Get( gatewayId.Value );
                 if ( financialGateway != null )
                 {
-                    if ( financialGateway.GetGatewayComponent() is Rock.Financial.IHostedGatewayComponent )
+                    var hostedGatewayComponent = financialGateway.GetGatewayComponent() as Rock.Financial.IHostedGatewayComponent;
+                    if ( hostedGatewayComponent != null && !hostedGatewayComponent.GetSupportedHostedGatewayModes( financialGateway ).Contains( Rock.Financial.HostedGatewayMode.Unhosted ) )
                     {
-                        nbValidationError.Text = "Unsupported Gateway. Registration doesn't currently support Gateways that have a hosted payment interface.";
+                        nbValidationError.Text = "Unsupported Gateway. Registration currently only supports Gateways that have an un-hosted payment interface.";
                         nbValidationError.Visible = true;
                         return;
                     }
@@ -1409,7 +1460,7 @@ The logged-in person's information will be used to complete the registrar inform
         {
             if ( hfRegistrationTemplateId.Value.Equals( "0" ) )
             {
-                int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
+                int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
                 if ( parentCategoryId.HasValue )
                 {
                     // Cancelling on Add, and we know the parentCategoryId, so we are probably in tree-view mode, so navigate to the current page
@@ -2213,8 +2264,8 @@ The logged-in person's information will be used to complete the registrar inform
         /// </summary>
         private void ShowDetail()
         {
-            int? registrationTemplateId = PageParameter( "RegistrationTemplateId" ).AsIntegerOrNull();
-            int? parentCategoryId = PageParameter( "ParentCategoryId" ).AsIntegerOrNull();
+            int? registrationTemplateId = PageParameter( PageParameterKey.RegistrationTemplateId ).AsIntegerOrNull();
+            int? parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
 
             if ( !registrationTemplateId.HasValue )
             {
@@ -2239,19 +2290,19 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationTemplate.ConfirmationFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.ConfirmationFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.ConfirmationSubject = "{{ RegistrationInstance.Name }} Confirmation";
-                registrationTemplate.ConfirmationEmailTemplate = GetAttributeValue( "DefaultConfirmationEmail" );
+                registrationTemplate.ConfirmationEmailTemplate = GetAttributeValue( AttributeKey.DefaultConfirmationEmail );
                 registrationTemplate.ReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.ReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.ReminderSubject = "{{ RegistrationInstance.Name }} Reminder";
-                registrationTemplate.ReminderEmailTemplate = GetAttributeValue( "DefaultReminderEmail" );
+                registrationTemplate.ReminderEmailTemplate = GetAttributeValue( AttributeKey.DefaultReminderEmail );
                 registrationTemplate.Notify = RegistrationNotify.None;
                 registrationTemplate.SuccessTitle = "Congratulations {{ Registration.FirstName }}";
-                registrationTemplate.SuccessText = GetAttributeValue( "DefaultSuccessText" );
-                registrationTemplate.PaymentReminderEmailTemplate = GetAttributeValue( "DefaultPaymentReminderEmail" );
+                registrationTemplate.SuccessText = GetAttributeValue( AttributeKey.DefaultSuccessText );
+                registrationTemplate.PaymentReminderEmailTemplate = GetAttributeValue( AttributeKey.DefaultPaymentReminderEmail );
                 registrationTemplate.PaymentReminderFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.PaymentReminderFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.PaymentReminderSubject = "{{ RegistrationInstance.Name }} Payment Reminder";
-                registrationTemplate.WaitListTransitionEmailTemplate = GetAttributeValue( "DefaultWaitListTransitionEmail" );
+                registrationTemplate.WaitListTransitionEmailTemplate = GetAttributeValue( AttributeKey.DefaultWaitListTransitionEmail );
                 registrationTemplate.WaitListTransitionFromEmail = "{{ RegistrationInstance.ContactEmail }}";
                 registrationTemplate.WaitListTransitionFromName = "{{ RegistrationInstance.ContactPersonAlias.Person.FullName }}";
                 registrationTemplate.WaitListTransitionSubject = "{{ RegistrationInstance.Name }} Wait List Update";
@@ -2275,6 +2326,14 @@ The logged-in person's information will be used to complete the registrar inform
                 nbEditModeMessage.Heading = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( RegistrationTemplate.FriendlyTypeName );
             }
+
+            // Only show the placements button if a linked page is defined AND this template has any placement records
+            bool showPlacementsButton = !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.RegistrationTemplatePlacementPage ) ) &&
+                registrationTemplate.Id > 0 &&
+                new RegistrationTemplatePlacementService( rockContext ).GetRegistrationTemplatePlacementCountByRegistrationTemplate( registrationTemplate.Id ) > 0;
+
+            btnPlacements.ToolTip = registrationTemplate.Name + " Placement";
+            btnPlacements.Visible = showPlacementsButton;
 
             if ( readOnly )
             {
@@ -3731,7 +3790,7 @@ The logged-in person's information will be used to complete the registrar inform
                 registrationTemplatePlacement = new RegistrationTemplatePlacement();
                 registrationTemplatePlacement.Guid = registrationPlacementConfigurationGuid;
             }
-            
+
             tbPlacementConfigurationName.Text = registrationTemplatePlacement.Name;
             gtpPlacementConfigurationGroupTypeEdit.SelectedGroupTypeId = registrationTemplatePlacement.GroupTypeId;
 
@@ -3892,7 +3951,7 @@ The logged-in person's information will be used to complete the registrar inform
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPlacementConfigurationAddSharedGroupCancel_Click( object sender, EventArgs e )
         {
-            
+
             pnlPlacementConfigurationAddSharedGroup.Visible = false;
         }
 
@@ -3908,6 +3967,6 @@ The logged-in person's information will be used to complete the registrar inform
 
         #endregion
 
-        
+
     }
 }

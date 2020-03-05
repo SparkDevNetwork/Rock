@@ -94,6 +94,9 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this InteractionChannel target, InteractionChannel source )
         {
             target.Id = source.Id;
+            target.ChannelCustom1Label = source.ChannelCustom1Label;
+            target.ChannelCustom2Label = source.ChannelCustom2Label;
+            target.ChannelCustomIndexed1Label = source.ChannelCustomIndexed1Label;
             target.ChannelData = source.ChannelData;
             target.ChannelDetailTemplate = source.ChannelDetailTemplate;
             target.ChannelEntityId = source.ChannelEntityId;
