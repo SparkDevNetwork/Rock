@@ -1,0 +1,42 @@
+﻿  <div class="row margin-t-lg">
+    {% for group in Groups %}
+    <div class="col-sm-4">
+      <div class="team-member">
+        
+        
+        {% for groupLocation in group.GroupLocations %}
+          {% if groupLocation.Location.GeoPoint != '' %}
+          <img class="mx-auto rounded-circle" src="https://maps.googleapis.com/maps/api/staticmap?size=300x300&zoom=11&scale=2&maptype=roadmap&markers={{ groupLocation.Location.GeoPoint }}&key={{ 'Global' | Attribute:'GoogleAPIKey' }}" alt="" />
+          {% assign location = groupLocation.Location %}
+          {% break %}
+          {% endif %}
+        {% endfor %}
+
+          <h4>{{ group.Name }}</h4>
+          <p class="text-muted">{{ group.Description  | TruncateWords:10 }}</p>
+          <ul class="list-inline social-buttons">
+            <li class="list-inline-item">
+              <a title="Register" href="{{ RegisterPage }}?GroupGuid={{ group.Guid }}">
+                <i class="fa fa-pencil"></i>
+              </a>
+            </li>
+            {% if LinkedPages.GroupDetailPage != null and LinkedPages.GroupDetailPage != empty and LinkedPages.GroupDetailPage !='' %}
+            <li class="list-inline-item">
+            <a title="Details" href="{{ LinkedPages.GroupDetailPage }}?GroupId={{ group.Id }}" target="_blank">
+              <i class="fa fa-info"></i>
+            </a>
+          </li>
+            {% endif %}
+            {% if location != null and location != empty and location != '' %}
+            <li class="list-inline-item">
+              <a title ="Get Directions" href="https://maps.google.com/?saddr=Current+Location&daddr={{ location.Street1 }}+{{ location.City }}+{{ location.State }}" target="_blank">
+                <i class="fa fa-map"></i>
+              </a>
+            </li>
+            {% endif %}
+            
+          </ul>
+        </div>
+    </div>
+    {% endfor %}
+  </div>
