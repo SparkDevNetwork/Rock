@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMemberListLava.ascx.cs" Inherits="com.bemaservices.Theme.Agency.GroupMemberListLava" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupMemberListLava.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.AgencyTheme.GroupMemberListLava" %>
 
 <script type="text/javascript">
     function clearDialog() {
