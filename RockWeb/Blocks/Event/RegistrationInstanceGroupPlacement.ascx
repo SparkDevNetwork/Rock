@@ -180,9 +180,9 @@
                                                                 </div>
                                                                 <ul class="dropdown-menu">
                                                                     <li><a class="js-edit-group">Edit</a></li>
-                                                                    <li><a class="js-detach-placement-group">Detach</a></li>
-                                                                    <li role="separator" class="divider"></li>
-                                                                    <li><a class="dropdown-item-danger js-delete-group">Delete</a></li>
+                                                                    <li><a id="detachPlacementGroup" runat="server" class="js-detach-placement-group ">Detach</a></li>
+                                                                    <li id="actionSeparator" runat="server" role="separator" class="divider"></li>
+                                                                    <li><a id="deleteGroup" runat="server" class="dropdown-item-danger js-delete-group">Delete</a></li>
                                                                 </ul>
                                                             </div>
                                                             <div class="btn btn-default btn-xs btn-square pull-right js-placement-group-toggle-visibility placement-group-toggle-visibility">
@@ -293,6 +293,14 @@
                             <div class="col-md-6">
                                 <Rock:NotificationBox ID="nbAddExistingPlacementGroupWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
                                 <Rock:GroupPicker ID="gpAddExistingPlacementGroup" runat="server" Label="Group" ValidationGroup="vgAddPlacementGroup" OnSelectItem="gpAddExistingPlacementGroup_SelectItem" />
+                            </div>
+                        </div>
+                    </asp:Panel>
+                    <asp:Panel runat="server" ID="pnlAddMultipleGroups">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:NotificationBox ID="nbAddExistingPlacementMultipleGroupsWarning" runat="server" NotificationBoxType="Warning" Dismissable="true" />
+                                <Rock:GroupPicker ID="gpAddExistingPlacementGroupsFromParent" runat="server" Label="Parent Group" ValidationGroup="vgAddPlacementGroup" Help="Selecting a Parent Group will add all of its child groups." OnSelectItem="gpAddExistingPlacementGroupsFromParent_SelectItem" />
                             </div>
                         </div>
                     </asp:Panel>
