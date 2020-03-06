@@ -131,6 +131,7 @@ namespace Rock.Model
         /// The financial person saved account.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? FinancialPersonSavedAccountId { get; set; }
 
         #endregion
