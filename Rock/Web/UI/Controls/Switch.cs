@@ -107,6 +107,18 @@ namespace Rock.Web.UI.Controls
             set { ViewState["Required"] = value; }
         }
 
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Should the text be bold?" )
+        ]
+        public bool BoldText
+        {
+            get { return ViewState["BoldText"] as bool? ?? false; }
+            set { ViewState["BoldText"] = value; }
+        }
+
         /// <summary>
         /// Gets or sets the form group class.
         /// </summary>

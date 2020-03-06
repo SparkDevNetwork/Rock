@@ -161,13 +161,13 @@ namespace Rock.Web.UI.Adapters
                 else
                 {
                     // If the switch does not have a lable make the text bold
-                    if ( cbSwitch.Label.Length > 0 )
+                    if ( cbSwitch.BoldText )
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label" );
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label custom-control-label-bold" );
                     }
                     else
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label custom-control-label-bold" );
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label" );
                     }
                     writer.AddAttribute( HtmlTextWriterAttribute.For, cb.ClientID );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
