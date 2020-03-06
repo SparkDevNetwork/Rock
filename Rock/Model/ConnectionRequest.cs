@@ -275,7 +275,12 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public override void PostSaveChanges( Rock.Data.DbContext dbContext )
         {
-            if ( ConnectionStatus.AutoInactivateState && ConnectionState != ConnectionState.Inactive )
+            if ( ConnectionStatus == null )
+            {
+                ConnectionStatus = new ConnectionStatusService( ( RockContext ) dbContext ).Get( ConnectionStatusId );
+            }
+
+            if ( ConnectionStatus != null && ConnectionStatus.AutoInactivateState && ConnectionState != ConnectionState.Inactive )
             {
                 ConnectionState = ConnectionState.Inactive;
                 var rockContext = ( RockContext ) dbContext;
