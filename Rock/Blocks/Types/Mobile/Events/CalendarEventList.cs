@@ -22,25 +22,23 @@ using System.Net.Http;
 using System.Text;
 
 using Rock.Attribute;
-using Rock.Common.Mobile.Blocks.Content;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Mobile;
 using Rock.Model;
-using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Events
 {
     /// <summary>
-    /// Displays a calendar of events.
+    /// Displays a list of events from a calendar.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockMobileBlockType" />
 
-    [DisplayName( "Calendar View" )]
+    [DisplayName( "Calendar Event List" )]
     [Category( "Mobile > Events" )]
-    [Description( "Views events from a calendar." )]
-    [IconCssClass( "fa fa-calendar-alt" )]
+    [Description( "Displays a list of events from a calendar." )]
+    [IconCssClass( "fa fa-list-alt" )]
 
     #region Block Attributes
 
@@ -56,38 +54,30 @@ namespace Rock.Blocks.Types.Mobile.Events
         Key = AttributeKeys.DetailPage,
         Order = 1 )]
 
-    [DefinedValueField( "Audience Filter",
-        Description = "Determines which audiences should be displayed in the filter.",
-        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE,
-        IsRequired = false,
-        AllowMultiple = true,
-        Key = AttributeKeys.AudienceFilter,
+    [BlockTemplateField( "Event Template",
+        Description = "The template to use when rendering event items.",
+        TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST,
+        IsRequired = true,
+        DefaultValue = "",
+        Key = AttributeKeys.EventTemplate,
         Order = 2 )]
 
-    [CodeEditorField( "Event Summary",
-        Description = "The XAML to use when rendering the event summaries below the calendar.",
+    [CodeEditorField( "Day Header Template",
+        Description = "The XAML to use when rendering the day header above a grouping of events.",
         IsRequired = true,
-        DefaultValue = AttributeDefaults.EventSummary,
+        DefaultValue = AttributeDefaults.DayHeaderTemplate,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
-        Key = AttributeKeys.EventSummary,
+        Key = AttributeKeys.DayHeaderTemplate,
         Order = 3 )]
-
-    [BooleanField( "Show Filter",
-        Description = "If enabled then the user will be able to apply custom filtering.",
-        IsRequired = false,
-        DefaultBooleanValue = true,
-        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
-        Key = AttributeKeys.ShowFilter,
-        Order = 4 )]
 
     #endregion
 
-    public class CalendarView : RockMobileBlockType
+    public class CalendarEventList : RockMobileBlockType
     {
         #region Block Attributes
 
         /// <summary>
-        /// The block setting attribute keys for the CalendarView block.
+        /// The block setting attribute keys for the CalendarEventList block.
         /// </summary>
         public static class AttributeKeys
         {
@@ -102,30 +92,25 @@ namespace Rock.Blocks.Types.Mobile.Events
             public const string DetailPage = "DetailPage";
 
             /// <summary>
-            /// The audience filter
+            /// The event template
             /// </summary>
-            public const string AudienceFilter = "AudienceFilter";
+            public const string EventTemplate = "EventTemplate";
 
             /// <summary>
-            /// The event summary
+            /// The day header template
             /// </summary>
-            public const string EventSummary = "EventSummary";
-
-            /// <summary>
-            /// The show filter
-            /// </summary>
-            public const string ShowFilter = "ShowFilter";
+            public const string DayHeaderTemplate = "DayHeaderTemplate";
         }
 
         /// <summary>
-        /// The block attribute default values for the CalendarView block.
+        /// The block attribute default values for the CalendarEventList block.
         /// </summary>
         public static class AttributeDefaults
         {
             /// <summary>
-            /// The event summary default value
+            /// The event template default value.
             /// </summary>
-            public const string EventSummary = @"<Frame HasShadow=""false"" StyleClass=""calendar-event"">
+            public const string EventTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-event"">
     <StackLayout Spacing=""0"">
         <Label StyleClass=""calendar-event-title"" Text=""{Binding Name}"" />
         {% if Item.EndDateTime == null %}
@@ -138,6 +123,14 @@ namespace Rock.Blocks.Types.Mobile.Events
             <Label StyleClass=""calendar-event-campus"" Text=""{{ Item.Campus }}"" HorizontalTextAlignment=""End"" LineBreakMode=""NoWrap"" />
         </StackLayout>
     </StackLayout>
+</Frame>
+";
+
+            /// <summary>
+            /// The day header template default value.
+            /// </summary>
+            public const string DayHeaderTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-events-day"">
+    <Label Text=""{Binding ., StringFormat=""{0:dddd MMMM d}""}"" />
 </Frame>
 ";
         }
@@ -159,28 +152,20 @@ namespace Rock.Blocks.Types.Mobile.Events
         protected Guid? DetailPage => GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull();
 
         /// <summary>
-        /// Gets the audience filter.
+        /// Gets the event template.
         /// </summary>
         /// <value>
-        /// The audience filter.
+        /// The event template.
         /// </value>
-        protected IEnumerable<Guid> AudienceFilter => GetAttributeValue( AttributeKeys.AudienceFilter ).SplitDelimitedValues().AsGuidList();
+        protected string EventTemplate => Rock.Field.Types.BlockTemplateFieldType.GetTemplateContent( GetAttributeValue( AttributeKeys.EventTemplate ) );
 
         /// <summary>
-        /// Gets the event summary.
+        /// Gets the day header template.
         /// </summary>
         /// <value>
-        /// The event summary.
+        /// The day header template.
         /// </value>
-        protected string EventSummary => GetAttributeValue( AttributeKeys.EventSummary );
-
-        /// <summary>
-        /// Gets a value indicating whether the filter should be available to the user.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the filter should be available to the user; otherwise, <c>false</c>.
-        /// </value>
-        protected bool ShowFilter => GetAttributeValue( AttributeKeys.ShowFilter ).AsBoolean();
+        protected string DayHeaderTemplate => GetAttributeValue( AttributeKeys.DayHeaderTemplate );
 
         #endregion
 
@@ -200,7 +185,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <value>
         /// The class name of the mobile block to use during rendering on the device
         /// </value>
-        public override string MobileBlockType => "Rock.Mobile.Blocks.Events.CalendarView";
+        public override string MobileBlockType => "Rock.Mobile.Blocks.Events.CalendarEventList";
 
         /// <summary>
         /// Gets the property values that will be sent to the device in the application bundle.
@@ -210,20 +195,17 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            //
-            // Indicate that we are a dynamic content providing block.
-            //
             return new
             {
                 Audiences = GetAudiences().Select( a => new
                 {
                     a.Id,
                     Name = a.Value,
-                    Color = a.GetAttributeValue( "HighlightColor")
+                    Color = a.GetAttributeValue( "HighlightColor" )
                 } ),
-                SummaryContent = EventSummary,
-                DetailPage,
-                ShowFilter
+                EventTemplate,
+                DayHeaderTemplate,
+                DetailPage
             };
         }
 
@@ -237,19 +219,11 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// <returns></returns>
         private IEnumerable<DefinedValueCache> GetAudiences()
         {
-            var filterAudiences = AudienceFilter;
             var audiences = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE )
                 .DefinedValues
                 .Where( a => a.IsActive );
 
-            if ( !filterAudiences.Any() )
-            {
-                return audiences;
-            }
-            else
-            {
-                return audiences.Where( a => filterAudiences.Contains( a.Guid ) );
-            }
+            return audiences;
         }
 
         /// <summary>
@@ -356,22 +330,6 @@ namespace Rock.Blocks.Types.Mobile.Events
                 var output = lavaTemplate.ResolveMergeFields( mergeFields );
 
                 return ActionOk( new StringContent( output, Encoding.UTF8, "application/json" ) );
-
-                //foreach ( var occurrence in occurrences )
-                //{
-                //    mergeFields.AddOrReplace( "Item", occurrence );
-
-                //    items.Add( new
-                //    {
-                //        occurrence.EventItemOccurrence.Id,
-                //        occurrence.Name,
-                //        StartDateTime = occurrence.Date,
-                //        Summary = EventSummary.ResolveMergeFields( mergeFields ),
-                //        occurrence.Audiences
-                //    } );
-                //}
-
-                //return items;
             }
         }
 
