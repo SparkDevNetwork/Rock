@@ -682,6 +682,12 @@ namespace RockWeb.Blocks.Communication
                 var lblMessageDateTime = ( Label ) e.Item.FindControl( "lblMessageDateTime" );
                 lblMessageDateTime.ToolTip = communicationRecipientResponse.CreatedDateTime.ToString();
                 lblMessageDateTime.Text = communicationRecipientResponse.HumanizedCreatedDateTime.ToString();
+
+                if ( communicationRecipientResponse.MessageStatus == CommunicationRecipientStatus.Pending )
+                {
+                    lblMessageDateTime.Text += " (Pending)";
+                }
+
                 var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
 
                 if ( communicationRecipientResponse.IsOutbound )
