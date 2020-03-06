@@ -36,7 +36,7 @@
                                 <asp:UpdatePanel runat="server" UpdateMode="Conditional">
                                     <ContentTemplate>
                                         <h5>Speed Settings</h5>
-                                        <Rock:Switch ID="swPersistDataView" runat="server" Text="Persist Data View" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed."  />
+                                        <Rock:Switch ID="swPersistDataView" runat="server" Text="Enable Persistence" BoldText="true" AutoPostBack="true" OnCheckedChanged="swPersistDataView_CheckedChanged" Help="Persisting this dataview may improve performance, especially for complex filters. The results of a persisted dataview are stored and re-used until the scheduled interval has elapsed."  />
                                         
                                         <asp:Panel runat="server" ID="pnlSpeedSettings">
                                             <Rock:RangeSlider ID="rsPersistedScheduleInterval" runat="server" Label="Persistence Interval" MaxValue="24" MinValue="1" SelectedValue="12" />
