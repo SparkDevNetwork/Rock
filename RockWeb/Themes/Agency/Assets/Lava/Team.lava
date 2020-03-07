@@ -1,0 +1,38 @@
+﻿  <div class="row">
+    {% for member in Members %}
+    {% assign facebook = member.Person | Attribute:'Facebook' %}
+    {% assign twitter = member.Person | Attribute:'Twitter' %}
+    {% assign instagram = member.Person | Attribute:'Instagram' %}
+    {% assign position = member.Person | Attribute:'Position' %}
+    <div class="col-sm-4">
+      <div class="team-member">
+        <img class="mx-auto rounded-circle" src="{{ member.Person.PhotoUrl }}" alt="" />
+          <h4>{{ member.Person.FullName }}</h4>
+          <p class="text-muted">{{ position }}</p>
+          <ul class="list-inline social-buttons">
+            {% if facebook != empty and facebook != '' %}
+            <li class="list-inline-item">
+              <a href="{{ facebook }}">
+                <i class="fa fa-facebook"></i>
+              </a>
+            </li>
+            {% endif %}
+            {% if twitter != empty and twitter != '' %}
+            <li class="list-inline-item">
+              <a href="{{ twitter }}">
+                <i class="fa fa-twitter"></i>
+              </a>
+            </li>
+            {% endif %}
+            {% if instagram != empty and instagram != '' %}
+            <li class="list-inline-item">
+              <a href="{{ instagram }}">
+                <i class="fa fa-instagram"></i>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+    </div>
+    {% endfor %}
+  </div>

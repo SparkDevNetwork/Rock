@@ -1,0 +1,146 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="Rock" %>
+<%@ Import Namespace="Rock.Web" %>
+<%@ Import Namespace="Rock.Web.UI" %>
+<%@ Import Namespace="Rock.Model" %>
+<%@ Import Namespace="Rock.Attribute" %>
+<!DOCTYPE html>
+
+<script runat="server">
+
+    // keep code below to call base class init method
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+    }
+
+    protected void Page_Load( object sender, EventArgs e )
+    {
+        var page = ( RockPage ) this.Page;
+
+        var bannerImage = page.GetAttributeValue( "HeaderImage" );
+        if(bannerImage != null)
+        {
+            header.Style.Add("background-image", "url('/GetImage.ashx?guid=" + bannerImage.AsGuid() + "')");
+        }
+        
+    }
+
+</script>
+
+<html class="no-js">
+<head runat="server">
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title></title>
+    
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+   
+     <!-- Bootstrap core CSS 
+    <link href="<%# ResolveRockUrl("~~/vendor/bootstrap/css/bootstrap.css", true) %>" rel="stylesheet"/>
+         -->
+    
+    <!-- Custom fonts for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href='https://fonts.googleapis.com/css?family=Kaushan+Script' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+   <script src="<%# ResolveRockUrl("~~/vendor/bootstrap/js/bootstrap.bundle.js", true ) %>" ></script>
+
+    <script src="<%# ResolveRockUrl("~~/vendor/jquery-easing/jquery.easing.js", true ) %>" ></script>
+
+    <script src="<%# ResolveRockUrl("~~/js/agency.js", true  ) %>" ></script>
+
+    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
+
+</head>
+<body runat="server" id="body">
+
+    <form id="form1" runat="server">
+                   
+        <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+      <div class="container">
+
+        <Rock:Zone Name="Header" runat="server" />
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          Menu
+          <i class="fa fa-bars"></i>
+        </button>
+        <div class="pull-right">
+            
+        </div>
+          <Rock:Zone Name="Navigation" runat="server" />
+          <Rock:Zone Name="Login" runat="server" />
+      </div>
+    </nav>
+    
+    <!-- Header -->
+    <header class="masthead" id="header" runat="server">
+      <div class="container">
+        <div class="intro-text">
+            <asp:ContentPlaceHolder ID="feature" runat="server"></asp:ContentPlaceHolder>
+        </div>
+      </div>
+    </header>
+        
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+
+	    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="row">
+            <Rock:Zone Name="Footer" runat="server" />
+        </div>
+      </div>
+    </footer>
+
+
+        
+        <%-- controls for scriptmanager and update panel --%>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+        <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
+		        <ProgressTemplate>
+		            <div class="updateprogress-status">
+                        <div class="spinner">
+                          <div class="rect1"></div>
+                          <div class="rect2"></div>
+                          <div class="rect3"></div>
+                          <div class="rect4"></div>
+                          <div class="rect5"></div>
+                        </div>
+                    </div>
+                    <div class="updateprogress-bg modal-backdrop"></div>
+		        </ProgressTemplate>
+        </asp:UpdateProgress>
+
+    </form>
+
+
+
+</body>
+
+</html>

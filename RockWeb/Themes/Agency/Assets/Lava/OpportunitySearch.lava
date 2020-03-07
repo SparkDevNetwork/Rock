@@ -1,0 +1,30 @@
+{% assign opportunityCount = Opportunities | Size %}
+
+{% if opportunityCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no opportunities that match the criteria</div>
+  </div>
+{% endif %}
+<div class="row text-center margin-t-lg">
+{% for opportunity in Opportunities %}
+	<div class="col-md-4">
+		<span class="fa-stack fa-4x">
+			<i class="fa fa-circle fa-stack-2x text-primary"></i>
+			<i class="{{ opportunity.IconCssClass }} fa-stack-1x fa-inverse"></i>
+		</span>
+		<h4 class="service-heading">{{ opportunity.PublicName }}</h4>
+		<p class="text-muted">{{ opportunity.Summary }}</p>
+		{% if DetailPage contains "?" %}
+			<a class="btn btn-primary" href="{{ DetailPage }}&OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+		{% else %}
+			<a class="btn btn-primary" href="{{ DetailPage }}?OpportunityId={{ opportunity.Id }}" role="button">More Info</a>
+		{% endif %}  
+	</div>
+{% endfor %}
+</div>
+
+<script type="text/javascript">
+  $( document ).ready(function() {
+    $('.js-group-item').tooltip();
+  });
+</script>

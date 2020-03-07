@@ -1,0 +1,32 @@
+﻿<section class="bg-light section-agency" id="portfolio">
+
+  <div class="container">
+
+    <div class="row">
+      <div class="col-lg-12 text-center">
+        <h2 class="section-heading text-uppercase">Upcoming</h2>
+        <h3 class="section-subheading text-muted">&nbsp;</h3>
+      </div>
+      <div class="row">
+        {% for item in Items %}
+        <div class="col-md-4 col-sm-6 portfolio-item">
+        <a class="portfolio-link" data-toggle="modal" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+          <div class="portfolio-hover">
+            <div class="portfolio-hover-content">
+              <i class="fa fa-plus fa-3x"></i>
+            </div>
+          </div>
+          <img class="img-fluid" src="/GetImage.ashx?guid={{ item | Attribute:'Image','Guid' }}&width=400" alt="" />
+            </a>
+        <div class="portfolio-caption">
+          <h4>{{ item.Title }}</h4>
+          <p class="text-muted">{{ item | Attribute:'SummaryText' }}</p>
+        </div>
+      </div>
+        {% endfor %}
+      </div>
+    </div>
+    
+  </div>
+
+</section>

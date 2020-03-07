@@ -1,0 +1,54 @@
+﻿{% for item in Items %}
+{% assign image = item | Attribute:'Image' %}
+
+<article class="margin-b-lg">
+  
+{% if image != null and image != empty %}
+	<div class="row">
+	<div class="col-sm-3">
+		{{ image }}
+	</div>
+	<div class="col-sm-9">
+{% endif %}
+  <h3>{{ item.Title }}</h3>
+
+  <div>
+    {{ item | Attribute:'Summary' }}
+  </div>
+
+  <p class="margin-t-lg">
+    <a class="btn btn-primary btn-sm" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}" class="btn btn-default btn-xs">
+      Read more <i class="fa fa-chevron-right"></i>
+    </a>
+  </p>
+{% if image != null and image != empty %}
+</div>
+</div>
+{% endif %}
+</article>
+{% endfor %}
+
+<div class="clearfix">
+  {% assign nextPageString = Pagination.NextPage | ToString %}
+  {% assign prevPageString = Pagination.PreviousPage | ToString %}
+
+  {% if Pagination.PreviousPage == -1 %}
+  <div class="btn btn-default pull-left">
+    <i class="fa fa-chevron-left"></i> Prev
+  </div>
+  {% else %}
+  <a class="btn btn-primary pull-left" href="{{ Pagination.UrlTemplate | Replace:'PageNum', prevPageString }}">
+    <i class="fa fa-chevron-left"></i> Prev
+  </a>
+  {% endif %}
+
+  {% if Pagination.NextPage == -1 %}
+  <div class="btn btn-default pull-right">
+    Next <i class="fa fa-chevron-right"></i>
+  </div>
+  {% else %}
+  <a class="btn btn-primary pull-right" href="{{ Pagination.UrlTemplate | Replace:'PageNum', nextPageString }}">
+    Next <i class="fa fa-chevron-right"></i>
+  </a>
+  {% endif %}
+</div>
