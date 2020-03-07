@@ -58,7 +58,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SystemGuid\SystemJob.cs" />
     <Compile Include="SystemGuid\SystemEmail.cs" />
-    <Compile Include="Utility\Version.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock\Rock.csproj">
