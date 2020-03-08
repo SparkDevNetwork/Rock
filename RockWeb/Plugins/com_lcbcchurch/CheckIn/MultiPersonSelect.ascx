@@ -31,8 +31,8 @@
                                 <div class="controls checkin-person-list">
                                     <asp:Repeater ID="rSelection" runat="server">
                                         <ItemTemplate>
-                                            <div class="row">
-                                                <asp:Panel ID="pnlPersonButton" runat="server" CssClass="col-xs-12">
+                                            <div class="row row-no-gutters row-eq-height row-checkin-item" style="min-height: 100%;width: 100%;">
+                                                <asp:Panel ID="pnlPersonButton" runat="server" CssClass="col-xs-12 checkin-person" style="display: flex">
                                                     <a data-person-id='<%# Eval("Person.Id") %>' class="btn btn-primary btn-checkin-select btn-block js-person-select <%# GetSelectedClass( (bool)Eval("PreSelected") ) %>">
                                                         <div class="row">
                                                             <div class="col-md-1 col-sm-2 col-xs-3 checkbox-container">
@@ -41,12 +41,12 @@
                                                             <asp:Panel ID="pnlPhoto" runat="server" CssClass="col-md-1 col-sm-2 col-xs-3 photo-container">
                                                                 <div class="photo-round photo-round-md pull-left" style="display: block; background-image: url('<%# GetPersonImageTag( Eval("Person") ) %>');"></div>
                                                             </asp:Panel>
-                                                            <asp:Panel ID="pnlPerson" runat="server"><asp:Literal ID="lPersonButton" runat="server"></asp:Literal></asp:Panel>
+                                                            <asp:Panel ID="pnlPerson" runat="server" style="display: flex;flex: 1 0;"><asp:Literal ID="lPersonButton" runat="server"></asp:Literal></asp:Panel>
                                                         </div>
                                                     </a>
                                                 </asp:Panel>
-                                                <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-9 col-sm-3 col-md-2" Visible="false">
-                                                    <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block" CommandArgument='<%# Eval("Person.Id") %>' CommandName="Change">Change</asp:LinkButton>
+                                                <asp:Panel ID="pnlChangeButton" runat="server" CssClass="col-xs-12 col-sm-3 col-md-2 checkin-change" style="flex: 1 0; padding: 0; display: flex;" Visible="false">
+                                                    <asp:LinkButton ID="lbChange" runat="server" CssClass="btn btn-default btn-checkin-select btn-block" style="align-items: center; justify-content: center; display: flex; border-color: #3c3d3d; border-left: 0;" CommandArgument='<%# Eval("Person.Id") %>' CommandName="Change">Change</asp:LinkButton>
                                                 </asp:Panel>
                                             </div>
                                         </ItemTemplate>
@@ -98,7 +98,7 @@
                                                     <div class="col-md-1 col-sm-2 col-xs-3">
                                                         <i class='fa fa-2x <%# GetCheckboxClass( (bool)Eval("Selected") ) %>'></i>
                                                     </div>
-                                                    <asp:Panel ID="pnlOption" runat="server"><%# GetOptionText( Container.DataItem ) %></asp:Panel>
+                                                    <asp:Panel ID="pnlOption" runat="server" CssClass="col-md-10 col-sm-9 col-xs-8"><%# GetOptionText( Container.DataItem ) %></asp:Panel>
                                                 </div>
                                             </a>
                                         </ItemTemplate>
