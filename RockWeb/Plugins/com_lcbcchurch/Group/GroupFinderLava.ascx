@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupFinderLava.ascx.cs" Inherits="RockWeb.Plugins.com_lcbcChurch.Groups.GroupFinderLava" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GroupFinderLava.ascx.cs" Inherits="RockWeb.Plugins.com_lcbcchurch.Groups.GroupFinderLava" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
