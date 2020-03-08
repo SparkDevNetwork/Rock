@@ -42,7 +42,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds the or replace.
+        /// Adds or replaces an item in a Dictionary.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -78,7 +78,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds if not empty.
+        /// Adds a string value to a Dictionary if it is not blank.
         /// </summary>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
@@ -103,7 +103,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets value for the specified key, or null if the dictionary doesn't contain the key
+        /// Gets value for the specified key, or null if the dictionary doesn't contain the key.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>

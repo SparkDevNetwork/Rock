@@ -23,12 +23,12 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to pick a school grade
     /// </summary>
     public class GradePicker : RockDropDownList
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DayOfWeekPicker"/> class.
+        /// Initializes a new instance of the <see cref="GradePicker"/> class.
         /// </summary>
         public GradePicker()
             : base()

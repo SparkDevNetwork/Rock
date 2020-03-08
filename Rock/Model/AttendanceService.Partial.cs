@@ -661,9 +661,9 @@ namespace Rock.Model
                 && a.PersonAlias.Person.IsEmailActive );
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
+            var attendancesBySystemEmailTypeList = sendConfirmationAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleConfirmationSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
             {
-                ScheduleConfirmationSystemEmailId = s.Key.Value,
+                ScheduleConfirmationSystemCommunicationId = s.Key.Value,
                 Attendances = s.ToList()
             } ).ToList();
 
@@ -673,7 +673,7 @@ namespace Rock.Model
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
-                var scheduleConfirmationSystemEmail = new SystemEmailService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemEmailId );
+                var scheduleConfirmationSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleConfirmationSystemCommunicationId );
 
                 var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
                 {
@@ -738,9 +738,9 @@ namespace Rock.Model
         {
             int emailsSent = 0;
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
-            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemEmailId ).Where( a => a.Key.HasValue ).Select( s => new
+            var attendancesBySystemEmailTypeList = sendReminderAttendancesQueryList.GroupBy( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId ).Where( a => a.Key.HasValue ).Select( s => new
             {
-                ScheduleReminderSystemEmailId = s.Key.Value,
+                ScheduleReminderSystemCommunicationId = s.Key.Value,
                 Attendances = s.ToList()
             } ).ToList();
 
@@ -748,7 +748,7 @@ namespace Rock.Model
 
             foreach ( var attendancesBySystemEmailType in attendancesBySystemEmailTypeList )
             {
-                var scheduleReminderSystemEmail = new SystemEmailService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemEmailId );
+                var scheduleReminderSystemEmail = new SystemCommunicationService( rockContext ).GetNoTracking( attendancesBySystemEmailType.ScheduleReminderSystemCommunicationId );
 
                 var attendancesByPersonList = attendancesBySystemEmailType.Attendances.GroupBy( a => a.PersonAlias.Person ).Select( s => new
                 {
@@ -815,7 +815,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of available the scheduler resources (people) based on the options specified in schedulerResourceParameters 
+        /// Gets a list of available resources (people) based on the options specified in schedulerResourceParameters
+        /// <para>If the source of resources is a group, only active group members will be included</para>
         /// </summary>
         /// <param name="schedulerResourceParameters">The scheduler resource parameters.</param>
         /// <returns></returns>
@@ -863,7 +864,9 @@ namespace Rock.Model
 
             if ( schedulerResourceParameters.ResourceGroupId.HasValue )
             {
-                groupMemberQry = groupMemberService.Queryable().Where( a => a.GroupId == schedulerResourceParameters.ResourceGroupId.Value );
+                groupMemberQry = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == schedulerResourceParameters.ResourceGroupId.Value )
+                    .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
 
                 var resourceGroup = groupService.GetNoTracking( schedulerResourceParameters.ResourceGroupId.Value );
                 if ( resourceGroup?.SchedulingMustMeetRequirements == true )
@@ -1574,7 +1577,10 @@ namespace Rock.Model
                 .Where( a => a.DidAttend != true )
                 .Where( a => a.Occurrence.OccurrenceDate >= currentDate )
                 // RSVP.Maybe is not used by the Group Scheduler. But, just in case, treat it as that the person has not responded.
-                .Where( a => a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown );
+                .Where( a => a.RSVP == RSVP.Maybe || a.RSVP == RSVP.Unknown )
+                // Explicitly include Group and Location objects to prevent issues with lazy loading after databinding (e.g., in GroupScheduleToolbox block).
+                .Include( a => a.Occurrence.Group )
+                .Include( a => a.Occurrence.Location );
         }
 
         /// <summary>

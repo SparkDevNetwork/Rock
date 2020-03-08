@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-paint-brush"></i> <asp:Literal ID="lThemeName" runat="server" /></h1>
             </div>
@@ -24,7 +24,7 @@
                                 <asp:LinkButton ID="btnBack" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancel_Click"  />
                             </div>
                         </div>
-                        
+
                         <asp:Panel ID="pnlFontAwesomeSettings" runat="server">
                             <Rock:RockDropDownList ID="ddlFontAwesomeIconWeight" runat="server" Label="Font Awesome Icon Weight" AutoPostBack="true" OnSelectedIndexChanged="ddlFontAwesomeIconWeight_SelectedIndexChanged" />
                             <Rock:RockCheckBoxList ID="cblFontAwesomeAlternateFonts" runat="server" Label="Font Awesome Alternate Fonts" Help="It allows you to also load those fonts to. So if you want to use 'fas fa-cog' and 'far fa-cog' and 'fal fa-cog' all on the same theme you could." />
@@ -35,7 +35,7 @@
                 </div>
 
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>
@@ -44,12 +44,16 @@
 <script type="text/javascript">
     // change approval status to pending if any values are changed
     Sys.Application.add_load( function () {
+        $('.js-color-override').each(function() {
+            return $(this).siblings('.form-group').children('.control-wrapper').append($(this))
+        });
+
         $(".js-color-override").on("click", function () {
             var controlKey = $(this).attr("data-control");
             var originalValue = $(this).attr("data-original-value");
 
             $("input[id$='" + controlKey + "']").parent().colorpicker('setValue', originalValue);
-            
+
             $(this).hide();
         });
 

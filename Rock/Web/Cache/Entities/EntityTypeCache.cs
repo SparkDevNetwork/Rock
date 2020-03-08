@@ -36,7 +36,7 @@ namespace Rock.Web.Cache
     {
         #region Static Fields
 
-        private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>();
+        private static readonly ConcurrentDictionary<string, int> EntityTypes = new ConcurrentDictionary<string, int>( StringComparer.OrdinalIgnoreCase );
 
         #endregion
 
@@ -472,7 +472,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the id.
+        /// Gets an EntityTypeId based on the specified type name.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>

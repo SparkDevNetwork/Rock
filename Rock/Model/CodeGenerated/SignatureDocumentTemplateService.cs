@@ -104,7 +104,10 @@ namespace Rock.Model
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InviteSystemCommunicationId = source.InviteSystemCommunicationId;
+            #pragma warning disable 612, 618
             target.InviteSystemEmailId = source.InviteSystemEmailId;
+            #pragma warning restore 612, 618
             target.Name = source.Name;
             target.ProviderEntityTypeId = source.ProviderEntityTypeId;
             target.ProviderTemplateKey = source.ProviderTemplateKey;

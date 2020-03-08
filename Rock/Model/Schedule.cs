@@ -336,6 +336,27 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the duration in minutes.
+        /// </summary>
+        /// <value>
+        /// The duration in minutes.
+        /// </value>
+        [LavaInclude]
+        public virtual int DurationInMinutes
+        {
+            get
+            {
+                DDay.iCal.Event calendarEvent = this.GetCalendarEvent();
+                if ( calendarEvent != null && calendarEvent.DTStart != null && calendarEvent.DTEnd != null )
+                {
+                    return ( int ) calendarEvent.DTEnd.Subtract( calendarEvent.DTStart ).TotalMinutes;
+                }
+
+                return 0;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.Category"/> that this Schedule belongs to.
         /// </summary>
         /// <value>
@@ -805,11 +826,13 @@ namespace Rock.Model
                             }
                             else if ( rrule.ByDay.Count > 0 )
                             {
-                                // The Nth <DayOfWeekName> (we only support one day in the ByDay list)
+                                // The Nth <DayOfWeekName>.  We only support one *day* in the ByDay list, but multiple *offsets*.
+                                // So, it can be the "The first and third Monday" of every month.
                                 IWeekDay bydate = rrule.ByDay[0];
-                                if ( NthNames.ContainsKey( bydate.Offset ) )
+                                var offsetNames = NthNamesAbbreviated.Where( a => rrule.ByDay.Select( o=>o.Offset ).Contains( a.Key ) ).Select( a => a.Value );
+                                if ( offsetNames != null )
                                 {
-                                    result = string.Format( "The {0} {1} of every month", NthNames[bydate.Offset], bydate.DayOfWeek.ConvertToString() );
+                                    result = string.Format( "The {0} {1} of every month", offsetNames.JoinStringsWithCommaAnd(), bydate.DayOfWeek.ConvertToString() );
                                 }
                                 else
                                 {
@@ -1078,7 +1101,7 @@ namespace Rock.Model
 
         #endregion
 
-        #region consts
+        #region Constants
 
         /// <summary>
         /// The "nth" names for DayName of Month (First, Second, Third, Forth, Last)
@@ -1089,6 +1112,17 @@ namespace Rock.Model
             {3, "Third"},
             {4, "Fourth"},
             {-1, "Last"}
+        };
+
+        /// <summary>
+        /// The abbreviated "nth" names for DayName of Month (1st, 2nd, 3rd, 4th, last)
+        /// </summary>
+        private static readonly Dictionary<int, string> NthNamesAbbreviated = new Dictionary<int, string> {
+            {1, "1st"},
+            {2, "2nd"},
+            {3, "3rd"},
+            {4, "4th"},
+            {-1, "last"}
         };
 
         #endregion

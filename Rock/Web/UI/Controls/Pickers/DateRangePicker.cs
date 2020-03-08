@@ -269,7 +269,8 @@ $(function() {{
         format: '{dateFormat}',
         todayHighlight: true,
         autoclose: true,
-        inputs: $('#{this.ClientID} .form-control')
+        inputs: $('#{this.ClientID} .form-control'),
+        zIndexOffset: 1050
     }});
 }});
 

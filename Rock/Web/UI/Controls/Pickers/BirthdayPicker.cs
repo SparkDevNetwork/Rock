@@ -19,7 +19,8 @@ using System;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select individual parts (month, day, year) of a birthday
+    /// <para>Birthdates cannot be in the future</para>
     /// </summary>
     public class BirthdayPicker : DatePartsPicker, IRockChangeHandlerControl
     {

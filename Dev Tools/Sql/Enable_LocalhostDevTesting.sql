@@ -3,7 +3,7 @@
 /* If this script returns 'O rows affected', then you are already set for localhost testing */
 
 /*  Update Organization Website Global Attribute to the localhost url that RockWeb uses when developing locally */
-DECLARE @OrganizationWebSiteId int = (SELECT Id from [Attribute] WHERE [Key] = 'OrganizationWebSite')
+DECLARE @OrganizationWebSiteId int = (SELECT TOP 1 Id FROM [Attribute] WHERE [Key] = 'OrganizationWebSite' AND [IsActive] = 1)
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @OrganizationWebSiteId )
 BEGIN
 	UPDATE [AttributeValue]
@@ -37,7 +37,7 @@ BEGIN
 END
 
 /*  Update PublicApplicationRoot Global Attribute to the localhost url that RockWeb uses when developing locally. */
-DECLARE @PublicApplicationRootId int = (select Id from [Attribute] WHERE [Key] = 'PublicApplicationRoot')
+DECLARE @PublicApplicationRootId int = (SELECT TOP 1 Id FROM [Attribute] WHERE [Key] = 'PublicApplicationRoot' AND [IsActive] = 1)
 
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @PublicApplicationRootId )
 BEGIN
@@ -72,7 +72,7 @@ BEGIN
 END
 
 /*  Update InternalApplicationRoot Global Attribute to the localhost url that RockWeb uses when developing locally. */
-DECLARE @InternalApplicationRootId int = (select Id from [Attribute] WHERE [Key] = 'InternalApplicationRoot')
+DECLARE @InternalApplicationRootId int = (SELECT TOP 1 Id FROM [Attribute] WHERE [Key] = 'InternalApplicationRoot' AND [IsActive] = 1)
 
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @InternalApplicationRootId )
 BEGIN
@@ -107,7 +107,7 @@ BEGIN
 END
 
 /* Update SMTP Transport to use localhost as the SMTP Server.  Use https://github.com/ChangemakerStudios/Papercut/releases or similar email server tool to test email system */
-DECLARE @CommChannelServerId int = (SELECT Id from [Attribute] WHERE [Guid] = '6CFFDF99-E93A-49B8-B440-0EF93878A51F')
+DECLARE @CommChannelServerId int = (SELECT Id FROM [Attribute] WHERE [Guid] = '6CFFDF99-E93A-49B8-B440-0EF93878A51F')
 IF EXISTS ( SELECT [Id] FROM [AttributeValue]  WHERE [AttributeId] = @CommChannelServerId )
 BEGIN
 	UPDATE [AttributeValue]

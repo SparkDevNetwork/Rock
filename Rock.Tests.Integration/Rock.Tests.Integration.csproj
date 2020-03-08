@@ -92,6 +92,7 @@
     <Compile Include="RockTests\Crm\StepsTests.cs" />
     <Compile Include="RockTests\DatabaseTests.cs" />
     <Compile Include="RockTests\Migrations\MigrationTests.cs" />
+    <Compile Include="RockTests\Model\GroupTypeServiceTests.cs" />
     <Compile Include="RockTests\Model\StreakTypeServiceTests.cs" />
     <Compile Include="RockTests\Model\AttendanceCodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

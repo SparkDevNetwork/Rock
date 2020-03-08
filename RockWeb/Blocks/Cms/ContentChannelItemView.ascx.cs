@@ -480,7 +480,7 @@ Guid - ContentChannelItem Guid
                     var itemMergeFields = new Dictionary<string, object>( commonMergeFields );
 
                     var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
-                    
+
                     itemMergeFields.AddOrReplace( "Item", contentChannelItem );
                     contentChannelItem.Content = contentChannelItem.Content.ResolveMergeFields( itemMergeFields, enabledCommands );
                     contentChannelItem.LoadAttributes();
@@ -511,17 +511,17 @@ Guid - ContentChannelItem Guid
                     RockPage.Header.Description = metaDescriptionValue.SanitizeHtml( true );
                 }
 
-                AddHtmlMeta( "og:type", this.GetAttributeValue( "OpenGraphType" ) );
-                AddHtmlMeta( "og:title", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphTitleAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "og:description", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphDescriptionAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "og:image", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphImageAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterTitleAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterDescriptionAttribute" ), contentChannelItem ) );
-                AddHtmlMeta( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterImageAttribute" ), contentChannelItem ) );
+                AddHtmlMetaProperty( "og:type", this.GetAttributeValue( "OpenGraphType" ) );
+                AddHtmlMetaProperty( "og:title", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphTitleAttribute" ), contentChannelItem ) );
+                AddHtmlMetaProperty( "og:description", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphDescriptionAttribute" ), contentChannelItem ) );
+                AddHtmlMetaProperty( "og:image", GetMetaValueFromAttribute( this.GetAttributeValue( "OpenGraphImageAttribute" ), contentChannelItem ) );
+                AddHtmlMetaName( "twitter:title", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterTitleAttribute" ), contentChannelItem ) );
+                AddHtmlMetaName( "twitter:description", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterDescriptionAttribute" ), contentChannelItem ) );
+                AddHtmlMetaName( "twitter:image", GetMetaValueFromAttribute( this.GetAttributeValue( "TwitterImageAttribute" ), contentChannelItem ) );
                 var twitterCard = this.GetAttributeValue( "TwitterCard" );
                 if ( twitterCard.IsNotNullOrWhiteSpace() && twitterCard != "none" )
                 {
-                    AddHtmlMeta( "twitter:card", twitterCard );
+                    AddHtmlMetaName( "twitter:card", twitterCard );
                 }
                 string lavaTemplate = this.GetAttributeValue( "LavaTemplate" );
                 string enabledLavaCommands = this.GetAttributeValue( "EnabledLavaCommands" );
@@ -682,6 +682,13 @@ Guid - ContentChannelItem Guid
         /// </summary>
         private void LaunchInteraction()
         {
+            // don't log visits from crawlers
+            var clientType = InteractionDeviceType.GetClientType( Request.UserAgent );
+            if ( clientType == "Crawler" )
+            {
+                return;
+            }
+
             bool logInteractions = this.GetAttributeValue( "LogInteractions" ).AsBoolean();
             if ( !logInteractions )
             {
@@ -792,11 +799,11 @@ Guid - ContentChannelItem Guid
         }
 
         /// <summary>
-        /// Adds the HTML meta from attribute value.
+        /// Adds the HTML meta name from attribute value.
         /// </summary>
         /// <param name="metaName">Name of the meta.</param>
         /// <param name="metaContent">Content of the meta.</param>
-        private void AddHtmlMeta( string metaName, string metaContent )
+        private void AddHtmlMetaName( string metaName, string metaContent )
         {
             if ( string.IsNullOrEmpty( metaContent ) )
             {
@@ -808,6 +815,25 @@ Guid - ContentChannelItem Guid
                 Name = metaName,
                 Content = metaContent
             } );
+        }
+
+        /// <summary>
+        /// Adds the HTML meta property from attribute value.
+        /// </summary>
+        /// <param name="metaProperty">Property of the meta.</param>
+        /// <param name="metaContent">Content of the meta.</param>
+        private void AddHtmlMetaProperty( string metaProperty, string metaContent )
+        {
+            if ( string.IsNullOrEmpty( metaContent ) )
+            {
+                return;
+            }
+
+            HtmlMeta tag = new HtmlMeta();
+            tag.Attributes.Add("property", metaProperty);
+            tag.Content = metaContent;
+
+            RockPage.Header.Controls.Add( tag );
         }
 
         /// <summary>

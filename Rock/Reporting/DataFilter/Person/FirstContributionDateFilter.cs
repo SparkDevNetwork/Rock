@@ -252,7 +252,7 @@ function() {
             DateRange dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.DelimitedValues );
 
             int transactionTypeContributionId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
-            var financialTransactionsQry = new FinancialTransactionService( rockContext )
+            var financialTransactionBaseQry = new FinancialTransactionService( rockContext )
                 .Queryable()
                 .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId );
 
@@ -262,20 +262,31 @@ function() {
                 if ( accountIdList.Count == 1 )
                 {
                     int accountId = accountIdList.First();
-                    financialTransactionsQry = financialTransactionsQry.Where( xx => xx.TransactionDetails.Any( a => a.AccountId == accountId ) );
+                    financialTransactionBaseQry = financialTransactionBaseQry.Where( xx => xx.TransactionDetails.Any( a => a.AccountId == accountId ) );
                 }
                 else
                 {
-                    financialTransactionsQry = financialTransactionsQry.Where( xx => xx.TransactionDetails.Any( a => accountIdList.Contains( a.AccountId ) ) );
+                    financialTransactionBaseQry = financialTransactionBaseQry.Where( xx => xx.TransactionDetails.Any( a => accountIdList.Contains( a.AccountId ) ) );
                 }
             }
 
+            var personAliasQry = new PersonAliasService( rockContext ).Queryable();
+            var personQryForJoin = new PersonService( rockContext ).Queryable();
+
+            // Create explicit joins to person alias and person tables so that rendered SQL has an INNER Joins vs OUTER joins on PersonAlias
+            var financialTransactionsQry = financialTransactionBaseQry
+                .Join( personAliasQry, t => t.AuthorizedPersonAliasId, pa => pa.Id, ( t, pa ) => new
+                {
+                    txn = t,
+                    PersonId = pa.PersonId
+                } );
+
             var firstContributionDateQry = financialTransactionsQry
-                .GroupBy( xx => xx.AuthorizedPersonAlias.PersonId )
+                .GroupBy( xx => xx.PersonId )
                 .Select( ss => new
                 {
                     PersonId = ss.Key,
-                    FirstTransactionDate = ss.Min( a => selectionConfig.UseSundayDate == true ? a.SundayDate : a.TransactionDateTime )
+                    FirstTransactionDate = ss.Min( a => selectionConfig.UseSundayDate == true ? a.txn.SundayDate : a.txn.TransactionDateTime )
                 } );
 
             if ( dateRange.Start.HasValue )

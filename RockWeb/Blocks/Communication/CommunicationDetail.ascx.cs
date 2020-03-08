@@ -46,11 +46,9 @@ namespace RockWeb.Blocks.Communication
     [Description( "Used for displaying details of an existing communication that has already been created." )]
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    /* 14-Nov-2019 - DL
-     * This block makes use of conditional UpdatePanels to allow for partial page updates.
-     * These partial updates are necessary to prevent any full-page postbacks that destroy the content of hidden Bootstrap tabs.
-     *
-     * The block also contains additional script to handle client-side rendering of Charts and Message Content.
+    /* 11-Feb-2020 - DL
+     * This block contains additional script to handle client-side rendering of Charts and Message Content.
+     * It is needed to ensure these elements refresh correctly during postback events.
      */
 
     #region Block Attributes
@@ -119,7 +117,7 @@ namespace RockWeb.Blocks.Communication
         #region Fields
 
         private bool _EditingApproved = false;
-        private string _ActiveView = CommunicationDetailPanels.Analytics;
+        private string _ActivePanel = CommunicationDetailPanels.Analytics;
         private List<CommunicationDetailReportColumnInfo> _Columns;
         private Rock.Model.Communication _Communication = null;
         private List<InteractionInfo> _Interactions = null;
@@ -220,7 +218,15 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            InitializeChartScripts();
+            // Initialize JSON Data properties to empty, to prevent syntax errors in the page script.
+            LineChartDataLabelsJSON = "[]";
+            LineChartDataOpensJSON = "[]";
+            LineChartDataClicksJSON = "[]";
+            LineChartDataUnOpenedJSON = "[]";
+            PieChartDataOpenClicksJSON = "[]";
+            PieChartDataClientLabelsJSON = "[]";
+            PieChartDataClientCountsJSON = "[]";
+            SeriesColorsJSON = "[]";
 
             InitializeInteractionsList();
             InitializeRecipientsList();
@@ -236,6 +242,17 @@ namespace RockWeb.Blocks.Communication
             }
 
             InitializeBlockConfigurationChangeHandler( upPanel );
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            _ActivePanel = ( ViewState["ActivePanel"] as string ) ?? string.Empty;
         }
 
         /// <summary>
@@ -296,10 +313,23 @@ namespace RockWeb.Blocks.Communication
                     }
                     else
                     {
-                        ShowDetail( _Communication );
+                        ShowDetail();
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["ActivePanel"] = _ActivePanel;
+
+            return base.SaveViewState();
         }
 
         /// <summary>
@@ -386,6 +416,40 @@ namespace RockWeb.Blocks.Communication
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the Click event of the lbTab control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbTab_Click( object sender, EventArgs e )
+        {
+            LinkButton lb = sender as LinkButton;
+
+            if ( lb != null )
+            {
+                if ( lb == lnkTabActivity )
+                {
+                    _ActivePanel = CommunicationDetailPanels.Activity;
+                }
+                else if ( lb == lnkTabAnalytics )
+                {
+                    _ActivePanel = CommunicationDetailPanels.Analytics;
+                }
+                if ( lb == lnkTabMessageDetails )
+                {
+                    _ActivePanel = CommunicationDetailPanels.MessageDetails;
+                }
+                if ( lb == lnkTabRecipientDetails )
+                {
+                    _ActivePanel = CommunicationDetailPanels.RecipientDetails;
+                }
+
+                InitializeActiveCommunication();
+
+                ShowDetailTab();
+            }
+        }
 
         #region Message Panel Events
 
@@ -1169,19 +1233,19 @@ namespace RockWeb.Blocks.Communication
 
             if ( page == "activity" )
             {
-                _ActiveView = CommunicationDetailPanels.Activity;
+                _ActivePanel = CommunicationDetailPanels.Activity;
             }
             else if ( page == "message" || page == "details" )
             {
-                _ActiveView = CommunicationDetailPanels.MessageDetails;
+                _ActivePanel = CommunicationDetailPanels.MessageDetails;
             }
             else if ( page == "recipients" )
             {
-                _ActiveView = CommunicationDetailPanels.RecipientDetails;
+                _ActivePanel = CommunicationDetailPanels.RecipientDetails;
             }
             else
             {
-                _ActiveView = CommunicationDetailPanels.Analytics;
+                _ActivePanel = CommunicationDetailPanels.Analytics;
             }
         }
 
@@ -1193,9 +1257,9 @@ namespace RockWeb.Blocks.Communication
         {
             var queryParams = new Dictionary<string, string>();
 
-            if ( _ActiveView != CommunicationDetailPanels.Analytics )
+            if ( _ActivePanel != CommunicationDetailPanels.Analytics )
             {
-                queryParams.Add( "view", _ActiveView.ToString() );
+                queryParams.Add( "view", _ActivePanel.ToString() );
             }
 
             return queryParams;
@@ -1212,6 +1276,9 @@ namespace RockWeb.Blocks.Communication
             gRecipients.RowClickEnabled = false;
 
             gRecipients.RowDataBound += gRecipients_RowDataBound;
+            gRecipients.AllowCustomPaging = true;
+
+            SetDefaultGridPageSize( gRecipients );
         }
 
         /// <summary>
@@ -1221,6 +1288,25 @@ namespace RockWeb.Blocks.Communication
         {
             gInteractions.DataKeyNames = new string[] { "Id" };
             gInteractions.GridRebind += gInteractions_GridRebind;
+
+            SetDefaultGridPageSize( gInteractions );
+        }
+
+        /// <summary>
+        /// Set the default page size for the specified grid.
+        /// </summary>
+        /// <param name="grid"></param>
+        private void SetDefaultGridPageSize( Grid grid )
+        {
+            // Ensure that the page size is not set to maximum on an initial page load, because it may result in a timeout.
+            // This can be confusing or difficult to fix if the user is not aware of the persisted page size settings.
+            if ( !this.IsPostBack )
+            {
+                if ( grid.PageSize > 500 )
+                {
+                    grid.PageSize = 500;
+                }
+            }
         }
 
         /// <summary>
@@ -1271,31 +1357,46 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Show the block detail.
         /// </summary>
-        private void ShowDetail( Rock.Model.Communication communication )
+        private void ShowDetail()
         {
-            ShowAnalyticsPanel();
+            ShowStatus( _Communication );
 
-            ShowStatus( communication );
+            lTitle.Text = ( string.IsNullOrEmpty( _Communication.Name ) ? ( string.IsNullOrEmpty( _Communication.Subject ) ? _Communication.PushTitle : _Communication.Subject ) : _Communication.Name ).FormatAsHtmlTitle();
+            pdAuditDetails.SetEntity( _Communication, ResolveRockUrl( "~" ) );
 
-            lTitle.Text = ( string.IsNullOrEmpty( communication.Name ) ? ( string.IsNullOrEmpty( communication.Subject ) ? communication.PushTitle : communication.Subject ) : communication.Name ).FormatAsHtmlTitle();
-            pdAuditDetails.SetEntity( communication, ResolveRockUrl( "~" ) );
+            ShowDetailTab();
+        }
 
-            PopulatePersonPropertiesSelectionItems();
-            PopulatePersonAttributesSelectionItems();
+        /// <summary>
+        /// Shows the content for the active tab.
+        /// </summary>
+        private void ShowDetailTab()
+        {
+            if ( _ActivePanel == CommunicationDetailPanels.Analytics )
+            {
+                InitializeChartScripts();
+                ShowAnalyticsPanel();
+            }
+            else if ( _ActivePanel == CommunicationDetailPanels.MessageDetails )
+            {
+                ShowMessageDetails( _Communication );
+                ShowMessageActions( _Communication );
+            }
+            else if ( _ActivePanel == CommunicationDetailPanels.Activity )
+            {
+                BindInteractions();
+            }
+            else if ( _ActivePanel == CommunicationDetailPanels.RecipientDetails )
+            {
+                PopulatePersonPropertiesSelectionItems();
+                PopulatePersonAttributesSelectionItems();
+                LoadRecipientListPreferences();
 
-            LoadRecipientListPreferences();
+                BindRecipientsGrid();
+                PopulateRecipientFilterSelectionLists();
+            }
 
-            ShowMessageDetails( communication );
-
-            BindRecipientsGrid();
-
-            PopulateRecipientFilterSelectionLists();
-
-            BindInteractions();
-
-            ShowActions( communication );
-
-            SetActivePanel( _ActiveView );
+            SetActivePanel( _ActivePanel );
         }
 
         /// <summary>
@@ -1483,7 +1584,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             Report report = null;
-            DataTable dataTable = null;
+            ReportOutputBuilder.TabularReportOutputResult result = null;
 
             var dataContext = new RockContext();
 
@@ -1505,20 +1606,29 @@ namespace RockWeb.Blocks.Communication
 
                 ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.RawValue;
 
+                int? pageSize = null;
+                int? pageIndex = null;
+
                 if ( _GridIsExporting )
                 {
                     contentType = ReportOutputBuilder.ReportOutputBuilderFieldContentSpecifier.FormattedText;
                 }
+                else
+                {
+                    // Only retrieve data for the current grid page.
+                    pageSize = gRecipients.PageSize;
+                    pageIndex = gRecipients.PageIndex;
+                }
 
-                var results = builder.GetReportData( this.CurrentPerson,
+                result = builder.GetReportData( this.CurrentPerson,
                     whereExpression,
                     parameterExpression,
                     dataContext,
-                    contentType );
+                    contentType,
+                    pageIndex,
+                    pageSize );
 
-                dataTable = results.Data;
-
-                AddStandardRecipientFieldsToDataSource( dataContext, dataTable, builder );
+                AddStandardRecipientFieldsToDataSource( dataContext, result.Data, builder );
 
                 // Add report columns to the grid.
                 bool preserveExistingColumns = !this.IsPostBack;
@@ -1527,7 +1637,7 @@ namespace RockWeb.Blocks.Communication
                     this.CurrentPerson,
                     false,
                     dataContext,
-                    results.ReportFieldToDataColumnMap,
+                    result.ReportFieldToDataColumnMap,
                     preserveExistingColumns,
                     addSelectionColumn: true );
 
@@ -1540,7 +1650,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             // If the grid is sorted by a communication-specific column, apply the sort now.
-            var dataView = dataTable.AsDataView();
+            var dataView = result.Data.AsDataView();
 
             try
             {
@@ -1572,6 +1682,8 @@ namespace RockWeb.Blocks.Communication
             }
 
             // Show the data set in the grid.
+            gRecipients.VirtualItemCount = result.ReportRowCount.GetValueOrDefault();
+
             gRecipients.DataSource = dataView;
 
             gRecipients.DataBind();
@@ -1653,7 +1765,7 @@ namespace RockWeb.Blocks.Communication
         /// Shows the actions.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        private void ShowActions( Rock.Model.Communication communication )
+        private void ShowMessageActions( Rock.Model.Communication communication )
         {
             bool canApprove = IsUserAuthorized( "Approve" );
 
@@ -1837,85 +1949,32 @@ namespace RockWeb.Blocks.Communication
         /// <param name="panelName"></param>
         private void SetActivePanel( string panelName )
         {
-            bool showTabAnalytics = false;
-            bool showTabMessageDetails = false;
-            bool showTabActivity = false;
-            bool showTabRecipientDetails = false;
+            _ActivePanel = panelName;
 
-            if ( panelName == CommunicationDetailPanels.Analytics )
+            if ( _TabList == null )
             {
-                showTabAnalytics = true;
-            }
-            else if ( panelName == CommunicationDetailPanels.MessageDetails )
-            {
-                showTabMessageDetails = true;
-            }
-            else if ( panelName == CommunicationDetailPanels.Activity )
-            {
-                showTabActivity = true;
-            }
-            else if ( panelName == CommunicationDetailPanels.RecipientDetails )
-            {
-                showTabRecipientDetails = true;
+                _TabList = new Dictionary<string, Tuple<HtmlGenericControl, Panel>>();
+
+                _TabList.Add( CommunicationDetailPanels.Analytics, new Tuple<HtmlGenericControl, Panel>( tabAnalytics, pnlAnalyticsTab ) );
+                _TabList.Add( CommunicationDetailPanels.MessageDetails, new Tuple<HtmlGenericControl, Panel>( tabMessageDetails, pnlMessage ) );
+                _TabList.Add( CommunicationDetailPanels.Activity, new Tuple<HtmlGenericControl, Panel>( tabActivity, pnlActivity ) );
+                _TabList.Add( CommunicationDetailPanels.RecipientDetails, new Tuple<HtmlGenericControl, Panel>( tabRecipientDetails, pnlRecipients ) );
             }
 
-            _ActiveView = panelName;
-
-            hfActiveView.Value = panelName;
-
-            lnkTabAnalytics.Attributes["href"] = "#" + tabPaneAnalytics.ClientID;
-
-            if ( showTabAnalytics )
+            foreach ( var tab in _TabList )
             {
-                tabAnalytics.AddCssClass( "active" );
-                tabPaneAnalytics.AddCssClass( "active" );
-            }
-            else
-            {
-                tabAnalytics.RemoveCssClass( "active" );
-                tabPaneAnalytics.RemoveCssClass( "active" );
+                tab.Value.Item1.RemoveCssClass( "active" );
+                tab.Value.Item2.Visible = false;
             }
 
-            lnkTabMessageDetails.Attributes["href"] = "#" + tabPaneMessageDetails.ClientID;
-
-            if ( showTabMessageDetails )
+            if ( _TabList.ContainsKey( _ActivePanel ) )
             {
-                tabMessageDetails.AddCssClass( "active" );
-                tabPaneMessageDetails.AddCssClass( "active" );
+                _TabList[_ActivePanel].Item1.AddCssClass( "active" );
+                _TabList[_ActivePanel].Item2.Visible = true;
             }
-            else
-            {
-                tabMessageDetails.RemoveCssClass( "active" );
-                tabPaneMessageDetails.RemoveCssClass( "active" );
-            }
-
-            lnkTabActivity.Attributes["href"] = "#" + tabPaneActivity.ClientID;
-
-            if ( showTabActivity )
-            {
-                tabActivity.AddCssClass( "active" );
-                tabPaneActivity.AddCssClass( "active" );
-            }
-            else
-            {
-                tabActivity.RemoveCssClass( "active" );
-                tabPaneActivity.RemoveCssClass( "active" );
-            }
-
-            lnkTabRecipientDetails.Attributes["href"] = "#" + tabPaneRecipientDetails.ClientID;
-
-            if ( showTabRecipientDetails )
-            {
-                tabRecipientDetails.AddCssClass( "active" );
-                tabPaneRecipientDetails.AddCssClass( "active" );
-            }
-            else
-            {
-                tabRecipientDetails.RemoveCssClass( "active" );
-                tabPaneRecipientDetails.RemoveCssClass( "active" );
-            }
-
         }
+
+        private Dictionary<string, Tuple<HtmlGenericControl, Panel>> _TabList = null;
 
         /// <summary>
         /// Shows the content of the Analytics panel.
@@ -2473,28 +2532,28 @@ namespace RockWeb.Blocks.Communication
         private void AddStandardRecipientColumns()
         {
             // Add the standard columns to the grid, inserted after the Name column.
+            // Sorting is disabled for these columns because their data is only added after the initial report data page is retrieved.
             BoundField boundField;
 
             var nameField = gRecipients.GetColumnByHeaderText( "Name" );
 
             var insertAtIndex = gRecipients.GetColumnIndex( nameField ) + 1;
 
-            boundField = new BoundField { HeaderText = "Status", DataField = "DeliveryStatus", SortExpression = "DeliveryStatus" };
+            boundField = new BoundField { HeaderText = "Status", DataField = "DeliveryStatus" };
             gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
 
-            boundField = new BoundField { HeaderText = "Medium", DataField = "CommunicationMediumName", SortExpression = "CommunicationMediumName" };
+            boundField = new BoundField { HeaderText = "Medium", DataField = "CommunicationMediumName" };
             gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
 
-            boundField = new BoundField { HeaderText = "Note", DataField = "DeliveryStatusNote", SortExpression = "DeliveryStatusNote" };
+            boundField = new BoundField { HeaderText = "Note", DataField = "DeliveryStatusNote" };
             gRecipients.Columns.Insert( insertAtIndex, boundField );
             insertAtIndex++;
 
             var openedField = new BoolField();
             openedField.HeaderText = "Opened";
             openedField.DataField = "HasOpened";
-            openedField.SortExpression = "HasOpened";
 
             gRecipients.Columns.Insert( insertAtIndex, openedField );
             insertAtIndex++;
@@ -2502,7 +2561,6 @@ namespace RockWeb.Blocks.Communication
             var clickedField = new BoolField();
             clickedField.HeaderText = "Clicked";
             clickedField.DataField = "HasClicked";
-            clickedField.SortExpression = "HasClicked";
 
             gRecipients.Columns.Insert( insertAtIndex, clickedField );
             insertAtIndex++;
@@ -2525,7 +2583,7 @@ namespace RockWeb.Blocks.Communication
             }
 
             dataTable.Columns.Add( "CommunicationMediumName", typeof( string ) );
-            dataTable.Columns.Add( "DeliveryStatus", typeof( string ) );            
+            dataTable.Columns.Add( "DeliveryStatus", typeof( string ) );
             dataTable.Columns.Add( "DeliveryStatusNote", typeof( string ) );
             dataTable.Columns.Add( "HasOpened", typeof( bool ) );
             dataTable.Columns.Add( "HasClicked", typeof( bool ) );

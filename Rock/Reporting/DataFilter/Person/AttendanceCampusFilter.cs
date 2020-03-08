@@ -263,7 +263,22 @@ function() {
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            var campusIds = ( controls[0] as CampusesPicker ).SelectedCampusIds;
+            var campusPicker = controls[0] as CampusesPicker;
+            var campusIds = campusPicker.SelectedCampusIds;
+
+            if ( !campusPicker.Visible && !campusIds.Any() )
+            {
+                var campuses = CampusCache.All()
+        .Where( c => !c.IsActive.HasValue || c.IsActive.Value || campusPicker.IncludeInactive )
+        .OrderBy( c => c.Order )
+        .ToList();
+
+                if ( campuses.Count == 1 )
+                {
+                    campusIds = new List<int>() { campuses.First().Id };
+                }
+            }
+
             var ddlIntegerCompare = controls[1] as DropDownList;
             var tbAttendedCount = controls[2] as RockTextBox;
             var slidingDateRangePicker = controls[3] as SlidingDateRangePicker;

@@ -2,15 +2,11 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
-    <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
+    <asp:PlaceHolder ID="phGeoCodeScript" runat="server" />
     <asp:HiddenField ID="hfLatitude" runat="server" />
     <asp:HiddenField ID="hfLongitude" runat="server" />
-    <asp:HiddenField ID="hfTheme" runat="server" />
-    <asp:HiddenField ID="hfKiosk" runat="server" />
-    <asp:HiddenField ID="hfCheckinType" runat="server" />
-    <asp:HiddenField ID="hfGroupTypes" runat="server" />
+
     <span style="display:none">
-        <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
         <asp:LinkButton ID="lbCheckGeoLocation" runat="server" OnClick="lbCheckGeoLocation_Click"></asp:LinkButton>
     </span>
 

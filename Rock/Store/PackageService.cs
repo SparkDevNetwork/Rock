@@ -153,6 +153,11 @@ namespace Rock.Store
             errorResponse = string.Empty;
 
             string storeKey = StoreService.GetOrganizationKey(); ;
+            if ( string.IsNullOrEmpty( storeKey ) )
+            {
+                errorResponse = "The 'Store Key' is not configured yet. Please check the Account and ensure it is configured for your organization.";
+                return new List<Package>();
+            }
 
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
@@ -163,14 +168,22 @@ namespace Rock.Store
 
             var response = client.Execute( request );
 
-            if ( response.ResponseStatus == ResponseStatus.Completed )
+            try
             {
-                List<Package> packages = JsonConvert.DeserializeObject<List<Package>>(response.Content);
-                return packages;
+                if ( response.ResponseStatus == ResponseStatus.Completed )
+                {
+                    List<Package> packages = JsonConvert.DeserializeObject<List<Package>>( response.Content );
+                    return packages;
+                }
+                else
+                {
+                    errorResponse = response.ErrorMessage;
+                    return new List<Package>();
+                }
             }
-            else
+            catch ( JsonReaderException )
             {
-                errorResponse = response.ErrorMessage;
+                errorResponse = "Something went wrong while retrieving the purchased packages. It's possible your 'Store Key' is bad (could not be decrypted) and needs to be revoked.";
                 return new List<Package>();
             }
         }

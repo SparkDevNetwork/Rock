@@ -182,7 +182,7 @@ namespace Rock.Data
         /// Gets the current person alias.
         /// </summary>
         /// <returns></returns>
-        private PersonAlias GetCurrentPersonAlias()
+        internal PersonAlias GetCurrentPersonAlias()
         {
             if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
             {
