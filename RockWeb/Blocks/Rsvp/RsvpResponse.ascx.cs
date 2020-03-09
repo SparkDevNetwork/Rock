@@ -456,23 +456,31 @@ $(document).ready(function () {
         }
 
         /// <summary>
-        /// Calculates the display title for an AttendanceOccurrence.
+        /// Calculates the display title for an <see cref="AttendanceOccurrence"/>.
         /// </summary>
-        /// <param name="occurrence">The AttendanceOccurrence</param>
+        /// <param name="occurrence">The <see cref="AttendanceOccurrence"/>.</param>
         private string GetOccurrenceTitle( AttendanceOccurrence occurrence )
         {
+            bool hasTitle = ( !string.IsNullOrWhiteSpace( occurrence.Name ) );
             bool hasSchedule = ( occurrence.Schedule != null );
-            DDay.iCal.Event calendarEvent = null;
+
             if ( hasSchedule )
             {
-                calendarEvent = occurrence.Schedule.GetCalendarEvent();
+                // This block is unnecessary if the event has a name (because the name will take priority over the schedule, anyway), but it
+                // has been intentionally left in place to prevent anyone from creating an unintentional bug in the future, as it affects
+                // the logic below.
+                DDay.iCal.Event calendarEvent = occurrence.Schedule.GetCalendarEvent();
                 if ( calendarEvent == null )
                 {
                     hasSchedule = false;
                 }
             }
 
-            if ( hasSchedule )
+            if ( hasTitle )
+            {
+                return occurrence.Name;
+            }
+            else if ( hasSchedule )
             {
                 return string.Format(
                     "{0} - {1}, {2}",
@@ -1102,7 +1110,6 @@ $(document).ready(function () {
         }
 
         #endregion
-
 
         protected void rptrValues_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {

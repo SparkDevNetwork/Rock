@@ -161,9 +161,9 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                                 var locationLabels = methodHandler.GetLabels( attendance.Occurrence.Location, groupLabels );
 
                                 Device kioskDevice = null;
-                                if ( CurrentKioskId.HasValue )
+                                if ( LocalDeviceConfig.CurrentKioskId.HasValue )
                                 {
-                                    kioskDevice = new DeviceService( rockContext ).Get( CurrentKioskId.Value );
+                                    kioskDevice = new DeviceService( rockContext ).Get( LocalDeviceConfig.CurrentKioskId.Value );
                                 }
                                 else
                                 {

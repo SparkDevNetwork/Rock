@@ -1308,7 +1308,7 @@ namespace RockWeb.Blocks.Finance
                     {
                         // Credit Card
                         paymentMethodDetails.Add( "Type", currencyType.Value + ( txn.FinancialPaymentDetail.CreditCardTypeValue != null ? ( " - " + txn.FinancialPaymentDetail.CreditCardTypeValue.Value ) : string.Empty ) );
-                        paymentMethodDetails.Add( "Name on Card", txn.FinancialPaymentDetail.NameOnCard.Trim() );
+                        paymentMethodDetails.Add( "Name on Card", txn.FinancialPaymentDetail.NameOnCard.ToStringSafe().Trim() );
                         paymentMethodDetails.Add( "Account Number", txn.FinancialPaymentDetail.AccountNumberMasked );
                         paymentMethodDetails.Add( "Expires", txn.FinancialPaymentDetail.ExpirationDate );
                     }

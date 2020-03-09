@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.CameraBarcodeConfiguration? CameraBarcodeConfigurationType { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -45,6 +48,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public bool HasCamera { get; set; }
 
         /// <summary />
         public string IPAddress { get; set; }
@@ -105,10 +111,12 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Device source )
         {
             this.Id = source.Id;
+            this.CameraBarcodeConfigurationType = source.CameraBarcodeConfigurationType;
             this.Description = source.Description;
             this.DeviceTypeValueId = source.DeviceTypeValueId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HasCamera = source.HasCamera;
             this.IPAddress = source.IPAddress;
             this.IsActive = source.IsActive;
             this.LocationId = source.LocationId;

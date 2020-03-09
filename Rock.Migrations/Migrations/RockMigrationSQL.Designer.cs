@@ -1764,5 +1764,82 @@ namespace Rock.Migrations.Migrations {
                         "TransactionData", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This procedure merges the data from the non-primary person to the primary person.  It
+        ///		is used when merging people in Rock and should never be used outside of that process. 
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&quot;Old Id&quot; datatype=&quot;int&quot;&gt;The person id of the non-primary Person being merged&lt;/param&gt;
+        ///	&lt;param name=&quot;New Id&quot; datatype=&quot;int&quot;&gt;The person id of the primary Person being merged&lt;/param&gt;
+        ///	&lt;remarks&gt;	
+        ///		Uses the following constants:
+        ///			* Group Type - Family: 790E [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201911122101551_PergeMerge_spCrm_PersonMerge {
+            get {
+                return ResourceManager.GetString("_201911122101551_PergeMerge_spCrm_PersonMerge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Parameters]=N&apos;fillcolor^rgba(5,155,255,.6)|bordercolor^#059BFF|borderwidth^0|legendposition^bottom|legendshow^false|chartheight^400px|chartwidth^100%|tooltipshow^true|fontcolor^#777|fontfamily^sans-serif|tooltipbackgroundcolor^#000|type^bar|pointradius^3|pointcolor^#059BFF|pointbordercolor^#059BFF|pointborderwidth^0|pointhovercolor^rgba(5,155,255,.6)|pointhoverbordercolor^rgba(5,155,255,.6)|borderdash^|curvedlines^true|filllinearea^false|labels^|tooltipfontcolor^#fff|pointhoverra [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201912042320379_Rollup_1204_chartjsfix {
+            get {
+                return ResourceManager.GetString("_201912042320379_Rollup_1204_chartjsfix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        /// 		This stored procedure returns a data set used by the Rock eRA job to add/remove
+        ///		people from being an eRA. It should not be modified as it will be updated in the
+        ///		future to meet additional requirements.
+        ///
+        ///		The goal of the query is to return both those that meet the eRA requirements as well
+        ///		as those that are marked as already being an eRA and the criteria to ensure that
+        ///		they still should be an era.
+        ///	&lt;/summary&gt;
+        ///	
+        ///	&lt;remarks&gt;	
+        ///		For eRA we only consider adults for the c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset {
+            get {
+                return ResourceManager.GetString("_201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters], [Guid])
+        ///VALUES (N&apos;Easy Pie Chart&apos;, N&apos;Lightweight plugin to render simple, animated and retina optimized pie charts.&apos;, N&apos;&lt;p&gt;Easy Pie Chart is the perfect solution when you need to display a single percentage value on a chart. In fact it&apos;&apos;s as simple as &lt;code&gt;{[easypie value:&apos;&apos;60&apos;&apos;]}{[endeasypie]}&lt;/code&gt;&lt;/p&gt;
+        ///&lt;p&gt;&lt;img src=&quot;https://rockrms.blob.core.w [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202001071827547_Rollup_0107_EasyPieChartShortcodeMigration {
+            get {
+                return ResourceManager.GetString("_202001071827547_Rollup_0107_EasyPieChartShortcodeMigration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF ( SELECT COUNT(*) FROM [LavaShortCode] WHERE [Guid] = &apos;E7AC1E9B-0200-49AF-967F-0A9D2DD0F968&apos; ) = 0
+        ///BEGIN
+        ///INSERT INTO [LavaShortcode] ([Name], [Description], [Documentation], [IsSystem], [IsActive], [TagName], [Markup], [TagType], [EnabledLavaCommands], [Parameters],[Guid])
+        ///VALUES (N&apos;Sparkline Chart&apos;, N&apos;Generate small inline charts with just a single line of Lava.&apos;, N&apos;&lt;p&gt;Creating Sparklines with Lava is ridiculously easy with this shortcode. Basic examples for each type are shown below.&lt;/p&gt;
+        ///&lt;pre&gt;&lt;code [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202001071827547_Rollup_0107_SparklineShortcodeMigration {
+            get {
+                return ResourceManager.GetString("_202001071827547_Rollup_0107_SparklineShortcodeMigration", resourceCulture);
+            }
+        }
     }
 }

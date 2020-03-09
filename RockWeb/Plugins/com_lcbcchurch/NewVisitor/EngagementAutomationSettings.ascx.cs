@@ -443,7 +443,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
 
                         qryAttributes = qryAttributes.Where( a => string.IsNullOrEmpty( a.EntityTypeQualifierColumn ) && string.IsNullOrEmpty( a.EntityTypeQualifierValue ) );
 
-                        var cacheAttributeList = qryAttributes.ToCacheAttributeList();
+                        var cacheAttributeList = qryAttributes.ToAttributeCacheList();
 
                         var listItems = new List<ListItem>();
                         foreach ( var attributeCache in cacheAttributeList )

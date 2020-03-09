@@ -30,7 +30,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile;
-using Rock.Mobile.Common.Enums;
+using Rock.Common.Mobile.Enums;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -38,7 +38,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
-using ShellType = Rock.Mobile.Common.Enums.ShellType;
+using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
 
 namespace RockWeb.Blocks.Mobile

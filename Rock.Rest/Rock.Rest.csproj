@@ -66,8 +66,8 @@
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.2.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.2.10\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.4\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.5.3\lib\net40\Swashbuckle.Core.dll</HintPath>
@@ -119,8 +119,11 @@
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\AssetStorageProvidersController.Partial.cs" />
     <Compile Include="Controllers\AttendanceOccurrencesController.partial.cs" />
+    <Compile Include="Controllers\CheckinController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsDimCampusController.cs" />
     <Compile Include="Controllers\CodeGenerated\AnalyticsSourceCampusController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AssessmentsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\AssessmentTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AssetStorageProvidersController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceOccurrencesController.cs" />
     <Compile Include="Controllers\CodeGenerated\AttributeValueHistoricalsController.cs" />
@@ -129,6 +132,9 @@
     <Compile Include="Controllers\CodeGenerated\ContentChannelItemSlugsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DocumentsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DocumentTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\EntityCampusFiltersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupDemographicTypesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\GroupDemographicValuesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.cs" />
@@ -147,6 +153,9 @@
     <Compile Include="Controllers\CodeGenerated\PersonSearchKeysController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonSignalsController.cs" />
     <Compile Include="Controllers\CodeGenerated\RegistrationTemplateFeeItemsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RegistrationTemplatePlacementsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\RelatedEntitiesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SmsActionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepProgramsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepStatusController.cs" />
@@ -154,7 +163,9 @@
     <Compile Include="Controllers\CodeGenerated\StepTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepWorkflowsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StepWorkflowTriggersController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakAchievementAttemptsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreaksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypePrerequisitesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeAchievementTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypeExclusionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\StreakTypesController.cs" />
@@ -163,10 +174,13 @@
     <Compile Include="Controllers\CodeGenerated\NcoaHistoriesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PageShortLinksController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonTokensController.cs" />
+    <Compile Include="Controllers\CodeGenerated\SystemCommunicationsController.cs" />
     <Compile Include="Controllers\ContentChannelItemsController.Partial.cs" />
     <Compile Include="Controllers\ContentChannelItemSlugsController.Partial.cs" />
     <Compile Include="Controllers\FinancialBatchesController.Partial.cs" />
     <Compile Include="Controllers\FinancialGatewaysController.Partial.cs" />
+    <Compile Include="Controllers\RegistrationRegistrantsController.cs" />
+    <Compile Include="Controllers\RegistrationTemplatePlacementsController.cs" />
     <Compile Include="Controllers\StepProgramsController.Partial.cs" />
     <Compile Include="Controllers\StreakTypeAchievementTypesController.Partial.cs" />
     <Compile Include="Controllers\StreakTypesController.Partial.cs" />

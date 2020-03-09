@@ -180,8 +180,8 @@ namespace Rock.Utility
                     continue;
                 }
 
-                // Take only the labels that match the selected person and label types (file guids).
-                checkinLabels = checkinLabels.Where( l => l.PersonId == personId && fileGuids.Contains( l.FileGuid ) ).ToList();
+                // Take only the labels that match the selected person (or if they are Family type labels) and file guids).
+                checkinLabels = checkinLabels.Where( l => ( l.PersonId == personId || l.LabelType == KioskLabelType.Family ) && fileGuids.Contains( l.FileGuid ) ).ToList();
 
                 // Override the printer by printing to the given printerAddress?
                 if ( !string.IsNullOrEmpty( printerAddress ) )
@@ -236,16 +236,13 @@ namespace Rock.Utility
             string script = string.Format( @"
 
         // setup deviceready event to wait for cordova
-	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {{
+	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/) && typeof window.RockCheckinNative === 'undefined') {{
             document.addEventListener('deviceready', onDeviceReady, false);
         }} else {{
             $( document ).ready(function() {{
                 onDeviceReady();
             }});
         }}
-
-	    // label data
-        var labelData = {0};
 
 		function onDeviceReady() {{
             try {{			
@@ -256,13 +253,9 @@ namespace Rock.Utility
             }}
 		}}
 		
-		function alertDismissed() {{
-		    // do something
-		}}
-		
 		function printLabels() {{
 		    ZebraPrintPlugin.printTags(
-            	JSON.stringify(labelData), 
+            	JSON.stringify({0}), 
             	function(result) {{ 
 			        console.log('Tag printed');
 			    }},
@@ -271,12 +264,7 @@ namespace Rock.Utility
 				    // error[0] is the error message
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
-                    navigator.notification.alert(
-                        'An error occurred while printing the labels.' + error[0],  // message
-                        alertDismissed,         // callback
-                        'Error',            // title
-                        'Ok'                  // buttonName
-                    );
+                    alert('An error occurred while printing the labels. ' + error[0]);
 			    }}
             );
 	    }}
@@ -406,7 +394,7 @@ namespace Rock.Utility
                         continue;
                     }
 
-                    var fileGuids = checkinLabels.Where( l => l.PersonId == personId && !handledList.ContainsKey( l.FileGuid ) )
+                    var fileGuids = checkinLabels.Where( l => ( l.PersonId == personId || l.LabelType == KioskLabelType.Family ) && !handledList.ContainsKey( l.FileGuid ) )
                         .Select( l => l.FileGuid )
                         .ToList();
 

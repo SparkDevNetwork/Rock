@@ -94,7 +94,7 @@ namespace Rock.Rest.Controllers
             if ( model.IsValid )
             {
                 model.Order = ( (BlockService)Service ).GetMaxOrder( model );
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
                 Service.Context.SaveChanges();
             }
             else
@@ -187,10 +187,7 @@ namespace Rock.Rest.Controllers
                 // Get the authenticated person and make sure it's cached.
                 //
                 var person = GetPerson();
-                if ( !HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                {
-                    HttpContext.Current.Items.Add( "CurrentPerson", person );
-                }
+                HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
 
                 //
                 // Ensure the user has access to both the page and block.
@@ -296,6 +293,20 @@ namespace Rock.Rest.Controllers
                 {
                     try
                     {
+                        //
+                        // If the target type is nullable and the action parameter is an empty
+                        // string then consider it null. A GET query cannot have null values.
+                        //
+                        if ( Nullable.GetUnderlyingType( methodParameters[i].ParameterType ) != null )
+                        {
+                            if ( actionParameters[key].Type == JTokenType.String && actionParameters[key].ToString() == string.Empty )
+                            {
+                                parameters.Add( null );
+
+                                continue;
+                            }
+                        }
+
                         parameters.Add( actionParameters[key].ToObject( methodParameters[i].ParameterType ) );
                     }
                     catch
@@ -318,9 +329,14 @@ namespace Rock.Rest.Controllers
             {
                 result = action.Invoke( block, parameters.ToArray() );
             }
+            catch ( TargetInvocationException ex )
+            {
+                ExceptionLogService.LogApiException( ex.InnerException, Request, GetPersonAlias() );
+                result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
+            }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
+                ExceptionLogService.LogApiException( ex, Request, GetPersonAlias() );
                 result = new Rock.Blocks.BlockActionResult( HttpStatusCode.InternalServerError );
             }
 

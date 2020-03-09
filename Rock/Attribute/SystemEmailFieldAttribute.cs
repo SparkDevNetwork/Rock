@@ -22,6 +22,8 @@ namespace Rock.Attribute
     /// Field Attribute to select a system email. Stored as SystemEmail.Guid
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
+    [Obsolete( "Use SystemCommunicationFieldAttribute instead." )]
+    [RockObsolete( "1.10" )]
     public class SystemEmailFieldAttribute : FieldAttribute
     {
         /// <summary>

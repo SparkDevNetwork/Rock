@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Finance
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
-    [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
+    [SystemCommunicationField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
     [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Kiosk", "", 12 )]
     #endregion
 
@@ -534,13 +534,13 @@ namespace RockWeb.Blocks.Finance
         private void SendReceipt()
         {
             RockContext rockContext = new RockContext();
-            var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "ReceiptEmail" ) ) );
+            var receiptCommunication = new SystemCommunicationService( rockContext ).Get( new Guid( GetAttributeValue( "ReceiptEmail" ) ) );
 
-            if ( receiptEmail != null )
+            if ( receiptCommunication != null )
             {
                 var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
 
-                var emailMessage = new RockEmailMessage( receiptEmail.Guid );
+                var emailMessage = new RockEmailMessage( receiptCommunication.Guid );
                 emailMessage.AddRecipient( new RockEmailMessageRecipient( givingUnit, GetMergeFields( givingUnit ) ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );

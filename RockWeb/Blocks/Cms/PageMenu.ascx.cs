@@ -30,7 +30,8 @@ using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
+using Rock.Model;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -91,6 +92,8 @@ namespace RockWeb.Blocks.Cms
 
         private void Render()
         {
+            string content = null;
+
             try
             {
                 PageCache currentPage = PageCache.Get( RockPage.PageId );
@@ -129,34 +132,30 @@ namespace RockWeb.Blocks.Cms
                     pageHeirarchy = currentPage.GetPageHierarchy().Select( p => p.Id ).ToList();
                 }
 
-                // Add context to merge fields
-                var contextEntityTypes = RockPage.GetContextEntityTypes();
-                var contextObjects = new Dictionary<string, object>();
-                foreach ( var conextEntityType in contextEntityTypes )
-                {
-                    var contextObject = RockPage.GetCurrentContext( conextEntityType );
-                    contextObjects.Add( conextEntityType.FriendlyName, contextObject );
-                }
-
-                var pageProperties = new Dictionary<string, object>();
-                pageProperties.Add( "CurrentPerson", CurrentPerson );
-                pageProperties.Add( "Context", contextObjects );
+                // Get default merge fields.
+                var pageProperties = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
                 pageProperties.Add( "Site", GetSiteProperties( RockPage.Site ) );
                 pageProperties.Add( "IncludePageList", GetIncludePageList() );
-                pageProperties.Add( "CurrentPage", this.PageCache );
+
 
                 using ( var rockContext = new RockContext() )
                 {
                     pageProperties.Add( "Page", rootPage.GetMenuProperties( levelsDeep, CurrentPerson, rockContext, pageHeirarchy, pageParameters, queryString ) );
                 }
-
+           
                 var lavaTemplate = GetTemplate();
 
                 // Apply Enabled Lava Commands
                 var enabledCommands = GetAttributeValue( "EnabledLavaCommands" );
                 lavaTemplate.Registers.AddOrReplace( "EnabledCommands", enabledCommands);
 
-                string content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
+                content = lavaTemplate.Render( Hash.FromDictionary( pageProperties ) );
+
+                // Check for Lava rendering errors.
+                if ( lavaTemplate.Errors.Any() )
+                {
+                    throw lavaTemplate.Errors.First();
+                }
 
                 phContent.Controls.Clear();
                 phContent.Controls.Add( new LiteralControl( content ) );
@@ -165,11 +164,21 @@ namespace RockWeb.Blocks.Cms
             catch ( Exception ex )
             {
                 LogException( ex );
+
+                // Create a block showing the error and the attempted content render.
+                // Show the error first to ensure that it is visible, because the rendered content may disrupt subsequent output if it is malformed.
                 StringBuilder errorMessage = new StringBuilder();
                 errorMessage.Append( "<div class='alert alert-warning'>" );
-                errorMessage.Append( "An error has occurred while generating the page menu. Error details:" );
+                errorMessage.Append( "<h4>Warning</h4>" );
+                errorMessage.Append( "An error has occurred while generating the page menu. Error details:<br/>" );
                 errorMessage.Append( ex.Message );
-                errorMessage.Append( "</div>" );
+
+                if ( !string.IsNullOrWhiteSpace( content ) )
+                {
+                    errorMessage.Append( "<h4>Rendered Content</h4>" );
+                    errorMessage.Append( content );
+                    errorMessage.Append( "</div>" );
+                }
 
                 phContent.Controls.Add( new LiteralControl( errorMessage.ToString() ) );
             }

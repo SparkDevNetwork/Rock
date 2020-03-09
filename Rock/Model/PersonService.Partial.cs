@@ -3091,16 +3091,20 @@ namespace Rock.Model
                 UPDATE Person
                     SET [BirthDate] = (
 		                    CASE 
-			                    WHEN (
-					                    [BirthYear] IS NOT NULL
-					                    AND [BirthYear] > 1800
-					                    )
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
 				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
 			                    ELSE NULL
 			                    END
 		                    )
                     FROM Person
-                    WHERE IsDeceased = 0
+                    WHERE [BirthDate] != (
+		                    CASE 
+			                    WHEN ([BirthYear] IS NOT NULL AND [BirthYear] > 1800)
+				                    THEN TRY_CONVERT([date], (((CONVERT([varchar], [BirthYear]) + '-') + CONVERT([varchar], [BirthMonth])) + '-') + CONVERT([varchar], [BirthDay]), (126))
+			                    ELSE NULL
+			                    END
+		                    )
+                    AND IsDeceased = 0
                     AND RecordStatusValueId <> {inactiveStatusId}";
 
             rockContext = rockContext ?? new RockContext();
@@ -3458,6 +3462,17 @@ namespace Rock.Model
         #endregion
 
         #region User Preferences
+
+        /// <summary>
+        /// Gets the prefix for a user preference key that includes the block id so that it specific to the specified block
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <returns></returns>
+        public static string GetBlockUserPreferenceKeyPrefix( int blockId )
+        {
+            return $"block-{blockId}-";
+        }
+
         /// <summary>
         /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key and SavesChanges()
         /// </summary>
@@ -3959,6 +3974,31 @@ FROM (
         public static int UpdateGivingLeaderIdAll( RockContext rockContext )
         {
             return UpdatePersonGivingLeaderId( null, rockContext );
+        }
+
+        /// <summary>
+        /// Ensures the GivingId is correct for all person records in the database
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdateGivingIdAll( RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET GivingId = (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)
+WHERE GivingId IS NULL OR GivingId != (
+		CASE 
+			WHEN [GivingGroupId] IS NOT NULL
+				THEN 'G' + CONVERT([varchar], [GivingGroupId])
+			ELSE 'P' + CONVERT([varchar], [Id])
+			END
+		)" );
         }
 
         /// <summary>

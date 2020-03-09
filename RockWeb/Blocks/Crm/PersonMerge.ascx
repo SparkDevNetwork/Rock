@@ -40,7 +40,9 @@
                         CssClass="js-multiple-family-target-enable" />
 
                     <Rock:NotificationBox ID="nbSecurityNotice" runat="server" NotificationBoxType="danger" Visible="false" Heading="Security Alert, Account Hijack Possible:" />
-
+                    <Rock:NotificationBox ID="nbPermissionNotice" runat="server" NotificationBoxType="Warning" Visible="false"
+                        Heading="Conflicting Attribute Values:"
+                        Text="You do not have permission to view an attribute that has a conflicting value. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please contact someone with rights to view all attributes." />
                     <Rock:NotificationBox ID="nbError" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="actions pull-right">
