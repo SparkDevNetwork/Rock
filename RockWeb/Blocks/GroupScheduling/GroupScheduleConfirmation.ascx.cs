@@ -117,7 +117,14 @@ namespace RockWeb.Blocks.GroupScheduling
                     return;
                 }
 
-                UpdateAttendanceDeclineReasonAfterSubmit();
+                if ( PageParameter("redirectBackToPage").IsNotNullOrWhiteSpace() )
+                {
+                    NavigateToPage(  PageParameter("redirectBackToPage").AsGuid(), null );
+                }
+                else
+                {
+                    UpdateAttendanceDeclineReasonAfterSubmit();
+                }
             }
         }
 
