@@ -54,7 +54,7 @@ namespace RockWeb.Plugins.com_bemadev.Checkin
                     if ( location != null )
                     {
                         string locationIdList = "";
-                        if ( this.CurrentKioskId.HasValue )
+                        if ( this.LocalDeviceConfig.CurrentKioskId.HasValue )
                         {
                             var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
                             locationIdList = groupTypesLocations

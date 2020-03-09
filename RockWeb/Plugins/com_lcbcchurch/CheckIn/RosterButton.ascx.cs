@@ -56,7 +56,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.CheckIn
                 if ( location != null )
                 {
                     string locationIdList = "";
-                    if ( this.CurrentKioskId.HasValue )
+                    if ( this.LocalDeviceConfig.CurrentKioskId.HasValue )
                     {
                         var groupTypesLocations = this.GetGroupTypesLocations( rockContext );
                         locationIdList = groupTypesLocations
