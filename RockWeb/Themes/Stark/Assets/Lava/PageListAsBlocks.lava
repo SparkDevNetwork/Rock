@@ -1,7 +1,7 @@
 <div class="panel panel-default list-as-blocks clearfix">
     <div class="panel-body">
         <ul>
-            {% for childPage in Page.Pages %}
+            {%- for childPage in Page.Pages -%}
                 <li>
                     <a href="{{ childPage.Url }}" {% if childPage.DisplayDescription != 'true' %} title="{{ childPage.Description }}"{% endif %}>
                         {% if childPage.IconCssClass != '' %}
@@ -10,7 +10,13 @@
                         <h3>{{ childPage.Title }}</h3>
                     </a>
                 </li>
-            {% endfor %}
+            {%- endfor -%}
+            {%- for includedPage in IncludePageList -%}
+                {%- assign attributeParts = includedPage | PropertyToKeyValue -%}
+                <li>
+                    <a href="{{ attributeParts.Value }}">{{ attributeParts.Key }}</a>
+                </li>
+            {%- endfor -%}
         </ul>
     </div>
 </div>
