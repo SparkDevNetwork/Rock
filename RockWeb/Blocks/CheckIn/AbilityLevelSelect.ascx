@@ -58,7 +58,14 @@
                     <div class="controls">
                         <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
                             <ItemTemplate>
-                                <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Guid").ToString().ToUpper() %>' OnClientClick="disableButton(this);" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                                <Rock:BootstrapButton
+                                    ID="lbSelect"
+                                    runat="server"
+                                    Text='<%# Container.DataItem.ToString() %>'
+                                    CommandArgument='<%# Eval("Guid").ToString().ToUpper() %>'
+                                    OnClientClick="disableButton(this);"
+                                    CssClass="btn btn-primary btn-large btn-block btn-checkin-select"
+                                    DataLoadingText="Loading..." />
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
