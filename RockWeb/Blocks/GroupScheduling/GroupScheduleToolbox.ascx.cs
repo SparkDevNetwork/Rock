@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Description = "If the group type has enabled 'RequiresReasonIfDeclineSchedule' then specify the page to provide that reason here.",
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.Page.SCHEDULE_CONFIRMATION,
-        Key = AttributeKey.DeclineReasonPage)]
+        Key = AttributeKey.DeclineReasonPage )]
 
     public partial class GroupScheduleToolbox : RockBlock
     {
@@ -483,18 +483,15 @@ $('#{0}').tooltip();
             {
                 var rockContext = new RockContext();
                 var attendanceService = new AttendanceService( rockContext );
-
                 var requiresDeclineReason = attendanceService.Get( attendanceId.Value ).Occurrence.Group.GroupType.RequiresReasonIfDeclineSchedule;
 
-                if (requiresDeclineReason)
+                if ( requiresDeclineReason )
                 {
-                    // Redirect to the ScheduleConfirmation page.
-
                     var queryParams = new Dictionary<string, string>
                     {
                         { "attendanceId", attendanceId.Value.ToString() },
                         { "isConfirmed", "false" },
-                        { "redirectBackToPage", this.RockPage.Guid.ToString() }
+                        { "ReturnUrl", this.RockPage.Guid.ToString() }
                     };
 
                     NavigateToLinkedPage( AttributeKey.DeclineReasonPage, queryParams );

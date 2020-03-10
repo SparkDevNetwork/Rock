@@ -117,9 +117,9 @@ namespace RockWeb.Blocks.GroupScheduling
                     return;
                 }
 
-                if ( PageParameter("redirectBackToPage").IsNotNullOrWhiteSpace() )
+                if ( PageParameter( "ReturnUrl" ).IsNotNullOrWhiteSpace() )
                 {
-                    NavigateToPage(  PageParameter("redirectBackToPage").AsGuid(), null );
+                    NavigateToPage( PageParameter( "ReturnUrl" ).AsGuid(), null );
                 }
                 else
                 {
