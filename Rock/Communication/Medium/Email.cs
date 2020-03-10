@@ -32,15 +32,32 @@ namespace Rock.Communication.Medium
     [Export( typeof( MediumComponent ) )]
     [ExportMetadata( "ComponentName", "Email" )]
 
-    [CodeEditorField( "Unsubscribe HTML", "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubscribe HTML' merge field is used, or if not used, at the end of the email in email contents.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
-<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}'>Unsubscribe</a>", "", 2 )]
-    [CodeEditorField( "Non-HTML Content", "The text to display for email clients that do not support html content.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
+    [CodeEditorField( "Unsubscribe HTML",
+        Description = "The HTML to inject into email contents when the communication is a Bulk Communication.  Contents will be placed wherever the 'Unsubscribe HTML' merge field is used, or if not used, at the end of the email in email contents.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = @"
+<a href='{{ 'Global' | Attribute:'PublicApplicationRoot' }}Unsubscribe/{{ Person | PersonActionIdentifier:'Unsubscribe' }}'>Unsubscribe</a>",
+        Order = 2 )]
+
+    [CodeEditorField( "Non-HTML Content",
+        Description = "The text to display for email clients that do not support html content.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = @"
 Unfortunately, you cannot view the contents of this email as it contains formatting that is not supported 
 by your email client.  
 
 You can view an online version of this email here: 
-{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetCommunication.ashx?c={{ Communication.Id }}&p={{ Person | PersonActionIdentifier:'Unsubscribe' }}
-", "", 3, "DefaultPlainText" )]
+{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetCommunication.ashx?c={{ Communication.Guid }}&p={{ Person | PersonActionIdentifier:'Unsubscribe' }}
+",
+        Category = "",
+        Order = 3,
+        Key = "DefaultPlainText" )]
     public class Email : MediumComponent
     {
         /// <summary>
