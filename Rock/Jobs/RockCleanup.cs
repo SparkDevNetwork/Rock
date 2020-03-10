@@ -192,7 +192,59 @@ namespace Rock.Jobs
             }
             catch ( Exception ex )
             {
-                _rockCleanupExceptions.Add( new Exception( $"Exception occurred in {cleanupTitle}", ex ) );
+                _rockCleanupExceptions.Add( new RockCleanupException( cleanupTitle, ex ) );
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="System.Exception" />
+        private class RockCleanupException : Exception
+        {
+            /// <summary>
+            /// The exception
+            /// </summary>
+            private Exception _exception;
+
+            /// <summary>
+            /// The title
+            /// </summary>
+            private string _title;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="RockCleanupException"/> class.
+            /// </summary>
+            /// <param name="title">The title.</param>
+            /// <param name="ex">The ex.</param>
+            public RockCleanupException(string title, Exception ex ): base()
+            {
+                _title = title;
+                _exception = ex;
+            }
+
+            /// <summary>
+            /// Gets a message that describes the current exception.
+            /// </summary>
+            public override string Message => $"{_title}:{_exception.Message}";
+
+            /// <summary>
+            /// Gets a string representation of the immediate frames on the call stack.
+            /// </summary>
+            public override string StackTrace
+            {
+                get
+                {
+                    string stackTrace = _exception.StackTrace;
+                    var innerException = _exception.InnerException;
+                    while ( innerException != null)
+                    {
+                        stackTrace += "\n" + innerException.StackTrace;
+                        innerException = innerException.InnerException;
+                    }
+
+                    return stackTrace;
+                }
             }
         }
 
