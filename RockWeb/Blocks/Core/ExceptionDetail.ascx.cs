@@ -221,10 +221,16 @@ namespace RockWeb.Blocks.Core
         /// <param name="exceptionLogs">The exception logs.</param>
         private void GetChildExceptionsRecursive( ExceptionLogService exceptionLogService, ExceptionLog exceptionLog, ref List<ExceptionLog> exceptionLogs )
         {
+            if ( exceptionLogs.Any( a => a.Id == exceptionLog.Id ) )
+            {
+                // prevent stackoverflow just in case
+                return;
+            }
+
+            exceptionLogs.Add( exceptionLog );
             if ( exceptionLog.HasInnerException == true )
             {
                 List<ExceptionLog> innerExceptions = exceptionLogService.GetByParentId( exceptionLog.Id ).ToList();
-                exceptionLogs.AddRange( innerExceptions );
                 foreach ( var innerException in innerExceptions )
                 {
                     GetChildExceptionsRecursive( exceptionLogService, innerException, ref exceptionLogs );
@@ -301,7 +307,7 @@ namespace RockWeb.Blocks.Core
             lCookies.Text = baseException.Cookies;
             lServerVariables.Text = baseException.ServerVariables;
             lFormData.Text = baseException.Form;
-            
+
             btnShowCookies.Visible = !string.IsNullOrWhiteSpace( baseException.Cookies );
             btnShowVariables.Visible = !string.IsNullOrWhiteSpace( baseException.ServerVariables );
             btnShowFormData.Visible = !string.IsNullOrWhiteSpace( baseException.Form );
