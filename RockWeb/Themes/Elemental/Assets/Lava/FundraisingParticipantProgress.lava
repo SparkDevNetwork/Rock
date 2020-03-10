@@ -15,7 +15,7 @@
                 </label>
                 <label class='pull-right'>
                     {% if AmountLeft >= 0 %}
-                        {{ AmountLeft | FormatAsCurrency }}
+                        Amount Remaining: {{ AmountLeft | FormatAsCurrency }}
                     {% else %}
                         {{ percentRounded }}%
                     {% endif %}
