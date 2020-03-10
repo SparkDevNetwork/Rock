@@ -269,6 +269,7 @@
                         <Rock:RockDropDownList ID="ddlActivityConnector" runat="server" Label="Connector" Required="true" ValidationGroup="Activity" />
                     </div>
                 </div>
+                <Rock:AttributeValuesContainer ID="avcActivityAttributes" runat="server"/>
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" ValidationGroup="Activity" />
             </Content>
         </Rock:ModalDialog>
