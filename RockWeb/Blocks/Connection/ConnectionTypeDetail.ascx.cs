@@ -437,6 +437,7 @@ namespace RockWeb.Blocks.Connection
                         }
 
                         connectionActivityType.CopyPropertiesFrom( connectionActivityTypeState );
+                        connectionActivityType.CopyAttributesFrom( connectionActivityTypeState );
                     }
 
                     foreach ( var connectionStatusState in StatusesState )
@@ -480,6 +481,11 @@ namespace RockWeb.Blocks.Connection
                     rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
+
+                        foreach ( var connectionActivityType in connectionType.ConnectionActivityTypes )
+                        {
+                            connectionActivityType.SaveAttributeValues( rockContext );
+                        }
 
                         /* Save Attributes */
                         string qualifierValue = connectionType.Id.ToString();
@@ -903,10 +909,17 @@ namespace RockWeb.Blocks.Connection
             if ( connectionActivityType == null )
             {
                 connectionActivityType = new ConnectionActivityType();
+                var connectionTypeId = hfConnectionTypeId.Value.AsIntegerOrNull();
+                if ( connectionTypeId.HasValue )
+                {
+                    connectionActivityType.ConnectionTypeId = connectionTypeId;
+                }
             }
 
             connectionActivityType.Name = tbConnectionActivityTypeName.Text;
             connectionActivityType.IsActive = cbActivityTypeIsActive.Checked;
+            connectionActivityType.LoadAttributes();
+            avcActivityAttributes.GetEditValues( connectionActivityType );
 
             if ( !connectionActivityType.IsValid )
             {
@@ -971,6 +984,9 @@ namespace RockWeb.Blocks.Connection
                 tbConnectionActivityTypeName.Text = string.Empty;
                 cbActivityTypeIsActive.Checked = true;
             }
+
+            int connectionTypeId = int.Parse( hfConnectionTypeId.Value );
+            avcActivityAttributes.AddEditControls( connectionActivityType ?? new ConnectionActivityType() { ConnectionTypeId = connectionTypeId }, Rock.Security.Authorization.EDIT, CurrentPerson );
             hfConnectionTypeAddConnectionActivityTypeGuid.Value = connectionActivityTypeGuid.ToString();
             ShowDialog( "ConnectionActivityTypes", true );
         }

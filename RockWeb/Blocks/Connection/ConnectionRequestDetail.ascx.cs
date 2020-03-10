@@ -1184,7 +1184,11 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestActivity.ConnectorPersonAliasId = personAliasId.Value;
                         connectionRequestActivity.Note = tbNote.Text;
 
+                        connectionRequestActivity.LoadAttributes();
+                        avcActivityAttributes.GetEditValues( connectionRequestActivity );
+
                         rockContext.SaveChanges();
+                        connectionRequestActivity.SaveAttributeValues( rockContext );
 
                         BindConnectionRequestActivitiesGrid( connectionRequest, rockContext );
                         HideDialog();
@@ -1440,7 +1444,11 @@ namespace RockWeb.Blocks.Connection
             if ( connectionOpportunity != null && connectionRequest != null )
             {
 
-                if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) )
+                if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) &&
+                        !( connectionOpportunity.ConnectionType.EnableRequestSecurity &&
+                        CurrentPersonId.HasValue &&
+                        connectionRequest.ConnectorPersonAliasId.HasValue &&
+                        connectionRequest.ConnectorPersonAlias.PersonId == CurrentPersonId.Value ))
                 {
                     this.BreadCrumbs.Clear();
                     upDetail.Visible = false;
@@ -2486,6 +2494,9 @@ namespace RockWeb.Blocks.Connection
                 dlgConnectionRequestActivities.Title = "Edit Activity";
                 dlgConnectionRequestActivities.SaveButtonText = "Save";
             }
+
+            int connectionOpportunityId = int.Parse( hfConnectionOpportunityId.Value );
+            avcActivityAttributes.AddEditControls( activity ?? new ConnectionRequestActivity() { ConnectionOpportunityId = connectionOpportunityId } );
 
             ShowDialog( "ConnectionRequestActivities", true );
         }
