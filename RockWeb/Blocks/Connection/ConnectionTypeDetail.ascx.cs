@@ -425,6 +425,7 @@ namespace RockWeb.Blocks.Connection
                     connectionType.EnableFutureFollowup = cbFutureFollowUp.Checked;
                     connectionType.EnableFullActivityList = cbFullActivityList.Checked;
                     connectionType.RequiresPlacementGroupToConnect = cbRequiresPlacementGroup.Checked;
+                    connectionType.EnableRequestSecurity = cbEnableRequestSecurity.Checked;
 
                     foreach ( var connectionActivityTypeState in ActivityTypesState )
                     {
@@ -1535,6 +1536,7 @@ namespace RockWeb.Blocks.Connection
             tbIconCssClass.Text = connectionType.IconCssClass;
             nbDaysUntilRequestIdle.Text = connectionType.DaysUntilRequestIdle.ToString();
             cbRequiresPlacementGroup.Checked = connectionType.RequiresPlacementGroupToConnect;
+            cbEnableRequestSecurity.Checked = connectionType.EnableRequestSecurity;
             cbFullActivityList.Checked = connectionType.EnableFullActivityList;
             cbFutureFollowUp.Checked = connectionType.EnableFutureFollowup;
 
@@ -1552,7 +1554,7 @@ namespace RockWeb.Blocks.Connection
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
-            
+
             BindAttributesGrid();
             BindConnectionActivityTypesGrid();
             BindConnectionWorkflowsGrid();
