@@ -71,10 +71,13 @@ namespace Rock.Badge.Component
                                                         Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                     }
 
-                    Dictionary<string, object> mergeValues = new Dictionary<string, object>();
-                    mergeValues.Add( "Person", Person );
-                    mergeValues.Add( "Entity", Entity );
-                    writer.Write( GetAttributeValue( badge, "BadgeContent" ).ResolveMergeFields( mergeValues ) );
+                    if ( isEntityFound )
+                    {
+                        Dictionary<string, object> mergeValues = new Dictionary<string, object>();
+                        mergeValues.Add( "Person", Person );
+                        mergeValues.Add( "Entity", Entity );
+                        writer.Write( GetAttributeValue( badge, "BadgeContent" ).ResolveMergeFields( mergeValues ) );
+                    }
                 }
             }
         }
