@@ -20,10 +20,9 @@
                             </div>
                         </div>
 
-                        <div class="pull-left">
-                            <Rock:BootstrapButton ID="btnResetFilters" runat="server" Text="Reset Filters" CssClass="btn btn-default" OnClick="btnResetFilters_Click" />
-                            <Rock:BootstrapButton ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-primary" OnClick="btnFilter_Click" />
-                        </div>
+                        <Rock:BootstrapButton ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-primary" OnClick="btnFilter_Click" />
+                        <asp:LinkButton ID="btnResetFilters" runat="server" Text="Reset Filters" CssClass="btn btn-default btn-link" OnClick="btnResetFilters_Click" />
+
                     </asp:Panel>
                 </div>
             </div>
@@ -70,7 +69,7 @@
 
                     <div class="grid grid-panel">
                         <legend>Filters</legend>
-                        <Rock:Grid ID="gFilters" runat="server" AllowSorting="false" RowItemText="filter" TooltipField="Description" OnGridReorder="gFilters_GridReorder" OnRowDataBound="gFilters_RowDataBound" ShowActionsInHeader="false">
+                        <Rock:Grid ID="gFilters" runat="server" AllowSorting="false" RowItemText="filter" TooltipField="Description" OnGridReorder="gFilters_GridReorder" OnRowDataBound="gFilters_RowDataBound" DisplayType="Light" ShowActionsInHeader="false">
                             <Columns>
                                 <Rock:ReorderField Visible="true" />
                                 <Rock:RockBoundField DataField="Name" HeaderText="Name" />
