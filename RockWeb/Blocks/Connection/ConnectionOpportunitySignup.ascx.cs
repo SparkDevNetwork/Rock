@@ -84,13 +84,13 @@ namespace RockWeb.Blocks.Connection
         Order = 6,
         Key = AttributeKey.RecordStatus )]
 
-    [ConnectionOpportunityField( "Connection Opportunity",
-        "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).",
-        false,
-        "",
-        "",
-        7,
-        "ConnectionOpportunity" )]
+    [ConnectionOpportunityField( Name = "Connection Opportunity",
+        Description = "If a Connection Opportunity is set, only details for it will be displayed (regardless of the querystring parameters).",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 7,
+        Key = AttributeKey.ConnectionOpportunity )]
 
     [AttributeCategoryField(
         "Include Attribute Categories",
