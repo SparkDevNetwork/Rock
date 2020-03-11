@@ -68,6 +68,7 @@ namespace org.newpointe.eSpace.Utility
                 var eventItemService = new EventItemService( rockContext );
                 var eventItemOccurrenceService = new EventItemOccurrenceService( rockContext );
                 var eventItemAudienceService = new EventItemAudienceService( rockContext );
+                var scheduleService = new ScheduleService( rockContext );
                 var personService = new PersonService( rockContext );
 
                 // Get or create the linked Rock event
@@ -172,7 +173,7 @@ namespace org.newpointe.eSpace.Utility
                 var eSpaceEventOccurrences = await eSpaceClient.GetEventOccurrences( occurrencesFilter );
 
                 // Calculate some stuff for the occurrences
-                var campusLocation = MatchLocations( eSpaceEvent.Locations ).Concat( MatchLocations( eSpaceEvent.PublicLocations ) ).FirstOrDefault();
+                var campusLocations = MatchLocations( eSpaceEvent.IsOffSite ?? false ? eSpaceEvent.PublicLocations : eSpaceEvent.Locations );
                 var contactPerson = personService.FindPerson( eSpaceEvent.Contacts.FirstOrDefault() );
 
                 var firstESpaceOccurrence = eSpaceEventOccurrences.FirstOrDefault();
@@ -193,12 +194,15 @@ namespace org.newpointe.eSpace.Utility
                 // Update each occurrence
                 foreach ( var eSpaceOccurrence in eSpaceEventOccurrences )
                 {
-                    var rockOccurrence = SyncOccurrence( eSpaceEvent, eSpaceOccurrence, rockEvent, campusLocation, contactPerson, occurrenceApprovedAttributeKey, out var occurrenceChanged, out var occurrenceAttributeChanged );
-                    changed = changed || occurrenceChanged;
-                    syncedRockOccurrences.Add( rockOccurrence );
-                    if ( occurrenceAttributeChanged )
+                    foreach ( var campusLocation in campusLocations )
                     {
-                        rockOccurrencesWithAttributeChanges.Add( rockOccurrence );
+                        var rockOccurrence = SyncOccurrence( eSpaceEvent, eSpaceOccurrence, rockEvent, campusLocation, contactPerson, occurrenceApprovedAttributeKey, out var occurrenceChanged, out var occurrenceAttributeChanged );
+                        changed = changed || occurrenceChanged;
+                        syncedRockOccurrences.Add( rockOccurrence );
+                        if ( occurrenceAttributeChanged )
+                        {
+                            rockOccurrencesWithAttributeChanges.Add( rockOccurrence );
+                        }
                     }
                 }
 
@@ -207,6 +211,11 @@ namespace org.newpointe.eSpace.Utility
                 foreach ( var occurrence in removedOccurrences )
                 {
                     rockEvent.EventItemOccurrences.Remove( occurrence );
+                    if( occurrence.Schedule != null)
+                    {
+                        scheduleService.Delete( occurrence.Schedule );
+                        occurrence.Schedule = null;
+                    }
                     eventItemOccurrenceService.Delete( occurrence );
                     changed = true;
                 }
@@ -238,15 +247,22 @@ namespace org.newpointe.eSpace.Utility
         )
         {
             attributeChanged = false;
+            changed = false;
 
             // Get or create the linked Rock occurrence
-            var rockOccurrence = rockEvent.EventItemOccurrences.GetOrCreateByForeignId( ForeignKey_eSpaceOccurrenceId, eSpaceOccurrence.OccurrenceId.Value, out changed );
-
-            // Update the campus
-            var CampusId = ( eSpaceEvent.IsOffSite ?? false ) ? null : campus?.Id;
-            if ( rockOccurrence.CampusId != CampusId )
+            var rockOccurrence = rockEvent.EventItemOccurrences.FirstOrDefault( e =>
+                e.ForeignKey == ForeignKey_eSpaceOccurrenceId
+                && e.ForeignId == eSpaceOccurrence.OccurrenceId.Value
+                && e.CampusId == campus.Id
+            );
+            if ( rockOccurrence == null )
             {
-                rockOccurrence.CampusId = CampusId;
+                rockOccurrence = new EventItemOccurrence {
+                    ForeignKey = ForeignKey_eSpaceOccurrenceId,
+                    ForeignId = eSpaceOccurrence.OccurrenceId.Value,
+                    CampusId = campus.Id
+                };
+                rockEvent.EventItemOccurrences.Add( rockOccurrence );
                 changed = true;
             }
 
