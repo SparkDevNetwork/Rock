@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace DotLiquid
@@ -35,7 +35,30 @@ namespace DotLiquid
 				environments.Add(LocalVariables);
 			if (template.IsThreadSafe)
             {
-                context = new Context(environments, new Hash(), new Hash(), RethrowErrors);
+                /*
+                 * 2020-03-11 - JPH
+                 * DotLiquid's Template/Context.Registers (Hash) properties were designed to be a catch-all place to
+                 * store any "user-defined, internally-available variables". This Hash is a Dictionary<string, object>
+                 * under the hood. We leverage this object to store the collection of "EnabledCommands" for a given
+                 * Template. Within the context of a Thread-safe, cached Template, we generally don't want to share
+                 * any of these Register entries bewteen Threads, as a given Thread will have unique entries, but the
+                 * EnabledCommands entry is an exception to this rule; each time we re-use a cached Template, the
+                 * Context needs to be aware of which Rock Commands are enabled for that Template.
+                 *
+                 * Reason: Issue #4084 (Weird Behavior with Lava Includes)
+                 * https://github.com/SparkDevNetwork/Rock/issues/4084
+                 * https://github.com/SparkDevNetwork/Rock/issues/4084#issuecomment-597199333
+                 * https://github.com/dotliquid/dotliquid/blob/53556cb67cf2d08d66da129a1e5fdfa2cc182534/src/DotLiquid/Context.cs#L51
+                 */
+                Hash rockRegisters = new Hash();
+
+                var enabledCommandsKey = "EnabledCommands";
+                if ( template.Registers != null && template.Registers.ContainsKey( enabledCommandsKey ) )
+                {
+                    rockRegisters[enabledCommandsKey] = template.Registers[enabledCommandsKey];
+                }
+
+                context = new Context(environments, new Hash(), rockRegisters, RethrowErrors);
             }
             else
             {
