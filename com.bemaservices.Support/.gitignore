@@ -1,2 +1,6 @@
-/bin/
+﻿/bin/
 /obj/
+/*.suo
+/*.user
+
+builds/tmp/*  
