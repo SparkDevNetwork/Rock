@@ -247,7 +247,6 @@ namespace RockWeb.Blocks.Reporting
             if ( !Page.IsPostBack )
             {
                 CurrentParameters = this.RockPage.PageParameters();
-                var x = 1;
 
                 var query = new AttributeService( new RockContext() ).Get( _blockTypeEntityId, "Id", _block.Id.ToString() );
                 var attribsWithDefaultValue = query.AsQueryable().Where( a => a.DefaultValue != null && a.DefaultValue != "" ).ToList();
