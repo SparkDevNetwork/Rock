@@ -1376,7 +1376,7 @@ namespace Rock.Web.UI.Controls
             _cbIsPublic.ID = "_cbIsPublic";
             _cbIsPublic.Label = "Public";
             _cbIsPublic.Text = "Yes";
-            _cbIsPublic.Help = "Set to public if you want this attribute to be displayed in public contexts (like RSVP invitations).";
+            _cbIsPublic.Help = "Set to public if you want this attribute to be displayed in public contexts.";
             Controls.Add(_cbIsPublic);
 
             _tbDescription = new RockTextBox();
