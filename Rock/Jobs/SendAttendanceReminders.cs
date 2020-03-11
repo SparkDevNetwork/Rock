@@ -54,7 +54,7 @@ namespace Rock.Jobs
         "1^Email,2^SMS,0^Recipient Preference",
         Key = AttributeKey.SendUsingConfiguration,
         IsRequired = true,
-        DefaultValue = "0",
+        DefaultValue = "1",
         Order = 3 )]
     #endregion
 
