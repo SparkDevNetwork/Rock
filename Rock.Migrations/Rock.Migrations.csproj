@@ -129,6 +129,10 @@
     <Compile Include="Migrations\202003101057192_AddEnableRequestSecurityToConnection.Designer.cs">
       <DependentUpon>202003101057192_AddEnableRequestSecurityToConnection.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003111105370_AddDisableSchedulingToGroup.cs" />
+    <Compile Include="Migrations\202003111105370_AddDisableSchedulingToGroup.Designer.cs">
+      <DependentUpon>202003111105370_AddDisableSchedulingToGroup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1161,6 +1165,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202003101057192_AddEnableRequestSecurityToConnection.resx">
       <DependentUpon>202003101057192_AddEnableRequestSecurityToConnection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003111105370_AddDisableSchedulingToGroup.resx">
+      <DependentUpon>202003111105370_AddDisableSchedulingToGroup.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>

@@ -591,7 +591,10 @@ $('#{0}').tooltip();
                     .Queryable()
                     .AsNoTracking()
                     .Where( x => x.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) )
-                    .Where( x => x.IsActive == true && x.IsArchived == false && x.GroupType.IsSchedulingEnabled == true )
+                    .Where( x => x.IsActive == true && x.IsArchived == false
+                        && x.GroupType.IsSchedulingEnabled == true
+                        && x.DisableScheduling == false
+                        && x.DisableScheduleToolboxAccess == false )
                     .Where( x => x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
                     .OrderBy( x => new { x.Order, x.Name } )
                     .AsNoTracking()
@@ -1086,7 +1089,9 @@ $('#{0}').tooltip();
                     .Queryable()
                     .AsNoTracking()
                     .Where( g => g.PersonId == this.SelectedPersonId )
-                    .Where( g => g.Group.GroupType.IsSchedulingEnabled == true )
+                    .Where( g => g.Group.GroupType.IsSchedulingEnabled == true
+                        && g.Group.DisableScheduling == false
+                        && g.Group.DisableScheduleToolboxAccess == false )
                     .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
                     .ToList();
 
@@ -1488,6 +1493,8 @@ $('#{0}').tooltip();
                 // get GroupLocations that are for Groups that the person is an active member of
                 personGroupLocationQry = personGroupLocationQry.Where( a => a.Group.IsArchived == false
                     && a.Group.GroupType.IsSchedulingEnabled == true
+                    && a.Group.DisableScheduling == false
+                    && a.Group.DisableScheduleToolboxAccess == false
                     && a.Group.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var personGroupLocationList = personGroupLocationQry.ToList();
