@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Groups
                 // If there is a required signed document that member has not signed, show an icon in the grid
                 if ( _showPersonsThatHaventSigned && !_personIdsThatHaveSigned.Contains( groupMember.PersonId ) )
                 {
-                    sbNameHtml.Append( " <i class='fa fa-pencil-square-o text-danger'></i>" );
+                    sbNameHtml.Append( " <i class='fa fa-edit text-danger'></i>" );
                 }
 
                 lNameWithHtml.Text = sbNameHtml.ToString();
@@ -877,7 +877,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<AttributeCache>();
             if ( _group != null )
             {
@@ -1033,9 +1033,10 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.ControlStyle.CssClass = "btn btn-default btn-sm";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { "PersonId" };
             hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
+            hlPersonProfileLink.DataTextFormatString = "<i class='fa fa-user'></i>";
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
         }

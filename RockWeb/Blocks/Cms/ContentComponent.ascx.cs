@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Cms
                 configControls.Add( lbEditContent );
 
                 HtmlGenericControl iEditContent = new HtmlGenericControl( "i" );
-                iEditContent.Attributes.Add( "class", "fa fa-pencil-square-o" );
+                iEditContent.Attributes.Add( "class", "fa fa-edit" );
 
                 lbEditContent.Controls.Add( iEditContent );
                 lbEditContent.CausesValidation = false;
