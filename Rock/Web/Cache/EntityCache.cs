@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -40,24 +39,6 @@ namespace Rock.Web.Cache
         where T : IEntityCache, new()
         where TT : Entity<TT>, new()
     {
-        #region Cache Item Properties
-
-        /// <summary>
-        /// The cache name property
-        /// </summary>
-        internal readonly static PropertyInfo CacheNameProperty = typeof( T ).GetProperty( "Name" );
-
-        /// <summary>
-        /// The cache title property
-        /// </summary>
-        internal readonly static PropertyInfo CacheTitleProperty = typeof( T ).GetProperty( "Title" );
-
-        /// <summary>
-        /// The cache order property
-        /// </summary>
-        internal readonly static PropertyInfo CacheOrderProperty = typeof( T ).GetProperty( "Order" );
-
-        #endregion Cache Item Properties
 
         #region Properties
 
@@ -339,9 +320,7 @@ namespace Rock.Web.Cache
         {
             var cachedKeys = GetOrAddKeys( () => QueryDbForAllIds( rockContext ) );
             if ( cachedKeys == null )
-            {
                 return new List<T>();
-            }
 
             var allValues = new List<T>();
             foreach ( var key in cachedKeys.ToList() )
@@ -351,33 +330,6 @@ namespace Rock.Web.Cache
                 {
                     allValues.Add( value );
                 }
-            }
-
-            /*
-             * 2020-02-27 BJW
-             *
-             * The following default ordering logic was added as the result of a developer discussion:
-             * https://app.asana.com/0/0/1163635725705322/f
-             * We wanted by default the cache to order items by the typical Order property if it existed
-             * and then to smartly order by name or some other meaningful property.
-             */
-
-            // If the cached entity has an Order property, then order by that. Then order by name or title if one of those
-            // properties exist. Finally order by id for consistency
-            if ( CacheOrderProperty != null )
-            {
-                var ordered = allValues.OrderBy( i => CacheOrderProperty.GetValue( i, null ) );
-
-                if ( CacheNameProperty != null )
-                {
-                    ordered = ordered.ThenBy( i => CacheNameProperty.GetValue( i, null ) );
-                }
-                else if ( CacheTitleProperty != null )
-                {
-                    ordered = ordered.ThenBy( i => CacheTitleProperty.GetValue( i, null ) );
-                }
-
-                allValues = ordered.ThenBy( i => i.Id ).ToList();
             }
 
             return allValues;
