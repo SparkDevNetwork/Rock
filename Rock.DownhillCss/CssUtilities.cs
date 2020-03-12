@@ -149,7 +149,7 @@ namespace Rock.DownhillCss
                 }
             }
 
-            // Replace palatte colors
+            // Replace palette colors
             foreach ( var color in ColorPalette.ColorMaps )
             {
                 foreach ( var colorSaturation in color.ColorSaturations )
