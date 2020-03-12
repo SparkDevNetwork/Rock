@@ -180,7 +180,7 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisbaleGroupScheduling" runat="server" Label="Disbale Group Scheduling" />
+                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" />

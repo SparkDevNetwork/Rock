@@ -603,6 +603,7 @@ $('#{0}').tooltip();
                 rptGroupPreferences.DataSource = groups;
                 rptGroupPreferences.DataBind();
 
+                pnlBlackoutDates.Visible = groups.Any();
                 nbNoScheduledGroups.Visible = groups.Any() == false;
             }
         }
