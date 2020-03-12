@@ -629,7 +629,7 @@ namespace RockWeb.Blocks.Steps
         private void InitializeGrid()
         {
             gSteps.DataKeyNames = new string[] { "Id" };
-            gSteps.PersonIdField = "Person Id";
+            gSteps.PersonIdField = "PersonId";
             gSteps.GetRecipientMergeFields += gSteps_GetRecipientMergeFields;
             gSteps.Actions.AddClick += gSteps_AddClick;
             gSteps.GridRebind += gSteps_GridRebind;
@@ -1124,7 +1124,7 @@ namespace RockWeb.Blocks.Steps
         /// A view-model that represents a single row on the Steps Participant grid.
         /// </summary>
         /// <seealso cref="DotLiquid.Drop" />
-        public class StepParticipantListViewModel : DotLiquid.Drop
+        public class StepParticipantListViewModel : RockDynamic
         {
             public int Id { get; set; }
             public int PersonId { get; set; }
