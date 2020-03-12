@@ -208,9 +208,9 @@ namespace RockWeb.Blocks.Core
             // get inner exceptions recursively
             List<ExceptionLog> childExceptionLogs = new List<ExceptionLog>();
             GetChildExceptionsRecursive( exceptionService, exception, ref childExceptionLogs );
-            exceptionList.AddRange( childExceptionLogs );
+            exceptionList.AddRange( childExceptionLogs);
 
-            return exceptionList;
+            return exceptionList.Distinct().ToList();
         }
 
         /// <summary>
