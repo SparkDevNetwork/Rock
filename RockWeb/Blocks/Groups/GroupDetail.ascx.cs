@@ -858,7 +858,7 @@ namespace RockWeb.Blocks.Groups
             group.SchedulingMustMeetRequirements = cbSchedulingMustMeetRequirements.Checked;
             group.AttendanceRecordRequiredForCheckIn = ddlAttendanceRecordRequiredForCheckIn.SelectedValueAsEnum<AttendanceRecordRequiredForCheckIn>();
             group.ScheduleCancellationPersonAliasId = ppScheduleCancellationPerson.PersonAliasId;
-            group.DisableScheduling = cbDisbaleGroupScheduling.Checked;
+            group.DisableScheduling = cbDisableGroupScheduling.Checked;
             group.DisableScheduleToolboxAccess = cbDisableScheduleToolboxAccess.Checked;
 
             string iCalendarContent = string.Empty;
@@ -1690,7 +1690,7 @@ namespace RockWeb.Blocks.Groups
 
             cbSchedulingMustMeetRequirements.Checked = group.SchedulingMustMeetRequirements;
             cbDisableScheduleToolboxAccess.Checked = group.DisableScheduleToolboxAccess;
-            cbDisbaleGroupScheduling.Checked = group.DisableScheduling;
+            cbDisableGroupScheduling.Checked = group.DisableScheduling;
             ddlAttendanceRecordRequiredForCheckIn.SetValue( group.AttendanceRecordRequiredForCheckIn.ConvertToInt() );
             if ( group.ScheduleCancellationPersonAlias != null )
             {
@@ -2093,13 +2093,11 @@ namespace RockWeb.Blocks.Groups
                 if ( group.DisableScheduling )
                 {
                     hlGroupScheduler.Enabled = false;
-                    hlGroupScheduler.ToolTip = "Scheduling is disabled for this group.";
                 }
                 else
                 {
                     hlGroupScheduler.NavigateUrl = groupSchedulerUrl;
                     hlGroupScheduler.Enabled = true;
-                    hlGroupScheduler.ToolTip = "Group Scheduler.";
                 }
             }
             else
