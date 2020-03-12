@@ -115,6 +115,7 @@
 
 <script type="text/javascript">
     function toggleStackTrace(exceptionId) {
+        debugger
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-hide");
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-show");
 
