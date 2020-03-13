@@ -176,6 +176,25 @@ namespace Rock
         }
 
         /// <summary>
+        /// Removes all lava markup from the string including short codes.
+        /// </summary>
+        /// <param name="lava">The lava.</param>
+        /// <returns></returns>
+        public static string SanitizeLava( this string lava )
+        {
+            var doubleBracesRegex = new Regex( @"\{\{([^\}]+)\}\}" );
+            lava = doubleBracesRegex.Replace( lava, string.Empty );
+
+            var bracePercentRegex = new Regex( @"\{%([^\}]+)%\}" );
+            lava = bracePercentRegex.Replace( lava, string.Empty );
+
+            var bracBracketRegex = new Regex( @"\{\[([^\}]+)\]\}" );
+            lava = bracBracketRegex.Replace( lava, string.Empty );
+
+            return lava;
+        }
+
+        /// <summary>
         /// Scrubs any html from the string but converts carriage returns into html &lt;br/&gt; suitable for web display.
         /// </summary>
         /// <param name="str">a string that may contain unsanitized html and carriage returns</param>
