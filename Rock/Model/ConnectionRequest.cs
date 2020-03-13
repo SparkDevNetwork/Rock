@@ -257,6 +257,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>True if the person is authorized; false otherwise.</returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            if ( this.ConnectionOpportunity != null
+                && this.ConnectionOpportunity.ConnectionType != null
+                && this.ConnectionOpportunity.ConnectionType.EnableRequestSecurity
+                && this.ConnectorPersonAlias != null
+                && this.ConnectorPersonAlias.PersonId == person.Id )
+            {
+                return true;
+            }
+            else
+            {
+                return base.IsAuthorized( action, person );
+            }
+        }
+
+        /// <summary>
         /// Pres the save changes.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
