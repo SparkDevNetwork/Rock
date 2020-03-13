@@ -136,10 +136,6 @@ namespace RockWeb.Blocks.Steps
         private StepType _stepType = null;
         private bool _canView = false;
 
-        // Cache these fields since they could get called many times in GridRowDataBound
-        private DeleteField _deleteField = null;
-        private int? _deleteFieldColumnIndex = null;
-
         private RockLiteralField _fullNameField = null;
         private RockLiteralField _nameWithHtmlField = null;
         private RockLiteralField _stepStatusField = null;
@@ -177,8 +173,6 @@ namespace RockWeb.Blocks.Steps
 
             InitializeGrid();
 
-            AddGridRowButtons();
-
             InitializeSettingsNotification( upMain );
         }
 
@@ -208,7 +202,10 @@ namespace RockWeb.Blocks.Steps
 
             if ( !Page.IsPostBack )
             {
+                AddDynamicControls();
+
                 pnlContent.Visible = _canView;
+
                 if ( _canView )
                 {
                     BindFilter();
@@ -305,21 +302,6 @@ namespace RockWeb.Blocks.Steps
             if ( stepPerson.IsDeceased )
             {
                 e.Row.AddCssClass( "is-deceased" );
-            }
-
-            if ( _deleteField != null && _deleteField.Visible )
-            {
-                LinkButton deleteButton = null;
-
-                if ( !_deleteFieldColumnIndex.HasValue )
-                {
-                    _deleteFieldColumnIndex = gSteps.GetColumnIndex( gSteps.Columns.OfType<DeleteField>().First() );
-                }
-
-                if ( _deleteFieldColumnIndex.HasValue && _deleteFieldColumnIndex > -1 )
-                {
-                    deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
-                }
             }
 
             if ( _inactiveStatus != null && stepPerson.RecordStatusValueId == _inactiveStatus.Id )
@@ -614,8 +596,6 @@ namespace RockWeb.Blocks.Steps
                 {
                     rFilter.UserPreferenceKeyPrefix = string.Format( "{0}-", _stepType.Id );
                 }
-
-                BindFilter();
             }
 
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
@@ -677,9 +657,6 @@ namespace RockWeb.Blocks.Steps
 
                 cblStepStatus.DataBind();
             }
-
-            GetAvailableAttributes();
-            AddDynamicControls();
 
             tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
             tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
@@ -824,15 +801,6 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Initialize the row buttons.
-        /// </summary>
-        private void AddGridRowButtons()
-        {
-            RemoveRowButtons();
-            AddRowButtons();
-        }
-
-        /// <summary>
         /// Removes the "delete" row button columns and any HyperLinkField/LinkButtonField columns.
         /// </summary>
         private void RemoveRowButtons()
@@ -860,7 +828,7 @@ namespace RockWeb.Blocks.Steps
         /// <summary>
         /// Adds the PersonProfilePage button link and the "delete" row button column.
         /// </summary>
-        private void AddRowButtons()
+        private void AddGridRowButtons()
         {
             // Add Link to Profile Page Column
             if ( !string.IsNullOrEmpty( GetAttributeValue( "PersonProfilePage" ) ) )
@@ -871,10 +839,11 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Add delete column
-            _deleteField = new DeleteField();
-            _deleteField.Click += DeleteStep_Click;
+            var deleteField = new DeleteField();
 
-            gSteps.Columns.Add( _deleteField );
+            gSteps.Columns.Add( deleteField );
+
+            deleteField.Click += DeleteStep_Click;
         }
 
         /// <summary>
