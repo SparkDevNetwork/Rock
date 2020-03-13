@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Connection
 
     [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities.", true, "", "", 0 )]
     [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
-    [ConnectionTypesField("Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order:2 )]
+    [ConnectionTypesField( "Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order: 2 )]
     [BooleanField( "Show Request Total", "If enabled, the block will show the total number of requests.", true, order: 3 )]
-    [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order:4 )]
+    [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order: 4 )]
 
     [CodeEditorField( "Status Template", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
 @"<div class='pull-left badge-legend padding-r-md'>
@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Connection
     <span class='pull-left badge badge-warning badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'><span class='sr-only'>Unassigned Item</span></span>
     <span class='pull-left badge badge-critical badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'><span class='sr-only'>Critical Status</span></span>
     <span class='pull-left badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
-</div>", order:5
+</div>", order: 5
 )]
 
     [CodeEditorField( "Opportunity Summary Template", "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Connection
     <span class='badge badge-critical'>{{ OpportunitySummary.CriticalCount | Format:'#,###,###' }}</span>
     <span class='badge badge-danger'>{{ OpportunitySummary.IdleCount | Format:'#,###,###' }}</span>
 </div>
-", order:6
+", order: 6
 )]
     [CodeEditorField( "Connection Request Status Icons Template", "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
 @"
@@ -83,11 +83,26 @@ namespace RockWeb.Blocks.Connection
     <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
     {% endif %}
 </div>
-", key: "ConnectionRequestStatusIconsTemplate", order:7
+", key: "ConnectionRequestStatusIconsTemplate", order: 7
 )]
+    [BooleanField(
+        "Enable Request Security",
+        DefaultBooleanValue = false,
+        Description = "When enabled, the the security column for request would be displayed.",
+        Key = AttributeKeys.EnableRequestSecurity,
+        IsRequired = true,
+        Order = 8
+    )]
 
     public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKeys
+        {
+            public const string EnableRequestSecurity = "EnableRequestSecurity";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private const string TOGGLE_ACTIVE_SETTING = "MyConnectionOpportunities_ToggleShowActive";
@@ -136,6 +151,9 @@ namespace RockWeb.Blocks.Connection
             gRequests.GridRebind += gRequests_GridRebind;
             gRequests.ShowConfirmDeleteDialog = false;
             gRequests.PersonIdField = "PersonId";
+            var securityField = gRequests.ColumnsOfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
+            securityField.Visible = GetAttributeValue( AttributeKeys.EnableRequestSecurity ).AsBoolean();
 
             var lastActivityNoteBoundField = gRequests.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "LastActivityNote" );
             if ( lastActivityNoteBoundField != null )
@@ -599,7 +617,7 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                if ( opportunity.ConnectionType.EnableRequestSecurity && CurrentPersonId.HasValue && !isSelfAssignedOpportunitiesQueried )
+                if ( opportunity.ConnectionType.EnableRequestSecurity && !isSelfAssignedOpportunitiesQueried )
                 {
                     isSelfAssignedOpportunitiesQueried = true;
                     selfAssignedOpportunities = new ConnectionRequestService( rockContext )
@@ -612,7 +630,7 @@ namespace RockWeb.Blocks.Connection
 
                 var canView = canEdit ||
                                 opportunity.IsAuthorized( Authorization.VIEW, CurrentPerson ) ||
-                                ( opportunity.ConnectionType.EnableRequestSecurity && selfAssignedOpportunities.Contains( opportunity.Id ) );
+                                selfAssignedOpportunities.Contains( opportunity.Id );
 
                 // Is user is authorized to view this opportunity type...
                 if ( canView )
@@ -962,7 +980,6 @@ namespace RockWeb.Blocks.Connection
                     }
 
                     // Filter by State
-
                     if ( tglMyOpportunities.Checked )
                     {
                         requests = requests
@@ -1054,11 +1071,7 @@ namespace RockWeb.Blocks.Connection
 
                     var connectionRequests = requests
                         .AsEnumerable()
-                        .Where( r => !connectionTypeSummary.EnableRequestSecurity || r.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ||
-                                        (
-                                        CurrentPersonId.HasValue  &&
-                                        r.ConnectorPersonAliasId.HasValue &&
-                                        r.ConnectorPersonAlias.PersonId == CurrentPersonId.Value ) )
+                        .Where( r => r.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                         .Select( r => new
                         {
                             r.Id,
