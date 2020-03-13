@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
@@ -847,7 +848,7 @@ namespace RockWeb.Blocks.Steps
         }
 
         /// <summary>
-        /// Adds the column with a link to profile page.
+        /// Creates a grid column with a link to the person profile page.
         /// </summary>
         private HyperLinkField CreatePersonProfileLinkColumn( string fieldName )
         {
@@ -856,7 +857,7 @@ namespace RockWeb.Blocks.Steps
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { fieldName };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
+            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
             hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
             hlPersonProfileLink.DataTextField = fieldName;
 
