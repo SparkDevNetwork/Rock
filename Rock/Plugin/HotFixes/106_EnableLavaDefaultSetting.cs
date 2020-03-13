@@ -29,8 +29,8 @@ namespace Rock.Plugin.HotFixes
         public override void Up()
         {
             // Attrib for BlockType: Communication Entry:Enable Lava
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "D9834641-7F39-4CFA-8CB2-E64068127565", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Lava", "EnableLava", "Enable Lava", @"Remove the lava syntax from the message without resolving it.", 0, @"False", "2613E297-1FF8-4444-82FD-C3F6000BFFF1" );
-            RockMigrationHelper.AddBlockAttributeValue( "BD9B2F32-AB18-4761-80C9-FDA4DBEEA9EC", "2613E297-1FF8-4444-82FD-C3F6000BFFF1", "True" );
+            //RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "D9834641-7F39-4CFA-8CB2-E64068127565", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Enable Lava", "EnableLava", "Enable Lava", @"Remove the lava syntax from the message without resolving it.", 0, @"False", "2613E297-1FF8-4444-82FD-C3F6000BFFF1" );
+            //RockMigrationHelper.AddBlockAttributeValue( "BD9B2F32-AB18-4761-80C9-FDA4DBEEA9EC", "2613E297-1FF8-4444-82FD-C3F6000BFFF1", "True" );
         }
 
         /// <summary>
