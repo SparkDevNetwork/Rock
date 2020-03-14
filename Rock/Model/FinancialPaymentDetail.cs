@@ -95,7 +95,7 @@ namespace Rock.Model
         public string ExpirationMonthEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration year encrypted.
+        /// Gets or sets the expiration year encrypted. Note that this is probably a 2 digit year (2023 might just be 23) or maybe a 4 digit year depending on gateway
         /// </summary>
         /// <value>
         /// The expiration year encrypted.
@@ -148,6 +148,10 @@ namespace Rock.Model
         [HideFromReporting]
         public string NameOnCard
         {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
             get
             {
                 return Encryption.DecryptString( NameOnCardEncrypted );
@@ -168,6 +172,10 @@ namespace Rock.Model
         [HideFromReporting]
         public int? ExpirationMonth
         {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
             get
             {
                 return Encryption.DecryptString( ExpirationMonthEncrypted ).AsIntegerOrNull();
@@ -179,7 +187,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the expiration year by decrypting ExpirationYearEncrypted
+        /// Gets the 2 digit year (or maybe 4 depending on gateway) by decrypting ExpirationYearEncrypted.
+        /// Use <see cref="ExpirationYear4Digit"/> to always get this as 4 digit year.
         /// </summary>
         /// <value>
         /// The expiration year.
@@ -188,6 +197,10 @@ namespace Rock.Model
         [HideFromReporting]
         public int? ExpirationYear
         {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
             get
             {
                 return Encryption.DecryptString( ExpirationYearEncrypted ).AsIntegerOrNull();
@@ -195,6 +208,39 @@ namespace Rock.Model
             set
             {
                 ExpirationYearEncrypted = Encryption.EncryptString( value.ToStringSafe() );
+            }
+        }
+
+        /// <summary>
+        /// Gets the expiration year in 4 digit format by decrypting <see cref="ExpirationYearEncrypted"/> and correcting to a 4 digit year if needed
+        /// </summary>
+        /// <value>
+        /// The expiration year4 digit.
+        /// </value>
+        [DataMember]
+        [HideFromReporting]
+        public int? ExpirationYear4Digit
+        {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
+            get
+            {
+                int? year = ExpirationYear;
+                if ( year == null )
+                {
+                    return null;
+                }
+
+                if ( year.Value < 100 )
+                {
+                    // convert 2 digit year from 4 digit year
+                    // from https://stackoverflow.com/a/10414707/1755417
+                    year = System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+                }
+
+                return year;
             }
         }
 
@@ -326,7 +372,7 @@ namespace Rock.Model
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
-        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext ) 
+        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
         {
             if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
             {
@@ -341,14 +387,14 @@ namespace Rock.Model
                 CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
             }
 
-            if ( !CreditCardTypeValueId.HasValue &&  paymentInfo.CreditCardTypeValue != null )
+            if ( !CreditCardTypeValueId.HasValue && paymentInfo.CreditCardTypeValue != null )
             {
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
-                var ccPaymentInfo = (CreditCardPaymentInfo)paymentInfo;
+                var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
 
                 string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
                 var newLocation = new LocationService( rockContext ).Get(
@@ -376,7 +422,7 @@ namespace Rock.Model
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
-                var swipePaymentInfo = (SwipePaymentInfo)paymentInfo;
+                var swipePaymentInfo = ( SwipePaymentInfo ) paymentInfo;
 
                 if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
@@ -413,7 +459,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var rockContext = (RockContext)dbContext;
+            var rockContext = ( RockContext ) dbContext;
             HistoryChangeList = new History.HistoryChangeList();
 
             switch ( entry.State )
@@ -421,8 +467,8 @@ namespace Rock.Model
                 case EntityState.Added:
                     {
                         History.EvaluateChange( HistoryChangeList, "Account Number", string.Empty, AccountNumberMasked );
-                        History.EvaluateChange( HistoryChangeList, "Currency Type", (int?)null, CurrencyTypeValue, CurrencyTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Credit Card Type", (int?)null, CreditCardTypeValue, CreditCardTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Currency Type", ( int? ) null, CurrencyTypeValue, CurrencyTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Credit Card Type", ( int? ) null, CreditCardTypeValue, CreditCardTypeValueId );
                         History.EvaluateChange( HistoryChangeList, "Name On Card", string.Empty, AccountNumberMasked, true );
                         History.EvaluateChange( HistoryChangeList, "Expiration Month", string.Empty, ExpirationMonthEncrypted, true );
                         History.EvaluateChange( HistoryChangeList, "Expiration Year", string.Empty, ExpirationYearEncrypted, true );
@@ -463,16 +509,16 @@ namespace Rock.Model
         {
             if ( HistoryChangeList.Any() )
             {
-                foreach ( var txn in new FinancialTransactionService( (RockContext)dbContext )
+                foreach ( var txn in new FinancialTransactionService( ( RockContext ) dbContext )
                     .Queryable().AsNoTracking()
                     .Where( t => t.FinancialPaymentDetailId == this.Id )
                     .Select( t => new { t.Id, t.BatchId } )
                     .ToList() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                     var batchHistory = new History.HistoryChangeList();
                     batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Transaction" );
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), txn.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), txn.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 
@@ -501,11 +547,14 @@ namespace Rock.Model
             // NOTE: Migration for this makes this a 'ON DELETE SET NULL' cascade
             this.HasOptional( t => t.FinancialPersonSavedAccount ).WithMany().HasForeignKey( t => t.FinancialPersonSavedAccountId ).WillCascadeOnDelete( true );
 
-            // This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
-            // even though they are ignored at the database level
+            /* BW and MDP 2019-04-18
+              This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
+              even though they are ignored at the database level
+            */
             Ignore( fpd => fpd.NameOnCard );
             Ignore( fpd => fpd.ExpirationMonth );
             Ignore( fpd => fpd.ExpirationYear );
+            Ignore( fpd => fpd.ExpirationYear4Digit );
         }
     }
 
