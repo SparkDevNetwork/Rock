@@ -102,6 +102,8 @@ namespace Rock.Jobs
             RemoveExpiredSavedAccounts( context, out removeSavedAccountSummary );
             jobSummaryBuilder.AppendLine( removeSavedAccountSummary );
 
+            context.Result = ( jobSummaryBuilder.ToString() ).Trim();
+
             if ( expiredCreditCardEmailMessageSendErrors.Any() )
             {
                 StringBuilder sb = new StringBuilder();
@@ -120,6 +122,8 @@ namespace Rock.Jobs
                 var exception = new Exception( errorMessage );
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
+
+                context.Result = ( jobSummaryBuilder.ToString() ).Trim();
 
                 throw exception;
             }
@@ -141,7 +145,7 @@ namespace Rock.Jobs
             }
 
             var financialPersonSavedAccountQry = new FinancialPersonSavedAccountService( new RockContext() ).Queryable()
-                .Where( a => !string.IsNullOrWhiteSpace( a.FinancialPaymentDetail.ExpirationMonthEncrypted ) )
+                .Where( a => a.FinancialPaymentDetail.ExpirationMonthEncrypted != null )
                 .Where( a => a.PersonAliasId.HasValue || a.GroupId.HasValue )
                 .Where( a => a.FinancialPaymentDetailId.HasValue )
                 .Where( a => a.IsSystem == false )
@@ -150,10 +154,8 @@ namespace Rock.Jobs
             var savedAccountInfoList = financialPersonSavedAccountQry.Select( a => new SavedAccountInfo
             {
                 Id = a.Id,
-                FinancialPaymentDetailExpirationMonthEncrypted = a.FinancialPaymentDetail.ExpirationMonthEncrypted,
-                FinancialPaymentDetailExpirationYearEncrypted = a.FinancialPaymentDetail.ExpirationYearEncrypted,
-                FinancialPaymentDetailAccountNumberMasked = a.FinancialPaymentDetail.AccountNumberMasked,
-            } );
+                FinancialPaymentDetail = a.FinancialPaymentDetail
+            } ).ToList();
 
             DateTime now = DateTime.Now;
             int currentMonth = now.Month;
@@ -164,8 +166,8 @@ namespace Rock.Jobs
 
             foreach ( var savedAccountInfo in savedAccountInfoList )
             {
-                int? expirationMonth = Encryption.DecryptString( savedAccountInfo.FinancialPaymentDetailExpirationMonthEncrypted ).AsIntegerOrNull();
-                int? expirationYear = Encryption.DecryptString( savedAccountInfo.FinancialPaymentDetailExpirationYearEncrypted ).AsIntegerOrNull();
+                int? expirationMonth = Encryption.DecryptString( savedAccountInfo.FinancialPaymentDetail.ExpirationMonthEncrypted ).AsIntegerOrNull();
+                int? expirationYear = Encryption.DecryptString( savedAccountInfo.FinancialPaymentDetail.ExpirationYearEncrypted ).AsIntegerOrNull();
                 if ( !expirationMonth.HasValue || !expirationMonth.HasValue )
                 {
                     continue;
@@ -247,9 +249,8 @@ namespace Rock.Jobs
             List<ScheduledTransactionInfo> scheduledTransactionInfoList = financialScheduledTransactionQuery.Select( a => new ScheduledTransactionInfo
             {
                 Id = a.Id,
-                FinancialPaymentDetailExpirationMonthEncrypted = a.FinancialPaymentDetail.ExpirationMonthEncrypted,
-                FinancialPaymentDetailExpirationYearEncrypted = a.FinancialPaymentDetail.ExpirationYearEncrypted,
-                FinancialPaymentDetailAccountNumberMasked = a.FinancialPaymentDetail.AccountNumberMasked,
+                FinancialGatewayId = a.FinancialGatewayId,
+                FinancialPaymentDetail = a.FinancialPaymentDetail,
                 AuthorizedPersonAliasGuid = a.AuthorizedPersonAlias.Guid,
                 Person = a.AuthorizedPersonAlias.Person
             } ).ToList();
@@ -257,43 +258,45 @@ namespace Rock.Jobs
             // Get the current month and year 
             DateTime now = DateTime.Now;
             int currentMonth = now.Month;
-            int currentYear = now.Year;
+            int currentYYYY = now.Year;
             int expiredCreditCardCount = 0;
             expiredCreditCardEmailMessageSendErrors = new List<string>();
-            foreach ( ScheduledTransactionInfo scheduledTransactionInfo in scheduledTransactionInfoList )
+
+            // get the common merge fields once, so we don't have to keep calling it for every person, then create a new mergeFields for each person, starting with a copy of the common merge fields
+            var commonMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+
+            foreach ( ScheduledTransactionInfo scheduledTransactionInfo in scheduledTransactionInfoList.OrderByDescending( a => a.Id ) )
             {
-                int? expirationMonthDecrypted = Encryption.DecryptString( scheduledTransactionInfo.FinancialPaymentDetailExpirationMonthEncrypted ).AsIntegerOrNull();
-                int? expirationYearDecrypted = Encryption.DecryptString( scheduledTransactionInfo.FinancialPaymentDetailExpirationYearEncrypted ).AsIntegerOrNull();
-                if ( !expirationMonthDecrypted.HasValue || !expirationMonthDecrypted.HasValue )
+                int? expirationMonth = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationMonth;
+                int? expirationYYYY = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationYear4Digit;
+                if ( !expirationMonth.HasValue || !expirationMonth.HasValue )
                 {
                     continue;
                 }
 
                 string maskedCardNumber = string.Empty;
 
-                if ( !string.IsNullOrEmpty( scheduledTransactionInfo.FinancialPaymentDetailAccountNumberMasked ) && scheduledTransactionInfo.FinancialPaymentDetailAccountNumberMasked.Length >= 4 )
+                if ( !string.IsNullOrEmpty( scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked ) && scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Length >= 4 )
                 {
-                    maskedCardNumber = scheduledTransactionInfo.FinancialPaymentDetailAccountNumberMasked.Substring( scheduledTransactionInfo.FinancialPaymentDetailAccountNumberMasked.Length - 4 );
+                    maskedCardNumber = scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Substring( scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Length - 4 );
                 }
 
-                int warningYear = expirationYearDecrypted.Value;
-                int warningMonth = expirationMonthDecrypted.Value - 1;
+                int warningYear = expirationYYYY.Value;
+                int warningMonth = expirationMonth.Value - 1;
                 if ( warningMonth == 0 )
                 {
                     warningYear -= 1;
                     warningMonth = 12;
                 }
 
-                string warningDate = warningMonth.ToString() + warningYear.ToString();
-                string currentMonthString = currentMonth.ToString() + currentYear.ToString();
 
-                if ( warningDate == currentMonthString )
+                if ( ( warningYear == currentYYYY ) && ( warningMonth == currentMonth ) )
                 {
                     // as per ISO7813 https://en.wikipedia.org/wiki/ISO/IEC_7813
-                    var expirationDate = string.Format( "{0:D2}/{1:D2}", expirationMonthDecrypted, expirationYearDecrypted );
+                    string expirationMMYYFormatted = string.Format( "{0:D2}/{1:D2}", expirationMonth, expirationYYYY );
 
                     var recipients = new List<RockEmailMessageRecipient>();
-                    var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+
                     var person = scheduledTransactionInfo.Person;
 
                     if ( !person.IsEmailActive || person.Email.IsNullOrWhiteSpace() || person.EmailPreference == EmailPreference.DoNotEmail )
@@ -301,9 +304,12 @@ namespace Rock.Jobs
                         continue;
                     }
 
+                    // make a mergeFields for this person, starting with copy of the commonFieldFields 
+                    var mergeFields = new Dictionary<string, object>( commonMergeFields );
                     mergeFields.Add( "Person", person );
                     mergeFields.Add( "Card", maskedCardNumber );
-                    mergeFields.Add( "Expiring", expirationDate );
+                    mergeFields.Add( "Expiring", expirationMMYYFormatted );
+
                     recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
 
                     var emailMessage = new RockEmailMessage( systemCommunication );
@@ -319,7 +325,7 @@ namespace Rock.Jobs
                         Dictionary<string, string> attributes = new Dictionary<string, string>();
                         attributes.Add( "Person", scheduledTransactionInfo.AuthorizedPersonAliasGuid.ToString() );
                         attributes.Add( "Card", maskedCardNumber );
-                        attributes.Add( "Expiring", expirationDate );
+                        attributes.Add( "Expiring", expirationMMYYFormatted );
                         attributes.Add( "FinancialScheduledTransactionId", scheduledTransactionInfo.Id.ToString() );
 
                         StartWorkflow( workflowService, workflowType, attributes, $"{person.FullName} (scheduled transaction Id: {scheduledTransactionInfo.Id})" );
@@ -362,19 +368,16 @@ namespace Rock.Jobs
         private class ScheduledTransactionInfo
         {
             public int Id { get; set; }
-            public string FinancialPaymentDetailExpirationMonthEncrypted { get; set; }
-            public string FinancialPaymentDetailExpirationYearEncrypted { get; set; }
-            public string FinancialPaymentDetailAccountNumberMasked { get; set; }
             public Guid AuthorizedPersonAliasGuid { get; set; }
             public Person Person { get; set; }
+            public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
+            public int? FinancialGatewayId { get; internal set; }
         }
 
         private class SavedAccountInfo
         {
             public int Id { get; set; }
-            public string FinancialPaymentDetailExpirationMonthEncrypted { get; set; }
-            public string FinancialPaymentDetailExpirationYearEncrypted { get; set; }
-            public string FinancialPaymentDetailAccountNumberMasked { get; set; }
+            public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
         }
     }
 }
