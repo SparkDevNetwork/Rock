@@ -10,7 +10,7 @@
             var postbackUrl = $familySelectDiv.attr('data-target');
 
             // remove the postbackUrls from the other div to prevent multiple clicks
-            $(this).attr('data-target', '');
+            $familySelectDiv.attr('data-target', '');
 
             // if the postbackUrl has been cleared, another button has already been pressed, so ignore
             if (!postbackUrl || postbackUrl == '') {
