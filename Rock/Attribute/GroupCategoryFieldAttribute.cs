@@ -28,6 +28,7 @@ namespace Rock.Attribute
         private const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
         private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
+        private const string ALLOW_MULTIPLE_KEY = "allowMultiple";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupCategoryFieldAttribute" /> class.
@@ -53,18 +54,60 @@ namespace Rock.Attribute
         {
             FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Group" ) );
             FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "GroupTypeId" ) );
-            if ( groupTypeGuid.AsGuidOrNull() == null )
-            {
-                throw new System.Exception( "groupTypeGuid must be specified" );
-            }
 
-            int? groupTypeId = GroupTypeCache.Get( groupTypeGuid.AsGuid() )?.Id;
-            if ( groupTypeId == null )
-            {
-                throw new System.Exception( "A valid groupTypeGuid must be specified" );
-            }
-
-            FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( groupTypeId.Value.ToString() ) );
+            GroupTypeGuid = groupTypeGuid;
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether allow multiple is true.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if allow multiple; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+
+                FieldTypeClass = value ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the group type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The group type unique identifier.
+        /// </value>
+        public string GroupTypeGuid
+        {
+            get
+            {
+                var groupTypeId = FieldConfigurationValues.GetValueOrNull( QUALIFIER_VALUE_KEY ).AsIntegerOrNull();
+
+                if ( groupTypeId.HasValue )
+                {
+                    return GroupTypeCache.Get( groupTypeId.Value )?.Guid.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            set
+            {
+                var groupTypeGuid = value.AsGuidOrNull();
+                var groupTypeId = groupTypeGuid.HasValue ? GroupTypeCache.GetId( groupTypeGuid.Value ) : null;
+                FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( groupTypeId?.ToString() ) );
+            }
+        }
+
     }
 }

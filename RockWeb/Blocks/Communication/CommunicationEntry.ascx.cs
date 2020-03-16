@@ -43,6 +43,8 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
 
+    #region Block Attributes
+
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
     [BooleanField( "Enable Lava",
@@ -145,6 +147,7 @@ namespace RockWeb.Blocks.Communication
         Category = "HTML Editor Settings",
         Order = 2 )]
 
+    #endregion Block Attributes
     public partial class CommunicationEntry : RockBlock
     {
         #region Attribute Keys
