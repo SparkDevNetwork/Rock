@@ -35,9 +35,28 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Type List" )]
     [Category( "Connection" )]
     [Description( "Block to display the connection types." )]
-    [LinkedPage( "Detail Page", "Page used to view details of a connection type." )]
+
+    #region Block Attributes
+    [LinkedPage(
+        "Detail Page",
+        Description = "Page used to view details of a connection type.",
+        Key = AttributeKey.DetailPage )]
+    #endregion Block Attributes
+
     public partial class ConnectionTypeList : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -89,7 +108,7 @@ namespace RockWeb.Blocks.Connection
             int? connectionTypeId = e.CommandArgument.ToString().AsIntegerOrNull();
             if ( connectionTypeId.HasValue )
             {
-                NavigateToLinkedPage( "DetailPage", "ConnectionTypeId", connectionTypeId.Value );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionTypeId", connectionTypeId.Value );
             }
 
             GetData();
@@ -102,7 +121,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddConnectionType_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ConnectionTypeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionTypeId", 0 );
         }
         #endregion
 

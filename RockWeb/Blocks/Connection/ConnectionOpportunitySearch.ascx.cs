@@ -40,20 +40,104 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Allows users to search for an opportunity to join" )]
 
-    [CodeEditorField( "Lava Template", "Lava template to use to display the list of opportunities.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}", "", 0 )]
-    [BooleanField( "Enable Campus Context", "If the page has a campus context its value will be used as a filter", true, order: 1 )]
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the connection type name.", false, order: 2 )]
-    [BooleanField( "Display Name Filter", "Display the name filter", false, order: 3 )]
-    [BooleanField( "Display Campus Filter", "Display the campus filter", true, order: 4 )]
-    [BooleanField( "Display Inactive Campuses", "Include inactive campuses in the Campus Filter", true, order: 5 )]
-    [BooleanField( "Display Attribute Filters", "Display the attribute filters", true, order: 6 )]
-    [LinkedPage( "Detail Page", "The page used to view a connection opportunity.", order: 7 )]
-    [IntegerField( "Connection Type Id", "The Id of the connection type whose opportunities are displayed.", true, 1, order:8 )]
-    [BooleanField( "Show Search", "Determines if the search fields should be displayed. Sometimes listing all the options is enough.", true, order: 9 )]
-    [TextField( "Campus Label", "", true, "Campuses",  order:10 )]
+    #region Block Attributes
 
+    [CodeEditorField(
+        "Lava Template",
+        Description = "Lava template to use to display the list of opportunities.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% include '~~/Assets/Lava/OpportunitySearch.lava' %}",
+        Order = 0,
+        Key = AttributeKey.LavaTemplate )]
+    [BooleanField(
+        "Enable Campus Context",
+        Description = "If the page has a campus context its value will be used as a filter",
+        DefaultBooleanValue = true,
+        Order = 1,
+        Key = AttributeKey.EnableCampusContext )]
+    [BooleanField(
+        "Set Page Title",
+        Description = "Determines if the block should set the page title with the connection type name.",
+        DefaultBooleanValue = false,
+        Order = 2,
+        Key = AttributeKey.SetPageTitle )]
+    [BooleanField(
+        "Display Name Filter",
+        Description = "Display the name filter",
+        DefaultBooleanValue = false,
+        Order = 3,
+        Key = AttributeKey.DisplayNameFilter )]
+    [BooleanField(
+        "Display Campus Filter",
+        Description = "Display the campus filter",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = AttributeKey.DisplayCampusFilter )]
+    [BooleanField(
+        "Display Inactive Campuses",
+        Description = "Include inactive campuses in the Campus Filter",
+        DefaultBooleanValue = true,
+        Order = 5,
+        Key = AttributeKey.DisplayInactiveCampuses )]
+    [BooleanField(
+        "Display Attribute Filters",
+        Description = "Display the attribute filters",
+        DefaultBooleanValue = true,
+        Order = 6,
+        Key = AttributeKey.DisplayAttributeFilters )]
+    [LinkedPage(
+        "Detail Page",
+        Description = "The page used to view a connection opportunity.",
+        Order = 7,
+        Key = AttributeKey.DetailPage )]
+    [IntegerField(
+        "Connection Type Id",
+        Description = "The Id of the connection type whose opportunities are displayed.",
+        IsRequired = true,
+        DefaultIntegerValue = 1,
+        Order = 8,
+        Key = AttributeKey.ConnectionTypeId )]
+    [BooleanField(
+        "Show Search",
+        Description = "Determines if the search fields should be displayed. Sometimes listing all the options is enough.",
+        DefaultBooleanValue = true,
+        Order = 9,
+        Key = AttributeKey.ShowSearch )]
+    [TextField(
+        "Campus Label",
+        IsRequired = true,
+        DefaultValue = "Campuses",
+        Order = 10,
+        Key = AttributeKey.CampusLabel )]
+
+    #endregion Block Attributes
     public partial class OpportunitySearch : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string LavaTemplate = "LavaTemplate";
+            public const string EnableCampusContext = "EnableCampusContext";
+            public const string SetPageTitle = "SetPageTitle";
+            public const string DisplayNameFilter = "DisplayNameFilter";
+            public const string DisplayCampusFilter = "DisplayCampusFilter";
+            public const string DisplayInactiveCampuses = "DisplayInactiveCampuses";
+            public const string DisplayAttributeFilters = "DisplayAttributeFilters";
+            public const string DetailPage = "DetailPage";
+            public const string ConnectionTypeId = "ConnectionTypeId";
+            public const string ShowSearch = "ShowSearch";
+            public const string CampusLabel = "CampusLabel";
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -107,7 +191,7 @@ namespace RockWeb.Blocks.Connection
                 UpdateList();
             }
 
-            pnlSearch.Visible = GetAttributeValue( "ShowSearch" ).AsBoolean();
+            pnlSearch.Visible = GetAttributeValue( AttributeKey.ShowSearch ).AsBoolean();
         }
 
         /// <summary>
@@ -161,13 +245,13 @@ namespace RockWeb.Blocks.Connection
             {
                 var searchSelections = new Dictionary<string, string>();
 
-                var connectionTypeId = GetAttributeValue( "ConnectionTypeId" ).AsInteger();
+                var connectionTypeId = GetAttributeValue( AttributeKey.ConnectionTypeId ).AsInteger();
                 var connectionType = new ConnectionTypeService( rockContext ).Get( connectionTypeId );
                 var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
 
                 var qrySearch = connectionOpportunityService.Queryable().Where( a => a.ConnectionTypeId == connectionTypeId && a.IsActive && a.ConnectionType.IsActive );
 
-                if ( GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.DisplayNameFilter ).AsBoolean() )
                 {
                     if ( !string.IsNullOrWhiteSpace( tbSearchName.Text ) )
                     {
@@ -177,9 +261,9 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
                 {
-                    cblCampus.Label = GetAttributeValue( "CampusLabel" );
+                    cblCampus.Label = GetAttributeValue( AttributeKey.CampusLabel );
                     var searchCampuses = cblCampus.SelectedValuesAsInt;
                     if ( searchCampuses.Count > 0 )
                     {
@@ -188,7 +272,7 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.DisplayAttributeFilters ).AsBoolean() )
                 {
                     // Filter query by any configured attribute filters
                     if ( AvailableAttributes != null && AvailableAttributes.Any() )
@@ -210,7 +294,7 @@ namespace RockWeb.Blocks.Connection
                 var mergeFields = new Dictionary<string, object>();
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
-                var pageReference = new PageReference( GetAttributeValue( "DetailPage" ), null );
+                var pageReference = new PageReference( GetAttributeValue( AttributeKey.DetailPage ), null );
                 mergeFields.Add( "DetailPage", BuildDetailPageUrl(pageReference.BuildUrl()) );
 
                 // iterate through the opportunities and lava merge the summaries and descriptions
@@ -222,9 +306,9 @@ namespace RockWeb.Blocks.Connection
 
                 mergeFields.Add( "Opportunities", opportunities );
 
-                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                lOutput.Text = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields );
 
-                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean() )
                 {
                     string pageTitle = "Connection";
                     RockPage.PageTitle = pageTitle;
@@ -272,17 +356,17 @@ namespace RockWeb.Blocks.Connection
                 var searchSelections = Session[sessionKey] as Dictionary<string, string>;
                 setValues = setValues && searchSelections != null;
 
-                var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( "ConnectionTypeId" ).AsInteger() );
+                var connectionType = new ConnectionTypeService( rockContext ).Get( GetAttributeValue( AttributeKey.ConnectionTypeId ).AsInteger() );
 
-                if ( !GetAttributeValue( "DisplayNameFilter" ).AsBoolean() )
+                if ( !GetAttributeValue( AttributeKey.DisplayNameFilter ).AsBoolean() )
                 {
                     tbSearchName.Visible = false;
                 }
 
-                if ( GetAttributeValue( "DisplayCampusFilter" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
                 {
                     cblCampus.Visible = true;
-                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( "DisplayInactiveCampuses" ).AsBoolean() );
+                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( AttributeKey.DisplayInactiveCampuses ).AsBoolean() );
                     cblCampus.DataBind();
                 }
                 else
@@ -302,7 +386,7 @@ namespace RockWeb.Blocks.Connection
                         cblCampus.SetValues( selectedItems );
                     }
                 }
-                else if ( GetAttributeValue( "EnableCampusContext" ).AsBoolean() )
+                else if ( GetAttributeValue( AttributeKey.EnableCampusContext ).AsBoolean() )
                 {
                     var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
                     var contextCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
@@ -313,7 +397,7 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
 
-                if ( GetAttributeValue( "DisplayAttributeFilters" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.DisplayAttributeFilters ).AsBoolean() )
                 {
                     // Parse the attribute filters 
                     AvailableAttributes = new List<AttributeCache>();
