@@ -317,12 +317,29 @@ namespace RockWeb.Blocks.Administration
             ddlJobTypes.Items.Add( new ListItem() );
             foreach ( var job in jobsList.OrderBy(a => a.FullName ))
             {
-                ddlJobTypes.Items.Add( new ListItem( job.FullName, job.FullName ) );
+                ddlJobTypes.Items.Add( new ListItem( CreateJobTypeFriendlyName( job.FullName ), job.FullName ) );
             }
 
             nbJobTypeError.Visible = jobTypeErrors.Any();
             nbJobTypeError.Text = "Error loading job types";
             nbJobTypeError.Details = jobTypeErrors.AsDelimited( "<br/>" );
+        }
+
+        /// <summary>
+        /// Create Job Type Friendly Name
+        /// </summary>
+        private string CreateJobTypeFriendlyName( string jobType )
+        {
+            string friendlyName;
+            if ( jobType.Contains( "Rock.Jobs." ) )
+            {
+                friendlyName = jobType.Replace( "Rock.Jobs.", string.Empty ).SplitCase();
+            }
+            else
+            {
+                friendlyName = string.Format( "{0} (Plugin)", jobType.Split( '.' ).Last().SplitCase() );
+            }
+            return friendlyName;
         }
 
         #endregion

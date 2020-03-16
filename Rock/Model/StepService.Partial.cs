@@ -147,5 +147,15 @@ namespace Rock.Model
 
             base.Add( item );
         }
+
+        /// <summary>
+        /// Adds the step without checking prerequisites or allow multiple. Use cautiously in cases where these conditions
+        /// have already been checked.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        public void AddWithoutValidation( Step item )
+        {
+            base.Add( item );
+        }
     }
 }

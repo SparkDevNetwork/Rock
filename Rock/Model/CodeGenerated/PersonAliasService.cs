@@ -2374,6 +2374,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<SmsPipeline>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SmsPipeline.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<SmsPipeline>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, SmsPipeline.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Step>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Step.FriendlyTypeName );

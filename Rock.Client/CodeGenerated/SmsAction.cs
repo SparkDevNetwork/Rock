@@ -60,6 +60,9 @@ namespace Rock.Client
         /// <summary />
         public int SmsActionComponentEntityTypeId { get; set; }
 
+        /// <summary />
+        public int SmsPipelineId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -101,6 +104,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.Order = source.Order;
             this.SmsActionComponentEntityTypeId = source.SmsActionComponentEntityTypeId;
+            this.SmsPipelineId = source.SmsPipelineId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -116,6 +120,9 @@ namespace Rock.Client
     /// </summary>
     public partial class SmsAction : SmsActionEntity
     {
+        /// <summary />
+        public SmsPipeline SmsPipeline { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

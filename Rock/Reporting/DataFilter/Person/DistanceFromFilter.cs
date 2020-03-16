@@ -221,7 +221,7 @@ function() {
                 var groupTypeFamilyId = GroupTypeCache.GetFamilyGroupType().Id;
 
                 // limit to Family's Home Addresses that have are a real location (not a PO Box)
-                var groupMemberServiceQry = groupMemberService.Queryable()
+                var groupMemberServiceQry = groupMemberService.Queryable( true )
                     .Where( xx => xx.Group.GroupTypeId == groupTypeFamilyId );
 
                 int groupLocationTypeHomeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;

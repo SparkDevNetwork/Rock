@@ -118,17 +118,7 @@ namespace Rock.Financial
                 financialGateway.LoadAttributes();
             }
 
-            var values = financialGateway.AttributeValues;
-            if ( values != null && values.ContainsKey( key ) )
-            {
-                var keyValues = values[key];
-                if ( keyValues != null )
-                {
-                    return keyValues.Value;
-                }
-            }
-
-            return string.Empty;
+            return financialGateway.GetAttributeValue( key );
         }
 
         /// <summary>

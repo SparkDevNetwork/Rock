@@ -306,6 +306,14 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the content channel type cache.
+        /// </summary>
+        /// <value>
+        /// The type of the content channel.
+        /// </value>
+        public ContentChannelTypeCache ContentChannelType => ContentChannelTypeCache.Get( ContentChannelTypeId );
+
         #endregion
 
         #region Public Methods

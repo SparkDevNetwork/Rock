@@ -53,7 +53,13 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool IncludeDeceased { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public DateTime? LastRunDateTime { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -67,7 +73,16 @@ namespace Rock.Client
         public DateTime? PersistedLastRefreshDateTime { get; set; }
 
         /// <summary />
+        public int? PersistedLastRunDuration { get; set; }
+
+        /// <summary />
         public int? PersistedScheduleIntervalMinutes { get; set; }
+
+        /// <summary />
+        public int? RunCount { get; set; }
+
+        /// <summary />
+        public double? TimeToRunMS { get; set; }
 
         /// <summary />
         public int? TransformEntityTypeId { get; set; }
@@ -111,11 +126,16 @@ namespace Rock.Client
             this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IncludeDeceased = source.IncludeDeceased;
             this.IsSystem = source.IsSystem;
+            this.LastRunDateTime = source.LastRunDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.PersistedLastRefreshDateTime = source.PersistedLastRefreshDateTime;
+            this.PersistedLastRunDuration = source.PersistedLastRunDuration;
             this.PersistedScheduleIntervalMinutes = source.PersistedScheduleIntervalMinutes;
+            this.RunCount = source.RunCount;
+            this.TimeToRunMS = source.TimeToRunMS;
             this.TransformEntityTypeId = source.TransformEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

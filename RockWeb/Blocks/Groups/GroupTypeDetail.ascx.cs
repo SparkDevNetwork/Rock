@@ -504,6 +504,7 @@ namespace RockWeb.Blocks.Groups
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
             groupType.EnableGroupTag = cbEnableGroupTag.Checked;
+            groupType.AllowAnyChildGroupType = cbAllowAnyChildGroupType.Checked;
             groupType.ShowAdministrator = cbShowAdministrator.Checked;
             groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
             groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
@@ -666,7 +667,6 @@ namespace RockWeb.Blocks.Groups
             if ( deleteGroupHistory )
             {
                 groupTypeService.BulkDeleteGroupHistory( groupType.Id );
-                
             }
 
             NavigateToParentPage();
@@ -835,6 +835,9 @@ namespace RockWeb.Blocks.Groups
 
             ddlGroupCapacityRule.SetValue( (int)groupType.GroupCapacityRule );
 
+            cbAllowAnyChildGroupType.Checked = groupType.AllowAnyChildGroupType;
+            rcwAllowedChildGroupTypes.Visible = !cbAllowAnyChildGroupType.Checked;
+
             ChildGroupTypesList = new List<int>();
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesList.Add( a.Id ) );
             BindChildGroupTypesGrid();
@@ -842,6 +845,7 @@ namespace RockWeb.Blocks.Groups
             cbEnableGroupTag.Checked = groupType.EnableGroupTag;
             cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
             cbShowAdministrator.Checked = groupType.ShowAdministrator;
+
             // Display
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
@@ -1658,6 +1662,16 @@ namespace RockWeb.Blocks.Groups
         #endregion
 
         #region Child GroupType Grid and Picker
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbAllowAnyChildGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbAllowAnyChildGroupType_CheckedChanged( object sender, EventArgs e )
+        {
+            rcwAllowedChildGroupTypes.Visible = !cbAllowAnyChildGroupType.Checked;
+        }
 
         /// <summary>
         /// Handles the Add event of the gChildGroupTypes control.

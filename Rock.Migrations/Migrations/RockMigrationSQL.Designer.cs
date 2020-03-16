@@ -1841,5 +1841,123 @@ namespace Rock.Migrations.Migrations {
                 return ResourceManager.GetString("_202001071827547_Rollup_0107_SparklineShortcodeMigration", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- un-link any &apos;Team Group&apos; Groups from all existing Campuses
+        ///UPDATE [Campus]
+        ///SET [TeamGroupId] = NULL;
+        ///GO
+        ///
+        ///-- delete all Groups of GroupType &apos;TeamGroup&apos;
+        ///DECLARE @GroupTypeId [int] = (SELECT [Id] FROM [GroupType] WHERE [Guid] = &apos;BADD7A6C-1FB3-4E11-A721-6D1377C6958C&apos;);
+        ///
+        ///IF (@GroupTypeId IS NOT NULL)
+        ///BEGIN
+        ///    DELETE FROM [Group]
+        ///    WHERE ([GroupTypeId] = @GroupTypeId);
+        ///END
+        ///.
+        /// </summary>
+        public static string _202002182236274_AddCampusTeamToAllCampuses_Down {
+            get {
+                return ResourceManager.GetString("_202002182236274_AddCampusTeamToAllCampuses_Down", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to -- add and assign a Group of GroupType &apos;Campus Team&apos; to all existing Campuses
+        ///
+        ///IF OBJECT_ID(&apos;tempdb..#campusTemp&apos;) IS NOT NULL
+        ///BEGIN
+        ///    DROP TABLE #campusTemp;
+        ///END
+        ///
+        ///CREATE TABLE #campusTemp (
+        ///    [Id] [int] IDENTITY(1,1) NOT NULL
+        ///    , [CampusId] [int] NOT NULL
+        ///    , [CampusName] [nvarchar](100) NOT NULL
+        ///    , CONSTRAINT [pk_campusTemp] PRIMARY KEY CLUSTERED ( [Id] ASC )
+        ///);
+        ///
+        ///-- collect all existing Campuses (that don&apos;t already have a TeamGroup assigned)
+        ///INSERT INTO #campusTemp
+        ///SELECT [Id]
+        /// [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202002182236274_AddCampusTeamToAllCampuses_Up {
+            get {
+                return ResourceManager.GetString("_202002182236274_AddCampusTeamToAllCampuses_Up", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This function return people who attended based on selected filter criteria and the first 5 dates they ever attended the selected group type
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		* PersonId
+        ///		* TimeAttending
+        ///		* SundayDate
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;GroupTypeId&apos; datatype=&apos;int&apos;&gt;The Check-in Area Group Type Id (only attendance for this are will be included&lt;/param&gt;
+        ///	&lt;param name=&apos;StartDate&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///	&lt;param name=&apos;EndDate&apos; datatype=&apos;dateti [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance {
+            get {
+                return ResourceManager.GetString("_202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAtten" +
+                        "dance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///         This function returns any person ids for people that have attended previously but who have not attended since the beginning date
+        ///    &lt;/summary&gt;
+        ///
+        ///    &lt;returns&gt;
+        ///        * PersonId 
+        ///        * SundayDate - Last time attended
+        ///    &lt;/returns&gt;
+        ///    &lt;param name=&apos;GroupTypeIds&apos; datatype=&apos;varchar(max)&apos;&gt;The Group Type Ids (only attendance for these group types will be included&lt;/param&gt;
+        ///    &lt;param name=&apos;StartDateTime&apos; datatype=&apos;datetime&apos;&gt;Beginning date range filter&lt;/param&gt;
+        ///    &lt;p [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_NonAttendees {
+            get {
+                return ResourceManager.GetString("_202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_NonAttendees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NULL
+        ///	, @MaxComplete decimal(18,2) = NULL
+        ///	, @MinAmountGiven decimal(18,2) = NULL
+        ///	, @MaxAmountGiven decimal(18,2) = NULL
+        ///	, @IncludeP [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery {
+            get {
+                return ResourceManager.GetString("_202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery", resourceCulture);
+            }
+        }
     }
 }

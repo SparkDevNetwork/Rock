@@ -497,6 +497,11 @@
             </Content>
         </Rock:ModalDialog>
 
+        <Rock:ModalDialog ID="mdArchive" runat="server" Title="Archive Single Group or All Child Groups" OnSaveClick="mdArchive_AllChildGroupsClick" OnSaveThenAddClick="mdArchive_SingleGroupClick" SaveButtonText="Yes" SaveThenAddButtonText="No" CancelLinkVisible="false">
+            <Content>
+                <p>Would you like to archive this group's children?</p>
+            </Content>
+        </Rock:ModalDialog>
         <script>
 
             Sys.Application.add_load(function () {

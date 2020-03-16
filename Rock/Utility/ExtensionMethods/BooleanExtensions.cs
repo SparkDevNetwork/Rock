@@ -55,6 +55,16 @@ namespace Rock
             return value ? "True" : "False";
         }
 
+        /// <summary>
+        /// Returns the string "true" or "false" (lowercase) which can be used for JSON and JavaScript boolean values
+        /// </summary>
+        /// <param name="value">if set to <c>true</c> [value].</param>
+        /// <returns></returns>
+        public static string ToJavaScriptValue(this bool value )
+        {
+            return value.ToTrueFalse().ToLower();
+        }
+
         #endregion Boolean Extensions
     }
 }

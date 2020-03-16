@@ -68,7 +68,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "The XAML to use when rendering the event summaries below the calendar.",
         IsRequired = true,
         DefaultValue = AttributeDefaults.EventSummary,
-        EditorMode = Web.UI.Controls.CodeEditorMode.Xml,
+        EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         Key = AttributeKeys.EventSummary,
         Order = 3 )]
 

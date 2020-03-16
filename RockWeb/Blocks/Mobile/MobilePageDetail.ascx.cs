@@ -605,7 +605,12 @@ namespace RockWeb.Blocks.Mobile
             ddlBlockTypeCategory.Items.Clear();
             foreach ( var c in categories.OrderBy( c => c ) )
             {
-                ddlBlockTypeCategory.Items.Add( c );
+                var text = c;
+                if ( c.StartsWith( "Mobile >" ) )
+                {
+                    text = c.Replace( "Mobile >", string.Empty ).Trim();
+                }
+                ddlBlockTypeCategory.Items.Add( new ListItem( text, c ) );
             }
             ddlBlockTypeCategory.SetValue( selectedCategory );
 
@@ -668,6 +673,7 @@ namespace RockWeb.Blocks.Mobile
             tbDescription.Text = page.Description;
             cbDisplayInNavigation.Checked = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed;
             ceEventHandler.Text = additionalSettings.LavaEventHandler;
+            ceCssStyles.Text = additionalSettings.CssStyles;
             imgPageIcon.BinaryFileId = page.IconBinaryFileId;
 
             //
@@ -718,6 +724,7 @@ namespace RockWeb.Blocks.Mobile
 
             var additionalSettings = page.AdditionalSettings.FromJsonOrNull<Rock.Mobile.AdditionalPageSettings>() ?? new Rock.Mobile.AdditionalPageSettings();
             additionalSettings.LavaEventHandler = ceEventHandler.Text;
+            additionalSettings.CssStyles = ceCssStyles.Text;
 
             page.InternalName = tbInternalName.Text;
             page.BrowserTitle = tbName.Text;

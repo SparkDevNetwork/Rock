@@ -27,8 +27,12 @@ namespace Rock.Financial
     public class ReferencePaymentInfo : PaymentInfo
     {
         /// <summary>
-        /// Gets or sets the transaction code.
+        /// Gets or sets the transaction code that was used as the "source transaction", and is used by some gateways (PayFlowPro) to lookup the payment info.
+        /// For gateways that have the concept of a Customer Vault (NMI and MyWell), <see cref="GatewayPersonIdentifier" /> is what would be used.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the transaction code of the transaction.
+        /// </value>
         public string TransactionCode { get; set; }
 
         /// <summary>
@@ -64,12 +68,21 @@ namespace Rock.Financial
         public DefinedValueCache InitialCreditCardTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the Gateway Person Identifier. Usually a reference to the gateway's saved customer info which the gateway would have previously collected payment info.
+        /// Gets or sets the Gateway Person Identifier.
+        /// This would indicate id the customer vault information on the gateway (for gateways that have customer vaults (NMI and MyWell) )
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial person saved account identifier that was used for this payment
+        /// </summary>
+        /// <value>
+        /// The financial person saved account identifier.
+        /// </value>
+        public int? FinancialPersonSavedAccountId { get; set; }
 
         /// <summary>
         /// Gets the account number.

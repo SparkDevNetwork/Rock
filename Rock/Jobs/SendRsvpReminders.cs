@@ -239,7 +239,7 @@ namespace Rock.Jobs
 
             // Get occurrences (within the correct date range) with positive RSVP responses for this group.
             var rsvpOccurrences = GetOccurrencesForGroup( group, offsetDays, rockContext );
-
+            
             foreach ( var rsvpOccurrence in rsvpOccurrences )
             {
                 // Process each positive RSVP response and send their reminder.
@@ -265,13 +265,19 @@ namespace Rock.Jobs
         {
             // Calculate correct date range from the RSVP Offset.
             DateTime startDate = DateTime.Today.AddDays( offsetDays );
-            DateTime endDate = startDate.AddDays( 1 ).AddMilliseconds( -1 );
+            DateTime endDate = startDate.AddDays( 1 );
 
+            // This can't use WithNoTracking because the sms service tries to access the PrimaryAliasId
+            // which links to the Aliases property, but when we try to at the Aliases property to the include list
+            // we get an "The RelatedEnd with role name X has already been loaded" error because it has already
+            // been loaded with the PersonAlias object, however removing the AsNoTracking() resolves this issue.
+            // you can read more about it here:
+            // https://stackoverflow.com/questions/46038016/the-relatedend-with-role-name-x-has-already-been-loaded
             var rsvpOccurrences = new AttendanceOccurrenceService( rockContext )
-                    .Queryable( "Attendees,Attendees.PersonAlias.Person" ).AsNoTracking()
+                    .Queryable( "Attendees,Attendees.PersonAlias.Person" )
                     .Where( o => o.GroupId == group.Id )
                     .Where( o => o.OccurrenceDate >= startDate ) // OccurrenceDate must be greater than startDate (the beginning of the day from the offset).
-                    .Where( o => o.OccurrenceDate <= endDate ) // OccurrenceDate must be less than endDate (the end of the day from the offset).
+                    .Where( o => o.OccurrenceDate < endDate ) // OccurrenceDate must be less than endDate (the next day after the beginning of the offset).
                     .Where( o => o.Attendees.Where( a => a.RSVP == RSVP.Yes ).Any() ) // Occurrence must have attendees who responded "Yes".
                     .ToList();
 
@@ -362,10 +368,8 @@ namespace Rock.Jobs
             }
 
             var recipient = new RockSMSMessageRecipient( person, smsNumber, lavaMergeFields );
-            var message = new RockSMSMessage();
+            var message = new RockSMSMessage( reminder );
             message.SetRecipients( new List<RockSMSMessageRecipient>() { recipient } );            
-            message.FromNumber = DefinedValueCache.Get( reminder.SMSFromDefinedValueId.Value );
-            message.Message = reminder.SMSMessage;
             message.Send( out List<string> smsErrors );
 
             if ( !smsErrors.Any() )

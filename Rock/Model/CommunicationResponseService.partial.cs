@@ -599,6 +599,7 @@ namespace Rock.Model
                     WHERE cr.[RelatedSmsFromDefinedValueId] = @releatedSmsFromDefinedValueId
                         AND cr.[RelatedMediumEntityTypeId] = @smsMediumEntityTypeId
                         {filterDate}
+                    ORDER BY [CreatedDateTime] OFFSET 0 ROWS
                     UNION
                     SELECT 
 	                       cr.[PersonAliasId] AS FromPersonAliasId
@@ -615,6 +616,7 @@ namespace Rock.Model
                     WHERE c.[SMSFromDefinedValueId] = @releatedSmsFromDefinedValueId
 	                    AND pn.IsMessagingEnabled = 1
                         {filterDate}
+                    ORDER BY [CreatedDateTime] OFFSET 0 ROWS
                     )
 
                     -- Lets do our grouping here since we are returning a dataset.

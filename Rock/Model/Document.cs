@@ -90,6 +90,39 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        /*
+           edrotning 2020-02-21
+            /// <summary>
+            /// Document to BinaryFile is a 1:1 relationship. EF doesn't really support this but it can be kind of hacked by having a navigation property but not an ID property.
+            /// There is a discussion here: https://stackoverflow.com/a/41847251
+            /// Also attempted was to have the BinaryFileID as a property but not have it mapped. Trying to use the setter didn't work with the context.
+            /// This may work as a method instead of a property but is no longer simplified.
+            /// Leaving this commented out so someone else doesn't have to go through it again.
+            /// </summary>
+            /// <value>
+            /// The binary file identifier.
+            /// </value>
+            //public int BinaryFileID
+            //{
+            //    get
+            //    {
+            //        return this.BinaryFile.Id;
+            //    }
+            //    set
+            //    {
+            //        using ( var rockContext = new RockContext() )
+            //        {
+            //            var binaryFileService = new BinaryFileService( rockContext );
+            //            var binaryFile = binaryFileService.Get( value );
+            //            if ( binaryFile != null )
+            //            {
+            //                this.BinaryFile = binaryFile;
+            //            }
+            //        }
+            //    }
+            //}
+        */
+
         #endregion
 
         #region Virtual Properties
@@ -230,6 +263,21 @@ namespace Rock.Model
             return false;
         }
         #endregion
+
+        /// <summary>
+        /// Sets the binary file for the document. If the document is being added or updated use the same context.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public void SetBinaryFile( int binaryFileId, RockContext rockContext )
+        {
+            var binaryFileService = new BinaryFileService( rockContext );
+            var binaryFile = binaryFileService.Get( binaryFileId );
+            if ( binaryFile != null )
+            {
+                this.BinaryFile = binaryFile;
+            }
+        }
     }
 
     #region Entity Configuration

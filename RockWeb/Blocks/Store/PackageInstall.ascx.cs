@@ -165,14 +165,32 @@ namespace RockWeb.Blocks.Store
 
         #region Methods
 
+        private int GetCurrentlyInstalledPackageVersion( string packageName )
+        {
+            var installedPackages = InstalledPackageService.GetInstalledPackages().OrderBy( p => p.PackageName ).OrderByDescending( p => p.InstallDateTime );
+            foreach ( var installedPackage in installedPackages )
+            {
+                if ( installedPackage.PackageName == packageName )
+                {
+                    return installedPackage.VersionId;
+                }
+            }
+            return -1;
+        }
+
         private void ProcessInstall( PurchaseResponse purchaseResponse )
         {
+            var currentlyInstalledPackageVersion = GetCurrentlyInstalledPackageVersion( purchaseResponse.PackageName );
 
             if ( purchaseResponse.PackageInstallSteps != null )
             {
                 RockSemanticVersion rockVersion = RockSemanticVersion.Parse( VersionInfo.GetRockSemanticVersionNumber() );
 
-                foreach ( var installStep in purchaseResponse.PackageInstallSteps.Where( s => s.RequiredRockSemanticVersion <= rockVersion ))
+                var packageInstallSteps = purchaseResponse.PackageInstallSteps
+                    .Where( s => s.RequiredRockSemanticVersion <= rockVersion )
+                    .Where( s => s.VersionId > currentlyInstalledPackageVersion );
+
+                foreach ( var installStep in packageInstallSteps )
                 {
                     string appRoot = Server.MapPath( "~/" );
                     string rockShopWorkingDir = appRoot + "App_Data/RockShop";

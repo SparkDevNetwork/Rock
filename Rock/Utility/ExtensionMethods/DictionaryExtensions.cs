@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Rock
@@ -240,78 +239,5 @@ namespace Rock
         }
 
         #endregion Dictionary<TKey, TValue> extension methods
-
-        #region Dictionary (non-generic) extension methods
-
-        /// <summary>
-        /// Adds or replaces an item in a Dictionary.
-        /// </summary>
-        /// <param name="dictionary">The dictionary.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
-        public static void AddOrReplace( this IDictionary dictionary, object key, object value )
-        {
-            if ( !dictionary.Contains( key ) )
-            {
-                dictionary.Add( key, value );
-            }
-            else
-            {
-                dictionary[key] = value;
-            }
-        }
-
-        /// <summary>
-        /// Adds an item to a Dictionary if it doesn't already exist in Dictionary.
-        /// </summary>
-        /// <param name="dictionary">The dictionary.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="value">The value.</param>
-        public static void AddOrIgnore( this IDictionary dictionary, object key, object value )
-        {
-            if ( !dictionary.Contains( key ) )
-            {
-                dictionary.Add( key, value );
-            }
-        }
-
-        /// <summary>
-        /// Gets value for the specified key, or null if the dictionary doesn't contain the key.
-        /// </summary>
-        /// <param name="dictionary">The dictionary.</param>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        public static object GetValueOrNull( this IDictionary dictionary, object key )
-        {
-            if ( dictionary.Contains( key ) )
-            {
-                return dictionary[key];
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the value associated with the specified key or a default value if the key is not found.
-        /// </summary>
-        /// <param name="dictionary">The dictionary.</param>
-        /// <param name="key">The key.</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <returns></returns>
-        public static object GetValueOrDefault( this IDictionary dictionary, object key, object defaultValue )
-        {
-            if ( dictionary.Contains( key ))
-            {
-                return dictionary[key];
-            }
-            else
-            {
-                return defaultValue;
-            }
-        }
-
-        #endregion Dictionary (non-generic) extension methods
     }
 }

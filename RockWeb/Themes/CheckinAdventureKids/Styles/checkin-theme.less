@@ -85,6 +85,27 @@
 // Custom Overrides
 // --------------------------------------------------
 
+.administration {
+  .checkin-scroll-panel {
+    background: @btn-default-bg;
+    border-radius: @border-radius-base;
+
+    > .scroller {
+      padding-top: 15px;
+      padding-bottom: 15px;
+    }
+  }
+}
+
+.checkin-messages,
+.checkin-summary {
+  li {
+    border-radius: @border-radius-base;
+    background: @btn-default-bg;
+    padding: 15px;
+  }
+}
+
 .checkin-body-container {
   width: 80%; // keep items from going into the bamboo
 }
