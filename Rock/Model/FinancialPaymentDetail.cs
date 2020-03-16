@@ -85,7 +85,7 @@ namespace Rock.Model
         public string NameOnCardEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration month encrypted.
+        /// Gets or sets the expiration month encrypted. Use <seealso cref="ExpirationMonth"/> to get the unencrypted version of Month.
         /// </summary>
         /// <value>
         /// The expiration month encrypted.
@@ -95,7 +95,7 @@ namespace Rock.Model
         public string ExpirationMonthEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration year encrypted. Note that this is probably a 2 digit year (2023 might just be 23) or maybe a 4 digit year depending on gateway
+        /// Important Note: that this could be a 2 digit or 4 digit year, so use <seealso cref="ExpirationYear"/> to get the unencrypted version of this which will always return a 4 digit year.
         /// </summary>
         /// <value>
         /// The expiration year encrypted.
@@ -187,8 +187,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the 2 digit year (or maybe 4 depending on gateway) by decrypting ExpirationYearEncrypted.
-        /// Use <see cref="ExpirationYear4Digit"/> to always get this as 4 digit year.
+        /// Gets the 4 digit year by decrypting ExpirationYearEncrypted and correcting to a 4 digit year if ExpirationYearEncrypted is just a 2 digit year
         /// </summary>
         /// <value>
         /// The expiration year.
@@ -203,37 +202,9 @@ namespace Rock.Model
 
             get
             {
-                return Encryption.DecryptString( ExpirationYearEncrypted ).AsIntegerOrNull();
-            }
-            set
-            {
-                ExpirationYearEncrypted = Encryption.EncryptString( value.ToStringSafe() );
-            }
-        }
+                var year = Encryption.DecryptString( ExpirationYearEncrypted ).AsIntegerOrNull();
 
-        /// <summary>
-        /// Gets the expiration year in 4 digit format by decrypting <see cref="ExpirationYearEncrypted"/> and correcting to a 4 digit year if needed
-        /// </summary>
-        /// <value>
-        /// The expiration year4 digit.
-        /// </value>
-        [DataMember]
-        [HideFromReporting]
-        public int? ExpirationYear4Digit
-        {
-            /* MDP 2020-03-13
-               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
-            */
-
-            get
-            {
-                int? year = ExpirationYear;
-                if ( year == null )
-                {
-                    return null;
-                }
-
-                if ( year.Value < 100 )
+                if ( year != null && year.Value < 100 == true )
                 {
                     // convert 2 digit year from 4 digit year
                     // from https://stackoverflow.com/a/10414707/1755417
@@ -242,10 +213,15 @@ namespace Rock.Model
 
                 return year;
             }
+
+            set
+            {
+                ExpirationYearEncrypted = Encryption.EncryptString( value.ToStringSafe() );
+            }
         }
 
         /// <summary>
-        /// Gets the expiration date formatted as mm/yy
+        /// Gets the expiration date formatted as mm/yy, as per ISO7813 https://en.wikipedia.org/wiki/ISO/IEC_7813
         /// </summary>
         /// <value>
         /// The expiration date.
@@ -259,8 +235,16 @@ namespace Rock.Model
                 int? expYear = ExpirationYear;
                 if ( expMonth.HasValue && expYear.HasValue )
                 {
-                    return $"{expMonth.Value:00}/{expYear.Value:00}";
+                    // expYear is 4 digits, but just in case, check if it is 4 digits before just getting the last 2
+                    string expireYY = expYear.Value.ToString();
+                    if ( expireYY.Length == 4 )
+                    {
+                        expireYY = expireYY.Substring( 2 );
+                    }
+
+                    return $"{expMonth.Value:00}/{expireYY:00}";
                 }
+
                 return null;
             }
         }
@@ -554,7 +538,6 @@ namespace Rock.Model
             Ignore( fpd => fpd.NameOnCard );
             Ignore( fpd => fpd.ExpirationMonth );
             Ignore( fpd => fpd.ExpirationYear );
-            Ignore( fpd => fpd.ExpirationYear4Digit );
         }
     }
 

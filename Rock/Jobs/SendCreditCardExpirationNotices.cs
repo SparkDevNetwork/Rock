@@ -166,8 +166,8 @@ namespace Rock.Jobs
 
             foreach ( var savedAccountInfo in savedAccountInfoList )
             {
-                int? expirationMonth = Encryption.DecryptString( savedAccountInfo.FinancialPaymentDetail.ExpirationMonthEncrypted ).AsIntegerOrNull();
-                int? expirationYear = Encryption.DecryptString( savedAccountInfo.FinancialPaymentDetail.ExpirationYearEncrypted ).AsIntegerOrNull();
+                int? expirationMonth = savedAccountInfo.FinancialPaymentDetail.ExpirationMonth;
+                int? expirationYear = savedAccountInfo.FinancialPaymentDetail.ExpirationYear;
                 if ( !expirationMonth.HasValue || !expirationMonth.HasValue )
                 {
                     continue;
@@ -181,9 +181,9 @@ namespace Rock.Jobs
 
                 // a credit card with an expiration of April 2020 would be expired on May 1st, 2020
                 var expirationDate = new DateTime( expirationYear.Value, expirationMonth.Value, 1 ).AddMonths( 1 );
-                if ( expirationDate < expirationDateCutoff )
+                if ( expirationDate > expirationDateCutoff )
                 {
-                    // not considered expired yet
+                    // Card expiration date is after the cutoff date
                     continue;
                 }
 
@@ -249,7 +249,6 @@ namespace Rock.Jobs
             List<ScheduledTransactionInfo> scheduledTransactionInfoList = financialScheduledTransactionQuery.Select( a => new ScheduledTransactionInfo
             {
                 Id = a.Id,
-                FinancialGatewayId = a.FinancialGatewayId,
                 FinancialPaymentDetail = a.FinancialPaymentDetail,
                 AuthorizedPersonAliasGuid = a.AuthorizedPersonAlias.Guid,
                 Person = a.AuthorizedPersonAlias.Person
@@ -268,17 +267,10 @@ namespace Rock.Jobs
             foreach ( ScheduledTransactionInfo scheduledTransactionInfo in scheduledTransactionInfoList.OrderByDescending( a => a.Id ) )
             {
                 int? expirationMonth = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationMonth;
-                int? expirationYYYY = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationYear4Digit;
+                int? expirationYYYY = scheduledTransactionInfo.FinancialPaymentDetail.ExpirationYear;
                 if ( !expirationMonth.HasValue || !expirationMonth.HasValue )
                 {
                     continue;
-                }
-
-                string maskedCardNumber = string.Empty;
-
-                if ( !string.IsNullOrEmpty( scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked ) && scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Length >= 4 )
-                {
-                    maskedCardNumber = scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Substring( scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Length - 4 );
                 }
 
                 int warningYear = expirationYYYY.Value;
@@ -289,11 +281,16 @@ namespace Rock.Jobs
                     warningMonth = 12;
                 }
 
-
                 if ( ( warningYear == currentYYYY ) && ( warningMonth == currentMonth ) )
                 {
-                    // as per ISO7813 https://en.wikipedia.org/wiki/ISO/IEC_7813
-                    string expirationMMYYFormatted = string.Format( "{0:D2}/{1:D2}", expirationMonth, expirationYYYY );
+                    string maskedCardNumber = string.Empty;
+
+                    if ( !string.IsNullOrEmpty( scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked ) && scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Length >= 4 )
+                    {
+                        maskedCardNumber = scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Substring( scheduledTransactionInfo.FinancialPaymentDetail.AccountNumberMasked.Length - 4 );
+                    }
+
+                    string expirationDateMMYYFormatted = scheduledTransactionInfo.FinancialPaymentDetail?.ExpirationDate;
 
                     var recipients = new List<RockEmailMessageRecipient>();
 
@@ -308,7 +305,7 @@ namespace Rock.Jobs
                     var mergeFields = new Dictionary<string, object>( commonMergeFields );
                     mergeFields.Add( "Person", person );
                     mergeFields.Add( "Card", maskedCardNumber );
-                    mergeFields.Add( "Expiring", expirationMMYYFormatted );
+                    mergeFields.Add( "Expiring", expirationDateMMYYFormatted );
 
                     recipients.Add( new RockEmailMessageRecipient( person, mergeFields ) );
 
@@ -325,7 +322,7 @@ namespace Rock.Jobs
                         Dictionary<string, string> attributes = new Dictionary<string, string>();
                         attributes.Add( "Person", scheduledTransactionInfo.AuthorizedPersonAliasGuid.ToString() );
                         attributes.Add( "Card", maskedCardNumber );
-                        attributes.Add( "Expiring", expirationMMYYFormatted );
+                        attributes.Add( "Expiring", expirationDateMMYYFormatted );
                         attributes.Add( "FinancialScheduledTransactionId", scheduledTransactionInfo.Id.ToString() );
 
                         StartWorkflow( workflowService, workflowType, attributes, $"{person.FullName} (scheduled transaction Id: {scheduledTransactionInfo.Id})" );
@@ -371,7 +368,6 @@ namespace Rock.Jobs
             public Guid AuthorizedPersonAliasGuid { get; set; }
             public Person Person { get; set; }
             public FinancialPaymentDetail FinancialPaymentDetail { get; set; }
-            public int? FinancialGatewayId { get; internal set; }
         }
 
         private class SavedAccountInfo
