@@ -203,6 +203,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( !Page.IsPostBack )
             {
+                GetAvailableAttributes();
                 AddDynamicControls();
 
                 pnlContent.Visible = _canView;
@@ -449,6 +450,9 @@ namespace RockWeb.Blocks.Steps
         protected void rFilter_ClearFilterClick( object sender, EventArgs e )
         {
             rFilter.DeleteUserPreferences();
+
+            // Recreate the Attribute Filter fields to clear the filter values.
+            AddAttributeFilterFields();
 
             BindFilter();
         }
