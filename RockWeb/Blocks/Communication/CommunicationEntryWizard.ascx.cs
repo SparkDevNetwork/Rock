@@ -44,6 +44,9 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Communication Entry Wizard" )]
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
+
+    #region Block Attributes
+
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
     [BinaryFileTypeField( "Image Binary File Type",
@@ -126,6 +129,7 @@ namespace RockWeb.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 12 )]
 
+    #endregion Block Attributes
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Attribute Keys
