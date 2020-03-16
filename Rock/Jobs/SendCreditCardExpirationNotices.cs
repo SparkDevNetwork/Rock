@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -161,9 +162,11 @@ namespace Rock.Jobs
             DateTime now = DateTime.Now;
             int currentMonth = now.Month;
             int currentYear = now.Year;
-            var expirationDateCutoff = RockDateTime.Today.AddDays( removedExpiredSavedAccountDays.Value );
 
             int financialPersonSavedAccountDeleteCount = 0;
+
+            // if today is 3/16/2020 and removedExpiredSavedAccountDays is 90, only delete card if it expired before 12/17/2019
+            var deleteIfExpiredBeforeDate = RockDateTime.Today.AddDays( -removedExpiredSavedAccountDays.Value );
 
             foreach ( var savedAccountInfo in savedAccountInfoList )
             {
@@ -181,13 +184,39 @@ namespace Rock.Jobs
                 }
 
                 // a credit card with an expiration of April 2020 would be expired on May 1st, 2020
-                var expirationDate = new DateTime( expirationYear.Value, expirationMonth.Value, 1 ).AddMonths( 1 );
-                if ( expirationDate > expirationDateCutoff )
+                var cardExpirationDate = new DateTime( expirationYear.Value, expirationMonth.Value, 1 ).AddMonths( 1 );
+
+                /* Example:
+                 Today's Date: 2020-3-16
+                 removedExpiredSavedAccountDays: 90
+                 Expired Before Date: 2019-12-17 (Today (2020-3-16) - removedExpiredSavedAccountDays)
+                 Cards that expired before 2019-12-17 should be deleted
+                 Delete 04/20 (Expires 05/01/2020) card? No
+                 Delete 05/20 (Expires 06/01/2020) card? No
+                 Delete 01/20 (Expires 03/01/2020) card? No
+                 Delete 12/19 (Expires 01/01/2020) card? No
+                 Delete 11/19 (Expires 12/01/2019) card? Yes
+                 Delete 10/19 (Expires 11/01/2019) card? Yes
+
+                 Today's Date: 2020-3-16
+                 removedExpiredSavedAccountDays: 0
+                 Expired Before Date: 2019-03-16 (Today (2020-3-16) - 0)
+                 Cards that expired before 2019-03-16 should be deleted
+                 Delete 04/20 (Expires 05/01/2020) card? No
+                 Delete 05/20 (Expires 06/01/2020) card? No
+                 Delete 01/20 (Expires 03/01/2020) card? Yes
+                 Delete 12/19 (Expires 01/01/2020) card? Yes
+                 Delete 11/19 (Expires 12/01/2019) card? Yes
+                 Delete 10/19 (Expires 11/01/2019) card? Yes
+                 */
+
+                if ( cardExpirationDate >= deleteIfExpiredBeforeDate  )
                 {
-                    // Card expiration date is after the cutoff date
+                    // We want to only delete cards that expired more than X days ago, so if this card expiration day is after that, skip
                     continue;
                 }
 
+                // Card expiration date is older than X day ago, so delete it
                 using ( var savedAccountRockContext = new RockContext() )
                 {
                     var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( savedAccountRockContext );
@@ -204,7 +233,7 @@ namespace Rock.Jobs
                 }
             }
 
-            removeSavedAccountSummary = $"Removed {financialPersonSavedAccountDeleteCount} expired saved accounts.";
+            removeSavedAccountSummary = $"Removed {financialPersonSavedAccountDeleteCount} saved accounts that expired before {deleteIfExpiredBeforeDate.ToShortDateString()}";
         }
 
         /// <summary>
