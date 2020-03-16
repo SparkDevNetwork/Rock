@@ -456,6 +456,20 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region DefinedType Attributes
+
+        /// <summary>
+        /// The Template DefinedType > TemplateBlock DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TEMPLATE_TEMPLATE_BLOCK = "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D";
+
+        /// <summary>
+        /// The Template DefinedType > Icon DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TEMPLATE_ICON = "831403EB-262E-4BC5-8B5E-F16153493BF5";
+
+        #endregion
+
         #region Device Type Attributes
 
         /// <summary>
