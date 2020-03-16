@@ -778,41 +778,56 @@ mission. We are so grateful for your commitment.</p>
             var selectedAccountAmounts = caapPromptForAccountAmounts.AccountAmounts.Where( a => a.Amount.HasValue && a.Amount.Value != 0 ).Select( a => new { a.AccountId, Amount = a.Amount.Value } ).ToArray();
             referencePaymentInfo.Amount = selectedAccountAmounts.Sum( a => a.Amount );
 
-            var successfullyUpdated = financialGatewayComponent.UpdateScheduledPayment( financialScheduledTransaction, referencePaymentInfo, out errorMessage );
-
-            if ( !successfullyUpdated )
+            var originalGatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
+            try
             {
-                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Text = errorMessage ?? "Unknown Error";
-                nbMessage.Visible = true;
-                return;
-            }
+                var successfullyUpdated = financialGatewayComponent.UpdateScheduledPayment( financialScheduledTransaction, referencePaymentInfo, out errorMessage );
 
-            financialScheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( referencePaymentInfo, financialGatewayComponent as GatewayComponent, rockContext );
-
-            var selectedAccountIds = selectedAccountAmounts.Select( a => a.AccountId ).ToArray();
-            var deletedTransactionDetails = financialScheduledTransaction.ScheduledTransactionDetails.ToList().Where( a => !selectedAccountIds.Contains( a.AccountId ) ).ToList();
-
-            foreach ( var deletedTransactionDetail in deletedTransactionDetails )
-            {
-                financialScheduledTransaction.ScheduledTransactionDetails.Remove( deletedTransactionDetail );
-                financialScheduledTransactionDetailService.Delete( deletedTransactionDetail );
-            }
-
-            foreach ( var selectedAccountAmount in selectedAccountAmounts )
-            {
-                var scheduledTransactionDetail = financialScheduledTransaction.ScheduledTransactionDetails.FirstOrDefault( a => a.AccountId == selectedAccountAmount.AccountId );
-                if ( scheduledTransactionDetail == null )
+                if ( !successfullyUpdated )
                 {
-                    scheduledTransactionDetail = new FinancialScheduledTransactionDetail();
-                    scheduledTransactionDetail.AccountId = selectedAccountAmount.AccountId;
-                    financialScheduledTransaction.ScheduledTransactionDetails.Add( scheduledTransactionDetail );
+                    nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+                    nbMessage.Text = errorMessage ?? "Unknown Error";
+                    nbMessage.Visible = true;
+                    return;
                 }
 
-                scheduledTransactionDetail.Amount = selectedAccountAmount.Amount;
-            }
+                financialScheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( referencePaymentInfo, financialGatewayComponent as GatewayComponent, rockContext );
 
-            rockContext.SaveChanges();
+                var selectedAccountIds = selectedAccountAmounts.Select( a => a.AccountId ).ToArray();
+                var deletedTransactionDetails = financialScheduledTransaction.ScheduledTransactionDetails.ToList().Where( a => !selectedAccountIds.Contains( a.AccountId ) ).ToList();
+
+                foreach ( var deletedTransactionDetail in deletedTransactionDetails )
+                {
+                    financialScheduledTransaction.ScheduledTransactionDetails.Remove( deletedTransactionDetail );
+                    financialScheduledTransactionDetailService.Delete( deletedTransactionDetail );
+                }
+
+                foreach ( var selectedAccountAmount in selectedAccountAmounts )
+                {
+                    var scheduledTransactionDetail = financialScheduledTransaction.ScheduledTransactionDetails.FirstOrDefault( a => a.AccountId == selectedAccountAmount.AccountId );
+                    if ( scheduledTransactionDetail == null )
+                    {
+                        scheduledTransactionDetail = new FinancialScheduledTransactionDetail();
+                        scheduledTransactionDetail.AccountId = selectedAccountAmount.AccountId;
+                        financialScheduledTransaction.ScheduledTransactionDetails.Add( scheduledTransactionDetail );
+                    }
+
+                    scheduledTransactionDetail.Amount = selectedAccountAmount.Amount;
+                }
+
+                rockContext.SaveChanges();
+            }
+            catch ( Exception )
+            {
+                // if the GatewayScheduleId was updated, but there was an exception,
+                // make sure we save the  financialScheduledTransaction record with the updated GatewaayScheduleId so we don't orphan it
+                if ( financialScheduledTransaction.GatewayScheduleId.IsNotNullOrWhiteSpace() && ( originalGatewayScheduleId != financialScheduledTransaction.GatewayScheduleId ) )
+                {
+                    rockContext.SaveChanges();
+                }
+
+                throw;
+            }
 
             var mergeFields = LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             var finishLavaTemplate = this.GetAttributeValue( AttributeKey.FinishLavaTemplate );
@@ -850,7 +865,7 @@ mission. We are so grateful for your commitment.</p>
 
             var scheduledTransaction = this.GetFinancialScheduledTransaction( rockContext );
             var targetPerson = scheduledTransaction.AuthorizedPersonAlias.Person;
-            
+
             var financialGatewayComponent = this.FinancialGatewayComponent;
             var financialGateway = this.FinancialGateway;
 
