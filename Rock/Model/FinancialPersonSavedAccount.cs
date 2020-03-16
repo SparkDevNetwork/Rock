@@ -236,11 +236,11 @@ namespace Rock.Model
                 reference.MaskedAccountNumber = this.FinancialPaymentDetail.AccountNumberMasked;
 
                 // if the ExpirationMonth and ExpirationYear are valid, set the reference.PaymentExpirationDate from that 
-                if ( this.FinancialPaymentDetail.ExpirationMonth.HasValue && this.FinancialPaymentDetail.ExpirationYear.HasValue )
+                if ( this.FinancialPaymentDetail.ExpirationMonth.HasValue && this.FinancialPaymentDetail.ExpirationYear4Digit.HasValue )
                 {
                     if ( this.FinancialPaymentDetail.ExpirationMonth.Value >= 1 && this.FinancialPaymentDetail.ExpirationMonth.Value <= 12 )
                     {
-                        reference.PaymentExpirationDate = new DateTime( this.FinancialPaymentDetail.ExpirationYear.Value, this.FinancialPaymentDetail.ExpirationMonth.Value, 1 );
+                        reference.PaymentExpirationDate = new DateTime( this.FinancialPaymentDetail.ExpirationYear4Digit.Value, this.FinancialPaymentDetail.ExpirationMonth.Value, 1 );
                     }
                 }
 
