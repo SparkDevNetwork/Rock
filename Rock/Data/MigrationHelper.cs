@@ -1198,7 +1198,7 @@ WHERE [Guid] = '{pageGuid}';";
         }
 
         /// <summary>
-        /// Deletes the 'Template Block' DefinedValue.
+        /// Deletes a 'Template Block' DefinedValue.
         /// </summary>
         /// <param name="guid">The well-known Guid for this Template Block (the DefinedValue to be deleted).</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="guid"/> is null or white space.</exception>
@@ -1213,7 +1213,7 @@ WHERE [Guid] = '{pageGuid}';";
         }
 
         /// <summary>
-        /// Adds or Updates a Template Block 'Template' DefinedValue, as well as its associated AttributeValues and BinaryFile records.
+        /// Adds or Updates a Template Block 'Template' DefinedValue, as well as its associated AttributeValue and BinaryFile records.
         /// </summary>
         /// <param name="guid">The well-known Guid for this Template (the DefinedValue to be added or updated).</param>
         /// <param name="templateBlockGuid">The well-known Guid for this Template's corresponding Template Block (the 'Template Block' DefinedValue that this Template relates to).</param>
@@ -1221,7 +1221,7 @@ WHERE [Guid] = '{pageGuid}';";
         /// <param name="xamlTemplate">The XAML markup for this Template.</param>
         /// <param name="base64IconData">
         /// The data portion (the portion after the comma) of a BASE64 encoded icon image to use for this Template.
-        /// <para>Important: Do not proivde the scheme or media type here, or the image will not be saved to the database.</para>
+        /// <para>Important: Do not provide the scheme or media type here, or the image will not be saved to the database.</para>
         /// </param>
         /// <param name="iconName">The name to use for this Template's icon file when saved to storage.</param>
         /// <param name="iconMimeType">The MIME Type of this Template's icon (i.e. 'image/png', 'image/jpeg', Etc.).</param>
