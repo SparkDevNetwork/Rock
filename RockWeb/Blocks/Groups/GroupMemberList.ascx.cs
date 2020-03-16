@@ -405,7 +405,7 @@ namespace RockWeb.Blocks.Groups
                 sbNameHtml.Append( groupMember.Person.FullName );
                 if ( groupMember.Person.TopSignalColor.IsNotNullOrWhiteSpace() )
                 {
-                    sbNameHtml.Append( groupMember.Person.GetSignalMarkup() );
+                    sbNameHtml.Append( " " + groupMember.Person.GetSignalMarkup() );
                 }
 
                 if ( _hasGroupRequirements )
