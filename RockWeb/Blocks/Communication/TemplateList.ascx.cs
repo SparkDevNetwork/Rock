@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
+    #region Block Attributes
     [LinkedPage(
         "Detail Page",
         Key = AttributeKey.DetailPage )]
@@ -46,6 +47,7 @@ namespace RockWeb.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 1,
         Key = AttributeKey.PersonalTemplatesView )]
+    #endregion Block Attributes
     public partial class TemplateList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
 
+    #region Block Attributes
     [BooleanField(
         "Personal Templates View",
         Description = "Is this block being used to display personal templates (only templates that current user is allowed to edit)?",
@@ -56,6 +57,7 @@ namespace RockWeb.Blocks.Communication
         DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
         Order = 1,
         Key = AttributeKey.AttachmentBinaryFileType )]
+    #endregion Block Attributes
     public partial class TemplateDetail : RockBlock
     {
         #region Attribute Keys

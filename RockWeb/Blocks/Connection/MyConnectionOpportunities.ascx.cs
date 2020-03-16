@@ -40,23 +40,101 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Block to display the connection opportunities that user is authorized to view, and the opportunities that are currently assigned to the user." )]
 
-    [LinkedPage( "Configuration Page", "Page used to modify and create connection opportunities.", true, "", "", 0 )]
-    [LinkedPage( "Detail Page", "Page used to view details of an requests.", true, "", "", 1 )]
-    [ConnectionTypesField( "Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order: 2 )]
-    [BooleanField( "Show Request Total", "If enabled, the block will show the total number of requests.", true, order: 3 )]
-    [BooleanField( "Show Last Activity Note", "If enabled, the block will show the last activity note for each request in the list.", false, order: 4 )]
+    #region Block Attributes
+    [LinkedPage(
+        "Configuration Page",
+        Description = "Page used to modify and create connection opportunities.",
+        IsRequired = true,
+        Order = 0,
+        Key = AttributeKey.ConfigurationPage )]
+    [LinkedPage(
+        "Detail Page",
+        Description = "Page used to view details of an requests.",
+        IsRequired = true,
+        Order = 1,
+        Key = AttributeKey.DetailPage )]
+    [ConnectionTypesField(
+        "Connection Types",
+        Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.ConnectionTypes )]
+    [BooleanField(
+        "Show Request Total",
+        Description = "If enabled, the block will show the total number of requests.",
+        DefaultBooleanValue = true,
+        Order = 3,
+        Key = AttributeKey.ShowRequestTotal )]
+    [BooleanField(
+        "Show Last Activity Note",
+        Description = "If enabled, the block will show the last activity note for each request in the list.",
+        DefaultBooleanValue = false,
+        Order = 4,
+        Key = AttributeKey.ShowLastActivityNote )]
 
-    [CodeEditorField( "Status Template", "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
-@"<div class='pull-left badge-legend padding-r-md'>
+    [CodeEditorField(
+        "Status Template",
+        Description = "Lava Template that can be used to customize what is displayed in the status bar. Includes common merge fields plus ConnectionOpportunities, ConnectionTypes and the default IdleTooltip.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        DefaultValue = StatusTemplateDefaultValue,
+        Order = 5,
+        Key =  AttributeKey.StatusTemplate )]
+
+    [CodeEditorField(
+        "Opportunity Summary Template",
+        Description = "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        DefaultValue = OpportunitySummaryTemplateDefaultValue,
+        Key = AttributeKey.OpportunitySummaryTemplate,
+        Order = 6 )]
+    [CodeEditorField(
+        "Connection Request Status Icons Template",
+        Description = "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        DefaultValue = ConnectionRequestStatusIconsTemplateDefaultValue,
+        Key = AttributeKey.ConnectionRequestStatusIconsTemplate,
+        Order = 7 )]
+    [BooleanField(
+        "Enable Request Security",
+        DefaultBooleanValue = false,
+        Description = "When enabled, the the security column for request would be displayed.",
+        Key = AttributeKey.EnableRequestSecurity,
+        IsRequired = true,
+        Order = 8
+    )]
+    #endregion Block Attributes
+    public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
+    {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string ConfigurationPage = "ConfigurationPage";
+            public const string DetailPage = "DetailPage";
+            public const string EnableRequestSecurity = "EnableRequestSecurity";
+            public const string ConnectionTypes = "ConnectionTypes";
+            public const string ShowRequestTotal = "ShowRequestTotal";
+            public const string ShowLastActivityNote = "ShowLastActivityNote";
+            public const string StatusTemplate = "StatusTemplate";
+            public const string ConnectionRequestStatusIconsTemplate = "ConnectionRequestStatusIconsTemplate";
+            public const string OpportunitySummaryTemplate = "OpportunitySummaryTemplate";
+        }
+        #endregion Attribute Keys
+
+        #region Attribute Default values
+
+        private const string StatusTemplateDefaultValue = @"
+<div class='pull-left badge-legend padding-r-md'>
     <span class='pull-left badge badge-info badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
     <span class='pull-left badge badge-warning badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Unassigned Item'><span class='sr-only'>Unassigned Item</span></span>
     <span class='pull-left badge badge-critical badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='Critical Status'><span class='sr-only'>Critical Status</span></span>
     <span class='pull-left badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
-</div>", order: 5
-)]
+</div>";
 
-    [CodeEditorField( "Opportunity Summary Template", "Lava Template that can be used to customize what is displayed in each Opportunity Summary. Includes common merge fields plus the OpportunitySummary, ConnectionOpportunity, and its ConnectionRequests.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
-@"<span class=""item-count"" title=""There are {{ 'active connection' | ToQuantity:OpportunitySummary.TotalRequests }} in this opportunity."">{{ OpportunitySummary.TotalRequests | Format:'#,###,##0' }}</span>
+        private const string OpportunitySummaryTemplateDefaultValue = @"
+<span class=""item-count"" title=""There are {{ 'active connection' | ToQuantity:OpportunitySummary.TotalRequests }} in this opportunity."">{{ OpportunitySummary.TotalRequests | Format:'#,###,##0' }}</span>
 <i class='{{ OpportunitySummary.IconCssClass }}'></i>
 <h3>{{ OpportunitySummary.Name }}</h3>
 <div class='status-list'>
@@ -65,10 +143,9 @@ namespace RockWeb.Blocks.Connection
     <span class='badge badge-critical'>{{ OpportunitySummary.CriticalCount | Format:'#,###,###' }}</span>
     <span class='badge badge-danger'>{{ OpportunitySummary.IdleCount | Format:'#,###,###' }}</span>
 </div>
-", order: 6
-)]
-    [CodeEditorField( "Connection Request Status Icons Template", "Lava Template that can be used to customize what is displayed for the status icons in the connection request grid.", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue:
-@"
+";
+
+        private const string ConnectionRequestStatusIconsTemplateDefaultValue = @"
 <div class='status-list'>
     {% if ConnectionRequestStatusIcons.IsAssignedToYou %}
     <span class='badge badge-info js-legend-badge' data-toggle='tooltip' data-original-title='Assigned To You'><span class='sr-only'>Assigned To You</span></span>
@@ -83,25 +160,9 @@ namespace RockWeb.Blocks.Connection
     <span class='badge badge-danger js-legend-badge' data-toggle='tooltip' data-original-title='{{ IdleTooltip }}'><span class='sr-only'>{{ IdleTooltip }}</span></span>
     {% endif %}
 </div>
-", key: "ConnectionRequestStatusIconsTemplate", order: 7
-)]
-    [BooleanField(
-        "Enable Request Security",
-        DefaultBooleanValue = false,
-        Description = "When enabled, the the security column for request would be displayed.",
-        Key = AttributeKeys.EnableRequestSecurity,
-        IsRequired = true,
-        Order = 8
-    )]
+";
 
-    public partial class MyConnectionOpportunities : Rock.Web.UI.RockBlock
-    {
-        #region Attribute Keys
-        private static class AttributeKeys
-        {
-            public const string EnableRequestSecurity = "EnableRequestSecurity";
-        }
-        #endregion Attribute Keys
+        #endregion Attribute Default values
 
         #region Fields
 
@@ -153,12 +214,12 @@ namespace RockWeb.Blocks.Connection
             gRequests.PersonIdField = "PersonId";
             var securityField = gRequests.ColumnsOfType<SecurityField>().FirstOrDefault();
             securityField.EntityTypeId = EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
-            securityField.Visible = GetAttributeValue( AttributeKeys.EnableRequestSecurity ).AsBoolean();
+            securityField.Visible = GetAttributeValue( AttributeKey.EnableRequestSecurity ).AsBoolean();
 
             var lastActivityNoteBoundField = gRequests.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "LastActivityNote" );
             if ( lastActivityNoteBoundField != null )
             {
-                lastActivityNoteBoundField.Visible = GetAttributeValue( "ShowLastActivityNote" ).AsBoolean();
+                lastActivityNoteBoundField.Visible = GetAttributeValue( AttributeKey.ShowLastActivityNote ).AsBoolean();
             }
 
             this.BlockUpdated += Block_BlockUpdated;
@@ -274,7 +335,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbConnectionTypes_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "ConfigurationPage" );
+            NavigateToLinkedPage( AttributeKey.ConfigurationPage );
         }
 
         /// <summary>
@@ -313,7 +374,7 @@ namespace RockWeb.Blocks.Connection
         /// <returns></returns>
         public string GetOpportunitySummaryHtml( OpportunitySummary opportunitySummary )
         {
-            var template = this.GetAttributeValue( "OpportunitySummaryTemplate" );
+            var template = this.GetAttributeValue( AttributeKey.OpportunitySummaryTemplate );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson, new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
             mergeFields.Add( "OpportunitySummary", DotLiquid.Hash.FromAnonymousObject( opportunitySummary ) );
@@ -457,7 +518,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gRequests_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ConnectionRequestId", 0, "ConnectionOpportunityId", SelectedOpportunityId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionRequestId", 0, "ConnectionOpportunityId", SelectedOpportunityId );
         }
 
         /// <summary>
@@ -467,7 +528,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "ConnectionRequestId", e.RowKeyId, "ConnectionOpportunityId", SelectedOpportunityId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionRequestId", e.RowKeyId, "ConnectionOpportunityId", SelectedOpportunityId );
         }
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
@@ -526,7 +587,7 @@ namespace RockWeb.Blocks.Connection
                         dynamic connectionRequestInfo = e.Row.DataItem;
                         int connectionRequestId = connectionRequestInfo.Id;
 
-                        string connectionRequestStatusIconTemplate = this.GetAttributeValue( "ConnectionRequestStatusIconsTemplate" );
+                        string connectionRequestStatusIconTemplate = this.GetAttributeValue( AttributeKey.ConnectionRequestStatusIconsTemplate );
 
                         Dictionary<string, object> mergeFields = new Dictionary<string, object>();
                         ConnectionRequestStatusIcons connectionRequestStatusIcons = new ConnectionRequestStatusIcons
@@ -562,7 +623,7 @@ namespace RockWeb.Blocks.Connection
             var opportunities = new ConnectionOpportunityService( rockContext )
                 .Queryable().AsNoTracking();
 
-            var typeFilter = GetAttributeValue( "ConnectionTypes" ).SplitDelimitedValues().AsGuidList();
+            var typeFilter = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
             if ( typeFilter.Any() )
             {
                 opportunities = opportunities.Where( o => typeFilter.Contains( o.ConnectionType.Guid ) );
@@ -790,7 +851,7 @@ namespace RockWeb.Blocks.Connection
                 sb.Append( "</ul>" );
             }
 
-            var statusTemplate = this.GetAttributeValue( "StatusTemplate" );
+            var statusTemplate = this.GetAttributeValue( AttributeKey.StatusTemplate );
             var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage);
             statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
             statusMergeFields.Add( "ConnectionTypes", connectionTypes );
@@ -798,7 +859,7 @@ namespace RockWeb.Blocks.Connection
             lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
 
-            if ( GetAttributeValue( "ShowRequestTotal" ).AsBoolean( true ) )
+            if ( GetAttributeValue( AttributeKey.ShowRequestTotal ).AsBoolean( true ) )
             {
                 lTotal.Visible = true;
                 lTotal.Text = string.Format( "Total Requests: {0:N0}", SummaryState.SelectMany( s => s.Opportunities ).Sum( o => o.TotalRequests ) );
