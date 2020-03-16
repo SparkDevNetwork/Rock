@@ -57,6 +57,7 @@ namespace Rock.Jobs
         Key = AttributeKey.RemovedExpiredSavedAccountDays,
         Description = "The number of days after a saved account expires to delete the saved account. For example, if a credit card expiration is January 2023, it'll expire on Feb 1st, 2023. Setting this to 0 will delete the saved account on Feb 1st. Leave this blank to not delete expired saved accounts.",
         DefaultValue = null,
+        IsRequired = false,
         Order = 3
         )]
 
