@@ -117,7 +117,9 @@ function ToggleParameter(param, id) {
 <div class="tag-list-label">{{ FilterTwo.Name }}</div>
 <div class="tag-list">
   {%- for item in FilterTwo.DefinedValues -%}
+  {% if item.IsActive %}
   <a href="?FilterTwoValue={{ item.Id }}" onclick="ToggleParameter('FilterTwoValue', '{{ item.Id }}');return false;" class="tag js-dv-{{item.Id}}">{{ item.Value }}</a>
+  {% endif %}
   {%- endfor -%}
 </div>
 
