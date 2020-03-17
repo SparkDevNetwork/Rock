@@ -633,7 +633,7 @@ namespace RockWeb.Blocks.Event
                 if ( registrant.PersonAlias != null && registrant.PersonAlias.Person != null )
                 {
                     lRegistrant.Text = registrant.PersonAlias.Person.FullNameReversed +
-                        ( SignersPersonAliasIds != null && !SignersPersonAliasIds.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-pencil-square-o text-danger'></i>" : string.Empty );
+                        ( SignersPersonAliasIds != null && !SignersPersonAliasIds.Contains( registrant.PersonAlias.PersonId ) ? " <i class='fa fa-edit text-danger'></i>" : string.Empty );
                 }
                 else
                 {

@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
-        
+
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <asp:Literal ID="lIcon" runat="server" />
@@ -19,10 +19,10 @@
                     <asp:Literal ID="lEntityTypeName" runat="server" />
                 </div>
 
-                <div class="row margin-t-sm">
+                <div class="row d-flex flex-wrap margin-t-sm">
                     <asp:Repeater ID="rEntitySetItems" runat="server">
                         <ItemTemplate>
-                            <div class="col-xs-1 margin-b-md" style="width: 175px;">
+                            <div class="col-xs-12 col-sm-6 col-md-3 mb-sm-3">
                                 <%# Eval("Html") %>
                             </div>
                         </ItemTemplate>
@@ -53,7 +53,7 @@
                     <Rock:BootstrapButton ID="btnReset" runat="server" Text="Launch Another Workflow" CssClass="btn btn-default" OnClick="btnReset_Click" />
                 </div>
             </div>
-        
+
         </asp:Panel>
 
     </ContentTemplate>

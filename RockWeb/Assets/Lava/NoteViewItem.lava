@@ -98,7 +98,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                 {%- if NoteOptions.DisplayType == "Light" or NoteOptions.UsePersonIcon and note.CreatedByPersonId -%}
                     <a href="/person/{{ note.CreatedByPersonId }}" class="avatar avatar-{{ avatarSize }}"><img src="{{ note.CreatedByPersonPhotoUrl }}" alt="{{ note.CreatedByPersonName }}"></a>
                 {%- else -%}
-                    <div class="icon icon-{{ avatarSize }}" {%- if note.IsAlert or note.NoteType.FontColor != '' -%}style="{%- if note.IsAlert -%}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i></div>
+                    <div class="avatar avatar-icon avatar-{{ avatarSize }}" {%- if note.IsAlert or note.NoteType.FontColor != '' -%}style="{%- if note.IsAlert -%}color: var(--state-danger-text,#fcf2f1);{% else %}{{ fontStyle }}{% endif %}"{% endif %}><i class="{{ note.NoteType.IconCssClass | Default:'fa fa-comment' }}"></i></div>
                 {%- endif -%}
             </div>
             <div class="meta-body">
