@@ -962,7 +962,6 @@ namespace RockWeb.Blocks.Connection
                         wpConnectionRequestActivities.Visible = true;
                         wpConnectionRequestWorkflow.Visible = true;
                         pnlTransferDetails.Visible = false;
-
                         ShowDetail( connectionRequest.Id, connectionRequest.ConnectionOpportunityId );
                     }
                 }
@@ -1444,15 +1443,12 @@ namespace RockWeb.Blocks.Connection
             if ( connectionOpportunity != null && connectionRequest != null )
             {
 
-                if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) &&
-                        !( connectionOpportunity.ConnectionType.EnableRequestSecurity &&
-                        CurrentPersonId.HasValue &&
-                        connectionRequest.ConnectorPersonAliasId.HasValue &&
-                        connectionRequest.ConnectorPersonAlias.PersonId == CurrentPersonId.Value ))
+                if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) )
                 {
                     this.BreadCrumbs.Clear();
-                    upDetail.Visible = false;
+                    pnlDetail.Visible = false;
                     nbSecurityWarning.Visible = true;
+                    return;
                 }
 
                 hfConnectionOpportunityId.Value = connectionRequest.ConnectionOpportunityId.ToString();
