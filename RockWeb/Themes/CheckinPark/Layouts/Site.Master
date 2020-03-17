@@ -9,6 +9,7 @@
 
     <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>" ></script>
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
 
     <!-- Set the viewport width to device width for mobile -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -35,9 +36,35 @@
             new FastClick(document.body);
         }, false);
 
+        function checkinSounds() {
+            var tapSound = new Howl({
+                src: ['/Assets/Sounds/CheckIn/tap.mp3'],
+                volume: 0.4
+            });
+
+            var successSound = new Howl({
+                src: ['/Assets/Sounds/CheckIn/success.mp3'],
+                volume: 0.8
+            });
+
+            if ($('.block-instance.success').length){
+                success.play();
+            }
+
+            $("a, button").on("click", function(){
+                tapSound.play();
+            });
+        }
+
         // add quick fade-in effect to the page
         $(document).ready(function () {
             $("body").rockFadeIn();
+
+            checkinSounds();
+
+            $(document).on("shown.bs.modal", function (event) {
+                checkinSounds();
+            });
         });
     </script>
 </body>
