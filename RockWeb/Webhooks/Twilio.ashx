@@ -69,6 +69,8 @@ class TwilioResponseAsync : IAsyncResult
     Object IAsyncResult.AsyncState { get { return _state; } }
     bool IAsyncResult.CompletedSynchronously { get { return false; } }
 
+    private const bool ENABLE_LOGGING = false;
+
     public TwilioResponseAsync( AsyncCallback callback, HttpContext context, Object state )
     {
         _callback = callback;
@@ -108,7 +110,7 @@ class TwilioResponseAsync : IAsyncResult
         }
         else
         {
-            TwilioLogging.HandleRequestLogging( _context );
+            TwilioLogging.HandleRequestLogging( _context, ENABLE_LOGGING );
 
             if ( request.Form["SmsStatus"] != null )
             {
