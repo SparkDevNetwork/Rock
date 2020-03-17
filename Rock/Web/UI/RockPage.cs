@@ -1249,15 +1249,6 @@ namespace Rock.Web.UI
                                     {
                                         blockControl.GetBreadCrumbs( PageReference ).ForEach( c => PageReference.BreadCrumbs.Add( c ) );
                                     }
-
-                                    // If the blocktype's security actions have not yet been loaded, load them now
-                                    block.BlockType.SetSecurityActions( blockControl );
-                                }
-
-                                if ( control is RockBlockTypeWrapper wrapper )
-                                {
-                                    // If the blocktype's security actions have not yet been loaded, load them now
-                                    block.BlockType.SetSecurityActions( wrapper.Block.GetType() );
                                 }
                             }
 
