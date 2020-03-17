@@ -353,7 +353,7 @@ namespace RockWeb.Blocks.Connection
                 if ( tglMyOpportunities.Checked )
                 {
                     // if 'My Opportunities' is selected, only include the opportunities that have active requests with current person as the connector
-                    rptConnectionOpportunities.DataSource = connectionType.Opportunities.Where( o => o.HasActiveRequestsForConnector ).ToList();
+                    rptConnectionOpportunities.DataSource = connectionType.Opportunities.Where( o => o.HasActiveRequestsForConnector ).OrderBy( c => c.Name ).ToList();
                 }
                 else
                 {
