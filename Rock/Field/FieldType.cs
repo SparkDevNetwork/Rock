@@ -324,6 +324,12 @@ namespace Rock.Field
             return true;
         }
 
+        /// <summary>
+        /// Gets the copy value.
+        /// </summary>
+        /// <param name="originalValue">The original value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
         public virtual string GetCopyValue( string originalValue, RockContext rockContext )
         {
             return originalValue;
