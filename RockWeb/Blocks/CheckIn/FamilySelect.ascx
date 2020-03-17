@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        $('div.js-family-select').on('click', function () {
+        $('div.js-family-select').on('click touchstart', function () {
 
             var $familySelectDiv = $(this);
 
@@ -10,7 +10,7 @@
             var postbackUrl = $familySelectDiv.attr('data-target');
 
             // remove the postbackUrls from the other div to prevent multiple clicks
-            $('div.js-family-select').attr('data-target', '');
+            $familySelectDiv.attr('data-target', '');
 
             // if the postbackUrl has been cleared, another button has already been pressed, so ignore
             if (!postbackUrl || postbackUrl == '') {

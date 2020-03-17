@@ -565,22 +565,10 @@ namespace RockWeb.Blocks.Event
             var registrationTemplate = registrationTemplateService.Get( registrationInstance.RegistrationTemplateId );
             if ( registrationTemplate.SetCostOnInstance == true )
             {
-                // Set Account
                 registrationInstance.AccountId = apAccount.SelectedValueAsId();
-
-                // Set Cost
-                decimal cost = 0.0M;
-                if ( decimal.TryParse( cbCost.Text, out cost ) )
-                {
-                    registrationInstance.Cost = cost;
-                }
-
-                // Set Minimum Payment
-                decimal minimumPayment = 0.0M;
-                if ( decimal.TryParse( cbMinimumInitialPayment.Text, out minimumPayment ) )
-                {
-                    registrationInstance.MinimumInitialPayment = minimumPayment;
-                }
+                registrationInstance.Cost = cbCost.Text.AsDecimalOrNull();
+                registrationInstance.MinimumInitialPayment = cbMinimumInitialPayment.Text.AsDecimalOrNull();
+                registrationInstance.DefaultPayment = cbDefaultPaymentAmount.Text.AsDecimalOrNull();
             }
 
             // Save changes to database.
