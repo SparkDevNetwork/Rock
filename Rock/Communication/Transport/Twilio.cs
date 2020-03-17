@@ -40,8 +40,8 @@ namespace Rock.Communication.Transport
     [ExportMetadata( "ComponentName", "Twilio" )]
     [TextField( "SID", "Your Twilio Account SID (find at https://www.twilio.com/user/account)", true, "", "", 0 )]
     [TextField( "Token", "Your Twilio Account Token", true, "", "", 1 )]
-    [IntegerField("Long-Code Throttling", "The amount of time (in milliseconds) to wait between sending to recipients when sending a message from a long-code number (regular phone number). When carriers detect that a message is not coming from a human, they may filter/block the message. A delay can help prevent this from happening.",
-        false, 500, order: 2)]
+    [IntegerField( "Long-Code Throttling", "The amount of time (in milliseconds) to wait between sending to recipients when sending a message from a long-code number (regular phone number). When carriers detect that a message is not coming from a human, they may filter/block the message. A delay can help prevent this from happening.",
+        false, 500, order: 2 )]
     public class Twilio : TransportComponent
     {
         /// <summary>
@@ -150,7 +150,7 @@ namespace Rock.Communication.Transport
                         errorMessages.Add( ex.Message );
                         ExceptionLogService.LogException( ex );
                     }
-                    
+
                     if ( throttlingWaitTimeMS.HasValue )
                     {
                         System.Threading.Tasks.Task.Delay( throttlingWaitTimeMS.Value ).Wait();
@@ -245,22 +245,13 @@ namespace Rock.Communication.Transport
                                 {
                                     try
                                     {
-                                        var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers
-                                            .Where( p => p.IsMessagingEnabled )
-                                            .FirstOrDefault();
-
-                                        if ( phoneNumber != null )
+                                        var twilioNumber = recipient.PersonAlias.Person.PhoneNumbers.GetFirstSmsNumber();
+                                        if ( !string.IsNullOrWhiteSpace( twilioNumber ) )
                                         {
                                             // Create merge field dictionary
                                             var mergeObjects = recipient.CommunicationMergeValues( mergeFields );
 
                                             string message = ResolveText( communication.SMSMessage, currentPerson, recipient, communication.EnabledLavaCommands, mergeObjects, publicAppRoot );
-
-                                            string twilioNumber = phoneNumber.Number;
-                                            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-                                            {
-                                                twilioNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-                                            }
 
                                             MessageResource response = SendToTwilio( fromPhone, callbackUrl, attachmentMediaUrls, message, twilioNumber );
 
@@ -425,7 +416,7 @@ namespace Rock.Communication.Transport
                     createMessageOptions.MediaUrl = attachmentMediaUrls;
                 }
 
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !callbackUrl.Contains(".ngrok.io") )
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment && !callbackUrl.Contains( ".ngrok.io" ) )
                 {
                     createMessageOptions.StatusCallback = null;
                 }
@@ -447,7 +438,7 @@ namespace Rock.Communication.Transport
         /// <returns>
         ///   <c>true</c> if [is long code phone number] [the specified from number]; otherwise, <c>false</c>.
         /// </returns>
-        private bool IsLongCodePhoneNumber(string fromNumber)
+        private bool IsLongCodePhoneNumber( string fromNumber )
         {
             // if the number of digits in the phone number 10 or more, assume is it a LongCode ( if it is less than 10, assume it is a short-code)
             return fromNumber.AsNumeric().Length >= 10;

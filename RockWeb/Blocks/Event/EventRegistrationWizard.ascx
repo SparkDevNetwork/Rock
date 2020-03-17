@@ -231,6 +231,10 @@
                                     <div class="col-md-6">
                                         <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
                                     </div>
+                                    <div class="col-md-6">
+                                        <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
+                                            Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
+                                    </div>
                                 </div>
                             </asp:Panel>
 

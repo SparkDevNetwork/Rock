@@ -80,6 +80,13 @@ namespace RockWeb.Blocks.GroupScheduling
 </div>",
         Order = 2
          )]
+
+    [LinkedPage("Decline Reason Page",
+        Description = "If the group type has enabled 'RequiresReasonIfDeclineSchedule' then specify the page to provide that reason here.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.SCHEDULE_CONFIRMATION,
+        Key = AttributeKey.DeclineReasonPage )]
+
     public partial class GroupScheduleToolbox : RockBlock
     {
         protected class AttributeKey
@@ -87,6 +94,7 @@ namespace RockWeb.Blocks.GroupScheduling
             public const string FutureWeeksToShow = "FutureWeeksToShow";
             public const string EnableSignup = "EnableSignup";
             public const string SignupInstructions = "SignupInstructions";
+            public const string DeclineReasonPage = "DeclineReasonPage";
         }
 
         protected const string ALL_GROUPS_STRING = "All Groups";
@@ -355,6 +363,21 @@ $('#{0}').tooltip();
         /// <returns></returns>
         protected string GetOccurrenceDetails( Attendance attendance )
         {
+            if ( attendance.Occurrence.GroupId == null && attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
+            if ( attendance.Occurrence.GroupId == null )
+            {
+                return string.Format( "{0} - {1}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Location );
+            }
+
+            if ( attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
             return string.Format( "{0} - {1} - {2}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Group.Name, attendance.Occurrence.Location );
         }
 
@@ -459,12 +482,25 @@ $('#{0}').tooltip();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
+                var attendanceService = new AttendanceService( rockContext );
+                var requiresDeclineReason = attendanceService.Get( attendanceId.Value ).Occurrence.Group.GroupType.RequiresReasonIfDeclineSchedule;
 
-                // TODO: Need to provide a way to indicate the reason a pending schedule was declined.
-                int? declineReasonValueId = null;
+                if ( requiresDeclineReason )
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        { "attendanceId", attendanceId.Value.ToString() },
+                        { "isConfirmed", "false" },
+                        { "ReturnUrl", this.RockPage.Guid.ToString() }
+                    };
 
-                new AttendanceService( rockContext ).ScheduledPersonDecline( attendanceId.Value, declineReasonValueId );
-                rockContext.SaveChanges();
+                    NavigateToLinkedPage( AttributeKey.DeclineReasonPage, queryParams );
+                }
+                else
+                {
+                    attendanceService.ScheduledPersonDecline( attendanceId.Value, null );
+                    rockContext.SaveChanges();
+                }
             }
 
             UpdateMySchedulesTab();
@@ -555,7 +591,10 @@ $('#{0}').tooltip();
                     .Queryable()
                     .AsNoTracking()
                     .Where( x => x.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) )
-                    .Where( x => x.IsActive == true && x.IsArchived == false && x.GroupType.IsSchedulingEnabled == true )
+                    .Where( x => x.IsActive == true && x.IsArchived == false
+                        && x.GroupType.IsSchedulingEnabled == true
+                        && x.DisableScheduling == false
+                        && x.DisableScheduleToolboxAccess == false )
                     .Where( x => x.GroupLocations.Any( gl => gl.Schedules.Any() ) )
                     .OrderBy( x => new { x.Order, x.Name } )
                     .AsNoTracking()
@@ -564,6 +603,7 @@ $('#{0}').tooltip();
                 rptGroupPreferences.DataSource = groups;
                 rptGroupPreferences.DataBind();
 
+                pnlBlackoutDates.Visible = groups.Any();
                 nbNoScheduledGroups.Visible = groups.Any() == false;
             }
         }
@@ -1050,7 +1090,9 @@ $('#{0}').tooltip();
                     .Queryable()
                     .AsNoTracking()
                     .Where( g => g.PersonId == this.SelectedPersonId )
-                    .Where( g => g.Group.GroupType.IsSchedulingEnabled == true )
+                    .Where( g => g.Group.GroupType.IsSchedulingEnabled == true
+                        && g.Group.DisableScheduling == false
+                        && g.Group.DisableScheduleToolboxAccess == false )
                     .Select( g => new { Value = ( int? ) g.GroupId, Text = g.Group.Name } )
                     .ToList();
 
@@ -1452,6 +1494,8 @@ $('#{0}').tooltip();
                 // get GroupLocations that are for Groups that the person is an active member of
                 personGroupLocationQry = personGroupLocationQry.Where( a => a.Group.IsArchived == false
                     && a.Group.GroupType.IsSchedulingEnabled == true
+                    && a.Group.DisableScheduling == false
+                    && a.Group.DisableScheduleToolboxAccess == false
                     && a.Group.Members.Any( m => m.PersonId == this.SelectedPersonId && m.IsArchived == false && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
                 var personGroupLocationList = personGroupLocationQry.ToList();

@@ -33,73 +33,71 @@
 
                 <%-- My Schedule --%>
                 <asp:Panel ID="pnlMySchedule" runat="server">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <Rock:NotificationBox ID="nbNoUpcomingSchedules" runat="server" Visible="false" Text="No upcoming schedules" NotificationBoxType="Info" />
 
-                            <%-- Pending Confirmations Grid --%>
-                            <asp:Panel ID="pnlPendingConfirmations" runat="server" CssClass="pending-confirmations">
-                                <span class="control-label">
-                                    <asp:Literal runat="server" ID="lPendingConfirmations" Text="Pending Confirmations" />
-                                </span>
-                                <table class="table table-borderless">
-                                    <tbody>
-                                        <asp:Repeater ID="rptPendingConfirmations" runat="server" OnItemDataBound="rptPendingConfirmations_ItemDataBound">
-                                            <ItemTemplate>
-                                                <tr>
-                                                    <td>
-                                                        <asp:Literal ID="lPendingOccurrenceDetails" runat="server" />
-                                                    </td>
-                                                    <td>
-                                                        <asp:Literal ID="lPendingOccurrenceTime" runat="server" />
+                    <Rock:NotificationBox ID="nbNoUpcomingSchedules" runat="server" Visible="false" Text="No upcoming schedules" NotificationBoxType="Info" />
 
-                                                    </td>
-                                                    <td>
-                                                        <div class="actions">
-                                                            <asp:LinkButton ID="btnConfirmAttending" runat="server" CssClass="btn btn-xs btn-success" Text="Attending" OnClick="btnConfirmAttending_Click" />
-                                                            <asp:LinkButton ID="btnDeclineAttending" runat="server" CssClass="btn btn-xs btn-danger" Text="Decline" OnClick="btnDeclineAttending_Click" />
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </tbody>
-                                </table>
-                            </asp:Panel>
+                    <%-- Pending Confirmations Grid --%>
+                    <asp:Panel ID="pnlPendingConfirmations" runat="server" CssClass="pending-confirmations">
+                        <span class="control-label">
+                            <asp:Literal runat="server" ID="lPendingConfirmations" Text="Pending Confirmations" />
+                        </span>
+                        <table class="table table-borderless">
+                            <tbody>
+                                <asp:Repeater ID="rptPendingConfirmations" runat="server" OnItemDataBound="rptPendingConfirmations_ItemDataBound">
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td>
+                                                <asp:Literal ID="lPendingOccurrenceDetails" runat="server" />
+                                            </td>
+                                            <td>
+                                                <asp:Literal ID="lPendingOccurrenceTime" runat="server" />
 
-                            <%-- Upcoming Schedules Grid --%>
-                            <asp:Panel ID="pnlUpcomingSchedules" runat="server" CssClass="confirmed margin-t-md">
-                                <span class="control-label">
-                                    <asp:Literal runat="server" ID="lUpcomingSchedules" Text="Upcoming Schedules" />
-                                    <button id="btnCopyToClipboard" runat="server" disabled="disabled"
-                                        data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
-                                        class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
-                                        onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                                        <i class="fa fa-calendar-alt"></i>Copy Calendar Link
-                                    </button>
-                                </span>
-                                <table class="table table-borderless">
-                                    <tbody>
-                                        <asp:Repeater ID="rptUpcomingSchedules" runat="server" OnItemDataBound="rptUpcomingSchedules_ItemDataBound">
-                                            <ItemTemplate>
-                                                <tr>
-                                                    <td>
-                                                        <asp:Literal ID="lConfirmedOccurrenceDetails" runat="server" />
-                                                    </td>
-                                                    <td>
-                                                        <asp:Literal ID="lConfirmedOccurrenceTime" runat="server" />
-                                                    </td>
-                                                    <td>
-                                                        <asp:LinkButton ID="btnCancelConfirmAttending" runat="server" CssClass="btn btn-xs btn-link" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttending_Click" />
-                                                    </td>
-                                                </tr>
-                                            </ItemTemplate>
-                                        </asp:Repeater>
-                                    </tbody>
-                                </table>
-                            </asp:Panel>
-                        </div>
-                    </div>
+                                            </td>
+                                            <td>
+                                                <div class="actions">
+                                                    <asp:LinkButton ID="btnConfirmAttending" runat="server" CssClass="btn btn-xs btn-success" Text="Attending" OnClick="btnConfirmAttending_Click" />
+                                                    <asp:LinkButton ID="btnDeclineAttending" runat="server" CssClass="btn btn-xs btn-danger" Text="Decline" OnClick="btnDeclineAttending_Click" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </tbody>
+                        </table>
+                    </asp:Panel>
+
+                    <%-- Upcoming Schedules Grid --%>
+                    <asp:Panel ID="pnlUpcomingSchedules" runat="server" CssClass="confirmed margin-t-md">
+                        <span class="control-label">
+                            <asp:Literal runat="server" ID="lUpcomingSchedules" Text="Upcoming Schedules" />
+                            <button id="btnCopyToClipboard" runat="server" disabled="disabled"
+                                data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
+                                class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
+                                onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
+                                <i class="fa fa-calendar-alt"></i>Copy Calendar Link
+                            </button>
+                        </span>
+                        <table class="table table-borderless">
+                            <tbody>
+                                <asp:Repeater ID="rptUpcomingSchedules" runat="server" OnItemDataBound="rptUpcomingSchedules_ItemDataBound">
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td>
+                                                <asp:Literal ID="lConfirmedOccurrenceDetails" runat="server" />
+                                            </td>
+                                            <td>
+                                                <asp:Literal ID="lConfirmedOccurrenceTime" runat="server" />
+                                            </td>
+                                            <td>
+                                                <asp:LinkButton ID="btnCancelConfirmAttending" runat="server" CssClass="btn btn-xs btn-link" Text="Cancel Confirmation" OnClick="btnCancelConfirmAttending_Click" />
+                                            </td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </tbody>
+                        </table>
+                    </asp:Panel>
+
                 </asp:Panel>
 
                 <%-- Preferences --%>
@@ -183,32 +181,32 @@
                         </div>
 
                         <%-- Blackout Dates --%>
-                        <div class="col-md-6">
+                        <asp:Panel ID="pnlBlackoutDates" runat="server" CssClass="col-md-6">
                             <div class="well">
-                                <h3>
-                                    <asp:Literal runat="server" ID="lBlackoutDates" Text="Blackout Dates" />
-                                </h3>
-                                <hr class="margin-t-sm margin-b-sm" />
-                                <p>
-                                    Please provide any dates <%= ( CurrentPersonId == null || CurrentPersonId != SelectedPersonId ? "they" : "you") %> will not be able to attend.
-                                </p>
+                                    <h3>
+                                        <asp:Literal runat="server" ID="lBlackoutDates" Text="Blackout Dates" />
+                                    </h3>
+                                    <hr class="margin-t-sm margin-b-sm" />
+                                    <p>
+                                        Please provide any dates <%= ( CurrentPersonId == null || CurrentPersonId != SelectedPersonId ? "they" : "you") %> will not be able to attend.
+                                    </p>
 
-                                <Rock:Grid ID="gBlackoutDates" runat="server" EmptyDataText="No black out dates have been set." DataKeyNames="ExclusionId" ShowHeader="false" DisplayType="Light">
-                                    <Columns>
-                                        <Rock:RockBoundField DataField="ExclusionId" Visible="false"></Rock:RockBoundField>
-                                        <Rock:RockBoundField DataField="PersonAliasId" Visible="false"></Rock:RockBoundField>
-                                        <Rock:RockTemplateField>
-                                            <ItemTemplate>
-                                                <asp:Literal ID="litExclusionDateRange" runat="server" Text='<%# Eval("DateRange")%>'></asp:Literal><span> - </span>
-                                                <asp:Literal ID="litExclusionFullName" runat="server" Text='<%# Eval("FullName") %>'></asp:Literal><span> - </span>
-                                                <asp:Literal ID="litExclusionGroupName" runat="server" Text='<%# Eval("GroupName") %>'></asp:Literal>
-                                            </ItemTemplate>
-                                        </Rock:RockTemplateField>
-                                        <Rock:DeleteField ID="gBlackoutDatesDelete" runat="server" OnClick="gBlackoutDatesDelete_Click"></Rock:DeleteField>
-                                    </Columns>
-                                </Rock:Grid>
-                            </div>
-                        </div>
+                                    <Rock:Grid ID="gBlackoutDates" runat="server" EmptyDataText="No black out dates have been set." DataKeyNames="ExclusionId" ShowHeader="false" DisplayType="Light">
+                                        <Columns>
+                                            <Rock:RockBoundField DataField="ExclusionId" Visible="false"></Rock:RockBoundField>
+                                            <Rock:RockBoundField DataField="PersonAliasId" Visible="false"></Rock:RockBoundField>
+                                            <Rock:RockTemplateField>
+                                                <ItemTemplate>
+                                                    <asp:Literal ID="litExclusionDateRange" runat="server" Text='<%# Eval("DateRange")%>'></asp:Literal><span> - </span>
+                                                    <asp:Literal ID="litExclusionFullName" runat="server" Text='<%# Eval("FullName") %>'></asp:Literal><span> - </span>
+                                                    <asp:Literal ID="litExclusionGroupName" runat="server" Text='<%# Eval("GroupName") %>'></asp:Literal>
+                                                </ItemTemplate>
+                                            </Rock:RockTemplateField>
+                                            <Rock:DeleteField ID="gBlackoutDatesDelete" runat="server" OnClick="gBlackoutDatesDelete_Click"></Rock:DeleteField>
+                                        </Columns>
+                                    </Rock:Grid>
+                                </div>
+                        </asp:Panel>
                     </div>
                 </asp:Panel>
 

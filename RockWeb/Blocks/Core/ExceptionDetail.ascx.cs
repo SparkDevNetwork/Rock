@@ -13,13 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -48,26 +48,7 @@ namespace RockWeb.Blocks.Core
 
         #endregion
 
-        #region Configuration Properties
-
-        private Type _entitySystemType = typeof( Rock.Model.ExceptionLog );
-
-        #endregion
-
         #region Common Code (EntityDetail)
-
-        private EntityTypeCache _entityType = null;
-
-        /// <summary>
-        /// Get the Rock Entity Type information for the entity type displayed by this block.
-        /// </summary>
-        /// <returns></returns>
-        private bool InitializeEntityType()
-        {
-            _entityType = EntityTypeCache.Get( _entitySystemType );
-
-            return ( _entityType != null );
-        }
 
         private RockContext _dataContext = null;
 
@@ -84,24 +65,6 @@ namespace RockWeb.Blocks.Core
 
             return _dataContext;
         }
-
-        /// <summary>
-        /// Get a unique friendly description for the current entity.
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <returns></returns>
-        private string GetEntityDescription( IEntity entity )
-        {
-            var targetEntity = entity as AssessmentType;
-
-            if ( targetEntity == null )
-            {
-                return "(None)";
-            }
-
-            return targetEntity.Title;
-        }
-
 
         #endregion
 
@@ -223,13 +186,13 @@ namespace RockWeb.Blocks.Core
 
             var exceptionService = new ExceptionLogService( dataContext );
 
-            //load the base exception 
+            // load the base exception 
             exceptionList.Add( exception );
 
-            //get the parentID
+            // get the parentID
             int? parentId = exception.ParentId;
 
-            //loop through exception hierarchy (parent, grandparent, etc)
+            // loop through exception hierarchy (parent, grandparent, etc)
             while ( parentId != null && parentId > 0 )
             {
                 var parentException = exceptionService.Get( ( int ) parentId );
@@ -242,13 +205,37 @@ namespace RockWeb.Blocks.Core
                 parentId = parentException.ParentId;
             }
 
-            //get inner exceptions
-            if ( exception.HasInnerException != null && ( bool ) exception.HasInnerException )
+            // get inner exceptions recursively
+            List<ExceptionLog> childExceptionLogs = new List<ExceptionLog>();
+            GetChildExceptionsRecursive( exceptionService, exception, ref childExceptionLogs );
+            exceptionList.AddRange( childExceptionLogs);
+
+            return exceptionList.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// Gets the child exceptions recursive.
+        /// </summary>
+        /// <param name="exceptionLogService">The exception log service.</param>
+        /// <param name="exceptionLog">The exception log.</param>
+        /// <param name="exceptionLogs">The exception logs.</param>
+        private void GetChildExceptionsRecursive( ExceptionLogService exceptionLogService, ExceptionLog exceptionLog, ref List<ExceptionLog> exceptionLogs )
+        {
+            if ( exceptionLogs.Any( a => a.Id == exceptionLog.Id ) )
             {
-                exceptionList.AddRange( exceptionService.GetByParentId( exception.Id ) );
+                // prevent stackoverflow just in case
+                return;
             }
 
-            return exceptionList;
+            exceptionLogs.Add( exceptionLog );
+            if ( exceptionLog.HasInnerException == true )
+            {
+                List<ExceptionLog> innerExceptions = exceptionLogService.GetByParentId( exceptionLog.Id ).ToList();
+                foreach ( var innerException in innerExceptions )
+                {
+                    GetChildExceptionsRecursive( exceptionLogService, innerException, ref exceptionLogs );
+                }
+            }
         }
 
         /// <summary>
@@ -256,7 +243,7 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void ShowContent()
         {
-            //show the detail
+            // show the detail
             int? exceptionId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
 
             if ( !exceptionId.HasValue )
@@ -305,7 +292,7 @@ namespace RockWeb.Blocks.Core
             }
 
             // If query string is not empty build query string list
-            if ( !String.IsNullOrWhiteSpace( baseException.QueryString ) )
+            if ( !string.IsNullOrWhiteSpace( baseException.QueryString ) )
             {
                 dl.Add( "Query String", BuildQueryStringList( baseException.QueryString ) );
             }
@@ -335,6 +322,27 @@ namespace RockWeb.Blocks.Core
             rptExceptionDetails.DataBind();
 
             pnlSummary.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptExceptionDetails control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptExceptionDetails_ItemDataBound( object sender, System.Web.UI.WebControls.RepeaterItemEventArgs e )
+        {
+            ExceptionLog exceptionLog = e.Item.DataItem as ExceptionLog;
+            if ( exceptionLog == null )
+            {
+                return;
+            }
+
+            Literal lStackTrace = e.Item.FindControl( "lStackTrace" ) as Literal;
+            var stackTrace = exceptionLog.StackTrace;
+            lStackTrace.Text = exceptionLog.StackTrace;
+
+            var phStackTraceButton = e.Item.FindControl( "phStackTraceButton" ) as PlaceHolder;
+            phStackTraceButton.Visible = exceptionLog.StackTrace.IsNotNullOrWhiteSpace();
         }
 
         /// <summary>

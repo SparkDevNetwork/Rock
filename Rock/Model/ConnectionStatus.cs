@@ -82,6 +82,15 @@ namespace Rock.Model
         public bool IsDefault { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether choosing this Status will set the Request's State to Inactive.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this will set the State to Inactive; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoInactivateState { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
         /// </summary>
         /// <value>

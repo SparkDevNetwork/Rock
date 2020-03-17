@@ -4329,12 +4329,16 @@ FROM (
         {
             using ( var anonymousGiverPersonRockContext = new RockContext() )
             {
+
+                var connectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
+                var recordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var recordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
                 var anonymousGiver = new Person()
                 {
-                    IsSystem = false,
-                    RecordTypeValueId = 1,
-                    RecordStatusValueId = 3,
-                    ConnectionStatusValueId = 203,
+                    IsSystem = true,
+                    RecordTypeValueId = recordTypeValueId,
+                    RecordStatusValueId = recordStatusValueId,
+                    ConnectionStatusValueId = connectionStatusValueId,
                     IsDeceased = false,
                     FirstName = "Giver",
                     NickName = "Giver",
