@@ -137,6 +137,10 @@
     <Compile Include="Migrations\202003171932312_Rollup_0317.Designer.cs">
       <DependentUpon>202003171932312_Rollup_0317.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003172326550_SpiritualGiftsUpdate.cs" />
+    <Compile Include="Migrations\202003172326550_SpiritualGiftsUpdate.Designer.cs">
+      <DependentUpon>202003172326550_SpiritualGiftsUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1175,6 +1179,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202003171932312_Rollup_0317.resx">
       <DependentUpon>202003171932312_Rollup_0317.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003172326550_SpiritualGiftsUpdate.resx">
+      <DependentUpon>202003172326550_SpiritualGiftsUpdate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
