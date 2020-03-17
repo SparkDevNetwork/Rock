@@ -16,10 +16,10 @@ namespace RockWeb
             return ( !string.IsNullOrWhiteSpace( context.Request.QueryString["Log"] ) && context.Request.QueryString["Log"] == "true" );
         }
 
-        public static void HandleRequestLogging( HttpContext context )
+        public static void HandleRequestLogging( HttpContext context, bool alwaysLog )
         {
             // determine if we should log
-            if ( ShouldLogRequest( context ) )
+            if ( alwaysLog || ShouldLogRequest( context ) )
             {
                 LogRequest( context );
             }
