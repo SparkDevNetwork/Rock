@@ -27,24 +27,23 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using RockWeb;
 
 /// <summary>
 /// This the Twilio Webwook that updates the communication recipient record to indicate the message status, and runs any Workflow configured with the SMS Phone Number that the message was from.
 /// </summary>
 public class TwilioAsync : IHttpAsyncHandler
 {
-    public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
+    public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, Object extraData )
     {
-        TwilioResponseAsync twilioAsync = new TwilioResponseAsync(cb, context, extraData);
+        TwilioResponseAsync twilioAsync = new TwilioResponseAsync( cb, context, extraData );
         twilioAsync.StartAsyncWork();
         return twilioAsync;
     }
 
-    public void EndProcessRequest(IAsyncResult result)
-    {
-    }
+    public void EndProcessRequest( IAsyncResult result ) { }
 
-    public void ProcessRequest(HttpContext context)
+    public void ProcessRequest( HttpContext context )
     {
         throw new InvalidOperationException();
     }
@@ -61,18 +60,16 @@ public class TwilioAsync : IHttpAsyncHandler
 class TwilioResponseAsync : IAsyncResult
 {
     private bool _completed;
-    private Object _state;
-    private AsyncCallback _callback;
-    private HttpContext _context;
+    private readonly Object _state;
+    private readonly AsyncCallback _callback;
+    private readonly HttpContext _context;
 
     bool IAsyncResult.IsCompleted { get { return _completed; } }
     WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
     Object IAsyncResult.AsyncState { get { return _state; } }
     bool IAsyncResult.CompletedSynchronously { get { return false; } }
 
-    private const bool ENABLE_LOGGING = false;
-
-    public TwilioResponseAsync(AsyncCallback callback, HttpContext context, Object state)
+    public TwilioResponseAsync( AsyncCallback callback, HttpContext context, Object state )
     {
         _callback = callback;
         _context = context;
@@ -98,29 +95,24 @@ class TwilioResponseAsync : IAsyncResult
         }, null );
     }
 
-    private void StartAsyncTask(Object workItemState)
+    private void StartAsyncTask( Object workItemState )
     {
         var request = _context.Request;
         var response = _context.Response;
 
         response.ContentType = "text/plain";
 
-        if (request.HttpMethod != "POST")
+        if ( request.HttpMethod != "POST" )
         {
-            response.Write("Invalid request type.");
+            response.Write( "Invalid request type." );
         }
         else
         {
+            TwilioLogging.HandleRequestLogging( _context );
 
-            // determine if we should log
-            if ((!string.IsNullOrEmpty(request.QueryString["Log"]) && request.QueryString["Log"] == "true") || ENABLE_LOGGING)
+            if ( request.Form["SmsStatus"] != null )
             {
-                WriteToLog();
-            }
-
-            if (request.Form["SmsStatus"] != null)
-            {
-                switch (request.Form["SmsStatus"])
+                switch ( request.Form["SmsStatus"] )
                 {
                     case "received":
                         MessageReceived();
@@ -139,14 +131,13 @@ class TwilioResponseAsync : IAsyncResult
         }
 
         _completed = true;
-        _callback(this);
+        _callback( this );
     }
 
     private void MessageUndelivered()
     {
-
         var request = _context.Request;
-        string messageSid = string.Empty;
+        var messageSid = string.Empty;
 
         if ( !string.IsNullOrEmpty( request.Form["MessageSid"] ) )
         {
@@ -166,7 +157,7 @@ class TwilioResponseAsync : IAsyncResult
                 }
                 else
                 {
-                    WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                    Rock.Model.ExceptionLogService.LogException( "No recipient was found with the specified MessageSid value!" );
                 }
             }
         }
@@ -185,7 +176,8 @@ class TwilioResponseAsync : IAsyncResult
 
         response.ContentType = "application/xml";
 
-        if ( !string.IsNullOrEmpty( request.Form["To"] ) ) {
+        if ( !string.IsNullOrEmpty( request.Form["To"] ) )
+        {
             toPhone = request.Form["To"];
         }
 
@@ -199,7 +191,7 @@ class TwilioResponseAsync : IAsyncResult
             body = request.Form["Body"];
         }
 
-        if ( !(string.IsNullOrWhiteSpace(toPhone)) && !(string.IsNullOrWhiteSpace(fromPhone)) )
+        if ( !( string.IsNullOrWhiteSpace( toPhone ) ) && !( string.IsNullOrWhiteSpace( fromPhone ) ) )
         {
             string errorMessage = string.Empty;
 
@@ -214,46 +206,4 @@ class TwilioResponseAsync : IAsyncResult
 
         response.Write( messagingResponse.ToString() );
     }
-
-    private void WriteToLog ()
-    {
-        var request = _context.Request;
-        var formValues = new List<string>();
-        foreach ( string name in request.Form.AllKeys )
-        {
-            formValues.Add( string.Format( "{0}: '{1}'", name, request.Form[name] ) );
-        }
-
-        WriteToLog( formValues.AsDelimited( ", " ) );
-    }
-
-    private void WriteToLog( string message )
-    {
-        string logFile = _context.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
-
-        // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
-        var maxRetry = 3;
-        for ( int retry = 0; retry < maxRetry; retry++ )
-        {
-            try
-            {
-                using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
-                {
-                    using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
-                    {
-                        sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
-                    }
-                }
-            }
-            catch ( System.IO.IOException )
-            {
-                if ( retry < maxRetry - 1 )
-                {
-                    System.Threading.Tasks.Task.Delay( 2000 ).Wait();
-                }
-            }
-        }
-
-    }
-
 }
