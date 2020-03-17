@@ -213,7 +213,7 @@ BEGIN
         PD.[ScheduleId],
         PD.[StartDateTime],
         PD.[LocationId],
-        R.[Name] AS [RoleName],
+   R.[Name] AS [RoleName],
         L.[Name] AS [LocationName]
     FROM (
         SELECT 

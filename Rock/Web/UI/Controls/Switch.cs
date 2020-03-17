@@ -107,6 +107,12 @@ namespace Rock.Web.UI.Controls
             set { ViewState["Required"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [bold text].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [bold text]; otherwise, <c>false</c>.
+        /// </value>
         [
         Bindable( true ),
         Category( "Behavior" ),

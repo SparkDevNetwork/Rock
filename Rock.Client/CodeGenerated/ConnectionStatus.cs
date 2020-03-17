@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public bool AutoInactivateState { get; set; }
+
+        /// <summary />
         public int? ConnectionTypeId { get; set; }
 
         /// <summary />
@@ -96,6 +99,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ConnectionStatus source )
         {
             this.Id = source.Id;
+            this.AutoInactivateState = source.AutoInactivateState;
             this.ConnectionTypeId = source.ConnectionTypeId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;

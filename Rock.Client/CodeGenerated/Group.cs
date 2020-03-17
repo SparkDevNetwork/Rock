@@ -53,6 +53,12 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public bool DisableScheduleToolboxAccess { get; set; }
+
+        /// <summary />
+        public bool DisableScheduling { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -162,6 +168,8 @@ namespace Rock.Client
             this.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             this.CampusId = source.CampusId;
             this.Description = source.Description;
+            this.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
+            this.DisableScheduling = source.DisableScheduling;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupCapacity = source.GroupCapacity;

@@ -188,6 +188,8 @@ namespace Rock.Model
             target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             target.CampusId = source.CampusId;
             target.Description = source.Description;
+            target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
+            target.DisableScheduling = source.DisableScheduling;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupCapacity = source.GroupCapacity;
