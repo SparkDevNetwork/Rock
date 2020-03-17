@@ -23,7 +23,7 @@
                 </div>
             </a>
         </div>
-
+{% comment %}
         <div class="col-xs-12 col-lg-4 margin-b-lg">
             <a href="?FilterTwoValue=1882"  class="card card-link d-flex h-100">
                 <div class="embed-responsive embed-responsive-21by9">
@@ -40,7 +40,7 @@
                 </div>
             </a>
         </div>
-
+{% endcomment %}
         <div class="col-xs-12 col-lg-4 margin-b-lg">
             <a href="?FilterTwoValue=1881" class="card card-link d-flex h-100">
                 <div class="embed-responsive embed-responsive-21by9">
