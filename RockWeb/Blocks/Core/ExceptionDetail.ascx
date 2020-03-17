@@ -20,9 +20,19 @@
                     </div>
 
                     <div class="actions">
-                        <a href="#" id="btnShowCookies" runat="server" class="js-btn-show-cookies btn btn-default"><i class="fa fa-laptop"></i> Show Cookies</a>
-                        <a href="#" id="btnShowVariables" runat="server" class="js-btn-show-servervars btn btn-default"><i class="fa fa-hdd-o"></i> Show Server Variables</a>
-                        <a href="#" id="btnShowFormData" runat="server" class="js-btn-show-formdata btn btn-default"><i class="fa fa-hdd-o"></i> Show Form Data</a>
+                        <a href="#" id="btnShowCookies" runat="server" class="js-btn-show-cookies btn btn-default">
+                            <i class="fa fa-laptop"></i>
+                            Show Cookies
+                        </a>
+                        <a href="#" id="btnShowVariables" runat="server" class="js-btn-show-servervars btn btn-default">
+                            <i class="fa fa-hdd-o"></i>
+                            Show Server Variables
+
+                        </a>
+                        <a href="#" id="btnShowFormData" runat="server" class="js-btn-show-formdata btn btn-default">
+                            <i class="fa fa-hdd-o"></i>
+                            Show Form Data
+                        </a>
                     </div>
 
                 </fieldset>
@@ -51,7 +61,7 @@
                         <p>
                             This list shows the complete exception hierarchy with a full call-stack trace. The top-level exception is listed first, and subsequent entries provide more specific detail about the origin of the error.
                         </p>
-                        <asp:Repeater ID="rptExceptionDetails" runat="server">
+                        <asp:Repeater ID="rptExceptionDetails" runat="server" OnItemDataBound="rptExceptionDetails_ItemDataBound">
 
                             <HeaderTemplate>
                                 <div class="table-responsive">
@@ -75,14 +85,17 @@
                                     <td class="wrap-contents"><%# EncodeHtml( Eval("Description") ) %></td>
 
                                     <td style="text-align: center;">
-                                        <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
-                                            <i class="fa fa-layer-group"></i> Show Stack Trace
-                                        </a>
+                                        <asp:PlaceHolder ID="phStackTraceButton" runat="server">
+                                            <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
+                                                <i class="fa fa-layer-group"></i>
+                                                Show Stack Trace
+                                            </a>
+                                        </asp:PlaceHolder>
                                     </td>
                                 </tr>
                                 <tr id="<%# "trStackTrace_" + Eval("Id").ToString() %>" class="exceptionDetail-stackTrace-hide">
                                     <td colspan="5">
-                                        <pre style="white-space: pre-wrap;"><%#Eval("StackTrace") %></pre>
+                                        <pre style="white-space: pre-wrap;"><asp:Literal ID="lStackTrace" runat="server" /></pre>
                                     </td>
                                 </tr>
                             </ItemTemplate>
@@ -102,6 +115,7 @@
 
 <script type="text/javascript">
     function toggleStackTrace(exceptionId) {
+        debugger
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-hide");
         $("[id*=trStackTrace_" + exceptionId + "]").first().toggleClass("exceptionDetail-stackTrace-show");
 

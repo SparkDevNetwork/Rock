@@ -41,9 +41,28 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Opportunity Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given connection opportunity." )]
-    [BooleanField( "Show Edit", "", true, "", 2 )]
+
+    #region Block Attributes
+    [BooleanField(
+        "Show Edit",
+        DefaultBooleanValue = true,
+        Order = 2,
+        Key = AttributeKey.ShowEdit )]
+    #endregion Block Attributes
     public partial class ConnectionOpportunityDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ShowEdit = "ShowEdit";
+        }
+
+        #endregion
+
         #region Fields
 
         public int _connectionTypeId = 0;

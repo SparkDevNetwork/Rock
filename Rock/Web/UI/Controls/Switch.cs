@@ -108,6 +108,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [bold text].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [bold text]; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Should the text be bold?" )
+        ]
+        public bool BoldText
+        {
+            get { return ViewState["BoldText"] as bool? ?? false; }
+            set { ViewState["BoldText"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the form group class.
         /// </summary>
         /// <value>

@@ -80,6 +80,7 @@
 
                         <Rock:NotificationBox ID="nbBarChartMessage" runat="server" NotificationBoxType="Default" CssClass="text-center padding-all-lg" Heading="Confirm Settings"
                             Text="<p>Confirm your settings and select the Update button to display your results.</p>" Visible="true" />
+                        <Rock:NotificationBox ID="nbSchedulingDisabled" runat="server" CssClass="text-center padding-all-lg" NotificationBoxType="Warning" Visible="false" />
                         <Rock:NotificationBox ID="nbNoData" runat="server" NotificationBoxType="Default" CssClass="text-center padding-all-lg" Text="No Data Found" Visible="false"></Rock:NotificationBox>
                         <div class="row">
                             <%-- Bar chart to show the data in the tabular --%>

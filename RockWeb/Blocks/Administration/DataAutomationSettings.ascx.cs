@@ -266,7 +266,7 @@ namespace RockWeb.Blocks.Administration
             {
                 SetPanel( pwUpdateCampus, pnlCampusUpdate, "Update Family Campus", cbCampusUpdate.Checked );
             }
-            
+
             SetPanel( pwReactivatePeople, pnlReactivatePeople, "Reactivate People", cbReactivatePeople.Checked );
             SetPanel( pwInactivatePeople, pnlInactivatePeople, "Inactivate People", cbInactivatePeople.Checked );
             SetPanel( pwAdultChildren, pnlAdultChildren, "Move Adult Children", cbAdultChildren.Checked );
@@ -325,6 +325,8 @@ namespace RockWeb.Blocks.Administration
             cbAttendanceInGroupType.Checked = _reactivateSettings.IsAttendanceInGroupTypeEnabled;
             nbAttendanceInGroupType.Text = _reactivateSettings.AttendanceInGroupTypeDays.ToStringSafe();
             rlbAttendanceInGroupType.SetValues( _reactivateSettings.AttendanceInGroupType ?? new List<int>() );
+            cbSiteLogin.Checked = _reactivateSettings.IsSiteLoginEnabled;
+            nbSiteLogin.Text = _reactivateSettings.SiteLoginPeriod.ToStringSafe();
             cbPrayerRequest.Checked = _reactivateSettings.IsPrayerRequestEnabled;
             nbPrayerRequest.Text = _reactivateSettings.PrayerRequestPeriod.ToStringSafe();
             cbPersonAttributes.Checked = _reactivateSettings.IsPersonAttributesEnabled;
@@ -376,6 +378,8 @@ namespace RockWeb.Blocks.Administration
             cbNoAttendanceInGroupType.Checked = _inactivateSettings.IsNoAttendanceInGroupTypeEnabled;
             nbNoAttendanceInGroupType.Text = _inactivateSettings.NoAttendanceInGroupTypeDays.ToStringSafe();
             rlbNoAttendanceInGroupType.SetValues( _inactivateSettings.AttendanceInGroupType ?? new List<int>() );
+            cbNoSiteLogin.Checked = _inactivateSettings.IsNoSiteLoginEnabled;
+            nbNoSiteLogin.Text = _inactivateSettings.NoSiteLoginPeriod.ToStringSafe();
             cbNoPrayerRequest.Checked = _inactivateSettings.IsNoPrayerRequestEnabled;
             nbNoPrayerRequest.Text = _inactivateSettings.NoPrayerRequestPeriod.ToStringSafe();
             cbNoPersonAttributes.Checked = _inactivateSettings.IsNoPersonAttributesEnabled;
@@ -402,7 +406,7 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 // Now UNCHECK all channels that were NOT *previously* saved
-                var remainingChannels = inactivateChannelTypes.Where( c => ! _inactivateSettings.NoInteractions.Any( x => x.Guid == c.Guid ) );
+                var remainingChannels = inactivateChannelTypes.Where( c => !_inactivateSettings.NoInteractions.Any( x => x.Guid == c.Guid ) );
                 foreach ( var nonSavedInteractionItem in remainingChannels )
                 {
                     nonSavedInteractionItem.IsInteractionTypeEnabled = false;
@@ -463,7 +467,7 @@ namespace RockWeb.Blocks.Administration
                 .Select( a => new PersonConnectionStatusDataView
                 {
                     PersonConnectionStatusValue = a,
-                    DataViewId = _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.GetValueOrNull(a.Id)
+                    DataViewId = _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.GetValueOrNull( a.Id )
                 } ).ToList();
 
             rptPersonConnectionStatusDataView.DataSource = personConnectionStatusDataViewSettingsList;
@@ -509,6 +513,9 @@ namespace RockWeb.Blocks.Administration
             _reactivateSettings.AttendanceInGroupType = rlbAttendanceInGroupType.SelectedValues.AsIntegerList();
             _reactivateSettings.AttendanceInGroupTypeDays = nbAttendanceInGroupType.Text.AsInteger();
 
+            _reactivateSettings.IsSiteLoginEnabled = cbSiteLogin.Checked;
+            _reactivateSettings.SiteLoginPeriod = nbSiteLogin.Text.AsInteger();
+
             _reactivateSettings.IsPrayerRequestEnabled = cbPrayerRequest.Checked;
             _reactivateSettings.PrayerRequestPeriod = nbPrayerRequest.Text.AsInteger();
 
@@ -527,15 +534,15 @@ namespace RockWeb.Blocks.Administration
             foreach ( RepeaterItem rItem in rInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
-                    _reactivateSettings.Interactions = _reactivateSettings.Interactions ?? new List<InteractionItem>();
-                    HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
-                    NumberBox lastInteractionDays = rItem.FindControl( "nbInteractionDays" ) as NumberBox;
-                    var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
-                    {
-                        IsInteractionTypeEnabled = isInterationTypeEnabled.Checked,
-                        LastInteractionDays = lastInteractionDays.Text.AsInteger()
-                    };
-                    _reactivateSettings.Interactions.Add( item );
+                _reactivateSettings.Interactions = _reactivateSettings.Interactions ?? new List<InteractionItem>();
+                HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
+                NumberBox lastInteractionDays = rItem.FindControl( "nbInteractionDays" ) as NumberBox;
+                var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
+                {
+                    IsInteractionTypeEnabled = isInterationTypeEnabled.Checked,
+                    LastInteractionDays = lastInteractionDays.Text.AsInteger()
+                };
+                _reactivateSettings.Interactions.Add( item );
             }
 
             // Inactivate
@@ -547,6 +554,9 @@ namespace RockWeb.Blocks.Administration
             _inactivateSettings.IsNoAttendanceInGroupTypeEnabled = cbNoAttendanceInGroupType.Checked;
             _inactivateSettings.AttendanceInGroupType = rlbNoAttendanceInGroupType.SelectedValues.AsIntegerList();
             _inactivateSettings.NoAttendanceInGroupTypeDays = nbNoAttendanceInGroupType.Text.AsInteger();
+
+            _inactivateSettings.IsNoSiteLoginEnabled = cbNoSiteLogin.Checked;
+            _inactivateSettings.NoSiteLoginPeriod = nbNoSiteLogin.Text.AsInteger();
 
             _inactivateSettings.IsNoPrayerRequestEnabled = cbNoPrayerRequest.Checked;
             _inactivateSettings.NoPrayerRequestPeriod = nbNoPrayerRequest.Text.AsInteger();
@@ -565,17 +575,17 @@ namespace RockWeb.Blocks.Administration
             foreach ( RepeaterItem rItem in rNoInteractions.Items )
             {
                 RockCheckBox isInterationTypeEnabled = rItem.FindControl( "cbInterationType" ) as RockCheckBox;
-                    _inactivateSettings.NoInteractions = _inactivateSettings.NoInteractions ?? new List<InteractionItem>();
-                    HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
-                    NumberBox lastInteractionDays = rItem.FindControl( "nbNoInteractionDays" ) as NumberBox;
+                _inactivateSettings.NoInteractions = _inactivateSettings.NoInteractions ?? new List<InteractionItem>();
+                HiddenField interactionTypeId = rItem.FindControl( "hfInteractionTypeId" ) as HiddenField;
+                NumberBox lastInteractionDays = rItem.FindControl( "nbNoInteractionDays" ) as NumberBox;
                 var item = new InteractionItem( interactionTypeId.Value.AsGuid(), string.Empty )
                 {
-                    IsInteractionTypeEnabled =  isInterationTypeEnabled.Checked,
+                    IsInteractionTypeEnabled = isInterationTypeEnabled.Checked,
                     LastInteractionDays = lastInteractionDays.Text.AsInteger()
                 };
 
-                    _inactivateSettings.NoInteractions.Add( item );
- 
+                _inactivateSettings.NoInteractions.Add( item );
+
             }
 
             // Campus Update
@@ -618,7 +628,7 @@ namespace RockWeb.Blocks.Administration
             // Update Connection Status
             _updatePersonConnectionStatus.IsEnabled = cbUpdatePersonConnectionStatus.Checked;
             _updatePersonConnectionStatus.ConnectionStatusValueIdDataviewIdMapping.Clear();
-            foreach (var item in rptPersonConnectionStatusDataView.Items.OfType<RepeaterItem>())
+            foreach ( var item in rptPersonConnectionStatusDataView.Items.OfType<RepeaterItem>() )
             {
                 HiddenField hfPersonConnectionStatusValueId = item.FindControl( "hfPersonConnectionStatusValueId" ) as HiddenField;
                 DataViewItemPicker dvpPersonConnectionStatusDataView = item.FindControl( "dvpPersonConnectionStatusDataView" ) as DataViewItemPicker;

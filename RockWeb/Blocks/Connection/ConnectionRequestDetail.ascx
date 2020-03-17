@@ -1,9 +1,10 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionRequestDetail.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionRequestDetail" %>
-<Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Text="The information provided is not valid or you are not authorized to view this content." Visible="false" />
+
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-
+        <Rock:NotificationBox ID="nbSecurityWarning" runat="server" NotificationBoxType="Warning" Text="The information provided is not valid or you are not authorized to view this content." Visible="false" />
+        <asp:Panel ID="pnlDetail" runat="server">
         <asp:HiddenField ID="hfConnectionOpportunityId" runat="server" />
         <asp:HiddenField ID="hfConnectionRequestId" runat="server" />
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -269,6 +270,7 @@
                         <Rock:RockDropDownList ID="ddlActivityConnector" runat="server" Label="Connector" Required="true" ValidationGroup="Activity" />
                     </div>
                 </div>
+                <Rock:AttributeValuesContainer ID="avcActivityAttributes" runat="server"/>
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Note" TextMode="MultiLine" Rows="4" ValidationGroup="Activity" />
             </Content>
         </Rock:ModalDialog>
@@ -314,6 +316,6 @@
                 $("#<%=ddlTransferOpportunityConnector.ClientID%>").toggle($('#<%=rbTransferSelectConnector.ClientID%>').is(":checked"));
             })
         </script>
-
+        </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

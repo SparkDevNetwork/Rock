@@ -44,6 +44,9 @@ namespace RockWeb.Blocks.Communication
     [DisplayName( "Communication Entry Wizard" )]
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
+
+    #region Block Attributes
+
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
     [BinaryFileTypeField( "Image Binary File Type",
@@ -126,6 +129,7 @@ namespace RockWeb.Blocks.Communication
         DefaultBooleanValue = false,
         Order = 12 )]
 
+    #endregion Block Attributes
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
         #region Attribute Keys
@@ -391,7 +395,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            LoadDropDowns();
+            LoadDropDowns( communication );
 
             hfCommunicationId.Value = communication.Id.ToString();
             lTitle.Text = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
@@ -401,7 +405,6 @@ namespace RockWeb.Blocks.Communication
             tglBulkCommunication.Checked = communication.IsBulkCommunication;
 
             tglRecipientSelection.Checked = communication.Id == 0 || communication.ListGroupId.HasValue;
-            ddlCommunicationGroupList.SetValue( communication.ListGroupId );
 
             var segmentDataviewGuids = communication.Segments.SplitDelimitedValues().AsGuidList();
             if ( segmentDataviewGuids.Any() )
@@ -516,7 +519,8 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns()
+        /// <param name="communication">The communication.</param>
+        private void LoadDropDowns( Rock.Model.Communication communication )
         {
             var rockContext = new RockContext();
 
@@ -534,11 +538,13 @@ namespace RockWeb.Blocks.Communication
                 ddlCommunicationGroupList.Items.Add( new ListItem( communicationGroup.Name, communicationGroup.Id.ToString() ) );
             }
 
+            ddlCommunicationGroupList.SetValue( communication.ListGroupId );
+
             LoadCommunicationSegmentFilters();
 
             rblCommunicationGroupSegmentFilterType.Items.Clear();
-            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "All segment filters", SegmentCriteria.All.ToString() ) { Selected = true } );
-            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", SegmentCriteria.Any.ToString() ) );
+            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "All segment filters", SegmentCriteria.All.ToString() ) { Selected = communication.SegmentCriteria == SegmentCriteria.All } );
+            rblCommunicationGroupSegmentFilterType.Items.Add( new ListItem( "Any segment filters", SegmentCriteria.Any.ToString() ) { Selected = communication.SegmentCriteria == SegmentCriteria.Any } );
 
             UpdateRecipientListCount();
 
@@ -2565,71 +2571,29 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
 
             var emailMediumEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
             var smsMediumEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
-            Dictionary<int, CommunicationType?> communicationListGroupMemberCommunicationTypeLookup = new Dictionary<int, CommunicationType?>();
+            var communicationListGroupMemberCommunicationTypeLookup = new Dictionary<int, CommunicationType>();
 
-            var preferredCommunicationTypeAttribute = AttributeCache.Get( Rock.SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
-            var groupMemberPreferredCommunicationTypeAttributeDefault = ( CommunicationType? ) preferredCommunicationTypeAttribute.DefaultValue.AsIntegerOrNull();
             if ( communication.CommunicationType == CommunicationType.RecipientPreference )
             {
-                var attributeValueQry = new AttributeValueService( rockContext ).Queryable().Where( a => a.AttributeId == preferredCommunicationTypeAttribute.Id );
-                if ( communication.ListGroupId.HasValue )
-                {
-                    var communicationListGroupMemberCommunicationTypeList = new GroupMemberService( rockContext ).Queryable()
-                        .Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active )
-                        .Join( attributeValueQry, gm => gm.Id, av => av.EntityId, ( gm, av ) => new { gm.PersonId, av.ValueAsNumeric } )
-                        .ToList();
+                var communicationListGroupMemberCommunicationTypeList = new GroupMemberService( rockContext ).Queryable()
+                    .Where( a => a.GroupId == communication.ListGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active )
+                    .ToList();
 
-                    foreach ( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
-                    {
-                        var recipientPreference = ( CommunicationType? ) communicationListGroupMemberCommunicationType.ValueAsNumeric;
-                        communicationListGroupMemberCommunicationTypeLookup.AddOrIgnore( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );
-                    }
+                foreach ( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
+                {
+                    var recipientPreference = communicationListGroupMemberCommunicationType.CommunicationPreference;
+                    communicationListGroupMemberCommunicationTypeLookup.AddOrIgnore( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );
                 }
             }
 
             foreach ( var recipient in communication.Recipients )
             {
-                if ( communication.CommunicationType == CommunicationType.Email )
-                {
-                    recipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                }
-                else if ( communication.CommunicationType == CommunicationType.SMS )
-                {
-                    recipient.MediumEntityTypeId = smsMediumEntityType.Id;
-                }
-                else if ( communication.CommunicationType == CommunicationType.RecipientPreference )
-                {
-                    // if emailing to a communication list, first see if the recipient has a CommunicationPreference set as a GroupMember attribute for this list
-                    CommunicationType? recipientPreference = null;
-
-                    recipientPreference = communicationListGroupMemberCommunicationTypeLookup.GetValueOrNull( recipient.PersonAlias.PersonId ) ?? groupMemberPreferredCommunicationTypeAttributeDefault;
-
-                    // if not emailing to a communication list, or the recipient doesn't have a preference set in the list, get the preference from the Person record
-                    if ( recipientPreference == null || recipientPreference == CommunicationType.RecipientPreference )
-                    {
-                        recipientPreference = recipientPersonsLookup[recipient.PersonAlias.PersonId].CommunicationPreference;
-                    }
-
-                    if ( recipientPreference == CommunicationType.SMS )
-                    {
-                        // if the Recipient's preferred communication type is SMS, use that as the medium for this recipient
-                        recipient.MediumEntityTypeId = smsMediumEntityType.Id;
-                    }
-                    else if ( recipientPreference == CommunicationType.Email )
-                    {
-                        // if the Recipient's preferred communication type is Email, use that as the medium for this recipient
-                        recipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                    }
-                    else
-                    {
-                        // if the Recipient's preferred communication type neither Email or SMS, or not specified, default to sending as an Email
-                        recipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                    }
-                }
-                else
-                {
-                    throw new Exception( "Unexpected CommunicationType: " + communication.CommunicationType.ConvertToString() );
-                }
+                // GetValueOrNull will default to CommunicationType.RecipientPreference if not found in the dictionary.
+                var groupMemberPreference = communicationListGroupMemberCommunicationTypeLookup.GetValueOrNull( recipient.PersonAlias.PersonId );
+                var recipientPreference = recipientPersonsLookup[recipient.PersonAlias.PersonId].CommunicationPreference;
+                
+                recipient.MediumEntityTypeId = Rock.Model.Communication.DetermineMediumEntityTypeId( emailMediumEntityType.Id, smsMediumEntityType.Id,
+                                                communication.CommunicationType, groupMemberPreference, recipientPreference );
             }
 
             communication.ExcludeDuplicateRecipientAddress = cbDuplicatePreventionOption.Checked;
@@ -2708,10 +2672,5 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
         }
 
         #endregion
-
-
-
-
-
     }
 }

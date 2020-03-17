@@ -304,6 +304,18 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <summary>
+        /// Gets the copy value.
+        /// </summary>
+        /// <param name="originalValue">The original value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>string.Empty, which means we don't actually want to copy the linked matrix.</returns>
+        public override string GetCopyValue( string originalValue, RockContext rockContext )
+        {
+            // Don't copy
+            return string.Empty;
+        }
+
         #region Filter Control
 
         /// <summary>

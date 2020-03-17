@@ -98,6 +98,7 @@ namespace Rock.Model
             target.Description = source.Description;
             target.EnableFullActivityList = source.EnableFullActivityList;
             target.EnableFutureFollowup = source.EnableFutureFollowup;
+            target.EnableRequestSecurity = source.EnableRequestSecurity;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
