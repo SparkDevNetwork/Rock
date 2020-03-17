@@ -37,28 +37,20 @@
         <meta charset="utf-8">
         <title></title>
 
+        <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" ) %>"></script>
+
         <!-- Set the viewport width to device width for mobile -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5">
 
-
-        <asp:ContentPlaceHolder ID="cphLibraries" runat="server">
-            <!-- Libraries -->
-            <script src='<%= System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>'></script>
-            <script src='<%= ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>' ></script>
-            <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
-            <script src='<%= ResolveRockUrl("~~/Scripts/layout.js", true) %>' ></script>
-            <script src='<%= ResolveRockUrl("~~/Scripts/append-query.js", true) %>' ></script>
-            <script src='<%= ResolveRockUrl("~~/Scripts/swiper.js", true) %>' ></script>
-            <script src='<%= ResolveRockUrl("~~/Scripts/navigation.js", true) %>' ></script>
-            <script src='<%= ResolveRockUrl("~~/Scripts/search.js", true) %>' ></script>
-            <script src='<%= ResolveRockUrl("~/Scripts/modernizr.js" ) %>' ></script>
-
-            <!-- Included CSS Files -->
-            <link rel="stylesheet" href='<%= ResolveRockUrl("~~/Styles/bootstrap.css", true) %>'/>
-            <link rel="stylesheet" href='<%= ResolveRockUrl("~~/Styles/theme.css", true) %>'/>
-            <link rel="stylesheet" href='<%= ResolveRockUrl("~/Styles/developer.css", true) %>'/>
-
-        </asp:ContentPlaceHolder>
+        <!-- Libraries -->
+        <script src='<%# ResolveRockUrl("~~/Scripts/smooth-scroll.js", true) %>' ></script>
+        <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
+        <script src='<%# ResolveRockUrl("~~/Scripts/layout.js", true) %>' ></script>
+        <script src='<%# ResolveRockUrl("~~/Scripts/append-query.js", true) %>' ></script>
+        <script src='<%# ResolveRockUrl("~~/Scripts/swiper.js", true) %>' ></script>
+        <script src='<%# ResolveRockUrl("~~/Scripts/navigation.js", true) %>' ></script>
+        <script src='<%# ResolveRockUrl("~~/Scripts/search.js", true) %>' ></script>
+        <script src='<%# ResolveRockUrl("~/Scripts/modernizr.js" ) %>' ></script>
 
         <script>
             document.addEventListener("DOMContentLoaded", function(){
@@ -89,8 +81,12 @@
             });
         </script>
 
-
         <asp:ContentPlaceHolder ID="css" runat="server" />
+
+        <!-- Included CSS Files -->
+        <link rel="stylesheet" href='<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>'/>
+        <link rel="stylesheet" href='<%# ResolveRockUrl("~~/Styles/theme.css", true) %>'/>
+
         <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
     </head>
      
@@ -110,25 +106,8 @@
             </Rock:Lava>
 
             <div id="navigation">
-                <Rock:Lava ID="HideNav" runat="server">
-                    {% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav'  %}
-                    
-                    {% if hideNav == 'true' %}
-                        <div class="hidden">
-                    {% endif %}
-                </Rock:Lava>
-
                 <Rock:Zone Name="Login" runat="server" />
                 <Rock:Zone Name="Navigation" runat="server" />
-
-                <Rock:Lava ID="HideNavClose" runat="server">
-                    {% assign hideNav = 'Global' | Page:'QueryString' | Property:'hidenav'  %}
-                    
-                    {% if hideNav == 'true' %}
-                        </div>
-                    {% endif %}
-                </Rock:Lava>
-
             </div>
             <div id="navigation-secondary" class="position-fixed top-zero width-full" style="z-index: 10; margin-top: 75px;">
                 <Rock:Zone Name="Header" runat="server" />
