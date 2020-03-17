@@ -103,11 +103,9 @@ namespace Rockweb.Blocks.Crm
 </p>";
 
         private const string ResultsMessageDefaultValue = @"
-<div class='row'>
-    <div class='col-md-12'>
-    <h2 class='h2'> Dominant Gifts</h2>
-    </div>
-    <div class='col-md-9'>
+<div>
+    <h2 class='h2'>Dominant Gifts</h2>
+    <div>
         <div class='table-responsive'>
             <table class='table'>
                 <thead>
@@ -144,12 +142,9 @@ namespace Rockweb.Blocks.Crm
         </div>
     </div>
 </div>
-
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Supportive Gifts</h2>
-    </div>
-    <div class='col-md-9'>
+<div>
+    <h2 class='h2'>Supportive Gifts</h2>
+    <div>
         <div class='table-responsive'>
             <table class='table'>
                 <thead>
@@ -185,12 +180,10 @@ namespace Rockweb.Blocks.Crm
             </table>
         </div>
     </div>
-</div?
-<div class='row'>
-    <div class='col-md-12'>
-        <h2 class='h2'> Other Gifts</h2>
-    </div>
-    <div class='col-md-9'>
+</div>
+<div>
+    <h2 class='h2'>Other Gifts</h2>
+    <div>
         <div class='table-responsive'>
             <table class='table'>
                 <thead>
@@ -222,11 +215,30 @@ namespace Rockweb.Blocks.Crm
                             </td>
                         </tr>
                     {% endif %}
-            </tbody>
+                </tbody>
             </table>
         </div>
     </div>
-</div>";
+</div>
+{% if GiftScores != null and GiftScores != empty %}
+    <div>
+        <h2 class='h2'>Ranked Gifts</h2>
+        <p>
+            The following graph shows your spiritual gifts ranked from top to bottom.
+        </p>
+        <div class='panel panel-default'>
+            <div class='panel-body'>
+                {[ chart type:'horizontalBar' ]}
+                    {% assign sortedScores = GiftScores | OrderBy:'Percentage desc,SpiritualGiftName' %}
+                    {% for score in sortedScores %}
+                        [[ dataitem label:'{{ score.SpiritualGiftName }}' value:'{{ score.Percentage }}' fillcolor:'#709AC7' ]]
+                        [[ enddataitem ]]
+                    {% endfor %}
+                {[ endchart ]}
+            </div>
+        </div>
+    </div>
+{% endif %}";
 
         #endregion AttributeDefaultValues
 
@@ -453,9 +465,9 @@ namespace Rockweb.Blocks.Crm
             }
             else
             {
-                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value ) );
-                SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
                 var resultData = _assessmentResponses.ToDictionary( a => a.Code, b => b.Response.Value );
+                SpiritualGiftsService.AssessmentResults result = SpiritualGiftsService.GetResult( resultData );
+                SpiritualGiftsService.SaveAssessmentResults( _targetPerson, result );
                 var rockContext = new RockContext();
 
                 var assessmentService = new AssessmentService( rockContext );
@@ -479,7 +491,13 @@ namespace Rockweb.Blocks.Crm
 
                 assessment.Status = AssessmentRequestStatus.Complete;
                 assessment.CompletedDateTime = RockDateTime.Now;
-                assessment.AssessmentResultData = new { Result = resultData, TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds }.ToJson();
+                assessment.AssessmentResultData = new SpiritualGiftsService.AssessmentResultData
+                {
+                    Result = resultData,
+                    ResultScores = result.SpiritualGiftScores,
+                    TimeToTake = RockDateTime.Now.Subtract( StartDateTime ).TotalSeconds
+                }.ToJson();
+
                 rockContext.SaveChanges();
 
                 ShowResult( result, assessment );
@@ -618,7 +636,7 @@ namespace Rockweb.Blocks.Crm
             // If assessment is completed show the results
             if ( assessment.Status == AssessmentRequestStatus.Complete )
             {
-                SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
+                SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson, assessment );
                 ShowResult( savedScores, assessment );
                 return;
             }
@@ -630,7 +648,7 @@ namespace Rockweb.Blocks.Crm
                     // If assessment is pending and the current person is not the one assigned the show previouslyCompletedAssessment results
                     if ( previouslyCompletedAssessment != null )
                     {
-                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson );
+                        SpiritualGiftsService.AssessmentResults savedScores = SpiritualGiftsService.LoadSavedAssessmentResults( _targetPerson, previouslyCompletedAssessment );
                         ShowResult( savedScores, previouslyCompletedAssessment, true );
                         return;
                     }
@@ -746,6 +764,7 @@ namespace Rockweb.Blocks.Crm
                 mergeFields.Add( "DominantGifts", spiritualGifts.DefinedValues.Where( a => result.DominantGifts.Contains( a.Guid ) ).ToList() );
                 mergeFields.Add( "SupportiveGifts", spiritualGifts.DefinedValues.Where( a => result.SupportiveGifts.Contains( a.Guid ) ).ToList() );
                 mergeFields.Add( "OtherGifts", spiritualGifts.DefinedValues.Where( a => result.OtherGifts.Contains( a.Guid ) ).ToList() );
+                mergeFields.Add( "GiftScores", result.SpiritualGiftScores );
             }
 
             lResult.Text = GetAttributeValue( AttributeKey.ResultsMessage ).ResolveMergeFields( mergeFields );
