@@ -10,7 +10,7 @@
     JOIN ContentChannelItem cci
     ON cci.ContentChannelId = cc.Id
     JOIN ContentChannel pcc
-    ON av.Value = pcc.Guid
+    ON av.Value = convert(nvarchar(50), pcc.Guid)
     WHERE a.[Key] = 'PrimaryParentChannel'
     AND a.EntityTypeId = 209
     AND cci.Id = {{ cciid }}
