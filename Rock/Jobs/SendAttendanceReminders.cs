@@ -134,6 +134,13 @@ namespace Rock.Jobs
                 HandleErrorMessages( context, errorMessages );
             }
 
+            var results = new StringBuilder();
+            if(jobPreferredCommunicationType != CommunicationType.Email && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
+            {
+                results.AppendLine($"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email.");
+                jobPreferredCommunicationType = CommunicationType.Email;
+            }
+
             var occurrences = GetOccurenceDates( groupType, dataMap, rockContext );
 
             // Get the groups that have occurrences
@@ -144,7 +151,8 @@ namespace Rock.Jobs
 
             var attendanceRemindersSent = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType, isSmsEnabled, out var errors );
 
-            context.Result = $"{attendanceRemindersSent} attendance reminders sent";
+            results.AppendLine( $"{attendanceRemindersSent} attendance reminders sent." );
+            context.Result =  results.ToString();
             HandleErrorMessages( context, errors );
         }
 
@@ -524,9 +532,13 @@ namespace Rock.Jobs
         {
             if ( errorMessages.Any() )
             {
-                StringBuilder sb = new StringBuilder( context.Result.ToString() );
+                StringBuilder sb = new StringBuilder();
 
-                sb.AppendLine( $"{errorMessages.Count} Errors: " );
+                sb.AppendLine( context.Result.ToString() );
+
+                var error = "Error".PluralizeIf( errorMessages.Count > 1 );
+
+                sb.AppendLine( $"{errorMessages.Count} {error}:" );
 
                 errorMessages.ForEach( e => { sb.AppendLine( e ); } );
 
