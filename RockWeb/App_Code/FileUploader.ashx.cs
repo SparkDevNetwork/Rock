@@ -186,9 +186,17 @@ namespace RockWeb
             string untrustedFolderPath = context.Request.Form["folderPath"] ?? string.Empty;
             string encryptedRootFolder = context.Request.QueryString["rootFolder"];
 
-            /* Scrub the file name */
+            // Scrub the file name 
 
-            string scrubedFileName = ScrubFileName( untrustedFileName );
+            /*
+	            3/17/2020 - JME 
+	            And remove spaces, I did not add the removal of spaces to the scrub as the scrub logic
+                has existed for a while and is used in other places that may not want that. We can move
+                this to the scrub should we desire in the future.
+
+                Reason: The theme editor needs files with no spaces to be used in CSS
+            */
+            string scrubedFileName = ScrubFileName( untrustedFileName ).Replace(" ", "_");
 
             if ( string.IsNullOrWhiteSpace( scrubedFileName ) )
             {

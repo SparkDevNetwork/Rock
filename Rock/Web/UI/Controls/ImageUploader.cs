@@ -349,7 +349,7 @@ namespace Rock.Web.UI.Controls
                     else
                     {
                         var rootFolderPath = ( this.RootFolder ?? "~/Content" ).EnsureTrailingForwardslash();
-                        if ( !_hfContentFileSource.Value.StartsWith( rootFolderPath ) )
+                        if ( !_hfContentFileSource.Value.StartsWith( rootFolderPath ) && !_hfContentFileSource.Value.StartsWith("~") )
                         {
                             // if NonBinaryFileSrc only specified the filename, include the rootFolderPath
                             return rootFolderPath + _hfContentFileSource.Value;
