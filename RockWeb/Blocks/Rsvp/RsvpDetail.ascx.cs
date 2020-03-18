@@ -1123,6 +1123,8 @@ var dnutChart = new Chart(dnutCtx, {{
         /// </summary>
         private void BindFilter()
         {
+            cblStatus.Items.Clear();
+
             foreach ( Statuses status in Enum.GetValues( typeof( Statuses ) ) )
             {
                 cblStatus.Items.Add( new ListItem( status.ConvertToString().SplitCase(), status.ConvertToInt().ToString() ) );
