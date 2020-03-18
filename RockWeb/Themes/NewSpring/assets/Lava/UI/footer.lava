@@ -1,19 +1,12 @@
+<style>
+.fa-facebook-square, .fa-twitter-square, .fa-instagram { transition: all .2s ease; }
+.fa-facebook-square:hover { color: #4467ca; }
+.fa-twitter-square:hover { color: #1DA1F2; }
+.fa-instagram:hover { color: #FDD362 }
+</style>
+
 {% assign orgAddress = 'Global' | Attribute:'OrganizationAddress','Object' %}
 {% assign orgPhone = 'Global' | Attribute:'OrganizationPhone' %}
-
-{% if CurrentPerson and CurrentPerson != empty %}
-    {% assign orgCampus = CurrentPerson | Campus %}
-    {% assign orgStreet = orgCampus.Location.Street1 %}
-{% endif %}
-
-{% if orgStreet and orgStreet != empty %}
-    {% assign orgAddress = orgCampus.Location %}
-{% endif %}
-
-{% if orgCampus.PhoneNumber and orgCampus.PhoneNumber != empty %}
-    {% assign orgPhone = orgCampus.PhoneNumber %}
-    {% capture orgPhone %}({{ orgPhone | Slice:0,3 }}) {{ orgPhone | Slice:4,9 }}{% endcapture %}
-{% endif %}
 
 <footer class="position-relative shell soft-double xs-soft-double-ends bg-gray-dark rounded shadowed">
     <a href="#content" data-scroll title="Scroll to Top">
@@ -21,7 +14,7 @@
     </a>
     <div class="row sans-serif strong text-decoration-none">
         <div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom xs-push-half-bottom">
-            <h2 class="h5 text-white push-half-bottom">NewSpring {% if orgCampus and orgCampus != empty %}{{ orgCampus.Name }}{% else %}Church{% endif %}</h2>
+            <h2 class="h5 text-white push-half-bottom">{{ 'Global' | Attribute:'OrganizationName' }}</h2>
             <span class="text-white">
                 <p class="flush">
                 {{ orgAddress.Street1 }}{% if orgAddress.Street2 != empty %}{{ orgAddress.Street2 }}{% endif %} <br>{{ orgAddress.City }}, {{ orgAddress.State }} {% assign postalCodeParts = orgAddress.PostalCode | Split:'-' %}{{ postalCodeParts[0]  }}</p>
@@ -40,6 +33,7 @@
                 <li><a href="/privacy">Privacy Policy</a></li>
                 <li><a href="/terms">Terms of Use</a></li>
                 <li><a href="/reprinting-and-reposting">Reprinting &amp; Reposting</a></li>
+                <li><a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=2">Report Website Issue</a></li>
             </ul>
         </div><div class="col-xs-12 col-sm-6 col-md-3 xs-text-center push-bottom">
             <h2 class="h5 text-white push-half-bottom">Social</h2>
@@ -51,5 +45,10 @@
             
         </div>
     </div>
-    <p class="sans-serif strong text-white text-decoration-none flush-bottom xs-text-center"><small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on <i class="fab fa-rockrms" title="Rock RMS"></i> Rock RMS</a> &middot; <a href="/workflows/530?CurrentPage={{ 'Global' | Page:'Url' }}&PageId={{ 'Global' | Page:'Id' }}&Source=2">Report Website Issue</a></small></p>
+    <p class="sans-serif strong text-white text-decoration-none flush-bottom xs-text-center"><small><a href="https://www.rockrms.com" class="text-white text-hover-white" target="_blank">Built on 
+    <span class="position-relative fa-layers fa-lg fa-fw" style="top:5px;">
+        <i class="fas fa-circle" style="color:white"></i>
+        <i class="fa-inverse fab fa-rockrms" style="color: #ee7725; transform: scale(1.1);" data-fa-transform="shrink-6"></i>
+    </span>
+    Rock RMS</a></small></p>
 </footer>
