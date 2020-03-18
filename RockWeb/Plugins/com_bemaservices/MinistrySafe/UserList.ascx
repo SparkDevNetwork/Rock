@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="UserList.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Security.MinistrySafe.UserList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="UserList.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.MinistrySafe.UserList" %>
 
 <asp:UpdatePanel ID="upList" runat="server">
     <ContentTemplate>

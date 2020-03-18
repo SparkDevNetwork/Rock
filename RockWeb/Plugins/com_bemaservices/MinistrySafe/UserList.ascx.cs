@@ -29,7 +29,7 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_bemaservices.Security.MinistrySafe
+namespace RockWeb.Plugins.com_bemaservices.MinistrySafe
 {
     [DisplayName( "User List" )]
     [Category( "BEMA Services > Ministry Safe" )]
