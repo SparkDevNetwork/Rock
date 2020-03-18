@@ -44,6 +44,9 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.MemoFieldType" } )]
     [EnumField( "Status", "The  status for the new content channel item.", typeof( ContentChannelItemStatus ), true, "1", "", 6 )]
     [KeyValueListField( "Item Attribute Key", "Used to match the current workflow's attribute keys to the keys of the content channel item. The new content channel item will receive the values from this workflow's attributes.", false, keyPrompt: "Source Attribute", valuePrompt: "Target Attribute", order: 7 )]
+    [WorkflowAttribute( "Content Channel Item Attribute", "An optional content channel item attribute to store the item that is created.", false, "", "", 6, null,
+        new string[] { "Rock.Field.Types.ContentChannelItemFieldType" } )]
+
     public class AddContentChannelItem : ActionComponent
     {
         /// <summary>
@@ -191,6 +194,8 @@ namespace Rock.Workflow.Action
             contentChannelItemService.Add( contentChannelItem );
             rockContext.SaveChanges();
 
+            SetCreatedItemAttribute( action, "ContentChannelItemAttribute", contentChannelItem, rockContext );
+
             Dictionary<string, string> sourceKeyMap = null;
             var itemAttributeKeys = GetAttributeValue( action, "ItemAttributeKey" );
             if ( !string.IsNullOrWhiteSpace( itemAttributeKeys ) )
@@ -232,5 +237,30 @@ namespace Rock.Workflow.Action
 
             return true;
         }
+
+        /// <summary>
+        /// Sets the Guid of the created item as the Workflow value of the attribute specified by the attributeKey.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="action">The <see cref="WorkflowAction"/>.</param>
+        /// <param name="attributeKey">The key of the attribute.</param>
+        /// <param name="entity">Any Rock entity.</param>
+        /// <param name="rockContext">The DB context.</param>
+        private void SetCreatedItemAttribute<T>( WorkflowAction action, string attributeKey, T entity, RockContext rockContext ) where T : Entity<T>, new()
+        {
+            // If request attribute was specified, requery the request and set the attribute's value
+            Guid? attributeGuid = GetAttributeValue( action, attributeKey ).AsGuidOrNull();
+            if ( attributeGuid.HasValue )
+            {
+                // Ensure the entity has been added to the database before setting the attribute value.
+                var entityService = new Service<T>( rockContext );
+                entity = entityService.Get( entity.Id );
+                if ( entity != null )
+                {
+                    SetWorkflowAttributeValue( action, attributeGuid.Value, entity.Guid.ToString() );
+                }
+            }
+        }
+
     }
 }

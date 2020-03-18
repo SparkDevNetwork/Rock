@@ -500,7 +500,20 @@ namespace Rockweb.Blocks.Crm
 
                 rockContext.SaveChanges();
 
-                ShowResult( result, assessment );
+                // Since we are rendering chart.js we have to register the script or reload the page.
+                if ( _assessmentId == 0 )
+                {
+                    var removeParams = new List<string>
+                    {
+                        PageParameterKey.AssessmentId
+                    };
+
+                    NavigateToCurrentPageReferenceWithRemove( removeParams );
+                }
+                else
+                {
+                    this.NavigateToCurrentPageReference();
+                }
             }
         }
 
