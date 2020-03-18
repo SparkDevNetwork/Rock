@@ -646,7 +646,7 @@ namespace Rock.Web.UI
             if ( showDebugTimings )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                slDebugTimings.AppendFormat( "OnInit [{0}ms] @ {1} \n", stopwatchInitEvents.Elapsed.TotalMilliseconds, tsDuration.TotalMilliseconds );
+                slDebugTimings.AppendFormat( "OnInit @ {1} [{0}ms] \n", stopwatchInitEvents.Elapsed.TotalMilliseconds, tsDuration.TotalMilliseconds );
                 stopwatchInitEvents.Restart();
             }
 
@@ -708,7 +708,7 @@ namespace Rock.Web.UI
 
             if ( showDebugTimings )
             {
-                slDebugTimings.AppendFormat( "CheckingForLogout [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                slDebugTimings.AppendFormat( "\tCheckingForLogout [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                 stopwatchInitEvents.Restart();
             }
 
@@ -763,7 +763,7 @@ namespace Rock.Web.UI
 
             if ( showDebugTimings )
             {
-                slDebugTimings.AppendFormat( "CreateRockContext [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                slDebugTimings.AppendFormat( "\tCreateRockContext [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                 stopwatchInitEvents.Restart();
             }
 
@@ -780,7 +780,7 @@ namespace Rock.Web.UI
 
             if ( showDebugTimings )
             {
-                slDebugTimings.AppendFormat( "GetCurrentUser [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                slDebugTimings.AppendFormat( "\tGetCurrentUser [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                 stopwatchInitEvents.Restart();
             }
 
@@ -815,7 +815,7 @@ namespace Rock.Web.UI
 
                 if ( showDebugTimings )
                 {
-                    slDebugTimings.AppendFormat( "GetCurrentPerson [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                    slDebugTimings.AppendFormat( "\tGetCurrentPerson [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -900,7 +900,7 @@ namespace Rock.Web.UI
 
                 if ( showDebugTimings )
                 {
-                    slDebugTimings.AppendFormat( "isCurrentPersonAuthorized [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                    slDebugTimings.AppendFormat( "\tisCurrentPersonAuthorized [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -983,7 +983,7 @@ namespace Rock.Web.UI
 
                         if ( showDebugTimings )
                         {
-                            slDebugTimings.AppendFormat( "Set Page Context(s) [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                            slDebugTimings.AppendFormat( "\tSet Page Context(s) [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1028,7 +1028,7 @@ namespace Rock.Web.UI
 
                         if ( showDebugTimings )
                         {
-                            slDebugTimings.AppendFormat( "Check Page Context(s) [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                            slDebugTimings.AppendFormat( "\tCheck Page Context(s) [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1061,7 +1061,7 @@ namespace Rock.Web.UI
 
                     if ( showDebugTimings )
                     {
-                        slDebugTimings.AppendFormat( "canAdministratePage [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                        slDebugTimings.AppendFormat( "\tcanAdministratePage [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1116,7 +1116,7 @@ namespace Rock.Web.UI
 
                     if ( showDebugTimings )
                     {
-                        slDebugTimings.AppendFormat( "start loading blocks [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
+                        slDebugTimings.AppendFormat( "\tStart Loading Blocks [{0}ms]\n", stopwatchInitEvents.Elapsed.TotalMilliseconds );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1262,7 +1262,7 @@ namespace Rock.Web.UI
                             {
                                 stopwatchBlockInit.Stop();
                                 slDebugTimings.AppendFormat(
-                                    "create/init block {0} <span class='label label-{2}'>[{1}ms]</span>\n",
+                                    "\t   Create/Init Block {0} <span class='label label-{2}'>[{1}ms]</span>\n",
                                     block.Name,
                                     stopwatchBlockInit.Elapsed.TotalMilliseconds,
                                     stopwatchBlockInit.Elapsed.TotalMilliseconds > 500 ? "danger" : "info");
@@ -1473,7 +1473,7 @@ namespace Rock.Web.UI
                 if ( showDebugTimings )
                 {
                     TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-                    slDebugTimings.AppendFormat( "done oninit [{0}ms] @ {1} \n", stopwatchInitEvents.Elapsed.TotalMilliseconds, tsDuration.TotalMilliseconds );
+                    slDebugTimings.AppendFormat( "Done OnInit @ {1} [{0}ms] \n", stopwatchInitEvents.Elapsed.TotalMilliseconds, tsDuration.TotalMilliseconds );
                     stopwatchInitEvents.Restart();
                 }
 
