@@ -1,8 +1,8 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="UpdateBemaCode.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Support.UpdateBemaCode" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BemaPluginInstaller.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Support.BemaPluginInstaller" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
+        <Rock:NotificationBox ID="nbInfo" runat="server" Visible="false" />
         <asp:Panel ID="pnlView" runat="server">
             <div class="alert alert-info">
                 <p>A newer version of BEMA Custom code is available for installation.</p>
