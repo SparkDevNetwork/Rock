@@ -151,6 +151,51 @@ namespace Rock.Model
         #region Overrides
 
         /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+            RockContext rockContext = null;
+
+            // Get PersonAlias.
+            var person = this.PersonAlias?.Person;
+            if ( person == null )
+            {
+                if ( rockContext == null )
+                {
+                    rockContext = new RockContext();
+                }
+                var personAlias = new PersonAliasService( rockContext ).Get( this.PersonAliasId );
+                person = personAlias.Person;
+            }
+
+            // Get StepType.
+            var stepType = this.StepType;
+            if ( stepType == null )
+            {
+                if ( rockContext == null )
+                {
+                    rockContext = new RockContext();
+                }
+                stepType = new StepTypeService( rockContext ).Get( this.StepTypeId );
+            }
+
+            if ( person != null && stepType != null )
+            {
+                if ( stepType.AllowMultiple )
+                {
+                    // If "AllowMultiple" is set, include the Order to distinguish this from duplicate steps.
+                    return $"{stepType.Name} {this.Order} - {person.FullName}";
+                }
+
+                return $"{stepType.Name} - {person.FullName}";
+            }
+
+            return base.ToString();
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         public override bool IsValid
@@ -192,12 +237,12 @@ namespace Rock.Model
 
         #endregion Overrides
 
-    #region Entity Configuration
+        #region Entity Configuration
 
-    /// <summary>
-    /// Step Configuration class.
-    /// </summary>
-    public partial class StepConfiguration : EntityTypeConfiguration<Step>
+        /// <summary>
+        /// Step Configuration class.
+        /// </summary>
+        public partial class StepConfiguration : EntityTypeConfiguration<Step>
         {
             /// <summary>
             /// Initializes a new instance of the <see cref="StepConfiguration"/> class.
