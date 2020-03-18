@@ -422,9 +422,9 @@ namespace Rock.Transactions
                 return;
             }
 
-            var userAgentsLookup = interactionInfosToProcess.Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => InteractionDeviceType.GetClientType( v ) );
+            var userAgentsLookup = interactionInfosToProcess.Where(a => a.UserAgent.IsNotNullOrWhiteSpace()).Select( a => a.UserAgent ).Distinct().ToList().ToDictionary( a => a, v => InteractionDeviceType.GetClientType( v ) );
 
-            interactionInfosToProcess = interactionInfosToProcess.Where( a => a.LogCrawlers || userAgentsLookup.GetValueOrNull( a.UserAgent ) != "Crawler" ).ToList();
+            interactionInfosToProcess = interactionInfosToProcess.Where( a => a.LogCrawlers || a.UserAgent.IsNullOrWhiteSpace() || userAgentsLookup.GetValueOrNull( a.UserAgent ) != "Crawler" ).ToList();
 
             if ( !interactionInfosToProcess.Any() )
             {
