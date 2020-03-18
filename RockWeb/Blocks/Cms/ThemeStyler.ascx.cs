@@ -232,7 +232,7 @@ $('.js-panel-toggle').on('click', function (e) {
                         }
                     }
 
-                    
+
 
                     // find original value
                     if ( originalValues.ContainsKey( variableName ) )
@@ -245,7 +245,7 @@ $('.js-panel-toggle').on('click', function (e) {
                         }
                     }
                 }
-               
+
             }
 
             File.WriteAllText( _variableOverrideFile, overrideFile.ToString() );
@@ -600,7 +600,7 @@ $('.js-panel-toggle').on('click', function (e) {
                                     imgUploader.IsBinaryFile = false;
                                     imgUploader.NoPictureUrl = "";
                                     imgUploader.Label = variableName;
-                                    imgUploader.RootFolder = "~/Contents/Themes/" + _themeName;
+                                    imgUploader.RootFolder = "~/Content/Themes/" + _themeName;
                                     imgUploader.ImageRemoved += ImgUploader_ImageRemoved;
                                     imgUploader.FormGroupCssClass = "clearable-input";
 
