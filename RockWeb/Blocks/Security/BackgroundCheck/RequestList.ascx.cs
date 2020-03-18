@@ -359,8 +359,11 @@ namespace RockWeb.Blocks.Security.BackgroundCheck
         #endregion
 
         /// <summary>
-        /// 
+        /// The Background Check table row columns tags
         /// </summary>
+        [DotLiquid.LiquidType("Name", "Id", "PersonId", "HasWorkflow", "RequestDate",
+            "ResponseDate", "RecordFound", "RecordFoundLabel", "HasResponseData",
+            "ResponseDocumentText", "ResponseDocumentId")]
         public class BackgroundCheckRow
         {
             public string Name { get; set; }

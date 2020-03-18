@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -348,6 +348,13 @@ namespace RockWeb.Blocks.Administration
                         interactionChannelType.LastInteractionDays = settingInteractionItem.LastInteractionDays;
                     }
                 }
+
+                // Now UNCHECK all channels that were NOT *previously* saved
+                var remainingChannels = reactivateChannelTypes.Where( c => !_reactivateSettings.Interactions.Any( x => x.Guid == c.Guid ) );
+                foreach ( var nonSavedInteractionItem in remainingChannels )
+                {
+                    nonSavedInteractionItem.IsInteractionTypeEnabled = false;
+                }
             }
 
             rInteractions.DataSource = reactivateChannelTypes;
@@ -384,6 +391,13 @@ namespace RockWeb.Blocks.Administration
                         interactionChannelType.IsInteractionTypeEnabled = noneSelected || settingInteractionItem.IsInteractionTypeEnabled;
                         interactionChannelType.LastInteractionDays = settingInteractionItem.LastInteractionDays;
                     }
+                }
+
+                // Now UNCHECK all channels that were NOT *previously* saved
+                var remainingChannels = inactivateChannelTypes.Where( c => ! _inactivateSettings.NoInteractions.Any( x => x.Guid == c.Guid ) );
+                foreach ( var nonSavedInteractionItem in remainingChannels )
+                {
+                    nonSavedInteractionItem.IsInteractionTypeEnabled = false;
                 }
             }
 
