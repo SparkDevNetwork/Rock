@@ -19,6 +19,8 @@
                 </div>
             </div>
 
+            <Rock:NotificationBox ID="nbConfigurationError" runat="server" NotificationBoxType="Danger" Text="" Visible="false" />
+
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-12">

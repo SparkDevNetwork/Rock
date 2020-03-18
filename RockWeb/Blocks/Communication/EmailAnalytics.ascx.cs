@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Communication
@@ -291,8 +292,14 @@ namespace RockWeb.Blocks.Communication
                 lTitle.Text = "Email Analytics";
             }
 
-            var interactionChannelCommunication = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
-            var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id );
+            var interactionChannelCommunicationId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
+            if ( !interactionChannelCommunicationId.HasValue )
+            {
+                nbConfigurationError.Text = "Rock.SystemGuid.InteractionChannel.COMMUNICATION not found in database";
+                return;
+            }
+
+            var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.EntityId.HasValue ).Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunicationId.Value );
 
             List<int> communicationIdList = null;
             if ( communicationId.HasValue )
@@ -316,7 +323,9 @@ namespace RockWeb.Blocks.Communication
                     a.InteractionDateTime,
                     a.Operation,
                     a.InteractionData,
-                    CommunicationRecipientId = a.EntityId
+                    CommunicationRecipientId = a.EntityId.Value,
+                    InteractionSessionDeviceTypeClientType = a.InteractionSession.DeviceType.ClientType,
+                    InteractionSessionDeviceTypeApplication = a.InteractionSession.DeviceType.Application
                 } )
                 .ToList();
 
@@ -386,7 +395,7 @@ namespace RockWeb.Blocks.Communication
             List<int> cumulativeOpensList = new List<int>();
             List<int> openCountsList = interactionsSummary.Select( a => a.OpenCounts ).ToList();
             int openCountsSoFar = 0;
-            foreach (var openCounts in openCountsList)
+            foreach ( var openCounts in openCountsList )
             {
                 openCountsSoFar += openCounts;
                 cumulativeOpensList.Add( openCountsSoFar );
@@ -434,13 +443,13 @@ namespace RockWeb.Blocks.Communication
             // Unique Clicks is the number of times a Recipient clicked at least once in an email
             int uniqueClicks = interactionsList.Where( a => a.Operation == "Click" ).GroupBy( a => a.CommunicationRecipientId ).Count();
 
-            string actionsStatFormatNumber =  "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:#,##0}</span>";
+            string actionsStatFormatNumber = "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:#,##0}</span>";
             string actionsStatFormatPercent = "<span class='{0}'>{1}</span><br><span class='js-actions-statistic' title='{2}' style='font-size: 45px; font-weight: 700; line-height: 40px;'>{3:P2}</span>";
 
-            if ( deliveredRecipientCount.HasValue  )
+            if ( deliveredRecipientCount.HasValue )
             {
                 lDelivered.Text = string.Format( actionsStatFormatNumber, "label label-default", "Delivered", "The number of recipients that the email was successfully delivered to", deliveredRecipientCount );
-                lPercentOpened.Text = string.Format( actionsStatFormatPercent, "label label-opened", "Percent Opened", "The percent of the delivered emails that were opened at least once", deliveredRecipientCount > 0 ? ( decimal) uniqueOpens  / deliveredRecipientCount : 0 );
+                lPercentOpened.Text = string.Format( actionsStatFormatPercent, "label label-opened", "Percent Opened", "The percent of the delivered emails that were opened at least once", deliveredRecipientCount > 0 ? ( decimal ) uniqueOpens / deliveredRecipientCount : 0 );
                 lFailedRecipients.Text = string.Format( actionsStatFormatNumber, "label label-danger", "Failed Recipients", "The number of emails that failed to get delivered", failedRecipientCount );
 
                 // just in case there are more opens then delivered, don't let it go negative
@@ -490,8 +499,8 @@ namespace RockWeb.Blocks.Communication
             int interactionCount = interactionsList.Count();
 
             /* Clients-In-Use (Client Type) Pie Chart*/
-            var clientsUsageByClientType = interactionQuery
-                .GroupBy( a => ( a.InteractionSession.DeviceType.ClientType ?? "Unknown" ).ToLower() ).Select( a => new ClientTypeUsageInfo
+            var clientsUsageByClientType = interactionsList
+                .GroupBy( a => ( a.InteractionSessionDeviceTypeClientType ?? "Unknown" ).ToLower() ).Select( a => new ClientTypeUsageInfo
                 {
                     ClientType = a.Key,
                     UsagePercent = a.Count() * 100.00M / interactionCount
@@ -512,8 +521,8 @@ namespace RockWeb.Blocks.Communication
             nbClientsDoughnutChartMessage.Text = "No client usage activity" + ( !string.IsNullOrEmpty( noDataMessageName ) ? " for " + noDataMessageName : string.Empty );
 
             /* Clients-In-Use (Application) Grid */
-            var clientsUsageByApplication = interactionQuery
-            .GroupBy( a => a.InteractionSession.DeviceType.Application ).Select( a => new ApplicationUsageInfo
+            var clientsUsageByApplication = interactionsList
+            .GroupBy( a => a.InteractionSessionDeviceTypeApplication ).Select( a => new ApplicationUsageInfo
             {
                 Application = a.Key,
                 UsagePercent = ( a.Count() * 100.00M / interactionCount )
@@ -538,7 +547,6 @@ namespace RockWeb.Blocks.Communication
                                 .OrderByDescending( a => a.UniqueClickCount )
                                 .Take( 100 )
                                 .ToList();
-
 
             if ( topClicks.Any() )
             {
