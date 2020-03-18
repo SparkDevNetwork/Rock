@@ -42,12 +42,11 @@ namespace RockWeb.Plugins.com_bemaservices.Support
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Update Bema Code" )]
+    [DisplayName( "BEMA Plugin Installer" )]
     [Category( "BEMA Services > Support" )]
     [Description( "Allows a client to download the latest copy of their BEMA Code." )]
     [UrlLinkField( "Server Url", "The Url location to check for the latest BEMA packages." )]
-    [LinkedPage( "Install Page", "Page reference to use for the install / update page.", false, "", "", 1 )]
-    public partial class UpdateBemaCode : Rock.Web.UI.RockBlock
+    public partial class BemaPluginInstaller : Rock.Web.UI.RockBlock
     {
         #region Fields
 
@@ -129,9 +128,8 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                 // download file
                 try
                 {
-                    // WebClient wc = new WebClient();
-                    //  wc.DownloadFile( sourceFile, destinationFile );
-                    File.Copy( sourceFile, destinationFile );
+                    WebClient wc = new WebClient();
+                    wc.DownloadFile( sourceFile, destinationFile );
                 }
                 catch ( Exception ex )
                 {
@@ -268,28 +266,6 @@ namespace RockWeb.Plugins.com_bemaservices.Support
             }
         }
 
-        private static void UpdateInstalledVersion( UpdateFile latestVersion )
-        {
-            var attribute = AttributeCache.Get( "BDA1D5CD-91C3-4D8A-8BFA-09698DF816AD" );
-
-            var rockContext = new RockContext();
-            var attributeValueService = new AttributeValueService( rockContext );
-            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null );
-            if ( attributeValue == null )
-            {
-                attributeValue = new AttributeValue
-                {
-                    AttributeId = attribute.Id,
-                    EntityId = null
-                };
-                attributeValueService.Add( attributeValue );
-            }
-
-            attributeValue.Value = String.Format( "{0}.{1}.{2}.{3}", latestVersion.Major, latestVersion.Minor, latestVersion.Build, latestVersion.Revision );
-
-            rockContext.SaveChanges();
-        }
-
         #endregion
 
         #region Methods
@@ -362,23 +338,74 @@ namespace RockWeb.Plugins.com_bemaservices.Support
         {
             var url = GetAttributeValue( "ServerUrl" );
 
-            List<UpdateFile> updateFiles = new List<UpdateFile>();
-            string[] fileEntries = Directory.GetFiles( url );
-            foreach ( var fileEntry in fileEntries )
+            if ( url.IsNotNullOrWhiteSpace() )
             {
-                var fileName = fileEntry.Replace( url, "" ).Replace( "\\", "" );
-                var versionNumber = fileName.Replace( "Autobuild-v", "" ).Replace( ".plugin", "" );
-                var versionArray = versionNumber.Split( '.' ).AsIntegerList();
-
-                if ( versionArray.Count() == 4 )
+                try
                 {
-                    var updateFile = new UpdateFile( fileName, fileEntry, versionArray[0], versionArray[1], versionArray[2], versionArray[3] );
-                    updateFiles.Add( updateFile );
+                    try
+                    {
+                        List<UpdateFile> updateFiles = new List<UpdateFile>();
+                        List<string> fileNames = new List<string>();
+                        HttpWebRequest request = ( HttpWebRequest ) WebRequest.Create( url );
+                        using ( HttpWebResponse response = ( HttpWebResponse ) request.GetResponse() )
+                        {
+                            using ( StreamReader reader = new StreamReader( response.GetResponseStream() ) )
+                            {
+                                string html = reader.ReadToEnd();
+                                Regex regex = new Regex( ".plugin\">(?<name>Autobuild-v........plugin)</A>" );
+                                MatchCollection matches = regex.Matches( html );
+                                if ( matches.Count > 0 )
+                                {
+                                    foreach ( System.Text.RegularExpressions.Match match in matches )
+                                    {
+                                        if ( match.Success )
+                                        {
+                                            fileNames.Add( match.Groups["name"].ToString() );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        foreach ( var fileName in fileNames )
+                        {
+                            var fileEntry = url + fileName;
+                            var versionNumber = fileName.Replace( "Autobuild-v", "" ).Replace( ".plugin", "" );
+                            var versionArray = versionNumber.Split( '.' ).AsIntegerList();
+
+                            if ( versionArray.Count() == 4 )
+                            {
+                                var updateFile = new UpdateFile( fileName, fileEntry, versionArray[0], versionArray[1], versionArray[2], versionArray[3] );
+                                updateFiles.Add( updateFile );
+                            }
+                        }
+
+                        var latestVersion = updateFiles.OrderByDescending( f => f.Major ).ThenByDescending( f => f.Minor ).ThenByDescending( f => f.Build ).ThenByDescending( f => f.Revision ).FirstOrDefault();
+                        return latestVersion;
+                    }
+                    catch ( InvalidCastException ex )
+                    {
+                        nbInfo.Text = "Valid Url needed to check for updates.";
+                        nbInfo.NotificationBoxType = NotificationBoxType.Warning;
+                        nbInfo.Visible = true;
+                        return null;
+                    }
+
+                }
+                catch ( NotSupportedException ex )
+                {
+                    nbInfo.Text = "Valid Url needed to check for updates.";
+                    nbInfo.NotificationBoxType = NotificationBoxType.Warning;
+                    nbInfo.Visible = true;
+                    return null;
                 }
             }
+            else
+            {
+                return null;
+            }
 
-            var latestVersion = updateFiles.OrderByDescending( f => f.Major ).ThenByDescending( f => f.Minor ).ThenByDescending( f => f.Build ).ThenByDescending( f => f.Revision ).FirstOrDefault();
-            return latestVersion;
+
         }
 
         private void CleanUpPackage( string packageFile )
@@ -396,6 +423,28 @@ namespace RockWeb.Plugins.com_bemaservices.Support
                 lMessages.Text = string.Format( "<div class='alert alert-warning margin-t-md'><strong>Error Cleaning Up</strong> An error occurred while cleaning up after the install. <br><em>Error: {0}</em></div>", ex.Message );
                 return;
             }
+        }
+
+        private static void UpdateInstalledVersion( UpdateFile latestVersion )
+        {
+            var attribute = AttributeCache.Get( com.bemaservices.Support.SystemGuid.Attribute.BEMA_CODE_VERSION_ATTRIBUTE_GUID );
+
+            var rockContext = new RockContext();
+            var attributeValueService = new AttributeValueService( rockContext );
+            var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null );
+            if ( attributeValue == null )
+            {
+                attributeValue = new AttributeValue
+                {
+                    AttributeId = attribute.Id,
+                    EntityId = null
+                };
+                attributeValueService.Add( attributeValue );
+            }
+
+            attributeValue.Value = String.Format( "{0}.{1}.{2}.{3}", latestVersion.Major, latestVersion.Minor, latestVersion.Build, latestVersion.Revision );
+
+            rockContext.SaveChanges();
         }
 
         #endregion
