@@ -66,7 +66,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     [LinkedPage(
         "Add Business Link",
         Key = AttributeKey.AddBusinessLink,
-        Description = "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked",
+        Description ="Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked",
         IsRequired = false,
         Order = 2 )]
 
@@ -95,7 +95,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         "Prompt to Edit Payment Detail Attributes",
         Key = AttributeKey.DisplayPaymentDetailAttributeControls,
         Description = "If Transaction Payment Detail has attributes configured, this will prompt to edit the values for those.",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue =  false,
         Order = 6 )]
 
     /* BEMA.FE1.Start */

@@ -55,7 +55,7 @@
                                 </div>
 
                                 <Rock:EmailBox ID="tbEmail" runat="server" Label="Email Address" />
-
+								<!-- BEMA.FE1.Start -->			
                                 <div class="row">
                                     <div class="col-md-6">
                                         <Rock:RockRadioButtonList ID="rblEmailPreference" runat="server" RepeatDirection="Horizontal" Label="Email Preference">
@@ -71,7 +71,7 @@
                                         <Rock:BootstrapButton runat="server" ID="btnGenerateEnvelopeNumber" OnClick="btnGenerateEnvelopeNumber_Click" Text="Generate Envelope #" CssClass="btn btn-primary btn-no-label" Visible="false"></Rock:BootstrapButton>
                                     </div>
                                 </div>
-                                
+                                <!-- BEMA.FE1.End -->	
 
                                 <Rock:RockDropDownList ID="ddlCampus" runat="server" Label="Campus" />
 

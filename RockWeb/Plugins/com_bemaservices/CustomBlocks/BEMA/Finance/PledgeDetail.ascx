@@ -23,18 +23,18 @@
                             <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="true" IncludeBusinesses="true" OnSelectPerson="ppPerson_SelectPerson"/>
                         </div>
                         <div class="col-md-6">
-                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
+                            <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
-                            <Rock:DefinedValuePicker ID="dvpFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Help="How often the person is expected to give some portion of the total amount." />
+                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
                             <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" MinimumValue="0" Required="true" Help="The total amount that is being pledged. If they intend to give $100 monthly for one year, enter $1200." />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" />
+                            <Rock:DefinedValuePicker ID="dvpFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Help="How often the person is expected to give some portion of the total amount." />
                         </div>
                     </div>
 

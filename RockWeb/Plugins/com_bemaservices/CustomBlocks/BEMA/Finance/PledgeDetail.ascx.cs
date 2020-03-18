@@ -378,7 +378,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
 
             int? personId = ppPerson.PersonId;
             Guid? groupTypeGuid = GetAttributeValue( "SelectGroupType" ).AsGuidOrNull();
-            if ( personId.HasValue && groupTypeGuid.HasValue )
+            if ( personId.HasValue && groupTypeGuid.HasValue  )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -403,7 +403,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
                     {
                         ddlGroup.DataSource = groups;
                         ddlGroup.DataBind();
-                        ddlGroup.Items.Insert( 0, new ListItem() );
+                        ddlGroup.Items.Insert(0, new ListItem() );
                         ddlGroup.SetValue( currentGroupId );
                     }
                 }

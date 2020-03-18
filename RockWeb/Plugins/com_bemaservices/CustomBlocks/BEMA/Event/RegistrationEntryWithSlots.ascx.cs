@@ -696,41 +696,17 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             var breadCrumbs = new List<BreadCrumb>();
 
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
-            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
 
             if ( registrationInstanceId.HasValue )
             {
-                string registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
+                var registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
 
                 RockPage.Title = registrationInstanceName;
                 breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
-            }
-            else if ( registrationSlug.IsNotNullOrWhiteSpace() )
-            {
-                var dateTime = RockDateTime.Now;
-                var linkage = new EventItemOccurrenceGroupMapService( new RockContext() )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( l => l.UrlSlug == registrationSlug )
-                    .Where( l => l.RegistrationInstance != null )
-                    .Where( l => l.RegistrationInstance.IsActive )
-                    .Where( l => l.RegistrationInstance.RegistrationTemplate != null )
-                    .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
-                    .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
-                    .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .FirstOrDefault();
-
-                if ( linkage != null )
-                {
-                    RockPage.Title = linkage.RegistrationInstance.Name;
-                    breadCrumbs.Add( new BreadCrumb( linkage.RegistrationInstance.Name, pageReference ) );
-                }
-            }
-            else
-            {
-                breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
+                return breadCrumbs;
             }
 
+            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
 
@@ -1821,15 +1797,13 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             if ( RegistrationState != null )
             {
-                // Calculate the available slots. If maxAttendees is null that means unlimited registrants and RegistrationState.SlotsAvailable should not be calculated.
+                // Calculate the available slots. If maxAttendees is 0 that means unlimited since this is not a nullable.
                 if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees.HasValue )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
-                    var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() )
-                        .Queryable()
+                    var otherRegistrantsCount = new RegistrationRegistrantService( new RockContext() ).Queryable()
                         .Where( a => a.Registration.RegistrationInstanceId == registrationInstanceId && !a.Registration.IsTemporary )
-                        .Where( a => !existingRegistrantIds.Contains( a.Id ) )
-                        .Count();
+                        .Where( a => !existingRegistrantIds.Contains( a.Id ) ).Count();
 
                     int otherRegistrants = RegistrationInstanceState.Registrations
                         .Where( r => !r.IsTemporary )
@@ -3680,34 +3654,32 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         /// </summary>
         private void ShowWaitingListNotice()
         {
-            if ( !RegistrationTemplate.WaitListEnabled || !RegistrationState.SlotsAvailable.HasValue )
+            if ( RegistrationTemplate.WaitListEnabled )
             {
-                return;
-            }
+                nbWaitingList.Title = string.Format( "{0} Full", RegistrationTerm );
 
-            nbWaitingList.Title = string.Format( "{0} Full", RegistrationTerm );
-
-            if ( RegistrationState.SlotsAvailable.Value <= 0 )
-            {
-                nbWaitingList.Text = string.Format( "<p>This {0} has reached its capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
-                nbWaitingList.Visible = true;
-            }
-            else
-            {
-                if ( numHowMany.Value > RegistrationState.SlotsAvailable )
+                if ( !RegistrationState.SlotsAvailable.HasValue || RegistrationState.SlotsAvailable.Value <= 0 )
                 {
-                    int slots = RegistrationState.SlotsAvailable.Value;
-                    int wait = numHowMany.Value - slots;
-                    nbWaitingList.Text = string.Format(
-                        "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
-                        RegistrationTerm.ToLower(),
-                        slots,
-                        RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(),
-                        slots > 1 ? slots.ToString() + " " : string.Empty,
-                        RegistrationInstanceState.Name,
-                        wait > 1 ? wait.ToString() + " " : string.Empty,
-                        RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
+                    nbWaitingList.Text = string.Format( "<p>This {0} has reached its capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
                     nbWaitingList.Visible = true;
+                }
+                else
+                {
+                    if ( numHowMany.Value > RegistrationState.SlotsAvailable )
+                    {
+                        int slots = RegistrationState.SlotsAvailable.Value;
+                        int wait = numHowMany.Value - slots;
+                        nbWaitingList.Text = string.Format(
+                            "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
+                            RegistrationTerm.ToLower(),
+                            slots,
+                            RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(),
+                            slots > 1 ? slots.ToString() + " " : string.Empty,
+                            RegistrationInstanceState.Name,
+                            wait > 1 ? wait.ToString() + " " : string.Empty,
+                            RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
+                        nbWaitingList.Visible = true;
+                    }
                 }
             }
         }

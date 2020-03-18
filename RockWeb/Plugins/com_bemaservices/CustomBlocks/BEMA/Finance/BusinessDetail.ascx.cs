@@ -289,7 +289,6 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 hfBusinessId.Value = business.Id.ToString();
             } );
 
-
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "businessId", hfBusinessId.Value );
             NavigateToCurrentPage( queryParams );
@@ -765,7 +764,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
         #endregion Internal Methods
 
-
+		/* BEMA.FE1.Start */
         protected void btnGenerateEnvelopeNumber_Click( object sender, EventArgs e )
         {
 
@@ -775,5 +774,6 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                                     .Max( a => ( int? ) a.ValueAsNumeric );
             tbEnvelopeNumber.Text = ( ( maxEnvelopeNumber ?? 0 ) + 1 ).ToString();
         }
+		/* BEMA.FE1.End */
     }
 }

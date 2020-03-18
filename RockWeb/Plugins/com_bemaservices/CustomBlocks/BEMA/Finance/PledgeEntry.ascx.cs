@@ -105,7 +105,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
         }
-
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -418,7 +418,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
                 }
 
                 // Same logic as TransactionEntry.ascx.cs
-                var personQuery = new PersonService.PersonMatchQuery( firstName, tbLastName.Text, tbEmail.Text, string.Empty );
+                var personQuery = new PersonService.PersonMatchQuery( firstName, tbLastName.Text, tbEmail.Text, string.Empty);
                 person = personService.FindPerson( personQuery, true );
             }
 

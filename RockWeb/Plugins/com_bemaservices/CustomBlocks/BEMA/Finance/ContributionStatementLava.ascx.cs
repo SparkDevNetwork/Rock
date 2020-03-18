@@ -462,7 +462,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value )
+                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
                                     && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
 
                                 /* BEMA.FE4.Start */

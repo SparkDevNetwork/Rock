@@ -684,9 +684,9 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
             NavigateToDetailPage( e.RowKeyId );
         }
 
-        private void NavigateToDetailPage( int requestId )
+        private void NavigateToDetailPage(int requestId)
         {
-            var queryParms = new Dictionary<string, string> { { _PrayerRequestKeyParameter, requestId.ToString() } };
+            var queryParms = new Dictionary<string, string> {{ _PrayerRequestKeyParameter, requestId.ToString() }};
 
             var personContext = ContextEntity<Person>();
             if ( personContext != null )
@@ -833,7 +833,7 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
                 var prayerRequest = e.Row.DataItem as PrayerRequest;
 
                 Literal lFullname = e.Row.FindControl( "lFullname" ) as Literal;
-                if ( lFullname != null && prayerRequest != null )
+                if (lFullname != null && prayerRequest != null)
                 {
                     lFullname.Text = prayerRequest.FirstName + " " + prayerRequest.LastName;
                 }

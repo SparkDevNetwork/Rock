@@ -260,7 +260,7 @@
                     }
                     var link = $(this);
 
-                    $('.address-extended').slideToggle(function () {
+                    $('.address-extended').slideToggle(function() {
                         if ($(this).is(':visible')) {
                             link.text('Show Less').prop('title', 'Hide additional addresses');
                         } else {

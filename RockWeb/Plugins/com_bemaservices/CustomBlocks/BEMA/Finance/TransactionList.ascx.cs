@@ -1137,7 +1137,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                                 }
 
                                 var accountChanges = new History.HistoryChangeList();
-                                accountChanges.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
+                                accountChanges.AddChange(History.HistoryVerb.Add, History.HistoryChangeType.Record, "Acct/Routing information" );
 
 
                                 HistoryService.SaveChanges( rockContext, typeof( Person ), Rock.SystemGuid.Category.HISTORY_PERSON.AsGuid(), personId.Value,
@@ -1303,7 +1303,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             // Remove summary column
             var summaryCol = gTransactions.Columns.OfType<RockBoundField>().FirstOrDefault( c => c.DataField == "Summary" );
-            if ( summaryCol != null )
+            if (summaryCol != null )
             {
                 gTransactions.Columns.Remove( summaryCol );
             }
@@ -1331,7 +1331,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     {
                         if ( control is IRockControl )
                         {
-                            var rockControl = ( IRockControl ) control;
+                            var rockControl = (IRockControl)control;
                             rockControl.Label = attribute.Name;
                             rockControl.Help = attribute.Description;
                             phAttributeFilters.Controls.Add( control );
@@ -1584,7 +1584,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                         TransactionDateTime = a.TransactionDateTime.Value,
                         TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
                         SourceTypeValueId = a.SourceTypeValueId,
-                        TotalAmount = a.TransactionDetails.Sum( d => ( decimal? ) d.Amount ),
+                        TotalAmount = a.TransactionDetails.Sum( d => (decimal?)d.Amount ),
                         TransactionCode = a.TransactionCode,
                         ForeignKey = a.ForeignKey,
                         Status = a.Status,

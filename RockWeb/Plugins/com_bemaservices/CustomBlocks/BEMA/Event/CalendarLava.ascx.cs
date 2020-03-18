@@ -57,7 +57,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
 
-    [CampusesField( name: "Campuses", description: "Select campuses to display calendar events for. No selection will show all.", required: false, defaultCampusGuids: "", category: "", order: 4, key: "Campuses" )]
+    [CampusesField(name: "Campuses", description: "Select campuses to display calendar events for. No selection will show all.", required: false, defaultCampusGuids: "", category: "", order: 4, key: "Campuses")]
     [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 5 )]
 
     [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 6 )]
@@ -78,8 +78,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 18 )]
 
-    [TextField( "Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order: 19 )]
-    [TextField( "Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 20 )]
+    [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order: 19)]
+    [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 20)]
     [TextField( "Date Parameter Name", "The page parameter name that contains the selected date.", false, "date", order: 21 )]
 
     /* BEMA.FE1.Start */
@@ -426,7 +426,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 // If CampusId is null, then the event is an 'All Campuses' event, so include those
                 qry = qry.Where( c => !c.CampusId.HasValue || selectedCampusIdList.Contains( c.CampusId.Value ) );
             }
-            else if ( campusIdList.Any() )
+            else if ( campusIdList.Any())
             {
                 // If no campus filter is selected then check the block filtering
                 // If CampusId is null, then the event is an 'All Campuses' event, so include those
@@ -451,16 +451,15 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             var today = RockDateTime.Today;
             var filterStart = FilterStartDate.HasValue ? FilterStartDate.Value : today;
             var monthStart = new DateTime( filterStart.Year, filterStart.Month, 1 );
-            var rangeStart = monthStart.AddMonths( -1 );
+            var rangeStart = monthStart.AddMonths(-1 );
             var rangeEnd = monthStart.AddMonths( 2 );
             var beginDate = FilterStartDate.HasValue ? FilterStartDate.Value : rangeStart;
             var endDate = FilterEndDate.HasValue ? FilterEndDate.Value : rangeEnd;
 
-            endDate = endDate.AddDays( 1 ).AddMilliseconds( -1 );
+            endDate = endDate.AddDays( 1 ).AddMilliseconds(-1 );
 
             // Get the occurrences
             var occurrences = qry.ToList();
-
             var occurrencesWithDates = occurrences
                 .Select( o => new EventOccurrenceDate
                 {
@@ -543,8 +542,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
         }
 
-
-
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
@@ -580,7 +577,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             else if ( ViewMode == "Month" )
             {
                 FilterStartDate = new DateTime( today.Year, today.Month, 1 );
-                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays( -1 );
+                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays(-1 );
             }
             else if ( ViewMode == "Year" )
             {
@@ -624,7 +621,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             cblCampus.DataBind();
 
-            if ( cblCampus.Items.Count == 1 )
+            if ( cblCampus.Items.Count == 1)
             {
                 CampusPanelClosed = false;
                 CampusPanelOpen = false;
@@ -730,7 +727,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             else if ( ViewMode == "Month" )
             {
                 FilterStartDate = new DateTime( selectedDate.Year, selectedDate.Month, 1 );
-                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays( -1 );
+                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays(-1 );
             }
             else if ( ViewMode == "Year" )
             {
@@ -749,8 +746,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
         private void SetCalendarFilterDates()
         {
-            FilterStartDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[0] : ( DateTime? ) null;
-            FilterEndDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[calEventCalendar.SelectedDates.Count - 1] : ( DateTime? ) null;
+            FilterStartDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[0] : (DateTime?)null;
+            FilterEndDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[calEventCalendar.SelectedDates.Count - 1] : (DateTime?)null;
         }
 
         /// <summary>

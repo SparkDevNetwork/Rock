@@ -288,11 +288,11 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                 // Check for existing attendance records.
                 //
                 attendance = attendanceService.Queryable()
-                    .Where( a =>
-                        a.DidAttend == true &&
-                        a.Occurrence.GroupId == group.Id &&
-                        a.Occurrence.OccurrenceDate == dateTime.Value &&
-                        a.Occurrence.LocationId == groupLocation.LocationId &&
+                    .Where( a => 
+                        a.DidAttend == true && 
+                        a.Occurrence.GroupId == group.Id && 
+                        a.Occurrence.OccurrenceDate == dateTime.Value && 
+                        a.Occurrence.LocationId == groupLocation.LocationId && 
                         a.Occurrence.ScheduleId == scheduleId )
                     .OrderBy( a => a.PersonAlias.Person.LastName )
                     .ThenBy( a => a.PersonAlias.Person.FirstName );
@@ -365,7 +365,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                 }
             }
             /* BEMA.FE1.End */		
-           
+            //
             // If the user is using the activate and save button then mark the
             // person as active too.
             //

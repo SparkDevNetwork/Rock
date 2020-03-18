@@ -1424,7 +1424,7 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn.Manager
                 foreach ( var kv in chartCounts.OrderBy( c => c.Key ) )
                 {
                     DateTime offsetTime = kv.Key.Subtract( baseSpan );
-                    long ticks = ( long ) ( offsetTime.Ticks / 10000 );
+                    long ticks = (long)( offsetTime.Ticks / 10000 );
                     chartData.Add( string.Format( "[{0}, {1}]", ticks, kv.Value.Count() ) );
                 }
                 hfChartData.Value = string.Format( "[ [ {0} ] ]", chartData.AsDelimited( ", " ) );
