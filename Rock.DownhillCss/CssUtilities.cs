@@ -576,6 +576,13 @@ namespace Rock.DownhillCss
     line-height: 1.1;
 }
 
+.heading5, .heading6 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: small;
+    line-height: 1.25;
+}
+
 .link{
     color: ?color-primary;
 }
