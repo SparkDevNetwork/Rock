@@ -623,7 +623,15 @@ $('.js-panel-toggle').on('click', function (e) {
                                     }
                                     else
                                     {
-                                        imgUploader.NonBinaryFileSrc = "~" + variableValue.Replace("'", "");
+                                        var originalFile = variableValue.Replace( "'", "" ).Trim();
+
+                                        // Adjust "../Assets/Themes/header.png" to "~/Assets/Themes/header.png"
+                                        if ( originalFile.StartsWith( "../" ) )
+                                        {
+                                            originalFile = originalFile.Replace( "../", string.Format( "/Themes/{0}/", _themeName ) );
+                                        }
+
+                                        imgUploader.NonBinaryFileSrc = "~" + originalFile;
                                     }
 
                                     if ( !string.IsNullOrWhiteSpace( helpText ) )
