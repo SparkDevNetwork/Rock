@@ -76,6 +76,5 @@
   
   $(document).ready(function(){
     swiper.update();
-    swiper.slideTo(0, 50, false);
   });
 </script>
