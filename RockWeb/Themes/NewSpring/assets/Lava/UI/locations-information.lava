@@ -18,7 +18,7 @@
 <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-soft-half-sides xs-text-center sm-text-center">
     <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
         <h3 class="push-half-bottom">Sunday Gatherings</h3>
-        <p class="spush-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
+        <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
         <p class="lead">{{ serviceTimes }}
         {% if getDirections != empty %}
             <a href="{{ getDirections }}" class="btn btn-primary btn-sm push-half-top">Get Directions</a>
@@ -26,7 +26,7 @@
         </p>
     </div>{% if fuseServiceTimes != empty and fuseServiceTimes != '' %}<div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype == 'Fuse' %}push-bottom{% endif %}">
         <h3 class="push-half-bottom">Fuse Student Ministry</h3>
-        <p class="spush-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for Fuse &mdash; the Student Ministry of NewSpring Church.</small></p>
+        <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for Fuse &mdash; the Student Ministry of NewSpring Church.</small></p>
         <p class="lead">{{ fuseServiceTimes }}</p>
     </div>{% endif %}
 </div>
