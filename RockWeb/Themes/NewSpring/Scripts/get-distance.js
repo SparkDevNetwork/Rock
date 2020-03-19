@@ -114,8 +114,10 @@ document.addEventListener("DOMContentLoaded", function(){
             // Scroll to locations card slider after sorting
             var anchor = document.querySelector('#locations');
 
+
             // Scroll constructor located in _smooth-scroll.js, compiled into main.js
             window.scroll.animateScroll(anchor);
+            
         });
     }
 
