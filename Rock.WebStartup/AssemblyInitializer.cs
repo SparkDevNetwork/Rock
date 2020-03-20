@@ -25,18 +25,24 @@ namespace Rock
     public static class AssemblyInitializer
     {
         /// <summary>
+        /// 
+        /// </summary>
+        /// <seealso cref="System.Exception" />
+        internal class RockAssemblyInitializerException : Exception
+        {
+            public RockAssemblyInitializerException( string message, Exception innerException )
+                : base( message, innerException )
+            {
+            }
+        }
+
+        /// <summary>
         /// Initializes this instance.
         /// </summary>
         public static void Initialize()
         {
             try
             {
-                var runMigrationFileExists = System.IO.File.Exists( System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data\\Run.Migration" ) );
-                if ( runMigrationFileExists )
-                {
-                    return;
-                }
-
                 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
@@ -44,7 +50,7 @@ namespace Rock
                     try
                     {
                         System.Diagnostics.Debug.WriteLine( string.Format( "Application_Initialize: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
-                        new Rock.Model.AttributeService( new Data.RockContext() ).GetSelect( 0, a=> a.Id );
+                        new Rock.Model.AttributeService( new Data.RockContext() ).GetSelect( 0, a => a.Id );
                         System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                         stopwatch.Restart();
                     }
@@ -67,7 +73,13 @@ namespace Rock
                     System.Diagnostics.Debug.WriteLine( string.Format( "WebStartup.Initialize - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                 }
             }
-            catch ( Exception ) { } // incase something bad happens when access the database, like a problem with a migration
+            catch ( Exception ex )
+            {
+                // incase something bad happens when access the database, like a problem with a migration. We will just log this,
+                var rockAssemblyInitializerException = new RockAssemblyInitializerException( $"Exception in AssemblyInitializer.Initialize {ex.Message}. It is OK to ignore this because it is probably due to pending migrations.", ex );
+                System.Diagnostics.Debug.WriteLine( rockAssemblyInitializerException.Message );
+                Rock.Model.ExceptionLogService.LogException( rockAssemblyInitializerException );
+            }
         }
     }
 }
