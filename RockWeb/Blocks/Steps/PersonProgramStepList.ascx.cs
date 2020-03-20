@@ -19,11 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -294,6 +296,51 @@ namespace RockWeb.Blocks.Steps
             lStepStatus.Text = string.Format( "<span{0}>{1}</span>",
                 classAttribute,
                 stepGridRow.StepStatusName.IsNullOrWhiteSpace() ? "-" : stepGridRow.StepStatusName );
+        }
+
+        protected void lSummary_DataBound( object sender, RowEventArgs e )
+        {
+            var lStepStatus = sender as Literal;
+            if(lStepStatus == null )
+            {
+                return;
+            }
+
+            var stepGridRowViewModel = e.Row.DataItem as StepGridRowViewModel;
+            if(stepGridRowViewModel == null )
+            {
+                return;
+            }
+
+            var step = stepGridRowViewModel.Step;
+            if(step == null )
+            {
+                return;
+            }
+
+            var classAttribute = string.Empty;
+            var itemSummary = new StringBuilder();
+
+            if ( step.Attributes == null )
+            {
+                step.LoadAttributes();
+            }
+
+            var formatString = "{0}: {1}<br />";
+            var attributesToDisplay = step.Attributes.Where( a => a.Value.IsGridColumn );
+            foreach ( var attributeCache in attributesToDisplay )
+            {
+                var attribute = step.Attributes[attributeCache.Key];
+                var rawValue = step.GetAttributeValue( attributeCache.Key );
+                
+                var showCondensed = !( attribute.FieldType.Field is BooleanFieldType );
+
+                var formattedValue = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, step.Id, rawValue, attribute.QualifierValues, showCondensed );
+
+                itemSummary.AppendLine( string.Format( formatString, attribute.Name, formattedValue ) );
+            }
+        
+            lStepStatus.Text = itemSummary.ToString();
         }
 
         /// <summary>
@@ -1081,7 +1128,8 @@ namespace RockWeb.Blocks.Steps
                 StepStatusName = s.StepStatus == null ? string.Empty : s.StepStatus.Name,
                 StepTypeIconCssClass = s.StepType.IconCssClass,
                 StepTypeOrder = s.StepType.Order,
-                Summary = string.Empty // TODO
+                Summary = string.Empty,
+                Step = s
             } );
 
             // Sort the view models
@@ -1258,6 +1306,7 @@ namespace RockWeb.Blocks.Steps
             /// The step type order.
             /// </value>
             public int StepTypeOrder { get; internal set; }
+            public Step Step { get; set; }
         }
 
         /// <summary>
