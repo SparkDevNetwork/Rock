@@ -66,6 +66,8 @@ namespace RockWeb.Blocks.Connection
         private static class PageParameterKey
         {
             public const string ConnectionTypeId = "ConnectionTypeId";
+            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+
         }
 
         #endregion
@@ -314,7 +316,7 @@ namespace RockWeb.Blocks.Connection
         {
             if ( _canEdit )
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionOpportunityId", 0, "ConnectionTypeId", _connectionType.Id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionOpportunityId, 0, PageParameterKey.ConnectionTypeId, _connectionType.Id );
             }
         }
 
@@ -331,7 +333,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunity connectionOpportunity = connectionOpportunityService.Get( e.RowKeyId );
                 if ( connectionOpportunity != null )
                 {
-                    NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionOpportunityId", connectionOpportunity.Id, "ConnectionTypeId", _connectionType.Id );
+                    NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionOpportunityId, connectionOpportunity.Id, PageParameterKey.ConnectionTypeId, _connectionType.Id );
                 }
             }
         }

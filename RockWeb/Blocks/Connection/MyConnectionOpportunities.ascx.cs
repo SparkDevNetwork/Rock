@@ -123,6 +123,19 @@ namespace RockWeb.Blocks.Connection
         }
         #endregion Attribute Keys
 
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string ConnectionRequestId = "ConnectionRequestId";
+            public const string ConnectionOpportunityId = "ConnectionOpportunityId";
+        }
+
+        #endregion
+
         #region Attribute Default values
 
         private const string StatusTemplateDefaultValue = @"
@@ -518,7 +531,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gRequests_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionRequestId", 0, "ConnectionOpportunityId", SelectedOpportunityId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, 0, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
         }
 
         /// <summary>
@@ -528,7 +541,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionRequestId", e.RowKeyId, "ConnectionOpportunityId", SelectedOpportunityId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionRequestId, e.RowKeyId, PageParameterKey.ConnectionOpportunityId, SelectedOpportunityId );
         }
 
         protected void gRequests_Delete( object sender, RowEventArgs e )
