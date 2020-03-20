@@ -258,6 +258,19 @@ namespace Rock.Model
         [MaxLength( 50 )]
         public string Term { get; set; }
 
+        /// <summary>
+        /// Gets the interaction date key.
+        /// </summary>
+        /// <value>
+        /// The interaction date key.
+        /// </value>
+        [DataMember]
+        public int InteractionDateKey
+        {
+            get => InteractionDateTime.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
         #endregion
 
         #region Virtual Properties
@@ -333,6 +346,15 @@ namespace Rock.Model
             this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
         }
 
+        /// <summary>
+        /// Gets or sets the interaction source date.
+        /// </summary>
+        /// <value>
+        /// The interaction source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate InteractionSourceDate { get; set; }
+
         #endregion Virtual Properties
 
         #region Public Methods
@@ -385,6 +407,10 @@ namespace Rock.Model
             this.HasOptional( r => r.InteractionSession ).WithMany( r => r.Interactions ).HasForeignKey( r => r.InteractionSessionId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.PersonalDevice ).WithMany().HasForeignKey( r => r.PersonalDeviceId ).WillCascadeOnDelete( false );
             this.HasOptional( r => r.RelatedEntityType ).WithMany().HasForeignKey( r => r.RelatedEntityTypeId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasRequired( r => r.InteractionSourceDate ).WithMany().HasForeignKey( r => r.InteractionDateKey ).WillCascadeOnDelete( false );
         }
     }
 
