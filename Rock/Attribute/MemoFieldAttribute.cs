@@ -76,7 +76,7 @@ namespace Rock.Attribute
         /// <value>
         /// The height of the editor.
         /// </value>
-        public virtual int NumberOfRows
+        public int NumberOfRows
         {
             get
             {

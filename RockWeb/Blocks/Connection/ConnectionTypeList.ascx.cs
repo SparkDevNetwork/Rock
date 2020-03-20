@@ -57,6 +57,18 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string ConnectionTypeId = "ConnectionTypeId";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -108,7 +120,7 @@ namespace RockWeb.Blocks.Connection
             int? connectionTypeId = e.CommandArgument.ToString().AsIntegerOrNull();
             if ( connectionTypeId.HasValue )
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionTypeId", connectionTypeId.Value );
+                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionTypeId, connectionTypeId.Value );
             }
 
             GetData();
@@ -121,7 +133,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddConnectionType_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionTypeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ConnectionTypeId, 0 );
         }
         #endregion
 
