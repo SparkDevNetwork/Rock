@@ -153,7 +153,7 @@ namespace RockWeb
                 // Indicate to always log to file during initialization.
                 ExceptionLogService.AlwaysLogToFile = true;
                 
-                if ( !File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) )
+                if ( HasPendingEFMigrations() == false )
                 {
                     // Clear all cache
                     RockCache.ClearAllCachedItems( false );
@@ -175,7 +175,6 @@ namespace RockWeb
                     }
 
                     //// Run any needed Rock and/or plugin migrations
-                    //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
                     bool anyMigrations = MigrateDatabase( rockContext );
                     
                     // Run any plugin migrations
@@ -183,7 +182,7 @@ namespace RockWeb
                     bool anyPluginMigrations = MigratePlugins( rockContext );
                     if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                     {
-                        System.Diagnostics.Debug.WriteLine( string.Format( "MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "EF Migrations and MigratePlugins - {0} ms", stopwatch.Elapsed.TotalMilliseconds ) );
                     }
                     
                     if ( anyMigrations || anyPluginMigrations )
@@ -616,19 +615,49 @@ namespace RockWeb
         #region Methods
 
         /// <summary>
-        /// Migrates the database.
+        /// uses Reflection and a query on __MigrationHistory to determine whether we need to check for pending EF Migrations
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [has pending ef migrations]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasPendingEFMigrations()
+        {
+            /* MDP 2020-03-20
+             * We had previously used the presence of a "~/App_Data/Run.Migration" file to see if there are migrations to run.
+             * We did this to avoid the ~5 second delay that asking EF if there were pending migrations.
+             * However, we ran into a few cases where the Run.Migration method may have gotten deleted even though there were still migrations that needed to be run.
+             * To avoid this problem, we use Reflection plus querying the __MigrationHistory table to see if migrations need to be run. This only takes a few milliseconds
+             * and eliminates the need for a Run.Migration file. Now migrations will run as needed in both dev and prod environments.
+             */
+
+            // use reflection to find the last EF Migration (last Rock.Migrations.RockMigration since that is what all of Rock's EF migrations are based on)
+            var migrationTypes = Rock.Reflection.SearchAssembly( typeof( Rock.Migrations.RockMigration ).Assembly, typeof( Rock.Migrations.RockMigration ) ).ToList();
+            var migrationTypeInstances = migrationTypes.Select( a => Activator.CreateInstance( a.Value ) as IMigrationMetadata ).ToList();
+            var lastRockMigrationId = migrationTypeInstances.Max( a => a.Id );
+
+            // now look in __MigrationHistory table to see what the last migration that ran was
+            var lastDbMigrationId = DbService.ExecuteScaler( "select max(MigrationId) from __MigrationHistory" ) as string;
+
+            // if they aren't the same, run EF Migrations
+            return ( lastDbMigrationId != lastRockMigrationId );
+        }
+
+        /// <summary>
+        /// If EF migrations need to be done, does MF Migrations on the database 
         /// </summary>
         /// <returns>True if at least one migration was run</returns>
         public bool MigrateDatabase( RockContext rockContext )
         {
             bool result = false;
 
-            var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
-            if ( fileInfo.Exists )
+            // if they aren't the same, run EF Migrations
+            if ( HasPendingEFMigrations() )
             {
                 // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
                 var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
                 var pendingMigrations = migrator.GetPendingMigrations().OrderBy(a => a);
+
+                // double check if there are migrations to run
                 if ( pendingMigrations.Any() )
                 {
                     LogMessage( APP_LOG_FILENAME, "Migrating Database..." );
@@ -644,8 +673,6 @@ namespace RockWeb
                     migratorLoggingDecorator.Update( lastMigration );
                     result = true;
                 }
-
-                fileInfo.Delete();
             }
 
             return result;
