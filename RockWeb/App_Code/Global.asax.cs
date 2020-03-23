@@ -152,11 +152,25 @@ namespace RockWeb
 
                 // Indicate to always log to file during initialization.
                 ExceptionLogService.AlwaysLogToFile = true;
-                
-                if ( HasPendingEFMigrations() == false )
+
+                try
                 {
-                    // Clear all cache
-                    RockCache.ClearAllCachedItems( false );
+                    // if there is a Run.Migration, skip this so we don't get an exception.
+                    // if Run.Migration does not exist, check for PendingEFMigrations
+                    if ( File.Exists( Server.MapPath( "~/App_Data/Run.Migration" ) ) || HasPendingEFMigrations() )
+                    {
+                        // don't try to clear the cache if there was either a Run.Migration or HasPendingEFMigration detected migrations
+                        // we skip this because it might throw an exception if there are pending schema changes
+                    }
+                    else
+                    {
+                        // if we there wasn't a RunMigration and HasPendingEFMigration didn't detect any either, clear all cached items
+                        RockCache.ClearAllCachedItems( false );
+                    }
+                }
+                catch
+                {
+                    // ignore just in case there we tried to run ClearAllCacheItems even though there were pending migration
                 }
 
                 // Get a db context
@@ -657,7 +671,8 @@ namespace RockWeb
             bool result = false;
 
             // if they aren't the same, run EF Migrations
-            if ( HasPendingEFMigrations() )
+            var fileInfo = new FileInfo( Server.MapPath( "~/App_Data/Run.Migration" ) );
+            if ( fileInfo.Exists || HasPendingEFMigrations() )
             {
                 // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
                 var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
