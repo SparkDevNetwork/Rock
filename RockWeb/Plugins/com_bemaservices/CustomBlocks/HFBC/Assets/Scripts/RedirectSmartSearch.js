@@ -1,6 +1,6 @@
 <script>
     function calledFunction() {
-        $( ".smartsearch-type li[data-target*='Search'" ).each(function( index ) {
+        $( ".smartsearch-type li[data-target*='Search']" ).each(function( index ) {
             var originalTarget = $(this).data("target");
             var newTarget = originalTarget;
             if(newTarget.indexOf("Person/Search") > -1){
