@@ -673,6 +673,13 @@ namespace RockWeb
                     migratorLoggingDecorator.Update( lastMigration );
                     result = true;
                 }
+
+                if ( fileInfo.Exists )
+                {
+                    // fileInfo.Delete() won't do anything if the file doesn't exist (it doesn't throw an exception if it is not there
+                    // but do the fileInfo.Exists to make this logic more readable
+                    fileInfo.Delete();
+                }
             }
 
             return result;
