@@ -47,7 +47,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
     [Category( "BEMA Services > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
 
-    [PersonBadgesField( "Badges", "The label badges to display in this block.", false, "", "", 0 )]
+    [BadgesField( "Badges", "The label badges to display in this block.", false, "", "", 0 )]
     [WorkflowTypeField( "Workflow Actions", "The workflows to make available as actions.", true, false, "", "", 1 )]
     [CodeEditorField( "Additional Custom Actions", @"
 Additional custom actions (will be displayed after the list of workflow actions). Any instance of '{0}' will be replaced with the current person's id.
@@ -136,10 +136,10 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                         Guid guid = badgeGuid.AsGuid();
                         if ( guid != Guid.Empty )
                         {
-                            var personBadge = PersonBadgeCache.Get( guid );
+                            var personBadge = BadgeCache.Get( guid );
                             if ( personBadge != null )
                             {
-                                blStatus.PersonBadges.Add( personBadge );
+                                blStatus.BadgeTypes.Add( personBadge );
                             }
                         }
                     }

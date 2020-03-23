@@ -309,7 +309,7 @@ namespace com.bemaservices.WorkflowExtensions.Field.Types
         {
             var schedule = new Schedule();
             schedule.iCalendarContent = iCalContent;
-            var calEvent = ScheduleICalHelper.GetCalenderEvent( iCalContent );
+            var calEvent = ScheduleICalHelper.GetCalendarEvent( iCalContent );
             if ( calEvent != null )
             {
                 schedule.EffectiveStartDate = calEvent.DTStart != null ? calEvent.DTStart.Value.Date : ( DateTime? ) null;

@@ -196,7 +196,7 @@ namespace com.bemaservices.WorkflowExtensions.Workflow.Action
             }
             catch ( Exception ex )
             {
-                errorMessages.Add( string.Format( "Could not save metric value! {1}", ex.Message ) );
+                errorMessages.Add( string.Format( "Could not save metric value! {0}", ex.Message ) );
                 return false;
             }
 

@@ -48,7 +48,7 @@ namespace com.bemaservices.OpenConnectionsDigest.Jobs
             if ( group != null )
             {
 
-                var childrenGroups = groupService.GetAllDescendents( group.Id );
+                var childrenGroups = groupService.GetAllDescendentGroups( group.Id, false );
 
                 var allGroups = childrenGroups.ToList();
 
