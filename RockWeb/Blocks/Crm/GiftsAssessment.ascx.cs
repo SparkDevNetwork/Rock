@@ -101,18 +101,18 @@ namespace Rockweb.Blocks.Crm
     <div>
         <div class='table-responsive'>
             <table class='table'>
-                <thead>
-                    <tr>
-                        <th>
-                            Spiritual Gift
-                        </th>
-                        <th>
-                            You are uniquely wired to:
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if DominantGifts != empty %}
+                {% if DominantGifts != empty %}
+                    <thead>
+                        <tr>
+                            <th>
+                                Spiritual Gift
+                            </th>
+                            <th>
+                                You are uniquely wired to:
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         {% for dominantGift in DominantGifts %}
                             <tr>
                                 <td>
@@ -123,14 +123,16 @@ namespace Rockweb.Blocks.Crm
                                 </td>
                             </tr>
                         {% endfor %}
-                    {% else %}
+                    </tbody>
+                {% else %}
+                    <tbody>
                         <tr>
                             <td colspan='2'>
                                 You did not have any Dominant Gifts
                             </td>
                         </tr>
-                    {% endif %}
-                </tbody>
+                    </tbody>
+                {% endif %}
             </table>
         </div>
     </div>
@@ -140,18 +142,18 @@ namespace Rockweb.Blocks.Crm
     <div>
         <div class='table-responsive'>
             <table class='table'>
-                <thead>
-                    <tr>
-                    <th>
-                        Spiritual Gift
-                        </th>
-                        <th>
-                        You are uniquely wired to:
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if SupportiveGifts != empty %}
+                {% if SupportiveGifts != empty %}
+                    <thead>
+                        <tr>
+                            <th>
+                                Spiritual Gift
+                            </th>
+                            <th>
+                                You are uniquely wired to:
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         {% for supportiveGift in SupportiveGifts %}
                             <tr>
                                 <td>
@@ -162,14 +164,16 @@ namespace Rockweb.Blocks.Crm
                                 </td>
                             </tr>
                         {% endfor %}
-                    {% else %}
+                    </tbody>
+                {% else %}
+                    <tbody>
                         <tr>
                             <td colspan='2'>
                                 You did not have any Supportive Gifts
                             </td>
                         </tr>
-                    {% endif %}
-                </tbody>
+                    </tbody>
+                {% endif %}
             </table>
         </div>
     </div>
@@ -179,18 +183,18 @@ namespace Rockweb.Blocks.Crm
     <div>
         <div class='table-responsive'>
             <table class='table'>
-                <thead>
-                    <tr>
-                    <th>
-                        Spiritual Gift
-                        </th>
-                        <th>
-                        You are uniquely wired to:
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if OtherGifts != empty %}
+                {% if OtherGifts != empty %}
+                    <thead>
+                        <tr>
+                            <th>
+                                Spiritual Gift
+                            </th>
+                            <th>
+                                You are uniquely wired to:
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         {% for otherGift in OtherGifts %}
                             <tr>
                                 <td>
@@ -201,25 +205,31 @@ namespace Rockweb.Blocks.Crm
                                 </td>
                             </tr>
                         {% endfor %}
-                    {% else %}
+                    </tbody>
+                {% else %}
+                    <tbody>
                         <tr>
                             <td colspan='2'>
                                 You did not have any Other Gifts
                             </td>
                         </tr>
-                    {% endif %}
-                </tbody>
+                    </tbody>
+                {% endif %}
             </table>
         </div>
     </div>
 </div>
 {% if GiftScores != null and GiftScores != empty %}
+    <!-- The following empty h2 element is to mantain vertical spacing between sections. -->
+    <h2 class='h2'></h2>
     <div>
-        <h2 class='h2'>Ranked Gifts</h2>
         <p>
             The following graph shows your spiritual gifts ranked from top to bottom.
         </p>
         <div class='panel panel-default'>
+            <div class='panel-heading'>
+                <h2 class='panel-title'><b>Ranked Gifts</b></h2>
+            </div>
             <div class='panel-body'>
                 {[ chart type:'horizontalBar' ]}
                     {% assign sortedScores = GiftScores | OrderBy:'Percentage desc,SpiritualGiftName' %}
