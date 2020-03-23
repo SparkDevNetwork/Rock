@@ -347,7 +347,15 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["DataSourceUrl"] as string ?? "~/api/MetricValues/GetByMetricId/";
+                if ( string.IsNullOrWhiteSpace( this.ChartData ) )
+                {
+                    return ViewState["DataSourceUrl"] as string ?? "~/api/MetricValues/GetByMetricId/";
+                }
+                else
+                {
+                    // Chart data has been set manually, so return an empty URL rather than the default.
+                    return string.Empty;
+                }
             }
 
             set

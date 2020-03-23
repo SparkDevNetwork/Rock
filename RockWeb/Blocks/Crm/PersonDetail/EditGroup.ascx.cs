@@ -154,6 +154,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
         }
 
+        private string DefaultCountry
+        {
+            get
+            {
+                var globalAttributesCache = GlobalAttributesCache.Get();
+                return globalAttributesCache.OrganizationCountry;
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -216,7 +225,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var campusi = CampusCache.All();
             cpCampus.Campuses = campusi;
-            cpCampus.Visible = campusi.Any();
 
             if ( _isFamilyGroupType )
             {
@@ -915,6 +923,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     LocationTypeName = homeLocType.Value,
                     LocationIsDirty = true,
                     State = DefaultState,
+                    Country = DefaultCountry,
                     IsMailing = true,
                     IsLocation = setLocation,
                     ShowCounty = _showCounty
@@ -987,7 +996,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocations_Add( object sender, EventArgs e )
         {
-            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, IsMailing = true, ShowCounty = _showCounty } );
+            GroupAddresses.Add( new GroupAddressInfo { State = DefaultState, Country = DefaultCountry, IsMailing = true, ShowCounty = _showCounty } );
             gLocations.EditIndex = GroupAddresses.Count - 1;
 
             BindLocations();

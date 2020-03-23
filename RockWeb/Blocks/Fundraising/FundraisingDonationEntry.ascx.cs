@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Fundraising
             if ( baseGroup != null )
             {
                 groupIds.Add( baseGroup.Id );
-                groupIds.AddRange( service.GetAllDescendents( baseGroup.Id ).Select( g => g.Id ) );
+                groupIds.AddRange( service.GetAllDescendentGroupIds( baseGroup.Id, false ) );
             }
 
             return groupIds;

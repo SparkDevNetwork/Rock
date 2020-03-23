@@ -608,7 +608,7 @@ Update Family Status: {updateFamilyStatus}
                     // Query all of the transactions that are considered as "giving activity" and are associated with a campus.
                     if ( settings.IsMostFamilyGivingEnabled )
                     {
-                        int transactionTypeContributionId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+                        int transactionTypeContributionId = DefinedValueCache.GetOrThrow( "Transaction Type/Contribution", Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
 
                         var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyAttendancePeriod );
                         personCampusGiving = new FinancialTransactionDetailService( rockContext )

@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -248,7 +264,7 @@ namespace Rock.TransNational.Pi.Controls
             Controls.Add( _hfPublicApiKey );
 
             _hiddenInputStyleHook = new TextBox();
-            _hiddenInputStyleHook.Attributes["class"] = "js-input-style-hook";
+            _hiddenInputStyleHook.Attributes["class"] = "js-input-style-hook form-control";
             _hiddenInputStyleHook.Style["display"] = "none";
             Controls.Add( _hiddenInputStyleHook );
 
@@ -261,22 +277,22 @@ namespace Rock.TransNational.Pi.Controls
             Literal lPaymentSelectorHTML = new Literal() { ID = "lPaymentSelectorHTML" };
 
             lPaymentSelectorHTML.Text = $@"
-<ul class='nav nav-pills'>
-    <li class='js-payment-creditcard payment-creditcard active' runat='server'>
-        <a data-toggle='pill'>Credit Card</a>
-    </li>
-    <li class='js-payment-ach payment-ach' runat='server'>
-        <a data-toggle='pill'>Bank Account</a>
-    </li>
-</ul>
+<div class='gateway-type-selector btn-group btn-group-justified' role='group'>
+    <a class='btn btn-default active js-payment-creditcard payment-creditcard' runat='server'>
+        Card
+    </a>
+    <a class='btn btn-default js-payment-ach payment-ach' runat='server'>
+        Bank Account
+    </a>
+</div>
 ";
 
             _paymentTypeSelector.Controls.Add( lPaymentSelectorHTML );
 
-            _gatewayCreditCardIFrameContainer = new Panel() { ID = "_gatewayCreditCardIFrameContainer", CssClass = "js-gateway-creditcard-iframe-container" };
+            _gatewayCreditCardIFrameContainer = new Panel() { ID = "_gatewayCreditCardIFrameContainer", CssClass = "gateway-iframe-container js-gateway-creditcard-iframe-container" };
             Controls.Add( _gatewayCreditCardIFrameContainer );
 
-            _gatewayACHIFrameContainer = new Panel() { ID = "_gatewayACHIFrameContainer", CssClass = "js-gateway-ach-iframe-container" };
+            _gatewayACHIFrameContainer = new Panel() { ID = "_gatewayACHIFrameContainer", CssClass = "gateway-iframe-container js-gateway-ach-iframe-container" };
             Controls.Add( _gatewayACHIFrameContainer );
         }
     }

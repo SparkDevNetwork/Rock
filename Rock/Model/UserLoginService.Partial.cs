@@ -52,7 +52,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets<see cref="Rock.Model.UserLogin"/> by User Name
+        /// Gets<see cref="Rock.Model.UserLogin"/> by User Name, with eager loading of the Person and PersonAliases
         /// </summary>
         /// <param name="userName">A <see cref="System.String"/> representing the UserName to search for.</param>
         /// <returns>A <see cref="UserLogin"/> entity where the UserName matches the provided value.</returns>

@@ -261,7 +261,7 @@ namespace RockWeb.Blocks.Event
 
     public partial class EventRegistrationWizard : RockBlock
     {
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string DefaultAccount = "DefaultAccount";
             public const string DefaultCalendar = "DefaultCalendar";

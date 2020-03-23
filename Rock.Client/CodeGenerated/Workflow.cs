@@ -44,6 +44,12 @@ namespace Rock.Client
         public string Description { get; set; }
 
         /// <summary />
+        public int? EntityId { get; set; }
+
+        /// <summary />
+        public int? EntityTypeId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -111,6 +117,8 @@ namespace Rock.Client
             this.ActivatedDateTime = source.ActivatedDateTime;
             this.CompletedDateTime = source.CompletedDateTime;
             this.Description = source.Description;
+            this.EntityId = source.EntityId;
+            this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.InitiatorPersonAliasId = source.InitiatorPersonAliasId;

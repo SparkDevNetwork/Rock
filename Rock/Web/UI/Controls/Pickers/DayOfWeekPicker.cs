@@ -31,11 +31,54 @@ namespace Rock.Web.UI.Controls
         public DayOfWeekPicker()
             : base()
         {
+            UpdateDayOfWeekItems();
+        }
+
+        /// <summary>
+        /// Updates the day of week items.
+        /// </summary>
+        private void UpdateDayOfWeekItems()
+        {
             this.Items.Clear();
             this.Items.Add( new ListItem() );
-            foreach (var dow in Enum.GetValues(typeof(DayOfWeek)).OfType<DayOfWeek>().ToList())
+            foreach ( var dow in Enum.GetValues( typeof( DayOfWeek ) ).OfType<DayOfWeek>().ToList() )
             {
-                this.Items.Add( new ListItem( dow.ConvertToString(), dow.ConvertToInt().ToString() ) );
+                string itemName = dow.ConvertToString();
+                if ( dow == DefaultDayOfWeek )
+                {
+                    itemName = $"{dow.ConvertToString()} (default)";
+                }
+
+                this.Items.Add( new ListItem( itemName, dow.ConvertToInt().ToString() ) );
+            }
+        }
+
+        /// <summary>
+        /// Set this to indicate which Day of the Week is the default
+        /// </summary>
+        /// <value>
+        /// The default day of week.
+        /// </value>
+        public DayOfWeek? DefaultDayOfWeek
+        {
+            get
+            {
+                return ViewState["DefaultDayOfWeek"] as DayOfWeek?;
+            }
+
+            set
+            {
+                ViewState["DefaultDayOfWeek"] = value;
+
+                var selectedDayOfWeek = this.SelectedDayOfWeek;
+
+                UpdateDayOfWeekItems();
+
+                if ( selectedDayOfWeek.HasValue )
+                {
+                    this.SelectedDayOfWeek = selectedDayOfWeek;
+                }
+
             }
         }
 
@@ -50,9 +93,9 @@ namespace Rock.Web.UI.Controls
             get
             {
                 int? result = this.SelectedValue.AsIntegerOrNull();
-                if (result.HasValue)
+                if ( result.HasValue )
                 {
-                    return (DayOfWeek)result.Value;
+                    return ( DayOfWeek ) result.Value;
                 }
                 else
                 {

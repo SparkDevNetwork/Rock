@@ -144,6 +144,7 @@ namespace Rock.Model
             target.EnableGroupHistory = source.EnableGroupHistory;
             target.EnableGroupTag = source.EnableGroupTag;
             target.EnableLocationSchedules = source.EnableLocationSchedules;
+            target.EnableRSVP = source.EnableRSVP;
             target.EnableSpecificGroupRequirements = source.EnableSpecificGroupRequirements;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

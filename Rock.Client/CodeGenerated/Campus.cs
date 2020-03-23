@@ -35,6 +35,12 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public int? CampusStatusValueId { get; set; }
+
+        /// <summary />
+        public int? CampusTypeValueId { get; set; }
+
+        /// <summary />
         public string Description { get; set; }
 
         /// <summary />
@@ -76,6 +82,9 @@ namespace Rock.Client
         public string ShortCode { get; set; }
 
         /// <summary />
+        public int? TeamGroupId { get; set; }
+
+        /// <summary />
         public string TimeZoneId { get; set; }
 
         /// <summary />
@@ -114,6 +123,8 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Campus source )
         {
             this.Id = source.Id;
+            this.CampusStatusValueId = source.CampusStatusValueId;
+            this.CampusTypeValueId = source.CampusTypeValueId;
             this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -127,6 +138,7 @@ namespace Rock.Client
             this.PhoneNumber = source.PhoneNumber;
             this.ServiceTimes = source.ServiceTimes;
             this.ShortCode = source.ShortCode;
+            this.TeamGroupId = source.TeamGroupId;
             this.TimeZoneId = source.TimeZoneId;
             this.Url = source.Url;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -145,10 +157,19 @@ namespace Rock.Client
     public partial class Campus : CampusEntity
     {
         /// <summary />
+        public DefinedValue CampusStatusValue { get; set; }
+
+        /// <summary />
+        public DefinedValue CampusTypeValue { get; set; }
+
+        /// <summary />
         public PersonAlias LeaderPersonAlias { get; set; }
 
         /// <summary />
         public Location Location { get; set; }
+
+        /// <summary />
+        public Group TeamGroup { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
