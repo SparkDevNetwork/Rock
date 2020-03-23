@@ -536,6 +536,7 @@ namespace Rock.Model
 
             using ( var dbContext = this.GetDbContext() )
             {
+                Stopwatch persistStopwatch = Stopwatch.StartNew();
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
 
@@ -563,13 +564,8 @@ namespace Rock.Model
 
                     var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
                     var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
-                    
+
                     stopwatch.Stop();
-                    var transaction = new Rock.Transactions.RunDataViewTransaction();
-                    transaction.DataViewId = this.Id;
-                    transaction.LastRunDate = RockDateTime.Now;
-                    transaction.TimeToRunMS = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
-                    Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
                     int removeCount = persistedValuesToRemove.Count();
                     if ( removeCount > 0 )
@@ -592,6 +588,12 @@ namespace Rock.Model
 
                         rockContext.BulkInsert( persistedValuesToInsert );
                     }
+
+                    persistStopwatch.Stop();
+
+                    DataViewService.AddRunDataViewTransaction( this.Id,
+                                Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ),
+                                Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds ) );
                 }
             }
 

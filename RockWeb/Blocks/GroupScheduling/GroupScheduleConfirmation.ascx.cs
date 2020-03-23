@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -35,28 +35,89 @@ namespace RockWeb.Blocks.GroupScheduling
     [Category( "Group Scheduling" )]
     [Description( "Allows a person to confirm a schedule RSVP and view pending schedules.  Uses PersonActionIdentifier in 'Person' with action 'ScheduleConfirm' when supplied." )]
 
-    [CodeEditorField( "Confirm Heading Template", "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false,
-    @"<h2 class='margin-t-none'>{{ Person.NickName }}, You’re confirmed to serve</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }} <i class='text-success fa fa-check-circle'></i><br></p>
-<p class='margin-b-lg'>Thanks again!<br>
-{{ Scheduler.FullName }}</p>", "", 1, "ConfirmHeadingTemplate" )]
+    [CodeEditorField( "Confirm Heading Template",
+        Description = "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = ConfirmHeadingTemplateDefaultValue,
+        Order = 1,
+        Key = AttributeKey.ConfirmHeadingTemplate )]
 
-    [CodeEditorField( "Decline Heading Template", "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, false,
-    @"<h2 class='margin-t-none'>{{ Person.NickName }}, Can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
-<p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>
-{{ Group.Name }}<br>
-{{ ScheduledItem.Location.Name }} {{ ScheduledItem.Schedule.Name }}<br></p>", "", 2, "DeclineHeadingTemplate" )]
+    [CodeEditorField( "Decline Heading Template",
+        Description = "Text to display when person confirms a schedule RSVP. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 200,
+        IsRequired = false,
+        DefaultValue = DeclineHeadingTemplateDefaultValue,
+        Order = 2,
+        Key = AttributeKey.DeclineHeadingTemplate )]
 
-    [BooleanField( "Scheduler Receive Confirmation Emails", "If checked, the scheduler will receive an email response for each confirmation or decline.", false, "", 3 )]
-    [BooleanField( "Require Decline Reasons", "If checked, a person must choose one of the ‘Decline Reasons’ to submit their decline status.", true, "", 4 )]
-    [BooleanField( "Enable Decline Note", "If checked, a note will be shown for the person to elaborate on why they cannot attend.", false, "", 5 )]
-    [BooleanField( "Require Decline Note", "If checked, a custom note response will be required in order to save their decline status.", false, "", 6 )]
+    [BooleanField( "Scheduler Receive Confirmation Emails",
+        Description = "If checked, the scheduler will receive an email response for each confirmation or decline.",
+        DefaultBooleanValue = false,
+        Order = 3,
+        Key = AttributeKey.SchedulerReceiveConfirmationEmails )]
 
-    [TextField( "Decline Note Title", "A custom title for the decline elaboration note.", false, "Please elaborate on why you cannot attend.", "", 7 )]
-    [SystemCommunicationField( "Scheduling Response Email", "The system email that will be used for sending responses back to the scheduler.", false, Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE, "", 8, "SchedulingResponseEmail" )]
+    [BooleanField( "Require Decline Reasons",
+        Description = "If checked, a person must choose one of the ‘Decline Reasons’ to submit their decline status.",
+        DefaultBooleanValue = true,
+        Order = 4,
+        Key = AttributeKey.RequireDeclineReasons )]
+
+    [BooleanField( "Enable Decline Note",
+        Description = "If checked, a note will be shown for the person to elaborate on why they cannot attend.",
+        DefaultBooleanValue = false,
+        Order = 5,
+        Key = AttributeKey.EnableDeclineNote )]
+
+    [BooleanField( "Require Decline Note",
+        Description = "If checked, a custom note response will be required in order to save their decline status.",
+        DefaultBooleanValue = false,
+        Order = 6,
+        Key = AttributeKey.RequireDeclineNote)]
+
+    [TextField( "Decline Note Title",
+        Description = "A custom title for the decline elaboration note.",
+        IsRequired = false,
+        DefaultValue = "Please elaborate on why you cannot attend.",
+        Order = 7,
+        Key = AttributeKey.DeclineNoteTitle)]
+
+    [SystemCommunicationField( "Scheduling Response Email",
+        Description = "The system email that will be used for sending responses back to the scheduler.",
+        IsRequired = false,
+        DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE,
+        Order = 8,
+        Key = AttributeKey.SchedulingResponseEmail )]
+
     [ContextAware( typeof( Rock.Model.Person ) )]
-
     public partial class GroupScheduleConfirmation : Rock.Web.UI.RockBlock
     {
+        protected class AttributeKey
+        {
+            public const string ConfirmHeadingTemplate = "ConfirmHeadingTemplate";
+            public const string DeclineHeadingTemplate = "DeclineHeadingTemplate";
+            public const string SchedulerReceiveConfirmationEmails = "SchedulerReceiveConfirmationEmails";
+            public const string RequireDeclineReasons = "RequireDeclineReasons";
+            public const string EnableDeclineNote = "EnableDeclineNote";
+            public const string RequireDeclineNote = "RequireDeclineNote";
+            public const string DeclineNoteTitle = "DeclineNoteTitle";
+            public const string SchedulingResponseEmail = "SchedulingResponseEmail";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
+        }
+
+        protected const string ConfirmHeadingTemplateDefaultValue = @"<h2 class='margin-t-none'>{{ Person.NickName }}, You’re confirmed to serve</h2><p>Thanks for letting us know.  You’re confirmed for:</p><p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>{{ Group.Name }}<br>{{ ScheduledItem.Location.Name }} {{ScheduledItem.Schedule.Name }} <i class='text-success fa fa-check-circle'></i><br></p>
+<p class='margin-b-lg'>Thanks again!<br>
+{{ Scheduler.FullName }}</p>";
+
+        protected const string DeclineHeadingTemplateDefaultValue = @"<h2 class='margin-t-none'>{{ Person.NickName }}, Can’t make it?</h2><p>Thanks for letting us know.  We’ll try to schedule another person for:</p>
+<p><b>{{ OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}</b><br>
+{{ Group.Name }}<br>
+{{ ScheduledItem.Location.Name }} {{ ScheduledItem.Schedule.Name }}<br></p>";
+
         #region Fields
 
         private Person _selectedPerson;
@@ -117,7 +178,14 @@ namespace RockWeb.Blocks.GroupScheduling
                     return;
                 }
 
-                UpdateAttendanceDeclineReasonAfterSubmit();
+                if ( PageParameter( "ReturnUrl" ).IsNotNullOrWhiteSpace() )
+                {
+                    NavigateToPage( PageParameter( "ReturnUrl" ).AsGuid(), null );
+                }
+                else
+                {
+                    UpdateAttendanceDeclineReasonAfterSubmit();
+                }
             }
         }
 
@@ -277,10 +345,10 @@ namespace RockWeb.Blocks.GroupScheduling
             if ( PageParameter( "isConfirmed" ).AsBoolean() )
             {
                 ShowConfirmationHeading( mergeFields );
-                // we send decline email from submit button
             }
             else
             {
+                // we send decline email from submit button
                 ShowDeclineHeading( mergeFields );
             }
 
@@ -293,7 +361,7 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <param name="mergeFields">The merge fields.</param>
         private void ShowConfirmationHeading( IDictionary<string, object> mergeFields )
         {
-            lResponse.Text = GetAttributeValue( "ConfirmHeadingTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+            lResponse.Text = GetAttributeValue( AttributeKey.ConfirmHeadingTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
             lResponse.Visible = true;
             pnlDeclineReason.Visible = false;
             pnlPendingConfirmation.Visible = true;
@@ -306,7 +374,7 @@ namespace RockWeb.Blocks.GroupScheduling
         private void ShowDeclineHeading( IDictionary<string, object> mergeFields )
         {
             pnlDeclineReason.Visible = true;
-            lResponse.Text = GetAttributeValue( "DeclineHeadingTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+            lResponse.Text = GetAttributeValue( AttributeKey.DeclineHeadingTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
             lResponse.Visible = true;
         }
 
@@ -323,6 +391,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 ShowNotAuthorizedMessage();
                 return false;
             }
+
             if ( PageParameter( "isConfirmed" ).AsBooleanOrNull() == null )
             {
                 ShowIsConfirmedMissingParameterMessage();
@@ -354,13 +423,13 @@ namespace RockWeb.Blocks.GroupScheduling
             ddlDeclineReason.Visible = true;
 
             // block setting drives if required
-            ddlDeclineReason.Required = GetAttributeValue( "RequireDeclineReasons" ).AsBoolean();
+            ddlDeclineReason.Required = GetAttributeValue( AttributeKey.RequireDeclineReasons ).AsBoolean();
             this.btnSubmit.Visible = true;
 
             // decline Note
-            dtbDeclineReasonNote.Label = GetAttributeValue( "DeclineNoteTitle" ).ToString();
-            dtbDeclineReasonNote.Visible = GetAttributeValue( "EnableDeclineNote" ).AsBoolean();
-            dtbDeclineReasonNote.Required = GetAttributeValue( "RequireDeclineNote" ).AsBoolean();
+            dtbDeclineReasonNote.Label = GetAttributeValue( AttributeKey.DeclineNoteTitle ).ToString();
+            dtbDeclineReasonNote.Visible = GetAttributeValue( AttributeKey.EnableDeclineNote ).AsBoolean();
+            dtbDeclineReasonNote.Required = GetAttributeValue( AttributeKey.RequireDeclineNote ).AsBoolean();
         }
 
         /// <summary>
@@ -462,7 +531,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
                             if ( declineResonId == 0 )
                             {
-                                //set to blank and not required
+                                // set to blank and not required
                                 attendance.DeclineReasonValueId = null;
                             }
                             else
@@ -513,9 +582,9 @@ namespace RockWeb.Blocks.GroupScheduling
                         hfSelectedPersonId.Value = _selectedPerson.Id.ToString();
                     }
                 }
-                // ...otherwise use the current person.
                 else
                 {
+                    // ...otherwise use the current person.
                     _selectedPerson = this.CurrentPerson;
                     hfSelectedPersonId.Value = this.CurrentPersonId.ToString();
                 }
@@ -558,6 +627,21 @@ namespace RockWeb.Blocks.GroupScheduling
         /// <returns></returns>
         protected string GetOccurrenceDetails( Attendance attendance )
         {
+            if ( attendance.Occurrence.GroupId == null && attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
+            if ( attendance.Occurrence.GroupId == null )
+            {
+                return string.Format( "{0} - {1}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Location );
+            }
+
+            if ( attendance.Occurrence.LocationId == null )
+            {
+                return attendance.Occurrence.OccurrenceDate.ToShortDateString();
+            }
+
             return string.Format( "{0} - {1} - {2}", attendance.Occurrence.OccurrenceDate.ToShortDateString(), attendance.Occurrence.Group.Name, attendance.Occurrence.Location );
         }
 
@@ -583,7 +667,7 @@ namespace RockWeb.Blocks.GroupScheduling
             List<RockEmailMessageRecipient> recipients = new List<RockEmailMessageRecipient>();
 
             // if scheduler receives email add as a recipient
-            if ( GetAttributeValue( "SchedulerReceiveConfirmationEmails" ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
+            if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() && attendance.ScheduledByPersonAlias != null && attendance.ScheduledByPersonAlias.Person.IsEmailActive )
             {
                 recipients.Add( new RockEmailMessageRecipient(attendance.ScheduledByPersonAlias.Person, null) );
             }
@@ -613,7 +697,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 foreach ( var recipient in recipients )
                 {
                     recipient.MergeFields = mergeFields;
-                    var emailMessage = new RockEmailMessage( GetAttributeValue( "SchedulingResponseEmail" ).AsGuid() );
+                    var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
                     emailMessage.AddRecipient( recipient );
                     emailMessage.CreateCommunicationRecord = false;
                     emailMessage.Send();

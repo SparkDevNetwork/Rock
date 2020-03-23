@@ -51,12 +51,8 @@ namespace Rock.Model
         public bool CanDelete( FinancialPersonSavedAccount item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<FinancialPaymentDetail>( Context ).Queryable().Any( a => a.FinancialPersonSavedAccountId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialPersonSavedAccount.FriendlyTypeName, FinancialPaymentDetail.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring FinancialPaymentDetail,FinancialPersonSavedAccountId 
             return true;
         }
     }

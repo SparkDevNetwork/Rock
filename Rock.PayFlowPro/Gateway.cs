@@ -80,6 +80,21 @@ namespace Rock.PayFlowPro
         }
 
         /// <summary>
+        /// Gets a value indicating whether gateway provider needs first and last name on credit card as two distinct fields.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [split name on card]; otherwise, <c>false</c>.
+        /// </value>
+        public override bool SplitNameOnCard
+        {
+            get
+            {
+                // we want First and Last name as distinct fields so that Billing FirstName and Billing LastName get populated correctly (without guessing how to parse a full name string)
+                return true;
+            }
+        }
+
+        /// <summary>
         /// Authorizes the specified payment info.
         /// </summary>
         /// <param name="financialGateway"></param>
@@ -821,6 +836,13 @@ namespace Rock.PayFlowPro
         {
             var ppBillingInfo = new BillTo();
 
+            // If giving from a Business, FirstName will be blank
+            // The Gateway might require a FirstName, so just put '-' if no FirstName was provided
+            if ( paymentInfo.FirstName.IsNullOrWhiteSpace() )
+            {
+                paymentInfo.FirstName = "-";
+            }
+
             ppBillingInfo.FirstName = paymentInfo.FirstName;
             ppBillingInfo.LastName = paymentInfo.LastName;
             ppBillingInfo.Email = paymentInfo.Email;
@@ -835,6 +857,8 @@ namespace Rock.PayFlowPro
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
+                ppBillingInfo.FirstName = cc.NameOnCard;
+                ppBillingInfo.LastName = cc.LastNameOnCard;
                 ppBillingInfo.Street = cc.BillingStreet1;
                 ppBillingInfo.BillToStreet2 = cc.BillingStreet2;
                 ppBillingInfo.City = cc.BillingCity;

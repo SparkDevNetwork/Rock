@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -242,7 +243,8 @@ namespace RockWeb.Blocks.Event
         private enum AddPlacementGroupTab
         {
             AddNewGroup,
-            AddExistingGroup
+            AddExistingGroup,
+            AddMultipleGroups
         }
 
         #endregion
@@ -717,8 +719,14 @@ namespace RockWeb.Blocks.Event
             cpNewPlacementGroupCampus.SetValue( ( int? ) null );
             nbGroupCapacity.Text = string.Empty;
             tbNewPlacementGroupDescription.Text = string.Empty;
+
             nbAddExistingPlacementGroupWarning.Visible = false;
             gpAddExistingPlacementGroup.SetValue( ( int? ) null );
+
+            nbNewPlacementGroupParentGroupWarning.Visible = false;
+
+            nbAddExistingPlacementMultipleGroupsWarning.Visible = false;
+            gpAddExistingPlacementGroupsFromParent.SetValue( ( int? ) null );
 
             mdAddPlacementGroup.Show();
         }
@@ -945,12 +953,31 @@ namespace RockWeb.Blocks.Event
             {
                 hlInstanceName.Text = new RegistrationInstanceService( new RockContext() ).GetByIds( groupRegistrationInstanceIds ).Select( a => a.Name ).ToList().AsDelimited( ",", "and" );
                 hlInstanceName.Visible = true;
+
+                // if there is exactly one registration instance that has this as a placement group, set what instance this group placement is associated with
+                // If there are multiple, leave this blank
+                if ( groupRegistrationInstanceIds.Count() == 1 )
+                {
+                    var hfPlacementGroupRegistrationInstanceId = e.Item.FindControl( "hfPlacementGroupRegistrationInstanceId" ) as HiddenFieldWithClass;
+                    int groupRegistrationInstanceId = groupRegistrationInstanceIds[0];
+                    hfPlacementGroupRegistrationInstanceId.Value = groupRegistrationInstanceId.ToString();
+                }
             }
 
             if ( _registrationTemplatePlacementGroupIds.Contains( placementGroup.Id ) )
             {
                 hlRegistrationTemplatePlacementName.Text = "Shared";
                 hlRegistrationTemplatePlacementName.Visible = true;
+
+                /* Don't show the detach and delete actions for shared groups since that would affect all the instances */
+                var detachPlacementGroup = e.Item.FindControl( "detachPlacementGroup" ) as HtmlAnchor;
+                detachPlacementGroup.Visible = false;
+
+                var deleteGroup = e.Item.FindControl( "deleteGroup" ) as HtmlAnchor;
+                deleteGroup.Visible = false;
+
+                var actionSeparator = e.Item.FindControl( "actionSeparator" ) as HtmlGenericControl;
+                actionSeparator.Visible = false;
             }
 
             var pnlGroupAttributes = e.Item.FindControl( "pnlGroupAttributes" ) as Panel;
@@ -1024,9 +1051,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAddPlacementGroup_SaveClick( object sender, EventArgs e )
         {
-            Group placementGroup;
+            List<Group> placementGroups;// = new List<Group>();
             var groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
             var rockContext = new RockContext();
+            nbAddExistingPlacementMultipleGroupsWarning.Visible = false;
+            nbAddExistingPlacementGroupWarning.Visible = false;
+
             if ( bgAddNewOrExistingPlacementGroup.SelectedValue == AddPlacementGroupTab.AddExistingGroup.ConvertToInt().ToString() )
             {
                 var existingGroupId = gpAddExistingPlacementGroup.SelectedValue.AsIntegerOrNull();
@@ -1035,48 +1065,74 @@ namespace RockWeb.Blocks.Event
                     return;
                 }
 
-                placementGroup = new GroupService( rockContext ).Get( existingGroupId.Value );
-                if ( placementGroup == null )
+                var existingPlacementGroup = new GroupService( rockContext ).Get( existingGroupId.Value );
+                if ( existingPlacementGroup == null )
                 {
                     return;
                 }
 
                 var groupType = GroupTypeCache.Get( groupTypeId );
 
-                if ( groupTypeId != placementGroup.GroupTypeId )
+                if ( groupTypeId != existingPlacementGroup.GroupTypeId )
                 {
                     nbAddExistingPlacementGroupWarning.Text = "Group must have a group type of " + groupType.Name + ".";
                     return;
                 }
+
+                placementGroups = new List<Group>();
+                placementGroups.Add( existingPlacementGroup );
+            }
+            else if ( bgAddNewOrExistingPlacementGroup.SelectedValue == AddPlacementGroupTab.AddMultipleGroups.ConvertToInt().ToString() )
+            {
+                var parentGroupId = gpAddExistingPlacementGroupsFromParent.SelectedValueAsId();
+                if ( parentGroupId == null )
+                {
+                    nbAddExistingPlacementMultipleGroupsWarning.Visible = true;
+                    nbAddExistingPlacementMultipleGroupsWarning.Text = "Please select a parent group to add the groups.";
+                    return;
+                }
+
+                string errorMessage;
+                if ( !HasValidChildGroups( parentGroupId.Value, groupTypeId, out errorMessage ) )
+                {
+                    nbAddExistingPlacementMultipleGroupsWarning.Visible = true;
+                    nbAddExistingPlacementMultipleGroupsWarning.Text = errorMessage;
+                    return;
+                }
+
+                var existingPlacementGroups = new GroupService( rockContext ).Queryable().Where( a => a.ParentGroupId == parentGroupId ).ToList();
+                placementGroups = existingPlacementGroups;
             }
             else
             {
-                placementGroup = new Group();
-                placementGroup.GroupTypeId = groupTypeId;
+                var newPlacementGroup = new Group();
+                newPlacementGroup.GroupTypeId = groupTypeId;
 
                 var groupService = new GroupService( rockContext );
                 if ( gpNewPlacementGroupParentGroup.GroupId.HasValue )
                 {
-                    placementGroup.ParentGroupId = gpNewPlacementGroupParentGroup.GroupId;
-                    placementGroup.ParentGroup = groupService.Get( placementGroup.ParentGroupId.Value );
+                    newPlacementGroup.ParentGroupId = gpNewPlacementGroupParentGroup.GroupId;
+                    newPlacementGroup.ParentGroup = groupService.Get( newPlacementGroup.ParentGroupId.Value );
                 }
 
-                placementGroup.Name = tbNewPlacementGroupName.Text;
-                placementGroup.CampusId = cpNewPlacementGroupCampus.SelectedCampusId;
-                placementGroup.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
-                placementGroup.Description = tbNewPlacementGroupDescription.Text;
+                newPlacementGroup.Name = tbNewPlacementGroupName.Text;
+                newPlacementGroup.CampusId = cpNewPlacementGroupCampus.SelectedCampusId;
+                newPlacementGroup.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
+                newPlacementGroup.Description = tbNewPlacementGroupDescription.Text;
 
-                groupService.Add( placementGroup );
+                groupService.Add( newPlacementGroup );
 
-                if ( !placementGroup.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
+                if ( !newPlacementGroup.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) )
                 {
                     nbNotAllowedToAddGroup.Visible = true;
                     return;
                 }
 
                 rockContext.SaveChanges();
-                avcNewPlacementGroupAttributeValues.GetEditValues( placementGroup );
-                placementGroup.SaveAttributeValues();
+                avcNewPlacementGroupAttributeValues.GetEditValues( newPlacementGroup );
+                newPlacementGroup.SaveAttributeValues();
+                placementGroups = new List<Group>();
+                placementGroups.Add( newPlacementGroup );
             }
 
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -1084,17 +1140,20 @@ namespace RockWeb.Blocks.Event
             var registrationInstanceId = hfRegistrationInstanceId.Value.AsIntegerOrNull();
             var registrationTemplatePlacementId = hfRegistrationTemplatePlacementId.Value.AsIntegerOrNull();
 
-            if ( registrationInstanceId.HasValue )
+            foreach ( var placementGroup in placementGroups )
             {
-                var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
+                if ( registrationInstanceId.HasValue )
+                {
+                    var registrationInstance = registrationInstanceService.Get( registrationInstanceId.Value );
 
-                // in RegistrationInstanceMode
-                registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup );
-            }
-            else if ( registrationTemplatePlacementId.HasValue )
-            {
-                var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
-                registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup );
+                    // in RegistrationInstanceMode
+                    registrationInstanceService.AddRegistrationInstancePlacementGroup( registrationInstance, placementGroup );
+                }
+                else if ( registrationTemplatePlacementId.HasValue )
+                {
+                    var registrationTemplatePlacement = registrationTemplatePlacementService.Get( registrationTemplatePlacementId.Value );
+                    registrationTemplatePlacementService.AddRegistrationTemplatePlacementPlacementGroup( registrationTemplatePlacement, placementGroup );
+                }
             }
 
             rockContext.SaveChanges();
@@ -1110,6 +1169,7 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected void bgAddNewOrExistingPlacementGroup_SelectedIndexChanged( object sender, EventArgs e )
         {
+            pnlAddMultipleGroups.Visible = bgAddNewOrExistingPlacementGroup.SelectedValue == AddPlacementGroupTab.AddMultipleGroups.ConvertToInt().ToString();
             pnlAddExistingPlacementGroup.Visible = bgAddNewOrExistingPlacementGroup.SelectedValue == AddPlacementGroupTab.AddExistingGroup.ConvertToInt().ToString();
             pnlAddNewPlacementGroup.Visible = bgAddNewOrExistingPlacementGroup.SelectedValue == AddPlacementGroupTab.AddNewGroup.ConvertToInt().ToString();
         }
@@ -1178,6 +1238,30 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the SelectItem event of the gpAddExistingPlacementGroupsFromParent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gpAddExistingPlacementGroupsFromParent_SelectItem( object sender, EventArgs e )
+        {
+            int groupTypeId = hfRegistrationTemplatePlacementGroupTypeId.Value.AsInteger();
+            nbAddExistingPlacementMultipleGroupsWarning.Visible = false;
+            var parentGroupId = gpAddExistingPlacementGroupsFromParent.SelectedValueAsId();
+            if ( parentGroupId == null )
+            {
+                return;
+            }
+
+            string errorMessage;
+            if (!HasValidChildGroups( parentGroupId.Value, groupTypeId, out errorMessage ))
+            {
+                nbAddExistingPlacementMultipleGroupsWarning.Visible = true;
+                nbAddExistingPlacementMultipleGroupsWarning.Text = errorMessage;
+                return;
+            }
+        }
+
+        /// <summary>
         /// Determines whether [is valid existing group] [the specified selected group].
         /// </summary>
         /// <param name="selectedGroup">The selected group.</param>
@@ -1188,6 +1272,44 @@ namespace RockWeb.Blocks.Event
         private bool IsValidExistingGroup( Group selectedGroup, int groupTypeId )
         {
             return selectedGroup.GroupTypeId == groupTypeId;
+        }
+
+        /// <summary>
+        /// Determines whether [has valid child groups] [the specified parent group identifier].
+        /// </summary>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if [has valid child groups] [the specified parent group identifier]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool HasValidChildGroups( int parentGroupId, int groupTypeId, out string errorMessage )
+        {
+            var childPlacementGroups = new GroupService( new RockContext() ).Queryable().Where( a => a.ParentGroupId == parentGroupId ).ToList();
+            if ( childPlacementGroups.Count() == 0 )
+            {
+                errorMessage = "The selected parent group does not have any child groups.";
+                return false;
+            }
+
+            List<Group> invalidGroups = new List<Group>();
+            foreach ( var childPlacementGroup in childPlacementGroups )
+            {
+                if ( !IsValidExistingGroup( childPlacementGroup, groupTypeId ) )
+                {
+                    invalidGroups.Add( childPlacementGroup );
+                }
+            }
+
+            if ( invalidGroups.Any() )
+            {
+                var groupType = GroupTypeCache.Get( groupTypeId );
+                errorMessage = string.Format( "The child groups of this parent group must be {0} groups.", groupType );
+                return false;
+            }
+
+            errorMessage = string.Empty;
+            return true;
         }
 
         #endregion Add Placement Group
@@ -1532,16 +1654,22 @@ namespace RockWeb.Blocks.Event
             foreach ( var field in registrantAttributeFields )
             {
                 var attribute = field.Attribute;
-                var filterControl = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
-                var filterControlWrapper = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() + "_wrapper" );
-                filterControl.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
-                if ( filterControlWrapper != null )
+                if ( attribute.FieldType.Field.HasFilterControl() )
                 {
-                    filterControlWrapper.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                    var filterControl = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() );
+                    var filterControlWrapper = phRegistrantFilters.FindControl( "filterRegistrants_" + attribute.Id.ToString() + "_wrapper" );
+                    if ( filterControl != null && filterControlWrapper != null )
+                    {
+                        filterControl.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                        if ( filterControlWrapper != null )
+                        {
+                            filterControlWrapper.Visible = displayedRegistrantAttributes.Contains( attribute.Id );
+                        }
+                    }
                 }
             }
 
-            // hide the registrant filters secition if there aren't any visible
+            // hide the registrant filters section if there aren't any visible
             rcwRegistrantFilters.Visible = registrantAttributeFields.Where( a => displayedRegistrantAttributes.Contains( a.AttributeId ) ).Any();
         }
 
@@ -1585,5 +1713,7 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Registrant Filter
+
+
     }
 }

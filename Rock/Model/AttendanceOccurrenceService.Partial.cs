@@ -317,12 +317,12 @@ namespace Rock.Model
                 scheduleIdList = scheduleIds.Split( ',' ).Select( int.Parse ).ToList();
             }
 
-            var qry = Queryable("Group,Schedule").AsNoTracking().Where( a => a.GroupId == group.Id );
+            var qry = Queryable( "Group,Schedule" ).AsNoTracking().Where( a => a.GroupId == group.Id );
 
             // Filter by date range
             var fromDate = DateTime.Now.Date;
             var toDate = fromDate.AddMonths( 6 ); // Default to 6 months in the future.
-            if (toDateTime.HasValue)
+            if ( toDateTime.HasValue )
             {
                 toDate = toDateTime.Value.Date;
             }
@@ -348,7 +348,7 @@ namespace Rock.Model
             Schedule groupSchedule = null;
             if ( group.ScheduleId.HasValue )
             {
-                groupSchedule = group.Schedule ?? new ScheduleService( ( RockContext ) Context).Get( group.ScheduleId.Value );
+                groupSchedule = group.Schedule ?? new ScheduleService( ( RockContext ) Context ).Get( group.ScheduleId.Value );
             }
 
             if ( groupSchedule == null )
@@ -396,7 +396,7 @@ namespace Rock.Model
                     // Move start time forward to the correct day of week.
                     while ( startDate.DayOfWeek != groupSchedule.WeeklyDayOfWeek.Value )
                     {
-                        startDate = startDate.AddDays(1);
+                        startDate = startDate.AddDays( 1 );
                     }
 
                     // Add the start time
@@ -421,7 +421,7 @@ namespace Rock.Model
 
                             newOccurrences.Add( newOccurrence );
                         }
-                        startDate = startDate.AddDays(7);
+                        startDate = startDate.AddDays( 7 );
                     }
                 }
             }
@@ -429,7 +429,7 @@ namespace Rock.Model
             if ( newOccurrences.Any() )
             {
                 // Filter Exclusions
-                var groupType = GroupTypeCache.Get(group.GroupTypeId);
+                var groupType = GroupTypeCache.Get( group.GroupTypeId );
                 foreach ( var exclusion in groupType.GroupScheduleExclusions )
                 {
                     if ( !exclusion.Start.HasValue || !exclusion.End.HasValue )
@@ -450,7 +450,7 @@ namespace Rock.Model
 
             foreach ( var occurrence in newOccurrences )
             {
-                occurrences.Add(occurrence);
+                occurrences.Add( occurrence );
             }
 
             occurrences = occurrences.OrderBy( o => o.OccurrenceDate ).ToList();
@@ -622,4 +622,58 @@ namespace Rock.Model
             public GroupLocationScheduleConfig GroupLocationScheduleConfig { get; set; }
         }
     }
+
+    #region Extension Methods
+    public partial class AttendanceOccurrenceExtensionMethods
+    {
+        /// <summary>
+        /// AttendanceOccurrence in the specified date range.
+        /// </summary>
+        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> DateInRange( this IQueryable<AttendanceOccurrence> attendanceOccurrences, DateTime startDate, DateTime endDate )
+        {
+            return attendanceOccurrences
+                    .Where( a => a.OccurrenceDate >= startDate )
+                    .Where( a => a.OccurrenceDate < endDate );
+        }
+
+        /// <summary>
+        /// AttendanceOccurrence with the specified Group Ids.
+        /// </summary>
+        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
+        /// <param name="groupIds">The group ids.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> GroupIdsInList( this IQueryable<AttendanceOccurrence> attendanceOccurrences, List<int> groupIds )
+        {
+            return attendanceOccurrences
+                    .Where( a => a.GroupId.HasValue )
+                    .Where( a => groupIds.Contains( a.GroupId.Value ) );
+        }
+
+        /// <summary>
+        /// AttendanceOccurrence with a Schedule Id.
+        /// </summary>
+        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> HasScheduleId( this IQueryable<AttendanceOccurrence> attendanceOccurrences )
+        {
+            return attendanceOccurrences
+                    .Where( a => a.ScheduleId.HasValue );
+        }
+
+        /// <summary>
+        /// AttendanceOccurrence that either have attendees or are marked as "Did not occur".
+        /// </summary>
+        /// <param name="attendanceOccurrences">The attendance occurrences.</param>
+        /// <returns></returns>
+        public static IQueryable<AttendanceOccurrence> HasAttendeesOrDidNotOccur( this IQueryable<AttendanceOccurrence> attendanceOccurrences )
+        {
+            return attendanceOccurrences
+                    .Where( a => a.Attendees.Any() || ( a.DidNotOccur.HasValue && a.DidNotOccur.Value ) );
+        }
+    }
+    #endregion
 }

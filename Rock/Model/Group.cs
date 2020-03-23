@@ -327,6 +327,24 @@ namespace Rock.Model
         [DataMember]
         public int? RSVPReminderOffsetDays { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if the schedule toolbox access is disabled.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the schedule toolbox access is disabled; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool DisableScheduleToolboxAccess { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if scheduling is disabled.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if scheduling is disabled; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool DisableScheduling { get; set; }
+
         #endregion
 
         #region Virtual Properties

@@ -723,7 +723,7 @@ namespace RockWeb.Blocks.Groups
             rblStatus.Enabled = !readOnly;
             rblStatus.Label = string.Format( "{0} Status", group.GroupType.GroupMemberTerm );
 
-            rblCommunicationPreference.SetValue( groupMember.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
+            rblCommunicationPreference.SetValue( ( ( int ) groupMember.CommunicationPreference ).ToString() );
 
             var registrations = new RegistrationRegistrantService( rockContext )
                 .Queryable().AsNoTracking()

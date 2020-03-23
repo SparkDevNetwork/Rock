@@ -858,6 +858,8 @@ namespace RockWeb.Blocks.Groups
             group.SchedulingMustMeetRequirements = cbSchedulingMustMeetRequirements.Checked;
             group.AttendanceRecordRequiredForCheckIn = ddlAttendanceRecordRequiredForCheckIn.SelectedValueAsEnum<AttendanceRecordRequiredForCheckIn>();
             group.ScheduleCancellationPersonAliasId = ppScheduleCancellationPerson.PersonAliasId;
+            group.DisableScheduling = cbDisableGroupScheduling.Checked;
+            group.DisableScheduleToolboxAccess = cbDisableScheduleToolboxAccess.Checked;
 
             string iCalendarContent = string.Empty;
 
@@ -1183,14 +1185,8 @@ namespace RockWeb.Blocks.Groups
                     rockContext.SaveChanges();
 
                     newGroup.LoadAttributes( rockContext );
-                    if ( group.Attributes != null && group.Attributes.Any() )
-                    {
-                        foreach ( var attributeKey in group.Attributes.Select( a => a.Key ) )
-                        {
-                            string value = group.GetAttributeValue( attributeKey );
-                            newGroup.SetAttributeValue( attributeKey, value );
-                        }
-                    }
+
+                    Rock.Attribute.Helper.CopyAttributes( group, newGroup, rockContext );
 
                     newGroup.SaveAttributeValues( rockContext );
 
@@ -1693,6 +1689,8 @@ namespace RockWeb.Blocks.Groups
             ShowGroupTypeEditDetails( groupTypeCache, group, true );
 
             cbSchedulingMustMeetRequirements.Checked = group.SchedulingMustMeetRequirements;
+            cbDisableScheduleToolboxAccess.Checked = group.DisableScheduleToolboxAccess;
+            cbDisableGroupScheduling.Checked = group.DisableScheduling;
             ddlAttendanceRecordRequiredForCheckIn.SetValue( group.AttendanceRecordRequiredForCheckIn.ConvertToInt() );
             if ( group.ScheduleCancellationPersonAlias != null )
             {
@@ -2092,7 +2090,15 @@ namespace RockWeb.Blocks.Groups
             if ( groupSchedulerUrl.IsNotNullOrWhiteSpace() )
             {
                 hlGroupScheduler.Visible = groupType != null && groupType.IsSchedulingEnabled;
-                hlGroupScheduler.NavigateUrl = groupSchedulerUrl;
+                if ( group.DisableScheduling )
+                {
+                    hlGroupScheduler.Enabled = false;
+                }
+                else
+                {
+                    hlGroupScheduler.NavigateUrl = groupSchedulerUrl;
+                    hlGroupScheduler.Enabled = true;
+                }
             }
             else
             {

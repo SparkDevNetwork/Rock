@@ -1201,6 +1201,8 @@ namespace Rock.Migrations
         private void AddUpgradeSQLServerMessageUp()
         {
             Sql( @"
+                IF NOT EXISTS(SELECT 1 FROM [dbo].[DefinedValue] WHERE [Guid] = '0b16bd4b-f55b-4adb-a744-fc4751731a7d')
+                BEGIN
                 -- Get Defined Type Id
                 DECLARE @DefinedTypeId AS INT
                 SELECT @DefinedTypeId = Id
@@ -1272,7 +1274,8 @@ namespace Rock.Migrations
                     ,@IsCompleted
                     ,'125EB24D-7BFC-4440-AD8C-014FB49EB95E'
                     ,GETDATE()
-                    ,GETDATE())"
+                    ,GETDATE())
+            END"
             );
         }
 
@@ -1286,16 +1289,19 @@ namespace Rock.Migrations
                 SELECT @DefinedTypeId = Id
                 FROM DefinedType
                 WHERE [Guid] = '4BF34677-37E9-4E71-BD03-252B66C9373D'
+                
+                IF EXISTS(SELECT 1 FROM [dbo].[DefinedValue] WHERE [Guid] = '0b16bd4b-f55b-4adb-a744-fc4751731a7d')
+                BEGIN
+                    DELETE [dbo].[AttributeValue]
+                    WHERE [Guid] = '125EB24D-7BFC-4440-AD8C-014FB49EB95E'
 
-                DELETE [dbo].[AttributeValue]
-                WHERE [Guid] = '125EB24D-7BFC-4440-AD8C-014FB49EB95E'
+                    DELETE [dbo].[DefinedValue]
+                    WHERE [Guid] = '0B16BD4B-F55B-4ADB-A744-FC4751731A7D'
 
-                DELETE [dbo].[DefinedValue]
-                WHERE [Guid] = '0B16BD4B-F55B-4ADB-A744-FC4751731A7D'
-
-                UPDATE DefinedValue
-                SET [Order] = [Order] - 1
-                WHERE DefinedTypeId = @DefinedTypeId"
+                    UPDATE DefinedValue
+                    SET [Order] = [Order] - 1
+                    WHERE DefinedTypeId = @DefinedTypeId
+                END"
             );
         }
 

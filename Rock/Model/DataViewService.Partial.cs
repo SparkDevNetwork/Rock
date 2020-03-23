@@ -110,7 +110,7 @@ namespace Rock.Model
         /// </returns>
         public bool IsViewInFilter( int dataViewId, DataViewFilter filter )
         {
-            var dataViewFilterEntityId = new EntityTypeService( (RockContext)this.Context ).Get( typeof( OtherDataViewFilter ), false, null ).Id;
+            var dataViewFilterEntityId = new EntityTypeService( ( RockContext ) this.Context ).Get( typeof( OtherDataViewFilter ), false, null ).Id;
 
             return IsViewInFilter( dataViewId, filter, dataViewFilterEntityId );
         }
@@ -148,7 +148,7 @@ namespace Rock.Model
             }
 
             // Deep-clone the Data View and reset the properties that connect it to the permanent store.
-            var newItem = (DataView)( item.Clone( true ) );
+            var newItem = ( DataView ) ( item.Clone( true ) );
 
             newItem.Id = 0;
             newItem.Guid = Guid.NewGuid();
@@ -162,6 +162,36 @@ namespace Rock.Model
 
             return newItem;
         }
+
+
+        #region Static Methods
+
+        /// <summary>
+        /// Adds AddRunDataViewTransaction to transaction queue
+        /// </summary>
+        /// <param name="dataViewId">The unique identifier of a Data View.</param>
+        /// <param name="timeToRunMS">The time to run dataview in milliseconds.</param>
+        /// /// <param name="persistedLastRunDuration">The time to persist dataview in milliseconds.</param>
+        /// <returns></returns>
+        public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunMS, int? persistedLastRunDuration = null )
+        {
+            var transaction = new Rock.Transactions.RunDataViewTransaction();
+            transaction.DataViewId = dataViewId;
+            if ( timeToRunMS.HasValue )
+            {
+                transaction.LastRunDateTime = RockDateTime.Now;
+                transaction.TimeToRunMS = timeToRunMS;
+            }
+
+            if ( persistedLastRunDuration.HasValue )
+            {
+                transaction.PersistedLastRefreshDateTime = RockDateTime.Now;
+                transaction.PersistedLastRunDuration = persistedLastRunDuration.Value;
+            }
+            Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
+        }
+
+        #endregion Static Methods
 
         /// <summary>
         /// Reset all of the identifiers on a DataViewFilter that uniquely identify it in the permanent store.
