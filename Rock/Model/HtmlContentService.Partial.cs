@@ -115,19 +115,33 @@ namespace Rock.Model
         /// <param name="blockId">A <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Block"/>.</param>
         /// <param name="entityValue">A <see cref="System.String" /> representing the entityValue.</param>
         /// <returns>The active <see cref="Rock.Model.HtmlContent"/> for the specified <see cref="Rock.Model.Block"/> and/or EntityContext.</returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use GetActiveContentHtml if you only need the HTML or GetActiveContentQueryable.FirstOrDefault() if you want the whole record" )]
         public HtmlContent GetActiveContent( int blockId, string entityValue )
+        {
+            return GetActiveContentQueryable( blockId, entityValue ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the active html content record (approved and within the start/expire daterange) ordered by the most recent approval date
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <returns></returns>
+        public IOrderedQueryable<HtmlContent> GetActiveContentQueryable( int blockId, string entityValue )
         {
             // Only consider approved content and content that is not prior to the start date 
             // or past the expire date
-            var content = Queryable( "ApprovedByPersonAlias.Person" )
+            var content = Queryable()//.Include(a => a.ApprovedByPersonAlias.Person)
                 .Where( c => c.IsApproved &&
-                    ( c.StartDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MinValue ) <= RockDateTime.Now &&
-                    ( c.ExpireDateTime ?? (DateTime)System.Data.SqlTypes.SqlDateTime.MaxValue ) >= RockDateTime.Now );
+                    ( c.StartDateTime == null || c.StartDateTime.Value <= RockDateTime.Now ) &&
+                    ( c.ExpireDateTime == null || c.ExpireDateTime.Value >= RockDateTime.Now ) );
 
             // If an entity value is specified, then return content specific to that context (entityValue), 
             // otherewise return content for the current block instance
             if ( !string.IsNullOrEmpty( entityValue ) )
             {
+                //content = content.Where( c => !string.IsNullOrEmpty(c.EntityValue) &&  c.EntityValue == entityValue );
                 content = content.Where( c => c.EntityValue == entityValue );
             }
             else
@@ -136,7 +150,18 @@ namespace Rock.Model
             }
 
             // return the most recently approved item
-            return content.OrderByDescending( c => c.ApprovedDateTime ).FirstOrDefault();
+            return content.OrderByDescending( c => c.ApprovedDateTime );
+        }
+
+        /// <summary>
+        /// Gets the active content HTML.
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <param name="entityValue">The entity value.</param>
+        /// <returns></returns>
+        public string GetActiveContentHtml( int blockId, string entityValue )
+        {
+            return GetActiveContentQueryable( blockId, entityValue ).OrderByDescending( c => c.ApprovedDateTime ).Select( a => a.Content ).FirstOrDefault();
         }
 
         #region HtmlContent Caching Methods
