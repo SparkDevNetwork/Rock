@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Reflection;
 using System.Web;
 using System.Web.Http.Description;
 
@@ -33,7 +35,7 @@ namespace Rock.Rest.Swagger
         /// <returns></returns>
         public static bool RockVersionSupportResolverAndControllerFilter( ApiDescription apiDesc, string targetApiVersion )
         {
-            string controllerName = null;
+            string controllerName;
             var requestParams = HttpContext.Current?.Request?.Params;
             if ( requestParams != null )
             {
@@ -41,6 +43,16 @@ namespace Rock.Rest.Swagger
 
                 if ( apiDesc?.ActionDescriptor?.ControllerDescriptor?.ControllerName == controllerName )
                 {
+                    // don't include obsolete controllers
+                    Type controllerType = apiDesc?.ActionDescriptor?.ControllerDescriptor?.ControllerType;
+                    if ( controllerType != null )
+                    {
+                        if ( controllerType.GetCustomAttribute<ObsoleteAttribute>() != null )
+                        {
+                            return false;
+                        }
+                    }
+
                     return true;
                 }
             }
