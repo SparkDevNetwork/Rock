@@ -145,6 +145,10 @@
     <Compile Include="Migrations\202003191428506_AddDateKeyToSelectTables.Designer.cs">
       <DependentUpon>202003191428506_AddDateKeyToSelectTables.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003240246119_UpdateSpiritualGiftsResultsLava.cs" />
+    <Compile Include="Migrations\202003240246119_UpdateSpiritualGiftsResultsLava.Designer.cs">
+      <DependentUpon>202003240246119_UpdateSpiritualGiftsResultsLava.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1189,6 +1193,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202003191428506_AddDateKeyToSelectTables.resx">
       <DependentUpon>202003191428506_AddDateKeyToSelectTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003240246119_UpdateSpiritualGiftsResultsLava.resx">
+      <DependentUpon>202003240246119_UpdateSpiritualGiftsResultsLava.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
