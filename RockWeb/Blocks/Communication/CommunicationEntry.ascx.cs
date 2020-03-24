@@ -43,13 +43,21 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for creating and sending a new communications such as email, SMS, etc. to recipients." )]
 
+    #region Block Attributes
+
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
+    [BooleanField( "Enable Lava",
+        Key = AttributeKey.EnableLava,
+        Description = "Remove the lava syntax from the message without resolving it.",
+        DefaultBooleanValue = false,
+        IsRequired = true,
+        Order = 0 )]
     [LavaCommandsField( "Enabled Lava Commands",
         Key = AttributeKey.EnabledLavaCommands,
-        Description = "The Lava commands that should be enabled for this HTML block.",
+        Description = "The Lava commands that should be enabled for this HTML block if Enable Lava is checked.",
         IsRequired = false,
-        Order = 0 )]
+        Order = 1 )]
     [ComponentsField( "Rock.Communication.MediumContainer, Rock",
         Name = "Mediums",
         Key = AttributeKey.Mediums,
@@ -139,6 +147,7 @@ namespace RockWeb.Blocks.Communication
         Category = "HTML Editor Settings",
         Order = 2 )]
 
+    #endregion Block Attributes
     public partial class CommunicationEntry : RockBlock
     {
         #region Attribute Keys
@@ -165,6 +174,7 @@ namespace RockWeb.Blocks.Communication
             public const string ShowAttachmentUploader = "ShowAttachmentUploader";
             public const string Mediums = "Mediums";
             public const string DefaultTemplate = "DefaultTemplate";
+            public const string EnableLava = "EnableLava";
         }
 
         #endregion Attribute Keys
@@ -1473,6 +1483,18 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 communication.FutureSendDateTime = null;
+            }
+
+            // If we are not allowing lava then remove the syntax
+            if ( !GetAttributeValue( AttributeKey.EnableLava ).AsBooleanOrNull() ?? false )
+            {
+                communication.Message = communication.Message.SanitizeLava();
+                communication.Subject = communication.Subject.SanitizeLava();
+                communication.BCCEmails = communication.BCCEmails.SanitizeLava();
+                communication.CCEmails = communication.CCEmails.SanitizeLava();
+                communication.FromEmail = communication.FromEmail.SanitizeLava();
+                communication.FromName = communication.FromName.SanitizeLava();
+                communication.ReplyToEmail = communication.ReplyToEmail.SanitizeLava();
             }
 
             return communication;

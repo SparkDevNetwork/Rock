@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using Quartz;
 using Rock.Attribute;
@@ -93,6 +94,7 @@ namespace Rock.Jobs
             // Get the set of entity key values returned by the Data View.
             var errorMessages = new List<string>();
 
+            Stopwatch stopwatch = Stopwatch.StartNew();
             var qry = dataView.GetQuery( null, rockContext, null, out errorMessages );
 
             var modelType = dataView.EntityType.GetType();
@@ -108,6 +110,9 @@ namespace Rock.Jobs
             }
 
             var entityIds = qry.Select( e => e.Id ).ToList();
+            stopwatch.Stop();
+            DataViewService.AddRunDataViewTransaction( dataView.Id,
+                                                        Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
 
             var entityTypeId = dataView.EntityTypeId.Value;
             var entityTypeName = modelType.GetFriendlyTypeName();

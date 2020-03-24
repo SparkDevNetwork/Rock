@@ -37,6 +37,9 @@ namespace Rock.Utility.Settings.DataAutomation
             IsAttendanceInGroupTypeEnabled = true;
             AttendanceInGroupTypeDays = 90;
 
+            IsSiteLoginEnabled = true;
+            SiteLoginPeriod = 90;
+
             IsPrayerRequestEnabled = true;
             PrayerRequestPeriod = 90;
 
@@ -109,6 +112,22 @@ namespace Rock.Utility.Settings.DataAutomation
         /// The attendance in group type days.
         /// </value>
         public int AttendanceInGroupTypeDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is site login enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is site login enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSiteLoginEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the site login period.
+        /// </summary>
+        /// <value>
+        /// The site login period.
+        /// </value>
+        public int SiteLoginPeriod { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is prayer request enabled.

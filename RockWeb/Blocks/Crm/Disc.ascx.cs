@@ -506,17 +506,15 @@ namespace Rockweb.Blocks.Crm
             Assessment assessment = null;
             Assessment previouslyCompletedAssessment = null;
 
-            // This is a computed property so it cannot be in the linq query
-            int primaryAliasId = _targetPerson.PrimaryAliasId.Value;
-
             // A "0" value indicates that the block should create a new assessment instead of looking for an existing one, so keep assessment null. e.g. a user directed re-take
             if ( _assessmentId != 0 )
             {
                 var assessments = new AssessmentService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( a => a.PersonAliasId == primaryAliasId )
-                .Where( a => a.AssessmentTypeId == assessmentType.Id )
+                .Where( a => a.PersonAlias != null
+                             && a.PersonAlias.PersonId == _targetPerson.Id 
+                             && a.AssessmentTypeId == assessmentType.Id )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
                 .ToList();
 
