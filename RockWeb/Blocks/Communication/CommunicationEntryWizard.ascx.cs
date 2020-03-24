@@ -2590,10 +2590,17 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             {
                 // GetValueOrNull will default to CommunicationType.RecipientPreference if not found in the dictionary.
                 var groupMemberPreference = communicationListGroupMemberCommunicationTypeLookup.GetValueOrNull( recipient.PersonAlias.PersonId );
-                var recipientPreference = recipientPersonsLookup[recipient.PersonAlias.PersonId].CommunicationPreference;
-                
-                recipient.MediumEntityTypeId = Rock.Model.Communication.DetermineMediumEntityTypeId( emailMediumEntityType.Id, smsMediumEntityType.Id,
-                                                communication.CommunicationType, groupMemberPreference, recipientPreference );
+
+                var recipientPreference = recipientPersonsLookup.ContainsKey(recipient.PersonAlias.PersonId) ?
+                    recipientPersonsLookup[recipient.PersonAlias.PersonId].CommunicationPreference :
+                    groupMemberPreference;
+
+                recipient.MediumEntityTypeId = Rock.Model.Communication.DetermineMediumEntityTypeId(
+                    emailMediumEntityType.Id,
+                    smsMediumEntityType.Id,
+                    communication.CommunicationType,
+                    groupMemberPreference,
+                    recipientPreference );
             }
 
             communication.ExcludeDuplicateRecipientAddress = cbDuplicatePreventionOption.Checked;
