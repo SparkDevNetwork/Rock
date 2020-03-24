@@ -56,13 +56,19 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbName" runat="server" Label="Name" Required="true" ValidationGroup="EditPage" />
-
-                        <Rock:RockDropDownList ID="ddlLayout" runat="server" Label="Layout" Required="true" ValidationGroup="EditPage" />
                     </div>
 
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbInternalName" runat="server" Label="Internal Name" Required="true" ValidationGroup="EditPage" />
+                    </div>
+                </div>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockDropDownList ID="ddlLayout" runat="server" Label="Layout" Required="true" ValidationGroup="EditPage" />
+                    </div>
+
+                    <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbDisplayInNavigation" runat="server" Label="Display In Navigation" ValidationGroup="EditPage" />
                     </div>
                 </div>
@@ -71,7 +77,17 @@
                 <Rock:ImageUploader ID="imgPageIcon" runat="server" Help="This image is used as a icon for your page." Label="Icon" />
 
                 <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:DataTextBox ID="tbCssClass" runat="server"
+                                              SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass"
+                                              Label="Body CSS Class"
+                                              Help="The CSS class to add to the page." />
+                        </div>
+                    </div>
+
                     <Rock:CodeEditor ID="ceEventHandler" runat="server" Label="Event Handler" Help="The lava to execute on the client whenever a page event is triggered." EditorMode="Lava" />
+
                     <Rock:CodeEditor ID="ceCssStyles" runat="server" Label="Page Scoped CSS" EditorMode="Css" Help="CSS styles that will only be applied to elements on this page." />
                 </Rock:PanelWidget>
 
