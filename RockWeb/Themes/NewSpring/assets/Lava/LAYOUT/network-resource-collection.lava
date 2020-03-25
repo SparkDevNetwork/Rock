@@ -109,10 +109,9 @@
         {% for result in results %}[[ item ]]
             {% contentchannelitem id:'{{ result.Id }}' iterator:'children' %}
                 {% for child in children %}
-
                     {% assign id = child.Id %}
                     {% assign cciid = child.Id %}
-                    {% assign type = forloop.index | Prepend:'Week ' %}
+                    {% assign type = result.Index | Plus:1 | Prepend:'Week ' %}
                     {% assign video = child | Attribute:'Video','RawValue' %}
                     {% assign childimage = child | Attribute:'ImageLandscape','Url' %}
                     {% capture imageurl %}
