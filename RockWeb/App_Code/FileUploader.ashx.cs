@@ -432,7 +432,17 @@ namespace RockWeb
             // Get the base filename
             string baseFileName = Path.GetFileName( untrustedFileName );
 
-            // Scrub invalid file characters
+            /*
+             * 2020-03-25 JME
+             *
+             * While C# has a listing of invalid file characters (used below), we added a few more of our own to help
+             * with dealing with linking easily to files that have been uploaded.
+             *
+             * Specific Use Case: Theme Editor was having issues when using uploaded files from the Image Upload control
+             */
+            baseFileName = baseFileName.Replace( "(", "" ).Replace( ")", "" );
+
+            // Scrub base invalid file characters
             return Regex.Replace( baseFileName, "[" + Regex.Escape( Path.GetInvalidFileNameChars().ToString() ) + "]", string.Empty, RegexOptions.CultureInvariant );
         }
 
