@@ -32,7 +32,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -54,7 +54,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /* BEMA.FE1.Start */
     [BooleanField(
         "Is Limited to Active Events?",
-        Key = AttributeKey.IsLimitedToActiveEvents,
+        Key = BemaAttributeKey.IsLimitedToActiveEvents,
         Description = "Are only active events displayed?",
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
@@ -64,7 +64,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /* BEMA.FE2.Start */
     [BooleanField(
         "Is Limited to Current and Future Events?",
-        Key = AttributeKey.IsLimitedToCurrentAndFutureEvents,
+        Key = BemaAttributeKey.IsLimitedToCurrentAndFutureEvents,
         Description = "Are only current and future events displayed?",
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
@@ -74,7 +74,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string IsLimitedToActiveEvents = "IsLimitedToActiveEvents";
             public const string IsLimitedToCurrentAndFutureEvents = "IsLimitedToCurrentAndFutureEvents";
@@ -177,7 +177,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     .Where( i => i.Id == eventItemOccurrenceId );
 
                 /* BEMA.FE1.Start */
-                if ( GetAttributeValue( AttributeKey.IsLimitedToActiveEvents ).AsBoolean() )
+                if ( GetAttributeValue( BemaAttributeKey.IsLimitedToActiveEvents ).AsBoolean() )
                 {
                     qry = qry.Where( i => i.EventItem.IsActive == true );
                 }
@@ -186,7 +186,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 var eventItemOccurrence = qry.FirstOrDefault();
 
                 /* BEMA.FE2.Start */
-                if ( GetAttributeValue( AttributeKey.IsLimitedToCurrentAndFutureEvents ).AsBoolean() &&
+                if ( GetAttributeValue( BemaAttributeKey.IsLimitedToCurrentAndFutureEvents ).AsBoolean() &&
                     eventItemOccurrence.Schedule.GetNextStartDateTime( RockDateTime.Today ) < RockDateTime.Today )
                 {
                     eventItemOccurrence = null;

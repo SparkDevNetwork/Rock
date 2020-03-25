@@ -32,7 +32,7 @@ using System.Data.Entity;
 using Rock.Security;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -192,14 +192,14 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             required: false,
             Description = "A selection of pledge accounts to include on the statement.",
             Order = 0,
-            Key = AttributeKey.PledgeAccounts )]
+            Key = BemaAttributeKey.PledgeAccounts )]
     /* BEMA.FE1.End */
 
     /* BEMA.FE2.Start */
     [BooleanField(
         "Are Transactions In Ascending Order?",
         Description = "Do you want transactions displayed in ascending order of datetime instead of descending?",
-        Key = AttributeKey.InAscendingOrder,
+        Key = BemaAttributeKey.InAscendingOrder,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -209,7 +209,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     [BooleanField(
         "Are Transactions Filtered by Valid Date Times?",
         Description = "Do you want to further filter transactions by valid date times?",
-        Key = AttributeKey.IsFilteredByValidDateTime,
+        Key = BemaAttributeKey.IsFilteredByValidDateTime,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -218,7 +218,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE5.Start */
     [BooleanField(
         "Is Child Account Giving Rolled up into Pledge Giving?",
-        Key = AttributeKey.IsChildAccountGivingRolledUp,
+        Key = BemaAttributeKey.IsChildAccountGivingRolledUp,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -228,7 +228,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string PledgeAccounts = "PledgeAccounts";
             public const string InAscendingOrder = "InAscendingOrder";
@@ -353,7 +353,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             }
 
             /* BEMA.FE1.Start */
-            var isOrderedAscending = GetAttributeValue( AttributeKey.InAscendingOrder ).AsBoolean();
+            var isOrderedAscending = GetAttributeValue( BemaAttributeKey.InAscendingOrder ).AsBoolean();
             if ( isOrderedAscending )
             {
                 qry = qry.OrderBy( t => t.Transaction.TransactionDateTime );
@@ -452,15 +452,36 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                                                 } )
                                                 .OrderBy( s => s.Order ) );
 
+            // pledge information
+            if ( GetAttributeValue( "DisplayPledges" ).AsBoolean() )
+            {
+                List<PledgeSummary> pledges = GetPledgeDataForPersonYear( rockContext, statementYear, personAliasIds );
+                mergeFields.Add( "Pledges", pledges );
+            }
+
+            var template = GetAttributeValue( "LavaTemplate" );
+
+            lResults.Text = template.ResolveMergeFields( mergeFields );
+
+        }
+
+        /// <summary>
+        /// Gets the pledge data for the given person and year.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="statementYear">The statement year.</param>
+        /// <param name="personAliasIds">The person alias ids.</param>
+        /// <returns></returns>
+        private List<PledgeSummary> GetPledgeDataForPersonYear( RockContext rockContext, int statementYear, List<int> personAliasIds )
+        {           
             /* BEMA.FE4.Start */
-            var isFilteredByValidDateTime = GetAttributeValue( AttributeKey.IsFilteredByValidDateTime ).AsBoolean();
+            var isFilteredByValidDateTime = GetAttributeValue( BemaAttributeKey.IsFilteredByValidDateTime ).AsBoolean();
             /* BEMA.FE4.End */
 
             /* BEMA.FE1.Start */
-            var accountIds = new FinancialAccountService( rockContext ).GetByGuids( GetAttributeValue( AttributeKey.PledgeAccounts ).SplitDelimitedValues().AsGuidList() ).Select( a => a.Id ).ToList();
+            var accountIds = new FinancialAccountService( rockContext ).GetByGuids( GetAttributeValue( BemaAttributeKey.PledgeAccounts ).SplitDelimitedValues().AsGuidList() ).Select( a => a.Id ).ToList();
             /* BEMA.FE1.End */
 
-            // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
                                 .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
                                     && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
@@ -490,7 +511,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             {
                 /* BEMA.FE5.Start */
                 var accounts = new FinancialAccountService( rockContext ).Queryable().Where( f => f.ParentAccountId == pledge.AccountId || f.Id == pledge.AccountId ).Select( f => f.Id );
-                var isChildAccountGivingRolledUp = GetAttributeValue( AttributeKey.IsChildAccountGivingRolledUp ).AsBoolean();
+                var isChildAccountGivingRolledUp = GetAttributeValue( BemaAttributeKey.IsChildAccountGivingRolledUp ).AsBoolean();
                 /* BEMA.FE5.End */
 
                 var adjustedPledgeEndDate = pledge.PledgeEndDate.Value.Date;
@@ -530,12 +551,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 }
             }
 
-            mergeFields.Add( "Pledges", pledges );
-
-            var template = GetAttributeValue( "LavaTemplate" );
-
-            lResults.Text = template.ResolveMergeFields( mergeFields );
-
+            return pledges;
         }
 
         #endregion

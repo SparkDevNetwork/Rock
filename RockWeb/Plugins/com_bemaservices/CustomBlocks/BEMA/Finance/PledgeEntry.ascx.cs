@@ -33,7 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -75,7 +75,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
     [BooleanField(
         "Enable Attribute Values",
         Description = "Whether Attribute Values should be available for display / editing.",
-        Key = AttributeKey.EnableAttributeValues,
+        Key = BemaAttributeKey.EnableAttributeValues,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -85,7 +85,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string EnableAttributeValues = "EnableAttributeValues";
         }
@@ -122,7 +122,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
             }
 
             /* BEMA.FE1.Start */
-            if ( GetAttributeValue( AttributeKey.EnableAttributeValues ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.EnableAttributeValues ).AsBoolean() )
             {
                 var pledgeId = PageParameter( "pledgeId" ).AsInteger();
                 var financialPledge = new FinancialPledgeService( new RockContext() ).Get( pledgeId );
@@ -219,7 +219,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
             if ( financialPledge.IsValid )
             {
                 /* BEMA.FE1.Start */
-                if ( GetAttributeValue( AttributeKey.EnableAttributeValues ).AsBoolean() )
+                if ( GetAttributeValue( BemaAttributeKey.EnableAttributeValues ).AsBoolean() )
                 {
                     financialPledge.LoadAttributes( rockContext );
                     Rock.Attribute.Helper.GetEditValues( phAttributes, financialPledge );
@@ -231,7 +231,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
                 rockContext.SaveChanges();
 
                 /* BEMA.FE1.Start */
-                if ( GetAttributeValue( AttributeKey.EnableAttributeValues ).AsBoolean() )
+                if ( GetAttributeValue( BemaAttributeKey.EnableAttributeValues ).AsBoolean() )
                 {
                     financialPledge.SaveAttributeValues( rockContext );
                 }
@@ -264,7 +264,7 @@ namespace Rock.Plugins.com_bemaservices.Finance
                 if ( confirmationEmailTemplateGuid.HasValue )
                 {
                     var emailMessage = new RockEmailMessage( confirmationEmailTemplateGuid.Value );
-                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                    emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                     emailMessage.AppRoot = ResolveRockUrl( "~/" );
                     emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                     emailMessage.Send();

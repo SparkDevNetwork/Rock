@@ -32,9 +32,10 @@ using Rock.Attribute;
 using Rock.Store;
 using System.Text;
 using Rock.Security;
+using DDay.iCal;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -57,7 +58,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     [LinkedPage( "Details Page", "Detail page for events", order: 2 )]
     [LavaCommandsField( "Enabled Lava Commands", "The Lava commands that should be enabled for this HTML block.", false, order: 3 )]
 
-    [CampusesField(name: "Campuses", description: "Select campuses to display calendar events for. No selection will show all.", required: false, defaultCampusGuids: "", category: "", order: 4, key: "Campuses")]
+    [CampusesField( name: "Campuses", description: "Select campuses to display calendar events for. No selection will show all.", required: false, defaultCampusGuids: "", category: "", order: 4, key: "Campuses" )]
     [CustomRadioListField( "Campus Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", order: 5 )]
 
     [CustomRadioListField( "Audience Filter Display Mode", "", "1^Hidden, 2^Plain, 3^Panel Open, 4^Panel Closed", true, "1", key: "CategoryFilterDisplayMode", order: 6 )]
@@ -78,14 +79,14 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar name.", false, order: 18 )]
 
-    [TextField("Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order: 19)]
-    [TextField("Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 20)]
+    [TextField( "Campus Parameter Name", "The page parameter name that contains the id of the campus entity.", false, "campusId", order: 19 )]
+    [TextField( "Category Parameter Name", "The page parameter name that contains the id of the category entity.", false, "categoryId", order: 20 )]
     [TextField( "Date Parameter Name", "The page parameter name that contains the selected date.", false, "date", order: 21 )]
 
     /* BEMA.FE1.Start */
     [BooleanField(
         "Is Limited to Events with Registrations?",
-        Key = AttributeKey.IsLimitedToEventsWithRegistrations,
+        Key = BemaAttributeKey.IsLimitedToEventsWithRegistrations,
         Description = "Are only events with registrations displayed?",
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
@@ -94,7 +95,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /* BEMA.FE2.Start */
     [BooleanField(
         "Is Limited to Next Event Item Recurrence?",
-        Key = AttributeKey.IsLimitedToNextEventItemRecurrence,
+        Key = BemaAttributeKey.IsLimitedToNextEventItemRecurrence,
         Description = "If enabled, will only return the next recurrence of the next EventItemOccurrence of an EventItem.",
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
@@ -103,12 +104,12 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /* BEMA.FE3.Start */
     [BooleanField(
         "Replace Core Filters with custom filters",
-        Key = AttributeKey.AreCoreFiltersReplacedWithCustomFilters,
+        Key = BemaAttributeKey.AreCoreFiltersReplacedWithCustomFilters,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
 
     [AttributeField( "Defined Type Filter Attribute",
-        Key = AttributeKey.DefinedTypeFilterAttribute,
+        Key = BemaAttributeKey.DefinedTypeFilterAttribute,
         EntityTypeGuid = "E37FB26F-03F6-48DA-8E96-F412616F5EE4",
         Description = "If you want to further narrow down the results using a defined value attribute, set it here",
         IsRequired = false,
@@ -116,7 +117,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Category = "BEMA Additional Features" )]
 
     [AttributeField( "Display Campus Boolean Attribute",
-        Key = AttributeKey.DisplayCampusBooleanAttribute,
+        Key = BemaAttributeKey.DisplayCampusBooleanAttribute,
         EntityTypeGuid = "00096BED-9587-415E-8AD4-4E076AE8FBF0",
         Description = "If you want to further narrow down the displayed campuses using a boolean attribute, set it here",
         IsRequired = false,
@@ -127,7 +128,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string IsLimitedToEventsWithRegistrations = "IsLimitedToEventsWithRegistrations";
             public const string IsLimitedToNextEventItemRecurrence = "IsLimitedToNextEventItemRecurrence";
@@ -143,6 +144,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
         private int _calendarId = 0;
         private string _calendarName = string.Empty;
+
+        /// <summary>
+        /// NOTE: this is Sunday vs RockDateTime.FirstDayOfWeek since it is used to show the selected week/month in the Calendar control
+        /// </summary>
         private DayOfWeek _firstDayOfWeek = DayOfWeek.Sunday;
 
         protected bool CampusPanelOpen { get; set; }
@@ -407,7 +412,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             /* BEMA.FE1.Start */
 
-            if ( GetAttributeValue( AttributeKey.IsLimitedToEventsWithRegistrations ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.IsLimitedToEventsWithRegistrations ).AsBoolean() )
             {
                 qry = qry.Where( m => m.Linkages.Where( l => l.RegistrationInstanceId != null ).Any() );
             }
@@ -426,7 +431,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 // If CampusId is null, then the event is an 'All Campuses' event, so include those
                 qry = qry.Where( c => !c.CampusId.HasValue || selectedCampusIdList.Contains( c.CampusId.Value ) );
             }
-            else if ( campusIdList.Any())
+            else if ( campusIdList.Any() )
             {
                 // If no campus filter is selected then check the block filtering
                 // If CampusId is null, then the event is an 'All Campuses' event, so include those
@@ -440,8 +445,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => categories.Contains( c.DefinedValueId ) ) );
             }
 
-
-
             /* BEMA.FE3.Start */
             qry = FilterByCustomFilters( rockContext, qry, selectedCampusIdList );
 
@@ -451,22 +454,36 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             var today = RockDateTime.Today;
             var filterStart = FilterStartDate.HasValue ? FilterStartDate.Value : today;
             var monthStart = new DateTime( filterStart.Year, filterStart.Month, 1 );
-            var rangeStart = monthStart.AddMonths(-1 );
+            var rangeStart = monthStart.AddMonths( -1 );
             var rangeEnd = monthStart.AddMonths( 2 );
             var beginDate = FilterStartDate.HasValue ? FilterStartDate.Value : rangeStart;
             var endDate = FilterEndDate.HasValue ? FilterEndDate.Value : rangeEnd;
 
-            endDate = endDate.AddDays( 1 ).AddMilliseconds(-1 );
+            endDate = endDate.AddDays( 1 ).AddMilliseconds( -1 );
 
             // Get the occurrences
             var occurrences = qry.ToList();
             var occurrencesWithDates = occurrences
-                .Select( o => new EventOccurrenceDate
+                .Select( o =>
                 {
-                    EventItemOccurrence = o,
-                    Dates = o.GetStartTimes( beginDate, endDate ).ToList()
+                    var eventOccurrenceDate = new EventOccurrenceDate
+                    {
+                        EventItemOccurrence = o
+
+                    };
+
+                    if ( o.Schedule != null )
+                    {
+                        eventOccurrenceDate.ScheduleOccurrences = o.Schedule.GetOccurrences( beginDate, endDate ).ToList();
+                    }
+                    else
+                    {
+                        eventOccurrenceDate.ScheduleOccurrences = new List<Occurrence>();
+                    }
+
+                    return eventOccurrenceDate;
                 } )
-                .Where( d => d.Dates.Any() )
+                .Where( d => d.ScheduleOccurrences.Any() )
                 .ToList();
 
             CalendarEventDates = new List<DateTime>();
@@ -475,15 +492,18 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             foreach ( var occurrenceDates in occurrencesWithDates )
             {
                 var eventItemOccurrence = occurrenceDates.EventItemOccurrence;
-                foreach ( var datetime in occurrenceDates.Dates )
+                foreach ( var scheduleOccurrence in occurrenceDates.ScheduleOccurrences )
                 {
-                    if ( eventItemOccurrence.Schedule.EffectiveEndDate.HasValue && ( eventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.Schedule.EffectiveEndDate ) )
+
+                    var datetime = scheduleOccurrence.Period.StartTime.Value;
+                    var occurrenceEndTime = scheduleOccurrence.Period.EndTime;
+                    if ( occurrenceEndTime != null && occurrenceEndTime.Value.Date > datetime.Date )
                     {
-                        var multiDate = eventItemOccurrence.Schedule.EffectiveStartDate;
-                        while ( multiDate.HasValue && ( multiDate.Value < eventItemOccurrence.Schedule.EffectiveEndDate.Value ) )
+                        var multiDate = datetime;
+                        while ( multiDate <= occurrenceEndTime.Date && multiDate <= endDate )
                         {
-                            CalendarEventDates.Add( multiDate.Value.Date );
-                            multiDate = multiDate.Value.AddDays( 1 );
+                            CalendarEventDates.Add( multiDate.Date );
+                            multiDate = multiDate.AddDays( 1 );
                         }
                     }
                     else
@@ -513,7 +533,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             }
 
             /* BEMA.FE2.Start */
-            if ( GetAttributeValue( AttributeKey.IsLimitedToNextEventItemRecurrence ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.IsLimitedToNextEventItemRecurrence ).AsBoolean() )
             {
                 eventOccurrenceSummaries = GrabFirstRecurrenceForEachEvent( beginDate, endDate, occurrencesWithDates );
             }
@@ -577,7 +597,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             else if ( ViewMode == "Month" )
             {
                 FilterStartDate = new DateTime( today.Year, today.Month, 1 );
-                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays(-1 );
+                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays( -1 );
             }
             else if ( ViewMode == "Year" )
             {
@@ -621,7 +641,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             cblCampus.DataBind();
 
-            if ( cblCampus.Items.Count == 1)
+            if ( cblCampus.Items.Count == 1 )
             {
                 CampusPanelClosed = false;
                 CampusPanelOpen = false;
@@ -727,7 +747,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             else if ( ViewMode == "Month" )
             {
                 FilterStartDate = new DateTime( selectedDate.Year, selectedDate.Month, 1 );
-                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays(-1 );
+                FilterEndDate = FilterStartDate.Value.AddMonths( 1 ).AddDays( -1 );
             }
             else if ( ViewMode == "Year" )
             {
@@ -746,8 +766,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
         private void SetCalendarFilterDates()
         {
-            FilterStartDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[0] : (DateTime?)null;
-            FilterEndDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[calEventCalendar.SelectedDates.Count - 1] : (DateTime?)null;
+            FilterStartDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[0] : ( DateTime? ) null;
+            FilterEndDate = calEventCalendar.SelectedDates.Count > 0 ? calEventCalendar.SelectedDates[calEventCalendar.SelectedDates.Count - 1] : ( DateTime? ) null;
         }
 
         /// <summary>
@@ -811,7 +831,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 ddlCatPicker.SelectedDefinedValueId = PageParameter( "AudienceId" ).AsIntegerOrNull();
             }
 
-            var definedValueAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeFilterAttribute ).AsGuidOrNull();
+            var definedValueAttributeGuid = GetAttributeValue( BemaAttributeKey.DefinedTypeFilterAttribute ).AsGuidOrNull();
             if ( definedValueAttributeGuid.HasValue )
             {
                 var definedValueAttribute = AttributeCache.Get( definedValueAttributeGuid.Value );
@@ -846,7 +866,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             cpCampus.Items.Remove( cpCampus.Items.FindByValue( "" ) );
             cpCampus.Items.Insert( 0, new ListItem( "Campus", "" ) );
-            var campusAttributeGuid = GetAttributeValue( AttributeKey.DisplayCampusBooleanAttribute ).AsGuidOrNull();
+            var campusAttributeGuid = GetAttributeValue( BemaAttributeKey.DisplayCampusBooleanAttribute ).AsGuidOrNull();
             if ( campusAttributeGuid.HasValue )
             {
                 var campusAttribute = AttributeCache.Get( campusAttributeGuid.Value );
@@ -862,8 +882,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 cpCampus.SelectedCampusId = PageParameter( "CampusId" ).AsIntegerOrNull();
             }
 
-            pnlBemaFilters.Visible = GetAttributeValue( AttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
-            pnlFilters.Visible = !GetAttributeValue( AttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
+            pnlBemaFilters.Visible = GetAttributeValue( BemaAttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
+            pnlFilters.Visible = !GetAttributeValue( BemaAttributeKey.AreCoreFiltersReplacedWithCustomFilters ).AsBoolean();
         }
         private IQueryable<EventItemOccurrence> FilterByCustomFilters( RockContext rockContext, IQueryable<EventItemOccurrence> qry, List<int> selectedCampusIdList )
         {
@@ -894,7 +914,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     if ( definedValue != null )
                     {
                         var definedValueGuid = definedValue.Guid.ToString();
-                        var definedValueAttributeGuid = GetAttributeValue( AttributeKey.DefinedTypeFilterAttribute ).AsGuidOrNull();
+                        var definedValueAttributeGuid = GetAttributeValue( BemaAttributeKey.DefinedTypeFilterAttribute ).AsGuidOrNull();
                         if ( definedValueAttributeGuid.HasValue )
                         {
                             var definedValueAttribute = AttributeCache.Get( definedValueAttributeGuid.Value );
@@ -964,7 +984,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             public EventItemOccurrence EventItemOccurrence { get; set; }
 
-            public List<DateTime> Dates { get; set; }
+            public List<Occurrence> ScheduleOccurrences { get; set; }
         }
 
         #endregion
@@ -979,8 +999,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 .Select( o => new EventOccurrenceNextDate
                 {
                     EventItemOccurrence = o.EventItemOccurrence,
-                    Dates = o.Dates,
-                    NextDateTime = o.Dates.Min()
+                    ScheduleOccurrences = o.ScheduleOccurrences,
+                    NextDateTime = o.ScheduleOccurrences.Min( so => so.Period.StartTime.Value )
                 } )
                 .ToList();
 
@@ -1043,7 +1063,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             public EventItemOccurrence EventItemOccurrence { get; set; }
 
-            public List<DateTime> Dates { get; set; }
+            public List<Occurrence> ScheduleOccurrences { get; set; }
 
             public DateTime NextDateTime { get; set; }
         }

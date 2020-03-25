@@ -20,16 +20,18 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -49,13 +51,13 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     [Description( "Generic list of all pledges in the system." )]
 
     [LinkedPage( "Detail Page", "", false )]
-    [BooleanField("Show Account Column", "Allows the account column to be hidden.", true, "", 1)]
-    [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
+    [BooleanField( "Show Account Column", "Allows the account column to be hidden.", true, "", 1 )]
+    [BooleanField( "Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2 )]
     [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
-    [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4)]
+    [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4 )]
     [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 5 )]
     [AccountsField( "Accounts", "Limit the results to pledges that match the selected accounts.", false, "", "", 5 )]
-    [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
+    [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0 )]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
     [BooleanField( "Show Date Range Filter", "Allows date range filter to be hidden.", true, "Display Filters", 2 )]
     [BooleanField( "Show Last Modified Filter", "Allows last modified filter to be hidden.", true, "Display Filters", 3 )]
@@ -63,7 +65,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE1.Start */
     [BooleanField(
         "Is Reassignment Allowed?",
-        Key = AttributeKey.IsReassignmentAllowed,
+        Key = BemaAttributeKey.IsReassignmentAllowed,
         Description = "Are Pledges allowed to be reassigned?",
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
@@ -73,7 +75,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI1.Start */
     [BooleanField(
         "Are accounts limited to active accounts?",
-        Key = AttributeKey.IsPickerLimitedToActiveAccounts,
+        Key = BemaAttributeKey.IsPickerLimitedToActiveAccounts,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -82,7 +84,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI2.Start */
     [TextField(
         "Total Amount Label",
-        Key = AttributeKey.TotalAmountLabel,
+        Key = BemaAttributeKey.TotalAmountLabel,
         Description = "The Label on the Total Amount controls.",
         IsRequired = true,
         DefaultValue = "Total Amount",
@@ -93,7 +95,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI3.Start */
     [BooleanField(
         "Show Amount Given Column?",
-        Key = AttributeKey.ShowAmountGivenColumn,
+        Key = BemaAttributeKey.ShowAmountGivenColumn,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -102,7 +104,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI4.Start */
     [BooleanField(
         "Show Amount Remaining Column?",
-        Key = AttributeKey.ShowAmountRemainingColumn,
+        Key = BemaAttributeKey.ShowAmountRemainingColumn,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -111,7 +113,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI5.Start */
     [BooleanField(
         "Show Modified By Column?",
-        Key = AttributeKey.ShowModifiedByColumn,
+        Key = BemaAttributeKey.ShowModifiedByColumn,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -120,7 +122,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI6.Start */
     [BooleanField(
         "Show Grid Filter when Person Filter is hidden?",
-        Key = AttributeKey.AlwaysShowGridFilter,
+        Key = BemaAttributeKey.AlwaysShowGridFilter,
         Description = "Should the grid filter be shown even when the person filter is hidden.",
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
@@ -132,7 +134,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string IsReassignmentAllowed = "IsReassignmentAllowed";
             public const string IsPickerLimitedToActiveAccounts = "IsPickerLimitedToActiveAccounts";
@@ -155,6 +157,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// The target person.
         /// </value>
         protected Person TargetPerson { get; private set; }
+		
+		protected List<AttributeCache> AvailableAttributes { get; set; }
 
         /* BEMA.FE1.Start */
         private LinkButton _lbReassign = new LinkButton();
@@ -162,7 +166,9 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /* BEMA.FE1.End */
 
         #endregion
-        
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -184,15 +190,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gPledges.Actions.ShowAdd = canAddEditDelete && !string.IsNullOrWhiteSpace( GetAttributeValue( "DetailPage" ) );
             gPledges.IsDeleteEnabled = canAddEditDelete;
-
-            AddAttributeColumns();
-
-            var deleteField = new DeleteField();
-            gPledges.Columns.Add( deleteField );
-            deleteField.Click += gPledges_Delete;
-
             /* BEMA.FE1.Start */
-            if ( GetAttributeValue( AttributeKey.IsReassignmentAllowed ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.IsReassignmentAllowed ).AsBoolean() )
             {
                 gPledges.Columns[0].Visible = canAddEditDelete;
 
@@ -209,14 +208,14 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             /* BEMA.FE1.END */
 
             /* BEMA.UI1.Start */
-            apFilterAccount.DisplayActiveOnly = GetAttributeValue( AttributeKey.IsPickerLimitedToActiveAccounts ).AsBoolean();
+            apFilterAccount.DisplayActiveOnly = GetAttributeValue( BemaAttributeKey.IsPickerLimitedToActiveAccounts ).AsBoolean();
             /* BEMA.UI1.End */
 
             /* BEMA.UI2.Start */
             var totalField = gPledges.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.DataField == "TotalAmount" );
             if ( totalField != null )
             {
-                totalField.HeaderText = GetAttributeValue( AttributeKey.TotalAmountLabel );
+                totalField.HeaderText = GetAttributeValue( BemaAttributeKey.TotalAmountLabel );
             }
             /* BEMA.UI2.End */
 
@@ -224,7 +223,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             var amountGivenField = gPledges.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.DataField == "AmountGiven" );
             if ( amountGivenField != null )
             {
-                amountGivenField.Visible = GetAttributeValue( AttributeKey.ShowAmountGivenColumn ).AsBoolean();
+                amountGivenField.Visible = GetAttributeValue( BemaAttributeKey.ShowAmountGivenColumn ).AsBoolean();
             }
             /* BEMA.UI3.End */
 
@@ -232,7 +231,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             var amountRemainingField = gPledges.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.DataField == "AmountRemaining" );
             if ( amountRemainingField != null )
             {
-                amountRemainingField.Visible = GetAttributeValue( AttributeKey.ShowAmountRemainingColumn ).AsBoolean();
+                amountRemainingField.Visible = GetAttributeValue( BemaAttributeKey.ShowAmountRemainingColumn ).AsBoolean();
             }
             /* BEMA.UI4.End */
 
@@ -240,7 +239,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             var modifiedByField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.DataField == "ModifiedBy" );
             if ( modifiedByField != null )
             {
-                modifiedByField.Visible = GetAttributeValue( AttributeKey.ShowModifiedByColumn ).AsBoolean();
+                modifiedByField.Visible = GetAttributeValue( BemaAttributeKey.ShowModifiedByColumn ).AsBoolean();
             }
             /* BEMA.UI5.End */
 
@@ -264,9 +263,9 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 gfPledges.Visible = false;
 
                 /* BEMA.UI6.Start */
-                gfPledges.Visible = GetAttributeValue( AttributeKey.AlwaysShowGridFilter ).AsBoolean();
+                gfPledges.Visible = GetAttributeValue( BemaAttributeKey.AlwaysShowGridFilter ).AsBoolean();
                 /* BEMA.UI6.End */
-            }        
+            }
 
             var forField = gPledges.ColumnsOfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "For" );
             if ( forField != null )
@@ -340,6 +339,61 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         }
         /* BEMA.FE1.End */
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            if ( !Page.IsPostBack )
+            {
+                if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() && this.CurrentPerson == null )
+                {
+                    this.Visible = false;
+                }
+                else
+                {
+
+                    BindAttributes();
+                    AddDynamicControls();
+                    BindFilter();
+                    BindGrid();
+                }
+            }
+
+            base.OnLoad( e );
+        }
+
+        /// <summary>
+        /// Restores the view-state information from a previous user control request that was saved by the <see cref="M:System.Web.UI.UserControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the user control state to be restored.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+
+            AddDynamicControls();
+        }
+
+        /// <summary>
+        /// Saves any user control view-state changes that have occurred since the last page postback.
+        /// </summary>
+        /// <returns>
+        /// Returns the user control's current view state. If there is no view state associated with the control, it returns null.
+        /// </returns>
+        protected override object SaveViewState()
+        {
+            ViewState["AvailableAttributes"] = AvailableAttributes;
+
+            return base.SaveViewState();
+        }
+
+        #endregion
+
+        #region Events
+
         private void GPledges_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
@@ -359,7 +413,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                 if ( pledge.EndDate.ToShortDateString() == DateTime.MaxValue.ToShortDateString() )
                 {
-                    var endField = gPledges.ColumnsOfType<DateField>().FirstOrDefault( a => a.HeaderText == "Starts" );
+                    var endField = gPledges.ColumnsOfType<DateField>().FirstOrDefault( a => a.HeaderText == "Ends" );
                     if ( endField != null )
                     {
                         var cell = e.Row.Cells[gPledges.Columns.IndexOf( endField )].Text = string.Empty;
@@ -414,27 +468,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             }
         }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
-        {
-            if ( !Page.IsPostBack )
-            {
-                if ( GetAttributeValue( "LimitPledgesToCurrentPerson" ).AsBoolean() && this.CurrentPerson == null )
-                {
-                    this.Visible = false;
-                }
-                else
-                {
-                    BindFilter();
-                    BindGrid();
-                }
-            }
-
-            base.OnLoad( e );
-        }
+        #endregion
+        #region Methods
 
         /// <summary>
         /// Binds the filter.
@@ -470,7 +505,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             drpDates.DelimitedValues = gfPledges.GetUserPreference( "Date Range" );
             drpLastModifiedDates.DelimitedValues = gfPledges.GetUserPreference( "Last Modified" );
             apFilterAccount.SetValues( gfPledges.GetUserPreference( "Accounts" ).Split( ',' ).AsIntegerList() );
-           
+
         }
 
         /* BEMA.FE1.Start */
@@ -569,6 +604,24 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gfPledges_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
+            if ( AvailableAttributes != null )
+            {
+                var attribute = AvailableAttributes.FirstOrDefault( a => "Attribute_" + a.Key == e.Key );
+                if ( attribute != null )
+                {
+                    try
+                    {
+                        var values = JsonConvert.DeserializeObject<List<string>>( e.Value );
+                        e.Value = attribute.FieldType.Field.FormatFilterValues( attribute.QualifierValues, values );
+                        return;
+                    }
+                    catch
+                    {
+                        // intentionally ignore
+                    }
+                }
+            }
+
             switch ( e.Key )
             {
                 case "Date Range":
@@ -652,7 +705,26 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             gfPledges.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
             gfPledges.SaveUserPreference( "Last Modified", drpLastModifiedDates.DelimitedValues );
             gfPledges.SaveUserPreference( "Person", ppFilterPerson.PersonId.ToString() );
-            gfPledges.SaveUserPreference( "Accounts", apFilterAccount.SelectedValues.ToList().AsDelimited(",") );
+            gfPledges.SaveUserPreference( "Accounts", apFilterAccount.SelectedValues.ToList().AsDelimited( "," ) );
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    if ( filterControl != null )
+                    {
+                        try
+                        {
+                            var values = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            gfPledges.SaveUserPreference( "Attribute_" + attribute.Key, attribute.Name, attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter ).ToJson() );
+                        }
+                        catch
+                        {
+                            // intentionally ignore
+                        }
+                    }
+                }
+            }
             BindGrid();
         }
 
@@ -664,29 +736,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             var rockContext = new RockContext();
             var pledgeService = new FinancialPledgeService( rockContext );
             var sortProperty = gPledges.SortProperty;
-            //var pledges = pledgeService.Queryable();
+            var pledges = pledgeService.Queryable();
 
-            /* BEMA.Start */
-            var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Select( g => new PledgeSummary
-                                {
-                                    Id = g.Id,
-                                    AccountId = g.AccountId,
-                                    AccountName = g.Account.Name,
-                                    Account = g.Account,
-                                    PersonAliasId = g.PersonAlias.PersonId,
-                                    Group = g.Group,
-                                    PledgeFrequencyValue = g.PledgeFrequencyValue,
-                                    PledgeFrequencyValueId = g.PledgeFrequencyValueId,
-                                    TotalAmount = g.TotalAmount,
-                                    PersonAlias = g.PersonAlias,
-                                    AmountPledged = g.TotalAmount,
-                                    StartDate = g.StartDate,
-                                    EndDate = g.EndDate,
-                                    ModifiedDateTime = g.ModifiedDateTime,
-                                    ModifiedByPersonAliasId = g.ModifiedByPersonAliasId
-                                } );
-            /* BEMA.End */
 
             Person person = null;
             if ( TargetPerson != null )
@@ -701,7 +752,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     person = new PersonService( rockContext ).Get( personId.Value );
                 }
             }
-            
+
             if ( person != null )
             {
                 // if a person is specified, get pledges for that person ( and also anybody in their GivingUnit )
@@ -751,7 +802,17 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             // exclude pledges that start after the filter's end date or end before the filter's start date
             if ( drpDates.Visible && ( filterDateRange.Start.HasValue || filterDateRange.End.HasValue ) )
             {
-                pledges = pledges.Where( p => !(p.StartDate > filterEndDate) && !(p.EndDate < filterStartDate) );
+                pledges = pledges.Where( p => !( p.StartDate > filterEndDate ) && !( p.EndDate < filterStartDate ) );
+            }
+
+            // Filter query by any configured attribute filters
+            if ( AvailableAttributes != null && AvailableAttributes.Any() )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var filterControl = phAttributeFilters.FindControl( "filter_" + attribute.Id.ToString() );
+                    pledges = attribute.FieldType.Field.ApplyAttributeQueryFilter( pledges, filterControl, attribute, pledgeService, Rock.Reporting.FilterMode.SimpleFilter );
+                }
             }
 
             // Last Modified
@@ -764,7 +825,30 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 pledges = pledges.Where( p => !( p.ModifiedDateTime >= filterModifiedEndDate ) && !( p.ModifiedDateTime <= filterModifiedStartDate ) );
             }
 
-            gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderByDescending( p => p.ModifiedDateTime ).ToList();
+            
+            /* BEMA.Start */
+            var pledgeSummaries = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
+                                .Select( g => new PledgeSummary
+                                {
+                                    Id = g.Id,
+                                    AccountId = g.AccountId,
+                                    AccountName = g.Account.Name,
+                                    Account = g.Account,
+                                    PersonAliasId = g.PersonAlias.PersonId,
+                                    Group = g.Group,
+                                    PledgeFrequencyValue = g.PledgeFrequencyValue,
+                                    PledgeFrequencyValueId = g.PledgeFrequencyValueId,
+                                    TotalAmount = g.TotalAmount,
+                                    PersonAlias = g.PersonAlias,
+                                    AmountPledged = g.TotalAmount,
+                                    StartDate = g.StartDate,
+                                    EndDate = g.EndDate,
+                                    ModifiedDateTime = g.ModifiedDateTime,
+                                    ModifiedByPersonAliasId = g.ModifiedByPersonAliasId
+                                } );
+            /* BEMA.End */
+
+            gPledges.DataSource = sortProperty != null ? pledgeSummaries.Sort( sortProperty ).ToList() : pledgeSummaries.OrderBy( p => p.AccountId ).ToList();
             gPledges.DataBind();
 
             var showAccountSummary = this.GetAttributeValue( "ShowAccountSummary" ).AsBoolean();
@@ -772,7 +856,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             {
                 pnlSummary.Visible = true;
 
-                var summaryList = pledges
+                var summaryList = pledgeSummaries
                                 .GroupBy( a => a.AccountId )
                                 .Select( a => new AccountSummaryRow
                                 {
@@ -794,43 +878,102 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         }
 
         /// <summary>
-        /// Adds columns for any Pledge attributes marked as Show In Grid
+        /// Adds filters and columns for any Pledge attributes marked as Show In Grid
         /// </summary>
-        protected void AddAttributeColumns()
+        protected void AddDynamicControls()
         {
+            // Clear the filter controls
+            phAttributeFilters.Controls.Clear();
+
             // Remove attribute columns
             foreach ( var column in gPledges.Columns.OfType<AttributeField>().ToList() )
             {
                 gPledges.Columns.Remove( column );
             }
 
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    var control = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filter_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                    if ( control != null )
+                    {
+                        if ( control is IRockControl )
+                        {
+                            var rockControl = ( IRockControl ) control;
+                            rockControl.Label = attribute.Name;
+                            rockControl.Help = attribute.Description;
+                            phAttributeFilters.Controls.Add( control );
+                        }
+                        else
+                        {
+                            var wrapper = new RockControlWrapper();
+                            wrapper.ID = control.ID + "_wrapper";
+                            wrapper.Label = attribute.Name;
+                            wrapper.Controls.Add( control );
+                            phAttributeFilters.Controls.Add( wrapper );
+                        }
+
+                        string savedValue = gfPledges.GetUserPreference( "Attribute_" + attribute.Key );
+                        if ( !string.IsNullOrWhiteSpace( savedValue ) )
+                        {
+                            try
+                            {
+                                var values = JsonConvert.DeserializeObject<List<string>>( savedValue );
+                                attribute.FieldType.Field.SetFilterValues( control, attribute.QualifierValues, values );
+                            }
+                            catch
+                            {
+                                // intentionally ignore
+                            }
+                        }
+                    }
+
+                    bool columnExists = gPledges.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+
+                        var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
+                        if ( attributeCache != null )
+                        {
+                            boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
+                        }
+
+                        gPledges.Columns.Add( boundField );
+                    }
+                }
+            }
+
+            var deleteField = new DeleteField();
+            gPledges.Columns.Add( deleteField );
+            deleteField.Click += gPledges_Delete;
+
+        }
+
+
+        /// <summary>
+        /// Binds the attributes
+        /// </summary>
+        private void BindAttributes()
+        {
+            // Parse the attribute filters 
+            AvailableAttributes = new List<AttributeCache>();
+
             int entityTypeId = new FinancialPledge().TypeId;
-            foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
+            foreach ( var attributeModel in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn
-                   )
+                    a.IsGridColumn )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name ) )
             {
-                string dataFieldExpression = attribute.Key;
-                bool columnExists = gPledges.Columns.OfType<AttributeField>().FirstOrDefault( a => a.DataField.Equals( dataFieldExpression ) ) != null;
-                if ( !columnExists )
-                {
-                    AttributeField boundField = new AttributeField();
-                    boundField.DataField = dataFieldExpression;
-                    boundField.AttributeId = attribute.Id;
-                    boundField.HeaderText = attribute.Name;
-
-                    var attributeCache = Rock.Web.Cache.AttributeCache.Get( attribute.Id );
-                    if ( attributeCache != null )
-                    {
-                        boundField.ItemStyle.HorizontalAlign = attributeCache.FieldType.Field.AlignValue;
-                    }
-
-                    gPledges.Columns.Add( boundField );
-                }
+                AvailableAttributes.Add( AttributeCache.Get( attributeModel ) );
             }
+
         }
 
         /// Hook so that other blocks can set the visibility of all ISecondaryBlocks on its page
@@ -871,7 +1014,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             hfActiveDialog.Value = string.Empty;
         }
         /* BEMA.FE1.End */
-
+        #endregion
 
         #region Supporting Classes
 

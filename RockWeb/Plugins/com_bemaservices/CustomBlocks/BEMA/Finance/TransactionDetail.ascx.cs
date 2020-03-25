@@ -37,7 +37,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -61,7 +61,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI1.Start */
     [BooleanField(
         "Are accounts limited to active accounts?",
-        Key = AttributeKey.IsPickerLimitedToActiveAccounts,
+        Key = BemaAttributeKey.IsPickerLimitedToActiveAccounts,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -70,7 +70,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string IsPickerLimitedToActiveAccounts = "IsPickerLimitedToActiveAccounts";
         }
@@ -283,7 +283,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             Helper.AddEditControls( txnDetail, phAccountAttributeEdits, true, mdAccount.ValidationGroup );
 
             /* BEMA.UI1.Start */
-            apAccount.DisplayActiveOnly = GetAttributeValue( AttributeKey.IsPickerLimitedToActiveAccounts ).AsBoolean();
+            apAccount.DisplayActiveOnly = GetAttributeValue( BemaAttributeKey.IsPickerLimitedToActiveAccounts ).AsBoolean();
             /* BEMA.UI1.End */
         }
 
@@ -1316,12 +1316,17 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                 if ( txn.ScheduledTransaction != null )
                 {
+                    var text = txn.ScheduledTransaction.GatewayScheduleId.IsNullOrWhiteSpace() ?
+                        txn.ScheduledTransactionId.ToString() :
+                        txn.ScheduledTransaction.GatewayScheduleId;
+
                     var qryParam = new Dictionary<string, string>();
                     qryParam.Add( "ScheduledTransactionId", txn.ScheduledTransaction.Id.ToString() );
                     string url = LinkedPageUrl( "ScheduledTransactionDetailPage", qryParam );
+
                     detailsLeft.Add( "Scheduled Transaction Id", !string.IsNullOrWhiteSpace( url ) ?
-                        string.Format( "<a href='{0}'>{1}</a>", url, txn.ScheduledTransaction.GatewayScheduleId ) :
-                        txn.ScheduledTransaction.GatewayScheduleId );
+                        string.Format( "<a href='{0}'>{1}</a>", url, text ) :
+                        text );
                 }
 
                 if ( txn.FinancialPaymentDetail != null && txn.FinancialPaymentDetail.CurrencyTypeValue != null )
@@ -1747,12 +1752,14 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             if ( txn.Batch != null )
             {
-                hlBatchId.Visible = true;
-                hlBatchId.Text = string.Format( "Batch #{0}", txn.BatchId );
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "batchId", txn.BatchId.ToString() );
+                lBatchId.Text = string.Format( "<div class='label label-info'><a href='{1}'>Batch #{0}</a></div>", txn.BatchId, LinkedPageUrl( "BatchDetailPage", qryParams ) );
+                lBatchId.Visible = true;
             }
             else
             {
-                hlBatchId.Visible = false;
+                lBatchId.Visible = false;
             }
         }
 

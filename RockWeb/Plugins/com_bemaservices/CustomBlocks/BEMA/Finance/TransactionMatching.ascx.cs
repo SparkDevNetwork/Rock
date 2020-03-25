@@ -31,7 +31,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -101,7 +101,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE1.Start */
     [BooleanField(
         "Show Transaction Attributes?",
-        Key = AttributeKey.ShowTransactionAttributes,
+        Key = BemaAttributeKey.ShowTransactionAttributes,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -114,7 +114,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             public const string Accounts = "Accounts";
             public const string AddFamilyLink = "AddFamilyLink";
@@ -123,6 +123,13 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             public const string TransactionDetailPage = "TransactionDetailPage";
             public const string ExpandPersonSearchOptions = "ExpandPersonSearchOptions";
             public const string DisplayPaymentDetailAttributeControls = "DisplayPaymentDetailAttributeControls";
+        }
+		
+        /// <summary>
+        /// Keys to use for Bema Attributes
+        /// </summary>
+        protected static class BemaAttributeKey
+        {
             public const string ShowTransactionAttributes = "ShowTransactionAttributes";
         }
 
@@ -988,11 +995,13 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             cbOnlyShowSelectedAccounts.Checked = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
             cbIncludeChildAccounts.Checked = this.GetUserPreference( keyPrefix + "include-child-accounts" ).AsBoolean();
             cbFilterAccountsByBatchsCampus.Checked = this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ).AsBoolean();
-
+            
             cpAccounts.Campuses = CampusCache.All();
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
-
+            
             mdAccountsPersonalFilter.Show();
+
+            cbFilterAccountsByBatchsCampus.Visible = cpAccounts.Visible;
         }
 
         /// <summary>
@@ -1405,8 +1414,11 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 var spouse = person.GetSpouse( rockContext );
                 lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
 
-                var campus = person.GetCampus();
-                lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                if ( CampusCache.All( false ).Count > 1 )
+                {
+                    var campus = person.GetCampus();
+                    lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                }
 
                 var previousDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
                 var addresses = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();

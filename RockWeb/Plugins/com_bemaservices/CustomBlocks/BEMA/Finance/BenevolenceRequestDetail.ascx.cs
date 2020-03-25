@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -55,7 +55,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE1.Start */
     [WorkflowTypeField(
             "Workflow",
-            key: AttributeKey.Workflow,
+            key: BemaAttributeKey.Workflow,
             description: "Workflow to be triggered when the page is saved",
             allowMultiple: true,
             required: false,
@@ -66,7 +66,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI1.Start */
     [TextField(
         "Case Worker Label",
-        Key = AttributeKey.CaseWorkerLabel,
+        Key = BemaAttributeKey.CaseWorkerLabel,
         Description = "The Label on the Case Worker controls.",
         IsRequired = true,
         DefaultValue = "Case Worker",
@@ -77,7 +77,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI2.Start */
     [TextField(
         "Government Id Label",
-        Key = AttributeKey.GovernmentIdLabel,
+        Key = BemaAttributeKey.GovernmentIdLabel,
         Description = "The Label on the Government Id controls.",
         IsRequired = true,
         DefaultValue = "Government ID",
@@ -88,7 +88,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.UI3.Start */
     [BooleanField(
         "Are all statuses shown as labels?",
-        Key = AttributeKey.AreAllStatusesShownAsLabels,
+        Key = BemaAttributeKey.AreAllStatusesShownAsLabels,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -100,7 +100,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         description: "What Label Type should be used for the Initiated Label?",
         enumSourceType: typeof( LabelType ),
         DefaultValue = "3", //Info
-        Key = AttributeKey.AssignedLabelType,
+        Key = BemaAttributeKey.AssignedLabelType,
         Category = "BEMA Additional Features"
         )]
     /* BEMA.UI4.End */
@@ -111,7 +111,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         description: "What Label Type should be used for the Initiated Label?",
         enumSourceType: typeof( LabelType ),
         DefaultValue = "4", //Warning
-        Key = AttributeKey.InitiatedLabelType,
+        Key = BemaAttributeKey.InitiatedLabelType,
         Category = "BEMA Additional Features"
         )]
     /* BEMA.UI5.End */
@@ -120,7 +120,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string Workflow = "Workflow";
             public const string CaseWorkerLabel = "CaseWorkerLabel";
@@ -238,12 +238,12 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             base.OnLoad( e );
 
             /* BEMA.UI1.Start */
-            ppCaseWorker.Label = GetAttributeValue( AttributeKey.CaseWorkerLabel );
-            ddlCaseWorker.Label = GetAttributeValue( AttributeKey.CaseWorkerLabel );
+            ppCaseWorker.Label = GetAttributeValue( BemaAttributeKey.CaseWorkerLabel );
+            ddlCaseWorker.Label = GetAttributeValue( BemaAttributeKey.CaseWorkerLabel );
             /* BEMA.UI1.End */
 
             /* BEMA.UI2.Start */
-            dtbGovernmentId.Label = GetAttributeValue( AttributeKey.GovernmentIdLabel );
+            dtbGovernmentId.Label = GetAttributeValue( BemaAttributeKey.GovernmentIdLabel );
             /* BEMA.UI2.End */
 
             if ( !Page.IsPostBack )
@@ -584,7 +584,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                     if ( statusChange != "" )
                     {
-                        Guid? workflowTypeGuid = GetAttributeValue( AttributeKey.Workflow ).AsGuidOrNull();
+                        Guid? workflowTypeGuid = GetAttributeValue( BemaAttributeKey.Workflow ).AsGuidOrNull();
                         if ( workflowTypeGuid.HasValue )
                         {
                             var workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
@@ -908,7 +908,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 }
 
                 /* BEMA.UI3.Start */
-                var showAllStatuses = GetAttributeValue( AttributeKey.AreAllStatusesShownAsLabels ).AsBoolean();
+                var showAllStatuses = GetAttributeValue( BemaAttributeKey.AreAllStatusesShownAsLabels ).AsBoolean();
                 if ( showAllStatuses )
                 {
                     hlStatus.Text = benevolenceRequest.RequestStatusValue.Value;
@@ -918,14 +918,14 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 /* BEMA.UI4.Start */
                 if ( benevolenceRequest.RequestStatusValue.Value == "Assigned" )
                 {
-                    hlStatus.LabelType = GetAttributeValue( AttributeKey.AssignedLabelType ).ConvertToEnum<LabelType>();
+                    hlStatus.LabelType = GetAttributeValue( BemaAttributeKey.AssignedLabelType ).ConvertToEnum<LabelType>();
                 }
                 /* BEMA.UI4.End */
 
                 /* BEMA.UI5.Start */
                 if ( benevolenceRequest.RequestStatusValue.Value == "Initiated" )
                 {
-                    hlStatus.LabelType = GetAttributeValue( AttributeKey.InitiatedLabelType ).ConvertToEnum<LabelType>();
+                    hlStatus.LabelType = GetAttributeValue( BemaAttributeKey.InitiatedLabelType ).ConvertToEnum<LabelType>();
                 }
                 /* BEMA.UI5.End */
             }

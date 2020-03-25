@@ -1,5 +1,5 @@
-// <copyright>
-// Copyright by the Spark Development Network
+﻿// <copyright>
+// Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -51,7 +51,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     /* BEMA.FE1.Start */
     [BooleanField(
         "Show the Envelope Number Fields",
-        Key = AttributeKey.ShowEnvelopeFields,
+        Key = BemaAttributeKey.ShowEnvelopeFields,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     /* BEMA.FE1.End */
@@ -60,7 +60,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string ShowEnvelopeFields = "ShowEnvelopeFields";
         }
@@ -208,7 +208,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             }
 
             /* BEMA.FE1.Start */
-            if ( GetAttributeValue( AttributeKey.ShowEnvelopeFields ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.ShowEnvelopeFields ).AsBoolean() )
             {
                 business.LoadAttributes();
                 var attribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER );
@@ -571,7 +571,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 detailsRight.Add( "Email Address", business.GetEmailTag( ResolveRockUrl( "/" ), communicationPageReference ) );
 
                 /* BEMA.FE1.Start */
-                if ( GetAttributeValue( AttributeKey.ShowEnvelopeFields ).AsBoolean() )
+                if ( GetAttributeValue( BemaAttributeKey.ShowEnvelopeFields ).AsBoolean() )
                 {
                     business.LoadAttributes();
                     var attribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER );
@@ -671,7 +671,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             }
 
             /* BEMA.FE1.Start */
-            if ( GetAttributeValue( AttributeKey.ShowEnvelopeFields ).AsBoolean() )
+            if ( GetAttributeValue( BemaAttributeKey.ShowEnvelopeFields ).AsBoolean() )
             {
                 business.LoadAttributes();
                 var attribute = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_GIVING_ENVELOPE_NUMBER );

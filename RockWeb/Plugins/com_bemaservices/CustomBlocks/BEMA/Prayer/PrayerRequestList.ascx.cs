@@ -33,7 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -58,7 +58,7 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
     /* BEMA.UI1.Start */
     [BooleanField(
         "Hide Campus Filter?",
-        Key = AttributeKey.HideCampusFilter,
+        Key = BemaAttributeKey.HideCampusFilter,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -67,7 +67,7 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
     /* BEMA.UI2.Start */
     [BooleanField(
         "Hide Campus Column?",
-        Key = AttributeKey.HideCampusColumn,
+        Key = BemaAttributeKey.HideCampusColumn,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
@@ -77,7 +77,7 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
     {
         /* BEMA.Start */
         #region Attribute Keys
-        private static class AttributeKey
+        private static class BemaAttributeKey
         {
             public const string HideCampusFilter = "HideCampusFilter";
             public const string HideCampusColumn = "HideCampusColumn";
@@ -163,11 +163,11 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
             gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
 
             /* BEMA.UI1.Start */
-            cpPrayerCampusFilter.Visible = !GetAttributeValue( AttributeKey.HideCampusFilter ).AsBoolean();
+            cpPrayerCampusFilter.Visible = !GetAttributeValue( BemaAttributeKey.HideCampusFilter ).AsBoolean();
             /* BEMA.UI1.End */
 
             /* BEMA.UI2.Start */
-            gPrayerRequests.GetColumnByHeaderText( "Campus" ).Visible = !GetAttributeValue( AttributeKey.HideCampusColumn ).AsBoolean();
+            gPrayerRequests.GetColumnByHeaderText( "Campus" ).Visible = !GetAttributeValue( BemaAttributeKey.HideCampusColumn ).AsBoolean();
             /* BEMA.UI2.End */
         }
 
@@ -248,10 +248,14 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
             catpPrayerCategoryFilter.SetValue( prayerCategory );
 
             int selectedPrayerCampusId = gfFilter.GetUserPreference( FilterSetting.PrayerCampus ).AsInteger();
-            // BEMA Custom Code: Removed Campus Filter
-            //cpPrayerCampusFilter.Campuses = CampusCache.All( false );
-            //cpPrayerCampusFilter.SetValue( new CampusService( new RockContext() ).Get( selectedPrayerCampusId ) );
-            // End Custom Code
+
+            /* BEMA.UI1.Start */
+            if ( !GetAttributeValue( BemaAttributeKey.HideCampusFilter ).AsBoolean() )
+            {
+                cpPrayerCampusFilter.Campuses = CampusCache.All( false );
+                cpPrayerCampusFilter.SetValue( new CampusService( new RockContext() ).Get( selectedPrayerCampusId ) );
+            }
+            /* BEMA.UI1.End */
 
             // Set the Show Expired filter
             cbShowExpired.Checked = gfFilter.GetUserPreference( FilterSetting.ShowExpired ).AsBooleanOrNull() ?? false;
@@ -316,9 +320,13 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
             }
 
             gfFilter.SaveUserPreference( FilterSetting.PrayerCategory, catpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : catpPrayerCategoryFilter.SelectedValue );
-            // BEMA Custom Code: Removed Campus Filter
-            //gfFilter.SaveUserPreference( FilterSetting.PrayerCampus, cpPrayerCampusFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : cpPrayerCampusFilter.SelectedValue );
-            // End Custom Code
+
+            /* BEMA.UI1.Start */
+            if ( !GetAttributeValue( BemaAttributeKey.HideCampusFilter ).AsBoolean() )
+            {
+                gfFilter.SaveUserPreference( FilterSetting.PrayerCampus, cpPrayerCampusFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty : cpPrayerCampusFilter.SelectedValue );
+            }
+            /* BEMA.UI1.End */
 
             gfFilter.SaveUserPreference( FilterSetting.ShowExpired, cbShowExpired.Checked ? "True" : string.Empty );
 
@@ -534,13 +542,19 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
             }
 
             // Filter by Campus if one is selected...
-            // BEMA Custom Code: Removed Campus Filter
-            //int? selectedPrayerCampusID = cpPrayerCampusFilter.SelectedCampusId;
-            //if ( selectedPrayerCampusID.HasValue && selectedPrayerCampusID.Value > 0 )
-            //{
-            //    prayerRequests = prayerRequests.Where( c => c.CampusId == selectedPrayerCampusID );
-            //}
-            // End Custom Code
+
+            /* BEMA.UI1.Start */
+            if ( !GetAttributeValue( BemaAttributeKey.HideCampusFilter ).AsBoolean() )
+            {
+                int? selectedPrayerCampusID = cpPrayerCampusFilter.SelectedCampusId;
+                if ( selectedPrayerCampusID.HasValue && selectedPrayerCampusID.Value > 0 )
+                {
+                    prayerRequests = prayerRequests.Where( c => c.CampusId == selectedPrayerCampusID );
+                }
+            }
+            /* BEMA.UI1.End */
+
+
 
             // Filter by approved/unapproved
             if ( ddlApprovedFilter.SelectedIndex > -1 )
@@ -659,6 +673,9 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
             {
                 gPrayerRequests.DataSource = prayerRequests.OrderByDescending( p => p.EnteredDateTime ).ThenByDescending( p => p.Id ).ToList();
             }
+
+            // Hide the campus column if the campus filter is not visible.
+            gPrayerRequests.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpPrayerCampusFilter.Visible;
 
             gPrayerRequests.EntityTypeId = EntityTypeCache.Get<PrayerRequest>().Id;
             gPrayerRequests.DataBind();
