@@ -11,7 +11,7 @@
 {% if campus.campusStaff != empty %}
 {[ section title:'{{ campus.Name }} Staff' ]}
         
-    {% if leader != empty %}
+    {% if leader != null %}
     <div class="floating floating-left row soft-double-sides push-double-top xs-soft-half-sides xs-push-half-top xs-text-center sm-text-center md-text-left mx-auto" style="max-width: 1200px;">
         <div class="floating-item col-xs-12 col-sm-12 col-md-3 push-bottom xs-push-half-bottom">
             <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ leader | Attribute:'StaffImage','Url' }}'); border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
