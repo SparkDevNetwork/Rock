@@ -1767,7 +1767,20 @@ namespace Rock.Web.UI
                     this.ViewStateIsCompressed = customPersister.ViewStateIsCompressed;
                 }
 
-                phLoadStats.Controls.Add( new LiteralControl( $"<span>Page Load Time: {tsDuration.TotalSeconds:N2}s </span><span class='margin-l-md js-view-state-stats'></span> <span class='margin-l-md js-html-size-stats'></span>" ) );
+                string showTimingsUrl = this.Request.Url.ToString();
+                if ( !showTimingsUrl.Contains( "ShowDebugTimings" ) )
+                {
+                    if ( showTimingsUrl.Contains( "?" ) )
+                    {
+                        showTimingsUrl += "&ShowDebugTimings=true";
+                    }
+                    else
+                    {
+                        showTimingsUrl += "?ShowDebugTimings=true";
+                    }
+                }
+
+                phLoadStats.Controls.Add( new LiteralControl( $"<span class='cms-admin-footer-property'><a href='{ showTimingsUrl }'> Page Load Time: {tsDuration.TotalSeconds:N2}s </a></span><span class='margin-l-md js-view-state-stats cms-admin-footer-property'></span> <span class='margin-l-md js-html-size-stats cms-admin-footer-property'></span>" ) );
 
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
                 {
