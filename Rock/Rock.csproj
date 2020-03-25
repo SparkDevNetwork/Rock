@@ -451,6 +451,7 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSession.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Jobs\SendMessageResults.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />

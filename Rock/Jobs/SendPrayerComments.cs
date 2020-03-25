@@ -433,6 +433,12 @@ namespace Rock.Jobs
                 if ( person != null
                      && person.Email.IsNotNullOrWhiteSpace() )
                 {
+                    if ( !person.IsEmailActive )
+                    {
+                        _Log.LogWarning( $"Notification not sent. {person.FullName.ToPossessive()} email address is inactive." );
+                        continue;
+                    }
+
                     recipient = new RockEmailMessageRecipient( person, mergeFields );
                 }
                 else
