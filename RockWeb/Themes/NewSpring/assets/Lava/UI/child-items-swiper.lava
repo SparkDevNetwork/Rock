@@ -1,4 +1,8 @@
 {% if cciid and cciid != empty %}
+    {% assign now = 'Now' | Date:'yyyy-MM-ddThh:mm:ss.000000' %}
+    {% assign startDate = Item | Attribute:'Dates','RawValue' | Split:',' | First %}
+    {% assign endDate = Item | Attribute:'Dates','RawValue' | Split:',' | Last %}
+
 
     {% comment %}
         Set current item slug so we can determine what the active slide should be
@@ -46,17 +50,27 @@
         {% endif %}
     {% endsql %}
 
-    {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
+    {% comment %}
+        If we're between the beginning/ending dates of this collection, make the last item in the swiper active
+    {% endcomment %}
+    {% if now >= startDate and now < endDate %}
+        {% assign initialslide = results | Size | Minus:1 %}
+    {% else %}
+        {% assign initialslide = results | Where:'Slug', currentSlug | Select:'Index' %}
+    {% endif %}
 
     {% comment %}
         Now that we've setup our array of child item ids, we'll loop through them and get the content channel item that corresponds to each Id and generate our swiper element.
     {% endcomment %}
 
+    {% assign childCount = results | Size %}
+    {% if childCount >= 1 %}
     {[ swiper id:'entries' initialslide:'{{ initialslide }}' ]}
         {% for result in results %}
             [[ item data:'' ]]
 
                 {% contentchannelitem id:'{{ result.Id }}' iterator:'children' %}
+                    
                     {% for child in children %}
                         {% assign childTypeParts = child.ContentChannel.Name | Split:' - ' %}
                         {% assign childType = childTypeParts[1] %}
@@ -127,6 +141,7 @@
             [[ enditem ]]
         {% endfor %}
     {[ endswiper ]}
+    {% endif %}
 
 {% else %}
     <div class="alert alert-danger">

@@ -430,7 +430,13 @@ namespace RockWeb
         {
             try
             {
-                UserLoginService.UpdateLastLogin( UserLogin.GetCurrentUserName() );
+                // get a current context so that we can set it inside the thread (which doesn't have a context)
+                var thisContext = HttpContext.Current;
+                Task.Run( () => {
+                    HttpContext.Current = thisContext;
+                    var currentUserName = UserLogin.GetCurrentUserName();
+                    UserLoginService.UpdateLastLogin( currentUserName );
+                } );
             }
             catch { }
 
