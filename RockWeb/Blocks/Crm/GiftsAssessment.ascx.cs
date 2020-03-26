@@ -96,129 +96,99 @@ namespace Rockweb.Blocks.Crm
 </p>";
 
         private const string ResultsMessageDefaultValue = @"
-<div>
-    <h2 class='h2'>Dominant Gifts</h2>
+{% if DominantGifts != empty %}
     <div>
+        <h2 class='h2'>Dominant Gifts</h2>
         <div class='table-responsive'>
             <table class='table'>
-                {% if DominantGifts != empty %}
-                    <thead>
+                <thead>
+                    <tr>
+                        <th>
+                            Spiritual Gift
+                        </th>
+                        <th>
+                            You are uniquely wired to:
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dominantGift in DominantGifts %}
                         <tr>
-                            <th>
-                                Spiritual Gift
-                            </th>
-                            <th>
-                                You are uniquely wired to:
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dominantGift in DominantGifts %}
-                            <tr>
-                                <td>
-                                    {{ dominantGift.Value }}
-                                </td>
-                                <td>
-                                    {{ dominantGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                {% else %}
-                    <tbody>
-                        <tr>
-                            <td colspan='2'>
-                                You did not have any Dominant Gifts
+                            <td>
+                                {{ dominantGift.Value }}
+                            </td>
+                            <td>
+                                {{ dominantGift.Description }}
                             </td>
                         </tr>
-                    </tbody>
-                {% endif %}
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
-</div>
-<div>
-    <h2 class='h2'>Supportive Gifts</h2>
+{% endif %}
+{% if SupportiveGifts != empty %}
     <div>
+        <h2 class='h2'>Supportive Gifts</h2>
         <div class='table-responsive'>
             <table class='table'>
-                {% if SupportiveGifts != empty %}
-                    <thead>
+                <thead>
+                    <tr>
+                        <th>
+                            Spiritual Gift
+                        </th>
+                        <th>
+                            You are uniquely wired to:
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supportiveGift in SupportiveGifts %}
                         <tr>
-                            <th>
-                                Spiritual Gift
-                            </th>
-                            <th>
-                                You are uniquely wired to:
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for supportiveGift in SupportiveGifts %}
-                            <tr>
-                                <td>
-                                    {{ supportiveGift.Value }}
-                                </td>
-                                <td>
-                                    {{ supportiveGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                {% else %}
-                    <tbody>
-                        <tr>
-                            <td colspan='2'>
-                                You did not have any Supportive Gifts
+                            <td>
+                                {{ supportiveGift.Value }}
+                            </td>
+                            <td>
+                                {{ supportiveGift.Description }}
                             </td>
                         </tr>
-                    </tbody>
-                {% endif %}
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
-</div>
-<div>
-    <h2 class='h2'>Other Gifts</h2>
+{% endif %}
+{% if OtherGifts != empty %}
     <div>
+        <h2 class='h2'>Other Gifts</h2>
         <div class='table-responsive'>
             <table class='table'>
-                {% if OtherGifts != empty %}
-                    <thead>
+                <thead>
+                    <tr>
+                        <th>
+                            Spiritual Gift
+                        </th>
+                        <th>
+                            You are uniquely wired to:
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for otherGift in OtherGifts %}
                         <tr>
-                            <th>
-                                Spiritual Gift
-                            </th>
-                            <th>
-                                You are uniquely wired to:
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for otherGift in OtherGifts %}
-                            <tr>
-                                <td>
-                                    {{ otherGift.Value }}
-                                </td>
-                                <td>
-                                    {{ otherGift.Description }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                {% else %}
-                    <tbody>
-                        <tr>
-                            <td colspan='2'>
-                                You did not have any Other Gifts
+                            <td>
+                                {{ otherGift.Value }}
+                            </td>
+                            <td>
+                                {{ otherGift.Description }}
                             </td>
                         </tr>
-                    </tbody>
-                {% endif %}
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
-</div>
+{% endif %}
 {% if GiftScores != null and GiftScores != empty %}
     <!-- The following empty h2 element is to mantain vertical spacing between sections. -->
     <h2 class='h2'></h2>
