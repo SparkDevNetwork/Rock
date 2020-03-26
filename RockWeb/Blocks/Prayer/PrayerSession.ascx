@@ -15,7 +15,7 @@
                     <Rock:RockCheckBoxList ID="cblCategories" CssClass="js-category-items" runat="server" RepeatColumns="2"></Rock:RockCheckBoxList>
                 </div>
                 <div class="col-md-6">
-                    <Rock:CampusPicker ID="cpCampus" runat="server"/>
+                    <Rock:CampusPicker ID="cpCampus" runat="server" IncludeInactive="false"/>
                 </div>
             </div>
             <div class="actions">
