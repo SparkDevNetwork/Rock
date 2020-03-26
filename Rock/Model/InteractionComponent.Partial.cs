@@ -87,6 +87,26 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a component query for those components that are tied to a particular <see cref="Page"/>.
+        /// </summary>
+        /// <param name="pageCache">The page cache.</param>
+        /// <returns></returns>
+        public IQueryable<InteractionComponent> QueryByPage( PageCache pageCache )
+        {
+            return QueryByPage( pageCache.SiteId, pageCache.Id );
+        }
+
+        /// <summary>
+        /// Returns a component query for those components that are tied to a particular <see cref="Page"/>.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        public IQueryable<InteractionComponent> QueryByPage( Page page )
+        {
+            return QueryByPage( page.SiteId, page.Id );
+        }
+
+        /// <summary>
         /// Gets the component by predicate.
         /// </summary>
         /// <param name="channelId">The channel identifier.</param>
@@ -113,6 +133,22 @@ namespace Rock.Model
             }
 
             return component;
+        }
+
+        /// <summary>
+        /// Returns a component query for those components that are tied to a particular <see cref="Page"/>.
+        /// </summary>
+        /// <param name="siteId">The site identifier.</param>
+        /// <param name="pageId">The page identifier.</param>
+        /// <returns></returns>
+        private IQueryable<InteractionComponent> QueryByPage( int siteId, int pageId )
+        {
+            var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+
+            return Queryable().Where( ic =>
+                ic.Channel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
+                ic.Channel.ChannelEntityId == siteId &&
+                ic.EntityId == pageId );
         }
     }
 }
