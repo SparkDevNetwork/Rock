@@ -113,12 +113,15 @@
                     {% assign cciid = child.Id %}
                     {% assign type = result.Index | Plus:1 | Prepend:'Week ' %}
                     {% assign video = child | Attribute:'Video','RawValue' %}
+                    {% assign parentimage = child.ParentItems | First | Property:'ContentChannelItem','Object' | Attribute:'ImageLandscape','Url' %}
                     {% assign childimage = child | Attribute:'ImageLandscape','Url' %}
                     {% capture imageurl %}
                         {% if childimage and childimage != empty %}
                             {{ childimage }}
                         {% elseif video and video != empty %}
                             {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+                        {% elseif parentimage and parentimage != empty %}
+                            {{ parentimage }}
                         {% endif %}
                     {% endcapture %}
                     {% assign imageurl = imageurl | Trim %}
