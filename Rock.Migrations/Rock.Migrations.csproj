@@ -153,6 +153,10 @@
     <Compile Include="Migrations\202003252005422_AddCcAndBccToSendEmailAction.Designer.cs">
       <DependentUpon>202003252005422_AddCcAndBccToSendEmailAction.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003260007389_HideGiftsCategoriesWithNoGifts.cs" />
+    <Compile Include="Migrations\202003260007389_HideGiftsCategoriesWithNoGifts.Designer.cs">
+      <DependentUpon>202003260007389_HideGiftsCategoriesWithNoGifts.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1203,6 +1207,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202003252005422_AddCcAndBccToSendEmailAction.resx">
       <DependentUpon>202003252005422_AddCcAndBccToSendEmailAction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003260007389_HideGiftsCategoriesWithNoGifts.resx">
+      <DependentUpon>202003260007389_HideGiftsCategoriesWithNoGifts.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
