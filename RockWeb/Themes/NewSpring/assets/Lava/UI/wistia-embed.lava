@@ -1,47 +1,49 @@
+{% if id and id != '' %}
+
 {% if CurrentPerson | HasRightsTo:'Edit' %}
-<div class="position-absolute top-zero right-zero push-top push-right bring-forward text-right">
+<div class="position-absolute top-zero right-zero push-half-top push-right bring-forward text-right">
     <a href="/video/{{ id }}" class="btn btn-sm btn-info push-half-bottom">About This Video</a><br>
     <a href="https://newspringchurch.wistia.com/medias/{{ id }}" target="_blank" class="btn btn-sm btn-info">Edit This Video</a>
 </div>
 {% endif %}
-<div class="wistia_responsive_wrapper" style="height:100%;left:0;position:absolute;top:0;width:100%;">
-    <div id="wistia_{{ id }}" class="wistia_embed rounded shadowed overflow-hidden">
-        <div class="wistia_swatch hidden" style="height:100%;left:0;opacity:0;overflow:hidden;position:absolute;top:0;transition:opacity 200ms;width:100%;">
-            <img src="https://fast.wistia.com/embed/medias/{{ id }}/swatch" style="filter:blur(5px);height:100%;object-fit:contain;width:100%;" alt="" onload="this.parentNode.style.opacity=1;" />
-        </div>
-    </div> 
-</div> 
-{% assign personAliasId = CurrentPerson.PrimaryAliasId -%} 
-{% if personAliasId == null -%}{% assign personAliasId = 0 -%}{% endif -%} 
-{% if contentchannelitemid == null || contentchannelitemid == '' -%}{% assign contentchannelitemid = 0 -%}{% endif -%} 
-{% if entitytypeid == null || entitytypeid == '' -%}{% assign entitytypeid = 0 -%}{% endif -%} 
-{% if entityid == null || entityid == '' -%}{% assign entityid = 0 -%}{% endif -%} 
-{% javascript id:'wistiaapi' url:'//fast.wistia.com/assets/external/E-v1.js' %}{% endjavascript %} 
-<script charset="ISO-8859-1" src=""></script> 
-<script> wistiaEmbed = Wistia.embed(
-    '{{ id }}', 
-    { 
-        trackEmail: { 
-            'Version': 1, 
-            'PersonAliasId': {{ personAliasId }}, 
-            'ContentChannelItemId': {{ contentchannelitemid }}, 
-            'EntityTypeId': {{ entitytypeid }}, 
-            'EntityId': {{ entityid }}, 
-            'Name': '{{ CurrentPerson.FullName | Replace: " ", "" }}' 
-        }, 
-        playerPreference: 'html5', 
-        videoFoam: true, 
-        autoPlay: {{ autoplay }}, 
-        {% if playercolor != '' -%} playerColor: '{{ color | Replace:"#","" }}', {% endif -%} 
-        playButton: {{ showplaybutton }}, 
-        playbar: {{ showplaybar }}, 
-        fullscreenButton: {{ showfullscreenbutton }}, 
-        doNotTrack: {{ donottrack }}, 
-        controlsVisibleOnLoad: {{ controlsvisibleonload }}, 
-        endVideoBehavior: '{{ endbehavior }}', 
-        googleAnalytics: {{ enablegoogleanalytics }}, 
-        settingsControl: {{ showsettingscontrol }}, 
-        volumeControl: {{ showvolumecontrol }}, 
-        smallPlayButton: {{ showsmallplaybutton }} 
-    }); 
+
+<div class="rounded shadowed overflow-hidden" style="width:{{ width }};">
+    <div id="wistia_{{ id }}" class="wistia_embed">&nbsp;</div>
+</div>
+
+{% assign personAliasId = CurrentPerson.PrimaryAliasId -%}
+{% if personAliasId == null -%}{% assign personAliasId = 0 -%}{% endif -%}
+{% if contentchannelitemid == null || contentchannelitemid == ' -%}{% assign contentchannelitemid = 0 -%}{% endif -%}
+{% if entitytypeid == null || entitytypeid == ' -%}{% assign entitytypeid = 0 -%}{% endif -%}
+{% if entityid == null || entityid == ' -%}{% assign entityid = 0 -%}{% endif -%}
+
+{% javascript id:'wistiaapi' url:'//fast.wistia.com/assets/external/E-v1.js' %}{% endjavascript %}
+
+<script charset="ISO-8859-1" src=""></script>
+<script>
+    wistiaEmbed = Wistia.embed("{{ id }}", {
+        trackEmail: {
+            "Version": 1, 
+            "PersonAliasId": {{ personAliasId }}, 
+            "ContentChannelItemId": {{ contentchannelitemid }}, 
+            "EntityTypeId": {{ entitytypeid }}, 
+            "EntityId": {{ entityid }}, 
+            "Name": "{{ CurrentPerson.FullName | Replace: ' ', '' }}" 
+        },        
+        playerPreference: "html5",        
+        videoFoam: true,        
+        autoPlay: {{ autoplay }},        
+        {% if color and color != '' -%}playerColor: '{{ color | Replace:'#','' }}',{% endif -%}        
+        playButton: {{ showplaybutton }},
+        playbar: {{ showplaybar }},
+        fullscreenButton: {{ showfullscreenbutton }},
+        doNotTrack: {{ donottrack }},
+        controlsVisibleOnLoad: {{ controlsvisibleonload }},
+        endVideoBehavior: '{{ endbehavior }}',
+        googleAnalytics: {{ enablegoogleanalytics }},
+        settingsControl: {{ showsettingscontrol }},
+        volumeControl: {{ showvolumecontrol }},
+        smallPlayButton: {{ showsmallplaybutton }}
+    });
 </script>
+{% endif %}
