@@ -18,7 +18,7 @@
             <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
             <p class="lead">{{ serviceTimes }}
             {% if getDirections != empty %}
-                <a href="{{ getDirections }}" class="btn btn-primary btn-sm push-half-top">Get Directions</a>
+                <a href="{{ getDirections }}" >Get Directions</a>
             {% endif %}
             </p>
         </div>{% if fuseServiceTimes != empty and fuseServiceTimes != '' %}<div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype == 'Fuse' %}push-bottom{% endif %}">
