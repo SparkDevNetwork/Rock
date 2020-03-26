@@ -22,6 +22,8 @@
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
+
+            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" CssClass="mb-0" NotificationBoxType="Info" />
             <div class="panel-body">
 
                 <asp:ValidationSummary ID="vsSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
@@ -133,7 +135,7 @@
                         <asp:Literal ID="lSiteDescription" runat="server"></asp:Literal>
                     </p>
 
-                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+
 
                     <div class="row">
                         <div class="col-md-12">
