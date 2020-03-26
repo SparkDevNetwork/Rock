@@ -1,5 +1,5 @@
 {% assign category = Item | Attribute:'Category' %}
-{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign currentUrl = 'Global' | Page:'Url' | Url:'pathandquery' %}
 
 {% capture pageTitle %}{% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }}{% endcapture %}
 {% capture browserTitle %}{{ Item.Title | Replace:"'","’" }} | {% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }} | Resources | NewSpring Network{% endcapture %}
