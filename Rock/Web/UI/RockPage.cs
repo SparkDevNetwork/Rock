@@ -711,7 +711,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Check For Logout</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Check For Logout</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -767,7 +767,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Create Rock Context</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Create Rock Context</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -785,7 +785,7 @@ namespace Rock.Web.UI
             if ( _showDebugTimings )
             {
                 TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Get Current User</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Get Current User</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                 stopwatchInitEvents.Restart();
             }
 
@@ -821,7 +821,7 @@ namespace Rock.Web.UI
                 if ( _showDebugTimings )
                 {
                     TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                    slDebugTimings.AppendFormat( "\t<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Get Current Person</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                    slDebugTimings.AppendFormat( "\t<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Get Current Person</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -907,7 +907,7 @@ namespace Rock.Web.UI
                 if ( _showDebugTimings )
                 {
                     TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                    slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Is Current Person Authorized</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                    slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Is Current Person Authorized</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                     stopwatchInitEvents.Restart();
                 }
 
@@ -991,7 +991,7 @@ namespace Rock.Web.UI
                         if ( _showDebugTimings )
                         {
                             TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                            slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Set Page Context(s)</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                            slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Set Page Context(s)</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1037,7 +1037,7 @@ namespace Rock.Web.UI
                         if ( _showDebugTimings )
                         {
                             TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                            slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Check Page Context(s)</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                            slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Check Page Context(s)</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                             stopwatchInitEvents.Restart();
                         }
 
@@ -1071,7 +1071,7 @@ namespace Rock.Web.UI
                     if ( _showDebugTimings )
                     {
                         TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                        slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Can Administrate Page</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                        slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'>Can Administrate Page</td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1127,7 +1127,7 @@ namespace Rock.Web.UI
                     if ( _showDebugTimings )
                     {
                         TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
-                        slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'><strong>Block OnInit</strong></td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
+                        slDebugTimings.AppendFormat( "<tr><td class='debug-timestamp'>{1} ms</td><td style='padding-left: 24px;'><strong>Block OnInit</strong></td><td class='debug-timestamp'>{0} ms</td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration='{0}'></td></tr>\n", Math.Round( stopwatchInitEvents.Elapsed.TotalMilliseconds, 2 ), Math.Round( tsDuration.TotalMilliseconds, 2 ) );
                         stopwatchInitEvents.Restart();
                     }
 
@@ -1274,7 +1274,7 @@ namespace Rock.Web.UI
                                 TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
                                 stopwatchBlockInit.Stop();
                                 slDebugTimings.AppendFormat(
-                                    "<tr><td class='debug-timestamp'>{4}ms</td><td style='padding-left: 48px;'>{0} <small><span style='color:#A4A4A4'>(Block Id: {3})</span></small></td><td class='debug-timestamp'><span{2}>{1} ms</span></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='' data-duration='{1}'></td></tr>\n",
+                                    "<tr><td class='debug-timestamp'>{4} ms</td><td style='padding-left: 48px;'>{0} <small><span style='color:#A4A4A4'>(Block Id: {3})</span></small></td><td class='debug-timestamp'><span{2}>{1} ms</span></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{4}' data-duration='{1}'></td></tr>\n",
                                     block.Name,
                                     Math.Round( stopwatchBlockInit.Elapsed.TotalMilliseconds, 2),
                                     stopwatchBlockInit.Elapsed.TotalMilliseconds > 500 ? " class='text-danger'" : "",
@@ -1496,7 +1496,7 @@ namespace Rock.Web.UI
 
                 if ( _showDebugTimings && canAdministratePage )
                 {
-                    slDebugTimings.Append( "<script>$(document).ready(function(){if($('#lblShowDebugTimings').length){var t=$('#lblShowDebugTimings').data('pointintimems'),i=0;$('#lblShowDebugTimings .debug-chart-bar').each(function(a){var s=$(this).data('start-location'),n=$(this).data('duration');''==s&&(s=i),i=s+n,n>2&&n<10?$(this).css('background','#F6E05E'):n>10&&$(this).css('background','#FC8181');var r=100-100*(s/t+n/t);$(this).css('right',r+'%').css('width',n/t*100+'%').attr('title','Started at '+s+' ms / Duration '+n+' ms')})}});</script>" );
+                    slDebugTimings.Append( "<script>$(document).ready(function(){if($('#lblShowDebugTimings').length){var t=$('#lblShowDebugTimings').data('pointintimems');$('#lblShowDebugTimings .debug-chart-bar').each(function(a){var i=$(this).data('start-location'),s=$(this).data('duration');s>2&&s<10?$(this).css('background','#F6E05E'):s>10&&$(this).css('background','#FC8181');var n=Math.max(100-100*(i/t+s/t),0);$(this).css('right',n+'%').css('width',s/t*100+'%').attr('title','Started at '+i+' ms / Duration '+s+' ms')})}});</script>" );
 
                     Page.Form.Controls.Add( new Label
                     {
