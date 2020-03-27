@@ -472,6 +472,7 @@
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
     <Compile Include="Transactions\RunReportTransaction.cs" />
     <Compile Include="Plugin\HotFixes\110_UpdateSpiritualGiftsResultsLava.cs" />
+    <Compile Include="Plugin\HotFixes\112_XamlTemplateMigration.cs" />
     <Compile Include="Plugin\HotFixes\111_HideGiftsCategoriesWithNoGifts.cs" />
     <Compile Include="Transactions\PageRenameTransaction.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
