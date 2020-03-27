@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpAccountList.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpAccountList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpGroupList.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpGroupList" %>
 
 <asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
@@ -9,7 +9,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-envelope"></i>
-                    MailChimp Accounts
+                    MailChimp Groups
                 </h1>
             </div>
             <div class="panel-body">
@@ -20,11 +20,9 @@
                         <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
 
                         <div class="grid grid-panel">
-                            <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
+                            <Rock:Grid ID="gGroups" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gGroups_Edit" AllowSorting="False" TooltipField="Id">
                                 <Columns>
-                                    <Rock:ReorderField />
-                                    <Rock:RockBoundField DataField="Value" HeaderText="Account" />
-                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Group" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpAccountList.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpAccountList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpListList.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpListList" %>
 
 <asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
@@ -9,7 +9,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-envelope"></i>
-                    MailChimp Accounts
+                    MailChimp Lists
                 </h1>
             </div>
             <div class="panel-body">

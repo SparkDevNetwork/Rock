@@ -15,26 +15,27 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Web.UI;
+using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
+using System.Collections.Generic;
 
 namespace com.bemaservices.MailChimp
 {
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Mail Chimp Account Detail" )]
+    [DisplayName( "Mail Chimp List Detail" )]
     [Category( "BEMA Services > MailChimp" )]
-    [Description( "Block for users to edit a MailChimp account." )]
-    public partial class MailChimpAccountDetail : Rock.Web.UI.RockBlock
+    [Description( "A block for people to edit the details of a MailChimp list." )]
+
+    public partial class MailChimpListDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
@@ -46,7 +47,7 @@ namespace com.bemaservices.MailChimp
         {
             base.OnInit( e );
 
-            var definedValueId = PageParameter( "AccountId" ).AsInteger();
+            var definedValueId = PageParameter( "ListId" ).AsInteger();
             hfDefinedValueId.Value = definedValueId.ToString();
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
@@ -65,14 +66,14 @@ namespace com.bemaservices.MailChimp
 
             if ( !Page.IsPostBack )
             {
-                var accountId = PageParameter( "AccountId" ).AsInteger();
-                if ( accountId > 0 )
+                var listId = PageParameter( "ListId" ).AsInteger();
+                if ( listId > 0 )
                 {
-                    ShowDetails( accountId );
+                    ShowDetails( listId );
                 }
                 else
                 {
-                    ShowDefinedValueEdit();
+                   // ShowDefinedValueEdit();
                 }
             }
         }
@@ -90,14 +91,14 @@ namespace com.bemaservices.MailChimp
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            var accountId = PageParameter( "AccountId" ).AsInteger();
-            if ( accountId > 0 )
+            var listId = PageParameter( "ListId" ).AsInteger();
+            if ( listId > 0 )
             {
-                ShowDetails( accountId );
+                ShowDetails( listId );
             }
             else
             {
-                ShowDefinedValueEdit();
+               // ShowDefinedValueEdit();
             }
         }
 
@@ -105,17 +106,17 @@ namespace com.bemaservices.MailChimp
 
         #region Methods
 
-        private void ShowDetails( int accountId )
+        private void ShowDetails( int listId )
         {
             pnlEdit.Visible = false;
             pnlView.Visible = true;
-            var definedValue = new DefinedValueService( new RockContext() ).Get( accountId );
+            var definedValue = new DefinedValueService( new RockContext() ).Get( listId );
             if ( definedValue != null )
             {
                 hfDefinedValueId.SetValue( definedValue.Id );
 
-                DescriptionList descriptionList = new DescriptionList()
-                .Add( "Account", definedValue.Value ?? string.Empty )
+                Rock.Web.DescriptionList descriptionList = new DescriptionList()
+                .Add( "List", definedValue.Value ?? string.Empty )
                 .Add( "Description", definedValue.Description ?? string.Empty );
 
                 lblMainDetails.Text = descriptionList.Html;
@@ -127,14 +128,14 @@ namespace com.bemaservices.MailChimp
             }
             else
             {
-                ShowDefinedValueEdit();
+               // ShowDefinedValueEdit();
             }
         }
 
         private void ShowDefinedValueEdit()
         {
             var valueId = hfDefinedValueId.ValueAsInt();
-            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS );
+            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS );
             DefinedValue definedValue;
 
             if ( !valueId.Equals( 0 ) )
@@ -163,7 +164,7 @@ namespace com.bemaservices.MailChimp
 
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            ShowDefinedValueEdit();
+            //ShowDefinedValueEdit();
         }
 
         protected void btnSave_Click( object sender, EventArgs e )
@@ -171,7 +172,7 @@ namespace com.bemaservices.MailChimp
             DefinedValue definedValue;
             var rockContext = new RockContext();
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
-            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS );
+            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS );
 
             int definedValueId = hfDefinedValueId.ValueAsInt();
 
@@ -223,8 +224,9 @@ namespace com.bemaservices.MailChimp
 
             hfDefinedValueId.Value = string.Empty;
 
+
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "AccountId", definedValue.Id.ToString() );
+            qryParams.Add( "ListId", definedValue.Id.ToString() );
             NavigateToCurrentPage( qryParams );
         }
     }

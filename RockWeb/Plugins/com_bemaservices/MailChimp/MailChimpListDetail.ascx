@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpAccountDetail.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpAccountDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpListDetail.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpListDetail" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -8,7 +8,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-envelope"></i>
-                    MailChimp Account
+                    MailChimp List
                 </h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -47,7 +47,7 @@
                             </div>
                         </div>
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" Visible="false" />
                         </div>
                     </fieldset>
                 </asp:Panel>

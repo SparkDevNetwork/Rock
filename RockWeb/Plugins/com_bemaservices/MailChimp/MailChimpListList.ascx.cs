@@ -36,11 +36,11 @@ namespace com.bemaservices.MailChimp
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Mail Chimp Account List" )]
+    [DisplayName( "Mail Chimp List List" )]
     [Category( "BEMA Services > MailChimp" )]
-    [Description( "A Block to display the list of MailChimp Accounts" )]
+    [Description( "A Block to display the list of MailChimp lists" )]
     [LinkedPage( "Detail Page" )]
-    public partial class MailChimpAccountList : RockBlock, ICustomGridColumns
+    public partial class MailChimpListList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Private Variables
 
@@ -69,12 +69,12 @@ namespace com.bemaservices.MailChimp
             if ( _definedType != null )
             {
                 gDefinedValues.DataKeyNames = new string[] { "Id" };
-                gDefinedValues.Actions.ShowAdd = true;
-                gDefinedValues.Actions.AddClick += gDefinedValues_Add;
+                // gDefinedValues.Actions.ShowAdd = true;
+                //gDefinedValues.Actions.AddClick += gDefinedValues_Add;
                 gDefinedValues.GridRebind += gDefinedValues_GridRebind;
                 gDefinedValues.GridReorder += gDefinedValues_GridReorder;
 
-                bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+                bool canAddEditDelete = false; //IsUserAuthorized( Authorization.EDIT );
                 gDefinedValues.Actions.ShowAdd = canAddEditDelete;
                 gDefinedValues.IsDeleteEnabled = canAddEditDelete;
 
@@ -95,7 +95,7 @@ namespace com.bemaservices.MailChimp
             int definedTypeId = 0;
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
-            if ( Guid.TryParse( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS, out definedTypeGuid ) )
+            if ( Guid.TryParse( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS, out definedTypeGuid ) )
             {
                 definedTypeId = DefinedTypeCache.Get( definedTypeGuid ).Id;
             }
@@ -289,12 +289,12 @@ namespace com.bemaservices.MailChimp
         /// </summary>
         protected void BindDefinedValuesGrid()
         {
-            if ( _definedType != null )
-            {
-                var queryable = new DefinedValueService( new RockContext() ).Queryable().Where( a => a.DefinedTypeId == _definedType.Id ).OrderBy( a => a.Order );
-                var result = queryable.ToList();
+            var definedValueCache = DefinedValueCache.Get( PageParameter( "AccountId" ).AsInteger() );
 
-                gDefinedValues.DataSource = result;
+            if ( _definedType != null && definedValueCache != null )
+            {
+                Utility.MailChimpApi mailChimpApi = new Utility.MailChimpApi( definedValueCache );
+                gDefinedValues.DataSource = mailChimpApi.GetMailChimpLists();
                 gDefinedValues.DataBind();
             }
         }
@@ -305,7 +305,20 @@ namespace com.bemaservices.MailChimp
         /// <param name="valueId">The value id.</param>
         protected void gDefinedValues_ShowEdit( int valueId )
         {
-            NavigateToLinkedPage( "DetailPage", "AccountId", valueId );
+            NavigateToLinkedPage( "DetailPage", "ListId", valueId );
+        }
+
+        #endregion
+
+        #region ISecondaryBlock
+
+        /// <summary>
+        /// Sets the visible.
+        /// </summary>
+        /// <param name="visible">if set to <c>true</c> [visible].</param>
+        public void SetVisible( bool visible )
+        {
+            pnlContent.Visible = visible;
         }
 
         #endregion
