@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
             var rockContext = new RockContext();
             var interactionComponentService = new InteractionComponentService( rockContext );
             var components = interactionComponentService.Queryable().AsNoTracking()
-                .Where( ic => ic.ChannelId == picker.InteractionChannelId.Value )
+                .Where( ic => ic.InteractionChannelId == picker.InteractionChannelId.Value )
                 .OrderBy( ic => ic.Name )
                 .ToList();
 

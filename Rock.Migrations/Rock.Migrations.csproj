@@ -161,6 +161,10 @@
     <Compile Include="Migrations\202003272101584_XamlTemplateMigration.Designer.cs">
       <DependentUpon>202003272101584_XamlTemplateMigration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003272152299_RenameInteractionComponentChannelId.cs" />
+    <Compile Include="Migrations\202003272152299_RenameInteractionComponentChannelId.Designer.cs">
+      <DependentUpon>202003272152299_RenameInteractionComponentChannelId.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1217,6 +1221,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202003272101584_XamlTemplateMigration.resx">
       <DependentUpon>202003272101584_XamlTemplateMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003272152299_RenameInteractionComponentChannelId.resx">
+      <DependentUpon>202003272152299_RenameInteractionComponentChannelId.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>

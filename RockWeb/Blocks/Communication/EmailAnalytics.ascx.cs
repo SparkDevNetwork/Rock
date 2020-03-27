@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
-            var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.EntityId.HasValue ).Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunicationId.Value );
+            var interactionQuery = new InteractionService( rockContext ).Queryable().Where( a => a.EntityId.HasValue ).Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelCommunicationId.Value );
 
             if ( maxMonthsBack.HasValue )
             {

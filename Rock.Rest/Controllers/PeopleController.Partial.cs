@@ -379,13 +379,13 @@ namespace Rock.Rest.Controllers
             // Filter by the channel guid if set
             if ( interactionChannelGuid.HasValue )
             {
-                query = query.Where( i => i.InteractionComponent.Channel.Guid == interactionChannelGuid.Value );
+                query = query.Where( i => i.InteractionComponent.InteractionChannel.Guid == interactionChannelGuid.Value );
             }
 
             // Filter by the channel id if set
             if ( interactionChannelId.HasValue )
             {
-                query = query.Where( i => i.InteractionComponent.Channel.Id == interactionChannelId.Value );
+                query = query.Where( i => i.InteractionComponent.InteractionChannel.Id == interactionChannelId.Value );
             }
 
             // Filter by the component guid if set

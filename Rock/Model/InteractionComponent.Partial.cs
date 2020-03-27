@@ -35,7 +35,7 @@ namespace Rock.Model
         public IOrderedQueryable<InteractionComponent> GetByChannelId( int channelId )
         {
             return Queryable()
-                .Where( c => c.ChannelId == channelId )
+                .Where( c => c.InteractionChannelId == channelId )
                 .OrderBy( c => c.Name );
         }
 
@@ -49,7 +49,7 @@ namespace Rock.Model
         public InteractionComponent GetComponentByEntityId( int channelId, int entityId, string name )
         {
             return GetComponentByPredicate( channelId, entityId, name, c =>
-                c.ChannelId == channelId &&
+                c.InteractionChannelId == channelId &&
                 c.EntityId == entityId );
         }
 
@@ -62,7 +62,7 @@ namespace Rock.Model
         public InteractionComponent GetComponentByComponentName( int channelId, string name )
         {
             return GetComponentByPredicate( channelId, null, name, c =>
-                    c.ChannelId == channelId &&
+                    c.InteractionChannelId == channelId &&
                     c.Name == name );
         }
 
@@ -127,7 +127,7 @@ namespace Rock.Model
             {
                 component = new InteractionComponent();
                 component.EntityId = entityId;
-                component.ChannelId = channelId;
+                component.InteractionChannelId = channelId;
                 component.Name = name;
                 this.Add( component );
             }
@@ -146,8 +146,8 @@ namespace Rock.Model
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
 
             return Queryable().Where( ic =>
-                ic.Channel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
-                ic.Channel.ChannelEntityId == siteId &&
+                ic.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
+                ic.InteractionChannel.ChannelEntityId == siteId &&
                 ic.EntityId == pageId );
         }
     }

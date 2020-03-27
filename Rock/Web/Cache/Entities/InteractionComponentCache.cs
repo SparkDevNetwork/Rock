@@ -64,7 +64,21 @@ namespace Rock.Web.Cache
         /// The channel identifier.
         /// </value>
         [DataMember]
-        public int ChannelId { get; private set; }
+        [Obsolete( "Use InteractionChannelId instead." )]
+        [RockObsolete( "1.11" )]
+        public int ChannelId
+        {
+            get { return InteractionChannelId; }
+        }
+
+        /// <summary>
+        /// Gets or sets the interaction channel identifier.
+        /// </summary>
+        /// <value>
+        /// The channel identifier.
+        /// </value>
+        [DataMember]
+        public int InteractionChannelId { get; private set; }
 
         /// <summary>
         /// Gets the interaction channel.
@@ -72,7 +86,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The interaction channel.
         /// </value>
-        public InteractionChannelCache InteractionChannel => InteractionChannelCache.Get( ChannelId );
+        public InteractionChannelCache InteractionChannel => InteractionChannelCache.Get( InteractionChannelId );
 
         #endregion
 
@@ -92,8 +106,8 @@ namespace Rock.Web.Cache
 
             Name = interactionComponent.Name;
             EntityId = interactionComponent.EntityId;
-            ChannelId = interactionComponent.ChannelId;
-            var lookupKey = $"{ChannelId}|{EntityId}";
+            InteractionChannelId = interactionComponent.InteractionChannelId;
+            var lookupKey = $"{InteractionChannelId}|{EntityId}";
 
             _interactionComponentLookup.AddOrUpdate( lookupKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
         }
