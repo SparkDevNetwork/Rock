@@ -12,7 +12,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-
 namespace com.bemaservices.MailChimp.Jobs
 {
 
@@ -23,6 +22,18 @@ namespace com.bemaservices.MailChimp.Jobs
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
+            var accounts = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS.AsGuid() );
+
+            foreach( var account in accounts.DefinedValues )
+            {
+                Utility.MailChimpApi mailChimpApi = new Utility.MailChimpApi( account );
+                var mailChimpLists = mailChimpApi.GetMailChimpLists();
+
+                foreach( var list in mailChimpLists )
+                {
+                    mailChimpApi.SyncMembers( DefinedValueCache.Get( list.Guid ) );
+                }
+            }
         }
     }
 }
