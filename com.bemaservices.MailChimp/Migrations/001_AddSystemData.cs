@@ -24,6 +24,7 @@ namespace com.bemaservices.MailChimp.Migrations
 
             RockMigrationHelper.AddDefinedTypeAttribute( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS, "9C204CD0-1233-41C5-818A-C5DA439445AA", "API Key", "APIKey", "", 1032, true, "", false, true, com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE );
             RockMigrationHelper.AddDefinedTypeAttribute( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS, "59D5A94C-94A0-4630-B80A-BB25697D74C7", "MailChimp Account", "MailChimpAccount", "", 1033, true, "", false, true, com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE );
+            RockMigrationHelper.AddDefinedTypeAttribute( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS, "9C204CD0-1233-41C5-818A-C5DA439445AA", "MailChimp List Id", "ListId", "", 1034, true, "", false, true, com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE, "ispassword", "False", "DC555C21-32B4-4BC2-8BAF-D304895130BC" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE, "maxcharacters", "", "21E5C15C-6443-4BDE-BD18-73D12E8A41FD" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE, "showcountdown", "False", "09B0E597-C3BD-4387-96B0-D839DF3636AF" );
@@ -32,7 +33,7 @@ namespace com.bemaservices.MailChimp.Migrations
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "displaydescription", "False", "93E13E42-6FD4-4483-8650-184CD593DDA3" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "enhancedselection", "False", "2C77ADCC-7071-44E7-9030-AA67D6698FAD" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "includeInactive", "False", "8051B44C-2600-4AC6-9D09-9160A11080C1" );
-
+           
             // Page: MailChimp Accounts
             RockMigrationHelper.AddPage( "5B6DBC42-8B03-4D15-8D92-AAFA28FD8616", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "MailChimp Accounts", "", "3A0F2C4C-CE31-4F17-9869-86D2476976F9", "fa fa-envelope" ); // Site:Rock RMS
             RockMigrationHelper.UpdateBlockType( "Mail Chimp Account List", "Template block for developers to use to start a new list block.", "~/Plugins/com_bemaservices/MailChimp/MailChimpAccountList.ascx", "BEMA Services > Utility", "C83CBCF2-6109-4DAC-99AD-F5E7511854B6" );
