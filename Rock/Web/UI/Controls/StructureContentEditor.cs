@@ -400,13 +400,8 @@ namespace Rock.Web.UI.Controls
 
             var script = string.Format( @"
 var fieldContent = $('#{1}').val();
- var output = document.getElementById('output');
-/**
- * To initialize the Editor, create a new instance with configuration object
- * @see docs/installation.md for mode details
- */
 var editor = new EditorJS({{
-holderId: '{0}',
+holder: '{0}',
 tools: {2},
 initialBlock: 'paragraph',
 data: JSON.parse(decodeURIComponent(fieldContent)),
