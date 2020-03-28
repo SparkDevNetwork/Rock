@@ -76,8 +76,23 @@ namespace com.bemaservices.MailChimp.Utility
                         var mailChimpListValue = mailChimpListValues.Where( x => x.ForeignId == mailChimpList.WebId &&
                                                                                 x.ForeignKey == MailChimp.Constants.ForeignKey )
                                                                     .FirstOrDefault();
-                        UpdateMailChimpListDefinedValue( mailChimpList, ref mailChimpListValue, definedValueService, rockContext );
-                        mailChimpListValues.Add( mailChimpListValue );
+                        if ( mailChimpListValue is null )
+                        {
+
+                            mailChimpListValue = new DefinedValue();
+                            mailChimpListValue.ForeignId = mailChimpList.WebId;
+                            mailChimpListValue.ForeignKey = MailChimp.Constants.ForeignKey;
+                            mailChimpListValue.IsSystem = true;
+                            mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS.AsGuid() ).Id;
+
+                            definedValueService.Add( mailChimpListValue );
+
+                            rockContext.SaveChanges();
+
+                            mailChimpListValues.Add( mailChimpListValue );
+
+                        }
+                        UpdateMailChimpListDefinedValue( mailChimpList, ref mailChimpListValue, rockContext );
                     }
 
                     // Look for any DefinedValues in Rock that are no longer in Mail Chimp and remove them.  We also need to remove any attribute Values assigned to these lists.
@@ -227,24 +242,11 @@ namespace com.bemaservices.MailChimp.Utility
             return addedPerson;
         }
 
-        private void UpdateMailChimpListDefinedValue( MCModels.List mailChimpList, ref DefinedValue mailChimpListValue, DefinedValueService definedValueService, RockContext rockContext )
+        private void UpdateMailChimpListDefinedValue( MCModels.List mailChimpList, ref DefinedValue mailChimpListValue, RockContext rockContext )
         {
-            if ( mailChimpListValue is null )
-            {
-                mailChimpListValue = new DefinedValue();
-                mailChimpListValue.ForeignId = mailChimpList.WebId;
-                mailChimpListValue.ForeignKey = MailChimp.Constants.ForeignKey;
-                mailChimpListValue.IsSystem = true;
-                mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS.AsGuid() ).Id;
-
-                definedValueService.Add( mailChimpListValue );
-
-            }
 
             mailChimpListValue.Value = mailChimpList.Name;
             mailChimpListValue.Description = mailChimpList.SubscribeUrlLong;
-
-            rockContext.SaveChanges();
 
             var mailChimpAccountAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE );
             var mailChimpIdAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE );
