@@ -339,7 +339,23 @@ namespace com.bemaservices.MailChimp.Utility
                     mailChimpMember.MergeFields.AddOrReplace( "FNAME", rockPerson.NickName );
                     mailChimpMember.MergeFields.AddOrReplace( "LNAME", rockPerson.LastName );
 
-                    _mailChimpManager.Members.AddOrUpdateAsync( mailChimpListId, mailChimpMember );
+                    var result = _mailChimpManager.Members.AddOrUpdateAsync( mailChimpListId, mailChimpMember ).Result;
+
+                }
+            }
+            catch ( System.AggregateException e )
+            {
+                foreach( var ex in e.InnerExceptions )
+                {
+                    if( ex is MCNet.Core.MailChimpException )
+                    {
+                        var mailChimpException = ex as MCNet.Core.MailChimpException;
+                        ExceptionLogService.LogException( new Exception( mailChimpException.Message + mailChimpException.Detail ) );
+                    }
+                    else
+                    {
+                        ExceptionLogService.LogException( ex );
+                    }
                 }
             }
             catch ( Exception ex )
