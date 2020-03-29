@@ -127,6 +127,7 @@ namespace com.bemaservices.MailChimp.Utility
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             GroupService groupService = new GroupService( rockContext );
             AttributeValueService attributeValueService = new AttributeValueService( rockContext );
+            PersonService personService = new PersonService( rockContext );
 
             Dictionary<int, MCModels.Member> mailChimpMemberLookUp = new Dictionary<int, MCModels.Member>();
             var mailChimpListIdAttributeKey = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE.AsGuid() ).Key;
@@ -175,6 +176,9 @@ namespace com.bemaservices.MailChimp.Utility
                                     groupMemberService.Add( groupMember );
                                 }
                                 groupMember.GroupMemberStatus = GetRockGroupMemberStatus( person.Value.Status );
+                                var rockPerson = personService.Get( person.Key );
+                                var mailChimpPerson = person.Value;
+                                syncPerson( ref rockPerson, ref mailChimpPerson, mailChimpListId );
                             }
                         }
                     }
@@ -216,7 +220,6 @@ namespace com.bemaservices.MailChimp.Utility
                                     StatusIfNew = MCModels.Status.Subscribed,
                                     Id = _mailChimpManager.Members.Hash( email )
                                 };
-                                syncPerson( ref person, ref member, mailChimpListId );
                                 break;
                             }
                         }
