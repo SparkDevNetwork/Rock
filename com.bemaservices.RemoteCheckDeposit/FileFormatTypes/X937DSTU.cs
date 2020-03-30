@@ -228,7 +228,8 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
                 ItemCount = itemRecords.Count(),
                 TotalAmount = checkDetailRecords.Sum( c => ( decimal ) c.ItemAmount ),
                 ImageCount = imageDetailRecords.Count(),
-                ECEInstitutionName = organizationName
+                ECEInstitutionName = organizationName,
+                SettlementDate = options.ExportDateTime
             };
 
             return control;
