@@ -471,20 +471,6 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
             var checkEndorsement = GetAttributeValue( options.FileFormat, "CheckEndorsementTemplate" );
             var enableEndorsement = GetAttributeValue( options.FileFormat, "EnableDigitalEndorsement" ).AsBoolean();
 
-            //
-            // Get the Image View Detail record (type 50).
-            //
-            var detail = new Records.ImageViewDetail
-            {
-                ImageIndicator = 1,
-                ImageCreatorRoutingNumber = routingNumber,
-                ImageCreatorDate = image.CreatedDateTime ?? options.ExportDateTime,
-                ImageViewFormatIndicator = 0,
-                CompressionAlgorithmIdentifier = 0,
-                SideIndicator = isFront ? 0 : 1,
-                ViewDescriptor = 0,
-                DigitalSignatureIndicator = 0
-            };
 
             //
             // If endorsement, add to back of image
@@ -524,6 +510,23 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
                 newBitmap.Save( imageData, System.Drawing.Imaging.ImageFormat.Tiff );//maybe this works...
 
             }
+
+
+            //
+            // Get the Image View Detail record (type 50).
+            //
+            var detail = new Records.ImageViewDetail
+            {
+                ImageIndicator = 1,
+                ImageCreatorRoutingNumber = routingNumber,
+                ImageCreatorDate = image.CreatedDateTime ?? options.ExportDateTime,
+                ImageViewFormatIndicator = 0,
+                CompressionAlgorithmIdentifier = 0,
+                SideIndicator = isFront ? 0 : 1,
+                ViewDescriptor = 0,
+                DigitalSignatureIndicator = 0,
+                DataSize = (int)imageData.Length
+            };
 
             //
             // Get the Image View Data record (type 52).
