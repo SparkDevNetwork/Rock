@@ -39,8 +39,8 @@
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" Visible="true" ExcelExportBehavior="AlwaysInclude" />
                                     <Rock:BoolField DataField="HasDuration" HeaderText="Spans Time" />
                                     <Rock:BoolField DataField="AllowMultipleInstances" HeaderText="Allow Multiple" />
-                                    <Rock:RockBoundField DataField="StartedCount" HeaderText="Started" DataFormatString="{0:#;#;}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
-                                    <Rock:RockBoundField DataField="CompletedCount" HeaderText="Completed" DataFormatString="{0:#;#;}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
+                                    <Rock:RockBoundField DataField="StartedCount" HeaderText="Started" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
+                                    <Rock:RockBoundField DataField="CompletedCount" HeaderText="Completed" DataFormatString="{0:N0}" HeaderStyle-HorizontalAlign="Right" ItemStyle-HorizontalAlign="Right" />
                                     <Rock:LinkButtonField ID="lbBulkEntry" Text="<i class='fa fa-truck'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gStepType_BulkEntry" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                                     <Rock:SecurityField />
                                     <Rock:DeleteField OnClick="gStepType_Delete" />
