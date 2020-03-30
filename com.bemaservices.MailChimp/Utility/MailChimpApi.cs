@@ -64,8 +64,10 @@ namespace com.bemaservices.MailChimp.Utility
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
 
-                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( new Guid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS ) ).ToList();
+                var mailChimpListDefinedValueIds = attributeValueService.Queryable().Where( a => a.Attribute.Guid == MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE.AsGuid() && a.Value.Equals( _mailChimpAccount.Guid.ToString(), StringComparison.OrdinalIgnoreCase ) ).Select( a => a.EntityId ).ToList();
 
+                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( new Guid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS ) ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
+                                        
                 try
                 {
                     var mailChimpListCollection = _mailChimpManager.Lists.GetAllAsync().Result;
@@ -98,10 +100,11 @@ namespace com.bemaservices.MailChimp.Utility
 
                     // Look for any DefinedValues in Rock that are no longer in Mail Chimp and remove them.  We also need to remove any attribute Values assigned to these lists.
                     var mailChimpListValuesToRemove = mailChimpListValues
-                                                        .Where( x =>
-                                                                !mailChimpListCollection.Any( y => y.WebId == x.ForeignId && x.ForeignKey == MailChimp.Constants.ForeignKey )
-                                                            );
-                    var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
+                                                       .Where( x => !mailChimpListCollection.Any( y => y.WebId == x.ForeignId && x.ForeignKey == MailChimp.Constants.ForeignKey )
+                                                       && mailChimpListDefinedValueIds.Contains( x.Id )
+                                                       );
+
+                   var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
 
                     foreach ( var definedValue in mailChimpListValuesToRemove )
                     {
