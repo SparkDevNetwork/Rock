@@ -542,7 +542,6 @@ namespace Rock.DownhillCss
         private static string baseStylesMobile = @"
 /* Resets */
 ^label {
-    line-height: 1.15;
     font-size: default;
     color: ?color-text;
 }
