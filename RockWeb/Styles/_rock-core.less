@@ -411,7 +411,7 @@ th[align="right"] {
 
     .panel-labels {
       float: right;
-      margin-top: -(round(@font-size-base * 0.3125, 1));
+      margin-top: -(round(@font-size-base * .3125, 1));
 
       .panel-text {
         float: left;
@@ -964,7 +964,52 @@ div.aspNetDisabled {
 }
 // Danger and error appear as red
 .btn-danger {
-  .button-outline-variant(@btn-danger-color; @btn-danger-bg; @btn-danger-border);
+  color: @btn-default-color;
+  background-color: @btn-default-bg;
+  border-color: @btn-default-border;
+
+  &:focus,
+  &.focus {
+    color: @btn-danger-color;
+    background-color: darken(@btn-danger-bg, 10%);
+    border-color: darken(@btn-danger-border, 25%);
+  }
+  &:hover {
+    color: @btn-danger-color;
+    background-color: darken(@btn-danger-bg, 10%);
+    border-color: darken(@btn-danger-border, 12%);
+  }
+  &:active,
+  &.active,
+  .open > .dropdown-toggle& {
+    color: @btn-danger-color;
+    background-color: darken(@btn-danger-bg, 10%);
+    background-image: none;
+    border-color: darken(@btn-danger-border, 12%);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color: @btn-danger-color;
+      background-color: darken(@btn-danger-bg, 17%);
+      border-color: darken(@btn-danger-border, 25%);
+    }
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: @btn-default-bg;
+      border-color: @btn-default-border;
+    }
+  }
+
+  .badge {
+    color: @btn-default-bg;
+    background-color: @btn-default-color;
+  }
 }
 // Danger and error appear as red
 .btn-danger-solid {

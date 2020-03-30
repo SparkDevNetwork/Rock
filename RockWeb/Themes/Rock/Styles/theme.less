@@ -24,7 +24,7 @@
   5. Components
 */
 
-/*#region
+/* #region
 // 1. HTML Overrides         */
 // -------------------------
 
@@ -90,10 +90,10 @@ textarea,
   background: @text-selection-bg;
 }
 
-/*#endregion */
+/* #endregion */
 
 
-/*#region
+/* #region
 // 2. Bootstrap Overrides    */
 // -------------------------
 
@@ -352,6 +352,23 @@ textarea,
   .btn {
     width: 33px;
     padding: 5px 7px;
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .btn-danger {
+    &:active,
+    &:hover {
+      color: @btn-danger-bg;
+    }
+
+    &:focus,
+    &:active &:active:hover,
+    &:active:focus {
+      color: @btn-danger-color;
+      background: @btn-danger-bg;
+      border-color: @btn-danger-border;
+    }
   }
 }
 
@@ -371,9 +388,9 @@ textarea,
   border-radius: 50%;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 3. Rock Overrides         */
 // -------------------------
 
@@ -564,9 +581,9 @@ td.grid-actions {
   }
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 4. Theme Styling          */
 // -------------------------
 
@@ -1408,9 +1425,9 @@ body.navbar-side-open {
   box-shadow: @shadow-sticky-nav;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 5. Specific Page Styling        */
 // -------------------------
 .personprofilebar-bio {
@@ -1433,9 +1450,9 @@ body.navbar-side-open {
   width: 270px;
 }
 
-/*#endregion */
+/* #endregion */
 
-/*#region
+/* #region
 // 6. Components          */
 // -------------------------
 
@@ -1515,6 +1532,6 @@ body.navbar-side-open {
 
 }
 
-/*#endregion */
+/* #endregion */
 @import "_print.less";
 @import "_css-overrides.less";
