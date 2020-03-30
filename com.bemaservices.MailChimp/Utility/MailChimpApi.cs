@@ -64,10 +64,11 @@ namespace com.bemaservices.MailChimp.Utility
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
 
-                var mailChimpListDefinedValueIds = attributeValueService.Queryable().Where( a => a.Attribute.Guid == MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE.AsGuid() && a.Value.Equals( _mailChimpAccount.Guid.ToString(), StringComparison.OrdinalIgnoreCase ) ).Select( a => a.EntityId ).ToList();
+                var accountAttributeGuid = MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE.AsGuid();
+                var mailChimpListDefinedValueIds = attributeValueService.Queryable().Where( a => a.Attribute.Guid == accountAttributeGuid && a.Value.Equals( _mailChimpAccount.Guid.ToString(), StringComparison.OrdinalIgnoreCase ) ).Select( a => a.EntityId ).ToList();
 
                 mailChimpListValues = definedValueService.GetByDefinedTypeGuid( new Guid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS ) ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
-                                        
+
                 try
                 {
                     var mailChimpListCollection = _mailChimpManager.Lists.GetAllAsync().Result;
@@ -104,7 +105,7 @@ namespace com.bemaservices.MailChimp.Utility
                                                        && mailChimpListDefinedValueIds.Contains( x.Id )
                                                        );
 
-                   var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
+                    var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
 
                     foreach ( var definedValue in mailChimpListValuesToRemove )
                     {
@@ -349,9 +350,9 @@ namespace com.bemaservices.MailChimp.Utility
             }
             catch ( System.AggregateException e )
             {
-                foreach( var ex in e.InnerExceptions )
+                foreach ( var ex in e.InnerExceptions )
                 {
-                    if( ex is MCNet.Core.MailChimpException )
+                    if ( ex is MCNet.Core.MailChimpException )
                     {
                         var mailChimpException = ex as MCNet.Core.MailChimpException;
                         ExceptionLogService.LogException( new Exception( mailChimpException.Message + mailChimpException.Detail ) );
