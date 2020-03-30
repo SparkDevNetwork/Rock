@@ -1,7 +1,7 @@
-{% if id and id != '' %}
+{% if id and id != '' %}<div class="position-relative">
 
 {% if CurrentPerson | HasRightsTo:'Edit' %}
-<div class="position-absolute top-zero right-zero push-half-top push-right bring-forward text-right">
+<div class="position-absolute top-zero right-zero push-half-top push-half-right bring-forward text-right">
     <a href="/video/{{ id }}" class="btn btn-sm btn-info push-half-bottom">About This Video</a><br>
     <a href="https://newspringchurch.wistia.com/medias/{{ id }}" target="_blank" class="btn btn-sm btn-info">Edit This Video</a>
 </div>
@@ -46,4 +46,4 @@
         smallPlayButton: {{ showsmallplaybutton }}
     });
 </script>
-{% endif %}
+</div>{% endif %}
