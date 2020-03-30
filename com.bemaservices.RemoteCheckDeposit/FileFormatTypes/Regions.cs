@@ -126,7 +126,7 @@ ItemCount: {{ ItemCount }}", order: 20 )]
             header.ReturnLocationRoutingNumber = originRoutingNumber;
 
             // Set Bundle ID  (should be same as Bundle Sequence Number )
-            header.ID = (bundleIndex + 1).ToString("0000000000");
+            header.ID = (bundleIndex + 1).ToString();
 
             return header;
         }
@@ -144,7 +144,6 @@ ItemCount: {{ ItemCount }}", order: 20 )]
         {
             var accountNumber = Rock.Security.Encryption.DecryptString( GetAttributeValue( options.FileFormat, "AccountNumber" ) );
             var routingNumber = Rock.Security.Encryption.DecryptString( GetAttributeValue( options.FileFormat, "RoutingNumber" ) );
-            var originRoutingNumber = Rock.Security.Encryption.DecryptString(GetAttributeValue(options.FileFormat, "InstitutionRoutingNumber"));
 
             var records = new List<Record>();
 
@@ -153,7 +152,7 @@ ItemCount: {{ ItemCount }}", order: 20 )]
                 RecordUsageIndicator = 5,
                 AuxiliaryOnUs = string.Empty,
                 ExternalProcessingCode = string.Empty,
-                PostingAccountRoutingNumber = originRoutingNumber.AsInteger(),
+                PostingAccountRoutingNumber = routingNumber.AsInteger(),
                 PostingAccountBankOnUs = accountNumber + "/20",
                 ItemAmount = transactions.Sum(p => p.TotalAmount),
                 ECEInstitutionSequenceNumber = GetNextItemSequenceNumber().ToString("000000000000000"), // A number assigned by you that uniquely identifies the item in the cash letter
