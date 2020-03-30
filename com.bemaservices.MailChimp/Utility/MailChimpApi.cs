@@ -84,6 +84,7 @@ namespace com.bemaservices.MailChimp.Utility
                             mailChimpListValue.ForeignKey = MailChimp.Constants.ForeignKey;
                             mailChimpListValue.IsSystem = true;
                             mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS.AsGuid() ).Id;
+                            mailChimpListValue.Value = mailChimpList.Name;
 
                             definedValueService.Add( mailChimpListValue );
 

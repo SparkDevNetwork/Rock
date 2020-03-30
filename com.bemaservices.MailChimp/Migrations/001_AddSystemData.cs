@@ -20,8 +20,8 @@ namespace com.bemaservices.MailChimp.Migrations
         {
             RockMigrationHelper.AddDefinedType( "Communication", "MailChimp Accounts", "", com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS, @"" );
             RockMigrationHelper.AddDefinedType( "Communication", "MailChimp Lists", "", com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS, @"" );
-            var definedTypeId = SqlScalar( String.Format( "Select Top 1 Id from DefinedType Where Guid = '{0}'", com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS ) ).ToString();
-
+            var mailChimpAccountDefinedTypeId = SqlScalar( String.Format( "Select Top 1 Id from DefinedType Where Guid = '{0}'", com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS ) ).ToString();
+            var mailChimpListDefinedTypeId = SqlScalar( String.Format( "Select Top 1 Id from DefinedType Where Guid = '{0}'", com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS ) ).ToString();
             RockMigrationHelper.AddDefinedTypeAttribute( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_ACCOUNTS, "9C204CD0-1233-41C5-818A-C5DA439445AA", "API Key", "APIKey", "", 1032, true, "", false, true, com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE );
             RockMigrationHelper.AddDefinedTypeAttribute( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS, "59D5A94C-94A0-4630-B80A-BB25697D74C7", "MailChimp Account", "MailChimpAccount", "", 1033, true, "", false, true, com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE );
             RockMigrationHelper.AddDefinedTypeAttribute( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS, "9C204CD0-1233-41C5-818A-C5DA439445AA", "MailChimp List Id", "ListId", "", 1034, true, "", false, true, com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE );
@@ -29,7 +29,7 @@ namespace com.bemaservices.MailChimp.Migrations
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE, "maxcharacters", "", "21E5C15C-6443-4BDE-BD18-73D12E8A41FD" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE, "showcountdown", "False", "09B0E597-C3BD-4387-96B0-D839DF3636AF" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "allowmultiple", "False", "3944F235-6109-4401-A453-A34EF9F3C77E" );
-            RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "definedtype", definedTypeId, "9FF49383-ACCA-4548-9B54-A826EC1AA4DE" );
+            RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "definedtype", mailChimpAccountDefinedTypeId, "9FF49383-ACCA-4548-9B54-A826EC1AA4DE" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "displaydescription", "False", "93E13E42-6FD4-4483-8650-184CD593DDA3" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "enhancedselection", "False", "2C77ADCC-7071-44E7-9030-AA67D6698FAD" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE, "includeInactive", "False", "8051B44C-2600-4AC6-9D09-9160A11080C1" );
@@ -87,6 +87,38 @@ namespace com.bemaservices.MailChimp.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "24E70313-DE15-4545-A92B-B9BF38495C5E", "A96E2051-E518-4DFD-B888-4EC4F7AA6D1B", @"4e237286-b715-4109-a578-c1445ec02707" );
             // Attrib Value for Block:Mail Chimp Group List, Attribute:core.CustomGridEnableStickyHeaders Page: List Detail, Site: Rock RMS
             RockMigrationHelper.AddBlockAttributeValue( "24E70313-DE15-4545-A92B-B9BF38495C5E", "62046D21-7546-4C5E-A06A-9D6FBAFE4A01", @"False" );
+
+            // Attribute: Mail Chimp List on Communication Lists
+            RockMigrationHelper.AddGroupTypeGroupAttribute( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, "Mail Chimp List", "The mail Chimp List to sync with.", 0, @"", com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, false );
+            RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "definedtype", mailChimpListDefinedTypeId, "8BE5E7D4-B648-4708-89D1-90B661E3BF67" );
+            RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "allowmultiple", "False", "BE51C8AA-2604-4D2A-B0FE-10D417A28205" );
+            RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "displaydescription", "False", "77486C51-5E56-42F7-9129-C5F4E1AE333B" );
+            RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "enhancedselection", "False", "DA092EEC-CA54-472E-83E3-4B317869C055" );
+            RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "includeInactive", "False", "0BAD4CD9-F949-4BA4-8919-D02E75B102F7" );
+
+            //Add Job
+            Sql( string.Format( @"
+			    INSERT INTO ServiceJob
+			    (
+				    IsSystem
+				    , IsActive
+				    , Name
+				    , Description
+				    , Class
+				    , CronExpression
+				    , NotificationStatus
+				    , Guid
+			    )
+			    SELECT
+				    0
+				    ,0
+				    ,'Mail Chimp Sync'
+				    ,'Syncs Group Members with a Mail Chimp List'
+				    ,'com.bemaservices.MailChimp.Jobs.MailChimpSync'
+				    ,'0 0/20 * 1/1 * ? *'
+				    ,3
+				    ,'A7EF4133-6616-4CF1-AD44-6F8DBE4EA46C'
+            " ) );
         }
 
         /// <summary>

@@ -17,5 +17,7 @@ namespace com.bemaservices.MailChimp.SystemGuid
 
         public static string MAIL_CHIMP_ACCOUNT_APIKEY_ATTRIBUTE = "0012EBE4-B786-44D3-A16A-8501F37F7330";
 
+        public static string COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE = "92AC3911-9823-4D1F-BBC5-67AED804731E";
+
     }
 }
