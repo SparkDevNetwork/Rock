@@ -111,7 +111,7 @@ namespace com.bemaservices.MailChimp.Migrations
 			    )
 			    SELECT
 				    0
-				    ,0
+				    ,1
 				    ,'Mail Chimp Sync'
 				    ,'Syncs Group Members with a Mail Chimp List'
 				    ,'com.bemaservices.MailChimp.Jobs.MailChimpSync'
