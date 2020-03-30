@@ -89,7 +89,7 @@ namespace com.bemaservices.MailChimp.Migrations
             RockMigrationHelper.AddBlockAttributeValue( "24E70313-DE15-4545-A92B-B9BF38495C5E", "62046D21-7546-4C5E-A06A-9D6FBAFE4A01", @"False" );
 
             // Attribute: Mail Chimp List on Communication Lists
-            RockMigrationHelper.AddGroupTypeGroupAttribute( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, "Mail Chimp List", "The mail Chimp List to sync with.", 0, @"", com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, false );
+            RockMigrationHelper.AddGroupTypeGroupAttribute( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST, Rock.SystemGuid.FieldType.DEFINED_VALUE, "Mail Chimp List", "The mail Chimp List to sync with.", 0, @"", com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, false );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "definedtype", mailChimpListDefinedTypeId, "8BE5E7D4-B648-4708-89D1-90B661E3BF67" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "allowmultiple", "False", "BE51C8AA-2604-4D2A-B0FE-10D417A28205" );
             RockMigrationHelper.AddAttributeQualifier( com.bemaservices.MailChimp.SystemGuid.Attribute.COMMUNICATION_LIST_MAIL_CHIMP_LIST_ATTRIBUTE, "displaydescription", "False", "77486C51-5E56-42F7-9129-C5F4E1AE333B" );
