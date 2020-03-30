@@ -36,11 +36,11 @@ namespace com.bemaservices.MailChimp
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Mail Chimp List List" )]
+    [DisplayName( "Mail Chimp Audience List" )]
     [Category( "BEMA Services > MailChimp" )]
-    [Description( "A Block to display the list of MailChimp lists" )]
+    [Description( "A Block to display the list of MailChimp audiences" )]
     [LinkedPage( "Detail Page" )]
-    public partial class MailChimpListList : RockBlock, ICustomGridColumns, ISecondaryBlock
+    public partial class MailChimpAudienceList : RockBlock, ICustomGridColumns, ISecondaryBlock
     {
         #region Private Variables
 
@@ -95,7 +95,7 @@ namespace com.bemaservices.MailChimp
             int definedTypeId = 0;
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
-            if ( Guid.TryParse( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS, out definedTypeGuid ) )
+            if ( Guid.TryParse( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES, out definedTypeGuid ) )
             {
                 definedTypeId = DefinedTypeCache.Get( definedTypeGuid ).Id;
             }

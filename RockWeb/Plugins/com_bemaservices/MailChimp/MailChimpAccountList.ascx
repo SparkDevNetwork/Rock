@@ -9,7 +9,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-envelope"></i>
-                    MailChimp Accounts
+                    Accounts
                 </h1>
             </div>
             <div class="panel-body">
@@ -20,7 +20,7 @@
                         <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
 
                         <div class="grid grid-panel">
-                            <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
+                            <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" EmptyDataText="No MailChimp Accounts Found" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
                                 <Columns>
                                     <Rock:ReorderField />
                                     <Rock:RockBoundField DataField="Value" HeaderText="Account" />

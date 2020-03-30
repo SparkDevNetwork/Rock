@@ -64,10 +64,10 @@ namespace com.bemaservices.MailChimp.Utility
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
 
-                var accountAttributeGuid = MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE.AsGuid();
+                var accountAttributeGuid = MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ACCOUNT_ATTRIBUTE.AsGuid();
                 var mailChimpListDefinedValueIds = attributeValueService.Queryable().Where( a => a.Attribute.Guid == accountAttributeGuid && a.Value.Equals( _mailChimpAccount.Guid.ToString(), StringComparison.OrdinalIgnoreCase ) ).Select( a => a.EntityId ).ToList();
 
-                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( new Guid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS ) ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
+                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( new Guid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES ) ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
 
                 try
                 {
@@ -86,7 +86,7 @@ namespace com.bemaservices.MailChimp.Utility
                             mailChimpListValue.ForeignId = mailChimpList.WebId;
                             mailChimpListValue.ForeignKey = MailChimp.Constants.ForeignKey;
                             mailChimpListValue.IsSystem = true;
-                            mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS.AsGuid() ).Id;
+                            mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() ).Id;
                             mailChimpListValue.Value = mailChimpList.Name;
 
                             definedValueService.Add( mailChimpListValue );
@@ -135,7 +135,7 @@ namespace com.bemaservices.MailChimp.Utility
             PersonService personService = new PersonService( rockContext );
 
             Dictionary<int, MCModels.Member> mailChimpMemberLookUp = new Dictionary<int, MCModels.Member>();
-            var mailChimpListIdAttributeKey = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE.AsGuid() ).Key;
+            var mailChimpListIdAttributeKey = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ID_ATTRIBUTE.AsGuid() ).Key;
             var mailChimpListId = mailChimpList.GetAttributeValue( mailChimpListIdAttributeKey );
 
             try
@@ -256,8 +256,8 @@ namespace com.bemaservices.MailChimp.Utility
             mailChimpListValue.Value = mailChimpList.Name;
             mailChimpListValue.Description = mailChimpList.SubscribeUrlLong;
 
-            var mailChimpAccountAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE );
-            var mailChimpIdAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE );
+            var mailChimpAccountAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ACCOUNT_ATTRIBUTE );
+            var mailChimpIdAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ID_ATTRIBUTE );
 
             Rock.Attribute.Helper.SaveAttributeValue( mailChimpListValue, mailChimpAccountAttribute, _mailChimpAccount.Guid.ToString(), rockContext );
             Rock.Attribute.Helper.SaveAttributeValue( mailChimpListValue, mailChimpIdAttribute, mailChimpList.Id, rockContext );

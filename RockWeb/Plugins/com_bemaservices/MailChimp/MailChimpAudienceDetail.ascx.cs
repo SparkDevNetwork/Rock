@@ -31,11 +31,11 @@ namespace com.bemaservices.MailChimp
     /// <summary>
     /// Template block for developers to use to start a new block.
     /// </summary>
-    [DisplayName( "Mail Chimp List Detail" )]
+    [DisplayName( "Mail Chimp Audience Detail" )]
     [Category( "BEMA Services > MailChimp" )]
-    [Description( "A block for people to edit the details of a MailChimp list." )]
+    [Description( "A block for people to edit the details of a MailChimp audience." )]
 
-    public partial class MailChimpListDetail : Rock.Web.UI.RockBlock
+    public partial class MailChimpAudienceDetail : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods
 
@@ -135,7 +135,7 @@ namespace com.bemaservices.MailChimp
         private void ShowDefinedValueEdit()
         {
             var valueId = hfDefinedValueId.ValueAsInt();
-            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS );
+            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES );
             DefinedValue definedValue;
 
             if ( !valueId.Equals( 0 ) )
@@ -172,7 +172,7 @@ namespace com.bemaservices.MailChimp
             DefinedValue definedValue;
             var rockContext = new RockContext();
             DefinedValueService definedValueService = new DefinedValueService( rockContext );
-            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS );
+            var definedTypeCache = DefinedTypeCache.Get( com.bemaservices.MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES );
 
             int definedValueId = hfDefinedValueId.ValueAsInt();
 

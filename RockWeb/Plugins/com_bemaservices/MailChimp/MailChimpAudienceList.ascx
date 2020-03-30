@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpListList.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpListList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MailChimpAudienceList.ascx.cs" Inherits="com.bemaservices.MailChimp.MailChimpAudienceList" %>
 
 <asp:UpdatePanel ID="upnlSettings" runat="server">
     <ContentTemplate>
@@ -9,7 +9,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-envelope"></i>
-                    MailChimp Lists
+                    Audiences
                 </h1>
             </div>
             <div class="panel-body">
@@ -20,10 +20,10 @@
                         <Rock:ModalAlert ID="mdGridWarningValues" runat="server" />
 
                         <div class="grid grid-panel">
-                            <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
+                            <Rock:Grid ID="gDefinedValues" runat="server" AllowPaging="true" EmptyDataText="No MailChimp Audiences Found" DisplayType="Full" OnRowSelected="gDefinedValues_Edit" AllowSorting="False" TooltipField="Id">
                                 <Columns>
                                     <Rock:ReorderField />
-                                    <Rock:RockBoundField DataField="Value" HeaderText="Account" />
+                                    <Rock:RockBoundField DataField="Value" HeaderText="Audience" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
                                 </Columns>
                             </Rock:Grid>
