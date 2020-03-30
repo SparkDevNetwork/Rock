@@ -145,7 +145,7 @@ namespace com.bemaservices.MailChimp.Utility
                 //Match all the mailChimpMembers to people in Rock.
                 foreach ( var member in mailChimpMembers )
                 {
-                    var personId = getRockPerson( member ).Id;
+                    var personId = GetRockPerson( member ).Id;
                     mailChimpMemberLookUp.Add( personId, member );
                 }
 
@@ -168,7 +168,7 @@ namespace com.bemaservices.MailChimp.Utility
                                                                                 m.GroupMemberStatus != GroupMemberStatus.Inactive && !m.IsArchived );
                             foreach ( var groupMember in rockPeopleToAdd )
                             {
-                                addPersonToMailChimp( groupMember.Person, mailChimpListId );
+                                AddPersonToMailChimp( groupMember.Person, mailChimpListId );
                             }
 
                             foreach ( var person in mailChimpMemberLookUp )
@@ -183,7 +183,7 @@ namespace com.bemaservices.MailChimp.Utility
                                 groupMember.GroupMemberStatus = GetRockGroupMemberStatus( person.Value.Status );
                                 var rockPerson = personService.Get( person.Key );
                                 var mailChimpPerson = person.Value;
-                                syncPerson( ref rockPerson, ref mailChimpPerson, mailChimpListId );
+                                SyncPerson( ref rockPerson, ref mailChimpPerson, mailChimpListId );
                             }
                         }
                     }
@@ -197,7 +197,7 @@ namespace com.bemaservices.MailChimp.Utility
             }
         }
 
-        private bool addPersonToMailChimp( Person person, string mailChimpListId )
+        private bool AddPersonToMailChimp( Person person, string mailChimpListId )
         {
             bool foundMember = false;
             bool addedPerson = false;
@@ -243,7 +243,7 @@ namespace com.bemaservices.MailChimp.Utility
             if ( !foundMember )
             {
                 MCModels.Member member = null;
-                syncPerson( ref person, ref member, mailChimpListId );
+                SyncPerson( ref person, ref member, mailChimpListId );
                 addedPerson = true;
             }
 
@@ -263,7 +263,7 @@ namespace com.bemaservices.MailChimp.Utility
             Rock.Attribute.Helper.SaveAttributeValue( mailChimpListValue, mailChimpIdAttribute, mailChimpList.Id, rockContext );
         }
 
-        private Person getRockPerson( MCModels.Member member )
+        private Person GetRockPerson( MCModels.Member member )
         {
             Person person = null;
             RockContext rockContext = new RockContext();
@@ -273,7 +273,7 @@ namespace com.bemaservices.MailChimp.Utility
             var lastName = member.MergeFields["LNAME"].ToString();
             var email = member.EmailAddress;
             string emailNote = null;
-            bool isEmailActive = getIsEmailActive( member.Status, out emailNote );
+            bool isEmailActive = GetIsEmailActive( member.Status, out emailNote );
 
             var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, null, null, null, null, null );
 
@@ -287,7 +287,7 @@ namespace com.bemaservices.MailChimp.Utility
                 person.LastName = lastName.FixCase();
                 person.IsEmailActive = isEmailActive;
                 person.Email = email;
-                person.EmailPreference = getRockEmailPrefernce( member.Status );
+                person.EmailPreference = GetRockEmailPrefernce( member.Status );
                 person.EmailNote = emailNote;
                 person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
@@ -303,7 +303,7 @@ namespace com.bemaservices.MailChimp.Utility
             return person;
         }
 
-        private void syncPerson( ref Person rockPerson, ref MCModels.Member mailChimpMember, string mailChimpListId )
+        private void SyncPerson( ref Person rockPerson, ref MCModels.Member mailChimpMember, string mailChimpListId )
         {
             if ( mailChimpMember.IsNull() )
             {
@@ -325,8 +325,8 @@ namespace com.bemaservices.MailChimp.Utility
                 if ( mailChimpMember.EmailAddress.Equals( rockPerson.Email, StringComparison.OrdinalIgnoreCase ) )
                 {
                     string emailNote;
-                    rockPerson.EmailPreference = getRockEmailPrefernce( mailChimpMember.Status );
-                    rockPerson.IsEmailActive = getIsEmailActive( mailChimpMember.Status, out emailNote );
+                    rockPerson.EmailPreference = GetRockEmailPrefernce( mailChimpMember.Status );
+                    rockPerson.IsEmailActive = GetIsEmailActive( mailChimpMember.Status, out emailNote );
                     rockPerson.EmailNote = emailNote;
                 }
                 else
@@ -369,7 +369,7 @@ namespace com.bemaservices.MailChimp.Utility
             }
         }
 
-        private EmailPreference getRockEmailPrefernce( MCModels.Status mailChimpEmailStatus )
+        private EmailPreference GetRockEmailPrefernce( MCModels.Status mailChimpEmailStatus )
         {
             EmailPreference preference = EmailPreference.EmailAllowed;
 
@@ -386,7 +386,7 @@ namespace com.bemaservices.MailChimp.Utility
             return preference;
         }
 
-        private bool getIsEmailActive( MCModels.Status mailChimpEmailStatus, out string emailNote )
+        private bool GetIsEmailActive( MCModels.Status mailChimpEmailStatus, out string emailNote )
         {
             bool isActive = true;
             emailNote = null;
