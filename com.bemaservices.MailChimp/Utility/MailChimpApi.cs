@@ -64,9 +64,9 @@ namespace com.bemaservices.MailChimp.Utility
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
 
-                var mailChimpListDefinedValueIds = attributeValueService.Queryable().Where( a => a.Attribute.Guid == MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE.AsGuid() && a.Value.Equals( _mailChimpAccount.Guid.ToString(), StringComparison.OrdinalIgnoreCase ) ).Select( a => a.EntityId ).ToList();
+                var mailChimpListDefinedValueIds = attributeValueService.GetByAttributeId( AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE ).Id ).Where( av => av.Value.Equals( _mailChimpAccount.Guid.ToString() ) ).Select( av => av.EntityId ).ToList();
 
-                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( new Guid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS ) ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
+                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS.AsGuid() ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
                                         
                 try
                 {
