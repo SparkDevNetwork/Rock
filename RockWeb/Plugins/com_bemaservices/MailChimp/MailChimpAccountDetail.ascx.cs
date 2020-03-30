@@ -113,6 +113,7 @@ namespace com.bemaservices.MailChimp
             if ( definedValue != null )
             {
                 hfDefinedValueId.SetValue( definedValue.Id );
+                lTitle.Text = definedValue.Value;
 
                 DescriptionList descriptionList = new DescriptionList()
                 .Add( "Account", definedValue.Value ?? string.Empty )
@@ -140,11 +141,13 @@ namespace com.bemaservices.MailChimp
             if ( !valueId.Equals( 0 ) )
             {
                 definedValue = new DefinedValueService( new RockContext() ).Get( valueId );
+                lTitle.Text = definedValue.Value;
             }
             else
             {
                 definedValue = new DefinedValue { Id = 0 };
                 definedValue.DefinedTypeId = definedTypeCache.Id;
+                lTitle.Text = "New Mailchimp Account";
             }
 
 

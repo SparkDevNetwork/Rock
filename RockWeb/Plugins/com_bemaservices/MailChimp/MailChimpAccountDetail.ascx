@@ -8,7 +8,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-envelope"></i>
-                    MailChimp Account
+                    <asp:Literal ID="lTitle" runat="server" />
                 </h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -16,19 +16,19 @@
                 <asp:HiddenField ID="hfDefinedValueId" runat="server" />
 
                 <asp:Panel ID="pnlEdit" runat="server" Visible="false">
-                    <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Value" />
+                    <asp:ValidationSummary ID="valSummaryValue" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Account" />
                     <legend>
                         <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
                     </legend>
                     <fieldset>
                         <div class="row-fluid">
                             <div class="span12">
-                                <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Value" ValidationGroup="Value" Label="Value" />
-                                <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidationGroup="Value" ValidateRequestMode="Disabled" />
+                                <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Value" ValidationGroup="Account" Label="Account" />
+                                <Rock:DataTextBox ID="tbValueDescription" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" ValidationGroup="Account" ValidateRequestMode="Disabled" />
                             </div>
                         </div>
                         <div class="attributes">
-                            <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" ValidationGroup="Value" />
+                            <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" ValidationGroup="Account" />
                         </div>
                         <div class="actions">
                             <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />

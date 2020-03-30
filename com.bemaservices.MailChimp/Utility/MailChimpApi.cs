@@ -64,9 +64,11 @@ namespace com.bemaservices.MailChimp.Utility
                 DefinedValueService definedValueService = new DefinedValueService( rockContext );
                 AttributeValueService attributeValueService = new AttributeValueService( rockContext );
 
-                var mailChimpListDefinedValueIds = attributeValueService.GetByAttributeId( AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE ).Id ).Where( av => av.Value.Equals( _mailChimpAccount.Guid.ToString() ) ).Select( av => av.EntityId ).ToList();
+                var mailChimpListDefinedValueIds = attributeValueService.GetByAttributeId( AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ACCOUNT_ATTRIBUTE ).Id )
+                                                    .Where( av => av.Value.Equals( _mailChimpAccount.Guid.ToString() ) ).Select( av => av.EntityId )
+                                                    .ToList();
 
-                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS.AsGuid() ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
+                mailChimpListValues = definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
                                         
                 try
                 {
@@ -85,7 +87,7 @@ namespace com.bemaservices.MailChimp.Utility
                             mailChimpListValue.ForeignId = mailChimpList.WebId;
                             mailChimpListValue.ForeignKey = MailChimp.Constants.ForeignKey;
                             mailChimpListValue.IsSystem = true;
-                            mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_LISTS.AsGuid() ).Id;
+                            mailChimpListValue.DefinedTypeId = DefinedTypeCache.Get( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() ).Id;
                             mailChimpListValue.Value = mailChimpList.Name;
 
                             definedValueService.Add( mailChimpListValue );
@@ -104,7 +106,7 @@ namespace com.bemaservices.MailChimp.Utility
                                                        && mailChimpListDefinedValueIds.Contains( x.Id )
                                                        );
 
-                   var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
+                    var attributeValuesToRemove = attributeValueService.Queryable().Where( av => mailChimpListValuesToRemove.Any( dv => dv.Guid.ToString() == av.Value ) );
 
                     foreach ( var definedValue in mailChimpListValuesToRemove )
                     {
@@ -134,7 +136,7 @@ namespace com.bemaservices.MailChimp.Utility
             PersonService personService = new PersonService( rockContext );
 
             Dictionary<int, MCModels.Member> mailChimpMemberLookUp = new Dictionary<int, MCModels.Member>();
-            var mailChimpListIdAttributeKey = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE.AsGuid() ).Key;
+            var mailChimpListIdAttributeKey = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ID_ATTRIBUTE.AsGuid() ).Key;
             var mailChimpListId = mailChimpList.GetAttributeValue( mailChimpListIdAttributeKey );
 
             try
@@ -144,7 +146,7 @@ namespace com.bemaservices.MailChimp.Utility
                 //Match all the mailChimpMembers to people in Rock.
                 foreach ( var member in mailChimpMembers )
                 {
-                    var personId = getRockPerson( member ).Id;
+                    var personId = GetRockPerson( member ).Id;
                     mailChimpMemberLookUp.Add( personId, member );
                 }
 
@@ -167,7 +169,7 @@ namespace com.bemaservices.MailChimp.Utility
                                                                                 m.GroupMemberStatus != GroupMemberStatus.Inactive && !m.IsArchived );
                             foreach ( var groupMember in rockPeopleToAdd )
                             {
-                                addPersonToMailChimp( groupMember.Person, mailChimpListId );
+                                AddPersonToMailChimp( groupMember.Person, mailChimpListId );
                             }
 
                             foreach ( var person in mailChimpMemberLookUp )
@@ -182,7 +184,7 @@ namespace com.bemaservices.MailChimp.Utility
                                 groupMember.GroupMemberStatus = GetRockGroupMemberStatus( person.Value.Status );
                                 var rockPerson = personService.Get( person.Key );
                                 var mailChimpPerson = person.Value;
-                                syncPerson( ref rockPerson, ref mailChimpPerson, mailChimpListId );
+                                SyncPerson( ref rockPerson, ref mailChimpPerson, mailChimpListId );
                             }
                         }
                     }
@@ -196,7 +198,7 @@ namespace com.bemaservices.MailChimp.Utility
             }
         }
 
-        private bool addPersonToMailChimp( Person person, string mailChimpListId )
+        private bool AddPersonToMailChimp( Person person, string mailChimpListId )
         {
             bool foundMember = false;
             bool addedPerson = false;
@@ -242,7 +244,7 @@ namespace com.bemaservices.MailChimp.Utility
             if ( !foundMember )
             {
                 MCModels.Member member = null;
-                syncPerson( ref person, ref member, mailChimpListId );
+                SyncPerson( ref person, ref member, mailChimpListId );
                 addedPerson = true;
             }
 
@@ -255,14 +257,14 @@ namespace com.bemaservices.MailChimp.Utility
             mailChimpListValue.Value = mailChimpList.Name;
             mailChimpListValue.Description = mailChimpList.SubscribeUrlLong;
 
-            var mailChimpAccountAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ACCOUNT_ATTRIBUTE );
-            var mailChimpIdAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_LIST_ID_ATTRIBUTE );
+            var mailChimpAccountAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ACCOUNT_ATTRIBUTE );
+            var mailChimpIdAttribute = AttributeCache.Get( MailChimp.SystemGuid.Attribute.MAIL_CHIMP_AUDIENCE_ID_ATTRIBUTE );
 
             Rock.Attribute.Helper.SaveAttributeValue( mailChimpListValue, mailChimpAccountAttribute, _mailChimpAccount.Guid.ToString(), rockContext );
             Rock.Attribute.Helper.SaveAttributeValue( mailChimpListValue, mailChimpIdAttribute, mailChimpList.Id, rockContext );
         }
 
-        private Person getRockPerson( MCModels.Member member )
+        private Person GetRockPerson( MCModels.Member member )
         {
             Person person = null;
             RockContext rockContext = new RockContext();
@@ -272,7 +274,7 @@ namespace com.bemaservices.MailChimp.Utility
             var lastName = member.MergeFields["LNAME"].ToString();
             var email = member.EmailAddress;
             string emailNote = null;
-            bool isEmailActive = getIsEmailActive( member.Status, out emailNote );
+            bool isEmailActive = GetIsEmailActive( member.Status, out emailNote );
 
             var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, null, null, null, null, null );
 
@@ -286,7 +288,7 @@ namespace com.bemaservices.MailChimp.Utility
                 person.LastName = lastName.FixCase();
                 person.IsEmailActive = isEmailActive;
                 person.Email = email;
-                person.EmailPreference = getRockEmailPrefernce( member.Status );
+                person.EmailPreference = GetRockEmailPrefernce( member.Status );
                 person.EmailNote = emailNote;
                 person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
@@ -302,7 +304,7 @@ namespace com.bemaservices.MailChimp.Utility
             return person;
         }
 
-        private void syncPerson( ref Person rockPerson, ref MCModels.Member mailChimpMember, string mailChimpListId )
+        private void SyncPerson( ref Person rockPerson, ref MCModels.Member mailChimpMember, string mailChimpListId )
         {
             if ( mailChimpMember.IsNull() )
             {
@@ -324,8 +326,8 @@ namespace com.bemaservices.MailChimp.Utility
                 if ( mailChimpMember.EmailAddress.Equals( rockPerson.Email, StringComparison.OrdinalIgnoreCase ) )
                 {
                     string emailNote;
-                    rockPerson.EmailPreference = getRockEmailPrefernce( mailChimpMember.Status );
-                    rockPerson.IsEmailActive = getIsEmailActive( mailChimpMember.Status, out emailNote );
+                    rockPerson.EmailPreference = GetRockEmailPrefernce( mailChimpMember.Status );
+                    rockPerson.IsEmailActive = GetIsEmailActive( mailChimpMember.Status, out emailNote );
                     rockPerson.EmailNote = emailNote;
                 }
                 else
@@ -349,9 +351,9 @@ namespace com.bemaservices.MailChimp.Utility
             }
             catch ( System.AggregateException e )
             {
-                foreach( var ex in e.InnerExceptions )
+                foreach ( var ex in e.InnerExceptions )
                 {
-                    if( ex is MCNet.Core.MailChimpException )
+                    if ( ex is MCNet.Core.MailChimpException )
                     {
                         var mailChimpException = ex as MCNet.Core.MailChimpException;
                         ExceptionLogService.LogException( new Exception( mailChimpException.Message + mailChimpException.Detail ) );
@@ -368,7 +370,7 @@ namespace com.bemaservices.MailChimp.Utility
             }
         }
 
-        private EmailPreference getRockEmailPrefernce( MCModels.Status mailChimpEmailStatus )
+        private EmailPreference GetRockEmailPrefernce( MCModels.Status mailChimpEmailStatus )
         {
             EmailPreference preference = EmailPreference.EmailAllowed;
 
@@ -385,7 +387,7 @@ namespace com.bemaservices.MailChimp.Utility
             return preference;
         }
 
-        private bool getIsEmailActive( MCModels.Status mailChimpEmailStatus, out string emailNote )
+        private bool GetIsEmailActive( MCModels.Status mailChimpEmailStatus, out string emailNote )
         {
             bool isActive = true;
             emailNote = null;
