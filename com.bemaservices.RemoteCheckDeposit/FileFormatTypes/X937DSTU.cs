@@ -512,7 +512,7 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
 
             }
 
-
+            var tiffImageBytes = ConvertImageToTiffG4(imageData).ReadBytesToEnd();
             //
             // Get the Image View Detail record (type 50).
             //
@@ -526,7 +526,7 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
                 SideIndicator = isFront ? 0 : 1,
                 ViewDescriptor = 0,
                 DigitalSignatureIndicator = 0,
-                DataSize = (int)imageData.Length
+                DataSize = (int)tiffImageBytes.Length
             };
 
             //
@@ -538,7 +538,7 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
                 BundleBusinessDate = options.BusinessDateTime,
                 ClientInstitutionItemSequenceNumber = accountNumber,
                 ClippingOrigin = 0,
-                ImageData = ConvertImageToTiffG4( imageData ).ReadBytesToEnd()
+                ImageData = tiffImageBytes
             };
 
             return new List<Record> { detail, data };
