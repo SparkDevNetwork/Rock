@@ -219,6 +219,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
             personId = ppContactor.PersonId;
             rFilter.SaveUserPreference( "Contactor", "Contactor", personId.HasValue ? personId.Value.ToString() : string.Empty );
+            rFilter.SaveUserPreference( "Status", "Status", ddlStatus.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -548,6 +549,8 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                 {
                     ppContactor.SetValue( personService.Get( personId.Value ) );
                 }
+                ddlStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
+
             }
 
             BindAttributes();
@@ -591,6 +594,19 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                         .Queryable().AsNoTracking()
                         .Where( r =>
                             r.CareTypeId == SelectedTypeId.Value );
+
+                    // Filter by Status
+                    string statusFilter = ddlStatus.SelectedValue;
+                    if ( statusFilter == "Active" )
+                    {
+                        careTypeItems = careTypeItems
+                            .Where( i => i.CareItem.IsActive );
+                    }
+                    else if ( statusFilter == "Inactive" )
+                    {
+                        careTypeItems = careTypeItems
+                            .Where( i => !i.CareItem.IsActive );
+                    }
 
                     // Filter by  Date.
                     var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDateRange.DelimitedValues );

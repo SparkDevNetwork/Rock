@@ -324,6 +324,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                     careItem.ContactorPersonAliasId = newContactorPersonAliasId;
                     careItem.PersonAlias = personAliasService.Get( ppPerson.PersonAliasId.Value );
                     careItem.PersonAliasId = ppPerson.PersonAliasId.Value;
+                    careItem.IsActive = cbIsActive.Checked;
 
                     careItem.Description = tbDescription.Text.SanitizeHtml();
                     careItem.ContactDateTime = dtpContactDate.SelectedDateTime.Value;
@@ -680,6 +681,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             if ( careItem == null )
             {
                 careItem = new CareItem();
+                careItem.IsActive = true;
                 careItem.CareTypeItems = new List<CareTypeItem>();
                 var careTypeItem = new CareTypeItem { CareTypeId = ( _careTypeId ?? 0 ) };
                 careItem.CareTypeItems.Add( careTypeItem );
@@ -772,6 +774,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
         {
             pdAuditDetails.SetEntity( careItem, ResolveRockUrl( "~" ) );
             lContactInfo.Text = string.Empty;
+                        hlInactive.Visible = careItem.IsActive == false;
 
             Person person = null;
             if ( careItem != null && careItem.PersonAlias != null )
@@ -959,6 +962,8 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             {
                 cblCareTypes.SetValues( careItem.CareTypeItems.Select( c => c.CareTypeId ).ToList() );
             }
+
+            cbIsActive.Checked = careItem.IsActive;
 
             ItemsState = careItem.CareTypeItems.ToList();
             ShowItemAttributes();
