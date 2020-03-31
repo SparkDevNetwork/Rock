@@ -1,19 +1,11 @@
 {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
-{% assign campuses = 'campuses' | PersistedDataset %}
-{% assign campus = campuses | Where:'Name', campusSlug | First %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
-{% comment %}
-{% capture title %}{% if servicetype == 'Fuse' %}Fuse Student Ministry{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %} in {{ campus.Name }}, SC | Locations | {% if servicetype == 'Fuse' %} Fuse | {% endif %}{{ 'Global' | Page:'SiteName' }}{% endcapture %}
-{% endcomment %}
 {% capture title %}{% if servicetype == 'Fuse' %}Fuse Student Ministry{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}{% if campus.Name != 'Eastlan' %} in {{ campus.Name }}, SC{% else %} - {{ campus.Name }}{% endif %} | Locations{% if servicetype == 'Fuse' %} | Fuse{% endif %} | {{ 'Global' | Attribute:'OrganizationName' }}{% endcapture %}
-{{ title | SetPageTitle:'PageTitle' }}
-{{ title | SetPageTitle:'BrowserTitle' }}
+{{ title | SetPageTitle }}
 
 {% assign fuseImageUrl = campus.FuseLandscapeImage %}
 {% assign nsImageUrl = campus.LandscapeImage %}
-
-{% assign fuseDirectionsUrl = campus.FuseGetDirectionsURL %}
-{% assign nsDirectionsUrl = campus.GetDirectionsURL %}
 
 {% capture id %}{% endcapture %}
 {% capture title %}{% if servicetype != 'Fuse' %}{{ 'Global' | Attribute:'OrganizationName' }}{% else %}Fuse Student Ministry{% endif %}{% endcapture %}

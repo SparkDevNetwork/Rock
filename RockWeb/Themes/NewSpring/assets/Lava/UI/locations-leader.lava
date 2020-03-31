@@ -1,6 +1,5 @@
 {% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
-{% assign campuses = 'campuses' | PersistedDataset %}
-{% assign campus = campuses | Where:'Name', campusSlug | First %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
 {% if servicetype == 'Fuse' %}
     {% assign leader = campus.FusePastorPersonId | PersonById %}

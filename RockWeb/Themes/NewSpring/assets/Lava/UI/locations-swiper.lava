@@ -1,21 +1,17 @@
 <div id="locations">
 {[ swiper title:'Find a Location' subtitle:'Swipe to Discover More' ]}
-
-    <!-- Slides -->
-    {% assign campuses = 'campuses' | PersistedDataset %}
-    {% for campus in campuses %}
-      {% assign directionsURL = campus.GetDirectionsURL %}
-      {% assign fuseDirectionsUrl = campus.FuseGetDirectionsURL %}
-      [[ item data:'data-latlon="{{ campus.Location.Latitude }},{{ campus.Location.Longitude }}"' ]]
-        {% assign nsImageUrl = campus.LandscapeImage %}
-        {% assign fuseImageUrl = campus.FuseLandscapeImage %}
-        {% capture campusImageUrl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
-        {% capture content %}
-          <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'{{ servicetype }}' ]}</p>
-        {% endcapture %}
-        {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linktext:'Campus Details' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
-      [[ enditem ]]
-    {% endfor %}
-    
+  <!-- Slides -->
+  {% assign campuses = 'campuses' | PersistedDataset %}
+  {% for campus in campuses %}
+    [[ item data:'data-latlon="{{ campus.LocationLatitude }},{{ campus.LocationLongitude }}"' ]]
+      {% assign nsImageUrl = campus.LandscapeImage %}
+      {% assign fuseImageUrl = campus.FuseLandscapeImage %}
+      {% capture campusImageUrl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
+      {% capture content %}
+        <p class="push-half-bottom">{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'{{ servicetype }}' ]}</p>
+      {% endcapture %}
+      {[ card type:'Location' title:'{{ campus.Name }}' titlesize:'h3' linktext:'Campus Details' linkurl:'{% if servicetype == 'Fuse' %}/fuse{% endif %}/locations/{{ campus.Name | Replace:' ','-' | Downcase }}' imageurl:'{{ campusImageUrl | Trim }}' content:'{% if content and content != empty %}{{ content }}{% endif %}' ]}
+    [[ enditem ]]
+  {% endfor %}
 {[ endswiper ]}
 </div>
