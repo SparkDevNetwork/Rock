@@ -29,8 +29,8 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            FixChartShortcode();
-            GroupMemberNotificationSystemEmail();
+            //FixChartShortcode();
+            //GroupMemberNotificationSystemEmail();
         }
 
         /// <summary>
