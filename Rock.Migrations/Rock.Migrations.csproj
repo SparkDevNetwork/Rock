@@ -165,6 +165,10 @@
     <Compile Include="Migrations\202003272152299_RenameInteractionComponentChannelId.Designer.cs">
       <DependentUpon>202003272152299_RenameInteractionComponentChannelId.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202003311924098_Rollup_0331.cs" />
+    <Compile Include="Migrations\202003311924098_Rollup_0331.Designer.cs">
+      <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1225,6 +1229,9 @@
     <EmbeddedResource Include="Migrations\202003272152299_RenameInteractionComponentChannelId.resx">
       <DependentUpon>202003272152299_RenameInteractionComponentChannelId.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003311924098_Rollup_0331.resx">
+      <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
     </EmbeddedResource>
@@ -2001,6 +2008,7 @@
     <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees_down.sql">
       <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql" />
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
     </Content>
