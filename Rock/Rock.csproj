@@ -459,6 +459,7 @@
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
     <Compile Include="Plugin\HotFixes\110_UpdateSpiritualGiftsResultsLava.cs" />
+    <Compile Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2.cs" />
     <Compile Include="Plugin\HotFixes\112_XamlTemplateMigration.cs" />
     <Compile Include="Plugin\HotFixes\111_HideGiftsCategoriesWithNoGifts.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
@@ -2719,6 +2720,9 @@
     </Content>
     <Content Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0_spFinance_PledgeAnalyticsQuery.sql">
       <DependentUpon>104_MigrationRollupsFor10_3_0.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2_FixChartYAxisShortcode.sql">
+      <DependentUpon>113_MigrationRollupsFor10_3_2.cs</DependentUpon>
     </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
