@@ -41,7 +41,13 @@ namespace Rock.Client
         public DateTime? CompletedDateTime { get; set; }
 
         /// <summary />
+        public AnalyticsSourceDate CompletedSourceDate { get; set; }
+
+        /// <summary />
         public DateTime? EndDateTime { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate EndSourceDate { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -65,6 +71,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? StartDateTime { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate StartSourceDate { get; set; }
 
         /// <summary />
         public int? StepStatusId { get; set; }
@@ -107,7 +116,9 @@ namespace Rock.Client
             this.Id = source.Id;
             this.CampusId = source.CampusId;
             this.CompletedDateTime = source.CompletedDateTime;
+            this.CompletedSourceDate = source.CompletedSourceDate;
             this.EndDateTime = source.EndDateTime;
+            this.EndSourceDate = source.EndSourceDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -115,6 +126,7 @@ namespace Rock.Client
             this.Order = source.Order;
             this.PersonAliasId = source.PersonAliasId;
             this.StartDateTime = source.StartDateTime;
+            this.StartSourceDate = source.StartSourceDate;
             this.StepStatusId = source.StepStatusId;
             this.StepTypeId = source.StepTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -136,10 +148,19 @@ namespace Rock.Client
         public Campus Campus { get; set; }
 
         /// <summary />
+        public int? CompletedDateKey { get; set; }
+
+        /// <summary />
+        public int? EndDateKey { get; set; }
+
+        /// <summary />
         public bool IsComplete { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }
+
+        /// <summary />
+        public int? StartDateKey { get; set; }
 
         /// <summary />
         public StepStatus StepStatus { get; set; }

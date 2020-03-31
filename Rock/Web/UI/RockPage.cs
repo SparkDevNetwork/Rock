@@ -1813,6 +1813,8 @@ Sys.Application.add_load(function () {
         /// <param name="eventTitle">The event title.</param>
         /// <param name="stepDuration">Duration of the step.</param>
         /// <param name="indentLevel">The indent level.</param>
+        /// <param name="boldTitle">if set to <c>true</c> [bold title].</param>
+        /// <param name="subtitle">The subtitle.</param>
         /// <returns></returns>
         private string GetDebugTimingOutput( string eventTitle, double stepDuration, int indentLevel = 0, bool boldTitle = false, string subtitle = "" )
         {
