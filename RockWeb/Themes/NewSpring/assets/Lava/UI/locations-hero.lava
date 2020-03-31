@@ -1,44 +1,35 @@
-{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Uppercase %}
-{% campus where:'Name == "{{ campusSlug }}"' iterator:'campuses' %}
-{% for campus in campuses %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
-    {% capture title %}{% if servicetype == 'Fuse' %}Fuse Student Ministry{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %} in {{ campus.Name }}, SC | Locations | {% if servicetype == 'Fuse' %} Fuse | {% endif %}{{ 'Global' | Page:'SiteName' }}{% endcapture %}
+{% capture title %}{% if servicetype == 'Fuse' %}Fuse Student Ministry{% else %}{{ 'Global' | Attribute:'OrganizationName' }}{% endif %}{% if campus.Name != 'Eastlan' %} in {{ campus.Name }}, SC{% else %} - {{ campus.Name }}{% endif %} | Locations{% if servicetype == 'Fuse' %} | Fuse{% endif %} | {{ 'Global' | Attribute:'OrganizationName' }}{% endcapture %}
+{{ title | SetPageTitle }}
 
-    {{ title | SetPageTitle:'PageTitle' }}
-    {{ title | SetPageTitle:'BrowserTitle' }}
+{% assign fuseImageUrl = campus.FuseLandscapeImage %}
+{% assign nsImageUrl = campus.LandscapeImage %}
 
-    {% assign fuseImageUrl = campus | Attribute:'FuseImageLandscape','Url' %}
-    {% assign nsImageUrl = campus | Attribute:'ImageLandscape','Url' %}
+{% capture id %}{% endcapture %}
+{% capture title %}{% if servicetype != 'Fuse' %}{{ 'Global' | Attribute:'OrganizationName' }}{% else %}Fuse Student Ministry{% endif %}{% endcapture %}
+{% capture titlesize %}{% endcapture %}
+{% capture content %}<p class="italic">- of -</p> <h3 class="flush">{{ campus.Name }}, SC</h3>{% endcapture %}
+{% capture textalignment %}{% endcapture %}
+{% capture label %}{% endcapture %}
+{% capture subtitle %}{% endcapture %}
+{% capture imageurl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
+{% capture imageoverlayurl %}{% endcapture %}
+{% capture imagealignment %}{% endcapture %}
+{% capture imageopacity %}.4{% endcapture %}
+{% capture imageflip %}{% endcapture %}
+{% capture imageblur %}{% endcapture %}
+{% capture grayscale %}{% endcapture %}
+{% capture backgroundvideourl %}{% endcapture %}
+{% capture lava %}{% endcapture %}
+{% capture video %}{% endcapture %}
+{% capture ratio %}thin{% endcapture %}
+{% capture trimcopy %}{% endcapture %}
+{% capture linkcolor %}{% endcapture %}
+{% capture backgroundcolor %}#303030{% endcapture %}
+{% assign linkurl = "" %}
+{% assign linktext = "" %}
+{% capture hideforegroundelements %}{% endcapture %}
 
-    {% assign fuseDirectionsUrl = campus | Attribute:'FuseGetDirectionsURL','RawValue' %}
-    {% assign nsDirectionsUrl = campus | Attribute:'GetDirectionsURL','RawValue' %}
-
-    {% capture id %}{% endcapture %}
-    {% capture title %}{% if servicetype != 'Fuse' %}{{ 'Global' | Attribute:'OrganizationName' }}{% else %}Fuse Student Ministry{% endif %}{% endcapture %}
-    {% capture titlesize %}{% endcapture %}
-    {% capture content %}<p class="italic">- of -</p> <h3 class="flush">{{ campus.Name }}, SC</h3>{% endcapture %}
-    {% capture textalignment %}{% endcapture %}
-    {% capture label %}{% endcapture %}
-    {% capture subtitle %}{% endcapture %}
-    {% capture imageurl %}{% if fuseImageUrl and fuseImageUrl != empty and servicetype == 'Fuse' %}{{ fuseImageUrl }}{% else %}{{ nsImageUrl }}{% endif %}{% endcapture %}
-    {% capture imageoverlayurl %}{% endcapture %}
-    {% capture imagealignment %}{% endcapture %}
-    {% capture imageopacity %}.4{% endcapture %}
-    {% capture imageflip %}{% endcapture %}
-    {% capture imageblur %}{% endcapture %}
-    {% capture grayscale %}{% endcapture %}
-    {% capture backgroundvideourl %}{% endcapture %}
-    {% capture lava %}{% endcapture %}
-    {% capture video %}{% endcapture %}
-    {% capture ratio %}thin{% endcapture %}
-    {% capture trimcopy %}{% endcapture %}
-    {% capture linkcolor %}{% endcapture %}
-    {% capture backgroundcolor %}#303030{% endcapture %}
-    {% assign linkurl = "" %}
-    {% assign linktext = "" %}
-    {% capture hideforegroundelements %}{% endcapture %}
-
-    {[ hero id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' ]}
-
-{% endfor %}
-{% endcampus %}
+{[ hero id:'{{ id }}' title:'{{ title }}' content:'{{ content }}' textalignment:'{{ textalignment }}' label:'{{ label }}' subtitle:'{{ subtitle }}' imageurl:'{{ imageurl }}' imageoverlayurl:'{{ imageoverlayurl }}' imagealignment:'{{ imagealignment }}' imageopacity:'{{ imageopacity }}' imageflip:'{{ imageflip }}' imageblur:'{{ imageblur }}' grayscale:'{{ grayscale }}' backgroundvideourl:'{{ backgroundvideourl }}' lava:'{{ lava }}' video:'{{ video }}' ratio:'{{ ratio }}' trimcopy:'{{ trimcopy }}' linkcolor:'{{ linkcolor }}' backgroundcolor:'{{ backgroundcolor }}' linktext:'{{ linktext }}' linkurl:'{{ linkurl }}' hideforegroundelements:'{{ hideforegroundelements }}' ]}

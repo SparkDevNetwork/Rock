@@ -1,54 +1,44 @@
-{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Uppercase %}
-{% campus where:'Name == "{{ campusSlug }}"' iterator:'campuses' %}
-{% for campus in campuses %}
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
 
-    {% if servicetype == 'Fuse' %}
-        {% assign leader = campus | Attribute:'FusePastor','Object' %}
-    {% else %}
-        {% assign leader = campus.LeaderPersonAliasId | PersonByAliasId %}
-    {% endif %}
+{% if servicetype == 'Fuse' %}
+    {% assign leader = campus.FusePastorPersonId | PersonById %}
+{% else %}
+    {% assign leader = campus.CampusPastorPersonId | PersonById %}
+{% endif %}
 
-    {% group where:'ParentGroupId == 1528254 && Name == "{{ campus.Name }}"' iterator:'groups' %}
-        {% for group in groups %}
-            {% assign campusStaff =  group.Members | Select:'Person' | Sort:'LastName' %}
-        {% endfor %}
-    {% endgroup %}
-
-    {% if campusStaff != empty %}
-    {[ section title:'{{ campus.Name }} Staff' ]}
+{% if campus.campusStaff != empty %}
+{[ section title:'{{ campus.Name }} Staff' ]}
         
-        {% if leader != empty %}
-        <div class="floating floating-left row soft-double-sides push-double-top xs-soft-half-sides xs-push-half-top xs-text-center sm-text-center md-text-left mx-auto" style="max-width: 1200px;">
-            <div class="floating-item col-xs-12 col-sm-12 col-md-3 push-bottom xs-push-half-bottom">
-                <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ leader | Attribute:'StaffImage','Url' }}'); border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
-            </div><div class="floating-item col-xs-12 col-sm-12 col-md-9 push-bottom xs-push-half-ends">
-                <div class="soft-sides xs-hard">
-                    <h3 class="h2 push-half-bottom">{{ leader.FullName }}</h2>
-                    <h4 class="h5 text-gray-light push-half-bottom">{{ leader | Attribute:'StaffTitle' }}</h4>
-                    <p>{{ leader | Attribute:'StaffBio' }}</p>
-                    <p><a href="mailto:{{ leader | Attribute:'StaffEmail' }}" class="btn btn-primary">Contact {{ leader.NickName }}</a></p>
-                </div>
+    {% if leader != null %}
+    <div class="floating floating-left row soft-double-sides push-double-top xs-soft-half-sides xs-push-half-top xs-text-center sm-text-center md-text-left mx-auto" style="max-width: 1200px;">
+        <div class="floating-item col-xs-12 col-sm-12 col-md-3 push-bottom xs-push-half-bottom">
+            <div class="ratio ratio-square background-cover background-center circular" style="background-image:url('{{ leader | Attribute:'StaffImage','Url' }}'); border: 5px solid #fff; box-shadow: 0 0 2px rgba(0,0,0,.4);"></div>
+        </div><div class="floating-item col-xs-12 col-sm-12 col-md-9 push-bottom xs-push-half-ends">
+            <div class="soft-sides xs-hard">
+                <h2 class="h2 push-half-bottom">{{ leader.FullName }}</h2>
+                <h4 class="h5 text-gray-light push-half-bottom">{{ leader | Attribute:'StaffTitle' }}</h4>
+                <p>{{ leader | Attribute:'StaffBio' }}</p>
+                <p><a href="mailto:{{ leader | Attribute:'StaffEmail' }}" class="btn btn-primary">Contact {{ leader.NickName }}</a></p>
             </div>
         </div>
-        {% endif %}
-
-        <div id="staff" class="row soft-double-sides xs-soft-half-sides text-center push-double-top xs-push-half-top">
-
-            {% for person in campusStaff %}{% assign staffTitle = person | Attribute:'StaffTitle' %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom  {% if person.FullName == leader.FullName %}hidden{% endif %}">
-
-                {[ user imageurl:'{{ person | Attribute:'StaffImage','Url' }}' title:'{{ person.FullName }}' subtitle:'{{ staffTitle | Replace:"'","’" }}' linkurl:'mailto:{{ person | Attribute:'StaffEmail' }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
-
-            </div>{% endfor %}
-        </div>
-
-        <style>
-            #staff .ratio-square {
-                margin: 0 auto;
-            }
-        </style>
-
-    {[ endsection ]}
+    </div>
     {% endif %}
 
-{% endfor %}
-{% endcampus %}
+    <div id="staff" class="row soft-double-sides xs-soft-half-sides text-center push-double-top xs-push-half-top">
+
+        {% for person in campus.CampusStaff %}<div class="col-xs-12 col-sm-6 col-md-4 push-bottom  {% if person.FullName == leader.FullName %}hidden{% endif %}">
+
+            {[ user imageurl:'{{ person.StaffImage }}' title:'{{ person.FullName }}' subtitle:'{{ person.StaffTitle | Replace:"'","’" }}' linkurl:'mailto:{{ person.StaffEmail }}' linktext:'Contact {{ person.NickName }}' ]}{[ enduser ]}
+
+        </div>{% endfor %}
+    </div>
+
+    <style>
+        #staff .ratio-square {
+            margin: 0 auto;
+        }
+    </style>
+
+{[ endsection ]}
+{% endif %}
