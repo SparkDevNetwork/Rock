@@ -1,7 +1,7 @@
 ﻿using com.bemaservices.RemoteCheckDeposit.Attributes;
 
 /// <summary>
-/// Record Type 61 Credit Reconciliation for Bank of America Merill Lync
+/// Record Type 61 Credit Reconciliation for alternate Credit Records (Bank of America, Regions, etc)
 /// </summary>
 namespace com.bemaservices.RemoteCheckDeposit.Records
 {

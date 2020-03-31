@@ -228,7 +228,8 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
                 ItemCount = itemRecords.Count(),
                 TotalAmount = checkDetailRecords.Sum( c => ( decimal ) c.ItemAmount ),
                 ImageCount = imageDetailRecords.Count(),
-                ECEInstitutionName = organizationName
+                ECEInstitutionName = organizationName,
+                SettlementDate = options.ExportDateTime
             };
 
             return control;
@@ -471,20 +472,6 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
             var checkEndorsement = GetAttributeValue( options.FileFormat, "CheckEndorsementTemplate" );
             var enableEndorsement = GetAttributeValue( options.FileFormat, "EnableDigitalEndorsement" ).AsBoolean();
 
-            //
-            // Get the Image View Detail record (type 50).
-            //
-            var detail = new Records.ImageViewDetail
-            {
-                ImageIndicator = 1,
-                ImageCreatorRoutingNumber = routingNumber,
-                ImageCreatorDate = image.CreatedDateTime ?? options.ExportDateTime,
-                ImageViewFormatIndicator = 0,
-                CompressionAlgorithmIdentifier = 0,
-                SideIndicator = isFront ? 0 : 1,
-                ViewDescriptor = 0,
-                DigitalSignatureIndicator = 0
-            };
 
             //
             // If endorsement, add to back of image
@@ -525,6 +512,23 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
 
             }
 
+            var tiffImageBytes = ConvertImageToTiffG4(imageData).ReadBytesToEnd();
+            //
+            // Get the Image View Detail record (type 50).
+            //
+            var detail = new Records.ImageViewDetail
+            {
+                ImageIndicator = 1,
+                ImageCreatorRoutingNumber = routingNumber,
+                ImageCreatorDate = image.CreatedDateTime ?? options.ExportDateTime,
+                ImageViewFormatIndicator = 0,
+                CompressionAlgorithmIdentifier = 0,
+                SideIndicator = isFront ? 0 : 1,
+                ViewDescriptor = 0,
+                DigitalSignatureIndicator = 0,
+                DataSize = (int)tiffImageBytes.Length
+            };
+
             //
             // Get the Image View Data record (type 52).
             //
@@ -534,7 +538,7 @@ Date: {{ BusinessDate | Date:'M/d/yyyy' }}", order: 10, required: false )]
                 BundleBusinessDate = options.BusinessDateTime,
                 ClientInstitutionItemSequenceNumber = accountNumber,
                 ClippingOrigin = 0,
-                ImageData = ConvertImageToTiffG4( imageData ).ReadBytesToEnd()
+                ImageData = tiffImageBytes
             };
 
             return new List<Record> { detail, data };
