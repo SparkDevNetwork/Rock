@@ -1179,6 +1179,12 @@ namespace Rock.SystemGuid
         public const string PAGE_ROUTE_DETAIL = "649A2B1E-7A15-4DA8-AF67-17874B6FE98F";
 
         /// <summary>
+        /// Gets the Page Map page guid
+        /// ParentPage: CMS Configuration
+        /// </summary>
+        public const string PAGE_VIEWS = "E556D6C5-E2DB-4041-81AB-4F582008155C";
+
+        /// <summary>
         /// Gets the People page guid
         /// ParentPage: Internal Homepage
         /// </summary>

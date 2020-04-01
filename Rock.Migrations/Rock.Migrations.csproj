@@ -169,6 +169,10 @@
     <Compile Include="Migrations\202003311924098_Rollup_0331.Designer.cs">
       <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202004011934123_PageViews.cs" />
+    <Compile Include="Migrations\202004011934123_PageViews.Designer.cs">
+      <DependentUpon>202004011934123_PageViews.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1231,6 +1235,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202003311924098_Rollup_0331.resx">
       <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004011934123_PageViews.resx">
+      <DependentUpon>202004011934123_PageViews.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>

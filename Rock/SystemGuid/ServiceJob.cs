@@ -103,6 +103,11 @@ namespace Rock.SystemGuid
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
 
         /// <summary>
+        /// The rock cleanup Job. <see cref="Rock.Jobs.RockCleanup"/>
+        /// </summary>
+        public const string ROCK_CLEANUP = "1A8238B1-038A-4295-9FDE-C6D93002A5D7";
+
+        /// <summary>
         /// The steps automation job - add steps based on people in a dataview
         /// </summary>
         public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
