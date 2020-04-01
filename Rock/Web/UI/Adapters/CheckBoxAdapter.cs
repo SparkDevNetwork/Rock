@@ -139,6 +139,8 @@ namespace Rock.Web.UI.Adapters
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
+                
+
                 if ( renderAsCheckbox )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, textCssClass );
@@ -158,7 +160,15 @@ namespace Rock.Web.UI.Adapters
                 }
                 else
                 {
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label" );
+                    // If the switch does not have a lable make the text bold
+                    if ( cbSwitch.BoldText )
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label custom-control-label-bold" );
+                    }
+                    else
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "custom-control-label" );
+                    }
                     writer.AddAttribute( HtmlTextWriterAttribute.For, cb.ClientID );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 

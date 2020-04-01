@@ -200,6 +200,28 @@ namespace RockWeb.Blocks.Finance
                 pnlMigrateScheduledTransactionsResults.Visible = true;
                 btnDownloadScheduledTransactionsResultsJSON.Style[HtmlTextWriterStyle.Display] = "";
             }
+
+            var oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() );
+            var oneTimeScheduledTransactionQry = new FinancialScheduledTransactionService( new RockContext() ).Queryable()
+                .Where( a => a.IsActive && a.TransactionFrequencyValueId == oneTimeFrequencyId && !string.IsNullOrEmpty( a.GatewayScheduleId ) )
+                .Where( a => a.FinancialGatewayId.HasValue );
+
+            var oneTimeScheduledTransactionCountText = oneTimeScheduledTransactionQry
+                .GroupBy( a => a.FinancialGateway.Name )
+                .Select( a => new
+                {
+                    GatewayName = a.Key,
+                    TransactionCount = a.Count()
+                } ).ToList().Select( a => string.Format( "<li>{0} - {1}</li>", a.GatewayName, a.TransactionCount ) ).ToList().AsDelimited( "" );
+
+            if ( oneTimeScheduledTransactionQry.Any() )
+            {
+                nbUpdateOneTimeScheduleStatus.Text = string.Format( "Active one-time scheduled transactions remaining: <ul> {0} </ul> ", oneTimeScheduledTransactionCountText );
+            }
+            else
+            {
+                nbUpdateOneTimeScheduleStatus.Text = "No one-time scheduled transactions remaining.";
+            }
         }
 
         public Dictionary<int, List<FinancialPersonSavedAccount>> _financialPersonSavedAccountLookupByPersonId = null;
@@ -1043,6 +1065,38 @@ and fst.NextPaymentDate >= GetDate()*/
                 Response.Flush();
                 Response.End();
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnUpdateOneTimeScheduleStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnUpdateOneTimeScheduleStatus_Click( object sender, EventArgs e )
+        {
+            var oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() );
+            var scheduledTransactionQry = new FinancialScheduledTransactionService( new RockContext() ).Queryable()
+                .Where( a => a.IsActive && a.TransactionFrequencyValueId == oneTimeFrequencyId && !string.IsNullOrEmpty( a.GatewayScheduleId ) )
+                .OrderBy( a => a.Id );
+            var scheduledTransactionIdList = scheduledTransactionQry.Select( a => a.Id ).ToList();
+
+            var updateStatusTask = new Task( () =>
+            {
+                foreach ( var scheduledTransactionId in scheduledTransactionIdList )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                        var scheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
+                        string errorMessage;
+                        financialScheduledTransactionService.GetStatus( scheduledTransaction, out errorMessage );
+                        rockContext.SaveChanges();
+                    }
+                }
+            } );
+
+            updateStatusTask.Start();
+            nbUpdateOneTimeScheduleStatus.Text = "Started updating status of one-time scheduled transactions. Refresh this page to see the progress of how many are left.";
         }
     }
 

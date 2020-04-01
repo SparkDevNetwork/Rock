@@ -390,7 +390,7 @@ namespace Rock.NMI
                     }
 
                     // write result error as an exception
-                    ExceptionLogService.LogException( new Exception( $@"Error processing NMI transaction.
+                    ExceptionLogService.LogException( new NMIGatewayException( $@"Error processing NMI transaction.
 Result Code:  {threeStepChangeStep3Response.ResultCode} ({resultCodeMessage}).
 Result text: {threeStepChangeStep3Response.ResultText}.
 Amount: {threeStepChangeStep3Response.Amount}.
@@ -741,7 +741,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( ex );
+                        ExceptionLogService.LogException( new NMIGatewayException( "Unexpected PaymentStatus response from NMI Gateway", ex ) );
                         subscription = null;
                     }
 
@@ -818,7 +818,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( ex );
+                    ExceptionLogService.LogException( new NMIGatewayException( "Unexpected GetPayments Response from NMI Gateway", ex ) );
                     queryTransactionsResponse = null;
                 }
 
@@ -911,7 +911,9 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             catch ( WebException webException )
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
-                throw new Exception( webException.Message + " - " + message );
+                var nmiGatewayException = new NMIGatewayException( webException.Message + " - " + message, webException );
+                ExceptionLogService.LogException( nmiGatewayException );
+                throw nmiGatewayException;
             }
 
             return paymentList;
@@ -1098,7 +1100,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( ex );
+                        ExceptionLogService.LogException( new NMIGatewayException( "Unexpected ThreeStep Response from NMI Gateway", ex ) );
                         postResult = null;
                     }
                 }
@@ -1108,7 +1110,9 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             catch ( WebException webException )
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
-                throw new Exception( webException.Message + " - " + message );
+                var nmiGatewayException = new NMIGatewayException( webException.Message + " - " + message, webException );
+                ExceptionLogService.LogException( nmiGatewayException );
+                throw nmiGatewayException;
             }
             catch ( Exception ex )
             {
@@ -1245,7 +1249,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( ex );
+                        ExceptionLogService.LogException( new NMIGatewayException( "Unexpected DirectPost Response from NMI Gateway", ex ) );
                         postResult = null;
                     }
                 }
@@ -1255,7 +1259,10 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             catch ( WebException webException )
             {
                 string message = GetResponseMessage( webException.Response.GetResponseStream() );
-                throw new Exception( webException.Message + " - " + message );
+
+                var nmiGatewayException = new NMIGatewayException( webException.Message + " - " + message, webException );
+                ExceptionLogService.LogException( nmiGatewayException );
+                throw nmiGatewayException;
             }
             catch ( Exception ex )
             {
@@ -1341,7 +1348,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
 
                 // write result error as an exception
-                var exception = new Exception( $"Error processing NMI transaction. Result Code:  {chargeResponse.ResponseCode} ({resultCodeMessage}). Result text: {chargeResponse.ResponseText} " );
+                var exception = new NMIGatewayException( $"Error processing NMI transaction. Result Code:  {chargeResponse.ResponseCode} ({resultCodeMessage}). Result text: {chargeResponse.ResponseText} " );
                 ExceptionLogService.LogException( exception );
 
                 return null;
@@ -1493,7 +1500,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     }
 
                     // write result error as an exception
-                    var exception = new Exception( $"Error processing NMI subscription. Result Code:  {addSubscriptionResponse.ResponseCode} ({resultCodeMessage}). Result text: {addSubscriptionResponse.ResponseText} " );
+                    var exception = new NMIGatewayException( $"Error processing NMI subscription. Result Code:  {addSubscriptionResponse.ResponseCode} ({resultCodeMessage}). Result text: {addSubscriptionResponse.ResponseText} " );
                     ExceptionLogService.LogException( exception );
 
                     return null;
@@ -1512,7 +1519,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
                 catch ( Exception ex )
                 {
-                    throw new Exception( $"Exception getting Customer Information for Scheduled Payment.", ex );
+                    throw new NMIGatewayException( $"Exception getting Customer Information for Scheduled Payment.", ex );
                 }
 
                 var scheduledTransaction = new FinancialScheduledTransaction();
@@ -1530,7 +1537,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
                 catch ( Exception ex )
                 {
-                    throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                    throw new NMIGatewayException( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
                 }
 
                 return scheduledTransaction;
@@ -1648,7 +1655,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
                 catch ( Exception ex )
                 {
-                    throw new Exception( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
+                    throw new NMIGatewayException( $"Exception getting Scheduled Payment Status. {errorMessage}", ex );
                 }
 
                 return true;
@@ -1723,7 +1730,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
+                ExceptionLogService.LogException( new NMIGatewayException( "Unexpected QuerySubscriptions Response from NMI Gateway", ex ) );
                 querySubscriptionsResponse = null;
             }
 
@@ -1759,7 +1766,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
+                ExceptionLogService.LogException( new NMIGatewayException( "Unexpected CustomerVault response from NMI Gateway", ex ) );
                 customerVaultQueryResponse = null;
             }
 
@@ -1781,21 +1788,6 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             /// </summary>
             public ReferencePaymentInfoRequired()
                 : base( "NMI gateway requires a token or customer reference" )
-            {
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <seealso cref="System.ArgumentNullException" />
-        public class NullFinancialGatewayException : ArgumentNullException
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="NullFinancialGatewayException"/> class.
-            /// </summary>
-            public NullFinancialGatewayException()
-                : base( "Unable to determine financial gateway" )
             {
             }
         }
@@ -1901,9 +1893,9 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             {
                 tokenResponse = nmiHostedPaymentControl.PaymentInfoTokenRaw.FromJsonOrThrow<TokenizerResponse>();
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
+                ExceptionLogService.LogException( new NMIGatewayException( "Unexpected Token Response from NMI Gateway", ex ) );
                 tokenResponse = null;
             }
 
@@ -1996,7 +1988,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 }
 
                 // write result error as an exception
-                var exception = new Exception( $"Error creating NMI customer. Result Code:  {createCustomerResponse.ResponseCode} ({resultCodeMessage}). Result text: {createCustomerResponse.ResponseText} " );
+                var exception = new NMIGatewayException( $"Error creating NMI customer. Result Code:  {createCustomerResponse.ResponseCode} ({resultCodeMessage}). Result text: {createCustomerResponse.ResponseText} " );
                 ExceptionLogService.LogException( exception );
 
                 return null;
@@ -2041,5 +2033,21 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         }
 
         #endregion IHostedGatewayComponent
+
+        #region NMI Specific
+
+        /// <summary>
+        /// Gets the three step javascript which will validate the inputs and submit payment details to NMI gateway
+        /// </summary>
+        /// <param name="validationGroup">The validation group.</param>
+        /// <param name="postbackControlReference">The postback control reference.</param>
+        /// <returns></returns>
+        public static string GetThreeStepJavascript( string validationGroup, string postbackControlReference )
+        {
+            var script = Scripts.threeStepScript.Replace( "{{validationGroup}}", validationGroup ).Replace( "{{postbackControlReference}}", postbackControlReference );
+            return script;
+        }
+
+        #endregion
     }
 }

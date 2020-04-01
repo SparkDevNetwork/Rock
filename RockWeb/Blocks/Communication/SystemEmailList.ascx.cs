@@ -41,9 +41,22 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the system emails that can be configured." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
     public partial class SystemEmailList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -145,7 +158,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "emailId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "emailId", 0 );
         }
 
         /// <summary>
@@ -155,7 +168,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "emailId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "emailId", e.RowKeyId );
         }
 
         /// <summary>

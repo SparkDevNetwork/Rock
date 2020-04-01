@@ -39,7 +39,7 @@ namespace Rock.Jobs
     [GroupTypeField( "Group Type",
         Key = AttributeKey.GroupType,
         Description = "The Group Type to send RSVP reminders for.",
-        IsRequired = true,
+        IsRequired = false,
         Order = 0 )]
     #endregion
 
@@ -95,42 +95,50 @@ namespace Rock.Jobs
 
             // Make sure GroupType job attribute was assigned.
             Guid? groupTypeGuid = dataMap.GetString( AttributeKey.GroupType ).AsGuidOrNull();
-            if ( groupTypeGuid == null )
+            List<GroupType> rsvpGroupTypes = new List<GroupType>();
+            if ( groupTypeGuid != null )
             {
-                context.Result = "Job Exited:  No Group Type has been set.";
-                return;
+                // Verify GroupType exists.
+                var groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid.Value );
+                if ( groupType == null )
+                {
+                    context.Result = "Job Exited:  The selected Group Type does not exist.";
+                    return;
+                }
+
+                // Verify GroupType has RSVP enabled.
+                if ( !groupType.EnableRSVP )
+                {
+                    context.Result = "Job Exited:  The selected Group Type does not have RSVP enabled.";
+                    return;
+                }
+
+                rsvpGroupTypes.Add( groupType );
+            }
+            else
+            {
+                rsvpGroupTypes = new GroupTypeService( rockContext ).Queryable().AsNoTracking().Where( gt => gt.EnableRSVP ).ToList();
             }
 
-            // Verify GroupType exists.
-            var groupType = new GroupTypeService( rockContext ).Get( groupTypeGuid.Value );
-            if ( groupType == null )
+            var sbResults = new StringBuilder();
+            foreach ( var groupType in rsvpGroupTypes )
             {
-                context.Result = "Job Exited:  The selected Group Type does not exist.";
-                return;
+                // Retrieve RSVP settings from GroupType.
+                var systemCommunicationService = new SystemCommunicationService( rockContext );
+                SystemCommunication groupTypeReminder = GetGroupTypeRsvpReminder( groupType, systemCommunicationService );
+                int? groupTypeOffset = GetGroupTypeOffset( groupType );
+
+                // Get RSVP enabled groups which have an RSVP Reminder set, and verify that there is at least one group to process.
+                var groups = GetRsvpReminderEligibleGroups( groupType, rockContext, groupType.RSVPReminderSystemCommunicationId.HasValue );
+                if ( !groups.Any() )
+                {
+                    sbResults.AppendLine( $"The Group Type {groupType.Name} does not contain any groups with RSVP reminder communications." );
+                    continue;
+                }
+
+                // Process groups and get the response.  This is where the actual work starts.
+                sbResults.Append( ProcessGroups( groups, groupTypeReminder, groupTypeOffset, rockContext ) );
             }
-
-            // Verify GroupType has RSVP enabled.
-            if ( !groupType.EnableRSVP )
-            {
-                context.Result = "Job Exited:  The selected Group Type does not have RSVP enabled.";
-                return;
-            }
-
-            // Retrieve RSVP settings from GroupType.
-            var systemCommunicationService = new SystemCommunicationService( rockContext );
-            SystemCommunication groupTypeReminder = GetGroupTypeRsvpReminder( groupType, systemCommunicationService );
-            int? groupTypeOffset = GetGroupTypeOffset( groupType );
-
-            // Get RSVP enabled groups which have an RSVP Reminder set, and verify that there is at least one group to process.
-            var groups = GetRsvpReminderEligibleGroups( groupType, rockContext, groupType.RSVPReminderSystemCommunicationId.HasValue );
-            if ( !groups.Any() )
-            {
-                context.Result = "Job Exited:  The selected Group Type does not contain any groups with RSVP reminder communications.";
-                return;
-            }
-
-            // Process groups and get the response.  This is where the actual work starts.
-            var sbResults = ProcessGroups( groups, groupTypeReminder, groupTypeOffset, rockContext );
 
             // Job complete!  Record results of the job to the context.
             var jobResult = sbResults.ToString();
@@ -239,7 +247,7 @@ namespace Rock.Jobs
 
             // Get occurrences (within the correct date range) with positive RSVP responses for this group.
             var rsvpOccurrences = GetOccurrencesForGroup( group, offsetDays, rockContext );
-            
+
             foreach ( var rsvpOccurrence in rsvpOccurrences )
             {
                 // Process each positive RSVP response and send their reminder.
@@ -277,7 +285,7 @@ namespace Rock.Jobs
                     .Queryable( "Attendees,Attendees.PersonAlias.Person" )
                     .Where( o => o.GroupId == group.Id )
                     .Where( o => o.OccurrenceDate >= startDate ) // OccurrenceDate must be greater than startDate (the beginning of the day from the offset).
-                    .Where( o => o.OccurrenceDate < endDate ) // OccurrenceDate must be less than endDate (the next day after the beginning of the offset).
+                    .Where( o => o.OccurrenceDate < endDate ) // OccurrenceDate must be less than endDate (the end of the day from the offset).
                     .Where( o => o.Attendees.Where( a => a.RSVP == RSVP.Yes ).Any() ) // Occurrence must have attendees who responded "Yes".
                     .ToList();
 
@@ -294,18 +302,18 @@ namespace Rock.Jobs
         private int SendReminder( Group group, AttendanceOccurrence occurrence, Person person, SystemCommunication reminder )
         {
             // Build Lava merge fields.
-            Dictionary<string, object> lavaMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(  null, person );
+            Dictionary<string, object> lavaMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
             lavaMergeFields.Add( "Person", person );
             lavaMergeFields.Add( "Group", group );
             lavaMergeFields.Add( "Occurrence", occurrence );
             lavaMergeFields.Add( "OccurrenceTitle", GetOccurrenceTitle( occurrence ) );
 
-            var smsNumber = person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
+            var smsNumber = person.PhoneNumbers.GetFirstSmsNumber();
 
             if ( person.CommunicationPreference == CommunicationType.SMS
                 && !string.IsNullOrWhiteSpace( reminder.SMSMessage )
                 && reminder.SMSFromDefinedValueId.HasValue
-                && smsNumber != null )
+                && !string.IsNullOrWhiteSpace( smsNumber ) )
             {
                 return SendReminderSMS( person, reminder, lavaMergeFields, smsNumber );
             }
@@ -357,19 +365,13 @@ namespace Rock.Jobs
         /// <param name="person">The <see cref="Person"/>.</param>
         /// <param name="reminder">The <see cref="SystemCommunication"/> to be sent as a reminder.</param>
         /// <param name="lavaMergeFields">A dictionary containing Lava merge fields.</param>
-        /// <param name="phoneNumber">The <see cref="PhoneNumber"/> for SMS communications.</param>
+        /// <param name="smsNumber">The correctly formatted SMS Number for SMS communications.</param>
         /// <returns>1 if the communication was successfully sent, otherwise 0.</returns>
-        private int SendReminderSMS( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields, PhoneNumber phoneNumber )
+        private int SendReminderSMS( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields, string smsNumber )
         {
-            string smsNumber = phoneNumber.Number;
-            if ( !string.IsNullOrWhiteSpace( phoneNumber.CountryCode ) )
-            {
-                smsNumber = "+" + phoneNumber.CountryCode + phoneNumber.Number;
-            }
-
             var recipient = new RockSMSMessageRecipient( person, smsNumber, lavaMergeFields );
             var message = new RockSMSMessage( reminder );
-            message.SetRecipients( new List<RockSMSMessageRecipient>() { recipient } );            
+            message.SetRecipients( new List<RockSMSMessageRecipient>() { recipient } );
             message.Send( out List<string> smsErrors );
 
             if ( !smsErrors.Any() )

@@ -85,11 +85,7 @@ namespace Rock.Jobs
                         try
                         {
                             context.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
-                            Stopwatch stopwatch = Stopwatch.StartNew();
                             dataView.PersistResult( sqlCommandTimeout );
-                            stopwatch.Stop();
-                            dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
-                            dataView.PersistedLastRunDuration = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
                             persistContext.SaveChanges();
                             updatedDataViewCount++;
                         }

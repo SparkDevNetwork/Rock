@@ -36,9 +36,40 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Opportunity List" )]
     [Category( "Connection" )]
     [Description( "Lists all the opportunities for a given connection type." )]
-    [LinkedPage( "Detail Page" )]
+
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    #endregion Block Attributes
     public partial class ConnectionOpportunityList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string ConnectionTypeId = "ConnectionTypeId";
+        }
+
+        #endregion
+
         #region Fields
 
         private ConnectionType _connectionType = null;
@@ -88,7 +119,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionTypeGuid == Guid.Empty )
             {
-                connectionTypeId = PageParameter( "ConnectionTypeId" ).AsInteger();
+                connectionTypeId = PageParameter( PageParameterKey.ConnectionTypeId ).AsInteger();
             }
 
             if ( !( connectionTypeId == 0 && connectionTypeGuid == Guid.Empty ) )
@@ -283,7 +314,7 @@ namespace RockWeb.Blocks.Connection
         {
             if ( _canEdit )
             {
-                NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", 0, "ConnectionTypeId", _connectionType.Id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionOpportunityId", 0, "ConnectionTypeId", _connectionType.Id );
             }
         }
 
@@ -300,7 +331,7 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunity connectionOpportunity = connectionOpportunityService.Get( e.RowKeyId );
                 if ( connectionOpportunity != null )
                 {
-                    NavigateToLinkedPage( "DetailPage", "ConnectionOpportunityId", connectionOpportunity.Id, "ConnectionTypeId", _connectionType.Id );
+                    NavigateToLinkedPage( AttributeKey.DetailPage, "ConnectionOpportunityId", connectionOpportunity.Id, "ConnectionTypeId", _connectionType.Id );
                 }
             }
         }

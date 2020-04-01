@@ -185,9 +185,6 @@ namespace Rock.Jobs
                     exceptionToLog = exceptionToLog.InnerException;
                 }
 
-                // log the exception to the database
-                ExceptionLogService.LogException( exceptionToLog, null );
-
                 var summaryException = exceptionToLog;
 
                 // put the exception into the status
@@ -197,19 +194,21 @@ namespace Rock.Jobs
                 if ( aggregateException != null && aggregateException.InnerExceptions != null && aggregateException.InnerExceptions.Count == 1 )
                 {
                     // if it's an aggregate, but there is only one, convert it to a single exception
-                    summaryException = aggregateException.InnerExceptions[0];
+                    exceptionToLog = aggregateException.InnerExceptions[0];
                     aggregateException = null;
                 }
+
+                // log the exception to the database (
+                ExceptionLogService.LogException( exceptionToLog, null );
 
                 if ( aggregateException != null )
                 {
                     var firstException = aggregateException.InnerExceptions.First();
                     job.LastStatusMessage = "One or more exceptions occurred. First Exception: " + firstException.Message;
-                    summaryException = firstException;
                 }
                 else
                 {
-                    job.LastStatusMessage = summaryException.Message;
+                    job.LastStatusMessage = exceptionToLog.Message;
                 }
 
                 if ( job.NotificationStatus == JobNotificationStatus.Error )

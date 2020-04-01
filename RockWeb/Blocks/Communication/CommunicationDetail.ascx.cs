@@ -2648,9 +2648,18 @@ namespace RockWeb.Blocks.Communication
             dataTable.Columns.Add( "HasOpened", typeof( bool ) );
             dataTable.Columns.Add( "HasClicked", typeof( bool ) );
 
-            var query = GetRecipientInfoQuery( dataContext );
+            // order by ModifiedDateTime to get a consistent result in case a person has received the communication more than once (more than one recipient record for the same person)
+            var query = GetRecipientInfoQuery( dataContext ).OrderByDescending( a => a.ModifiedDateTime );
+            var queryList = query.ToList();
 
-            var recipients = query.ToDictionary( k => k.PersonId, v => v );
+            // create dictionary
+            var recipients = new Dictionary<int, RecipientInfo>();
+            foreach( var recipient in queryList )
+            {
+                // since we order by ModifiedDateTime this will end up ignoring any order recipient records for the personid
+                // NOTE: We tried to do this in SQL but it caused performance issues, so we'll do it in C# instead.
+                recipients.AddOrIgnore( recipient.PersonId, recipient );
+            }
 
             builder.FillDataColumnValues( dataTable, recipients );
         }
@@ -2681,7 +2690,6 @@ namespace RockWeb.Blocks.Communication
             var recipientQuery = recipientService.Queryable()
                     .AsNoTracking()
                     .Where( x => x.CommunicationId == CommunicationId.Value )
-                    .OrderByDescending( x => x.ModifiedDateTime )
                     .Select( x => new RecipientInfo
                     {
                         PersonId = x.PersonAlias.PersonId,
@@ -2691,10 +2699,9 @@ namespace RockWeb.Blocks.Communication
                         DeliveryStatus = ( x.Status == CommunicationRecipientStatus.Opened ? "Delivered" : ( x.Status == CommunicationRecipientStatus.Sending ? "Pending" : x.Status.ToString() ) ),
                         DeliveryStatusNote = x.StatusNote,
                         HasOpened = ( x.Status == CommunicationRecipientStatus.Opened ),
-                        HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId )
-                    }
-                    ).GroupBy( k => k.PersonId, v => v )
-                    .Select( x => x.FirstOrDefault() );
+                        HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId ),
+                        ModifiedDateTime = x.ModifiedDateTime
+                    });
 
             return recipientQuery;
         }
@@ -2738,11 +2745,6 @@ namespace RockWeb.Blocks.Communication
                     .Queryable()
                     .AsNoTracking()
                     .Where( x => x.CommunicationId == CommunicationId.Value );
-
-            // If a person has received the communication more than once, select the most recently updated recipient record.
-            recipientQuery = recipientQuery.OrderByDescending( x => x.ModifiedDateTime )
-                .GroupBy( k => k.PersonAlias.PersonId )
-                .Select( g => g.FirstOrDefault() );
 
             // Filter by: Communication Medium
             var mediumList = filterSettingsKeyValueMap[FilterSettingName.CommunicationMedium].SplitDelimitedValues( "," ).AsGuidList();
@@ -3188,6 +3190,7 @@ namespace RockWeb.Blocks.Communication
             public string DeliveryStatus { get; set; }
             public string DeliveryStatusNote { get; set; }
             public string CommunicationMediumName { get; set; }
+            public DateTime? ModifiedDateTime { get; set; }
         }
 
         /// <summary>

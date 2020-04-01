@@ -962,7 +962,6 @@ namespace RockWeb.Blocks.Connection
                         wpConnectionRequestActivities.Visible = true;
                         wpConnectionRequestWorkflow.Visible = true;
                         pnlTransferDetails.Visible = false;
-
                         ShowDetail( connectionRequest.Id, connectionRequest.ConnectionOpportunityId );
                     }
                 }
@@ -1184,7 +1183,11 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestActivity.ConnectorPersonAliasId = personAliasId.Value;
                         connectionRequestActivity.Note = tbNote.Text;
 
+                        connectionRequestActivity.LoadAttributes();
+                        avcActivityAttributes.GetEditValues( connectionRequestActivity );
+
                         rockContext.SaveChanges();
+                        connectionRequestActivity.SaveAttributeValues( rockContext );
 
                         BindConnectionRequestActivitiesGrid( connectionRequest, rockContext );
                         HideDialog();
@@ -1443,8 +1446,9 @@ namespace RockWeb.Blocks.Connection
                 if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) )
                 {
                     this.BreadCrumbs.Clear();
-                    upDetail.Visible = false;
+                    pnlDetail.Visible = false;
                     nbSecurityWarning.Visible = true;
+                    return;
                 }
 
                 hfConnectionOpportunityId.Value = connectionRequest.ConnectionOpportunityId.ToString();
@@ -1817,7 +1821,7 @@ namespace RockWeb.Blocks.Connection
             // Status
             rblStatus.Items.Clear();
 
-            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy( a => a.Name );
+            var allStatuses = connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionStatuses.OrderBy(a => a.AutoInactivateState).ThenBy( a => a.Name );
 
             foreach ( var status in allStatuses )
             {
@@ -2486,6 +2490,9 @@ namespace RockWeb.Blocks.Connection
                 dlgConnectionRequestActivities.Title = "Edit Activity";
                 dlgConnectionRequestActivities.SaveButtonText = "Save";
             }
+
+            int connectionOpportunityId = int.Parse( hfConnectionOpportunityId.Value );
+            avcActivityAttributes.AddEditControls( activity ?? new ConnectionRequestActivity() { ConnectionOpportunityId = connectionOpportunityId } );
 
             ShowDialog( "ConnectionRequestActivities", true );
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Rock.Utility;
@@ -2202,7 +2202,7 @@ namespace Rock.NMI
         public string SubscriptionId { get; set; }
     }
 
-    internal class ThreeStepBilling: BaseResponse
+    internal class ThreeStepBilling : BaseResponse
     {
         [JsonProperty( "billing-id" )]
         public string BillingId { get; set; }
@@ -2331,10 +2331,16 @@ namespace Rock.NMI
 
             if ( friendlyMessage.IsNullOrWhiteSpace() )
             {
-                // This can happen if using the same card number and amount within a short window ( maybe around 20 minutes? )
                 if ( apiMessage.StartsWith( "Duplicate transaction REFID:" ) )
                 {
-                    friendlyMessage = "Duplicate transaction detected";
+                    // This can happen if using the same card number and amount within a short window ( maybe around 20 minutes? )
+                    return "Duplicate transaction detected";
+                }
+
+                var friendlyMessagePartial = FriendlyMessageMap.Where( k => apiMessage.StartsWith( k.Key ) ).Select( a => a.Value ).FirstOrDefault();
+                if ( friendlyMessagePartial != null )
+                {
+                    return friendlyMessagePartial;
                 }
             }
 
@@ -2519,8 +2525,11 @@ namespace Rock.NMI
             { "ccnumber is empty", "Invalid Credit Card Number" },
             { "Expiration date must be a present or future month and year", "Invalid Expiration Date" },
             { "ccexp is empty", "Invalid Expiration Date" },
-            { "CVV must be 3 or 4 digits", "Invalid CVV" },
             { "cvv is empty", "Invalid CVV" },
+
+            // Partial matches on CreditCard error
+            { "Required Field cc_number is Missing or Empty", "Invalid Credit Card Number" },
+            { "CVV must be 3 or 4 digits", "Invalid CVV" },
 
             // ACH Related
             { "Routing number must be 6 or 9 digits and a recognizable format", "Invalid Routing Number" },
@@ -2532,9 +2541,65 @@ namespace Rock.NMI
             // This seems to happen if entering an invalid ACH Account number ??
             { "Connection to tokenization service failed", "Invalid Account Number" },
 
+            // Partial Matches on ACH errors
+            { "Check Account number must contain only digits", "Invalid Check Account Number" },
+            { "ABA number must contain only digits", "Invalid Routing Number" },
+
             // Declined
             { "FAILED", "Declined" },
             { "DECLINE", "Declined" }
         };
     }
+
+    #region NMI.Gateway Exceptions
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Exception" />
+    public class NMIGatewayException : Exception
+    {
+        string _stackTrace;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NMIGatewayException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public NMIGatewayException( string errorMessage ) : this( errorMessage, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NMIGatewayException"/> class.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="innerException">The inner exception.</param>
+        public NMIGatewayException( string errorMessage, Exception innerException ) : base( errorMessage, innerException )
+        {
+            // lets set the stacktrace manually to ensure we have one. Otherwise, it would usually be blank.
+            _stackTrace = new System.Diagnostics.StackTrace( true ).ToString();
+        }
+
+        /// <summary>
+        /// Gets a string representation of the immediate frames on the call stack.
+        /// </summary>
+        public override string StackTrace => this._stackTrace ?? base.StackTrace;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.ArgumentNullException" />
+    public class NullFinancialGatewayException : ArgumentNullException
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NullFinancialGatewayException"/> class.
+        /// </summary>
+        public NullFinancialGatewayException()
+            : base( "Unable to determine financial gateway" )
+        {
+        }
+    }
+
+    #endregion NMI.Gateway Exceptions
 }

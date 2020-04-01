@@ -61,23 +61,45 @@ namespace Rock.NMI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to function initializeCollectJS(controlId) {
-        ///    var $control = $(&apos;#&apos; + controlId);
+        ///   Looks up a localized string similar to (function ($) {
+        ///    &apos;use strict&apos;;
+        ///    window.Rock = window.Rock || {};
+        ///    Rock.NMI = Rock.NMI || {}
+        ///    Rock.NMI.controls = Rock.NMI.controls || {};
         ///
-        ///    if ($control.length == 0) {
-        ///        // control hasn&apos;t been rendered so skip
-        ///        return;
-        ///    }
-        ///    var postbackScript = $control.attr(&apos;data-postback-script&apos;);
+        ///    /** JS helper for the gatewayCollectJS */
+        ///    Rock.NMI.controls.gatewayCollectJS = (function () {
+        ///        var exports = {
+        ///            initialize: function (controlId) {
+        ///                var self = this;
+        ///                var $control = $(&apos;#&apos; + controlId);
         ///
-        ///    var enabledPaymentTypes = JSON.parse($(&apos;.js-enabled-payment-types&apos;, $control).val());;
-        ///
-        ///    var $creditCardContainer = $(&apos;.js-gateway-creditcard-iframe-container&apos;, $control);
-        ///    var $achContainer = $(&apos;.js-gateway-ach-iframe-container&apos;, $control); [rest of string was truncated]&quot;;.
+        ///                if ($control.length == 0) {
+        ///                    // control hasn&apos;t been re [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string gatewayCollectJS {
             get {
                 return ResourceManager.GetString("gatewayCollectJS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sys.Application.add_load(function () {
+        ///    /* Threestep gateway related */
+        ///    var $step2Submit = $(&apos;.js-step2-submit&apos;);
+        ///
+        ///    // {{validationGroup}} will get replaced with whatever the validationGroup is
+        ///    var validationGroup = &apos;{{validationGroup}}&apos;;
+        ///    var $step2Url = $(&apos;.js-step2-url&apos;);
+        ///    var $updateProgress = $(&apos;#updateProgress&apos;);
+        ///    var $iframeStep2 = $(&apos;.js-step2-iframe&apos;);
+        ///    var $addressControl = $(&apos;.js-billingaddress-control&apos;);
+        ///
+        ///    // {{postbackControlReference}} will get replaced  [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string threeStepScript {
+            get {
+                return ResourceManager.GetString("threeStepScript", resourceCulture);
             }
         }
     }

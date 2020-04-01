@@ -199,34 +199,36 @@
                                             </asp:PlaceHolder>
 
                                             <asp:PlaceHolder ID="phCCDetails" runat="server">
-                                                <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false" Required="true" ValidationGroup="Payment"></Rock:RockTextBox>
-                                                <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false" Required="true" ValidationGroup="Payment"></Rock:RockTextBox>
-                                                <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false" Required="true" ValidationGroup="Payment"></Rock:RockTextBox>
-                                                <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number" MaxLength="19" CssClass="credit-card" Required="true" ValidationGroup="Payment" />
+                                                 <div class="js-creditcard-validation-notification alert alert-validation" style="display:none;">
+                            				        <span class="js-notification-text"></span>
+                                                </div>
+
+                                                <Rock:RockTextBox ID="txtCardFirstName" runat="server" CssClass="js-creditcard-firstname" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
+                                                <Rock:RockTextBox ID="txtCardLastName" runat="server" CssClass="js-creditcard-lastname" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
+                                                <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" CssClass="js-creditcard-fullname" Visible="false"></Rock:RockTextBox>
+                                                <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Card Number"  CssClass="js-creditcard-number credit-card" MaxLength="19" />
                                                 <ul class="card-logos list-unstyled">
                                                     <li class="card-visa"></li>
                                                     <li class="card-mastercard"></li>
                                                     <li class="card-amex"></li>
                                                     <li class="card-discover"></li>
                                                 </ul>
-
                                                 <div class="row">
                                                     <div class="col-sm-6">
-                                                        <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" Required="true" ValidationGroup="Payment" />
+                                                        <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" CssClass="js-creditcard-expiration" />
                                                     </div>
                                                     <div class="col-sm-6">
-                                                        <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs" runat="server" MaxLength="4" Required="true" ValidationGroup="Payment" />
+                                                        <Rock:NumberBox ID="txtCVV" Label="Card Security Code" CssClass="input-width-xs js-creditcard-cvv" runat="server" MaxLength="4" />
                                                     </div>
                                                 </div>
 
-                                                <Rock:AddressControl ID="acBillingAddress" runat="server" Label="Billing Address" UseStateAbbreviation="true" UseCountryAbbreviation="false" ShowAddressLine2="false"
-                                                    Required="true" ValidationGroup="Payment" RequiredErrorMessage="Billing Address is required" />
+                                                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" CssClass="js-billingaddress-control"/>
 
                                             </asp:PlaceHolder>
 
                                             <div class="actions">
                                                 <asp:LinkButton ID="lbSubmitPayment" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="lbSubmitPayment_Click" CausesValidation="true" ValidationGroup="Payment" />
-                                                <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary" Text="Submit" />
+                                                <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary js-step2-submit" Text="Submit" />
                                                 <asp:LinkButton ID="lbCancelPayment" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancelPayment_Click" CausesValidation="false" />
                                             </div>
 
@@ -286,11 +288,11 @@
 
         </asp:Panel>
 
-        <iframe id="iframeStep2" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
+        <iframe id="iframeStep2" class="js-step2-iframe" src="<%=this.Step2IFrameUrl%>" style="display:none"></iframe>
 
-        <asp:HiddenField ID="hfStep2AutoSubmit" runat="server" Value="false" />
-        <asp:HiddenField ID="hfStep2Url" runat="server" />
-        <asp:HiddenField ID="hfStep2ReturnQueryString" runat="server" />
+        <Rock:HiddenFieldWithClass ID="hfStep2AutoSubmit" CssClass="js-step2-autosubmit" runat="server" Value="false" />
+        <Rock:HiddenFieldWithClass ID="hfStep2Url" CssClass="js-step2-url" runat="server" />
+        <Rock:HiddenFieldWithClass ID="hfStep2ReturnQueryString" CssClass="js-step2-returnquerystring" runat="server" />
         <span style="display:none">
             <asp:LinkButton ID="lbStep2Return" runat="server" Text="Step 2 Return" OnClick="lbStep2Return_Click" CausesValidation="false"></asp:LinkButton>
         </span>

@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -136,10 +137,13 @@ namespace Rock.Jobs
                         dataViewName = sync.SyncDataView.Name;
                         groupName = sync.Group.Name;
 
+                        Stopwatch stopwatch = Stopwatch.StartNew();
                         // Get the person id's from the data view (source)
                         var dataViewQry = sync.SyncDataView.GetQuery( null, rockContext, commandTimeout, out syncErrors );
                         var sourcePersonIds = dataViewQry.Select( q => q.Id ).ToList();
-
+                        stopwatch.Stop();
+                        DataViewService.AddRunDataViewTransaction( sync.SyncDataView.Id,
+                                                        Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                         // If any error occurred trying get the 'where expression' from the sync-data-view,
                         // just skip trying to sync that particular group's Sync Data View for now.
                         if ( syncErrors.Count > 0 )

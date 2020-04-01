@@ -163,6 +163,14 @@ namespace Rock.Model
         ///   <c>true</c> if this instance is nameless person; otherwise, <c>false</c>.
         /// </value>
         public bool IsNamelessPerson => this.RecordTypeValueId == _recordTypeValueIdNameless;
+
+        /// <summary>
+        /// Gets the message status.
+        /// </summary>
+        /// <value>
+        /// The message status.
+        /// </value>
+        public CommunicationRecipientStatus MessageStatus { get; internal set; }
     }
 
     /// <summary>
@@ -336,25 +344,27 @@ namespace Rock.Model
                     MessageKey = communicationResponse.MessageKey,
                     IsOutbound = false,
                     RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
-                    SMSMessage = communicationResponse.Response
+                    SMSMessage = communicationResponse.Response,
+                    MessageStatus = CommunicationRecipientStatus.Delivered // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
                 };
 
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
-            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
-                .Where( r =>
-                    r.MediumEntityTypeId == smsMediumEntityTypeId
-                    && r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId
-                    && r.PersonAliasId == personAliasId
-                    && r.Status == CommunicationRecipientStatus.Delivered );
+            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext )
+                .Queryable()
+                .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId )
+                .Where( r =>  r.Communication.SMSFromDefinedValueId == relatedSmsFromDefinedValueId )
+                .Where( r =>  r.PersonAliasId == personAliasId )
+                .Where( r =>  r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending );
 
             var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers ).Select( a => new
             {
                 a.CreatedDateTime,
                 a.Communication.SenderPersonAlias.Person,
                 PersonAliasId = a.Communication.SenderPersonAliasId,
-                a.SentMessage
+                a.SentMessage,
+                a.Status
             } ).ToList();
 
             foreach ( var communicationRecipient in communicationRecipientList )
@@ -367,7 +377,8 @@ namespace Rock.Model
                     IsRead = true,
                     IsOutbound = true,
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
-                    SMSMessage = communicationRecipient.SentMessage
+                    SMSMessage = communicationRecipient.SentMessage,
+                    MessageStatus = communicationRecipient.Status
                 };
 
                 if ( communicationRecipient.Person?.IsNameless() == true )
