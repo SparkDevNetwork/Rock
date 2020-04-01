@@ -141,7 +141,7 @@
             
             {% if video != empty %}
                 <p id="video" class="text-center">
-                    {[ wistiaButton id:'{{ video }}' ]}
+                    {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'{{ Item.Id }}' entitytypeid:'' entityid:'' ]}
                 </p>
 
             {% endif %}
