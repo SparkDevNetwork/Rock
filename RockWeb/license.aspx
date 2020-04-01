@@ -140,6 +140,7 @@
                             <li><a href="https://github.com/nk-o/jarallax">Jarallax</a> (MIT)</li>
                             <li><a href="https://github.com/bevacqua/dragula">Dragula</a> (MIT)</li>
                             <li><a href="https://github.com/Modernizr/Modernizr">Modernizr</a> (MIT)</li>
+                            <li><a href="https://github.com/codex-team/editor.js">Editor.JS</a> (Apache 2)</li>
                         </ul>
                     </div>
                 </div>
