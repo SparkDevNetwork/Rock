@@ -313,7 +313,7 @@ namespace Rock.Model
             var interactionService = new InteractionService( rockContext );
             var interactionChannelGuid = Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid();
             var result = interactionService.Queryable()
-                .Where( a => a.InteractionComponent.Channel.Guid == interactionChannelGuid && a.InteractionComponentId == this.CommunicationId );
+                .Where( a => a.InteractionComponent.InteractionChannel.Guid == interactionChannelGuid && a.InteractionComponentId == this.CommunicationId );
             return result;
         }
 

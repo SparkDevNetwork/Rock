@@ -143,7 +143,7 @@ namespace RockWeb.Blocks.Reporting
                 pnlDetails.Visible = UserCanEdit || _component.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 IEntity componentEntity = null;
-                if ( _component.Channel.ComponentEntityTypeId.HasValue )
+                if ( _component.InteractionChannel.ComponentEntityTypeId.HasValue )
                 {
                     componentEntity = GetComponentEntity( _rockContext, _component );
                 }
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Reporting
                 lTitle.Text = _component.Name.FormatAsHtmlTitle();
 
                 var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                mergeFields.Add( "InteractionChannel", _component.Channel );
+                mergeFields.Add( "InteractionChannel", _component.InteractionChannel );
                 mergeFields.Add( "InteractionComponent", _component );
 
                 if ( componentEntity != null )
@@ -165,8 +165,8 @@ namespace RockWeb.Blocks.Reporting
                 
                 mergeFields.Add( "InteractionComponentEntity", componentEntity);
 
-                string template = _component.Channel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
-                    _component.Channel.ComponentDetailTemplate :
+                string template = _component.InteractionChannel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
+                    _component.InteractionChannel.ComponentDetailTemplate :
                     GetAttributeValue( "DefaultTemplate" );
 
                 lContent.Text = template.ResolveMergeFields( mergeFields );
@@ -197,7 +197,7 @@ namespace RockWeb.Blocks.Reporting
 
             try
             {
-                var componentEntityType = EntityTypeCache.Get( interactionComponent.Channel.ComponentEntityTypeId.Value ).GetEntityType();
+                var componentEntityType = EntityTypeCache.Get( interactionComponent.InteractionChannel.ComponentEntityTypeId.Value ).GetEntityType();
                 IService serviceInstance = Reflection.GetServiceForEntityType( componentEntityType, rockContext );
                 if ( serviceInstance != null )
                 {

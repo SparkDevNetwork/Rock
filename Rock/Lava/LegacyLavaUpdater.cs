@@ -212,7 +212,7 @@ namespace Rock.Lava
 
             try
             {
-                Regex regex = new Regex( @"{{{{(.*?)_unformatted(.*?)}}}}" );
+                Regex regex = new Regex( @"{{(.*?)_unformatted(.*?)}}" );
                 MatchCollection matches = regex.Matches( lavaText );
                 if ( matches.Count > 0 )
                 {
@@ -249,7 +249,7 @@ namespace Rock.Lava
             
             try
             {
-                Regex regex = new Regex( @"{{{{(.*?)_url(.*?)}}}}" );
+                Regex regex = new Regex( @"{{(.*?)_url(.*?)}}" );
                 MatchCollection matches = regex.Matches( lavaText );
                 if ( matches.Count > 0 )
                 {

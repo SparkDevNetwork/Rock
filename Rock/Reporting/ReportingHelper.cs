@@ -100,6 +100,7 @@ namespace Rock.Reporting
                     return;
                 }
 
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 gReport.EntityTypeId = report.EntityTypeId;
 
                 bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Get( typeof( Rock.Model.Person ), true, rockContext ).Id;
@@ -363,7 +364,6 @@ namespace Rock.Reporting
                     dynamic qry = report.GetQueryable( entityType, selectedEntityFields, selectedAttributes, selectedComponents, sortProperty, dataViewFilterOverrides, databaseTimeoutSeconds ?? 180, isCommunication, out qryErrors, out reportDbContext );
                     errors.AddRange( qryErrors );
 
-                    Stopwatch stopwatch = Stopwatch.StartNew();
                     if ( !string.IsNullOrEmpty( report.QueryHint ) && reportDbContext is RockContext )
                     {
                         using ( new QueryHintScope( reportDbContext as RockContext, report.QueryHint ) )
@@ -378,10 +378,12 @@ namespace Rock.Reporting
 
                     gReport.DataBind();
                     stopwatch.Stop();
+
                     if ( report.DataViewId.HasValue )
                     {
-                        DataViewService.AddRunDataViewTransaction( report.DataViewId.Value, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
+                        DataViewService.AddRunDataViewTransaction( report.DataViewId.Value );
                     }
+                    ReportService.AddRunReportTransaction( report.Id, Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                 }
                 catch ( Exception ex )
                 {
@@ -407,7 +409,7 @@ namespace Rock.Reporting
                         {
                             errors.Add( exception.Message );
                             exception = exception.InnerException;
-                        }
+                        } 
                     }
                 }
 

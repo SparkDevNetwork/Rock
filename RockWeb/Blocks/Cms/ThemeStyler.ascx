@@ -1,5 +1,19 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ThemeStyler.ascx.cs" Inherits="RockWeb.Blocks.Cms.ThemeStyler" %>
 
+<style>
+    .imageupload-group {
+        float: left;
+    }
+
+    .image-uploader.clearable-input i.fa-times {
+        margin-top: 113px;
+    }
+
+    .imageupload-remove {
+        display: none;
+    }
+</style>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
@@ -48,11 +62,31 @@
             return $(this).siblings('.form-group').children('.control-wrapper').append($(this))
         });
 
+        $('.js-image-override').each(function () {
+            return $(this).siblings('.form-group').children('.control-wrapper').append($(this))
+        });
+
         $(".js-color-override").on("click", function () {
             var controlKey = $(this).attr("data-control");
             var originalValue = $(this).attr("data-original-value");
 
             $("input[id$='" + controlKey + "']").parent().colorpicker('setValue', originalValue);
+
+            $(this).hide();
+        });
+
+        $(".js-image-override").on("click", function () {
+            var controlKey = $(this).attr("data-control");
+            var originalValue = $(this).attr("data-original-value");
+
+            var controlImageId = controlKey + '-thumbnail';
+            var controlValueFieldId = controlKey + '_hfContentFileSource';
+
+            console.log(controlImageId);
+            console.log(controlValueFieldId);
+
+            $("input[id$='" + controlValueFieldId + "']").val(originalValue);
+            $("div[id$='" + controlImageId + "']").css("background-image", "url('" + originalValue.replace( "~", "") + "')");
 
             $(this).hide();
         });

@@ -300,10 +300,10 @@ namespace Rock.Web.UI.Controls
                         var interactionComponentService = new InteractionComponentService( rockContext );
                         var component = interactionComponentService.Queryable().AsNoTracking().FirstOrDefault( st => st.Id == componentId );
 
-                        if ( component != null && _ichanChannelPicker.SelectedValue != component.ChannelId.ToString() )
+                        if ( component != null && _ichanChannelPicker.SelectedValue != component.InteractionChannelId.ToString() )
                         {
-                            _ichanChannelPicker.SelectedValue = component.ChannelId.ToString();
-                            _icompComponentPicker.InteractionChannelId = component.ChannelId;
+                            _ichanChannelPicker.SelectedValue = component.InteractionChannelId.ToString();
+                            _icompComponentPicker.InteractionChannelId = component.InteractionChannelId;
                         }
                     }
 

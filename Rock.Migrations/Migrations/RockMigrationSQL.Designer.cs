@@ -2051,5 +2051,17 @@ namespace Rock.Migrations.Migrations {
                         "nAttendees_down", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UPDATE [LavaShortcode] SET [Description]=N&apos;Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The chart shortcode allows anyone to create charts with just a few lines of Lava.&apos;, [Documentation]=N&apos;&lt;p&gt;
+        ///    Adding dynamic charts to a page can be difficult, even for an experienced Javascript developer. The 
+        ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
+        ///    creating a chart. The first ‘simple’ mode create [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202003311924098_Rollup_0331_FixChartYAxisShortcode {
+            get {
+                return ResourceManager.GetString("_202003311924098_Rollup_0331_FixChartYAxisShortcode", resourceCulture);
+            }
+        }
     }
 }

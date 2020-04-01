@@ -77,6 +77,16 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_90 = "3F279016-C7D1-490F-835D-8FFE6D943A32";
 
         /// <summary>
+        /// The Job to run Post v10.3 Data Migrations for Spiritual Gifts Assessment updates
+        /// </summary>
+        public const string DATA_MIGRATIONS_103_SPIRITUAL_GIFTS = "B16F889F-3349-4CA9-976D-7EF098DD8BC6";
+
+        /// <summary>
+        /// The Job to run Post v10.3 Data Migrations for Spiritual Gifts Assessment updates
+        /// </summary>
+        public const string DATA_MIGRATIONS_110_POPULATE_DATE_KEYS = "E56FD4FC-02F8-4A46-A91D-E86C2B635870";
+
+        /// <summary>
         /// The Job to Migrate pre-v8.0 History Summary Data
         /// </summary>
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
@@ -96,5 +106,6 @@ namespace Rock.SystemGuid
         /// The steps automation job - add steps based on people in a dataview
         /// </summary>
         public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
+
     }
 }

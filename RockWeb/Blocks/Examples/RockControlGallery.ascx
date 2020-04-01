@@ -110,6 +110,7 @@
                         <li><strong>label-md: </strong> Label column of 4, field column of 8</li>
                         <li><strong>label-lg: </strong> Label column of 6, field column of 6</li>
                         <li><strong>label-xl: </strong> Label column of 8, field column of 4</li>
+                        <li><strong>label-auto: </strong> Label and field widths determined by contents</li>
                     </ul>
 
                     <div runat="server" class="r-example">
@@ -117,38 +118,46 @@
                             <div class="form-group">
                                 <label for="inputEmail3" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-md">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+                        <div class="form-horizontal label-md">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-lg">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+                        <div class="form-horizontal label-lg">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-xl">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                        <div class="form-horizontal label-xl">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
+                        <div class="form-horizontal label-auto">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 

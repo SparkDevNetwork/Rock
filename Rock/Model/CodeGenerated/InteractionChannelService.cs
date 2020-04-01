@@ -52,7 +52,7 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
-            if ( new Service<InteractionComponent>( Context ).Queryable().Any( a => a.ChannelId == item.Id ) )
+            if ( new Service<InteractionComponent>( Context ).Queryable().Any( a => a.InteractionChannelId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", InteractionChannel.FriendlyTypeName, InteractionComponent.FriendlyTypeName );
                 return false;

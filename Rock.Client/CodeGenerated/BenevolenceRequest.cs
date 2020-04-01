@@ -85,6 +85,9 @@ namespace Rock.Client
         public int? RequestedByPersonAliasId { get; set; }
 
         /// <summary />
+        public AnalyticsSourceDate RequestSourceDate { get; set; }
+
+        /// <summary />
         public int? RequestStatusValueId { get; set; }
 
         /// <summary />
@@ -145,6 +148,7 @@ namespace Rock.Client
             this.ProvidedNextSteps = source.ProvidedNextSteps;
             this.RequestDateTime = source.RequestDateTime;
             this.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
+            this.RequestSourceDate = source.RequestSourceDate;
             this.RequestStatusValueId = source.RequestStatusValueId;
             this.RequestText = source.RequestText;
             this.ResultSummary = source.ResultSummary;
@@ -181,6 +185,9 @@ namespace Rock.Client
 
         /// <summary />
         public Location Location { get; set; }
+
+        /// <summary />
+        public int RequestDateKey { get; set; }
 
         /// <summary />
         public PersonAlias RequestedByPersonAlias { get; set; }
