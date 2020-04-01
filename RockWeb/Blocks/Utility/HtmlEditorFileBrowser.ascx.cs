@@ -37,6 +37,15 @@ namespace RockWeb.Blocks.Utility
     [Description( "Block to be used as part of the RockFileBrowser HtmlEditor Plugin" )]
     public partial class HtmlEditorFileBrowser : RockBlock
     {
+        #region Page Parameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string RelativeFilePath = "RelativeFilePath";
+        }
+
+        #endregion Page Parameter Keys
+
         #region Properties
 
         private List<string> RestrictedFolders
@@ -167,6 +176,18 @@ namespace RockWeb.Blocks.Utility
                 pnlModalFooterActions.Visible = PageParameter( "ModalMode" ).AsBoolean();
                 lTitle.Text = PageParameter( "Title" );
 
+                if ( PageParameter( PageParameterKey.RelativeFilePath ).IsNotNullOrWhiteSpace() )
+                {
+                    string fileUrl = Server.MapPath( PageParameter( PageParameterKey.RelativeFilePath ) );
+                    string physicalRootFolder = this.Request.MapPath( GetRootFolderPath() );
+                    if ( File.Exists( fileUrl ) && fileUrl.Contains( physicalRootFolder ) )
+                    {
+                        string directoryPath = Path.GetDirectoryName( fileUrl );
+                        string relativeFolderPath = directoryPath.Replace( physicalRootFolder, string.Empty );
+                        hfSelectedFolder.Value = relativeFolderPath;
+                    }
+                }
+
                 BuildFolderTreeView();
             }
 
@@ -221,7 +242,7 @@ namespace RockWeb.Blocks.Utility
                 }
             }
 
-            if ( Directory.Exists( physicalRootFolder ) && !HiddenFolders.Any( a => physicalRootFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase )  > 0) )
+            if ( Directory.Exists( physicalRootFolder ) && !HiddenFolders.Any( a => physicalRootFolder.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
             {
                 var sb = new StringBuilder();
                 sb.AppendLine( "<ul id=\"treeview\">" );
@@ -230,7 +251,7 @@ namespace RockWeb.Blocks.Utility
 
                 lblFolders.Text = sb.ToString();
                 upnlFolders.Update();
-                ListFolderContents( "" );
+                ListFolderContents( hfSelectedFolder.Value );
             }
             else
             {
@@ -433,7 +454,7 @@ namespace RockWeb.Blocks.Utility
                 foreach ( var filePath in fileList )
                 {
                     string ext = Path.GetExtension( filePath );
-                    string fileName = Path.GetFileName( filePath );
+                    string fileName = Path.GetFileName( filePath ).Replace( "'", "&#39;" );
                     string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                     string imagePath = rootFolder.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
                     string imageUrl = this.ResolveUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( imagePath ) );
@@ -452,7 +473,7 @@ namespace RockWeb.Blocks.Utility
                     }
 
                     string nameHtmlFormat = @"
-<li class='js-rocklist-item rocklist-item' data-id='{0}'>
+<li class='js-rocklist-item rocklist-item' data-id='{0}' title='{2}'>
     <div class='rollover-container'>
         <div class='rollover-item actions'>
             <a title='Delete' class='btn btn-xs btn-square btn-danger js-delete-file action'>
@@ -857,7 +878,7 @@ namespace RockWeb.Blocks.Utility
         /// Gets the physical folder of the specified virtual folder.
         /// </summary>
         /// <returns></returns>
-        private string GetPhysicalFolder(string relativeFolderPath)
+        private string GetPhysicalFolder( string relativeFolderPath )
         {
             string rootFolder = GetRootFolderPath();
             string physicalRootFolder = this.MapPath( rootFolder );

@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Web;
-
+using Rock;
 using Rock.Attribute;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -68,6 +68,15 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string RelativeFilePath = "RelativeFilePath";
+        }
+
+        #endregion Page Parameter Keys
 
         #region Base Control Methods
 
@@ -129,6 +138,12 @@ namespace RockWeb.Blocks.Cms
             iframeUrl += "&fileTypeBlackList=" + HttpUtility.UrlEncode( fileTypeBlackList );
             iframeUrl += "&fileTypeWhiteList=" + HttpUtility.UrlEncode( fileTypeWhiteList );
             iframeUrl += "&editFilePage=" + HttpUtility.UrlEncode( url );
+
+            if ( PageParameter( PageParameterKey.RelativeFilePath ).IsNotNullOrWhiteSpace() )
+            {
+                iframeUrl += "&relativeFilePath=" + HttpUtility.UrlEncode( PageParameter( PageParameterKey.RelativeFilePath ) );
+            }
+
             if ( browseMode == "image" )
             {
                 iframeUrl += "&imageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );
