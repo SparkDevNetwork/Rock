@@ -1,14 +1,18 @@
-{% if id and id != '' %}<div class="position-relative">
+{% if id and id != '' %}
 
-{% if CurrentPerson | HasRightsTo:'Edit' %}
-<div class="position-absolute top-zero right-zero push-half-top push-half-right bring-forward text-right">
-    <a href="/video/{{ id }}" class="btn btn-sm btn-info push-half-bottom">About This Video</a><br>
-    <a href="https://newspringchurch.wistia.com/medias/{{ id }}" target="_blank" class="btn btn-sm btn-info">Edit This Video</a>
-</div>
-{% endif %}
+<div class="position-relative">
 
-<div class="rounded shadowed overflow-hidden" style="width:{{ width }};">
-    <div id="wistia_{{ id }}" class="wistia_embed">&nbsp;</div>
+    {% if CurrentPerson | HasRightsTo:'Edit' %}
+        <div class="position-absolute top-zero right-zero push-half-top push-half-right bring-forward text-right">
+            <a href="/video/{{ id }}" class="btn btn-sm btn-info push-half-bottom">About This Video</a><br>
+            <a href="https://newspringchurch.wistia.com/medias/{{ id }}" target="_blank" class="btn btn-sm btn-info">Edit This Video</a>
+        </div>
+    {% endif %}
+
+    <div class="rounded shadowed overflow-hidden" style="width:{{ width }};">
+        <div id="wistia_{{ id }}" class="wistia_embed">&nbsp;</div>
+    </div>
+
 </div>
 
 {% assign personAliasId = CurrentPerson.PrimaryAliasId -%}
@@ -43,4 +47,4 @@
         smallPlayButton: {{ showsmallplaybutton }}
     });
 </script>
-</div>{% endif %}
+{% endif %}

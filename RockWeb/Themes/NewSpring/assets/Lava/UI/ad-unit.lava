@@ -47,7 +47,7 @@
 
 {% assign linkurl = linkurl | Trim %}
 
-<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides soft-double-top xs-hard xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }}"{% endif %}>
+<section {% if id and id != empty %}id="{{ id }}"{% endif %} class="shell {% if textalignment == '' %}text-center{% endif %} {% if ratio and ratio != empty %}hard{% endif %} bg-white position-relative overflow-hidden flush-sides soft-double-top xs-hard xs-push-half-bottom rounded shadowed {% if backgroundcolor != '' or imageurl != '' %}text-white{% endif %}" {% if backgroundcolor != '' %}style="background-color:{{ backgroundcolor }} !important;"{% endif %}>
     
     {% if ratio and ratio != empty %}
     {% assign trimcopy = 'Yes' %}
@@ -95,12 +95,7 @@
                         {% endif %}
 
                         {% if video != null and video != '' %}
-                            <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
-                                <a href="#" class="btn btn-primary">Play Video</a>
-                            </span>
-
-                            <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
-                            <script src="https://fast.wistia.com/assets/external/E-v1.js" async></script>
+                            {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'' entitytypeid:'' entityid:'' ]}
                         {% endif %}
 
                         {% if lava != null and lava != '' %}
