@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -80,7 +81,7 @@ namespace Rock.Jobs
         {
         }
 
-        private Dictionary<string, int> _databaseRowsCleanedUp = new Dictionary<string, int>();
+        private List<RockCleanupJobResult> _databaseRowsCleanedUp = new List<RockCleanupJobResult>();
         private List<Exception> _rockCleanupExceptions = new List<Exception>();
         private IJobExecutionContext jobContext;
 
@@ -106,6 +107,8 @@ namespace Rock.Jobs
             RunCleanupTask( "Purge Exception Log", () => this.PurgeExceptionLog( dataMap ) );
 
             RunCleanupTask( "Expired Entity Set", () => CleanupExpiredEntitySets( dataMap ) );
+
+            RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
 
             RunCleanupTask( "Old Interaction Cleanup", () => CleanupInteractions( dataMap ) );
 
@@ -162,9 +165,14 @@ namespace Rock.Jobs
             // ***********************
             //  Final count and report
             // ***********************
-            if ( _databaseRowsCleanedUp.Any( a => a.Value > 0 ) )
+            if ( _databaseRowsCleanedUp.Any( a => a.RowsAffected > 0 ) )
             {
-                context.Result = string.Format( "Processed {0}", _databaseRowsCleanedUp.Where( a => a.Value > 0 ).Select( a => $"{a.Value} {a.Key.PluralizeIf( a.Value != 1 )}" ).ToList().AsDelimited( ", ", " and " ) );
+                context.Result = string.Format( "Processed {0}",
+                    _databaseRowsCleanedUp
+                        .Where( a => a.RowsAffected > 0 )
+                        .Select( GetFormattedResult )
+                        .ToList()
+                        .AsDelimited( ", ", " and " ) );
             }
             else
             {
@@ -178,6 +186,20 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Get a cleanup job result as a formatted string
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        private string GetFormattedResult(RockCleanupJobResult result)
+        {
+            var rowsAffectedString = string.Format( "{0:n0}", result.RowsAffected );
+            var elapsedMillisecondsString = string.Format( "{0:n0}", result.ElapsedMilliseconds );
+            var titleString = result.Title.PluralizeIf( result.RowsAffected != 1 );
+
+            return $"{rowsAffectedString} {titleString} ({elapsedMillisecondsString}ms)";
+        }
+
+        /// <summary>
         /// Runs the cleanup task.
         /// </summary>
         /// <param name="cleanupTitle">The cleanup title.</param>
@@ -186,9 +208,19 @@ namespace Rock.Jobs
         {
             try
             {
+                var stopwatch = new Stopwatch();
                 jobContext.UpdateLastStatusMessage( $"Running {cleanupTitle}" );
+
+                stopwatch.Start();
                 var cleanupRowsAffected = cleanupMethod();
-                _databaseRowsCleanedUp.Add( cleanupTitle, cleanupRowsAffected );
+                stopwatch.Stop();
+
+                _databaseRowsCleanedUp.Add( new RockCleanupJobResult
+                {
+                    Title = cleanupTitle,
+                    RowsAffected = cleanupRowsAffected,
+                    ElapsedMilliseconds = stopwatch.ElapsedMilliseconds,
+                } );
             }
             catch ( Exception ex )
             {
@@ -217,7 +249,7 @@ namespace Rock.Jobs
             /// </summary>
             /// <param name="title">The title.</param>
             /// <param name="ex">The ex.</param>
-            public RockCleanupException(string title, Exception ex ): base()
+            public RockCleanupException( string title, Exception ex ) : base()
             {
                 _title = title;
                 _exception = ex;
@@ -237,7 +269,7 @@ namespace Rock.Jobs
                 {
                     string stackTrace = _exception.StackTrace;
                     var innerException = _exception.InnerException;
-                    while ( innerException != null)
+                    while ( innerException != null )
                     {
                         stackTrace += "\n" + innerException.StackTrace;
                         innerException = innerException.InnerException;
@@ -770,18 +802,20 @@ namespace Rock.Jobs
             using ( var interactionRockContext = new Rock.Data.RockContext() )
             {
                 interactionRockContext.Database.CommandTimeout = commandTimeout;
-                var interactionChannelService = new InteractionChannelService( interactionRockContext );
-                var interactionChannelQry = interactionChannelService.Queryable().Where( a => a.RetentionDuration.HasValue );
+                var interactionChannels = InteractionChannelCache.All().Where( ic => ic.RetentionDuration.HasValue );
 
-                foreach ( var interactionChannel in interactionChannelQry.ToList() )
+                foreach ( var interactionChannel in interactionChannels )
                 {
                     var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
+
                     if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
                     {
-                        retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                        continue;
                     }
 
-                    var interactionsToDeleteQuery = new InteractionService( interactionRockContext ).Queryable().Where( a => a.InteractionComponent.InteractionChannelId == interactionChannel.Id );
+                    var interactionsToDeleteQuery = new InteractionService( interactionRockContext ).Queryable().Where( i =>
+                        i.InteractionComponent.InteractionChannelId == interactionChannel.Id &&
+                        i.InteractionDateTime < retentionCutoffDateTime );
 
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
                 }
@@ -1504,6 +1538,99 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             }
 
             return rowsUpdated;
+        }
+
+        /// <summary>
+        /// Updates the median page load times. Returns the count of pages that had their MedianPageLoadTime updated.
+        /// </summary>
+        private int UpdateMedianPageLoadTimes()
+        {
+            var rockContext = new RockContext();
+            var pageService = new PageService( rockContext );
+            var interactionService = new InteractionService( rockContext );
+            var serviceJobService = new ServiceJobService( rockContext );
+
+            // Get the last successful run date
+            var serviceJob = serviceJobService.Get( SystemGuid.ServiceJob.ROCK_CLEANUP.AsGuid() );
+            var minDate = serviceJob?.LastSuccessfulRunDateTime ?? DateTime.MinValue;
+
+            // Build a query that contains all the interactions for the website
+            var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
+
+            var websiteInteractionQuery = interactionService.Queryable().AsNoTracking()
+                .Where( i =>
+                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
+                    i.InteractionComponent.EntityId.HasValue &&
+                    i.InteractionTimeToServe.HasValue );
+
+            // Get each distinct page that is referenced by those interactions that occurred since the last job run
+            var pageIdQuery = websiteInteractionQuery
+                .Where( i => i.InteractionDateTime > minDate )
+                .Select( i => i.InteractionComponent.EntityId.Value );
+
+            var pages = pageService.Queryable().Where( p => pageIdQuery.Contains( p.Id ) ).ToList();
+
+            // Query for only the interactions of those recently viewed pages
+            var pageInteractionsQuery = websiteInteractionQuery.Where( i => pageIdQuery.Contains( i.InteractionComponent.EntityId.Value ) );
+
+            // Calculate the median response time for each of the pages and store the results in a dictionary
+            var medianDictionary = pageInteractionsQuery
+                .GroupBy( i => i.InteractionComponent.EntityId.Value )
+                .Select( g => new
+                {
+                    PageId = g.Key,
+                    Times = g
+                        .OrderByDescending( i => i.InteractionDateTime )
+                        .Take( 100 )
+                        .Select( i => i.InteractionTimeToServe.Value )
+                        .OrderBy( i => i )
+                } )
+                .ToDictionary( g => g.PageId, g =>
+                {
+                    var count = g.Times.Count();
+                    var firstMiddleValue = g.Times.ElementAt( ( count - 1 ) / 2 );
+                    var secondMiddleValue = g.Times.ElementAt( count / 2 );
+                    return ( firstMiddleValue + secondMiddleValue ) / 2;
+                } );
+
+            // Update each page's median page load time
+            foreach ( var page in pages )
+            {
+                page.MedianPageLoadTime = medianDictionary[page.Id];
+            }
+
+            rockContext.SaveChanges();
+            return pages.Count;
+        }
+
+        /// <summary>
+        /// The result data from a cleanup task
+        /// </summary>
+        private class RockCleanupJobResult
+        {
+            /// <summary>
+            /// Gets or sets the title.
+            /// </summary>
+            /// <value>
+            /// The title.
+            /// </value>
+            public string Title { get; set; }
+
+            /// <summary>
+            /// Gets or sets the rows affected.
+            /// </summary>
+            /// <value>
+            /// The rows affected.
+            /// </value>
+            public int RowsAffected { get; set; }
+
+            /// <summary>
+            /// Gets or sets the time taken in milliseconds.
+            /// </summary>
+            /// <value>
+            /// The time.
+            /// </value>
+            public long ElapsedMilliseconds { get; set; }
         }
     }
 }

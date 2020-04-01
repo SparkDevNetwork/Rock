@@ -312,6 +312,16 @@ namespace Rock.Web.Cache
         public string AdditionalSettings { get; private set; }
 
         /// <summary>
+        /// Gets or sets the median page load time in seconds. Typically calculated from a set of
+        /// <see cref="Interaction.InteractionTimeToServe"/> values.
+        /// </summary>
+        /// <value>
+        /// The median page load time in seconds.
+        /// </value>
+        [DataMember]
+        public double? MedianPageLoadTime { get; private set; }
+
+        /// <summary>
         /// Gets the parent page.
         /// </summary>
         /// <value>
@@ -601,6 +611,7 @@ namespace Rock.Web.Cache
             BodyCssClass = page.BodyCssClass;
             IconBinaryFileId = page.IconBinaryFileId;
             AdditionalSettings = page.AdditionalSettings;
+            MedianPageLoadTime = page.MedianPageLoadTime;
 
             PageContexts = new Dictionary<string, string>();
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );
