@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5.2"
-		ProjectReferences = "{00edcb8d-ef33-459c-ad62-02876bd24dff}|DotLiquid.dll;{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{69AC175C-3997-4514-8C9E-5D24811928C2}|SignNowSDK.dll;{c1dd2402-5fb2-411e-bf8d-5d9cb3a58e8b}|Rock.Slingshot.dll;{962944DE-8BF4-4175-B55A-E75CF7918272}|Rock.Slingshot.Model.dll;{42edf2dd-5284-4b64-93c3-5186619d2b14}|Rock.StatementGenerator.dll;{5055f482-72c7-4cc9-8ed0-a77090c777db}|Rock.Security.Authentication.Auth0.dll;{515e22e4-4b9b-4886-8477-e5b312b75eb4}|Rock.WebStartup.dll;{94a5f880-31ae-4889-b9be-ba1fdc258e83}|Rock.Checkr.dll;{13711bed-69dd-4182-9bb5-b3c9a4de32df}|Rock.TransNational.Pi.dll;{b50e74b8-3f4b-4c4e-bf15-c64097eb461a}|com.bemaservices.OpenConnectionsDigest.dll;{0799f529-3f8b-43ff-87eb-02d365a03162}|com.bemaservices.AgencyTheme.dll;{7102f1c8-9b6a-40b8-b692-b9a455313004}|com.bemaservices.Autobuild.dll;{de8373fc-e14d-4ca0-8a98-0c31bdc80a75}|com.bemaservices.Support.dll;{2450a2ef-e09c-4e10-bf67-cee16b843371}|com.bemaservices.Security.SSO.dll;{7e4964f5-4fd5-41ac-9f5a-104586fc64bf}|com.bemaservices.WorkflowExtensions.dll;{962d7cf1-7e54-4c69-ae6c-df6372f8d38f}|com.bemaservices.SurveyGizmo.dll;{03b280a2-5333-4419-b570-7df521afb3cb}|com.bemaservices.RemoteCheckDeposit.dll;{6c423151-8812-4a7d-8fbb-fa5db9a668df}|com.bemaservices.eSpace.dll;{14fb9414-472a-4783-9ef5-d7875a6eeffe}|com.bemaservices.PastoralCare.dll;{a3ca2838-987d-483d-9a0c-431d5a847e22}|com.bemaservices.MinistrySafe.dll;"
+		ProjectReferences = "{00edcb8d-ef33-459c-ad62-02876bd24dff}|DotLiquid.dll;{185a31d7-3037-4dae-8797-0459849a84bd}|Rock.dll;{d6b19c0d-da5e-4f75-8001-04ded86b741f}|Rock.Mailgun.dll;{cf8c694a-55a0-434f-bc96-3450b96ec12a}|Rock.Mandrill.dll;{704740d8-b539-4560-9f8c-681670c9d6ad}|Rock.Migrations.dll;{f3692909-952d-4c4a-b2d2-d90d0083cf53}|Rock.NMI.dll;{a005d091-140e-4ec4-bcdf-cf7d42bb702c}|Rock.PayFlowPro.dll;{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}|Rock.Rest.dll;{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}|Rock.Version.dll;{1f5956f2-2b0f-49b8-aaf1-2cc28f01426a}|Rock.SignNow.dll;{69AC175C-3997-4514-8C9E-5D24811928C2}|SignNowSDK.dll;{c1dd2402-5fb2-411e-bf8d-5d9cb3a58e8b}|Rock.Slingshot.dll;{962944DE-8BF4-4175-B55A-E75CF7918272}|Rock.Slingshot.Model.dll;{42edf2dd-5284-4b64-93c3-5186619d2b14}|Rock.StatementGenerator.dll;{5055f482-72c7-4cc9-8ed0-a77090c777db}|Rock.Security.Authentication.Auth0.dll;{515e22e4-4b9b-4886-8477-e5b312b75eb4}|Rock.WebStartup.dll;{94a5f880-31ae-4889-b9be-ba1fdc258e83}|Rock.Checkr.dll;{13711bed-69dd-4182-9bb5-b3c9a4de32df}|Rock.TransNational.Pi.dll;{b50e74b8-3f4b-4c4e-bf15-c64097eb461a}|com.bemaservices.OpenConnectionsDigest.dll;{0799f529-3f8b-43ff-87eb-02d365a03162}|com.bemaservices.AgencyTheme.dll;{7102f1c8-9b6a-40b8-b692-b9a455313004}|com.bemaservices.Autobuild.dll;{de8373fc-e14d-4ca0-8a98-0c31bdc80a75}|com.bemaservices.Support.dll;{2450a2ef-e09c-4e10-bf67-cee16b843371}|com.bemaservices.Security.SSO.dll;{7e4964f5-4fd5-41ac-9f5a-104586fc64bf}|com.bemaservices.WorkflowExtensions.dll;{962d7cf1-7e54-4c69-ae6c-df6372f8d38f}|com.bemaservices.SurveyGizmo.dll;{03b280a2-5333-4419-b570-7df521afb3cb}|com.bemaservices.RemoteCheckDeposit.dll;{6c423151-8812-4a7d-8fbb-fa5db9a668df}|com.bemaservices.eSpace.dll;{14fb9414-472a-4783-9ef5-d7875a6eeffe}|com.bemaservices.PastoralCare.dll;{a3ca2838-987d-483d-9a0c-431d5a847e22}|com.bemaservices.MinistrySafe.dll;{f5210b1f-ccdd-44be-880e-2f2ad331939d}|com.bemaservices.MailChimp.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_6229"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_6229\"
@@ -93,6 +93,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.PastoralCare", "com.bemaservices.PastoralCare\com.bemaservices.PastoralCare.csproj", "{14FB9414-472A-4783-9EF5-D7875A6EEFFE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.MinistrySafe", "com.bemaservices.MinistrySafe\com.bemaservices.MinistrySafe.csproj", "{A3CA2838-987D-483D-9A0C-431D5A847E22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.MailChimp", "com.bemaservices.MailChimp\com.bemaservices.MailChimp.csproj", "{F5210B1F-CCDD-44BE-880E-2F2AD331939D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -232,6 +234,10 @@ Global
 		{A3CA2838-987D-483D-9A0C-431D5A847E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3CA2838-987D-483D-9A0C-431D5A847E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3CA2838-987D-483D-9A0C-431D5A847E22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5210B1F-CCDD-44BE-880E-2F2AD331939D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5210B1F-CCDD-44BE-880E-2F2AD331939D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5210B1F-CCDD-44BE-880E-2F2AD331939D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5210B1F-CCDD-44BE-880E-2F2AD331939D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
