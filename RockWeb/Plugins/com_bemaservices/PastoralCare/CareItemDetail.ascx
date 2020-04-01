@@ -127,7 +127,6 @@
                         <Rock:RockBoundField DataField="Date" HeaderText="Date" />
                         <Rock:RockBoundField DataField="Contactor" HeaderText="Contactor" />
                         <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                        <Rock:DeleteField OnClick="gCareContacts_Delete" />
                     </Columns>
                 </Rock:Grid>
             </div>
@@ -146,6 +145,8 @@
                     </div>
                 </div>
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Description" TextMode="MultiLine" Rows="4" ValidationGroup="Contact" />
+                <Rock:DynamicPlaceholder ID="phContactAttributes" runat="server" />
+
             </Content>
         </Rock:ModalDialog>
 

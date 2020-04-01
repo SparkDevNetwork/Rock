@@ -36,6 +36,7 @@ using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using System.Text;
 using com.bemaservices.PastoralCare.Model;
+using System.Web.UI.HtmlControls;
 
 namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 {
@@ -50,6 +51,9 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
         #region Properties
         public int? _careTypeId = null;
         public List<CareTypeItem> ItemsState { get; set; }
+        public List<AttributeCache> AvailableAttributes { get; set; }
+        private DeleteField _deleteField = null;
+        private int? _deleteFieldColumnIndex = null;
         #endregion
 
         #region Control Methods
@@ -71,6 +75,10 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             {
                 ItemsState = JsonConvert.DeserializeObject<List<CareTypeItem>>( json );
             }
+
+            AvailableAttributes = ViewState["AvailableAttributes"] as List<AttributeCache>;
+            AddDynamicControls();
+
             //  BuildAttributes( false );
         }
 
@@ -82,7 +90,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
         {
             base.OnInit( e );
 
-            gCareContacts.DataKeyNames = new string[] { "Guid" };
+            gCareContacts.DataKeyNames = new string[] { "Id" };
             gCareContacts.Actions.ShowAdd = true;
             gCareContacts.Actions.AddClick += gCareContacts_Add;
             gCareContacts.GridRebind += gCareContacts_GridRebind;
@@ -168,6 +176,11 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                 {
                     ShowItemAttributes();
                 }
+
+                if ( dlgCareContacts.Visible )
+                {
+                    ShowContactAttributes();
+                }
             }
         }
 
@@ -186,6 +199,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             };
 
             ViewState["ItemsState"] = JsonConvert.SerializeObject( ItemsState, Formatting.None, jsonSetting );
+            ViewState["AvailableAttributes"] = AvailableAttributes;
 
             return base.SaveViewState();
         }
@@ -484,7 +498,11 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                         careContact.ContactorPersonAliasId = personAliasId.Value;
                         careContact.Description = tbNote.Text;
 
+                        careContact.LoadAttributes();
+                        Rock.Attribute.Helper.GetEditValues( phContactAttributes, careContact );
+
                         rockContext.SaveChanges();
+                        careContact.SaveAttributeValues();
 
                         BindCareContactsGrid( careItem, rockContext );
                         HideDialog();
@@ -559,11 +577,25 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                 bool canEdit = e.Row.DataItem.GetPropertyValue( "CanEdit" ) as bool? ?? false;
                 if ( !canEdit )
                 {
-                    var deleteField = gCareContacts.Columns.OfType<DeleteField>().First();
-                    var cell = ( e.Row.Cells[gCareContacts.GetColumnIndex( deleteField )] as DataControlFieldCell ).Controls[0];
-                    if ( cell != null )
+                    if ( _deleteField != null && _deleteField.Visible )
                     {
-                        cell.Visible = false;
+                        LinkButton deleteButton = null;
+                        HtmlGenericControl buttonIcon = null;
+
+                        if ( !_deleteFieldColumnIndex.HasValue )
+                        {
+                            _deleteFieldColumnIndex = gCareContacts.GetColumnIndex( gCareContacts.Columns.OfType<DeleteField>().First() );
+                        }
+
+                        if ( _deleteFieldColumnIndex.HasValue && _deleteFieldColumnIndex > -1 )
+                        {
+                            deleteButton = e.Row.Cells[_deleteFieldColumnIndex.Value].ControlsOfTypeRecursive<LinkButton>().FirstOrDefault();
+                        }
+
+                        if ( deleteButton != null )
+                        {
+                            buttonIcon = deleteButton.ControlsOfTypeRecursive<HtmlGenericControl>().FirstOrDefault();
+                        }
                     }
                 }
             }
@@ -604,6 +636,9 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
         {
             if ( careItem != null && careItem.PersonAlias != null )
             {
+                BindAttributes();
+                AddDynamicControls();
+
                 bool editAllowed = UserCanEdit || careItem.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                 var careContactService = new CareContactService( rockContext );
@@ -618,6 +653,9 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
                 qry = qry.Where( a => a.CareItemId == careItem.Id );
 
+                gCareContacts.ObjectList = new Dictionary<string, object>();
+                qry.ToList().ForEach( m => gCareContacts.ObjectList.Add( m.Id.ToString(), m ) );
+                gCareContacts.EntityTypeId = new CareContact().TypeId;
 
                 gCareContacts.DataSource = qry.ToList()
                     .Select( a => new
@@ -633,6 +671,8 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                     .OrderByDescending( a => a.VisitDate )
                     .ToList();
                 gCareContacts.DataBind();
+
+
             }
         }
 
@@ -774,7 +814,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
         {
             pdAuditDetails.SetEntity( careItem, ResolveRockUrl( "~" ) );
             lContactInfo.Text = string.Empty;
-                        hlInactive.Visible = careItem.IsActive == false;
+            hlInactive.Visible = careItem.IsActive == false;
 
             Person person = null;
             if ( careItem != null && careItem.PersonAlias != null )
@@ -985,6 +1025,10 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                 {
                     contact = new CareContactService( rockContext ).Get( contactGuid );
                 }
+                else
+                {
+                    contact = new CareContact();
+                }
 
                 if ( contact != null && contact.ContactorPersonAlias != null && contact.ContactorPersonAlias.Person != null )
                 {
@@ -994,6 +1038,20 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                 dtpVisitDate.SelectedDateTime = contact != null ? contact.ContactDateTime : RockDateTime.Now;
 
                 tbNote.Text = contact != null ? contact.Description : string.Empty;
+
+                contact.LoadAttributes();
+
+                phContactAttributes.Controls.Clear();
+                phContactAttributes.Visible = false;
+
+                var editableAttributes = contact.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+
+                if ( editableAttributes.Any() )
+                {
+                    phContactAttributes.Visible = true;
+                    var excludeKeys = contact.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                    Rock.Attribute.Helper.AddEditControls( contact, phContactAttributes, true, string.Empty, excludeKeys );
+                }
 
                 hfAddCareContactGuid.Value = contactGuid.ToString();
                 if ( contactGuid == Guid.Empty )
@@ -1076,6 +1134,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             careTypeList.AddRange( cblCareTypes.SelectedValuesAsInt );
 
             phAttributes.Controls.Clear();
+            phContactAttributes.Controls.Clear();
 
             using ( var rockContext = new RockContext() )
             {
@@ -1140,6 +1199,99 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                         }
                     }
                 }
+            }
+
+        }
+
+        private void ShowContactAttributes()
+        {
+            var contact = new CareContact();
+            contact.LoadAttributes();
+
+            phContactAttributes.Controls.Clear();
+            phContactAttributes.Visible = false;
+
+            var editableAttributes = contact.Attributes.Where( a => a.Value.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Key ).ToList();
+
+            if ( editableAttributes.Any() )
+            {
+                phContactAttributes.Visible = true;
+                var excludeKeys = contact.Attributes.Where( a => !editableAttributes.Contains( a.Key ) ).Select( a => a.Key ).ToList();
+                Rock.Attribute.Helper.AddEditControls( contact, phContactAttributes, true, string.Empty, excludeKeys );
+            }
+        }
+
+
+        /// <summary>
+        /// Adds the attribute columns.
+        /// </summary>
+        private void AddDynamicControls()
+        {
+            // Clear dynamic controls so we can re-add them
+            RemoveAttributeColumns();
+
+            if ( AvailableAttributes != null )
+            {
+                foreach ( var attribute in AvailableAttributes )
+                {
+                    bool columnExists = gCareContacts.Columns.OfType<AttributeField>().FirstOrDefault( a => a.AttributeId == attribute.Id ) != null;
+                    if ( !columnExists )
+                    {
+                        AttributeField boundField = new AttributeField();
+                        boundField.DataField = attribute.Key;
+                        boundField.AttributeId = attribute.Id;
+                        boundField.HeaderText = attribute.Name;
+                        boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
+
+                        gCareContacts.Columns.Add( boundField );
+                    }
+                }
+            }
+
+
+            // Add delete column
+            _deleteField = new DeleteField();
+            _deleteField.Click += gCareContacts_Delete;
+            gCareContacts.Columns.Add( _deleteField );
+        }
+
+        /// <summary>
+        /// Binds the attributes.
+        /// </summary>
+        private void BindAttributes()
+        {
+            AvailableAttributes = new List<AttributeCache>();
+            var rockContext = new RockContext();
+
+            // Parse the attribute filters 
+            int entityTypeId = new CareContact().TypeId;
+
+            foreach ( var attribute in new AttributeService( rockContext ).GetByEntityTypeQualifier( entityTypeId, "", "", true )
+            .Where( a => a.IsGridColumn )
+            .OrderByDescending( a => a.EntityTypeQualifierColumn )
+            .ThenBy( a => a.Order )
+            .ThenBy( a => a.Name ).ToAttributeCacheList() )
+            {
+                if ( attribute.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    AvailableAttributes.Add( attribute );
+                }
+            }
+        }
+
+        private void RemoveAttributeColumns()
+        {
+            // Remove added button columns
+            DataControlField buttonColumn = gCareContacts.Columns.OfType<DeleteField>().FirstOrDefault( c => c.ItemStyle.CssClass == "grid-columncommand" );
+            if ( buttonColumn != null )
+            {
+                gCareContacts.Columns.Remove( buttonColumn );
+            }
+
+            // Remove attribute columns
+            foreach ( var column in gCareContacts.Columns.OfType<AttributeField>().ToList() )
+            {
+                gCareContacts.Columns.Remove( column );
             }
         }
 
