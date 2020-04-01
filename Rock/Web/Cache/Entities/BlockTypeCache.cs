@@ -293,7 +293,7 @@ namespace Rock.Web.Cache
         public void MarkInstancePropertiesVerified( bool verified )
         {
             IsInstancePropertiesVerified = verified;
-            UpdateCacheItem( this.Id.ToString(), this, TimeSpan.MaxValue );
+            UpdateCacheItem( this.Id.ToString(), this );
         }
 
         /// <summary>
