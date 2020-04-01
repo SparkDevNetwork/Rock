@@ -8,7 +8,7 @@
         <div class="modal-body">
             <p class="push-half-bottom clearfix"><i class="fa fa-times close" data-dismiss="modal" aria-hidden="true"></i></p>
             
-            {[ wistiaEmbed id:'{{ id }}' contentchannelitemid:'{{ contentchannelitemid }}' ]}
+            {[ wistiaEmbed id:'{{ id }}' contentchannelitemid:'{{ contentchannelitemid }}' entitytypeid:'' entityid:'' donottrack:'' ]}
         </div>
     </div>
   </div>

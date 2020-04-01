@@ -22,14 +22,7 @@
 <script charset="ISO-8859-1" src=""></script>
 <script>
     wistiaEmbed = Wistia.embed("{{ id }}", {
-        trackEmail: {
-            "Version": 1, 
-            "PersonAliasId": {{ personAliasId }}, 
-            "ContentChannelItemId": {{ contentchannelitemid }}, 
-            "EntityTypeId": {{ entitytypeid }}, 
-            "EntityId": {{ entityid }}, 
-            "Name": "{{ CurrentPerson.FullName | Replace: ' ', '' }}" 
-        },        
+        trackEmail: '{ "Version": 1, "PersonAliasId": {{ personAliasId }}, "ContentChannelItemId": {{ contentchannelitemid }}, "EntityTypeId": {{ entitytypeid }}, "EntityId": {{ entityid }}, "Name": "{{ CurrentPerson.FullName | Replace: ' ', '' }}" }',        
         playerPreference: "html5",        
         videoFoam: true,        
         autoPlay: {{ autoplay }},        
