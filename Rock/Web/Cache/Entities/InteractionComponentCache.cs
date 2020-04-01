@@ -31,6 +31,24 @@ namespace Rock.Web.Cache
     [DataContract]
     public class InteractionComponentCache : ModelCache<InteractionComponentCache, InteractionComponent>
     {
+        #region Base Property Overrides
+
+        /// <summary>
+        /// The amount of time that this cache's items will live in the cache before expiring
+        /// </summary>
+        public override TimeSpan? Lifespan
+        {
+            get
+            {
+                var minutes = InteractionChannel?.ComponentCacheDuration;
+                return ( minutes.HasValue && minutes.Value > 0 ) ?
+                    TimeSpan.FromMinutes( minutes.Value ) :
+                    base.Lifespan;
+            }
+        }
+
+        #endregion Base Property Overrides
+
         #region Static Fields
 
         private static ConcurrentDictionary<string, int> _interactionComponentLookup = new ConcurrentDictionary<string, int>();

@@ -25,17 +25,26 @@ namespace Rock.Web.Cache
     /// </summary>
     internal class PersistedDatasetValueCache : ItemCache<PersistedDatasetValueCache>
     {
+        private TimeSpan? _lifespan = null;
+
         #region Constructors
 
         /// <summary>
         /// Use Static Get() method to instantiate
         /// </summary>
-        public PersistedDatasetValueCache( object resultDataObjectValue )
+        public PersistedDatasetValueCache( object resultDataObjectValue, TimeSpan? lifespan )
         {
             ResultDataObjectValue = resultDataObjectValue;
+            _lifespan = lifespan;
         }
 
         #endregion
+
+        /// <summary>
+        /// The amount of time that this item will live in the cache before expiring. If null, then the
+        /// default lifespan is used.
+        /// </summary>
+        public virtual new TimeSpan? Lifespan => _lifespan;
 
         /// <summary>
         /// Gets the id.
