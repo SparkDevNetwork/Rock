@@ -94,12 +94,15 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this InteractionComponent target, InteractionComponent source )
         {
             target.Id = source.Id;
+            #pragma warning disable 612, 618
             target.ChannelId = source.ChannelId;
+            #pragma warning restore 612, 618
             target.ComponentData = source.ComponentData;
             target.ComponentSummary = source.ComponentSummary;
             target.EntityId = source.EntityId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.InteractionChannelId = source.InteractionChannelId;
             target.Name = source.Name;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

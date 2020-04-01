@@ -47,6 +47,9 @@ namespace Rock.Client
         public DateTime? MetricValueDateTime { get; set; }
 
         /// <summary />
+        public AnalyticsSourceDate MetricValueSourceDate { get; set; }
+
+        /// <summary />
         public Rock.Client.Enums.MetricValueType MetricValueType { get; set; }
 
         /// <summary>
@@ -100,6 +103,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.MetricId = source.MetricId;
             this.MetricValueDateTime = source.MetricValueDateTime;
+            this.MetricValueSourceDate = source.MetricValueSourceDate;
             this.MetricValueType = source.MetricValueType;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Note = source.Note;
@@ -122,6 +126,9 @@ namespace Rock.Client
     {
         /// <summary />
         public long DateTimeStamp { get; set; }
+
+        /// <summary />
+        public int? MetricValueDateKey { get; set; }
 
         /// <summary />
         public string MetricValuePartitionEntityIds { get; set; }

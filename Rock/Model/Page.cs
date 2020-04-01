@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Security;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -524,10 +525,16 @@ namespace Rock.Model
         /// Method that will be called on an entity immediately before the item is saved by context
         /// </summary>
         /// <param name="dbContext">The database context.</param>
+        /// <param name="entry">The entry.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            if (state == EntityState.Deleted)
+            if ( state == EntityState.Modified || state == EntityState.Deleted )
+            {
+                _originalParentPageId = entry.Property( nameof( ParentPageId ) )?.OriginalValue?.ToString().AsIntegerOrNull();
+            }
+
+            if ( state == EntityState.Deleted )
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add( "PageId", this.Id );
@@ -539,7 +546,7 @@ namespace Rock.Model
                     var routesToRemove = new List<Route>();
 
                     foreach ( var existingRoute in RouteTable.Routes.OfType<Route>().Where( r => r.PageIds().Contains( this.Id ) ) )
-                    { 
+                    {
                         var pageAndRouteIds = existingRoute.DataTokens["PageRoutes"] as List<Rock.Web.PageAndRouteId>;
                         pageAndRouteIds = pageAndRouteIds.Where( p => p.PageId != this.Id ).ToList();
                         if ( pageAndRouteIds.Any() )
@@ -559,8 +566,29 @@ namespace Rock.Model
 
                 }
             }
+            else if ( state == EntityState.Modified )
+            {
+                var previousInternalName = entry.Property( nameof( InternalName ) )?.OriginalValue.ToStringSafe();
+                _didNameChange = previousInternalName != InternalName;
+            }
 
             base.PreSaveChanges( dbContext, state );
+        }
+        private bool _didNameChange = false;
+        private int? _originalParentPageId = null;
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Data.DbContext dbContext )
+        {
+            base.PostSaveChanges( dbContext );
+
+            if ( _didNameChange )
+            {
+                new PageRenameTransaction( Guid ).Enqueue();
+            }
         }
 
         /// <summary>
@@ -577,24 +605,6 @@ namespace Rock.Model
         #endregion
 
         #region ICacheable
-
-        private int? _originalParentPageId;
-
-        /// <summary>
-        /// Method that will be called on an entity immediately after the item is saved by context
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        /// <param name="entry">The entry.</param>
-        /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
-        {
-            if ( state == EntityState.Modified || state == EntityState.Deleted )
-            {
-                _originalParentPageId = entry.OriginalValues["ParentPageId"]?.ToString().AsIntegerOrNull();
-            }
-
-            base.PreSaveChanges( dbContext, entry, state );
-        }
 
         /// <summary>
         /// Gets the cache object associated with this Entity

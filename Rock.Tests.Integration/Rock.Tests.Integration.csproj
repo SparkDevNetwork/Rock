@@ -80,6 +80,16 @@
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Interactions\PageViewTests.cs" />
+    <Compile Include="Model\AttendanceOccurrenceTests.cs" />
+    <Compile Include="Model\BenevolenceRequestTests.cs" />
+    <Compile Include="Model\CommunicationsTests.cs" />
+    <Compile Include="Model\ConnectionRequestTests.cs" />
+    <Compile Include="Model\FinancialPledgeTest.cs" />
+    <Compile Include="Model\FinancialTransactionTests.cs" />
+    <Compile Include="Model\InteractionTests.cs" />
+    <Compile Include="Model\MetricValueTests.cs" />
+    <Compile Include="Model\RegistrationTests.cs" />
+    <Compile Include="Model\StepTests.cs" />
     <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />

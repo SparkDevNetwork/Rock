@@ -180,15 +180,19 @@ a.aspNetDisabled {
       display: flex;
       -ms-flex-pack: end;
       justify-content: flex-end;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
       margin-right: -15px;
       margin-left: -15px;
 
       .control-label {
-        -ms-flex: 1 1 auto;
-        flex: 1 1 auto;
         width: auto;
         min-width: 180px;
-        max-width: 100%;
+        padding-top: @padding-base-vertical + 1px;
+        padding-bottom: @padding-base-vertical + 1px;
+        margin-bottom: 0; // Override the `<label>/<legend>` default
+        line-height: @line-height-base;
+        text-align: right;
       }
       .control-wrapper {
         -ms-flex: 0 0 auto;

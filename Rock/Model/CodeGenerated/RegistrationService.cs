@@ -89,6 +89,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.ConfirmationEmail = source.ConfirmationEmail;
+            target.CreatedSourceDate = source.CreatedSourceDate;
             target.DiscountAmount = source.DiscountAmount;
             target.DiscountCode = source.DiscountCode;
             target.DiscountPercentage = source.DiscountPercentage;

@@ -781,7 +781,7 @@ namespace Rock.Jobs
                         retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
                     }
 
-                    var interactionsToDeleteQuery = new InteractionService( interactionRockContext ).Queryable().Where( a => a.InteractionComponent.ChannelId == interactionChannel.Id );
+                    var interactionsToDeleteQuery = new InteractionService( interactionRockContext ).Queryable().Where( a => a.InteractionComponent.InteractionChannelId == interactionChannel.Id );
 
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
                 }

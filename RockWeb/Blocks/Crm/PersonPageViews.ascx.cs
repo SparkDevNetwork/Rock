@@ -281,22 +281,22 @@ namespace RockWeb.Blocks.Crm
                                                         .Select( a => a.Id)
                                                         .FirstOrDefault();
 
-                    sessionInfo = sessionInfo.Where( p => p.InteractionComponent.ChannelId == interactionChannelId );
+                    sessionInfo = sessionInfo.Where( p => p.InteractionComponent.InteractionChannelId == interactionChannelId );
                 }
 
                 var pageviewInfo = sessionInfo.GroupBy( s => new
-                                {
-                                    s.InteractionSession,
-                                    s.InteractionComponent.Channel,
-                                } )
+                {
+                    s.InteractionSession,
+                    s.InteractionComponent.InteractionChannel,
+                } )
                                 .Select( s => new WebSession
                                 {
                                     PageViewSession = s.Key.InteractionSession,
                                     StartDateTime = s.Min( x => x.InteractionDateTime ),
                                     EndDateTime = s.Max( x => x.InteractionDateTime ),
                                     SiteId = siteId,
-                                    Site = s.Key.Channel.Name,
-                                    PageViews = pageViews.Where( p => p.InteractionSessionId == s.Key.InteractionSession.Id && p.InteractionComponent.ChannelId == s.Key.Channel.Id ).OrderBy(p => p.InteractionDateTime).ToList()
+                                    Site = s.Key.InteractionChannel.Name,
+                                    PageViews = pageViews.Where( p => p.InteractionSessionId == s.Key.InteractionSession.Id && p.InteractionComponent.InteractionChannelId == s.Key.InteractionChannel.Id ).OrderBy( p => p.InteractionDateTime ).ToList()
                                 } );
 
                 pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )

@@ -97,6 +97,9 @@ namespace Rock.Client
         public string SettledGroupId { get; set; }
 
         /// <summary />
+        public AnalyticsSourceDate SettledSourceDate { get; set; }
+
+        /// <summary />
         public bool ShowAsAnonymous { get; set; }
 
         /// <summary />
@@ -119,6 +122,9 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? TransactionDateTime { get; set; }
+
+        /// <summary />
+        public AnalyticsSourceDate TransactionSourceDate { get; set; }
 
         /// <summary />
         public int TransactionTypeValueId { get; set; }
@@ -176,6 +182,7 @@ namespace Rock.Client
             this.ScheduledTransactionId = source.ScheduledTransactionId;
             this.SettledDate = source.SettledDate;
             this.SettledGroupId = source.SettledGroupId;
+            this.SettledSourceDate = source.SettledSourceDate;
             this.ShowAsAnonymous = source.ShowAsAnonymous;
             this.SourceTypeValueId = source.SourceTypeValueId;
             this.Status = source.Status;
@@ -184,6 +191,7 @@ namespace Rock.Client
             this.SundayDate = source.SundayDate;
             this.TransactionCode = source.TransactionCode;
             this.TransactionDateTime = source.TransactionDateTime;
+            this.TransactionSourceDate = source.TransactionSourceDate;
             this.TransactionTypeValueId = source.TransactionTypeValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -216,7 +224,13 @@ namespace Rock.Client
         public DefinedValue NonCashAssetTypeValue { get; set; }
 
         /// <summary />
+        public int? SettledDateKey { get; set; }
+
+        /// <summary />
         public DefinedValue SourceTypeValue { get; set; }
+
+        /// <summary />
+        public int? TransactionDateKey { get; set; }
 
         /// <summary />
         public ICollection<FinancialTransactionDetail> TransactionDetails { get; set; }

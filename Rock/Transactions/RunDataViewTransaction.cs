@@ -94,6 +94,7 @@ namespace Rock.Transactions
                 if ( LastRunDateTime != null )
                 {
                     dataView.LastRunDateTime = LastRunDateTime;
+                    dataView.RunCount = ( dataView.RunCount ?? 0 ) + 1;
                 }
 
                 if ( PersistedLastRefreshDateTime != null )
@@ -110,7 +111,6 @@ namespace Rock.Transactions
                 if ( TimeToRunMS != null )
                 {
                     dataView.TimeToRunMS = TimeToRunMS;
-                    dataView.RunCount = ( dataView.RunCount ?? 0 ) + 1;
                 }
 
                 rockContext.SaveChanges();

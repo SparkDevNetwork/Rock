@@ -123,3 +123,46 @@
 iframe.file-browser {
   border: 0;
 }
+
+.structured-content-container {
+  min-height: 378px;
+  overflow: hidden;
+  background: @input-bg;
+  border: 1px solid @input-border;
+  border-radius: @border-radius-base;
+
+  @media (min-width: @screen-md) {
+    background: lighten(@input-group-addon-bg, 7%);
+  }
+
+  @media (min-width: @screen-lg) {
+    min-height: 520px;
+    padding: 40px;
+  }
+
+  &:focus-within {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+  }
+
+  .codex-editor {
+    max-width: 800px;
+    margin: 0 auto;
+    background: @input-bg;
+
+    @media (min-width: @screen-sm) {
+      padding: 20px;
+    }
+
+    @media (min-width: @screen-lg) {
+      padding: 50px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, .1), 0 10px 10px -5px rgba(0, 0, 0, .04);
+    }
+  }
+}
+
+// Fix Editor.JS Wrapping (Remove after codex-team/editor.js#1003)
+.codex-editor .ce-settings {
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}
