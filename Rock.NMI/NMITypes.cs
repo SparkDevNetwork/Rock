@@ -538,6 +538,14 @@ namespace Rock.NMI
         public string Response { get; set; }
 
         /// <summary>
+        /// Determines whether response indicates an error
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is error; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsError() => Response != "1";
+
+        /// <summary>
         /// Gets or sets the response text.
         /// </summary>
         /// <value>
@@ -641,6 +649,14 @@ namespace Rock.NMI
         /// </value>
         [JsonProperty( "response" )]
         public string Response { get; set; }
+
+        /// <summary>
+        /// Determines whether response indicates an error
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is error; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsError() => Response != "1";
 
         /// <summary>
         /// Gets or sets the response text.
@@ -2121,6 +2137,14 @@ namespace Rock.NMI
     {
         [JsonProperty( "result" )]
         public string Result { get; set; }
+
+        /// <summary>
+        /// Determines whether response indicates an error
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if this instance is error; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsError() => Result != "1";
 
         [JsonProperty( "result-text" )]
         public string ResultText { get; set; }
