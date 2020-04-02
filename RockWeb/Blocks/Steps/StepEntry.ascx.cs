@@ -646,7 +646,7 @@ namespace RockWeb.Blocks.Steps
                 descriptionListMain.Add( "Date", step.StartDateTime, "d" );
             }
 
-            descriptionListMain.Add( "Status", step.StepStatus.Name );
+            descriptionListMain.Add( "Status", step.StepStatus == null ? string.Empty : step.StepStatus.Name );
 
             lStepDescription.Text = descriptionListMain.Html;
 
