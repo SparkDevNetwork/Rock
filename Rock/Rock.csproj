@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>7.3</LangVersion>
+    <DocumentationFile>bin\Debug\Rock.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -102,6 +103,24 @@
     <Reference Include="FCM.Net, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\FCM\FCM.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.25.0\lib\net45\Google.Apis.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.25.0\lib\net45\Google.Apis.Auth.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Auth.1.25.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Core, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Core.1.25.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.25.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.1.25.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Storage.v1, Version=1.25.0.854, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Apis.Storage.v1.1.25.0.854\lib\net45\Google.Apis.Storage.v1.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.11.12.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <HintPath>..\packages\HtmlAgilityPack.1.11.12\lib\Net45\HtmlAgilityPack.dll</HintPath>
@@ -196,8 +215,8 @@
     <Reference Include="RestSharp, Version=106.6.10.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.106.6.10\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Mobile.Common, Version=0.2.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Mobile.Common.0.2.10\lib\net452\Rock.Mobile.Common.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.4\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis, Version=2.0.0.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.2.0.601\lib\net472\StackExchange.Redis.dll</HintPath>
@@ -290,6 +309,9 @@
     <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.10.1.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
       <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.10.1\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
     </Reference>
+    <Reference Include="Zlib.Portable, Version=1.11.0.0, Culture=neutral, PublicKeyToken=431cba815f6a8b5b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Zlib.Portable.Signed.1.11.0\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
@@ -312,10 +334,12 @@
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
     <Compile Include="Attribute\AssessmentTypesFieldAttribute.cs" />
+    <Compile Include="Attribute\BlockTemplateFieldAttribute.cs" />
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
+    <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
     <Compile Include="Attribute\StreakTypeFieldAttribute.cs" />
@@ -336,6 +360,8 @@
     <Compile Include="Attribute\ReportFieldAttribute.cs" />
     <Compile Include="Attribute\SelectFieldAttribute.cs" />
     <Compile Include="Attribute\PersistedDatasetFieldAttribute.cs" />
+    <Compile Include="Attribute\StructureContentEditorFieldAttribute.cs" />
+    <Compile Include="Attribute\SystemCommunicationFieldAttribute.cs" />
     <Compile Include="Attribute\TextValueFilterFieldAttribute.cs" />
     <Compile Include="Attribute\TimeZoneFieldAttribute.cs" />
     <Compile Include="Attribute\FileFieldAttribute.cs" />
@@ -439,16 +465,35 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberEdit.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Groups\GroupView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
+    <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
+    <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
     <Compile Include="Bulk\BulkImport\AttendanceImport.cs" />
+    <Compile Include="CheckIn\CheckinConfigurationHelper.cs" />
     <Compile Include="Data\ICampusFilterable.cs" />
+    <Compile Include="Data\RelatedEntityHelper.cs" />
+    <Compile Include="Field\Types\BlockTemplateFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
+    <Compile Include="Field\Types\MetricFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepTypeFieldType.cs" />
-    <Compile Include="Blocks\Types\Mobile\ContentChannelItemView.cs" />
-    <Compile Include="Blocks\Types\Mobile\LavaItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemView.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\LavaItemList.cs" />
+    <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
+    <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
+    <Compile Include="Jobs\SendRsvpReminders.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsValueAsNumeric.cs" />
     <Compile Include="Jobs\SendPrayerComments.cs" />
@@ -456,44 +501,78 @@
     <Compile Include="Jobs\UpdatePersistedDatasets.cs" />
     <Compile Include="Mobile\AdditionalPageSettings.cs" />
     <Compile Include="Mobile\AdditionalSiteSettings.cs" />
+    <Compile Include="Mobile\JsonFields\AttributeFormat.cs" />
+    <Compile Include="Mobile\JsonFields\FieldFormat.cs" />
+    <Compile Include="Mobile\JsonFields\FieldSetting.cs" />
+    <Compile Include="Mobile\JsonFields\FieldSource.cs" />
+    <Compile Include="Mobile\JsonFields\PropertyField.cs" />
+    <Compile Include="Mobile\MobileExtensions.cs" />
     <Compile Include="Mobile\TabLocation.cs" />
     <Compile Include="Model\CodeGenerated\DocumentService.cs" />
     <Compile Include="Model\CodeGenerated\DocumentTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntityCampusFilterService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupDemographicTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupDemographicValueService.cs" />
     <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\CodeGenerated\RegistrationTemplatePlacementService.cs" />
+    <Compile Include="Model\CodeGenerated\RelatedEntityService.cs" />
     <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
+    <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
+    <Compile Include="Model\RegistrationInstanceService.partial.cs" />
+    <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
+    <Compile Include="Model\RegistrationTemplatePlacement.cs" />
+    <Compile Include="Model\RegistrationTemplatePlacementService.partial.cs" />
+    <Compile Include="Model\RelatedEntity.cs" />
     <Compile Include="Model\GroupDemographicType.cs" />
     <Compile Include="Model\GroupDemographicValue.cs" />
     <Compile Include="Model\PersistedDataset.cs" />
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
+    <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
     <Compile Include="Model\StreakAchievementAttempts.cs" />
+    <Compile Include="Model\StreakTypeAchievementTypePrerequisite.cs" />
     <Compile Include="Model\StreakTypeAchievementTypeService.Partial.cs" />
     <Compile Include="Model\StreakTypeAchievementType.cs" />
+    <Compile Include="Model\SystemCommunication.cs" />
     <Compile Include="Net\ClientInformation.cs" />
     <Compile Include="Badge\Component\Steps.cs" />
     <Compile Include="Plugin\HotFixes\095_PrayerRequestCommentsNotificationEmailTemplate.cs" />
     <Compile Include="Plugin\HotFixes\094_AchievementPagesAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\093_UpdateRockShopUI.cs" />
+    <Compile Include="Plugin\HotFixes\100_MigrationRollupsFor10_2_1.cs" />
+    <Compile Include="Plugin\HotFixes\099_MigrationRollupsFor10_2_0.cs" />
+    <Compile Include="Plugin\HotFixes\102_RapidAttendanceEntry.cs" />
+    <Compile Include="Plugin\HotFixes\101_RegistrationInstanceGroupPlacement.cs" />
+    <Compile Include="Plugin\HotFixes\103_GroupPlacementUpdates.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusFilter.cs" />
+    <Compile Include="Storage\AssetStorage\ApiClient\GoogleClient.cs" />
+    <Compile Include="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
     <Compile Include="SystemGuid\Person.cs" />
+    <Compile Include="SystemGuid\SystemCommunication.cs" />
+    <Compile Include="Transactions\ITransactionWithProgress.cs" />
+    <Compile Include="Transactions\RegisterControllersTransaction.cs" />
+    <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
     <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
     <Compile Include="UniversalSearch\IndexModels\DocumentIndex.cs" />
     <Compile Include="Reporting\ReportOutputBuilder.cs" />
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\HttpContextExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
+    <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
+    <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypePrerequisiteCache.cs" />
     <Compile Include="Web\Cache\Entities\StreakTypeAchievementTypeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
@@ -505,12 +584,12 @@
     <Compile Include="Web\RockCustomSettingsUserControlProvider.cs" />
     <Compile Include="Net\RockRequestContext.cs" />
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
-    <Compile Include="Blocks\Types\Mobile\ContentChannelItemList.cs" />
-    <Compile Include="Blocks\Types\Mobile\Content.cs" />
-    <Compile Include="Blocks\Types\Mobile\Login.cs" />
-    <Compile Include="Blocks\Types\Mobile\ProfileDetails.cs" />
-    <Compile Include="Blocks\Types\Mobile\Register.cs" />
-    <Compile Include="Blocks\Types\Mobile\WorkflowEntry.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Content.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Register.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\WorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
@@ -539,7 +618,6 @@
     <Compile Include="Jobs\PostV90DataMigrationsScheduledTransactionNotesToHistory.cs" />
     <Compile Include="Jobs\SendAssessmentReminders.cs" />
     <Compile Include="Field\Types\StreakTypeFieldType.cs" />
-    <Compile Include="Jobs\RebuildStreakMaps.cs" />
     <Compile Include="Jobs\SendGroupScheduleNotifications.cs" />
     <Compile Include="Lava\Blocks\JsonProperty.cs" />
     <Compile Include="Model\CodeGenerated\GroupMemberAssignmentService.cs" />
@@ -676,6 +754,9 @@
     <Compile Include="Plugin\HotFixes\089_MigrationRollupsForV9_3.cs" />
     <Compile Include="Plugin\HotFixes\088_FixAttributeQualifierMotivatorDefinedType.cs" />
     <Compile Include="Plugin\HotFixes\087_AddNonCashAssetTypes.cs" />
+    <Compile Include="Plugin\HotFixes\098_FixContributionStatementLava.cs" />
+    <Compile Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange.cs" />
+    <Compile Include="Plugin\HotFixes\096_MigrationRollupsForV9_5.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1383,7 +1464,7 @@
     <Compile Include="Model\CodeGenerated\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
-    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
+    <Compile Include="Model\SystemEmailService.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
     <Compile Include="Model\CodeGenerated\TagService.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
@@ -1944,15 +2025,23 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\JsonFieldsBuilder.cs" />
     <Compile Include="Web\UI\Controls\PersonBasicEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\AchievementComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BadgeComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\AssessmentTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\BlockTemplatePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MetricItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\InteractionChannelPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\InteractionComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\InteractionChannelInteractionComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypeAchievementTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StreakTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepStatusPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramStepTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\StructureContentEditor.cs" />
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
     <Compile Include="Web\UI\Controls\AccordionPanel.cs" />
     <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
@@ -2626,6 +2715,12 @@
     <Content Include="Plugin\HotFixes\060_MigrationRollupsForV8_6_spFinance_PledgeAnalyticsQuery_Up.sql">
       <DependentUpon>060_MigrationRollupsForV8_6.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\096_MigrationRollupsForV9_5_chartjsfix.sql">
+      <DependentUpon>096_MigrationRollupsForV9_5.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset.sql">
+      <DependentUpon>097_FamilyAnalyticsProcChange.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />
@@ -2648,6 +2743,7 @@
     <Content Include="SqlServerTypes\readme.htm" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="App.config" />
     <Compile Include="Model\RegistrationTemplateFeeService.Partial.cs" />
     <None Include="CheckIn\_DiagramCheckInClasses.cd" />

@@ -121,10 +121,7 @@ namespace Rock.Rest.Controllers
                     string.Join( ",", following.ValidationResults.Select( r => r.ErrorMessage ).ToArray() ) );
             }
 
-            if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-            {
-                System.Web.HttpContext.Current.Items.Add( "CurrentPerson", GetPerson() );
-            }
+            System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
             Service.Context.SaveChanges();
 

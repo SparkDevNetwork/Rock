@@ -72,13 +72,14 @@ namespace Rock.Field
         /// <returns></returns>
         public bool Evaluate( Dictionary<int, AttributeValueCache> attributeValues, Dictionary<RegistrationPersonFieldType, string> personFieldValues )
         {
-            bool visible = true;
             var fieldVisibilityRules = this;
+
+            List<bool> conditionResults = new List<bool>();
 
             if ( !fieldVisibilityRules.RuleList.Any() || ( !attributeValues.Any() && !personFieldValues.Any() ) )
             {
                 // if no rules or no values, just exit
-                return visible;
+                return true;
             }
 
             foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList.Where( a => a.ComparedToRegistrationTemplateFormFieldGuid.HasValue ) )
@@ -142,38 +143,50 @@ namespace Rock.Field
                     continue;
                 }
 
-                switch ( fieldVisibilityRules.FilterExpressionType )
-                {
-                    case Rock.Model.FilterExpressionType.GroupAll:
-                        {
-                            visible = visible && conditionResult;
-                            break;
-                        }
+                conditionResults.Add( conditionResult );
+            }
 
-                    case Rock.Model.FilterExpressionType.GroupAllFalse:
-                        {
-                            visible = visible && !conditionResult;
-                            break;
-                        }
+            if ( !conditionResults.Any() )
+            {
+                // ended up not having any conditions, so return true
+                return true;
+            }
 
-                    case Rock.Model.FilterExpressionType.GroupAny:
-                        {
-                            visible = visible || conditionResult;
-                            break;
-                        }
+            bool visible;
 
-                    case Rock.Model.FilterExpressionType.GroupAnyFalse:
-                        {
-                            visible = visible || !conditionResult;
-                            break;
-                        }
+            switch ( fieldVisibilityRules.FilterExpressionType )
+            {
+                case Rock.Model.FilterExpressionType.GroupAll:
+                    {
+                        // Show if all of the conditions are met (A && B && C && D)
+                        visible = conditionResults.All( a => a == true );
+                        break;
+                    }
+                case Rock.Model.FilterExpressionType.GroupAllFalse:
+                    {
+                        // Hide if all of the conditions are met (A && B && C && D)
+                        visible = !conditionResults.All( a => a == true );
+                        break;
+                    }
+                case Rock.Model.FilterExpressionType.GroupAny:
+                    {
+                        // Show if any of the conditions are met (A || B || C || D)
+                        visible = conditionResults.Any( a => a == true );
+                        break;
+                    }
+                case Rock.Model.FilterExpressionType.GroupAnyFalse:
+                    {
+                        // Hide if any of the conditions are met (A || B || C || D)
+                        visible = !conditionResults.Any( a => a == true );
+                        break;
+                    }
 
-                    default:
-                        {
-                            // ignore if unexpected FilterExpressionType
-                            break;
-                        }
-                }
+                default:
+                    {
+                        // show if unexpected FilterExpressionType
+                        visible = true;
+                        break;
+                    }
             }
 
             return visible;
@@ -185,7 +198,37 @@ namespace Rock.Field
         /// <value>
         /// The debugger formatted rules.
         /// </value>
-        internal string DebuggerFormattedRules => $"{FilterExpressionType} {this.RuleList.AsDelimited( " and " )}";
+        internal string DebuggerFormattedRules
+        {
+            get
+            {
+                switch ( FilterExpressionType )
+                {
+                    case FilterExpressionType.GroupAll:
+                        {
+                            return $"Show if {this.RuleList.AsDelimited( " and " )}";
+                        }
+                    case FilterExpressionType.GroupAnyFalse:
+                        {
+                            return $"Hide if {this.RuleList.AsDelimited( " or " )}";
+                        }
+                    case FilterExpressionType.GroupAny:
+                        {
+                            return $"Show if {this.RuleList.AsDelimited( " or " )}";
+                        }
+                    case FilterExpressionType.GroupAllFalse:
+                        {
+                            return $"Hide if {this.RuleList.AsDelimited( " and " )}";
+                        }
+                    default:
+                        {
+                            // some unexpected FilterExpressionType
+                            return $"{FilterExpressionType} {this.RuleList.AsDelimited( " and " ) }";
+                        }
+                }
+
+            }
+        }
 
         /// <summary>
         /// Determines if the registration field type is supported for conditional field visibility
@@ -266,7 +309,7 @@ namespace Rock.Field
         {
             if ( ComparedToRegistrationTemplateFormFieldGuid.HasValue )
             {
-                var comparedToField = RegistrationTemplateFormFieldCache.Get( this.ComparedToRegistrationTemplateFormFieldGuid.Value );                
+                var comparedToField = RegistrationTemplateFormFieldCache.Get( this.ComparedToRegistrationTemplateFormFieldGuid.Value );
 
                 if ( comparedToField?.AttributeId.HasValue == true )
                 {
@@ -279,8 +322,8 @@ namespace Rock.Field
                     return $"{comparedToField.PersonFieldType.ConvertToString()} is {ComparedToValue}";
                 }
             }
-            
-            return base.ToString();            
+
+            return base.ToString();
         }
     }
 }

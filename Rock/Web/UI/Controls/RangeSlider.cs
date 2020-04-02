@@ -81,11 +81,12 @@ namespace Rock.Web.UI.Controls
         private void RegisterJavascript()
         {
             var script = string.Format(
-                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', from: '{3}' }});",
+                @"Rock.controls.rangeSlider.initialize({{ controlId: '{0}', min: '{1}', max: '{2}', from: '{3}', disable: {4} }});",
                 this.ClientID,
                 this.MinValue ?? 0,
                 this.MaxValue ?? 100,
-                this.SelectedValue ?? 0 );
+                this.SelectedValue ?? 0,
+                ( !this.Enabled || this.ReadOnly ) ? "true" : "false" );
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "range_slider-" + this.ClientID, script, true );
         }

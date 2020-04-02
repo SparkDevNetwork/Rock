@@ -29,51 +29,7 @@
     </div>
 </div>
 
-<h5>Fields</h5>
-<p>
-    Configure the fields you would like to display in the list control. Each field you define here will be available via the key you provide.
-</p>
-<hr />
-<Rock:Grid ID="gIncludedAttributes" runat="server" DisplayType="Light" >
-    <Columns>
-        <Rock:RockBoundField DataField="FieldSource" HeaderText="Source" />
-        <Rock:RockBoundField DataField="Key" HeaderText="Key" />
-        <Rock:RockBoundField DataField="Value" HeaderText="Expression" />
-        <Rock:RockBoundField DataField="FieldFormat" HeaderText="Format" />
-
-        <Rock:EditField OnClick="gIncludedAttributesEdit_Click" />
-        <Rock:DeleteField OnClick="gIncludedAttributesDelete_Click" />
-    </Columns>
-</Rock:Grid>
-<asp:Panel ID="pnlDataEdit" runat="server" Visible="false">
-    <asp:HiddenField ID="hfOriginalKey" runat="server" />
-    <Rock:RockRadioButtonList ID="rblFieldSource" runat="server" Label="Field Source" OnSelectedIndexChanged="rblFieldSource_SelectedIndexChanged" AutoPostBack="true" RepeatDirection="Horizontal" />
-    
-    <asp:Panel ID="pnlProperties" runat="server">
-        <Rock:RockDropDownList ID="ddlContentChannelProperties" runat="server" Label="Property" />
-    </asp:Panel>
-
-    <asp:Panel ID="pnlAttributes" runat="server">
-        <div class="row">
-            <div class="col-md-6"><Rock:RockDropDownList ID="ddlContentChannelAttributes" runat="server" Label="Attribute" /></div>
-            <div class="col-md-6"><Rock:RockRadioButtonList ID="rblAttributeFormatType" runat="server" Label="Format Type" RepeatDirection="Horizontal" /></div>
-        </div>
-
-    </asp:Panel>
-
-    <asp:Panel ID="pnlLavaExpression" runat="server">
-        <div class="row">
-            <div class="col-md-6"><Rock:RockTextBox ID="tbKey" runat="server" Label="Key" Help="This will become the prorperty name in the returned JSON." Required="true" /></div>
-            <div class="col-md-6"><Rock:RockRadioButtonList ID="rblFieldFormat" runat="server" Label="Field Format" RepeatDirection="Horizontal" /></div>
-        </div>
-        
-        <Rock:CodeEditor id="ceLavaExpression" runat="server" Label="Lava Expression" EditorMode="Lava" Placeholder="{{ item | Attribute:'AttributeKey' }}" Help="Lava expression to use to get the value for the field. Note: The use of entity commands, SQL commands, etc are not recommended for performance reasons." />
-        
-    </asp:Panel>
-
-    <asp:LinkButton ID="lbApply" runat="server" OnClick="lbApply_Click" CssClass="btn btn-primary btn-xs" Text="Apply" />
-    <asp:LinkButton ID="lbCancel" runat="server" OnClick="lbCancel_Click" CssClass="btn btn-link btn-xs" Text="Cancel" />
-</asp:Panel>
+<Rock:JsonFieldsBuilder ID="jfBuilder" runat="server" Label="Additional Fields" Help="Configure the fields you would like to display in the list control. Each field you define here will be available via the key you provide." />
 
 <h5>Filter</h5>
     <asp:HiddenField ID="hfDataFilterId" runat="server" />

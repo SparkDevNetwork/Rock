@@ -208,22 +208,46 @@ namespace RockWeb.Blocks.Examples
         /// <summary>
         /// The marital status DefinedType
         /// </summary>
-        DefinedTypeCache _maritalStatusDefinedType = null;
+        DefinedTypeCache _maritalStatusDefinedType
+        {
+            get
+            {
+                return DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
+            }
+        }
 
         /// <summary>
         /// The small group topic DefinedType
         /// </summary>
-        DefinedTypeCache _smallGroupTopicDefinedType = null;
+        DefinedTypeCache _smallGroupTopicDefinedType
+        {
+            get
+            {
+                return DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
+            }
+        }
 
         /// <summary>
         /// The record status reason DefinedType
         /// </summary>
-        DefinedTypeCache _recordStatusReasonDefinedType = null;
+        DefinedTypeCache _recordStatusReasonDefinedType
+        {
+            get
+            {
+                return DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
+            }
+        }
 
         /// <summary>
         /// The suffix DefinedType
         /// </summary>
-        DefinedTypeCache _suffixDefinedType = null;
+        DefinedTypeCache _suffixDefinedType
+        {
+            get
+            {
+                return DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
+            }
+        }
 
         #endregion
 
@@ -471,11 +495,6 @@ namespace RockWeb.Blocks.Examples
             try
             {
                 rockContext.Configuration.AutoDetectChangesEnabled = false;
-
-                _maritalStatusDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() );
-                _smallGroupTopicDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
-                _recordStatusReasonDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON.AsGuid() );
-                _suffixDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() );
 
                 var elemFamilies = xdoc.Element( "data" ).Element( "families" );
                 var elemGroups = xdoc.Element( "data" ).Element( "groups" );
@@ -749,7 +768,7 @@ namespace RockWeb.Blocks.Examples
                     AddPersonNote = element.Attribute( "addPersonNote" ) != null ? element.Attribute( "addPersonNote" ).Value.AsBoolean() : false,
                     LoginRequired = element.Attribute( "loginRequired" ) != null ? element.Attribute( "loginRequired" ).Value.AsBoolean() : false,
                     AllowExternalRegistrationUpdates = element.Attribute( "allowExternalUpdatesToSavedRegistrations" ) != null ? element.Attribute( "allowExternalUpdatesToSavedRegistrations" ).Value.AsBoolean() : false,
-                    AllowGroupPlacement = element.Attribute( "allowGroupPlacement" ) != null ? element.Attribute( "allowGroupPlacement" ).Value.AsBoolean() : false,
+//                    AllowGroupPlacement = element.Attribute( "allowGroupPlacement" ) != null ? element.Attribute( "allowGroupPlacement" ).Value.AsBoolean() : false,
                     AllowMultipleRegistrants = element.Attribute( "allowMultipleRegistrants" ) != null ? element.Attribute( "allowMultipleRegistrants" ).Value.AsBoolean() : false,
                     MaxRegistrants = element.Attribute( "maxRegistrants" ).Value.AsInteger(),
                     RegistrantsSameFamily = registrantsSameFamily,
@@ -1190,8 +1209,7 @@ namespace RockWeb.Blocks.Examples
             Guid knownRelationshipsGroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid();
             var memberService = new GroupMemberService( rockContext );
 
-            var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable( "GroupType" )
-                .Where( r => r.GroupType.Guid == knownRelationshipsGroupTypeGuid ).ToList();
+            var groupTypeRoles = GroupTypeCache.Get( knownRelationshipsGroupTypeGuid, rockContext ).Roles;
 
             //// We have to create (or fetch existing) two groups for each relationship, adding the
             //// other person as a member of that group with the appropriate GroupTypeRole (GTR):
@@ -1650,7 +1668,6 @@ namespace RockWeb.Blocks.Examples
             }
 
             GroupService groupService = new GroupService( rockContext );
-            DefinedTypeCache smallGroupTopicType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SMALL_GROUP_TOPIC.AsGuid() );
 
             // Next create the group along with its members.
             foreach ( var elemGroup in elemGroups.Elements( "group" ) )
@@ -1731,6 +1748,13 @@ namespace RockWeb.Blocks.Examples
                 {
                     var topic = elemGroup.Attribute( "studyTopic" ).Value;
                     DefinedValueCache smallGroupTopicDefinedValue = _smallGroupTopicDefinedType.DefinedValues.FirstOrDefault( a => a.Value == topic );
+
+                    // add it as new if we didn't find it.
+                    if ( smallGroupTopicDefinedValue == null )
+                    {
+                        smallGroupTopicDefinedValue = AddDefinedTypeValue( topic, _smallGroupTopicDefinedType );
+                    }
+
                     group.SetAttributeValue( "Topic", smallGroupTopicDefinedValue.Guid.ToString() );
                 }
 
@@ -3103,11 +3127,14 @@ namespace RockWeb.Blocks.Examples
             binaryFile.IsTemporary = true;
             binaryFile.BinaryFileTypeId = binaryFileType.Id;
             binaryFile.FileName = Path.GetFileName( imageUrl );
-
+            Stopwatch stopwatch = Stopwatch.StartNew();
             var webClient = new WebClient();
+            webClient.Proxy = null;
             try
             {
                 byte[] imageData = webClient.DownloadData( imageUrl );
+                stopwatch.Stop();
+                Debug.WriteLine( stopwatch.Elapsed.TotalMilliseconds );
                 binaryFile.FileSize = imageData.Length;
                 binaryFile.ContentStream = new MemoryStream( imageData );
 

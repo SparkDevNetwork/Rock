@@ -1093,8 +1093,8 @@ namespace Rock.Utility
                     }
                 }
 
-                SystemEmailService emailService = new SystemEmailService( rockContext );
-                SystemEmail systemEmail = emailService.GetNoTracking( SystemGuid.SystemEmail.SPARK_DATA_NOTIFICATION.AsGuid() );
+                var emailService = new SystemCommunicationService( rockContext );
+                var systemEmail = emailService.GetNoTracking( SystemGuid.SystemCommunication.SPARK_DATA_NOTIFICATION.AsGuid() );
 
                 var emailMessage = new RockEmailMessage( systemEmail.Guid );
                 emailMessage.SetRecipients( recipients );

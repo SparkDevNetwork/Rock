@@ -118,6 +118,7 @@ namespace Rock.Web.Cache
         /// The value formatted.
         /// </value>
         [LavaInclude]
+        [Newtonsoft.Json.JsonProperty]
         public virtual string ValueFormatted
         {
             get

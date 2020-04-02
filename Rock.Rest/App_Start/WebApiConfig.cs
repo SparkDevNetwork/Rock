@@ -339,6 +339,7 @@ namespace Rock.Rest
             }
 
             config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel() );
+            new Transactions.RegisterControllersTransaction().Enqueue();
         }
     }
 }

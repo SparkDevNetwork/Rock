@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -37,12 +36,79 @@ namespace RockWeb.Blocks.CheckIn
     [DisplayName( "Administration" )]
     [Category( "Check-in" )]
     [Description( "Check-in Administration block" )]
-    [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true, "", 5 )]
-    [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 6 )]
-    [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 7 )]
-    [BooleanField( "Enable Kiosk Match By Name", "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address", false, "", 8, "EnableReverseLookup" )]
+
+    [BooleanField(
+        "Allow Manual Setup",
+        Key = AttributeKey.AllowManualSetup,
+        Description = "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.",
+        Category = AttributeCategory.CategoryNone,
+        DefaultBooleanValue = true,
+        Order = 5 )]
+
+    [BooleanField(
+        "Enable Location Sharing",
+        Key = AttributeKey.EnableLocationSharing,
+        Description = "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.GeoLocation,
+        Order = 6 )]
+
+    [IntegerField(
+        "Time to Cache Kiosk GeoLocation",
+        Key = AttributeKey.TimetoCacheKioskGeoLocation,
+        Description = "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.",
+        IsRequired = false,
+        DefaultIntegerValue = 20,
+        Category = AttributeCategory.GeoLocation,
+        Order = 7 )]
+
+    [BooleanField(
+        "Enable Kiosk Match By Name",
+        Key = AttributeKey.EnableKioskMatchByName,
+        Description = "Enable a kiosk match by computer name by doing reverseIP lookup to get computer name based on IP address",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.CategoryNone,
+        Order = 8 )]
+
     public partial class Admin : CheckInBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string AllowManualSetup = "AllowManualSetup";
+            public const string EnableLocationSharing = "EnableLocationSharing";
+            public const string TimetoCacheKioskGeoLocation = "TimetoCacheKioskGeoLocation";
+            public const string EnableKioskMatchByName = "EnableReverseLookup";
+        }
+
+        private static class AttributeCategory
+        {
+            public const string CategoryNone = "";
+            public const string GeoLocation = "Geo Location";
+        }
+
+        #endregion Attribute Keys
+
+        #region PageParameterKeys
+
+        /// <summary>
+        /// Just in case something passes in specific configuration in the URL
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string KioskId = "KioskId";
+            public const string CheckinConfigId = "CheckinConfigId";
+            public const string GroupTypeIds = "GroupTypeIds";
+            public const string FamilyId = "FamilyId";
+        }
+
+        #endregion PageParameterKe
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
@@ -50,144 +116,118 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( !Page.IsPostBack )
             {
-                // Set the check-in state from values passed on query string
-                bool themeRedirect = PageParameter( "ThemeRedirect" ).AsBoolean( false );
-
-                CurrentKioskId = PageParameter( "KioskId" ).AsIntegerOrNull();
-                CurrentCheckinTypeId = PageParameter( "CheckinConfigId" ).AsIntegerOrNull();
-                CurrentGroupTypeIds = ( PageParameter( "GroupTypeIds" ) ?? "" )
-                    .Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries )
-                    .ToList()
-                    .Select( s => s.AsInteger() )
-                    .ToList();
-
-                // If Kiosk and GroupTypes were passed, but not a checkin type, try to calculate it from the group types.
-                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() && !CurrentCheckinTypeId.HasValue )
+                // if a specific configuration was included in the URL, go directly to the next page (Welcome/Start Page)
+                if ( SetConfigurationFromURL() )
                 {
-                    if ( !CurrentCheckinTypeId.HasValue )
-                    {
-                        foreach ( int groupTypeId in CurrentGroupTypeIds )
-                        {
-                            var checkinType = GetCheckinType( groupTypeId );
-                            if ( checkinType != null )
-                            {
-                                CurrentCheckinTypeId = checkinType.Id;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // If valid parameters were used, set state and navigate to welcome page
-                if ( CurrentKioskId.HasValue && CurrentGroupTypeIds.Any() && CurrentCheckinTypeId.HasValue && !themeRedirect )
-                {
-                    // Save the check-in state
-                    SaveState();
-
                     // Navigate to the check-in home (welcome) page, passing family ID if it was included in the query string
                     var queryParams = new Dictionary<string, string>();
-                    string familyId = PageParameter( "FamilyId" );
+                    string familyId = PageParameter( PageParameterKey.FamilyId );
                     if ( familyId.IsNotNullOrWhiteSpace() )
                     {
-                        queryParams.Add( "FamilyId", familyId );
+                        queryParams.Add( PageParameterKey.FamilyId, familyId );
                     }
 
                     NavigateToNextPage( queryParams );
+                    return;
                 }
-                else
-                {
-                    bool enableLocationSharing = GetAttributeValue( "EnableLocationSharing" ).AsBoolean();
 
-                    // Inject script used for geo location determination
-                    if ( enableLocationSharing )
-                    {
-                        lbRetry.Visible = true;
-                        AddGeoLocationScript();
-                    }
-                    else
-                    {
-                        pnlManualConfig.Visible = true;
-                        lbOk.Visible = true;
-                        AttemptKioskMatchByIpOrName();
-                    }
-
-                    if ( !themeRedirect )
-                    {
-                        string script = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                if (localStorage.checkInKiosk) {{
-                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
-                                    if (localStorage.theme) {{
-                                        $('[id$=""hfTheme""]').val(localStorage.theme);
-                                    }}
-                                    if (localStorage.checkInType) {{
-                                        $('[id$=""hfCheckinType""]').val(localStorage.checkInType);
-                                    }}
-                                    if (localStorage.checkInGroupTypes) {{
-                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
-                                    }}
-
-                                    window.location = ""javascript:{0}"";
-                                }}
-                            }}
-                        }});
-                    </script>
-                ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                        phScript.Controls.Add( new LiteralControl( script ) );
-                    }
-
-                    ddlTheme.Items.Clear();
-                    DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
-                    foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
-                    {
-                        ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );
-                    }
-
-                    if ( !string.IsNullOrWhiteSpace( CurrentTheme ) )
-                    {
-                        ddlTheme.SetValue( CurrentTheme );
-                    }
-                    else
-                    {
-                        ddlTheme.SetValue( RockPage.Site.Theme.ToLower() );
-                    }
-
-                    Guid kioskDeviceType = Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid();
-                    ddlKiosk.Items.Clear();
-                    using ( var rockContext = new RockContext() )
-                    {
-                        ddlKiosk.DataSource = new DeviceService( rockContext )
-                            .Queryable().AsNoTracking()
-                            .Where( d => d.DeviceType.Guid.Equals( kioskDeviceType ) )
-                            .OrderBy( d => d.Name )
-                            .Select( d => new
-                            {
-                                d.Id,
-                                d.Name
-                            } )
-                            .ToList();
-                    }
-                    ddlKiosk.DataBind();
-                    ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
-
-                    if ( CurrentKioskId.HasValue )
-                    {
-                        ListItem item = ddlKiosk.Items.FindByValue( CurrentKioskId.Value.ToString() );
-                        if ( item != null )
-                        {
-                            item.Selected = true;
-                            BindCheckinTypes();
-                            BindGroupTypes();
-                        }
-                    }
-                }
+                ShowDetail();
             }
             else
             {
-                phScript.Controls.Clear();
+                phGeoCodeScript.Controls.Clear();
             }
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        private void ShowDetail()
+        {
+            bool enableLocationSharing = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean();
+
+            // Inject script used for geo location determination
+            if ( enableLocationSharing )
+            {
+                lbRetry.Visible = true;
+                AddGeoLocationScript();
+            }
+            else
+            {
+                pnlManualConfig.Visible = true;
+                lbOk.Visible = true;
+                AttemptKioskMatchByIpOrName();
+            }
+
+            ddlTheme.Items.Clear();
+            DirectoryInfo di = new DirectoryInfo( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ) );
+            foreach ( var themeDir in di.Parent.EnumerateDirectories().OrderBy( a => a.Name ) )
+            {
+                ddlTheme.Items.Add( new ListItem( themeDir.Name, themeDir.Name.ToLower() ) );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( LocalDeviceConfig.CurrentTheme ) )
+            {
+                ddlTheme.SetValue( LocalDeviceConfig.CurrentTheme );
+                SetSelectedTheme( LocalDeviceConfig.CurrentTheme );
+            }
+            else
+            {
+                ddlTheme.SetValue( RockPage.Site.Theme.ToLower() );
+            }
+
+            int? kioskDeviceTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid() );
+
+            ddlKiosk.Items.Clear();
+            using ( var rockContext = new RockContext() )
+            {
+                ddlKiosk.DataSource = new DeviceService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( d => d.DeviceTypeValueId == kioskDeviceTypeValueId )
+                    .OrderBy( d => d.Name )
+                    .Select( d => new
+                    {
+                        d.Id,
+                        d.Name
+                    } )
+                    .ToList();
+            }
+
+            ddlKiosk.DataBind();
+            ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+
+            ddlKiosk.SetValue( this.LocalDeviceConfig.CurrentKioskId );
+            BindCheckinTypes( this.LocalDeviceConfig.CurrentCheckinTypeId );
+            BindGroupTypes( this.LocalDeviceConfig.CurrentGroupTypeIds );
+        }
+
+        /// <summary>
+        /// Sets the configuration from URL, returning true if valid parameters were include in the URL
+        /// </summary>
+        /// <returns></returns>
+        private bool SetConfigurationFromURL()
+        {
+            var urlKioskId = PageParameter( PageParameterKey.KioskId ).AsIntegerOrNull();
+            var urlCheckinTypeId = PageParameter( PageParameterKey.CheckinConfigId ).AsIntegerOrNull();
+            var urlGroupTypeIds = ( PageParameter( PageParameterKey.GroupTypeIds ) ?? string.Empty ).SplitDelimitedValues().AsIntegerList();
+
+            if ( urlKioskId.HasValue && urlCheckinTypeId.HasValue && urlGroupTypeIds.Any() )
+            {
+                // all parameters that we need is in the URL, so set localDeviceConfig from that
+                this.LocalDeviceConfig.CurrentKioskId = urlKioskId;
+                this.LocalDeviceConfig.CurrentCheckinTypeId = urlCheckinTypeId;
+                this.LocalDeviceConfig.CurrentGroupTypeIds = urlGroupTypeIds;
+
+                // If the local device is fully configured return true
+                if ( this.LocalDeviceConfig.IsConfigured() )
+                {
+                    // Since we changed the config, save state
+                    SaveState();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -199,22 +239,22 @@ namespace RockWeb.Blocks.CheckIn
             var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
             using ( var rockContext = new RockContext() )
             {
-                bool enableReverseLookup = GetAttributeValue( "EnableReverseLookup" ).AsBoolean( false );
-                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, !enableReverseLookup );
+                bool skipReverseLookup = !GetAttributeValue( AttributeKey.EnableKioskMatchByName ).AsBoolean();
+                var device = new DeviceService( rockContext ).GetByIPAddress( Rock.Web.UI.RockPage.GetClientIpAddress(), checkInDeviceTypeId, skipReverseLookup );
                 if ( device != null )
                 {
                     ClearMobileCookie();
-                    CurrentKioskId = device.Id;
-                    CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext ); ;
+                    LocalDeviceConfig.CurrentKioskId = device.Id;
+                    LocalDeviceConfig.CurrentGroupTypeIds = GetAllKiosksGroupTypes( device, rockContext );
 
-                    if ( !CurrentCheckinTypeId.HasValue )
+                    if ( !LocalDeviceConfig.CurrentCheckinTypeId.HasValue )
                     {
-                        foreach ( int groupTypeId in CurrentGroupTypeIds )
+                        foreach ( int groupTypeId in LocalDeviceConfig.CurrentGroupTypeIds )
                         {
                             var checkinType = GetCheckinType( groupTypeId );
                             if ( checkinType != null )
                             {
-                                CurrentCheckinTypeId = checkinType.Id;
+                                LocalDeviceConfig.CurrentCheckinTypeId = checkinType.Id;
                                 break;
                             }
                         }
@@ -238,6 +278,7 @@ namespace RockWeb.Blocks.CheckIn
             string geoScript = string.Format( @"
     <script>
         $(document).ready(function (e) {{
+
             tryGeoLocation();
 
             function tryGeoLocation() {{
@@ -269,31 +310,10 @@ namespace RockWeb.Blocks.CheckIn
         }});
     </script>
 ", this.Page.ClientScript.GetPostBackEventReference( lbCheckGeoLocation, "" ) );
-            phScript.Controls.Add( new LiteralControl( geoScript ) );
+            phGeoCodeScript.Controls.Add( new LiteralControl( geoScript ) );
         }
 
-        /// <summary>
-        /// Used by the local storage script to rebind the group types if they were previously
-        /// saved via local storage.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        protected void lbRefresh_Click( object sender, EventArgs e )
-        {
-            if ( !string.IsNullOrWhiteSpace( hfTheme.Value ) &&
-                !hfTheme.Value.Equals( ddlTheme.SelectedValue, StringComparison.OrdinalIgnoreCase ) &&
-                Directory.Exists( Path.Combine( this.Page.Request.MapPath( ResolveRockUrl( "~~" ) ), hfTheme.Value ) ) )
-            {
-                CurrentTheme = hfTheme.Value;
-                RedirectToNewTheme( hfTheme.Value );
-            }
-            else
-            {
-                ddlKiosk.SetValue( hfKiosk.Value );
-                BindCheckinTypes( hfCheckinType.Value.AsIntegerOrNull() );
-                BindGroupTypes( hfGroupTypes.Value );
-            }
-        }
+
 
         #region GeoLocation related
 
@@ -305,33 +325,33 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e"></param>
         protected void lbCheckGeoLocation_Click( object sender, EventArgs e )
         {
-            var lat = hfLatitude.Value;
-            var lon = hfLongitude.Value;
+            var latitude = hfLatitude.Value.AsDoubleOrNull();
+            var longitude = hfLongitude.Value.AsDoubleOrNull();
             Device kiosk = null;
 
-            if ( !string.IsNullOrEmpty( lat ) && !string.IsNullOrEmpty( lon ) )
+            if ( latitude.HasValue && longitude.HasValue )
             {
-                kiosk = GetCurrentKioskByGeoFencing( lat, lon );
+                kiosk = GetCurrentKioskByGeoFencing( latitude.Value, longitude.Value );
             }
 
             if ( kiosk != null )
             {
                 SetDeviceIdCookie( kiosk );
 
-                CurrentKioskId = kiosk.Id;
+                LocalDeviceConfig.CurrentKioskId = kiosk.Id;
                 using ( var rockContext = new RockContext() )
                 {
-                    CurrentGroupTypeIds = GetAllKiosksGroupTypes( kiosk, rockContext ); ;
+                    LocalDeviceConfig.CurrentGroupTypeIds = GetAllKiosksGroupTypes( kiosk, rockContext );
                 }
 
-                if ( !CurrentCheckinTypeId.HasValue )
+                if ( !LocalDeviceConfig.CurrentCheckinTypeId.HasValue )
                 {
-                    foreach ( int groupTypeId in CurrentGroupTypeIds )
+                    foreach ( int groupTypeId in LocalDeviceConfig.CurrentGroupTypeIds )
                     {
                         var checkinType = GetCheckinType( groupTypeId );
                         if ( checkinType != null )
                         {
-                            CurrentCheckinTypeId = checkinType.Id;
+                            LocalDeviceConfig.CurrentCheckinTypeId = checkinType.Id;
                             break;
                         }
                     }
@@ -357,18 +377,18 @@ namespace RockWeb.Blocks.CheckIn
         private void SetDeviceIdCookie( Device kiosk )
         {
             // set an expiration cookie for these coordinates.
-            double timeCacheMinutes = double.Parse( GetAttributeValue( "TimetoCacheKioskGeoLocation" ) ?? "0" );
+            double timeCacheMinutes = GetAttributeValue( AttributeKey.TimetoCacheKioskGeoLocation ).AsDouble();
 
-            HttpCookie deviceCookie = Request.Cookies[CheckInCookie.DEVICEID];
+            HttpCookie deviceCookie = Request.Cookies[CheckInCookieKey.DeviceId];
             if ( deviceCookie == null )
             {
-                deviceCookie = new HttpCookie( CheckInCookie.DEVICEID, kiosk.Id.ToString() );
+                deviceCookie = new HttpCookie( CheckInCookieKey.DeviceId, kiosk.Id.ToString() );
             }
 
             deviceCookie.Expires = ( timeCacheMinutes == 0 ) ? DateTime.MaxValue : RockDateTime.Now.AddMinutes( timeCacheMinutes );
             Response.Cookies.Set( deviceCookie );
 
-            HttpCookie isMobileCookie = new HttpCookie( CheckInCookie.ISMOBILE, "true" );
+            HttpCookie isMobileCookie = new HttpCookie( CheckInCookieKey.IsMobile, "true" );
             Response.Cookies.Set( isMobileCookie );
         }
 
@@ -377,7 +397,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void ClearMobileCookie()
         {
-            HttpCookie isMobileCookie = new HttpCookie( CheckInCookie.ISMOBILE );
+            HttpCookie isMobileCookie = new HttpCookie( CheckInCookieKey.IsMobile );
             isMobileCookie.Expires = RockDateTime.Now.AddDays( -1d );
             Response.Cookies.Set( isMobileCookie );
         }
@@ -399,7 +419,7 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         private void TooFar()
         {
-            bool allowManualSetup = GetAttributeValue( "AllowManualSetup" ).AsBoolean( true );
+            bool allowManualSetup = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean( true );
 
             if ( allowManualSetup )
             {
@@ -413,37 +433,73 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        protected void lbRetry_Click( object sender, EventArgs e )
-        {
-            // TODO
-        }
-
         #endregion
 
         #region Manually Setting Kiosks related
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlTheme control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlTheme_SelectedIndexChanged( object sender, EventArgs e )
         {
-            CurrentTheme = ddlTheme.SelectedValue;
-            RedirectToNewTheme( ddlTheme.SelectedValue );
+            SetSelectedTheme( ddlTheme.SelectedValue );
         }
 
+        /// <summary>
+        /// Sets the configured theme and updates the theme cookie if needed
+        /// </summary>
+        /// <param name="theme">The theme.</param>
+        private void SetSelectedTheme( string theme )
+        {
+            if ( LocalDeviceConfig.CurrentTheme != theme )
+            {
+                LocalDeviceConfig.CurrentTheme = ddlTheme.SelectedValue;
+                SaveState();
+            }
+
+            if ( !RockPage.Site.Theme.Equals(LocalDeviceConfig.CurrentTheme, StringComparison.OrdinalIgnoreCase ) )
+            {
+                // if the site's theme doesn't match the configured theme, reload the page with the theme parameter so that the correct theme gets loaded and the theme cookie gets set
+                Dictionary<string, string> themeParameters = new Dictionary<string, string>();
+                themeParameters.Add( "theme", LocalDeviceConfig.CurrentTheme );
+
+                NavigateToCurrentPageReference( themeParameters );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlKiosk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindCheckinTypes();
-            BindGroupTypes();
+            BindCheckinTypes( ddlCheckinType.SelectedValueAsInt() );
+            BindGroupTypes( GetSelectedGroupTypeIds() );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCheckinType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlCheckinType_SelectedIndexChanged( object sender, EventArgs e )
         {
-            BindGroupTypes();
+            BindGroupTypes( GetSelectedGroupTypeIds() );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbOk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbOk_Click( object sender, EventArgs e )
         {
             if ( ddlKiosk.SelectedValue == None.IdValue )
             {
-                maWarning.Show( "A Kiosk Device needs to be selected!", ModalAlertType.Warning );
+                maWarning.Show( "A Kiosk Device needs to be selected", ModalAlertType.Warning );
                 return;
             }
 
@@ -452,22 +508,23 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( item.Selected )
                 {
-                    groupTypeIds.Add( Int32.Parse( item.Value ) );
+                    groupTypeIds.Add( item.Value.AsInteger() );
                 }
             }
+
             foreach ( ListItem item in cblAlternateGroupTypes.Items )
             {
                 if ( item.Selected )
                 {
-                    groupTypeIds.Add( Int32.Parse( item.Value ) );
+                    groupTypeIds.Add( item.Value.AsInteger() );
                 }
             }
 
             ClearMobileCookie();
-            CurrentTheme = ddlTheme.SelectedValue;
-            CurrentKioskId = ddlKiosk.SelectedValueAsInt();
-            CurrentCheckinTypeId = ddlCheckinType.SelectedValueAsInt();
-            CurrentGroupTypeIds = groupTypeIds;
+            LocalDeviceConfig.CurrentTheme = ddlTheme.SelectedValue;
+            LocalDeviceConfig.CurrentKioskId = ddlKiosk.SelectedValueAsInt();
+            LocalDeviceConfig.CurrentCheckinTypeId = ddlCheckinType.SelectedValueAsInt();
+            LocalDeviceConfig.CurrentGroupTypeIds = groupTypeIds;
             CurrentCheckInState = null;
             CurrentWorkflow = null;
             SaveState();
@@ -480,11 +537,12 @@ namespace RockWeb.Blocks.CheckIn
         /// </summary>
         /// <param name="deviceId">The device identifier.</param>
         /// <returns></returns>
-        private List<GroupType> GetDeviceGroupTypes( int deviceId, RockContext rockContext )
+        private List<GroupTypeCache> GetDeviceGroupTypes( int deviceId, RockContext rockContext )
         {
-            var groupTypes = new Dictionary<int, GroupType>();
+            var groupTypes = new Dictionary<int, GroupTypeCache>();
 
             var locationService = new LocationService( rockContext );
+            var groupLocationService = new GroupLocationService( rockContext );
 
             // Get all locations (and their children) associated with device
             var locationIds = locationService
@@ -492,14 +550,16 @@ namespace RockWeb.Blocks.CheckIn
                 .Select( l => l.Id )
                 .ToList();
 
-            // Requery using EF
-            foreach ( var groupType in locationService
+            var locationGroupTypes = groupLocationService
                 .Queryable().AsNoTracking()
-                .Where( l => locationIds.Contains( l.Id ) )
-                .SelectMany( l => l.GroupLocations )
+                .Where( l => locationIds.Contains( l.LocationId ) )
                 .Where( gl => gl.Group.GroupType.TakesAttendance )
-                .Select( gl => gl.Group.GroupType )
-                .ToList() )
+                .Select( gl => gl.Group.GroupTypeId )
+                .ToList()
+                .Select( a => GroupTypeCache.Get( a ) ).ToList();
+
+            // ReQuery using EF
+            foreach ( var groupType in locationGroupTypes )
             {
                 groupTypes.AddOrIgnore( groupType.Id, groupType );
             }
@@ -510,12 +570,11 @@ namespace RockWeb.Blocks.CheckIn
                 .ToList();
         }
 
-        private void BindCheckinTypes()
-        {
-            BindCheckinTypes( ddlCheckinType.SelectedValueAsInt() );
-        }
-
-        private void BindCheckinTypes( int? selectedValue )
+        /// <summary>
+        /// Binds the checkin types.
+        /// </summary>
+        /// <param name="selectedValue">The selected value.</param>
+        private void BindCheckinTypes( int? checkinTypeId )
         {
             ddlCheckinType.Items.Clear();
 
@@ -530,12 +589,11 @@ namespace RockWeb.Blocks.CheckIn
 
                     var groupTypeService = new GroupTypeService( rockContext );
 
-                    Guid templateTypeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
+                    var checkinTemplateTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+
                     ddlCheckinType.DataSource = groupTypeService
                         .Queryable().AsNoTracking()
-                        .Where( t =>
-                            t.GroupTypePurposeValue != null &&
-                            t.GroupTypePurposeValue.Guid == templateTypeGuid )
+                        .Where( t => t.GroupTypePurposeValueId.HasValue && t.GroupTypePurposeValueId == checkinTemplateTypeId )
                         .OrderBy( t => t.Name )
                         .Select( t => new
                         {
@@ -546,20 +604,20 @@ namespace RockWeb.Blocks.CheckIn
                     ddlCheckinType.DataBind();
                 }
 
-                if ( selectedValue.HasValue )
+                if ( checkinTypeId.HasValue )
                 {
-                    ddlCheckinType.SetValue( selectedValue );
+                    ddlCheckinType.SetValue( checkinTypeId );
                 }
                 else
                 {
-                    if ( CurrentCheckinTypeId.HasValue )
+                    if ( LocalDeviceConfig.CurrentCheckinTypeId.HasValue )
                     {
-                        ddlCheckinType.SetValue( CurrentCheckinTypeId );
+                        ddlCheckinType.SetValue( LocalDeviceConfig.CurrentCheckinTypeId );
                     }
                     else
                     {
                         var groupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_WEEKLY_SERVICE_CHECKIN_AREA.AsGuid() );
-                        if ( groupType != null  )
+                        if ( groupType != null )
                         {
                             ddlCheckinType.SetValue( groupType.Id );
                         }
@@ -568,6 +626,11 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Gets the type of the checkin.
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
         private GroupTypeCache GetCheckinType( int? groupTypeId )
         {
             Guid templateTypeGuid = Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid();
@@ -580,6 +643,13 @@ namespace RockWeb.Blocks.CheckIn
             return null;
         }
 
+        /// <summary>
+        /// Gets the type of the checkin.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="templateTypeId">The template type identifier.</param>
+        /// <param name="recursionControl">The recursion control.</param>
+        /// <returns></returns>
         private GroupTypeCache GetCheckinType( GroupTypeCache groupType, int templateTypeId, List<int> recursionControl = null )
         {
             if ( groupType != null )
@@ -607,7 +677,12 @@ namespace RockWeb.Blocks.CheckIn
             return null;
         }
 
-
+        /// <summary>
+        /// Gets the descendent group types.
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <param name="recursionControl">The recursion control.</param>
+        /// <returns></returns>
         private List<GroupTypeCache> GetDescendentGroupTypes( GroupTypeCache groupType, List<int> recursionControl = null )
         {
             var results = new List<GroupTypeCache>();
@@ -631,35 +706,41 @@ namespace RockWeb.Blocks.CheckIn
             return results;
         }
 
-        private void BindGroupTypes()
+        /// <summary>
+        /// Gets the selected GroupType Ids
+        /// </summary>
+        private List<int> GetSelectedGroupTypeIds()
         {
-            var groupTypeIds = new List<string>();
+            var groupTypeIds = new List<int>();
             foreach ( ListItem item in cblPrimaryGroupTypes.Items )
             {
                 if ( item.Selected )
                 {
-                    groupTypeIds.Add( item.Value );
+                    groupTypeIds.Add( item.Value.AsInteger() );
                 }
             }
+
             foreach ( ListItem item in cblAlternateGroupTypes.Items )
             {
                 if ( item.Selected )
                 {
-                    groupTypeIds.Add( item.Value );
+                    groupTypeIds.Add( item.Value.AsInteger() );
                 }
             }
 
-            BindGroupTypes( groupTypeIds.AsDelimited(",") );
+            return groupTypeIds;
         }
 
-        private void BindGroupTypes( string selectedValues )
+        /// <summary>
+        /// Binds the group types.
+        /// </summary>
+        /// <param name="selectedValues">The selected values.</param>
+        private void BindGroupTypes( List<int> groupTypeIds )
         {
-            var selectedItems = selectedValues.Split( ',' );
-
             cblPrimaryGroupTypes.Items.Clear();
             cblAlternateGroupTypes.Items.Clear();
 
-            if ( ddlKiosk.SelectedValue != None.IdValue ) 
+            if ( ddlKiosk.SelectedValue != None.IdValue )
             {
                 using ( var rockContext = new RockContext() )
                 {
@@ -676,17 +757,17 @@ namespace RockWeb.Blocks.CheckIn
                     cblAlternateGroupTypes.Visible = cblPrimaryGroupTypes.Items.Count > 0;
                 }
 
-                if ( selectedValues != string.Empty )
+                if ( groupTypeIds != null )
                 {
-                    foreach ( string id in selectedValues.Split( ',' ) )
+                    foreach ( var groupTypeId in groupTypeIds )
                     {
-                        ListItem item = cblPrimaryGroupTypes.Items.FindByValue( id );
+                        ListItem item = cblPrimaryGroupTypes.Items.FindByValue( groupTypeId.ToString() );
                         if ( item != null )
                         {
                             item.Selected = true;
                         }
 
-                        item = cblAlternateGroupTypes.Items.FindByValue( id );
+                        item = cblAlternateGroupTypes.Items.FindByValue( groupTypeId.ToString() );
                         if ( item != null )
                         {
                             item.Selected = true;
@@ -695,9 +776,9 @@ namespace RockWeb.Blocks.CheckIn
                 }
                 else
                 {
-                    if ( CurrentGroupTypeIds != null )
+                    if ( LocalDeviceConfig.CurrentGroupTypeIds != null )
                     {
-                        foreach ( int id in CurrentGroupTypeIds )
+                        foreach ( int id in LocalDeviceConfig.CurrentGroupTypeIds )
                         {
                             ListItem item = cblPrimaryGroupTypes.Items.FindByValue( id.ToString() );
                             if ( item != null )
@@ -710,7 +791,6 @@ namespace RockWeb.Blocks.CheckIn
                             {
                                 item.Selected = true;
                             }
-
                         }
                     }
                 }
@@ -725,13 +805,11 @@ namespace RockWeb.Blocks.CheckIn
         /// <summary>
         /// Returns a kiosk based on finding a geo location match for the given latitude and longitude.
         /// </summary>
-        /// <param name="sLatitude">latitude as string</param>
-        /// <param name="sLongitude">longitude as string</param>
+        /// <param name="latitude">The latitude.</param>
+        /// <param name="longitude">The longitude.</param>
         /// <returns></returns>
-        public static Device GetCurrentKioskByGeoFencing( string sLatitude, string sLongitude )
+        public static Device GetCurrentKioskByGeoFencing( double latitude, double longitude )
         {
-            double latitude = double.Parse( sLatitude );
-            double longitude = double.Parse( sLongitude );
             var checkInDeviceTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
 
             // We need to use the DeviceService until we can get the GeoFence to JSON Serialize/Deserialize.
@@ -742,37 +820,6 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
-        private void RedirectToNewTheme( string theme )
-        {
-            var pageRef = RockPage.PageReference;
-            pageRef.QueryString = new System.Collections.Specialized.NameValueCollection();
-            pageRef.Parameters = new Dictionary<string, string>();
-            pageRef.Parameters.Add( "theme", theme );
-            pageRef.Parameters.Add( "KioskId", ddlKiosk.SelectedValue );
-            pageRef.Parameters.Add( "CheckinConfigId", ddlCheckinType.SelectedValue );
-
-            var groupTypeIds = new List<string>();
-            foreach ( ListItem item in cblPrimaryGroupTypes.Items )
-            {
-                if ( item.Selected )
-                {
-                    groupTypeIds.Add( item.Value );
-                }
-            }
-            foreach ( ListItem item in cblAlternateGroupTypes.Items )
-            {
-                if ( item.Selected )
-                {
-                    groupTypeIds.Add( item.Value );
-                }
-            }
-            pageRef.Parameters.Add( "GroupTypeIds", groupTypeIds.AsDelimited( "," ) );
-            pageRef.Parameters.Add( "ThemeRedirect", "True" );
-
-            Response.Redirect( pageRef.BuildUrl(), false );
-        }
-
         #endregion
-
     }
 }

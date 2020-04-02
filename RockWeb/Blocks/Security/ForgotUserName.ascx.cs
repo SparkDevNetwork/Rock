@@ -43,7 +43,7 @@ namespace RockWeb.Blocks.Security
 
 
     [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)", true, "", "", 3 )]
-    [SystemEmailField( "Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemEmail.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
+    [SystemCommunicationField( "Forgot Username Email Template", "Email Template to send", false, Rock.SystemGuid.SystemCommunication.SECURITY_FORGOT_USERNAME, "", 4, "EmailTemplate" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Base Control Methods

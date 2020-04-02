@@ -262,6 +262,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<RelatedEntity>( Context ).Queryable().Any( a => a.SourceEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, RelatedEntity.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<RelatedEntity>( Context ).Queryable().Any( a => a.TargetEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, RelatedEntity.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Report>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Report.FriendlyTypeName );

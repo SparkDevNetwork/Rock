@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// A control that can be used to select an entity of a particular pre-configured entity type
     /// </summary>
     public class EntityPicker : CompositeControl, IRockControl
     {
@@ -463,8 +463,27 @@ namespace Rock.Web.UI.Controls
             var entityType = EntityTypeCache.Get( this.EntityTypeId ?? 0 );
             if ( entityType != null && entityType.SingleValueFieldType != null )
             {
-                fieldTypeName = entityType.SingleValueFieldType.Name;
+                /*
+                 * 1/24/2020 - JPH
+                 * EntityTypes whose SingleValueFieldType has a Name containing a space AND whose underlying edit control is an ItemPicker implementation
+                 * result in a scenario in which jQuery is unable to select the needed HTML elements in order to populate the picker via AJAX.
+                 * This is because an HTML id attribute cannot contain spaces.
+                 *
+                 * Example: EntityType FinancialAccount has a SingleValueFieldType with the Name "Financial Account" and an edit control of type AccountPicker.
+                 *
+                 * Adding 'Replace(" ", string.Empty)' to the 'fieldTypeName' assignment below resolves this issue.
+                 */
+                fieldTypeName = entityType.SingleValueFieldType.Name.Replace(" ", string.Empty);
+
                 entityTypeEditControl = entityType.SingleValueFieldType.Field.EditControl( new Dictionary<string, Field.ConfigurationValue>(), string.Format( "{0}_{1}_Picker", this.ID, fieldTypeName ) );
+
+                /*
+                 * 1/27/2020 - JPH
+                 * Some pickers contain logic to hide the control in certain cases. For example, the CampusPicker will not be visible in the case that
+                 * there is only one Campus. Within the context of the EntityPicker, we need for the control to always be visible so the proper default
+                 * value will be saved to the database.
+                 */
+                entityTypeEditControl.Visible = true;
             }
 
             // only set the _entityTypeEditControl is needs to be

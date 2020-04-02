@@ -3,23 +3,19 @@ Sys.Application.add_load(function() {
         $('[data-toggle="tooltip"]').tooltip();
     });
 
+    var navbarFixedTop = document.querySelector('.navbar-fixed-top');
     var stickyHeaders = document.querySelector('.js-sticky-headers');
 
-    if (stickyHeaders !== null) {
-        var navbarFixedTop = document.querySelector('.navbar-fixed-top');
-        if (navbarFixedTop !== null &&  getComputedStyle(navbarFixedTop)['position'] === 'fixed') {
-            $(stickyHeaders).stickyTableHeaders({ fixedOffset: $(navbarFixedTop) });
-        } else {
-            $(stickyHeaders).stickyTableHeaders();
-        }
+    if ($(navbarFixedTop).length && $(navbarFixedTop).css('position') === 'fixed') {
+        $(stickyHeaders).stickyTableHeaders({ fixedOffset: $(navbarFixedTop) });
+    } else {
+        $(stickyHeaders).stickyTableHeaders();
     }
 });
 
 $(document).on('enabledStickiness.stickyTableHeaders', function(event) {
-    var navbarFixedTop = document.querySelector('.navbar-fixed-top');
-
     $(window).on('resize', function(event) {
-        if (document.querySelector('.navbar-fixed-top') !== null && getComputedStyle(navbarFixedTop)['position'] === 'fixed') {
+        if ($('.navbar-fixed-top').length && $('.navbar-fixed-top').css('position') === 'fixed') {
             $('.js-sticky-headers').stickyTableHeaders({ fixedOffset: $('.navbar-fixed-top') });
         } else {
             $('.js-sticky-headers').stickyTableHeaders();

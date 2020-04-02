@@ -108,6 +108,7 @@ namespace Rock.Model
             target.Priority = source.Priority;
             target.StartDateTime = source.StartDateTime;
             target.Status = source.Status;
+            target.StructuredContent = source.StructuredContent;
             target.Title = source.Title;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

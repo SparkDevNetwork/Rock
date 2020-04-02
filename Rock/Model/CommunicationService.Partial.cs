@@ -327,6 +327,41 @@ namespace Rock.Model
 
             return queuedQry;
         }
-
     }
+
+    #region Extension Methods
+
+    public static partial class CommunicationExtensionMethods
+    {
+        /// <summary>
+        /// Communications that were not recently approved within since the given cutoffTime.
+        /// </summary>
+        /// <param name="communications">The communications.</param>
+        /// <param name="cutoffTime">The cutoff time.</param>
+        /// <returns></returns>
+        public static IQueryable<Communication> NotRecentlyApproved( this IQueryable<Communication> communications, DateTime cutoffTime )
+        {
+            // Make sure communication wasn't just recently approved
+            return communications.Where( c => !c.ReviewedDateTime.HasValue || c.ReviewedDateTime.Value < cutoffTime );
+        }
+
+        /// <summary>
+        /// Communications that were, if scheduled, are within the given window.
+        /// </summary>
+        /// <param name="communications">The communications.</param>
+        /// <param name="startWindow">The start window.</param>
+        /// <param name="endWindow">The end window.</param>
+        /// <returns></returns>
+        public static IQueryable<Communication> IfScheduledAreInWindow( this IQueryable<Communication> communications, DateTime startWindow, DateTime endWindow )
+        {
+            return communications.Where( c =>
+                (
+                    !c.FutureSendDateTime.HasValue ||
+                    ( c.FutureSendDateTime.HasValue && c.FutureSendDateTime.Value >= startWindow && c.FutureSendDateTime.Value <= endWindow )
+                )
+            );
+        }
+    }
+
+    #endregion
 }

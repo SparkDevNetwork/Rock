@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.Crm
                         sbPersonDetails.Append( "<div class=\"pull-left margin-l-sm\">" );
                         sbPersonDetails.Append( string.Format( "<strong>{0}</strong> ", person.FullNameReversed ) );
                         sbPersonDetails.Append( string.Format( "{0} ", Person.GetSignalMarkup( person.TopSignalColor, person.TopSignalIconCssClass ) ) );
-                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}</br></small>", delimitedCampuses ) );
+                        sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\"><br>{0}<br></small>", delimitedCampuses ) );
                         sbPersonDetails.Append( string.Format( "<small class=\"hidden-sm hidden-md hidden-lg\">{0}</small>", DefinedValueCache.GetName( person.ConnectionStatusValueId ) ) );
                         sbPersonDetails.Append( string.Format( " <small class=\"hidden-md hidden-lg\">{0}</small>", person.AgeFormatted ) );
 

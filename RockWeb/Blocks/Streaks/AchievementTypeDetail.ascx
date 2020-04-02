@@ -29,6 +29,7 @@
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 <asp:ValidationSummary ID="valAchievementTypeDetail" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <asp:CustomValidator ID="cvCustomValidator" runat="server" Display="None" />
 
                 <div id="pnlViewDetails" runat="server">
                     <div class="row margin-b-lg">
@@ -126,6 +127,17 @@
                     </Rock:PanelWidget>
 
                     <Rock:PanelWidget ID="wpAdvanced" runat="server" Title="Advanced Settings">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <Rock:RockCheckBoxList ID="cblPrerequsities"
+                                    runat="server"
+                                    Label="Prerequisite Achievements"
+                                    Help="The achievements that must be earned prior to this achievement."
+                                    RepeatDirection="Vertical"
+                                    DataValueField="Id"
+                                    DataTextField="Name" />
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <Rock:WorkflowTypePicker ID="wtpStartWorkflowType" runat="server" Label="Start Workflow Type" Help="The type of workflow to trigger when a person begins an attempt at this achievement" />

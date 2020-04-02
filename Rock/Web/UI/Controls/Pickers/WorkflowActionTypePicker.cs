@@ -25,7 +25,7 @@ using Rock.Workflow;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a workflow action type
     /// </summary>
     public class WorkflowActionTypePicker : ItemPicker
     {

@@ -67,6 +67,12 @@ namespace RockWeb.Blocks.RSVP
             public const string OtherLocationTabTitle = "Other Location";
         }
 
+        private static class UserPreferenceKey
+        {
+            public const string Status = "Status";
+            public const string DeclineReason = "DeclineReason";
+        }
+
         #endregion
 
         #region Properties
@@ -88,6 +94,9 @@ namespace RockWeb.Blocks.RSVP
         {
             base.OnInit( e );
             GetAvailableDeclineReasons();
+
+            rFilter.ClearFilterClick += rFilter_ClearFilterClick;
+            gAttendees.GridRebind += gAttendees_GridRebind;
 
             if ( !Page.IsPostBack )
             {
@@ -202,32 +211,64 @@ namespace RockWeb.Blocks.RSVP
         }
 
         /// <summary>
+        /// Handles the GridRebind event of the gAttendees control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        private void gAttendees_GridRebind( object sender, GridRebindEventArgs e )
+        {
+            BindAttendeeGridAndChart( e.IsExporting );
+        }
+
+        /// <summary>
         /// Handles the RowDataBound event of the gAttendees grid.
         /// </summary>
         protected void gAttendees_RowDataBound( object sender, GridViewRowEventArgs e )
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                // Bind Decline Reason dropdown values.
-                RockDropDownList rddlDeclineReason = e.Row.FindControl( "rddlDeclineReason" ) as RockDropDownList;
-                rddlDeclineReason.DataSource = _availableDeclineReasons;
-                rddlDeclineReason.DataBind();
-
-                RockCheckBox rcbAccept = e.Row.FindControl( "rcbAccept" ) as RockCheckBox;
-                RockCheckBox rcbDecline = e.Row.FindControl( "rcbDecline" ) as RockCheckBox;
-                rcbAccept.InputAttributes.Add( "data-paired-checkbox", rcbDecline.ClientID );
-                rcbDecline.InputAttributes.Add( "data-paired-checkbox", rcbAccept.ClientID );
+                bool isExporting = false;
+                if ( e is RockGridViewRowEventArgs )
+                {
+                    isExporting = ( e as RockGridViewRowEventArgs ).IsExporting;
+                }
 
                 var rsvpData = ( RSVPAttendee ) e.Row.DataItem;
-                if ( rsvpData.DeclineReason.HasValue )
+                if ( !isExporting )
                 {
-                    try
+
+                    // Bind Decline Reason dropdown values.
+                    RockDropDownList rddlDeclineReason = e.Row.FindControl( "rddlDeclineReason" ) as RockDropDownList;
+                    rddlDeclineReason.DataSource = _availableDeclineReasons;
+                    rddlDeclineReason.DataBind();
+
+                    RockCheckBox rcbAccept = e.Row.FindControl( "rcbAccept" ) as RockCheckBox;
+                    RockCheckBox rcbDecline = e.Row.FindControl( "rcbDecline" ) as RockCheckBox;
+                    rcbAccept.InputAttributes.Add( "data-paired-checkbox", rcbDecline.ClientID );
+                    rcbDecline.InputAttributes.Add( "data-paired-checkbox", rcbAccept.ClientID );
+
+                    if ( rsvpData.DeclineReason.HasValue )
                     {
-                        rddlDeclineReason.SelectedValue = rsvpData.DeclineReason.ToString();
+                        try
+                        {
+                            rddlDeclineReason.SelectedValue = rsvpData.DeclineReason.ToString();
+                        }
+                        catch
+                        {
+                            // This call may fail if the decline reason has been removed (from the DefinedType or from the individual occurrence).  Ignored.
+                        }
                     }
-                    catch
+                }
+                else
+                {
+                    if ( rsvpData.DeclineReason.HasValue )
                     {
-                        // This call may fail if the decline reason has been removed (from the DefinedType or from the individual occurrence).  Ignored.
+                        var lDeclineReason = e.Row.FindControl( "lDeclineReason" ) as Literal;
+                        var declineReason = _availableDeclineReasons.FirstOrDefault( a => a.Id == rsvpData.DeclineReason.Value );
+                        if ( declineReason != null )
+                        {
+                            lDeclineReason.Text = declineReason.Value;
+                        }
                     }
                 }
             }
@@ -279,6 +320,46 @@ namespace RockWeb.Blocks.RSVP
                 pnlDetails.Visible = true;
                 pnlAttendees.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case UserPreferenceKey.Status:
+                    {
+                        e.Value = ResolveValues( e.Value, cblStatus );
+                    }
+                    break;
+            }
+        }
+
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( UserPreferenceKey.Status, cblStatus.SelectedValues.AsDelimited( ";" ) );
+            BindAttendeeGridAndChart();
+        }
+
+        /// <summary>
+        /// Handles the ClearFilterClick event of the rFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rFilter_ClearFilterClick( object sender, EventArgs e )
+        {
+            rFilter.DeleteUserPreferences();
+            BindFilter();
         }
 
         #endregion
@@ -500,14 +581,20 @@ namespace RockWeb.Blocks.RSVP
             pnlDetails.Visible = true;
             pnlAttendees.Visible = true;
 
+            BindFilter();
+
             var groupType = new GroupTypeService( rockContext ).Get( group.GroupTypeId );
             var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+            lOccurrenceName.Text = occurrence.Name;
+            tbOccurrenceName.Text = occurrence.Name;
             lOccurrenceDate.Text = occurrence.OccurrenceDate.ToShortDateString();
             dpOccurrenceDate.SelectedDate = occurrence.OccurrenceDate;
             heAcceptMessage.Text = occurrence.AcceptConfirmationMessage;
             heDeclineMessage.Text = occurrence.DeclineConfirmationMessage;
 
             rcbShowDeclineReasons.Checked = occurrence.ShowDeclineReasons;
+            cblDeclineReason.Visible = occurrence.ShowDeclineReasons;
+
             List<int> selectedDeclineReasons = occurrence.DeclineReasonValueIds.SplitDelimitedValues().Select( int.Parse ).ToList();
             foreach ( int declineReasonId in selectedDeclineReasons )
             {
@@ -574,7 +661,7 @@ namespace RockWeb.Blocks.RSVP
         /// <summary>
         /// Binds the grid and chart with attendee data.
         /// </summary>
-        private void BindAttendeeGridAndChart()
+        private void BindAttendeeGridAndChart( bool isExporting = false )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -595,7 +682,18 @@ namespace RockWeb.Blocks.RSVP
                         .First( c => c.HeaderText == "Decline Note" )
                         .Visible = occurrence.ShowDeclineReasons;
                 }
-    
+
+                gAttendees.ColumnsOfType<BoolField>()
+                    .First( c => c.HeaderText == "Accept" )
+                    .Visible = isExporting;
+                gAttendees.ColumnsOfType<RockLiteralField>()
+                  .First( c => c.HeaderText == "Decline Reason" )
+                  .Visible = isExporting;
+                gAttendees.ColumnsOfType<BoolField>()
+                    .First( c => c.HeaderText == "Decline" )
+                    .Visible = isExporting;
+
+
                 var attendees = GetAttendees( rockContext );
                 int acceptCount = attendees.Where( a => a.Accept ).Count();
                 int declineCount = attendees.Where( a => a.Decline ).Count();
@@ -612,6 +710,10 @@ namespace RockWeb.Blocks.RSVP
                 {
                     lbSave.Visible = false;
                 }
+                else
+                {
+                    lbSave.Visible = true;
+                }
             }
         }
 
@@ -622,7 +724,7 @@ namespace RockWeb.Blocks.RSVP
         /// <returns>A list of <see cref="RSVPAttendee"/> objects representing the attendees of an occurrence.</returns>
         private List<RSVPAttendee> GetAttendees( RockContext rockContext )
         {
-            List<RSVPAttendee> attendees = new List<RSVPAttendee>();
+            List<RSVPAttendee> result = new List<RSVPAttendee>();
             List<int> existingAttendanceRecords = new List<int>();
 
             int? occurrenceId = PageParameter( PageParameterKey.OccurrenceId ).AsIntegerOrNull();
@@ -631,7 +733,39 @@ namespace RockWeb.Blocks.RSVP
                 // Add RSVP responses for anyone who has an attendance record, already.
                 var occurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = occurrenceService.Get( occurrenceId.Value );
-                var sortedAttendees = occurrence.Attendees.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
+                var attendees = occurrence.Attendees.AsEnumerable();
+
+                // Filter by Group Member Status
+                var statuses = new List<Status>();
+                foreach ( string status in cblStatus.SelectedValues )
+                {
+                    if ( !string.IsNullOrWhiteSpace( status ) )
+                    {
+                        statuses.Add( status.ConvertToEnum<Status>() );
+                    }
+                }
+
+                if ( statuses.Any() && statuses.Count == 1 )
+                {
+                    var status = statuses.First();
+                    switch ( status )
+                    {
+                        case Status.Accept:
+                            attendees = attendees.Where( a => a.RSVP == Rock.Model.RSVP.Yes );
+                            break;
+                        case Status.Decline:
+                            attendees = attendees.Where( a => a.RSVP == Rock.Model.RSVP.No );
+                            break;
+                    }
+                }
+
+                var declineReasonValueIds = cblDeclineReason.SelectedValuesAsInt;
+                if ( declineReasonValueIds.Any() )
+                {
+                    attendees = attendees.Where( a => a.DeclineReasonValueId.HasValue && declineReasonValueIds.Contains( a.DeclineReasonValueId.Value ) );
+                }
+
+                var sortedAttendees = attendees.OrderBy( a => a.PersonAlias.Person.LastName ).ThenBy( a => a.PersonAlias.Person.FirstName );
                 foreach ( var attendee in sortedAttendees )
                 {
                     RSVPAttendee rsvp = new RSVPAttendee();
@@ -642,12 +776,13 @@ namespace RockWeb.Blocks.RSVP
                     rsvp.Decline = ( attendee.RSVP == Rock.Model.RSVP.No );
                     rsvp.DeclineReason = attendee.DeclineReasonValueId;
                     rsvp.DeclineNote = attendee.Note;
-                    attendees.Add( rsvp );
+                    rsvp.RSVPDateTime = attendee.RSVPDateTime;
+                    result.Add( rsvp );
                     existingAttendanceRecords.Add( attendee.PersonAlias.PersonId );
                 }
             }
 
-            return attendees;
+            return result;
         }
 
         /// <summary>
@@ -785,15 +920,24 @@ var dnutChart = new Chart(dnutCtx, {{
                                 rockContext.SaveChanges();
                             }
 
-                            attendance.RSVPDateTime = DateTime.Now;
-                            attendance.RSVP = Rock.Model.RSVP.Yes;
+                            // only set the RSVP and Date if the value is changing 
+                            if ( attendance.RSVP != Rock.Model.RSVP.Yes )
+                            {
+                                attendance.RSVPDateTime = DateTime.Now;
+                                attendance.RSVP = Rock.Model.RSVP.Yes;
+                            }
                             attendance.Note = string.Empty;
                             attendance.DeclineReasonValueId = null;
                         }
                         else if ( attendee.Decline )
                         {
-                            attendance.RSVPDateTime = DateTime.Now;
-                            attendance.RSVP = Rock.Model.RSVP.No;
+                            // only set the RSVP and Date if the value is changing 
+                            if ( attendance.RSVP != Rock.Model.RSVP.No )
+                            {
+                                attendance.RSVPDateTime = DateTime.Now;
+                                attendance.RSVP = Rock.Model.RSVP.No;
+                            }
+
                             attendance.Note = attendee.DeclineNote;
                             if ( attendee.DeclineReason != 0 )
                             {
@@ -833,6 +977,7 @@ var dnutChart = new Chart(dnutCtx, {{
 
                 //Create new occurrence.
                 var occurrence = new AttendanceOccurrence();
+                occurrence.Name = tbOccurrenceName.Text;
                 occurrence.GroupId = groupId;
 
                 if ( locpLocation.Location != null )
@@ -910,6 +1055,8 @@ var dnutChart = new Chart(dnutCtx, {{
                 var occurrenceService = new AttendanceOccurrenceService( rockContext );
                 var occurrence = occurrenceService.Get( occurrenceId );
 
+                occurrence.Name = tbOccurrenceName.Text;
+
                 if ( locpLocation.Location != null )
                 {
                     occurrence.Location = new LocationService( rockContext ).Get( locpLocation.Location.Id );
@@ -968,9 +1115,53 @@ var dnutChart = new Chart(dnutCtx, {{
             }
         }
 
+        /// <summary>
+        /// Binds the filter.
+        /// </summary>
+        private void BindFilter()
+        {
+            cblStatus.BindToEnum<Status>();
+            cblDeclineReason.DataSource = _availableDeclineReasons.Where( a => a.Id != default( int ) ).ToList();
+            cblDeclineReason.DataBind();
+
+            string statusValue = rFilter.GetUserPreference( UserPreferenceKey.Status );
+            if ( !string.IsNullOrWhiteSpace( statusValue ) )
+            {
+                cblStatus.SetValues( statusValue.Split( ';' ).ToList() );
+            }
+        }
+
+        /// <summary>
+        /// Resolves the values.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        private string ResolveValues( string values, System.Web.UI.WebControls.CheckBoxList checkBoxList )
+        {
+            var resolvedValues = new List<string>();
+
+            foreach ( string value in values.Split( ';' ) )
+            {
+                var item = checkBoxList.Items.FindByValue( value );
+                if ( item != null )
+                {
+                    resolvedValues.Add( item.Text );
+                }
+            }
+
+            return resolvedValues.AsDelimited( ", " );
+        }
+
         #endregion
 
         #region Helper Class
+
+        public enum Status
+        {
+            Accept,
+            Decline
+        }
 
         [Serializable]
         public class RSVPAttendee
@@ -1026,9 +1217,29 @@ var dnutChart = new Chart(dnutCtx, {{
             /// </value>
             public bool Decline { get; set; }
 
+            /// <summary>
+            /// Gets or sets the decline reason (defined value Id).
+            /// </summary>
+            /// <value>
+            /// The decline reason (defined value Id).
+            /// </value>
             public int? DeclineReason { get; set; }
 
+            /// <summary>
+            /// Gets or sets the decline note.
+            /// </summary>
+            /// <value>
+            /// The decline note.
+            /// </value>
             public string DeclineNote { get; set; }
+
+            /// <summary>
+            /// Gets or sets the RSVP date time.
+            /// </summary>
+            /// <value>
+            /// The RSVP date time.
+            /// </value>
+            public DateTime? RSVPDateTime { get; set; }
         }
 
         #endregion

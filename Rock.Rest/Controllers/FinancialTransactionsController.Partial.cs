@@ -431,7 +431,7 @@ namespace Rock.Rest.Controllers
             }
 
             // fetch all the possible PersonAliasIds that have this GivingID to help optimize the SQL
-            var personAliasIds = new PersonAliasService( ( RockContext ) this.Service.Context ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id ).ToList();
+            var personAliasIds = new PersonAliasService( ( RockContext ) this.Service.Context ).Queryable().Where( a => a.Person.GivingId == givingId ).Select( a => a.Id );
 
             // get the transactions for the person or all the members in the person's giving group (Family)
             return Get().Where( t => t.AuthorizedPersonAliasId.HasValue && personAliasIds.Contains( t.AuthorizedPersonAliasId.Value ) );

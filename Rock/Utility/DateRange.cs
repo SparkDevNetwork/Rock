@@ -25,7 +25,7 @@ namespace Rock
     public class DateRange : IEquatable<DateRange>
     {
         /// <summary>
-        /// Gets or sets the start (as a DateTime)
+        /// Gets or sets the starting DateTime of the date range
         /// NOTE: You normally want to do a '&gt;= DateRange.Start' when using this in a query
         /// </summary>
         /// <value>
@@ -34,8 +34,11 @@ namespace Rock
         public DateTime? Start { get; set; }
 
         /// <summary>
-        /// Gets or sets the end date (as a DateTime)
-        /// NOTE: You normally want to do a '&lt; DateRange.End' when using this in a query
+        /// Gets or sets the ending DateTime of the date Range
+        /// NOTE: This is the DateTime that the date range ends, which will be a day *later* than what the user sees displayed.
+        /// For example, if your date range is Nov 1st to November 7th, you'll want to set this Nov 8th 12:00AM when using a LessThan EndDate expression, since we want into include all the data that happened on Nov 7th
+        /// However, to avoid confusion, our date range pickers might set this to November 7th 11:59.999PM, so that stuff like DateRange.End.DayOfWeek returns Nov 7th
+        /// You normally want to do a '&lt; DateRange.End' when using this in a query
         /// </summary>
         /// <value>
         /// The end.

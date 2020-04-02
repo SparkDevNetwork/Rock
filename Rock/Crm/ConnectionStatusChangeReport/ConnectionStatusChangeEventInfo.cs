@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using Rock.Model;
 
 namespace Rock.Crm.ConnectionStatusChangeReport
 {
@@ -70,22 +71,22 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         public bool IsDeceased { get; set; }
 
         /// <summary>
-        /// The campus of which the person was a member at the end of the reporting period.
+        /// The identifier of the person's connection status at the end of the reporting period.
         /// </summary>
         public int NewConnectionStatusId { get; set; }
 
         /// <summary>
-        /// The campus of which the person was a member at the end of the reporting period.
+        /// The name of the person's connection status at the end of the reporting period.
         /// </summary>
         public string NewConnectionStatusName { get; set; }
 
         /// <summary>
-        /// The campus of which the person was a member at the start of the reporting period.
+        /// The identifier of the person's connection status at the start of the reporting period.
         /// </summary>
         public int? OldConnectionStatusId { get; set; }
 
         /// <summary>
-        /// The campus of which the person was a member at the start of the reporting period.
+        /// The name of the person's connection status at the start of the reporting period.
         /// </summary>
         public string OldConnectionStatusName { get; set; }
 
@@ -93,6 +94,31 @@ namespace Rock.Crm.ConnectionStatusChangeReport
         /// The name of the person who recorded this event.
         /// </summary>
         public string CreatedBy { get; set; }
+
+        /// <summary>
+        /// The identifier of the photo associated with this person.
+        /// </summary>
+        public int? PhotoId { get; set; }
+
+        /// <summary>
+        /// The age of the person in years.
+        /// </summary>
+        public int? Age { get; set; }
+
+        /// <summary>
+        /// The gender of the person.
+        /// </summary>
+        public Gender Gender { get; set; }
+
+        /// <summary>
+        /// The person's date of birth.
+        /// </summary>
+        public DateTime? BirthDate { get; set; }
+
+        /// <summary>
+        /// The identifier of the person's Record Type.
+        /// </summary>
+        public Guid? RecordTypeValueGuid { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

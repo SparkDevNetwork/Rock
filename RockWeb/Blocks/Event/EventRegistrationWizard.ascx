@@ -35,6 +35,9 @@
 </script>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
+    <Triggers>
+        <asp:AsyncPostBackTrigger ControlID="cblCalendars" EventName="SelectedIndexChanged" />
+    </Triggers>
     <ContentTemplate>
 
         <asp:Panel ID="pnlLavaInstructions" runat="server" Visible="false" >
@@ -347,7 +350,7 @@
 
                                         <Rock:RockCheckBoxList ID="cblCalendars" runat="server" Label="Calendars"
                                             Help="Calendars that this item should be added to (at least one is required)."
-                                            OnSelectionChanged="cblCalendars_SelectionChanged" AutoPostBack="true"
+                                            OnSelectedIndexChanged="cblCalendars_SelectedIndexChanged" AutoPostBack="true"
                                             RepeatDirection="Horizontal" Required="true" />
                                         <Rock:RockTextBox ID="tbDetailUrl" runat="server" Label="Details URL"
                                             Help="A custom url to use for showing details of the calendar item (if the default item detail page should not be used)."/>

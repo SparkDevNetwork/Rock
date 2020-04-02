@@ -239,6 +239,8 @@
     <Compile Include="CodeGenerated\RegistrationTemplateFeeItem.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateForm.cs" />
     <Compile Include="CodeGenerated\RegistrationTemplateFormField.cs" />
+    <Compile Include="CodeGenerated\RegistrationTemplatePlacement.cs" />
+    <Compile Include="CodeGenerated\RelatedEntity.cs" />
     <Compile Include="CodeGenerated\Report.cs" />
     <Compile Include="CodeGenerated\ReportField.cs" />
     <Compile Include="CodeGenerated\RestAction.cs" />

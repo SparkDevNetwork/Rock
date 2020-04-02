@@ -31,6 +31,7 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Checkr\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.DownhillCss\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mandrill\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
@@ -40,13 +41,13 @@ namespace EnsureCopyrightHeader
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Security.Authentication.Auth0\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SignNow\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot\\" );
-            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
+            //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Specs\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
             //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.TransNational.Pi\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
-            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockJobSchedulerService\\" );
             updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
 
             Console.WriteLine( "\n\nDone!  Files Updated: {0}\n\nPress any key to continue.", updatedFileCount );

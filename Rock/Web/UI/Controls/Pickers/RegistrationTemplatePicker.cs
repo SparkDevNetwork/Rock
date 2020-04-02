@@ -26,7 +26,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a registration template
     /// </summary>
     public class RegistrationTemplatePicker : ItemPicker
     {

@@ -132,12 +132,18 @@ namespace Rock.Achievement.Component
             var minDate = openAttempt.AchievementAttemptStartDateTime;
             var maxDate = CalculateMaxDateForAchievementAttempt( minDate, attributeMaxDate );
 
+            // Get the max date that streaks can be broken. This is to avoid breaking streaks while people still have time to
+            // engage in that day or week (because it is the current day or week)
+            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache );
+
             // Track the streak
             var computedStreak = new ComputedStreak( minDate ) { EndDate = minDate };
 
             // Define what happens for each bit in the date range
             bool iterationAction( int currentUnit, DateTime currentDate, bool hasOccurrence, bool hasEngagement, bool hasExclusion )
             {
+                var iterationCanStop = false;
+
                 // If there is an engagement, then increment the streak
                 if ( hasOccurrence && hasEngagement )
                 {
@@ -148,12 +154,14 @@ namespace Rock.Achievement.Component
                     if ( computedStreak.Count >= numberToAchieve )
                     {
                         ApplyStreakToAttempt( computedStreak, openAttempt, numberToAchieve, !streakTypeAchievementTypeCache.AllowOverAchievement );
+                        iterationCanStop = !streakTypeAchievementTypeCache.AllowOverAchievement;
                     }
                 }
                 else if ( hasOccurrence && !hasEngagement && !hasExclusion )
                 {
                     // Break the streak and close the attempt if there is an unexcused absence
-                    ApplyStreakToAttempt( computedStreak, openAttempt, numberToAchieve, true );
+                    ApplyStreakToAttempt( computedStreak, openAttempt, numberToAchieve, currentDate <= maxDateForStreakBreaking );
+                    iterationCanStop = true;
                 }
 
                 // If there is a timespan and this streak is too old, then the attempt is closed
@@ -163,11 +171,12 @@ namespace Rock.Achievement.Component
 
                     if ( inclusiveAge >= attributeTimespanDays.Value )
                     {
-                        ApplyStreakToAttempt( computedStreak, openAttempt, numberToAchieve, true );
+                        ApplyStreakToAttempt( computedStreak, openAttempt, numberToAchieve, currentDate <= maxDateForStreakBreaking );
+                        iterationCanStop = true;
                     }
                 }
 
-                return openAttempt.IsClosed;
+                return iterationCanStop;
             }
 
             // Iterate through the streak date for the date range specified
@@ -225,6 +234,10 @@ namespace Rock.Achievement.Component
             var minDate = CalculateMinDateForAchievementAttempt( streak.EnrollmentDate, mostRecentClosedAttempt, attributeMinDate, numberToAchieve );
             var maxDate = CalculateMaxDateForAchievementAttempt( minDate, attributeMaxDate );
 
+            // Get the max date that streaks can be broken. This is to avoid breaking streaks while people still have time to
+            // engage in that day or week (because it is the current day or week)
+            var maxDateForStreakBreaking = StreakTypeService.GetMaxDateForStreakBreaking( streakTypeCache );
+
             // Track the attempts in a list that will be returned. The int is the streak count for that attempt
             var attempts = new List<StreakAchievementAttempt>();
             var streaks = new List<ComputedStreak>();
@@ -242,7 +255,7 @@ namespace Rock.Achievement.Component
                 {
                     // Break the streaks and close an attempt if there is an unexcused absence
                     var longestStreak = streaks.First();
-                    attempts.Add( GetAttemptFromStreak( longestStreak, numberToAchieve, true ) );
+                    attempts.Add( GetAttemptFromStreak( longestStreak, numberToAchieve, currentDate <= maxDateForStreakBreaking ) );
                     streaks.Clear();
                     return false;
                 }

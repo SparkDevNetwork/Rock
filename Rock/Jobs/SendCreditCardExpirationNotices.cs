@@ -35,7 +35,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Determines if a credit card is going to expire and notifies the person.
     /// </summary>
-    [SystemEmailField( "Expiring Credit Card Email", "The system email template to use for the credit card expiration notice. The merge fields 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be available to the email template.", required: true, order: 0 )]
+    [SystemCommunicationField( "Expiring Credit Card Email", "The system email template to use for the credit card expiration notice. The merge fields 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be available to the email template.", required: true, order: 0 )]
     [WorkflowTypeField( "Workflow", "The Workflow to launch for person whose credit card is expiring. The attributes 'Person', 'Card' (the last four digits of the credit card), and 'Expiring' (the MM/YYYY of expiration) will be passed to the workflow as attributes.", false, required: false, order: 1 )]
     [DisallowConcurrentExecution]
     public class SendCreditCardExpirationNotices : IJob
@@ -62,8 +62,8 @@ namespace Rock.Jobs
 
             // Get the details for the email that we'll be sending out.
             Guid? systemEmailGuid = dataMap.GetString( "ExpiringCreditCardEmail" ).AsGuidOrNull();
-            SystemEmailService emailService = new SystemEmailService( rockContext );
-            SystemEmail systemEmail = null;
+            var emailService = new SystemCommunicationService( rockContext );
+            SystemCommunication systemEmail = null;
 
             if ( systemEmailGuid.HasValue )
             {

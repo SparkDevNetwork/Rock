@@ -762,7 +762,7 @@ namespace RockWeb.Blocks.Reporting
                         if ( dateObj is DateTime )
                         {
                             DateTime dateTime = ( DateTime ) dateObj;
-                            if ( dateTime.TimeOfDay.Seconds != 0 )
+                            if ( dateTime.TimeOfDay.TotalSeconds != 0 )
                             {
                                 bf = new DateTimeField();
                                 break;

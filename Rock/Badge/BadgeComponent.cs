@@ -88,7 +88,14 @@ namespace Rock.Badge
         /// <summary>
         /// Gets or sets the parent context block.
         /// </summary>
-        public ContextEntityBlock ParentContextEntityBlock { get; set; }
+        public ContextEntityBlock ParentContextEntityBlock
+        {
+            get => _parentContextEntityBlock;
+            set => _parentContextEntityBlock = value;
+        }
+
+        [ThreadStatic]
+        private static ContextEntityBlock _parentContextEntityBlock;
 
         /// <summary>
         /// Gets or sets the parent person block.
@@ -106,7 +113,14 @@ namespace Rock.Badge
         /// <value>
         /// The person.
         /// </value>
-        public virtual IEntity Entity { get; set; }
+        public virtual IEntity Entity
+        {
+            get => _entity;
+            set => _entity = value;
+        }
+
+        [ThreadStatic]
+        private static IEntity _entity;
 
         /// <summary>
         /// Gets or sets the entity as a person.

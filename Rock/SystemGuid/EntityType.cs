@@ -303,6 +303,11 @@ namespace Rock.SystemGuid
         public const string STORAGE_PROVIDER_DATABASE = "0AA42802-04FD-4AEC-B011-FEB127FC85CD";
 
         /// <summary>
+        /// The guid for the system communication entity
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION = "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4";
+
+        /// <summary>
         /// The guid for the filesystem storage provider entity
         /// </summary>
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
@@ -311,6 +316,11 @@ namespace Rock.SystemGuid
         /// The guid for the Rock.Model.WorkflowType entity
         /// </summary>
         public const string WORKFLOW_TYPE = "C9F3C4A5-1526-474D-803F-D6C7A45CBBAE";
+
+        /// <summary>
+        /// The guid for the Rock.Model.WorkflowType entity
+        /// </summary>
+        public const string WORKFLOW_ACTION_TYPE = "23E3273A-B137-48A3-9AFF-C8DC832DDCA6";
 
         /// <summary>
         /// The guid for the Test Financial Gateway entity type

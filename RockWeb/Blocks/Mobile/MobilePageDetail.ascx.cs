@@ -603,7 +603,10 @@ namespace RockWeb.Blocks.Mobile
                 }
             }
             ddlBlockTypeCategory.Items.Clear();
-            categories.ForEach( c => ddlBlockTypeCategory.Items.Add( c ) );
+            foreach ( var c in categories.OrderBy( c => c ) )
+            {
+                ddlBlockTypeCategory.Items.Add( c );
+            }
             ddlBlockTypeCategory.SetValue( selectedCategory );
 
             BindBlockTypeRepeater();

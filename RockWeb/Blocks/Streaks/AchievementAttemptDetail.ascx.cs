@@ -655,19 +655,19 @@ namespace RockWeb.Blocks.Streaks
                 return string.Empty;
             }
 
-            var progress = attempt.Progress;
-            var progressBarWidth = progress < 0m ? 0m : ( progress > 1m ? 1m : progress );
-            var insideProgress = progress >= .5m ? progress : ( decimal? ) null;
-            var outsideProgress = progress < .5m ? progress : ( decimal? ) null;
-            var progressBarClass = progress >= 1m ? "progress-bar-success" : string.Empty;
+            var progressInt = Convert.ToInt32( decimal.Round( attempt.Progress * 100 ) );
+            var progressBarWidth = progressInt < 0 ? 0 : ( progressInt > 100 ? 100 : progressInt );
+            var insideProgress = progressInt >= 50 ? progressInt : ( int? ) null;
+            var outsideProgress = progressInt < 50 ? progressInt : ( int? ) null;
+            var progressBarClass = progressInt >= 100 ? "progress-bar-success" : string.Empty;
 
             return string.Format(
 @"<div class=""progress"">
-    <div class=""progress-bar {3}"" role=""progressbar"" style=""width: {0:P0};"">
-        {1:P0}
+    <div class=""progress-bar {5}"" role=""progressbar"" style=""width: {0}%;"">
+        {1}{2}
     </div>
-    <span style=""padding-left: 5px;"">{2:P0}</span>
-</div>", progressBarWidth, insideProgress, outsideProgress, progressBarClass );
+    <span style=""padding-left: 5px;"">{3}{4}</span>
+</div>", progressBarWidth, insideProgress, insideProgress.HasValue ? "%" : string.Empty, outsideProgress, outsideProgress.HasValue ? "%" : string.Empty, progressBarClass );
         }
 
         /// <summary>

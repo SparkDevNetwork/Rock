@@ -121,7 +121,7 @@ namespace Rock.Communication.Transport
             fromAddress = fromAddress.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : fromAddress;
             fromName = fromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : fromName;
 
-            if ( !fromAddress.IsValidEmail() )
+            if ( fromAddress.IsNullOrWhiteSpace() )
             {
                 errorMessages.Add( "A From address was not provided." );
                 return false;

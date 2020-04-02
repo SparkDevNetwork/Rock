@@ -33,7 +33,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Sends out reminders to group leaders when group members do not meet all requirements.
     /// </summary>
-    [SystemEmailField( "Notification Email Template", required: true, order: 0 )]
+    [SystemCommunicationField( "Notification Email Template", required: true, order: 0 )]
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
     [GroupField( "Accountability Group", "Optional group that will receive a list of all group members that do not meet requirements.", false, order: 3 )]

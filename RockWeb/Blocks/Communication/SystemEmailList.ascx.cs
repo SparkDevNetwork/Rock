@@ -34,6 +34,9 @@ namespace RockWeb.Blocks.Communication
     /// <summary>
     /// User control for managing the system emails
     /// </summary>
+    [Obsolete( "Use SystemCommunicationList instead." )]
+    [RockObsolete( "1.10" )]
+
     [DisplayName( "System Email List" )]
     [Category( "Communication" )]
     [Description( "Lists the system emails that can be configured." )]

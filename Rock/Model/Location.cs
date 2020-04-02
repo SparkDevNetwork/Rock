@@ -703,14 +703,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns true if the Location has one of the following: Street1, Street2, City. Otherwise returns false.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is minimum viable address]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsMinimumViableAddress()
+        {
+            if (this.Street1.IsNullOrWhiteSpace() &&
+                this.Street2.IsNullOrWhiteSpace() &&
+                this.City.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the full street address.
         /// </summary>
         /// <returns></returns>
         public string GetFullStreetAddress()
         {
-            if (string.IsNullOrWhiteSpace(this.Street1) &&
-                string.IsNullOrWhiteSpace(this.Street2) &&
-                string.IsNullOrWhiteSpace(this.City))
+            if ( !IsMinimumViableAddress() )
             {
                 return string.Empty;
             }

@@ -175,6 +175,11 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
 
         /// <summary>
+        /// The grouptype inactive reason
+        /// </summary>
+        public const string GROUPTYPE_INACTIVE_REASONS = "EB5D9839-F770-4E22-8B56-0B09397307D9";
+
+        /// <summary>
         /// Guid for the types of interaction service.
         /// </summary>
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
@@ -312,6 +317,16 @@ namespace Rock.SystemGuid
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
 
         /// <summary>
+        /// Template Block
+        /// </summary>
+        public const string TEMPLATE_BLOCK = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183";
+
+        /// <summary>
+        /// Template
+        /// </summary>
+        public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
+
+        /// <summary>
         /// Guid for the types of map styles
         /// </summary>
         public const string MAP_STYLES = "4EF89471-C049-49ED-AB50-677F689A4E4E";
@@ -350,6 +365,11 @@ namespace Rock.SystemGuid
 		/// The Spiritual Gifts
 		/// </summary>
 		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
+
+        /// <summary>
+        /// Guid for Structured Content Editor Tools
+        /// </summary>
+        public const string STRUCTURED_CONTENT_EDITOR_TOOLS = "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA";
 
         /// <summary>
         /// Used to manage the workflows that can be launched via webhook.

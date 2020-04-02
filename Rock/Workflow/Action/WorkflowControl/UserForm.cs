@@ -49,10 +49,20 @@ namespace Rock.Workflow.Action
             errorMessages = new List<string>();
 
             var actionType = action.ActionTypeCache;
-            if ( !action.LastProcessedDateTime.HasValue &&
+
+            /*
+             * 2020-01-30: DL
+             * Workflow Form instances created prior to v1.10.2 may hold a reference to a SystemEmail (deprecated) rather than a SystemCommunication,
+             * Processing has been added here to maintain backward-compatibility, with the SystemCommunication setting being preferred if it exists.
+             */
+#pragma warning disable CS0618 // Type or member is obsolete
+            var sendNotification = !action.LastProcessedDateTime.HasValue &&
                 actionType != null &&
                 actionType.WorkflowForm != null &&
-                actionType.WorkflowForm.NotificationSystemEmailId.HasValue )
+                ( actionType.WorkflowForm.NotificationSystemCommunicationId.HasValue || actionType.WorkflowForm.NotificationSystemEmailId.HasValue );
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if ( sendNotification )
             {
                 if ( action.Activity != null && ( action.Activity.AssignedPersonAliasId.HasValue || action.Activity.AssignedGroupId.HasValue ) )
                 {
@@ -95,10 +105,32 @@ namespace Rock.Workflow.Action
                         WorkflowService workflowService = new WorkflowService( rockContext );
                         workflowService.PersistImmediately( action );
 
-                        var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
-                        if ( systemEmail != null )
+                        // Create and send the notification email.
+                        RockEmailMessage emailMessage = null;
+
+                        if ( action.ActionTypeCache.WorkflowForm.NotificationSystemCommunicationId.HasValue )
                         {
-                            var emailMessage = new RockEmailMessage( systemEmail );
+                            var systemCommunication = new SystemCommunicationService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemCommunicationId.Value );
+
+                            if ( systemCommunication != null )
+                            {
+                                emailMessage = new RockEmailMessage( systemCommunication );
+                            }
+                        }
+#pragma warning disable CS0618 // Type or member is obsolete
+                        else if ( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.HasValue )
+                        {                            
+                            var systemEmail = new SystemEmailService( rockContext ).Get( action.ActionTypeCache.WorkflowForm.NotificationSystemEmailId.Value );
+
+                            if ( systemEmail != null )
+                            {
+                                emailMessage = new RockEmailMessage( systemEmail );
+                            }
+                        }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+                        if ( emailMessage != null )
+                        {
                             emailMessage.SetRecipients( recipients );
                             emailMessage.CreateCommunicationRecord = false;
                             emailMessage.AppRoot = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
@@ -106,8 +138,9 @@ namespace Rock.Workflow.Action
                         }
                         else
                         {
-                            action.AddLogEntry( "Could not find the selected notification system email", true );
+                            action.AddLogEntry( "Could not find the selected notification system communication.", true );
                         }
+
                     }
                     else
                     {

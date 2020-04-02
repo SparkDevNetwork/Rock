@@ -165,15 +165,29 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Obsolete: Use ShowInactiveTags instead.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [Show Inactive Tags]; otherwise, <c>false</c>.
+        /// </value>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "Use ShowInactiveTags instead." )]
+        public bool ShowInActiveTags
+        {
+            get { return ShowInactiveTags; }
+            set { ShowInactiveTags = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether Inactive tags should be displayed
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [Show InActive Tags]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [Show Inactive Tags]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowInActiveTags
+        public bool ShowInactiveTags
         {
-            get { return ViewState["ShowInActiveTags"] as bool? ?? false; }
-            set { ViewState["ShowInActiveTags"] = value; }
+            get { return ViewState["ShowInactiveTags"] as bool? ?? false; }
+            set { ViewState["ShowInactiveTags"] = value; }
         }
 
         #endregion
@@ -236,7 +250,7 @@ Rock.controls.tagList.initialize({{
                     ( !AllowNewTags ).ToString().ToLower(),
                     DelaySave.ToString().ToLower(),
                     CategoryGuid.HasValue ? CategoryGuid.Value.ToString() : "",
-                    this.ShowInActiveTags.ToString().ToLower() );
+                    this.ShowInactiveTags.ToString().ToLower() );
                 ScriptManager.RegisterStartupScript( this, this.GetType(), "tag_picker_" + this.ID, script, true );
             }
         }
@@ -256,8 +270,8 @@ Rock.controls.tagList.initialize({{
             using ( var rockContext = new RockContext() )
             {
                 var taggedItemService = new TaggedItemService( rockContext );
-                var itemList = taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags )
-                    .Where( ti => ShowInActiveTags || ti.Tag.IsActive )
+                var itemList = taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInactiveTags )
+                    .Where( ti => ShowInactiveTags || ti.Tag.IsActive )
                     .Select( ti => ti.Tag )
                     .Include( t => t.OwnerPersonAlias )
                     .OrderBy( t => t.Name )
@@ -319,7 +333,7 @@ Rock.controls.tagList.initialize({{
 
                 // Get the existing tagged items for this entity
                 var existingTaggedItems = new List<TaggedItem>();
-                foreach ( var taggedItem in taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInActiveTags ) )
+                foreach ( var taggedItem in taggedItemService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, EntityGuid, CategoryGuid, ShowInactiveTags ) )
                 {
                     if ( taggedItem.IsAuthorized( Authorization.VIEW, person ) )
                     {
@@ -339,7 +353,7 @@ Rock.controls.tagList.initialize({{
                     }
 
                     // Only if this is a new tag, create it
-                    var tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInActiveTags );
+                    var tag = tagService.Get( EntityTypeId, EntityQualifierColumn, EntityQualifierValue, currentPersonId, tagName, CategoryGuid, ShowInactiveTags );
 
                     if ( personAlias != null && tag == null )
                     {

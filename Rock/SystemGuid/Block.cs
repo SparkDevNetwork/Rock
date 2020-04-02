@@ -41,5 +41,20 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string RSVP_RESPONSE = "CA9DE522-DC29-45DE-8A86-C53AF02FA68C";
 
+        /// <summary>
+        /// System Communications List Block instance.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST = "CD18ECBD-A7FB-4167-9054-542362F87DC7";
+
+        /// <summary>
+        /// System Communication Detail Block instance.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_DETAIL = "E65EDFE8-5FE9-4785-9E3D-E5D4F6829819";
+
+        /// <summary>
+        /// Communications/System Communication Categories Block instance.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_CATEGORIES = "550D7229-2788-4C0E-BFE6-4AAE95D28267";
+
     }
 }
