@@ -120,4 +120,42 @@ namespace Rock.Model
             }
         }
     }
+
+    /// <summary>
+    /// Extension methods for GroupLocation
+    /// </summary>
+    public static class GroupLocationExtensions
+    {
+        /// <summary>
+        /// Where the group is active.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupLocation> WhereHasActiveGroup( this IQueryable<GroupLocation> query )
+        {
+            return query.Where( gl => gl.Group.IsActive );
+        }
+
+        /// <summary>
+        /// Where the location is active.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupLocation> WhereHasActiveLocation( this IQueryable<GroupLocation> query )
+        {
+            return query.Where( gl => gl.Location.IsActive );
+        }
+
+        /// <summary>
+        /// Where the entities are active (deduced from the group and location both being active).
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupLocation> WhereDeducedIsActive( this IQueryable<GroupLocation> query )
+        {
+            return query
+                .WhereHasActiveLocation()
+                .WhereHasActiveGroup();
+        }
+    }
 }
