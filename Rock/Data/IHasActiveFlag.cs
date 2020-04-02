@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Linq;
+
 namespace Rock.Data
 {
     /// <summary>
@@ -28,5 +30,21 @@ namespace Rock.Data
         /// Active.
         /// </value>
         bool IsActive { get; set; }
+    }
+
+    /// <summary>
+    /// Extensions for classes implementing the interface
+    /// </summary>
+    public static class HasActiveFlagExtensions
+    {
+        /// <summary>
+        /// Return the subset of items that are active.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <returns></returns>
+        public static IQueryable<T> WhereIsActive<T>( this IQueryable<T> query ) where T : IHasActiveFlag
+        {
+            return query.Where( i => i.IsActive );
+        }
     }
 }

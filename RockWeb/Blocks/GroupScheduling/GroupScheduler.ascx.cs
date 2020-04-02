@@ -213,7 +213,13 @@ btnCopyToClipboard.ClientID );
             {
                 var groupLocations = group.GroupLocations.ToList();
 
-                var groupSchedules = groupLocations.SelectMany( a => a.Schedules ).DistinctBy( a => a.Guid ).ToList();
+                var groupSchedules = groupLocations
+                    .Where( gl => gl.Location.IsActive )
+                    .SelectMany( gl => gl.Schedules )
+                    .Where( s => s.IsActive )
+                    .DistinctBy( a => a.Guid )
+                    .ToList();
+
                 if ( !groupSchedules.Any() )
                 {
                     nbGroupWarning.Text = "Group does not have any locations or schedules";
@@ -458,7 +464,10 @@ btnCopyToClipboard.ClientID );
 
                 var rockContext = new RockContext();
                 var groupLocationsQuery = new GroupLocationService( rockContext ).Queryable()
-                    .Where( a => a.GroupId == group.Id && a.Schedules.Any( s => s.Id == scheduleId ) )
+                    .Where( gl =>
+                        gl.GroupId == group.Id &&
+                        gl.Schedules.Any( s => s.Id == scheduleId ) &&
+                        gl.Location.IsActive )
                     .OrderBy( a => new { a.Order, a.Location.Name } )
                     .AsNoTracking();
 
