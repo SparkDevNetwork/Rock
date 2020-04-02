@@ -36,10 +36,28 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists communications sent to an individual" )]
 
+    #region Block Attributes
+
     [ContextAware]
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    #endregion Block Attributes
     public partial class CommunicationRecipientList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         private Person _person = null;
@@ -186,7 +204,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gCommunication_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "CommunicationId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "CommunicationId", e.RowKeyId );
         }
 
         /// <summary>

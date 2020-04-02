@@ -28,24 +28,23 @@ using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using RockWeb;
 
 /// <summary>
 /// This the Twilio Webwook that processes incoming SMS messages thru the SMS Pipeline. See https://community.rockrms.com/Rock/BookContent/8#smstwilio
 /// </summary>
 public class TwilioSmsAsync : IHttpAsyncHandler
 {
-    public IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, Object extraData)
+    public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, Object extraData )
     {
-        TwilioSmsResponseAsync twilioAsync = new TwilioSmsResponseAsync(cb, context, extraData);
+        TwilioSmsResponseAsync twilioAsync = new TwilioSmsResponseAsync( cb, context, extraData );
         twilioAsync.StartAsyncWork();
         return twilioAsync;
     }
 
-    public void EndProcessRequest(IAsyncResult result)
-    {
-    }
+    public void EndProcessRequest( IAsyncResult result ) { }
 
-    public void ProcessRequest(HttpContext context)
+    public void ProcessRequest( HttpContext context )
     {
         throw new InvalidOperationException();
     }
@@ -62,9 +61,9 @@ public class TwilioSmsAsync : IHttpAsyncHandler
 class TwilioSmsResponseAsync : IAsyncResult
 {
     private bool _completed;
-    private Object _state;
-    private AsyncCallback _callback;
-    private HttpContext _context;
+    private readonly Object _state;
+    private readonly AsyncCallback _callback;
+    private readonly HttpContext _context;
 
     bool IAsyncResult.IsCompleted { get { return _completed; } }
     WaitHandle IAsyncResult.AsyncWaitHandle { get { return null; } }
@@ -113,11 +112,7 @@ class TwilioSmsResponseAsync : IAsyncResult
         else
         {
 
-            // determine if we should log
-            if ( ( !string.IsNullOrEmpty( request.QueryString["Log"] ) && request.QueryString["Log"] == "true" ) || ENABLE_LOGGING )
-            {
-                WriteToLog();
-            }
+            TwilioLogging.HandleRequestLogging( _context, ENABLE_LOGGING );
 
             if ( request.Form["SmsStatus"] != null )
             {
@@ -167,7 +162,7 @@ class TwilioSmsResponseAsync : IAsyncResult
                 }
                 else
                 {
-                    WriteToLog( "No recipient was found with the specified MessageSid value!" );
+                    Rock.Model.ExceptionLogService.LogException( "No recipient was found with the specified MessageSid value!" );
                 }
             }
         }
@@ -202,7 +197,8 @@ class TwilioSmsResponseAsync : IAsyncResult
             {
                 message.FromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
-                var outcomes = SmsActionService.ProcessIncomingMessage( message );
+                var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
+                var outcomes = SmsActionService.ProcessIncomingMessage( message, smsPipelineId );
                 var smsResponse = SmsActionService.GetResponseFromOutcomes( outcomes );
                 var twilioMessage = new Twilio.TwiML.Message();
                 var messagingResponse = new Twilio.TwiML.MessagingResponse();
@@ -228,46 +224,5 @@ class TwilioSmsResponseAsync : IAsyncResult
                 response.Write( messagingResponse.ToString() );
             }
         }
-    }
-
-    private void WriteToLog()
-    {
-        var request = _context.Request;
-        var formValues = new List<string>();
-        foreach ( string name in request.Form.AllKeys )
-        {
-            formValues.Add( string.Format( "{0}: '{1}'", name, request.Form[name] ) );
-        }
-
-        WriteToLog( formValues.AsDelimited( ", " ) );
-    }
-
-    private void WriteToLog( string message )
-    {
-        string logFile = _context.Server.MapPath( "~/App_Data/Logs/TwilioLog.txt" );
-
-        // Write to the log, but if an ioexception occurs wait a couple seconds and then try again (up to 3 times).
-        var maxRetry = 3;
-        for ( int retry = 0; retry < maxRetry; retry++ )
-        {
-            try
-            {
-                using ( System.IO.FileStream fs = new System.IO.FileStream( logFile, System.IO.FileMode.Append, System.IO.FileAccess.Write ) )
-                {
-                    using ( System.IO.StreamWriter sw = new System.IO.StreamWriter( fs ) )
-                    {
-                        sw.WriteLine( string.Format( "{0} - {1}", RockDateTime.Now.ToString(), message ) );
-                    }
-                }
-            }
-            catch ( System.IO.IOException )
-            {
-                if ( retry < maxRetry - 1 )
-                {
-                    System.Threading.Tasks.Task.Delay( 2000 ).Wait();
-                }
-            }
-        }
-
     }
 }

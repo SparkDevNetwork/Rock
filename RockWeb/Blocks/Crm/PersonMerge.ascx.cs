@@ -443,6 +443,13 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMerge_Click( object sender, EventArgs e )
         {
+            /*
+            01/02/2020 - SK
+            Similar code is used in ExpungePerson in PersonService class
+            https://github.com/SparkDevNetwork/Rock/blob/develop/Rock/Model/CodeGenerated/PersonService.cs
+            and might also to consider for any future changes made to current method.
+            */
+
             if ( MergeData.People.Count < 2 )
             {
                 nbPeople.Visible = true;
@@ -631,7 +638,7 @@ namespace RockWeb.Blocks.Crm
                             }
 
                             // Update Addresses.
-                            MergeAddresses( rockContext, primaryPerson, primaryFamily );
+                            MergeAddresses( rockContext, primaryFamily );
                         }
 
                         // Delete the unselected photos
@@ -812,9 +819,8 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         /// <param name="rockContext"></param>
         /// <param name="primaryPerson"></param>
-        private void MergeAddresses( RockContext rockContext, Person primaryPerson, Group primaryFamily )
+        private void MergeAddresses( RockContext rockContext, Group primaryFamily )
         {
-            // Update the addresses of the primary family.
             if ( primaryFamily == null )
             {
                 return;
@@ -878,7 +884,7 @@ namespace RockWeb.Blocks.Crm
 
                     GroupLocation currentTargetFamilyLocation = null;
 
-                    if ( primaryPersonGroupLocationValue.Value != null )
+                    if ( primaryPersonGroupLocationValue.Value.IsNotNullOrWhiteSpace() )
                     {
                         currentTargetFamilyLocation = primaryFamily.GroupLocations.FirstOrDefault( p => p.Id == primaryPersonGroupLocationValue.Value.AsInteger() );
                     }
@@ -917,7 +923,7 @@ namespace RockWeb.Blocks.Crm
                     {
                         if ( mergeSourceFamilyLocation == null )
                         {
-                            // Remove the existing address if it exists
+                            // Remove the address if it exists.
                             if ( currentTargetFamilyLocation != null )
                             {
                                 primaryFamily.GroupLocations.Remove( currentTargetFamilyLocation );
@@ -1701,7 +1707,7 @@ namespace RockWeb.Blocks.Crm
 
             // Only show properties that match the selected headingKeys, and have more than one distinct value.
             var visibleProperties = Properties.Where( p => ( p.HasViewPermission || _ShowSecuredProperties )
-                                                           && ( headingKeys.Contains( p.Key ) || p.Values.Select( v => v.Value ).Distinct().Count() > 1 ) )
+                                                           && ( headingKeys.Contains( p.Key ) || p.Values.Select( v => v.Value ?? string.Empty ).Distinct().Count() > 1 ) )
                                               .ToList();
 
             foreach ( var personProperty in visibleProperties )

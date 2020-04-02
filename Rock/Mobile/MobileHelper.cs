@@ -109,6 +109,7 @@ namespace Rock.Mobile
             var baseUrl = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var homePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() ).Id;
             var mobilePhoneTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() ).Id;
+            var alternateIdTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID ).Id;
 
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
@@ -125,6 +126,10 @@ namespace Rock.Mobile
                 .Where( r => r.IsPersonInRole( person.Guid ) )
                 .Select( r => r.Guid )
                 .ToList();
+
+            var alternateId = person.GetPersonSearchKeys()
+                .Where( a => a.SearchTypeValueId == alternateIdTypeId )
+                .FirstOrDefault()?.SearchValue;
 
             return new MobilePerson
             {
@@ -144,6 +149,7 @@ namespace Rock.Mobile
                 PersonalizationSegmentGuids = new List<Guid>(),
                 PersonGuid = person.Guid,
                 PersonId = person.Id,
+                AlternateId = alternateId,
                 AttributeValues = GetMobileAttributeValues( person, personAttributes )
             };
         }
@@ -348,6 +354,7 @@ namespace Rock.Mobile
                         PreXaml = block.PreHtml,
                         PostXaml = block.PostHtml,
                         CssClasses = block.CssClass,
+                        CssStyles = additionalBlockSettings.CssStyles,
                         ShowOnTablet = additionalBlockSettings.ShowOnTablet,
                         ShowOnPhone = additionalBlockSettings.ShowOnPhone,
                         RequiresNetwork = additionalBlockSettings.RequiresNetwork,
@@ -418,6 +425,7 @@ namespace Rock.Mobile
                     IconUrl = page.IconBinaryFileId.HasValue ? $"{ applicationRoot }GetImage.ashx?Id={ page.IconBinaryFileId.Value }" : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
+                    CssStyles = additionalPageSettings.CssStyles,
                     AuthorizationRules = string.Join( ",", GetOrderedExplicitAuthorizationRules( page ) )
                 };
 

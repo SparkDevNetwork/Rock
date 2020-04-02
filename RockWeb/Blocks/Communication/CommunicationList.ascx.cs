@@ -41,12 +41,34 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the status of all previously created communications." )]
 
+    #region Block Attributes
     [SecurityAction( Authorization.APPROVE, "The roles and/or users that have access to approve new communications." )]
 
-    [LinkedPage( "Detail Page", order: 1 )]
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 1 )]
+
+    #endregion Block Attributes
     public partial class CommunicationList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
+
+        #region Fields
+
         private bool canApprove = false;
+
+        #endregion Fields
 
         #region Control Methods
 
@@ -233,7 +255,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gCommunication_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "CommunicationId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "CommunicationId", e.RowKeyId );
         }
 
         /// <summary>

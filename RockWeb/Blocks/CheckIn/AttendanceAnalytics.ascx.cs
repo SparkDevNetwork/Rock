@@ -403,7 +403,7 @@ namespace RockWeb.Blocks.CheckIn
             noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
             noCampusListItem.Value = "null";
             clbCampuses.Items.Add( noCampusListItem );
-            foreach ( var campus in CampusCache.All( includeInactiveCampuses ).OrderBy( a => a.Name ) )
+            foreach ( var campus in CampusCache.All( includeInactiveCampuses ) )
             {
                 var listItem = new ListItem();
                 listItem.Text = campus.Name;
@@ -1415,7 +1415,9 @@ function(item) {
                         person.Email = row["Email"].ToString();
                         person.GivingId = row["GivingId"].ToString();
                         person.Birthdate = row["BirthDate"] as DateTime?;
+                        person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
                         person.Age = Person.GetAge( person.Birthdate );
+                        person.Grade = dtNonAttenders.Columns.Contains( "GraduationYear" ) ? Person.GradeFormattedFromGraduationYear( row["GraduationYear"] as int? ) : null;
 
                         person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
                         result.Person = person;
@@ -1429,6 +1431,7 @@ function(item) {
                             parent.Email = row["ParentEmail"].ToString();
                             parent.GivingId = row["ParentGivingId"].ToString();
                             parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                            parent.Gender = row["ParentGender"].ToString().ConvertToEnum<Gender>();
                             parent.Age = Person.GetAge( parent.Birthdate );
                             result.Parent = parent;
                         }
@@ -1442,6 +1445,8 @@ function(item) {
                             child.Email = row["ChildEmail"].ToString();
                             child.GivingId = row["ChildGivingId"].ToString();
                             child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                            child.Gender = row["ChildGender"].ToString().ConvertToEnum<Gender>();
+                            child.Grade = Person.GradeFormattedFromGraduationYear(row["ChildGraduationYear"] as int?);
                             child.Age = Person.GetAge( child.Birthdate );
                             result.Child = child;
                         }
@@ -1546,6 +1551,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -1579,8 +1585,10 @@ function(item) {
                             person.Email = row["Email"].ToString();
                             person.GivingId = row["GivingId"].ToString();
                             person.Birthdate = row["BirthDate"] as DateTime?;
+                            person.Gender = row["Gender"].ToString().ConvertToEnum<Gender>();
                             person.Age = Person.GetAge( person.Birthdate );
                             person.ConnectionStatusValueId = row["ConnectionStatusValueId"] as int?;
+                            person.Grade = dtAttendees.Columns.Contains( "GraduationYear" ) ? Person.GradeFormattedFromGraduationYear( row["GraduationYear"] as int? ) : null;
                             result.Person = person;
 
                             if ( includeParents )
@@ -1592,6 +1600,7 @@ function(item) {
                                 parent.Email = row["ParentEmail"].ToString();
                                 parent.GivingId = row["ParentGivingId"].ToString();
                                 parent.Birthdate = row["ParentBirthDate"] as DateTime?;
+                                parent.Gender = row["ParentGender"].ToString().ConvertToEnum<Gender>();                                
                                 parent.Age = Person.GetAge( parent.Birthdate );
                                 result.Parent = parent;
                             }
@@ -1605,6 +1614,8 @@ function(item) {
                                 child.Email = row["ChildEmail"].ToString();
                                 child.GivingId = row["ChildGivingId"].ToString();
                                 child.Birthdate = row["ChildBirthDate"] as DateTime?;
+                                child.Gender = row["ChildGender"].ToString().ConvertToEnum<Gender>();
+                                child.Grade = Person.GradeFormattedFromGraduationYear( row["ChildGraduationYear"] as int? );
                                 child.Age = Person.GetAge( child.Birthdate );
                                 result.Child = child;
                             }
@@ -1646,6 +1657,7 @@ function(item) {
                             {
                                 var lastAttendance = new PersonLastAttendance();
                                 lastAttendance.CampusId = row["CampusId"] as int?;
+                                lastAttendance.CampusName = row["CampusName"].ToString();
                                 lastAttendance.GroupId = row["GroupId"] as int?;
                                 lastAttendance.GroupName = row["GroupName"].ToString();
                                 lastAttendance.RoleName = row["RoleName"].ToString();
@@ -1666,6 +1678,12 @@ function(item) {
 
             var personUrlFormatString = ( ( RockPage ) this.Page ).ResolveRockUrl( "~/Person/{0}" );
 
+            var personGradeField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Grade" );
+            if ( personGradeField != null )
+            {
+                personGradeField.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.NeverInclude : ExcelExportBehavior.AlwaysInclude;
+            }
+
             var personHyperLinkField = gAttendeesAttendance.Columns.OfType<HyperLinkField>().FirstOrDefault( a => a.HeaderText == "Name" );
             if ( personHyperLinkField != null )
             {
@@ -1685,6 +1703,12 @@ function(item) {
                 parentField.ExcelExportBehavior = includeParents ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
             }
 
+            var parentGenderField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Parent Gender" );
+            if ( parentGenderField != null )
+            {
+                parentGenderField.ExcelExportBehavior = includeParents ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
+            }
+                    
             var parentEmailField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Parent Email" );
             if ( parentEmailField != null )
             {
@@ -1708,6 +1732,18 @@ function(item) {
             if ( childfield != null )
             {
                 childfield.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
+            }
+
+            var childGenderlField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Child Gender" );
+            if ( childGenderlField != null )
+            {
+                childGenderlField.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
+            }
+
+            var childGradeField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Child Grade" );
+            if ( childGradeField != null )
+            {
+                childGradeField.ExcelExportBehavior = includeChildren ? ExcelExportBehavior.AlwaysInclude : ExcelExportBehavior.NeverInclude;
             }
 
             var childEmailField = gAttendeesAttendance.Columns.OfType<RockBoundField>().FirstOrDefault( a => a.HeaderText == "Child Email" );
@@ -2139,6 +2175,15 @@ function(item) {
                     if ( _personLocations != null && _personLocations.ContainsKey( currentPersonId ) )
                     {
                         lHomeAddress.Text = _personLocations[currentPersonId].FormattedHtmlAddress;
+                        lHomeAddressStreet.Text = _personLocations[currentPersonId].Street1.Trim();
+                        if ( !string.IsNullOrEmpty(_personLocations[currentPersonId].Street2 ))
+						{
+                            lHomeAddressStreet.Text += " " + _personLocations[currentPersonId].Street2;
+                        }
+                        lHomeAddressCity.Text = _personLocations[currentPersonId].City;
+                        lHomeAddressState.Text = _personLocations[currentPersonId].State;
+                        lHomeAddressPostalCode.Text = _personLocations[currentPersonId].PostalCode;
+                        lHomeAddressCountry.Text = _personLocations[currentPersonId].Country;
                     }
                 }
                 catch ( Exception ex )
@@ -2570,6 +2615,8 @@ function(item) {
 
             public DateTime? Birthdate { get; set; }
 
+            public string Grade { get; set; }
+
             public int? ConnectionStatusValueId { get; set; }
 
             public override string ToString()
@@ -2584,6 +2631,8 @@ function(item) {
         public class PersonLastAttendance
         {
             public int? CampusId { get; set; }
+
+            public string CampusName { get; set; }
 
             public int? GroupId { get; set; }
 

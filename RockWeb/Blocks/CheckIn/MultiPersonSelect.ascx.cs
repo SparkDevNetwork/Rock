@@ -223,9 +223,6 @@ namespace RockWeb.Blocks.CheckIn
                 var pnlPhoto = e.Item.FindControl( "pnlPhoto" ) as Panel;
                 pnlPhoto.Visible = !_hidePhotos;
 
-                var pnlPerson = e.Item.FindControl( "pnlPerson" ) as Panel;
-                pnlPerson.CssClass = ( _hidePhotos ? "col-md-10 col-sm-10 col-xs-8 name-container" : "col-md-10 col-sm-8 col-xs-6 name-container" );
-
                 var lPersonButton = e.Item.FindControl( "lPersonButton" ) as Literal;
                 var person = e.Item.DataItem as CheckInPerson;
 

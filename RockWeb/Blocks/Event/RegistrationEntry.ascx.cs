@@ -472,6 +472,28 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        protected FinancialGateway FinancialGateway
+        {
+            get
+            {
+                FinancialGateway financialGateway = null;
+                if ( RegistrationTemplate != null )
+                {
+                    financialGateway = RegistrationTemplate.FinancialGateway;
+                }
+                else
+                {
+                    var registrationInstanceId = this.PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    if ( registrationInstanceId.HasValue )
+                    {
+                        financialGateway = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, s => s.RegistrationTemplate.FinancialGateway );
+                    }
+                }
+
+                return financialGateway;
+            }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [using three-step gateway].
         /// </summary>
@@ -480,8 +502,17 @@ namespace RockWeb.Blocks.Event
         /// </value>
         protected bool Using3StepGateway
         {
-            get { return ViewState["Using3StepGateway"] as bool? ?? false; }
-            set { ViewState["Using3StepGateway"] = value; }
+            get
+            {
+                FinancialGateway financialGateway = this.FinancialGateway;
+
+                if ( financialGateway != null )
+                {
+                    return financialGateway.GetGatewayComponent() is IThreeStepGatewayComponent;
+                }
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -1878,11 +1909,9 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            if ( RegistrationTemplate != null &&
-                RegistrationTemplate.FinancialGateway != null )
+            if ( this.FinancialGateway != null )
             {
-                var threeStepGateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
-                Using3StepGateway = threeStepGateway != null;
+                var threeStepGateway = this.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
                 if ( Using3StepGateway )
                 {
                     Step2IFrameUrl = ResolveRockUrl( threeStepGateway.Step2FormUrl );
@@ -2987,7 +3016,7 @@ namespace RockWeb.Blocks.Event
 
                 rockContext.SaveChanges();
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 using ( var newRockContext = new RockContext() )
                 {
@@ -3005,7 +3034,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                throw ex;
+                throw;
             }
 
             return registration;
@@ -4269,10 +4298,10 @@ namespace RockWeb.Blocks.Event
     $('input.js-first-name').change( function() {{
         var name = $(this).val();
         if ( name == null || name == '') {{
-            name = '{23}';
+            name = '{11}';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' is in the same {22} as');
+        $lbl.text( name + ' is in the same {10} as');
     }} );
     $('input.js-your-first-name').change( function() {{
         var name = $(this).val();
@@ -4282,17 +4311,17 @@ namespace RockWeb.Blocks.Event
             name += ' is';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' in the same {22} as');
+        $lbl.text( name + ' in the same {10} as');
     }} );
 
     // Adjust the Family Member dropdown when choosing same immediate family
-    $('#{24}').on('change', function() {{
-        var displaySetting = $('#{25}').css('display');
-        if ( $(""input[id*='{24}']:checked"").val() == '{26}' && displaySetting == 'none' ) {{
-            $( '#{25}').slideToggle();
+    $('#{12}').on('change', function() {{
+        var displaySetting = $('#{13}').css('display');
+        if ( $(""input[id*='{12}']:checked"").val() == '{14}' && displaySetting == 'none' ) {{
+            $( '#{13}').slideToggle();
         }}
         else if ( displaySetting == 'block' ) {{
-            $('#{25}').slideToggle();
+            $('#{13}').slideToggle();
         }}
     }});
 
@@ -4347,63 +4376,6 @@ namespace RockWeb.Blocks.Event
         $('#{5}').val('')
     }}
 
-    $('#aStep2Submit').on('click', function(e) {{
-        e.preventDefault();
-        if (typeof (Page_ClientValidate) == 'function') {{
-            if (Page_IsValid && Page_ClientValidate('{10}') ) {{
-                $(this).prop('disabled', true);
-                $('#updateProgress').show();
-                var src = $('#{7}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-
-                $form.find('.js-cc-first-name').val( $('#{16}').val() );
-                $form.find('.js-cc-last-name').val( $('#{17}').val() );
-                $form.find('.js-cc-full-name').val( $('#{18}').val() );
-
-                $form.find('.js-cc-number').val( $('#{11}').val() );
-                var mm = $('#{12}_monthDropDownList').val();
-                var yy = $('#{12}_yearDropDownList_').val();
-                mm = mm.length == 1 ? '0' + mm : mm;
-                yy = yy.length == 4 ? yy.substring(2,4) : yy;
-                $form.find('.js-cc-expiration').val( mm + yy );
-                $form.find('.js-cc-cvv').val( $('#{13}').val() );
-
-                $form.find('.js-billing-address1').val( $('#{15}_tbStreet1').val() );
-                $form.find('.js-billing-city').val( $('#{15}_tbCity').val() );
-
-                if ( $('#{15}_ddlState').length ) {{
-                    $form.find('.js-billing-state').val( $('#{15}_ddlState').val() );
-                }} else {{
-                    $form.find('.js-billing-state').val( $('#{15}_tbState').val() );
-                }}
-                $form.find('.js-billing-postal').val( $('#{15}_tbPostalCode').val() );
-                $form.find('.js-billing-country').val( $('#{15}_ddlCountry').val() );
-
-                $form.attr('action', src );
-                $form.submit();
-            }}
-        }}
-    }});
-
-    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
-    // The qry parameter value is saved to a hidden field and a post back is performed
-    $('#iframeStep2').on('load', function(e) {{
-        var location = this.contentWindow.location;
-        var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{
-            $('#{8}').val(qryString);
-            window.location = ""javascript:{9}"";
-        }} else {{
-            if ( $('#{14}').val() == 'true' ) {{
-                $('#updateProgress').show();
-                var src = $('#{7}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-                $form.attr('action', src );
-                $form.submit();
-            }}
-        }}
-    }});
-
     // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
     // The qry parameter value is saved to a hidden field and a post back is performed
     $('#iframeRequiredDocument').on('load', function(e) {{
@@ -4411,8 +4383,8 @@ namespace RockWeb.Blocks.Event
         try {{
             var qryString = this.contentWindow.location.search;
             if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{
-                $('#{19}').val(qryString);
-                window.location = ""javascript:{20}"";
+                $('#{7}').val(qryString);
+                window.location = ""javascript:{8}"";
             }}
         }}
         catch (e) {{
@@ -4420,8 +4392,8 @@ namespace RockWeb.Blocks.Event
         }}
     }});
 
-    if ($('#{21}').val() != '' ) {{
-        $('#iframeRequiredDocument').attr('src', $('#{21}').val() );
+    if ($('#{9}').val() != '' ) {{
+        $('#iframeRequiredDocument').attr('src', $('#{9}').val() );
     }}
 
 ", nbAmountPaid.ClientID                 // {0}
@@ -4431,26 +4403,14 @@ namespace RockWeb.Blocks.Event
             , lRemainingDue.ClientID                 // {4}
             , hfTriggerScroll.ClientID               // {5}
             , GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
-            , hfStep2Url.ClientID                    // {7}
-            , hfStep2ReturnQueryString.ClientID      // {8}
-            , this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) // {9}
-            , this.BlockValidationGroup              // {10}
-            , txtCreditCard.ClientID                 // {11}
-            , mypExpiration.ClientID                 // {12}
-            , txtCVV.ClientID                        // {13}
-            , hfStep2AutoSubmit.ClientID             // {14}
-            , acBillingAddress.ClientID              // {15}
-            , txtCardFirstName.ClientID              // {16}
-            , txtCardLastName.ClientID               // {17}
-            , txtCardName.ClientID                  // {18}
-            , hfRequiredDocumentQueryString.ClientID // {19}
-            , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
-            , hfRequiredDocumentLinkUrl.ClientID     // {21}
-            , GetAttributeValue( "FamilyTerm" )      // {22}
-            , RegistrantTerm                         // {23}
-            , rblFamilyOptions.ClientID              // {24}
-            , pnlFamilyMembers.ClientID              // {25}
-            , controlFamilyGuid                      // {26}
+            , hfRequiredDocumentQueryString.ClientID // {7}
+            , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {8}
+            , hfRequiredDocumentLinkUrl.ClientID     // {9}
+            , GetAttributeValue( "FamilyTerm" )      // {10}
+            , RegistrantTerm                         // {11}
+            , rblFamilyOptions.ClientID              // {12}
+            , pnlFamilyMembers.ClientID              // {13}
+            , controlFamilyGuid                      // {14}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
@@ -4469,6 +4429,18 @@ namespace RockWeb.Blocks.Event
                 txtCVV.ClientID );             // {2}
 
                 ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
+
+                var financialGateway = this.FinancialGateway;
+
+                if ( financialGateway != null )
+                {
+                    bool usingNMIThreeStep = financialGateway.GetGatewayComponent() is Rock.NMI.Gateway;
+                    if ( usingNMIThreeStep )
+                    {
+                        var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                        ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
+                    }
+                }
             }
         }
 

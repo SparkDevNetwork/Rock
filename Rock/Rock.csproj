@@ -222,8 +222,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.4\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.5\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46, processorArchitecture=MSIL">
       <HintPath>..\packages\StackExchange.Redis.StrongName.1.2.6\lib\net45\StackExchange.Redis.StrongName.dll</HintPath>
@@ -319,6 +319,7 @@
     <Compile Include="Attribute\ColorFieldAttribute.cs" />
     <Compile Include="Attribute\ComparisonFieldAttribute.cs" />
     <Compile Include="Attribute\ContentChannelsFieldAttribute.cs" />
+    <Compile Include="Attribute\DocumentTypeFieldAttribute.cs" />
     <Compile Include="Attribute\MetricFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepStatusFieldAttribute.cs" />
     <Compile Include="Attribute\StepProgramStepTypeFieldAttribute.cs" />
@@ -445,6 +446,9 @@
     <Compile Include="Blocks\BlockActionAttribute.cs" />
     <Compile Include="Attribute\IconCssClassAttribute.cs" />
     <Compile Include="Blocks\RockMobileBlockType.cs" />
+    <Compile Include="Blocks\Types\Mobile\Cms\Hero.cs" />
+    <Compile Include="Blocks\Types\Mobile\Communication\CommunicationListSubscribe.cs" />
+    <Compile Include="Blocks\Types\Mobile\Events\CalendarEventList.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\CalendarView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupAttendanceEntry.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupEdit.cs" />
@@ -453,7 +457,15 @@
     <Compile Include="Blocks\Types\Mobile\Groups\GroupMemberView.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupView.cs" />
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerRequestDetails.cs" />
-    <Compile Include="Blocks\Types\Web\Events\RegistrationInstanceBlock.cs">
+    <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSession.cs" />
+    <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
+    <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
+    <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
+    <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
+    <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
+    <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
+    <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
+    <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Bulk\BulkImport\AttendancesImport.cs" />
@@ -463,6 +475,7 @@
     <Compile Include="Data\RelatedEntityHelper.cs" />
     <Compile Include="Field\Types\BlockTemplateFieldType.cs" />
     <Compile Include="Field\Types\ContentChannelsFieldType.cs" />
+    <Compile Include="Field\Types\DocumentTypeFieldType.cs" />
     <Compile Include="Field\Types\MetricFieldType.cs" />
     <Compile Include="Field\Types\PersistedDatasetFieldType.cs" />
     <Compile Include="Field\Types\StepProgramStepStatusFieldType.cs" />
@@ -470,7 +483,10 @@
     <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemView.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\LavaItemList.cs" />
     <Compile Include="Field\Types\StructureContentEditorFieldType.cs" />
+    <Compile Include="Jobs\StepsAutomation.cs" />
     <Compile Include="Field\Types\SystemCommunicationFieldType.cs" />
+    <Compile Include="Financial\HostedGatewayMode.cs" />
+    <Compile Include="Jobs\ConnectionRequestWorkflowTriggers.cs" />
     <Compile Include="Jobs\DataViewToWorkflow.cs" />
     <Compile Include="Jobs\SendRsvpReminders.cs" />
     <Compile Include="Jobs\PostV100DataMigrationsSundayDate.cs" />
@@ -493,12 +509,14 @@
     <Compile Include="Model\CodeGenerated\GroupDemographicTypeService.cs" />
     <Compile Include="Model\CodeGenerated\GroupDemographicValueService.cs" />
     <Compile Include="Model\CodeGenerated\PersistedDatasetService.cs" />
+    <Compile Include="Model\CodeGenerated\SmsPipelineService.cs" />
     <Compile Include="Model\CodeGenerated\RegistrationTemplatePlacementService.cs" />
     <Compile Include="Model\CodeGenerated\RelatedEntityService.cs" />
     <Compile Include="Model\CodeGenerated\StreakAchievementAttemptService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypePrerequisiteService.cs" />
     <Compile Include="Model\CodeGenerated\StreakTypeAchievementTypeService.cs" />
     <Compile Include="Model\CodeGenerated\SystemCommunicationService.cs" />
+    <Compile Include="Model\DocumentTypeService.Partial.cs" />
     <Compile Include="Model\EntityCampusFilter.cs" />
     <Compile Include="Model\RegistrationInstanceService.partial.cs" />
     <Compile Include="Model\RegistrationRegistrantService.partial.cs" />
@@ -511,6 +529,7 @@
     <Compile Include="Model\Document.cs" />
     <Compile Include="Model\DocumentType.cs" />
     <Compile Include="Model\PersistedDatasetService.Partial.cs" />
+    <Compile Include="Model\SmsPipeline.cs" />
     <Compile Include="Model\RelatedEntityService.Partial.cs" />
     <Compile Include="Model\StepTypeService.Partial.cs" />
     <Compile Include="Model\StepService.Partial.cs" />
@@ -528,6 +547,7 @@
     <Compile Include="Plugin\HotFixes\099_MigrationRollupsFor10_2_0.cs" />
     <Compile Include="Plugin\HotFixes\102_RapidAttendanceEntry.cs" />
     <Compile Include="Plugin\HotFixes\101_RegistrationInstanceGroupPlacement.cs" />
+    <Compile Include="Plugin\HotFixes\103_GroupPlacementUpdates.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewFilter.cs" />
     <Compile Include="Reporting\DataFilter\RelatedDataViewFilterBase.cs" />
     <Compile Include="Reporting\DataFilter\Person\PrimaryCampusesFilter.cs" />
@@ -539,6 +559,7 @@
     <Compile Include="SystemGuid\SystemCommunication.cs" />
     <Compile Include="Transactions\ITransactionWithProgress.cs" />
     <Compile Include="Transactions\RegisterControllersTransaction.cs" />
+    <Compile Include="Transactions\RunDataViewTransaction.cs" />
     <Compile Include="Transactions\StreakTypeRebuildTransaction.cs" />
     <Compile Include="Transactions\StreakTypeExclusionChangeTransaction.cs" />
     <Compile Include="Transactions\StreakAchievementAttemptChangeTransaction.cs" />
@@ -547,9 +568,11 @@
     <Compile Include="Reporting\ReportTemplateBuilder.cs" />
     <Compile Include="Utility\ExtensionMethods\ExpandoObjectExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\HttpContextExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\TypeExtensions.cs" />
     <Compile Include="Utility\LazyDictionary.cs" />
     <Compile Include="Utility\SingleOrArrayJsonConverter.cs" />
     <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
     <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
@@ -1441,7 +1464,8 @@
     <Compile Include="Model\CodeGenerated\SignatureDocumentTemplateService.cs" />
     <Compile Include="Model\CodeGenerated\SiteDomainService.cs" />
     <Compile Include="Model\CodeGenerated\SiteService.cs" />
-    <Compile Include="Model\SystemEmailService.cs" />
+    <Compile Include="Model\CodeGenerated\SystemEmailService.cs" />
+    <Compile Include="Model\SystemEmailService.Partial.cs" />
     <Compile Include="Model\CodeGenerated\TaggedItemService.cs" />
     <Compile Include="Model\CodeGenerated\TagService.cs" />
     <Compile Include="Model\CodeGenerated\UserLoginService.cs" />
@@ -2002,6 +2026,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
     <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
     <Compile Include="Web\UI\Controls\DefinedValueEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAdd.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAddSingleSelect.cs" />
@@ -2023,6 +2048,9 @@
     <Compile Include="Web\UI\Controls\Pickers\StepProgramPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\StepTypePicker.cs" />
     <Compile Include="Web\UI\Controls\StructureContentEditor.cs" />
+    <Compile Include="Web\UI\Controls\Switch.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Web\UI\RockBlockNotificationManager.cs" />
     <Compile Include="Web\UI\Controls\AccordionPanel.cs" />
     <Compile Include="Web\UI\Controls\AttributeValuesContainer.cs" />
@@ -2701,6 +2729,15 @@
     <Content Include="Plugin\HotFixes\097_FamilyAnalyticsProcChange_spCrm_FamilyAnalyticsEraDataset.sql">
       <DependentUpon>097_FamilyAnalyticsProcChange.cs</DependentUpon>
     </Content>
+    <Content Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
+      <DependentUpon>104_MigrationRollupsFor10_3_0.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>104_MigrationRollupsFor10_3_0.cs</DependentUpon>
+    </Content>
+    <Content Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0_spFinance_PledgeAnalyticsQuery.sql">
+      <DependentUpon>104_MigrationRollupsFor10_3_0.cs</DependentUpon>
+    </Content>
     <Content Include="Scripts\jquery-1.12.4.intellisense.js" />
     <Content Include="Scripts\jquery-1.12.4.js" />
     <Content Include="Scripts\jquery-1.12.4.min.js" />
@@ -2782,7 +2819,14 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
+    <PreBuildEvent>REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches
+REM In a production environment, it will be 10 seconds, even without the VBCSCOMPILER_TTL environment variable
+if "$(ConfigurationName)" == "Debug" (
+ echo "setting VBCSCOMPILER_TTL to 10 seconds"
+ call "$(SolutionDir)Dev Tools\VBCS_Compiler\setVBCSCOMPILER_TTL.bat"
+)
+
+REM delete build artifacts from stuff that is no longer part of Rock (InteractivePreGeneratedViews and React)
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.Core.resources.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\JavaScriptEngineSwitcher.V8.resources.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll" del "$(SolutionDir)\RockWeb\Bin\ru-ru\MsieJavaScriptEngine.resources.dll"
@@ -2803,10 +2847,7 @@ if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.dll" del "$(SolutionDir
 if Exist "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll" del "$(SolutionDir)\RockWeb\Bin\System.Web.WebPages.Razor.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\VroomJs.dll" del "$(SolutionDir)\RockWeb\Bin\VroomJs.dll"
 if Exist "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll" del "$(SolutionDir)\RockWeb\Bin\WebActivatorEx.dll"
-if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
-
-if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"
-</PreBuildEvent>
+if Exist "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll" del "$(SolutionDir)\RockWeb\Bin\Rock.TransNational.Pi.dll"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>

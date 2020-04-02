@@ -35,11 +35,43 @@ namespace RockWeb.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Block to display connection opportunities that are assigned to the current user. The display format is controlled by a lava template." )]
 
-    [LinkedPage( "Detail Page", "Page used to view details of a request.", false, Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL, "", 1 )]
-    [ConnectionTypesField( "Connection Types", "Optional list of connection types to limit the display to (All will be displayed by default).", false, order: 2 )]
-    [CodeEditorField( "Contents", @"The Lava template to use for displaying connection opportunities assigned to current user.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, false, @"{% include '~~/Assets/Lava/MyConnectionOpportunitiesSortable.lava' %}", "", 3 )]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Description = "Page used to view details of a request.",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUEST_DETAIL,
+        Order = 1,
+        Key = AttributeKey.DetailPage )]
+    [ConnectionTypesField(
+        "Connection Types",
+        Description = "Optional list of connection types to limit the display to (All will be displayed by default).",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.ConnectionTypes )]
+    [CodeEditorField(
+        "Contents",
+        Description = @"The Lava template to use for displaying connection opportunities assigned to current user.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = false,
+        DefaultValue = @"{% include '~~/Assets/Lava/MyConnectionOpportunitiesSortable.lava' %}",
+        Key = AttributeKey.Contents,
+        Order = 3 )]
+    #endregion Block Attributes
     public partial class MyConnectionOpportunitiesLava : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string ConnectionTypes = "ConnectionTypes";
+            public const string DetailPage = "DetailPage";
+            public const string Contents = "Contents";
+        }
+        #endregion Attribute Keys
+
         #region Base Control Methods
 
         /// <summary>
@@ -89,13 +121,13 @@ namespace RockWeb.Blocks.Connection
 
         private void BindData()
         {
-            string contents = GetAttributeValue( "Contents" );
+            string contents = GetAttributeValue( AttributeKey.Contents );
 
             string appRoot = ResolveRockUrl( "~/" );
             string themeRoot = ResolveRockUrl( "~~/" );
             contents = contents.Replace( "~~/", themeRoot ).Replace( "~/", appRoot );
 
-            var connectionTypeGuids = GetAttributeValue( "ConnectionTypes" ).SplitDelimitedValues().AsGuidList();
+            var connectionTypeGuids = GetAttributeValue( AttributeKey.ConnectionTypes ).SplitDelimitedValues().AsGuidList();
 
             DateTime midnightToday = RockDateTime.Today.AddDays( 1 );
 
@@ -125,7 +157,7 @@ namespace RockWeb.Blocks.Connection
             mergeFields.Add( "LastActivityLookup", lastActivityNotes );
 
             Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-            linkedPages.Add( "DetailPage", LinkedPageRoute( "DetailPage" ) );
+            linkedPages.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
             mergeFields.Add( "LinkedPages", linkedPages );
 
             lContents.Text = contents.ResolveMergeFields( mergeFields );

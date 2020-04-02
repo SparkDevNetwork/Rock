@@ -228,6 +228,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Site.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SiteDomain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\SmsPipeline.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\Step.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepProgram.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CodeGenerated\StepStatus.cs" />

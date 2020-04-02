@@ -123,7 +123,7 @@
                     </div>
 
                     <div class="row d-flex no-gutters">
-                        <div class="col-md-3 panel-sidebar styled-scroll">
+                        <div class="col-md-3 panel-sidebar styled-scroll mh-300">
                             <div class="d-flex flex-column h-100">
                                 <div class="position-relative flex-column overflow-auto flex-shrink-1 flex-grow-1 h-100">
                                 <div class="abs-scroll-list padding-all-sm">

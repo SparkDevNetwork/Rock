@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -26,6 +27,7 @@ using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
+using Rock.Reporting;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -129,6 +131,51 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? PersistedLastRefreshDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether deceased should be included.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [include deceased]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IncludeDeceased { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// </summary>
+        /// <value>
+        /// The persisted last run duration in mulliseconds.
+        /// </value>
+        [DataMember]
+        public int? PersistedLastRunDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last run date time.
+        /// </summary>
+        /// <value>
+        /// The last run date time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// </summary>
+        /// <value>
+        /// The persisted last run duration in mulliseconds.
+        /// </value>
+        [DataMember]
+        public int? RunCount { get; set; }
+
+        /// <summary>
+        /// The amount of time in milliseconds that it took to run the <see cref="DataView"/>
+        /// </summary>
+        /// <value>
+        /// The time to run in ms.
+        /// </value>
+        [DataMember]
+        public double? TimeToRunMS { get; set; }
 
         #endregion
 
@@ -455,6 +502,19 @@ namespace Rock.Model
             else
             {
                 Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( filteredEntityType, serviceInstance, paramExpression, dataViewFilterOverrides, errorMessages ) : null;
+                if ( cachedEntityType.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id )
+                {
+                    var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable( this.IncludeDeceased );
+                    Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, paramExpression, "p" );
+                    if ( filterExpression == null )
+                    {
+                        filterExpression = extractedFilterExpression;
+                    }
+                    else
+                    {
+                        filterExpression = Expression.AndAlso( filterExpression, extractedFilterExpression );
+                    }
+                }
 
                 Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
                 if ( transformedExpression != null )
@@ -476,11 +536,12 @@ namespace Rock.Model
 
             using ( var dbContext = this.GetDbContext() )
             {
+                Stopwatch persistStopwatch = Stopwatch.StartNew();
+                Stopwatch stopwatch = Stopwatch.StartNew();
                 DataViewFilterOverrides dataViewFilterOverrides = new DataViewFilterOverrides();
 
                 // set an override so that the Persisted Values aren't used when rebuilding the values from the DataView Query
                 dataViewFilterOverrides.IgnoreDataViewPersistedValues.Add( this.Id );
-
                 var qry = this.GetQuery( null, dbContext, dataViewFilterOverrides, databaseTimeoutSeconds, out errorMessages );
                 if ( !errorMessages.Any() )
                 {
@@ -504,6 +565,8 @@ namespace Rock.Model
                     var persistedValuesToRemove = savedDataViewPersistedValues.Where( a => !updatedEntityIdsQry.Any( x => x == a.EntityId ) );
                     var persistedEntityIdsToInsert = updatedEntityIdsQry.Where( x => !savedDataViewPersistedValues.Any( a => a.EntityId == x ) ).ToList();
 
+                    stopwatch.Stop();
+
                     int removeCount = persistedValuesToRemove.Count();
                     if ( removeCount > 0 )
                     {
@@ -525,6 +588,12 @@ namespace Rock.Model
 
                         rockContext.BulkInsert( persistedValuesToInsert );
                     }
+
+                    persistStopwatch.Stop();
+
+                    DataViewService.AddRunDataViewTransaction( this.Id,
+                                Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ),
+                                Convert.ToInt32( persistStopwatch.Elapsed.TotalMilliseconds ) );
                 }
             }
 

@@ -473,6 +473,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the upload button text.
+        /// </summary>
+        /// <value>
+        /// The upload button text.
+        /// </value>
+        public string UploadButtonText
+        {
+            get
+            {
+                string text = ( string ) ViewState["UploadButtonText"];
+                if ( text.IsNullOrWhiteSpace())
+                {
+                    text = this.DisplayMode == UploaderDisplayMode.Button ? "Upload File" : "Upload";
+                }
+
+                return text;
+            }
+            set
+            {
+                ViewState["UploadButtonText"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [show delete button].
         /// Defaults to true
         /// </summary>
@@ -634,6 +658,7 @@ namespace Rock.Web.UI.Controls
             _aRemove.HRef = "#";
             _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             _aRemove.Attributes["class"] = "remove-file";
+            _aRemove.Attributes["title"] = "Remove File";
 
             _fileUpload = new FileUpload();
             Controls.Add( _fileUpload );
@@ -642,6 +667,8 @@ namespace Rock.Web.UI.Controls
             RequiredFieldValidator.InitialValue = "0";
             RequiredFieldValidator.ControlToValidate = _hfBinaryFileId.ID;
             RequiredFieldValidator.Display = ValidatorDisplay.Dynamic;
+            RequiredFieldValidator.CssClass = "validation-error help-inline";
+            RequiredFieldValidator.ErrorMessage = this.RequiredErrorMessage;
         }
 
         /// <summary>
@@ -744,17 +771,11 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                if ( this.DisplayMode == UploaderDisplayMode.Button )
-                {
-                    writer.Write( "Upload File" );
-                }
-                else
-                {
-                    writer.Write( "Upload" );
-                }
 
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( this.UploadButtonText );
                 writer.RenderEndTag();
+
                 _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
                 _fileUpload.RenderControl( writer );
                 writer.RenderEndTag();

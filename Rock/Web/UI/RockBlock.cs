@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
@@ -80,7 +81,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return (RockPage)this.Page;
+                return ( RockPage ) this.Page;
             }
         }
 
@@ -262,7 +263,7 @@ namespace Rock.Web.UI
             IEntity entity = ContextEntity( typeof( T ).FullName );
             if ( entity != null )
             {
-                return (T)entity;
+                return ( T ) entity;
             }
             else
             {
@@ -426,7 +427,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use RemoveCacheItem( string key ) instead.", true )]
+        [Obsolete( "Use RemoveCacheItem( string key ) instead.", true )]
         protected virtual void FlushCacheItem( string key = "" )
         {
             RemoveCacheItem( key );
@@ -515,6 +516,18 @@ namespace Rock.Web.UI
                 foreach ( var grid in gridsOnBlock )
                 {
                     grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                    grid.EnableDefaultLaunchWorkflow = this.GetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean();
+
+                    var userDefinedCustomActions = this.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ).FromJsonOrNull<List<CustomActionConfig>>();
+
+                    if ( userDefinedCustomActions != null && userDefinedCustomActions.Any() )
+                    {
+                        // This is coded this way because the getter might return a new list if the property was null. And if there are any existing
+                        // configs (from the developer perhaps), these user defined configs should supplement, not overwrite
+                        var customActionConfigs = grid.CustomActionConfigs;
+                        customActionConfigs.AddRange( userDefinedCustomActions );
+                        grid.CustomActionConfigs = customActionConfigs;
+                    }
                 }
             }
         }
@@ -536,7 +549,7 @@ namespace Rock.Web.UI
                         var previousPointInTimeMS = lblShowDebugTimings.Attributes["PointInTimeMS"]?.AsDoubleOrNull();
                         if ( previousPointInTimeMS.HasValue )
                         {
-                            var lastDurationMS = Math.Round(tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 3);
+                            var lastDurationMS = Math.Round( tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 3 );
                             lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "</pre>", $"  [{lastDurationMS}ms]</pre>" );
                         }
 
@@ -840,7 +853,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="additionalQueryParameters">The additional query parameters.</param>
         /// <returns></returns>
-        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null)
+        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null )
         {
             var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
@@ -1390,29 +1403,6 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
             return Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
-        }
-
-        /// <summary>
-        /// Reads the security action attributes for this <see cref="Rock.Model.Block" />
-        /// </summary>
-        /// <returns>
-        /// A dictionary containing the actions for the <see cref="Rock.Model.Block">Block's</see> SecurityActionAttributes.
-        /// </returns>
-        internal Dictionary<string, string> GetSecurityActionAttributes()
-        {
-            var securityActions = new Dictionary<string, string>();
-
-            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( SecurityActionAttribute ), true );
-            foreach ( var customAttribute in customAttributes )
-            {
-                var securityActionAttribute = customAttribute as SecurityActionAttribute;
-                if ( securityActionAttribute != null )
-                {
-                    securityActions.Add( securityActionAttribute.Action, securityActionAttribute.Description );
-                }
-            }
-
-            return securityActions;
         }
 
         /// <summary>

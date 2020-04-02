@@ -108,6 +108,7 @@ namespace Rock.Net
         {
             PageParameters = new Dictionary<string, string>();
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            Headers = new Dictionary<string, IEnumerable<string>>();
             RootUrlPath = string.Empty;
         }
 
@@ -295,7 +296,7 @@ namespace Rock.Net
         /// <param name="currentPersonOverride">The current person override.</param>
         /// <param name="options">The options to use when initializing the merge fields.</param>
         /// <returns>A new dictionary of merge fields.</returns>
-        public Dictionary<string, object> GetCommonMergeFields( Person currentPersonOverride = null, CommonMergeFieldsOptions options = null )
+        public virtual Dictionary<string, object> GetCommonMergeFields( Person currentPersonOverride = null, CommonMergeFieldsOptions options = null )
         {
             var mergeFields = new Dictionary<string, object>();
 
@@ -342,12 +343,27 @@ namespace Rock.Net
                 mergeFields.Add( "Campuses", CampusCache.All() );
             }
 
-            if ( Headers != null && Headers.ContainsKey( "X-Rock-DeviceData" ) )
+            if ( Headers.ContainsKey( "X-Rock-DeviceData" ) )
             {
                 mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );
             }
 
             return mergeFields;
+        }
+
+        /// <summary>
+        /// Gets the values associated with the specified header.
+        /// </summary>
+        /// <param name="header">The header.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of all string values associated with the requested header.</returns>
+        public virtual IEnumerable<string> GetHeader( string header )
+        {
+            if ( !Headers.ContainsKey( header ) )
+            {
+                return new string[0];
+            }
+
+            return Headers[header];
         }
 
         #endregion

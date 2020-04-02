@@ -81,6 +81,62 @@
     <Compile Include="Migrations\202002191605076_UpdateGivingAnalyticsStoredProcs.Designer.cs">
       <DependentUpon>202002191605076_UpdateGivingAnalyticsStoredProcs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202002212333157_Feature-v11-merge.cs" />
+    <Compile Include="Migrations\202002212333157_Feature-v11-merge.Designer.cs">
+      <DependentUpon>202002212333157_Feature-v11-merge.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002241617327_UpdateCampusTeamImplementation.cs" />
+    <Compile Include="Migrations\202002241617327_UpdateCampusTeamImplementation.Designer.cs">
+      <DependentUpon>202002241617327_UpdateCampusTeamImplementation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002242353419_EmailAnalytics.cs" />
+    <Compile Include="Migrations\202002242353419_EmailAnalytics.Designer.cs">
+      <DependentUpon>202002242353419_EmailAnalytics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002251259222_CreateDefaultSmsPipeline.cs" />
+    <Compile Include="Migrations\202002251259222_CreateDefaultSmsPipeline.Designer.cs">
+      <DependentUpon>202002251259222_CreateDefaultSmsPipeline.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002252042033_GroupPlacementUpdates.cs" />
+    <Compile Include="Migrations\202002252042033_GroupPlacementUpdates.Designer.cs">
+      <DependentUpon>202002252042033_GroupPlacementUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002281154421_UpdateInteractionModels.cs" />
+    <Compile Include="Migrations\202002281154421_UpdateInteractionModels.Designer.cs">
+      <DependentUpon>202002281154421_UpdateInteractionModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202002291136340_AddColumnToDataViewAndReport.cs" />
+    <Compile Include="Migrations\202002291136340_AddColumnToDataViewAndReport.Designer.cs">
+      <DependentUpon>202002291136340_AddColumnToDataViewAndReport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003021715471_FinancialPaymentDetailGatewayPersonId.cs" />
+    <Compile Include="Migrations\202003021715471_FinancialPaymentDetailGatewayPersonId.Designer.cs">
+      <DependentUpon>202003021715471_FinancialPaymentDetailGatewayPersonId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003031854249_Rollup_0303.cs" />
+    <Compile Include="Migrations\202003031854249_Rollup_0303.Designer.cs">
+      <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003042320201_ConnectionStatus_AutoInactivateState.cs" />
+    <Compile Include="Migrations\202003042320201_ConnectionStatus_AutoInactivateState.Designer.cs">
+      <DependentUpon>202003042320201_ConnectionStatus_AutoInactivateState.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003051854011_AttendanceAnalyticsExports.cs" />
+    <Compile Include="Migrations\202003051854011_AttendanceAnalyticsExports.Designer.cs">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003101057192_AddEnableRequestSecurityToConnection.cs" />
+    <Compile Include="Migrations\202003101057192_AddEnableRequestSecurityToConnection.Designer.cs">
+      <DependentUpon>202003101057192_AddEnableRequestSecurityToConnection.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003111105370_AddDisableSchedulingToGroup.cs" />
+    <Compile Include="Migrations\202003111105370_AddDisableSchedulingToGroup.Designer.cs">
+      <DependentUpon>202003111105370_AddDisableSchedulingToGroup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202003171932312_Rollup_0317.cs" />
+    <Compile Include="Migrations\202003171932312_Rollup_0317.Designer.cs">
+      <DependentUpon>202003171932312_Rollup_0317.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1078,6 +1134,48 @@
     <EmbeddedResource Include="Migrations\202002191605076_UpdateGivingAnalyticsStoredProcs.resx">
       <DependentUpon>202002191605076_UpdateGivingAnalyticsStoredProcs.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002212333157_Feature-v11-merge.resx">
+      <DependentUpon>202002212333157_Feature-v11-merge.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002241617327_UpdateCampusTeamImplementation.resx">
+      <DependentUpon>202002241617327_UpdateCampusTeamImplementation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002242353419_EmailAnalytics.resx">
+      <DependentUpon>202002242353419_EmailAnalytics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002251259222_CreateDefaultSmsPipeline.resx">
+      <DependentUpon>202002251259222_CreateDefaultSmsPipeline.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002252042033_GroupPlacementUpdates.resx">
+      <DependentUpon>202002252042033_GroupPlacementUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002281154421_UpdateInteractionModels.resx">
+      <DependentUpon>202002281154421_UpdateInteractionModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202002291136340_AddColumnToDataViewAndReport.resx">
+      <DependentUpon>202002291136340_AddColumnToDataViewAndReport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003021715471_FinancialPaymentDetailGatewayPersonId.resx">
+      <DependentUpon>202003021715471_FinancialPaymentDetailGatewayPersonId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003031854249_Rollup_0303.resx">
+      <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003042320201_ConnectionStatus_AutoInactivateState.resx">
+      <DependentUpon>202003042320201_ConnectionStatus_AutoInactivateState.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003051854011_AttendanceAnalyticsExports.resx">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003101057192_AddEnableRequestSecurityToConnection.resx">
+      <DependentUpon>202003101057192_AddEnableRequestSecurityToConnection.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003111105370_AddDisableSchedulingToGroup.resx">
+      <DependentUpon>202003111105370_AddDisableSchedulingToGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202003171932312_Rollup_0317.resx">
+      <DependentUpon>202003171932312_Rollup_0317.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
     </EmbeddedResource>
@@ -1832,6 +1930,27 @@
     </Content>
     <Content Include="Migrations\202002182236274_AddCampusTeamToAllCampuses_Up.sql">
       <DependentUpon>202002182236274_AddCampusTeamToAllCampuses.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_AttendeeLastAttendance.sql">
+      <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003031854249_Rollup_0303_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003031854249_Rollup_0303_spFinance_PledgeAnalyticsQuery.sql">
+      <DependentUpon>202003031854249_Rollup_0303.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_Attendees.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_Attendees_down.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
+    </Content>
+    <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees_down.sql">
+      <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
     </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>

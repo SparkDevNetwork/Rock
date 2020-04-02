@@ -2,7 +2,7 @@
 
 <!DOCTYPE html>
 
-<html class="no-js">
+<html>
 <head runat="server">
     <title></title>
 

@@ -232,7 +232,8 @@ namespace RockWeb.Blocks.Finance
                 queryParams.Add( PageParameterKey.ScheduledTransactionId, financialScheduledTransaction.Id.ToString() );
                 queryParams.Add( PageParameterKey.Person, financialScheduledTransaction.AuthorizedPersonAlias.Person.UrlEncodedKey );
 
-                if ( financialScheduledTransaction.FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent )
+                var hostedGatewayComponent = financialScheduledTransaction.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                if ( hostedGatewayComponent != null && hostedGatewayComponent.GetSupportedHostedGatewayModes( financialScheduledTransaction.FinancialGateway ).Contains( HostedGatewayMode.Hosted ) )
                 {
                     NavigateToLinkedPage( AttributeKey.UpdatePageHosted, queryParams );
                 }
@@ -270,7 +271,16 @@ namespace RockWeb.Blocks.Finance
                         }
                         else
                         {
-                            ShowErrorMessage( errorMessage );
+                            if ( financialScheduledTransaction.IsActive == false )
+                            {
+                                // if GetStatus failed, but the scheduled transaction is inactive, just show Schedule is Inactive
+                                // This takes care of dealing with gateways that delete the scheduled payment vs inactivating them on the gateway side
+                                ShowErrorMessage( "Schedule is inactive" );
+                            }
+                            else
+                            {
+                                ShowErrorMessage( errorMessage );
+                            }
                         }
 
                         ShowView( financialScheduledTransaction );

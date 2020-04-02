@@ -164,6 +164,18 @@
                             <Rock:BootstrapButton ID="btnRemoveEmailAddresses" runat="server" CssClass="btn btn-primary " OnClick="btnRemoveEmailAddresses_Click" Enabled="true">Remove email addresses from Customer Vault</Rock:BootstrapButton>
                             <Rock:NotificationBox ID="nbRemoveEmailAddressesResult" runat="server" CssClass="js-remove-emails-notification" NotificationBoxType="Info" Visible="true" Dismissable="true" />
                         </div>
+
+                        <hr />
+
+                        <h4>Update One-Time Schedule Status</h4>
+                        <p>
+                            This will go thru all active One-Time schedules (both NMI and MyWell) and get the most recent status. If the one-time schedule has been completed, the schedule will be updated to inactive.
+                        </p>
+
+                        <Rock:NotificationBox ID="nbUpdateOneTimeScheduleStatus" runat="server" NotificationBoxType="Info" Visible="true" Dismissable="true" />
+                        <div class="actions margin-b-md">
+                            <Rock:BootstrapButton ID="btnUpdateOneTimeScheduleStatus" runat="server" CssClass="btn btn-primary" OnClick="btnUpdateOneTimeScheduleStatus_Click" >Update One-Time schedule status</Rock:BootstrapButton>
+                        </div>
                     </div>
                 </div>
             </div>

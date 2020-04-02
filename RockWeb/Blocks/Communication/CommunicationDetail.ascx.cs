@@ -218,20 +218,14 @@ namespace RockWeb.Blocks.Communication
         {
             base.OnInit( e );
 
-            // Initialize JSON Data properties to empty, to prevent syntax errors in the page script.
-            LineChartDataLabelsJSON = "[]";
-            LineChartDataOpensJSON = "[]";
-            LineChartDataClicksJSON = "[]";
-            LineChartDataUnOpenedJSON = "[]";
-            PieChartDataOpenClicksJSON = "[]";
-            PieChartDataClientLabelsJSON = "[]";
-            PieChartDataClientCountsJSON = "[]";
-            SeriesColorsJSON = "[]";
+            InitializeAnalyticsPanelControls();
 
             InitializeInteractionsList();
             InitializeRecipientsList();
 
             InitializeRecipientsFilter();
+
+            InitializeChartScripts();
 
             _EditingApproved = PageParameter( PageParameterKey.Edit ).AsBoolean() && IsUserAuthorized( "Approve" );
 
@@ -267,27 +261,48 @@ namespace RockWeb.Blocks.Communication
 
             if ( Page.IsPostBack )
             {
-                // Set the tab page to the parent of the postback control.
-                var targetControl = GetPostBackControl();
+                var argument = Request.Params.Get( "__EVENTARGUMENT" );
 
-                if ( targetControl != null )
+                if ( argument == "ShowPendingRecipients" )
                 {
-                    var parentTab = targetControl.FindFirstParentWhere( x => ( x is WebControl ) && ( ( WebControl ) x ).CssClass == "tab-panel" ) as WebControl;
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Pending );
+                }
+                else if ( argument == "ShowDeliveredRecipients" )
+                {
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Delivered );
+                }
+                else if ( argument == "ShowFailedRecipients" )
+                {
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Failed );
+                }
+                else if ( argument == "ShowCancelledRecipients" )
+                {
+                    ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus.Cancelled );
+                }
+                else
+                {
+                    // Set the tab page to the parent of the postback control.
+                    var targetControl = GetPostBackControl();
 
-                    if ( parentTab != null )
+                    if ( targetControl != null )
                     {
-                        var panelToTabMap = this.GetPanelControlToTabNameMap();
+                        var parentTab = targetControl.FindFirstParentWhere( x => ( x is WebControl ) && ( ( WebControl ) x ).CssClass == "tab-panel" ) as WebControl;
 
-                        if ( _PanelControlToTabNameMap.ContainsKey( parentTab.UniqueID ) )
+                        if ( parentTab != null )
                         {
-                            var panelName = _PanelControlToTabNameMap[parentTab.UniqueID];
+                            var panelToTabMap = this.GetPanelControlToTabNameMap();
 
-                            SetActivePanel( panelName );
+                            if ( _PanelControlToTabNameMap.ContainsKey( parentTab.UniqueID ) )
+                            {
+                                var panelName = _PanelControlToTabNameMap[parentTab.UniqueID];
+
+                                SetActivePanel( panelName );
+                            }
                         }
                     }
-                }
 
-                ShowDialog();
+                    ShowDialog();
+                }
             }
             else
             {
@@ -1016,8 +1031,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The e.</param>
         private void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
-            SaveRecipientsFilterSettings();
-
             e.Value = GetRecipientsFilterValueDescription( e.Key );
         }
 
@@ -1215,16 +1228,16 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void InitializeRecipientsFilter()
         {
+            // Hook up the filter event handlers.
+            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
+            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
+            rFilter.ClearFilterClick += rFilter_ClearFilterClick;
+
             // If this is a full page load, initialize the filter control and load the filter values.
             if ( !Page.IsPostBack )
             {
                 BindRecipientsFilter();
             }
-
-            // Hook up the filter event handlers.
-            rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-            rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
-            rFilter.ClearFilterClick += rFilter_ClearFilterClick;
         }
 
         /// <summary>
@@ -1267,6 +1280,28 @@ namespace RockWeb.Blocks.Communication
             }
 
             return queryParams;
+        }
+
+        /// <summary>
+        /// Initialize controls on the Analytics Pane.
+        /// </summary>
+        private void InitializeAnalyticsPanelControls()
+        {
+            // Initialize Chart Data properties to empty, to prevent syntax errors in the page script.
+            LineChartDataLabelsJSON = "[]";
+            LineChartDataOpensJSON = "[]";
+            LineChartDataClicksJSON = "[]";
+            LineChartDataUnOpenedJSON = "[]";
+            PieChartDataOpenClicksJSON = "[]";
+            PieChartDataClientLabelsJSON = "[]";
+            PieChartDataClientCountsJSON = "[]";
+            SeriesColorsJSON = "[]";
+
+            // Add handlers for postback events.
+            pnlPendingSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlPendingSummary, "ShowPendingRecipients" );
+            pnlDeliveredSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlDeliveredSummary, "ShowDeliveredRecipients" );
+            pnlCancelledSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlCancelledSummary, "ShowCancelledRecipients" );
+            pnlFailedSummary.Attributes["onclick"] = Page.ClientScript.GetPostBackEventReference( pnlFailedSummary, "ShowFailedRecipients" );
         }
 
         /// <summary>
@@ -1335,6 +1370,8 @@ namespace RockWeb.Blocks.Communication
                                           .OrderBy( x => x.Name )
                                           .ToList();
 
+            cblProperties.Items.Clear();
+
             foreach ( var column in columns )
             {
                 cblProperties.Items.Add( new ListItem { Text = column.Name, Value = column.Key } );
@@ -1351,6 +1388,8 @@ namespace RockWeb.Blocks.Communication
             var columns = availableColumns.Where( x => x.ContentType == PersonDataSourceColumnSourceSpecifier.Attribute )
                                           .OrderBy( x => x.Name )
                                           .ToList();
+
+            lbAttributes.Items.Clear();
 
             foreach ( var column in columns )
             {
@@ -1394,10 +1433,10 @@ namespace RockWeb.Blocks.Communication
             {
                 PopulatePersonPropertiesSelectionItems();
                 PopulatePersonAttributesSelectionItems();
-                LoadRecipientListPreferences();
-
-                BindRecipientsGrid();
                 PopulateRecipientFilterSelectionLists();
+
+                LoadRecipientListPreferences();
+                BindRecipientsGrid();
             }
 
             SetActivePanel( _ActivePanel );
@@ -2609,9 +2648,18 @@ namespace RockWeb.Blocks.Communication
             dataTable.Columns.Add( "HasOpened", typeof( bool ) );
             dataTable.Columns.Add( "HasClicked", typeof( bool ) );
 
-            var query = GetRecipientInfoQuery( dataContext );
+            // order by ModifiedDateTime to get a consistent result in case a person has received the communication more than once (more than one recipient record for the same person)
+            var query = GetRecipientInfoQuery( dataContext ).OrderByDescending( a => a.ModifiedDateTime );
+            var queryList = query.ToList();
 
-            var recipients = query.ToDictionary( k => k.PersonId, v => v );
+            // create dictionary
+            var recipients = new Dictionary<int, RecipientInfo>();
+            foreach( var recipient in queryList )
+            {
+                // since we order by ModifiedDateTime this will end up ignoring any order recipient records for the personid
+                // NOTE: We tried to do this in SQL but it caused performance issues, so we'll do it in C# instead.
+                recipients.AddOrIgnore( recipient.PersonId, recipient );
+            }
 
             builder.FillDataColumnValues( dataTable, recipients );
         }
@@ -2642,7 +2690,6 @@ namespace RockWeb.Blocks.Communication
             var recipientQuery = recipientService.Queryable()
                     .AsNoTracking()
                     .Where( x => x.CommunicationId == CommunicationId.Value )
-                    .OrderByDescending( x => x.ModifiedDateTime )
                     .Select( x => new RecipientInfo
                     {
                         PersonId = x.PersonAlias.PersonId,
@@ -2652,10 +2699,9 @@ namespace RockWeb.Blocks.Communication
                         DeliveryStatus = ( x.Status == CommunicationRecipientStatus.Opened ? "Delivered" : ( x.Status == CommunicationRecipientStatus.Sending ? "Pending" : x.Status.ToString() ) ),
                         DeliveryStatusNote = x.StatusNote,
                         HasOpened = ( x.Status == CommunicationRecipientStatus.Opened ),
-                        HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId )
-                    }
-                    ).GroupBy( k => k.PersonId, v => v )
-                    .Select( x => x.FirstOrDefault() );
+                        HasClicked = clickRecipientsIdList.Contains( x.PersonAlias.PersonId ),
+                        ModifiedDateTime = x.ModifiedDateTime
+                    });
 
             return recipientQuery;
         }
@@ -2699,11 +2745,6 @@ namespace RockWeb.Blocks.Communication
                     .Queryable()
                     .AsNoTracking()
                     .Where( x => x.CommunicationId == CommunicationId.Value );
-
-            // If a person has received the communication more than once, select the most recently updated recipient record.
-            recipientQuery = recipientQuery.OrderByDescending( x => x.ModifiedDateTime )
-                .GroupBy( k => k.PersonAlias.PersonId )
-                .Select( g => g.FirstOrDefault() );
 
             // Filter by: Communication Medium
             var mediumList = filterSettingsKeyValueMap[FilterSettingName.CommunicationMedium].SplitDelimitedValues( "," ).AsGuidList();
@@ -2935,6 +2976,34 @@ namespace RockWeb.Blocks.Communication
             return _PanelControlToTabNameMap;
         }
 
+        /// <summary>
+        /// Display the Recipients List filtered by the specified delivery status.
+        /// </summary>
+        /// <param name="status"></param>
+        private void ShowRecipientsListForDeliveryStatus( CommunicationRecipientStatus status )
+        {
+            SetActivePanel( CommunicationDetailPanels.RecipientDetails );
+
+            InitializeActiveCommunication();
+
+            PopulatePersonPropertiesSelectionItems();
+            PopulatePersonAttributesSelectionItems();
+            PopulateRecipientFilterSelectionLists();
+
+            LoadRecipientListPreferences();
+
+            // Set the filter.
+            var settings = GetRecipientsFilterSettings();
+
+            settings[FilterSettingName.DeliveryStatus] = status.ConvertToInt().ToString();
+
+            ApplyRecipientsFilterSettings( settings );
+
+            SaveRecipientsFilterSettings();
+
+            BindRecipientsGrid();
+        }
+
         #endregion
 
         #region Support Classes and Enumerations
@@ -3121,6 +3190,7 @@ namespace RockWeb.Blocks.Communication
             public string DeliveryStatus { get; set; }
             public string DeliveryStatusNote { get; set; }
             public string CommunicationMediumName { get; set; }
+            public DateTime? ModifiedDateTime { get; set; }
         }
 
         /// <summary>

@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Configuration;
+using System.IO;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -225,6 +226,7 @@ namespace Rock.Web.UI.Controls
 
         private HiddenField _hfBinaryFileId;
         private HiddenField _hfBinaryFileTypeGuid;
+        private HiddenField _hfContentFileSource;
         private FileUpload _fileUpload;
         private HtmlAnchor _aRemove;
 
@@ -243,24 +245,20 @@ namespace Rock.Web.UI.Controls
             WarningBlock = new WarningBlock();
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileTypeGuid = new HiddenField();
+            _hfContentFileSource = new HiddenFieldWithClass();
         }
+
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether [display required indicator].
+        /// Gets or sets the BinaryFileId when used in BinaryFile mode <see cref="IsBinaryFile"/>
         /// </summary>
         /// <value>
-        ///     <c>true</c> if [display required indicator]; otherwise, <c>false</c>.
+        /// The binary file identifier.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Data" ),
-        DefaultValue( "" ),
-        Description( "BinaryFile Id" )
-        ]
         public int? BinaryFileId
         {
             get
@@ -323,6 +321,50 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfBinaryFileTypeGuid.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the file name when used in ContentFile mode (when <see cref="IsBinaryFile"/> is set to false).
+        /// For example, "~/Content/External/MyUploadedFile.jpg".
+        /// </summary>
+        /// <value>
+        /// The uploaded content file path.
+        /// </value>
+        public string NonBinaryFileSrc
+        {
+            get
+            {
+                EnsureChildControls();
+                if ( IsBinaryFile )
+                {
+                    return null;
+                }
+                else
+                {
+                    if ( _hfContentFileSource.Value.IsNullOrWhiteSpace() )
+                    {
+                        return string.Empty;
+                    }
+                    else
+                    {
+                        var rootFolderPath = ( this.RootFolder ?? "~/Content" ).EnsureTrailingForwardslash();
+                        if ( !_hfContentFileSource.Value.StartsWith( rootFolderPath ) )
+                        {
+                            // if NonBinaryFileSrc only specified the filename, include the rootFolderPath
+                            return rootFolderPath + _hfContentFileSource.Value;
+                        }
+                        else
+                        {
+                            return _hfContentFileSource.Value;
+                        }
+                    }
+                }
+            }
+
+            set
+            {
+                _hfContentFileSource.Value = value;
             }
         }
 
@@ -571,6 +613,10 @@ namespace Rock.Web.UI.Controls
             _hfBinaryFileTypeGuid.ID = this.ID + "_hfBinaryFileTypeGuid";
             Controls.Add( _hfBinaryFileTypeGuid );
 
+            _hfContentFileSource.ID = this.ID + "_hfContentFileSource";
+
+            Controls.Add( _hfContentFileSource );
+
             _aRemove = new HtmlAnchor();
             _aRemove.ID = "rmv";
             _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
@@ -609,29 +655,42 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
 
-            writer.AddAttribute( "style", String.Format("width: {0}px; height: {1}px;", this.ThumbnailWidth, this.ThumbnailHeight ));
+            writer.AddAttribute( "style", String.Format( "width: {0}px; height: {1}px;", this.ThumbnailWidth, this.ThumbnailHeight ) );
             writer.AddAttribute( "class", "imageupload-thumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            string thumbnailImage = this.NoPictureUrl;
+            string thumbnailImageUrl = this.NoPictureUrl;
 
-            if ( BinaryFileId != null )
+            if ( IsBinaryFile && BinaryFileId.HasValue )
             {
-                thumbnailImage = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() );
+                thumbnailImageUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() );
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Href, thumbnailImage );
+                writer.AddAttribute( HtmlTextWriterAttribute.Href, thumbnailImageUrl );
                 writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
 
-                thumbnailImage += "&width=500";
+                thumbnailImageUrl += "&width=500";
+            }
+            else if ( NonBinaryFileSrc.IsNotNullOrWhiteSpace() )
+            {
+                string physicalFile = this.Page.Request.MapPath( NonBinaryFileSrc );
+                if ( File.Exists( physicalFile ) )
+                {
+                    thumbnailImageUrl = System.Web.VirtualPathUtility.ToAbsolute( NonBinaryFileSrc );
+                    _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
+                }
+                else
+                {
+                    _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
+                }
             }
             else
             {
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
-            writer.AddAttribute( "style", string.Format("background-image: url({0});", thumbnailImage) );
+            writer.AddAttribute( "style", string.Format( "background-image: url({0});", thumbnailImageUrl ) );
             writer.AddAttribute( "class", "imageupload-thumbnail-image" );
             writer.AddAttribute( "id", this.ClientID + "-thumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -644,6 +703,7 @@ namespace Rock.Web.UI.Controls
 
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
+            _hfContentFileSource.RenderControl( writer );
 
             writer.AddAttribute( "class", "imageupload-remove" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -658,7 +718,7 @@ namespace Rock.Web.UI.Controls
                 <div class='js-upload-progress upload-progress' style='display:none'>
                     <i class='fa fa-refresh fa-3x fa-spin'></i>                    
                 </div>" );
-            
+
             writer.AddAttribute( "class", "imageupload-dropzone" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -698,53 +758,42 @@ namespace Rock.Web.UI.Controls
             var postBackScript = this.ImageUploaded != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ImageUploaded" ), true ) : "";
             postBackScript = postBackScript.Replace( '\'', '"' );
 
-            var postBackRemovedScript = this.ImageRemoved != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ImageRemoved" ), true ) : "";
+            // If in BinaryFile mode, only do an ImageRemoved postback if there is a ImageRemoved event specified
+            // If in ContentFile mode, do the postback regardless since we'll have to delete the contentfile from the system
+            bool doImageRemovedPostback = this.ImageRemoved != null || this.IsBinaryFile == false;
+
+            var postBackRemovedScript = doImageRemovedPostback ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ImageRemoved" ), true ) : "";
             postBackRemovedScript = postBackRemovedScript.Replace( '\'', '"' );
 
-            var script = string.Format(
-@"
+            var script =
+$@"
 Rock.controls.imageUploader.initialize({{
-    controlId: '{0}',
-    fileId: '{1}',
-    fileTypeGuid: '{2}',
-    hfFileId: '{3}',
-    imgThumbnail: '{4}',
-    aRemove: '{5}',
-    postbackScript: '{6}',
+    controlId: '{_fileUpload.ClientID}',
+    fileId: '{this.BinaryFileId}',
+    fileTypeGuid: '{this.BinaryFileTypeGuid}',
+    hfFileId: '{_hfBinaryFileId.ClientID}',
+    hfContentFileSource: '{_hfContentFileSource.ClientID}',
+    imgThumbnail: '{( this.ClientID + "-thumbnail" )}',
+    aRemove: '{_aRemove.ClientID}',
+    postbackScript: '{postBackScript}',
     fileType: 'image',
-    isBinaryFile: '{7}',
-    rootFolder: '{8}',
-    noPictureUrl: '{11}',
+    isBinaryFile: '{( this.IsBinaryFile ? "T" : "F" )}',
+    rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
+    noPictureUrl: '{this.NoPictureUrl}',
     submitFunction: function (e, data) {{
-        {9}
+        {this.SubmitFunctionClientScript}
     }},
     doneFunction: function (e, data) {{
-        {10}
+        {this.DoneFunctionClientScript}
     }},
-    postbackRemovedScript: '{12}',
-    maxUploadBytes: {13},
-    isTemporary: '{14}',
+    postbackRemovedScript: '{postBackRemovedScript}',
+    maxUploadBytes: {( maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null" )},
+    isTemporary: '{( this.UploadAsTemporary ? "T" : "F" )}',
     deleteFunction: function(e, data) {{
-        {15}
+        {this.DeleteFunctionClientScript}
     }}
-}});",
-                _fileUpload.ClientID, // {0}
-                this.BinaryFileId, // {1}
-                this.BinaryFileTypeGuid, // {2}
-                _hfBinaryFileId.ClientID, // {3}
-                this.ClientID + "-thumbnail", // {4}
-                _aRemove.ClientID, // {5}
-                postBackScript, // {6}
-                this.IsBinaryFile ? "T" : "F", // {7}
-                Rock.Security.Encryption.EncryptString( this.RootFolder ), // {8}
-                this.SubmitFunctionClientScript, // {9}
-                this.DoneFunctionClientScript, // {10}
-                this.NoPictureUrl, // {11}
-                postBackRemovedScript, // {12}
-                maxUploadBytes.HasValue ? maxUploadBytes.Value.ToString() : "null", // {13} 
-                this.UploadAsTemporary ? "T" : "F", // {14}
-                this.DeleteFunctionClientScript // {15}
-                ); 
+}});";
+
             ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "ImageUploaderScript_" + this.ClientID, script, true );
         }
 
@@ -786,16 +835,37 @@ Rock.controls.imageUploader.initialize({{
         {
             if ( eventArgument == "ImageUploaded" && ImageUploaded != null )
             {
-                ImageUploaded( this, new ImageUploaderEventArgs( this.BinaryFileId, ImageUploaderEventArgs.ArgumentType.ImageUploaded ) );
+                if ( IsBinaryFile )
+                {
+                    ImageUploaded( this, new ImageUploaderEventArgs( this.BinaryFileId, ImageUploaderEventArgs.ArgumentType.ImageUploaded ) );
+                }
+                else
+                {
+                    ImageUploaded( this, new ImageUploaderEventArgs( this.NonBinaryFileSrc, ImageUploaderEventArgs.ArgumentType.ImageUploaded ) );
+                }
             }
 
             if ( eventArgument == "ImageRemoved" )
             {
-                if ( ImageRemoved != null )
+                if ( IsBinaryFile )
                 {
-                    ImageRemoved( this, new ImageUploaderEventArgs( this.BinaryFileId, ImageUploaderEventArgs.ArgumentType.ImageRemoved ) );
+                    ImageRemoved?.Invoke( this, new ImageUploaderEventArgs( this.BinaryFileId, ImageUploaderEventArgs.ArgumentType.ImageRemoved ) );
+                }
+                else
+                {
+                    if ( this.NonBinaryFileSrc.IsNotNullOrWhiteSpace() )
+                    {
+                        var physicalFileName = this.Page.Request.MapPath( NonBinaryFileSrc );
+                        if ( File.Exists( physicalFileName ) )
+                        {
+                            File.Delete( physicalFileName );
+                        }
+                    }
+
+                    ImageRemoved?.Invoke( this, new ImageUploaderEventArgs( this.NonBinaryFileSrc, ImageUploaderEventArgs.ArgumentType.ImageRemoved ) );
                 }
 
+                this.NonBinaryFileSrc = string.Empty;
                 this.BinaryFileId = 0;
             }
         }
@@ -816,6 +886,36 @@ Rock.controls.imageUploader.initialize({{
         public int? BinaryFileId { get; private set; }
 
         /// <summary>
+        /// Gets the name of the file (If IsBinaryFile=False)
+        /// </summary>
+        /// <value>
+        /// The name of the file.
+        /// </value>
+        public string NonBinaryFileSrc { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileUploaderEventArgs" /> class.
+        /// </summary>
+        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="eventArgument">The event argument.</param>
+        public ImageUploaderEventArgs( int? binaryFileId, ArgumentType eventArgument ) : base()
+        {
+            BinaryFileId = binaryFileId;
+            EventArgument = eventArgument;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileUploaderEventArgs" /> class.
+        /// </summary>
+        /// <param name="nonBinaryFileSrc">The non binary file source.</param>
+        /// <param name="eventArgument">The event argument.</param>
+        public ImageUploaderEventArgs( string nonBinaryFileSrc, ArgumentType eventArgument ) : base()
+        {
+            NonBinaryFileSrc = nonBinaryFileSrc;
+            EventArgument = eventArgument;
+        }
+
+        /// <summary>
         /// Gets the event argument.
         /// </summary>
         /// <value>
@@ -832,22 +932,11 @@ Rock.controls.imageUploader.initialize({{
             /// The image uploaded
             /// </summary>
             ImageUploaded,
-            
+
             /// <summary>
             /// The image removed
             /// </summary>
             ImageRemoved
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ImageUploaderEventArgs" /> class.
-        /// </summary>
-        /// <param name="binaryFileId">The binary file identifier.</param>
-        /// <param name="eventArgument">The event argument.</param>
-        public ImageUploaderEventArgs(int? binaryFileId, ArgumentType eventArgument ) : base()
-        {
-            BinaryFileId = binaryFileId;
-            EventArgument = eventArgument;
         }
     }
 }

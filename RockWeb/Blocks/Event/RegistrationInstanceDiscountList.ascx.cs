@@ -23,7 +23,6 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Blocks.Types.Web.Events;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;

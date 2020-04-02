@@ -658,7 +658,7 @@ namespace Rock.Web.Cache
         public void RedirectToDefaultPage()
         {
             var context = HttpContext.Current;
-            context.Response.Redirect( DefaultPageReference.BuildUrl(), false );
+            context.Response.Redirect( "/", false );
             context.ApplicationInstance.CompleteRequest();
         }
 

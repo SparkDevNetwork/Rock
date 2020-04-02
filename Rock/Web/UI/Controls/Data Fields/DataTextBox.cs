@@ -74,26 +74,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the placeholder text to display inside textbox when it is empty
-        /// </summary>
-        /// <value>
-        /// The placeholder text
-        /// </value>
-        public override string Placeholder
-        {
-            get
-            {
-                return base.Placeholder;
-            }
-
-            set
-            {
-                base.Placeholder = value;
-                this.Label = string.Empty;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the name of the entity property.
         /// </summary>
         /// <value>
@@ -103,7 +83,7 @@ namespace Rock.Web.UI.Controls
         Bindable( true ),
         Category( "Behavior" ),
         DefaultValue( "" ),
-        Description( "The model property that is annotated." )
+        Description( "The model property that is annotated. This will set the label to the Property Name value if the Label's value is an empty string." )
         ]
         public string PropertyName
         {
@@ -116,7 +96,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 dataValidator.PropertyName = value;
-                if ( ( this.Label == string.Empty ) && ( LabelTextFromPropertyName ) && this.Placeholder.IsNullOrWhiteSpace() )
+                if ( ( this.Label == string.Empty ) && ( LabelTextFromPropertyName ) )
                 {
                     this.Label = value.SplitCase();
                 }

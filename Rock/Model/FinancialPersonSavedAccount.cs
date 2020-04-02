@@ -62,10 +62,12 @@ namespace Rock.Model
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets a reference identifier needed by the payment provider to initiate a future transaction
+        /// Gets or sets a reference identifier needed by the payment provider to use as a payment token.
+        /// For gateways that have a concept of a customer vault (NMI and MyWell), this would be the customer vault id <see cref="GatewayPersonIdentifier"/>
+        /// For gateways that use a source transaction for payment info (PayFlowPro), this would be the <see cref="TransactionCode" />
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the reference identifier to initiate a future transaction.
+        /// A <see cref="System.String"/> reference identifier needed by the payment provider to use as a payment token (customer vault id).
         /// </value>
         [DataMember]
         public string ReferenceNumber { get; set; }
@@ -82,7 +84,8 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the transaction code for the transaction.
+        /// Gets or sets the transaction code that was used as the "source transaction", and is used by some gateways (PayFlowPro) to lookup the payment info.
+        /// For gateways that have the concept of a Customer Vault (NMI and MyWell), <see cref="GatewayPersonIdentifier" /> is what would be used.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the transaction code of the transaction.
@@ -111,6 +114,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the Gateway Person Identifier.
+        /// This would indicate id the customer vault information on the gateway (for gateways that have customer vaults (NMI and MyWell) )
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the Gateway Person Identifier of the account.
@@ -212,7 +216,20 @@ namespace Rock.Model
             var reference = new ReferencePaymentInfo();
             reference.TransactionCode = this.TransactionCode;
             reference.ReferenceNumber = this.ReferenceNumber;
-            reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
+            if ( this.GatewayPersonIdentifier.IsNotNullOrWhiteSpace() )
+            {
+                reference.GatewayPersonIdentifier = this.GatewayPersonIdentifier;
+            }
+            else
+            {
+                // if GatewayPersonIdentifier is unknown, this is probably from an older NMI gateway transaction that only saved the GatewayPersonIdentifier to ReferenceNumber
+                reference.GatewayPersonIdentifier = this.ReferenceNumber;
+            }
+
+            if ( this.Id > 0 )
+            {
+                reference.FinancialPersonSavedAccountId = this.Id;
+            }
 
             if ( this.FinancialPaymentDetail != null )
             {

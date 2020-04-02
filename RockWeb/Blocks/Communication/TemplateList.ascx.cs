@@ -37,10 +37,32 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the available communication templates that can used when creating new communications." )]
 
-    [LinkedPage( "Detail Page" )]
-    [BooleanField( "Personal Templates View", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", false, "", 1 )]
+    #region Block Attributes
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage )]
+    [BooleanField(
+        "Personal Templates View",
+        Description = "Is the block being used to display personal templates (only templates that current user is allowed to edit)?",
+        DefaultBooleanValue = false,
+        Order = 1,
+        Key = AttributeKey.PersonalTemplatesView )]
+    #endregion Block Attributes
     public partial class TemplateList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string PersonalTemplatesView = "PersonalTemplatesView";
+        }
+
+        #endregion
+
         #region fields
 
         private HashSet<int> _templatesWithCommunications;
@@ -423,7 +445,7 @@ namespace RockWeb.Blocks.Communication
 
             _templatesWithCommunications = new HashSet<int>( new CommunicationService( rockContext ).Queryable().Where( a => a.CommunicationTemplateId.HasValue ).Select( a => a.CommunicationTemplateId.Value ).Distinct().ToList() );
 
-            var personalView = GetAttributeValue( "PersonalTemplatesView" ).AsBoolean();
+            var personalView = GetAttributeValue( AttributeKey.PersonalTemplatesView ).AsBoolean();
             var viewableCommunications = new List<CommunicationTemplate>();
             foreach ( var comm in communicationTemplateQry.ToList() )
             {

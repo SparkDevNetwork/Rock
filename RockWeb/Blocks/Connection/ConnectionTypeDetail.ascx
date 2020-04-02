@@ -70,6 +70,7 @@
                             <Rock:RockCheckBox ID="cbFutureFollowUp" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFutureFollowUp" Label="Enable Future Follow-up" />
                             <Rock:RockCheckBox ID="cbFullActivityList" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableFullActivityList" Label="Enable Full Activity List" />
                             <Rock:RockCheckBox ID="cbRequiresPlacementGroup" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="RequiresPlacementGroupToConnect" Label="Requires Placement Group To Connect" />
+                            <Rock:RockCheckBox ID="cbEnableRequestSecurity" runat="server" SourceTypeName="Rock.Model.ConnectionType, Rock" PropertyName="EnableRequestSecurity" Label="Enable Request Security" />
                         </div>
                     </div>
                     <Rock:PanelWidget ID="wpConnectionRequestAttributes" runat="server" Title="Connection Request Attributes" CssClass="connection-request-attribute-panel">
@@ -123,6 +124,8 @@
                                 <Columns>
                                     <Rock:RockBoundField DataField="Name" HeaderText="Name" />
                                     <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsDefault" HeaderText="Is Default" />
+                                    <Rock:BoolField DataField="IsCritical" HeaderText="Is Critical" />
                                     <Rock:EditField OnClick="gStatuses_Edit" />
                                     <Rock:DeleteField OnClick="gStatuses_Delete" />
                                 </Columns>
@@ -178,6 +181,7 @@
                         <Rock:RockCheckBox ID="cbActivityTypeIsActive" runat="server" Label="Is Active" ValidationGroup="ConnectionActivityType" />
                     </div>
                 </div>
+                <Rock:AttributeValuesContainer ID="avcActivityAttributes" runat="server" />
             </Content>
         </Rock:ModalDialog>
 
@@ -199,6 +203,11 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:RockCheckBox ID="cbIsDefault" runat="server" Label="Is Default" ValidationGroup="ConnectionStatus" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbAutoInactivateState" runat="server" Label="Auto-Inactivate State" ValidationGroup="ConnectionStatus" Help="Selecting this status will change the state to Inactive." />
                     </div>
                 </div>
             </Content>
@@ -224,6 +233,7 @@
                             <asp:ListItem Value="3" Text="State Changed" />
                             <asp:ListItem Value="4" Text="Activity Added" />
                             <asp:ListItem Value="6" Text="Manual" />
+                            <asp:ListItem Value="9" Text="Future Follow-up Date Reached" />
                         </Rock:RockDropDownList>
                     </div>
                     <div class="col-md-6">

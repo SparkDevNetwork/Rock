@@ -93,6 +93,7 @@ namespace RockWeb.Blocks.Core
                         {
                             gReport.ColumnsOfType<SelectField>().First().Visible = true;
                             gReport.PersonIdField = "PersonId";
+                            gReport.EntityIdField = "PersonId";
                             gReport.Actions.ShowAdd = _tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson );
                         }
 

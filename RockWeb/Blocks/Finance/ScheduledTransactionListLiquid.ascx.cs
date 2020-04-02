@@ -213,8 +213,14 @@ namespace RockWeb.Blocks.Finance
 
                 // if there isn't an Edit page defined for the transaction, don't show th button
                 bool showEditButton;
-                bool isHostedGateway = transactionSchedule.FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent;
-                if ( isHostedGateway )
+                var hostedGatewayComponent = transactionSchedule.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                bool useHostedGatewayEditPage = false;
+                if ( hostedGatewayComponent != null )
+                {
+                    useHostedGatewayEditPage = hostedGatewayComponent.GetSupportedHostedGatewayModes( transactionSchedule.FinancialGateway ).Contains( HostedGatewayMode.Hosted );
+                }
+
+                if ( useHostedGatewayEditPage )
                 {
                     showEditButton = this.GetAttributeValue( AttributeKey.ScheduledTransactionEditPageHosted ).IsNotNullOrWhiteSpace();
                 }
@@ -273,8 +279,8 @@ namespace RockWeb.Blocks.Finance
 
                 scheduleSummary.Add( "ScheduledAmount", totalAmount );
                 scheduleSummary.Add( "TransactionDetails", summaryDetails );
-                scheduleSummary.Add( "IsHostedGateway", isHostedGateway );
-                if ( isHostedGateway )
+                scheduleSummary.Add( "IsHostedGateway", useHostedGatewayEditPage );
+                if ( useHostedGatewayEditPage )
                 {
                     scheduleSummary.Add( "EditPage", LinkedPageRoute( AttributeKey.ScheduledTransactionEditPageHosted ) );
                 }
@@ -376,7 +382,8 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                if ( financialScheduledTransaction.FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent )
+                var hostedGatewayComponent = financialScheduledTransaction.FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                if ( hostedGatewayComponent != null && hostedGatewayComponent.GetSupportedHostedGatewayModes( financialScheduledTransaction.FinancialGateway ).Contains( HostedGatewayMode.Hosted ) )
                 {
                     NavigateToLinkedPage( AttributeKey.ScheduledTransactionEditPageHosted, qryParams );
                 }

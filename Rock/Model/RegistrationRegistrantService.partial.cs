@@ -147,7 +147,7 @@ namespace Rock.Model
             // and also get a queryable of PersonIds for the registration instance placement groups so we can determine if the registrant has been placed 
             IQueryable<InstancePlacementGroupPersonId> allInstancesPlacementGroupInfoQuery = null;
 
-            if ( !options.RegistrationInstanceId.HasValue && (options.RegistrationTemplateInstanceIds == null || !options.RegistrationTemplateInstanceIds.Any()) )
+            if ( !options.RegistrationInstanceId.HasValue && ( options.RegistrationTemplateInstanceIds == null || !options.RegistrationTemplateInstanceIds.Any() ) )
             {
                 // if neither RegistrationInstanceId or RegistrationTemplateInstanceIds was specified, use all of the RegistrationTemplates instances
                 options.RegistrationTemplateInstanceIds = new RegistrationTemplateService( rockContext ).GetSelect( options.RegistrationTemplateId, s => s.Instances.Select( i => i.Id ) ).ToArray();
@@ -199,7 +199,7 @@ namespace Rock.Model
             {
                 Registrant = r,
                 r.PersonAlias.Person,
-                RegistrationInstanceName = r.Registration.RegistrationInstance.Name,
+                r.Registration.RegistrationInstance,
 
                 // marked as AlreadyPlacedInGroup if the Registrant is a member of any of the registrant template placement group or the registration instance placement groups
                 AlreadyPlacedInGroup =
@@ -210,7 +210,7 @@ namespace Rock.Model
             var registrationRegistrantPlacementList = registrationRegistrantPlacementQuery.AsNoTracking().ToList();
 
             var groupPlacementRegistrantList = registrationRegistrantPlacementList
-                .Select( x => new GroupPlacementRegistrant( x.Registrant, x.Person, x.AlreadyPlacedInGroup, x.RegistrationInstanceName, options ) )
+                .Select( x => new GroupPlacementRegistrant( x.Registrant, x.Person, x.AlreadyPlacedInGroup, x.RegistrationInstance, options ) )
                 .ToList();
 
             return groupPlacementRegistrantList.ToList();
@@ -253,6 +253,14 @@ namespace Rock.Model
         private RegistrationRegistrant RegistrationRegistrant { get; set; }
 
         /// <summary>
+        /// Gets or sets the registration instance.
+        /// </summary>
+        /// <value>
+        /// The registration instance.
+        /// </value>
+        private RegistrationInstance RegistrationInstance { get; set; }
+
+        /// <summary>
         /// Gets or sets the options.
         /// </summary>
         /// <value>
@@ -276,12 +284,27 @@ namespace Rock.Model
         /// <param name="alreadyPlacedInGroup">if set to <c>true</c> [already placed in group].</param>
         /// <param name="registrationInstanceName"></param>
         /// <param name="options">The options.</param>
+        [Obsolete( "Use the other GroupPlacementRegistrant constructor " )]
+        [RockObsolete( "1.10.3" )]
         public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, Person person, bool alreadyPlacedInGroup, string registrationInstanceName, GetGroupPlacementRegistrantsParameters options )
+            : this( registrationRegistrant, person, alreadyPlacedInGroup, registrationRegistrant.Registration.RegistrationInstance, options )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupPlacementRegistrant" /> class.
+        /// </summary>
+        /// <param name="registrationRegistrant">The registration registrant.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="alreadyPlacedInGroup">if set to <c>true</c> [already placed in group].</param>
+        /// <param name="registrationInstance">The registration instance.</param>
+        /// <param name="options">The options.</param>
+        public GroupPlacementRegistrant( RegistrationRegistrant registrationRegistrant, Person person, bool alreadyPlacedInGroup, RegistrationInstance registrationInstance, GetGroupPlacementRegistrantsParameters options )
         {
             this.RegistrationRegistrant = registrationRegistrant;
             this.Person = person;
             this.AlreadyPlacedInGroup = alreadyPlacedInGroup;
-            this.RegistrationInstanceName = registrationInstanceName;
+            this.RegistrationInstance = registrationInstance;
             this.Options = options;
         }
 
@@ -323,7 +346,15 @@ namespace Rock.Model
         /// <value>
         /// The name of the registration instance.
         /// </value>
-        public string RegistrationInstanceName { get; private set; }
+        public string RegistrationInstanceName => RegistrationInstance.Name;
+
+        /// <summary>
+        /// Gets the registration instance identifier.
+        /// </summary>
+        /// <value>
+        /// The registration instance identifier.
+        /// </value>
+        public int RegistrationInstanceId => RegistrationInstance.Id;
 
         /// <summary>
         /// Gets or sets a value indicating whether [already placed in group].

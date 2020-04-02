@@ -1346,7 +1346,7 @@ namespace RockWeb.Blocks.Steps
 
             // Set the visibility of the Activity Summary chart.
             bool showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
-            
+
             if ( showActivitySummary )
             {
                 // If the Program does not have any Step activity, hide the Activity Summary.
@@ -1437,15 +1437,16 @@ namespace RockWeb.Blocks.Steps
                 chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
 
                 stepTypeDataPoints = steps
-                    .GroupBy( x => new { Month = new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ), DatasetName = x.StepType.Name, Order = x.StepType.Order } )
+                    .GroupBy( x => new { Month = new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, 1 ), DatasetName = x.StepType.Name, SortKey1 = x.StepType.Order, SortKey2 = x.StepTypeId } )
                     .Select( x => new StepTypeActivityDataPoint
                     {
                         StepTypeName = x.Key.DatasetName,
                         DateTime = x.Key.Month,
-                        SortKey = x.Key.Order.ToString(),
+                        SortKey1 = x.Key.SortKey1,
+                        SortKey2 = x.Key.SortKey2,
                         CompletedCount = x.Count()
                     } )
-                    .OrderBy( x => x.SortKey )
+                    .OrderBy( x => x.SortKey1 ).ThenBy( x => x.SortKey2 )
                     .ToList();
             }
             else
@@ -1454,19 +1455,24 @@ namespace RockWeb.Blocks.Steps
                 chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
 
                 stepTypeDataPoints = steps
-                    .GroupBy( x => new { Day = new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, x.CompletedDateTime.Value.Day ), DatasetName = x.StepType.Name, Order = x.StepType.Order } )
+                    .GroupBy( x => new { Day = new DateTime( x.CompletedDateTime.Value.Year, x.CompletedDateTime.Value.Month, x.CompletedDateTime.Value.Day ), DatasetName = x.StepType.Name, SortKey1 = x.StepType.Order, SortKey2 = x.StepTypeId } )
                     .Select( x => new StepTypeActivityDataPoint
                     {
                         StepTypeName = x.Key.DatasetName,
                         DateTime = x.Key.Day,
-                        SortKey = x.Key.Order.ToString(),
+                        SortKey1 = x.Key.SortKey1,
+                        SortKey2 = x.Key.SortKey2,
                         CompletedCount = x.Count()
                     } )
-                    .OrderBy( x => x.SortKey )
+                    .OrderBy( x => x.SortKey1 ).ThenBy( x => x.SortKey2 )
                     .ToList();
             }
 
-            var stepTypeDatasets = stepTypeDataPoints.Select( x => x.StepTypeName ).Distinct().ToList();
+            var stepTypeDatasets = stepTypeDataPoints
+                .OrderBy( x => x.SortKey1 ).ThenBy( x => x.SortKey2 )
+                .Select( x => x.StepTypeName )
+                .Distinct()
+                .ToList();
 
             var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
 
@@ -1585,7 +1591,12 @@ namespace RockWeb.Blocks.Steps
             /// <summary>
             /// A value used to sort the datapoint within the set of values for this Step Type.
             /// </summary>
-            public string SortKey { get; set; }
+            public int SortKey1 { get; set; }
+
+            /// <summary>
+            /// A value used to sort the datapoint within the set of values for this Step Type.
+            /// </summary>
+            public int SortKey2 { get; set; }
         }
 
         #endregion

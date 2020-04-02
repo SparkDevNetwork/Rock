@@ -41,9 +41,28 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Opportunity Detail" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given connection opportunity." )]
-    [BooleanField( "Show Edit", "", true, "", 2 )]
+
+    #region Block Attributes
+    [BooleanField(
+        "Show Edit",
+        DefaultBooleanValue = true,
+        Order = 2,
+        Key = AttributeKey.ShowEdit )]
+    #endregion Block Attributes
     public partial class ConnectionOpportunityDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string ShowEdit = "ShowEdit";
+        }
+
+        #endregion
+
         #region Fields
 
         public int _connectionTypeId = 0;
@@ -348,7 +367,6 @@ namespace RockWeb.Blocks.Connection
                 ConnectionOpportunityService connectionOpportunityService = new ConnectionOpportunityService( rockContext );
                 EventCalendarItemService eventCalendarItemService = new EventCalendarItemService( rockContext );
                 ConnectionWorkflowService connectionWorkflowService = new ConnectionWorkflowService( rockContext );
-                ConnectionRequestWorkflowService connectionRequestWorkflowService = new ConnectionRequestWorkflowService( rockContext );
                 ConnectionOpportunityConnectorGroupService connectionOpportunityConnectorGroupsService = new ConnectionOpportunityConnectorGroupService( rockContext );
                 ConnectionOpportunityCampusService connectionOpportunityCampusService = new ConnectionOpportunityCampusService( rockContext );
                 ConnectionOpportunityGroupConfigService connectionOpportunityGroupConfigService = new ConnectionOpportunityGroupConfigService( rockContext );
@@ -392,12 +410,6 @@ namespace RockWeb.Blocks.Connection
                 var uiWorkflows = WorkflowsState.Where( w => w.ConnectionTypeId == null ).Select( l => l.Guid );
                 foreach ( var connectionWorkflow in connectionOpportunity.ConnectionWorkflows.Where( l => !uiWorkflows.Contains( l.Guid ) ).ToList() )
                 {
-                    foreach( var requestWorkflow in connectionRequestWorkflowService.Queryable()
-                        .Where( w => w.ConnectionWorkflowId == connectionWorkflow.Id ) )
-                    {
-                        connectionRequestWorkflowService.Delete( requestWorkflow );
-                    }
-
                     connectionOpportunity.ConnectionWorkflows.Remove( connectionWorkflow );
                     connectionWorkflowService.Delete( connectionWorkflow );
                 }
@@ -1513,6 +1525,7 @@ namespace RockWeb.Blocks.Connection
                 case ConnectionWorkflowTriggerType.RequestTransferred:
                 case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
                 case ConnectionWorkflowTriggerType.Manual:
+                case ConnectionWorkflowTriggerType.FutureFollowupDateReached:
                     {
                         ddlPrimaryQualifier.Visible = false;
                         ddlPrimaryQualifier.Items.Clear();

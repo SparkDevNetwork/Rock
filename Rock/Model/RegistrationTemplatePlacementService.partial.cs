@@ -36,6 +36,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the registration template placement count by registration template.
+        /// </summary>
+        /// <param name="registrationTemplateId">The registration template identifier.</param>
+        /// <returns></returns>
+        public int GetRegistrationTemplatePlacementCountByRegistrationTemplate( int registrationTemplateId )
+        {
+            return this.Queryable().Count( r => r.RegistrationTemplateId == registrationTemplateId );
+        }
+
+        /// <summary>
         /// Sets the RegistrationTemplatePlacement placement groups
         /// </summary>
         /// <param name="registrationTemplatePlacement">The registration template placement.</param>

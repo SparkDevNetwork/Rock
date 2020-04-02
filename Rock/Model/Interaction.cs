@@ -155,6 +155,55 @@ namespace Rock.Model
         [DataMember]
         public DateTime? InteractionEndDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the channel custom 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        public string ChannelCustom1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom 2.
+        /// </summary>
+        /// <value>
+        /// The channel custom 2.
+        /// </value>
+        [DataMember]
+        [MaxLength( 2000 )]
+        public string ChannelCustom2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom indexed 1.
+        /// </summary>
+        /// <value>
+        /// The channel custom indexed 1.
+        /// </value>
+        [DataMember]
+        [MaxLength( 500 )]
+        [Index( "IX_ChannelCustomIndexed1" )]
+        public string ChannelCustomIndexed1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the interaction length.
+        /// </summary>
+        /// <value>
+        /// The interaction length.
+        /// </value>
+        [DataMember]
+        public double? InteractionLength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time to serve the interaction in seconds.
+        /// </summary>
+        /// <value>
+        /// The time to serve the interaction in seconds.
+        /// </value>
+        [DataMember]
+        public double? InteractionTimeToServe { get; set; }
+
         #endregion
 
         #region Campaign Meta fields
@@ -279,11 +328,11 @@ namespace Rock.Model
         /// Sets the interaction data (for example, the URL of the request), and obfuscates sensitive data that might be in the interactionData
         /// </summary>
         /// <param name="interactionData">The interaction data.</param>
-        public void SetInteractionData( string interactionData)
+        public void SetInteractionData( string interactionData )
         {
             this.InteractionData = interactionData.IsNotNullOrWhiteSpace() ? PersonToken.ObfuscateRockMagicToken( interactionData ) : string.Empty;
         }
-       
+
         #endregion Virtual Properties
 
         #region Public Methods

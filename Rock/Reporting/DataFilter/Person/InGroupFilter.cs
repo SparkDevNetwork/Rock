@@ -688,7 +688,7 @@ namespace Rock.Reporting.DataFilter.Person
                     groupMemberStatus = selectionValues[3].ConvertToEnumOrNull<GroupMemberStatus>();
                 }
 
-                var groupMemberServiceQry = groupMemberService.Queryable();
+                var groupMemberServiceQry = groupMemberService.Queryable( true );
 
                 List<int> childGroupIds = new List<int>();
 
