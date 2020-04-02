@@ -492,7 +492,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    var registrationInstanceId = this.PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
                     if ( registrationInstanceId.HasValue )
                     {
                         financialGateway = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, s => s.RegistrationTemplate.FinancialGateway );
@@ -760,20 +760,38 @@ namespace RockWeb.Blocks.Event
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
-            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
+            int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
 
+            string pageTitle;
             if ( registrationInstanceId.HasValue )
             {
-                string registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
-
-                RockPage.Title = registrationInstanceName;
-                breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
+                pageTitle = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, s => s.Name );
             }
-            else if ( registrationSlug.IsNotNullOrWhiteSpace() )
+            else
+            {
+                pageTitle = this.PageCache.PageTitle;
+            }
+
+            RockPage.Title = pageTitle;
+            breadCrumbs.Add( new BreadCrumb( pageTitle, pageReference ) );
+
+            return breadCrumbs;
+        }
+
+        /// <summary>
+        /// Gets the registration instance identifier from URL.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetRegistrationInstanceIdFromURL()
+        {
+            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
+            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? registrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
+
+            if ( registrationInstanceId == null && registrationSlug.IsNotNullOrWhiteSpace() )
             {
                 var dateTime = RockDateTime.Now;
-                var linkage = new EventItemOccurrenceGroupMapService( new RockContext() )
+                registrationInstanceId = new EventItemOccurrenceGroupMapService( new RockContext() )
                     .Queryable()
                     .AsNoTracking()
                     .Where( l => l.UrlSlug == registrationSlug )
@@ -783,20 +801,14 @@ namespace RockWeb.Blocks.Event
                     .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
                     .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
                     .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .FirstOrDefault();
-
-                if ( linkage != null )
-                {
-                    RockPage.Title = linkage.RegistrationInstance.Name;
-                    breadCrumbs.Add( new BreadCrumb( linkage.RegistrationInstance.Name, pageReference ) );
-                }
+                    .Select( a => a.RegistrationInstanceId ).FirstOrDefault();
             }
-            else
+            else if ( registrationId.HasValue )
             {
-                breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
+                registrationInstanceId = new RegistrationService( new RockContext() ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
             }
 
-            return breadCrumbs;
+            return registrationInstanceId;
         }
 
         /// <summary>
@@ -4441,17 +4453,8 @@ namespace RockWeb.Blocks.Event
 
                 ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
 
-                var financialGateway = this.FinancialGateway;
-
-                if ( financialGateway != null )
-                {
-                    bool usingNMIThreeStep = financialGateway.GetGatewayComponent() is Rock.NMI.Gateway;
-                    if ( usingNMIThreeStep )
-                    {
-                        var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
-                        ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
-                    }
-                }
+                var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
             }
         }
 
@@ -5514,7 +5517,7 @@ namespace RockWeb.Blocks.Event
             {
                 return false;
             }
-            
+
             return true;
         }
 
