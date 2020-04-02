@@ -404,8 +404,11 @@ btnCopyToClipboard.ClientID );
             bool filterIsValid = groupId > 0 && scheduleId > 0 && cblGroupLocations.SelectedValues.Any();
             pnlScheduler.Visible = filterIsValid && !group.DisableScheduling;
             nbFilterInstructions.Visible = !filterIsValid;
-            nbSchedulingDisabled.Visible = group.DisableScheduling;
-            if ( group.DisableScheduling )
+
+            var disableScheduling = group != null && group.DisableScheduling;
+            nbSchedulingDisabled.Visible = disableScheduling;
+
+            if ( disableScheduling )
             {
                 nbSchedulingDisabled.Text = string.Format( "Scheduling is disabled for the {0} group.", group.Name );
             }
