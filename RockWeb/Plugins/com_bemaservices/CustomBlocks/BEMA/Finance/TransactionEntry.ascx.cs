@@ -2323,6 +2323,12 @@ TransactionAccountDetails: [
             }
 
             tdWhenConfirm.Description = schedule != null ? schedule.ToString() : "Today";
+            /* BEMA.FE3.Start */
+            if ( schedule.EndDate.HasValue )
+            {
+                tdWhenConfirm.Description = tdWhenConfirm.Description + " and ending on " + schedule.EndDate.Value.ToShortDateString ();
+            }
+            /* BEMA.FE3.End */
 
             btnConfirmationPrev.Visible = !_using3StepGateway;
 
@@ -2839,7 +2845,17 @@ TransactionAccountDetails: [
             }
 
             var changeSummary = new StringBuilder();
-            changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
+            /* BEMA.FE3.Start */
+            if ( schedule.EndDate.HasValue )
+            {
+                changeSummary.AppendFormat ( "{0} starting {1} and ending on {2}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString (), schedule.EndDate.Value.ToShortDateString () );
+            }
+            else
+            {
+                changeSummary.AppendFormat ( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString () );
+            }
+            /* BEMA.FE3.End */
+
             changeSummary.AppendLine();
             changeSummary.Append( paymentInfo.CurrencyTypeValue.Value );
             if ( paymentInfo.CreditCardTypeValue != null )
