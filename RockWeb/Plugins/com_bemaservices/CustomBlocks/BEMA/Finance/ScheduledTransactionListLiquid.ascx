@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ScheduledTransactionListLiquid.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Event.ScheduledTransactionListLiquid" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ScheduledTransactionListLiquid.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Finance.ScheduledTransactionListLiquid" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

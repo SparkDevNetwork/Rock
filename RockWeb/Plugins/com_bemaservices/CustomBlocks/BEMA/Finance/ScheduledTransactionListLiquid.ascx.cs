@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,7 +28,15 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_bemaservices.Event
+/*
+ * BEMA Modified Core Block( v9.4.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ *
+ * Additional Features:
+ * - FE1) Added Ability to hide Event Registration payments
+ * 
+ */
+namespace RockWeb.Plugins.com_bemaservices.Finance
 {
     /// <summary>
     /// Generates a list of scheduled transactions for the current person with edit/transfer and delete buttons.
@@ -96,10 +104,17 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         IsRequired = false,
         Order = 10 )]
 
-    [BooleanField( "Show Event Registration Payments" )]
+    [BooleanField( "Show Event Registration Payments", "Whether Event Registration Payments should be displayed or not.", true, "", 11, BemaAttributeKeys.ShowEventRegistrationPayments )]
 
     public partial class ScheduledTransactionListLiquid : RockBlock
     {
+        /* BEMA.Start */
+        protected static class BemaAttributeKeys
+        {
+            public const string ShowEventRegistrationPayments = "ShowEventRegistrationPayments";
+        }
+        /* BEMA.End*/
+
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
@@ -190,8 +205,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             {
                 var transactionSchedule = e.Item.DataItem as FinancialScheduledTransaction;
 
-                Button btnEdit = ( Button ) e.Item.FindControl( "btnEdit" );
-                BootstrapButton bbtnDelete = ( BootstrapButton ) e.Item.FindControl( "bbtnDelete" );
                 HiddenField hfScheduledTransactionId = ( HiddenField ) e.Item.FindControl( "hfScheduledTransactionId" );
                 hfScheduledTransactionId.Value = transactionSchedule.Id.ToString();
 
@@ -206,6 +219,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 // If a Transfer-To gateway was set and this transaction is not using that gateway, change the Edit button to a Transfer button
                 if ( _transferToGatewayGuid != null && transactionSchedule.FinancialGateway.Guid != _transferToGatewayGuid )
                 {
+                    Button btnEdit = ( Button ) e.Item.FindControl( "btnEdit" );
                     btnEdit.Text = GetAttributeValue( AttributeKey.TransferButtonText );
 
                     HiddenField hfTransfer = ( HiddenField ) e.Item.FindControl( "hfTransfer" );
@@ -233,11 +247,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     scheduleSummary.Add( "DaysSinceLastPayment", null );
                 }
 
-                var showEventRegistrationPayments = GetAttributeValue( "ShowEventRegistrationPayments" ).AsBoolean();
-                if ( showEventRegistrationPayments )
-                {
-                    btnEdit.Visible = false;
-                }
                 scheduleSummary.Add( "PersonName", transactionSchedule.AuthorizedPersonAlias != null && transactionSchedule.AuthorizedPersonAlias.Person != null ? transactionSchedule.AuthorizedPersonAlias.Person.FullName : string.Empty );
                 scheduleSummary.Add( "CurrencyType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue != null ) ? transactionSchedule.FinancialPaymentDetail.CurrencyTypeValue.Value : string.Empty );
                 scheduleSummary.Add( "CreditCardType", ( transactionSchedule.FinancialPaymentDetail != null && transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue != null ) ? transactionSchedule.FinancialPaymentDetail.CreditCardTypeValue.Value : string.Empty );
@@ -245,19 +254,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 scheduleSummary.Add( "UrlEncryptedKey", transactionSchedule.UrlEncodedKey );
                 scheduleSummary.Add( "Frequency", transactionSchedule.TransactionFrequencyValue.Value );
                 scheduleSummary.Add( "FrequencyDescription", transactionSchedule.TransactionFrequencyValue.Description );
-
-                var entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
-                var registrationId = transactionSchedule.ScheduledTransactionDetails.Where( std => std.EntityTypeId == entityTypeId ).Max( std => std.EntityId );
-                if ( registrationId != null )
-                {
-                    var registration = new RegistrationService( new RockContext() ).Get( registrationId.Value );
-                    if ( registration != null )
-                    {
-                        scheduleSummary.Add( "Registration", registration );
-                        bbtnDelete.Text = "Cancel Registration";
-                    }
-
-                }
 
                 List<Dictionary<string, object>> summaryDetails = new List<Dictionary<string, object>>();
                 decimal totalAmount = 0;
@@ -284,8 +280,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 // merge into content
                 Literal lLiquidContent = ( Literal ) e.Item.FindControl( "lLiquidContent" );
                 lLiquidContent.Text = GetAttributeValue( AttributeKey.Template ).ResolveMergeFields( schedule );
-
-
             }
         }
 
@@ -306,7 +300,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
-                RegistrationService registrationService = new RegistrationService( rockContext );
                 var currentTransaction = fstService.Get( hfScheduledTransactionId.Value.AsInteger() );
                 if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
                 {
@@ -327,41 +320,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
                     rockContext.SaveChanges();
                     content.Text = string.Format( "<div class='alert alert-success'>Your recurring {0} has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
-
-                    var entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
-                    var registrationId = currentTransaction.ScheduledTransactionDetails.Where( std => std.EntityTypeId == entityTypeId ).Max( std => std.EntityId );
-                    if ( registrationId != null )
-                    {
-                        var registration = registrationService.Get( registrationId.Value );
-                        if ( registration != null )
-                        {
-                            if ( registration != null )
-                            {
-                                int registrationInstanceId = registration.RegistrationInstanceId;
-
-
-                                var changes = new History.HistoryChangeList();
-                                changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
-
-                                rockContext.WrapTransaction( () =>
-                                {
-                                    HistoryService.SaveChanges(
-                                        rockContext,
-                                        typeof( Registration ),
-                                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                                        registration.Id,
-                                        changes );
-
-                                    registrationService.Delete( registration );
-                                    rockContext.SaveChanges();
-                                    content.Text = string.Format( "<div class='alert alert-success'>Your registration and related scheduled payment has been deleted.</div>", GetAttributeValue( AttributeKey.TransactionLabel ).ToLower() );
-
-                                } );
-
-                            }
-                        }
-
-                    }
                 }
                 else
                 {
@@ -456,10 +414,14 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     .Include( a => a.ScheduledTransactionDetails.Select( s => s.Account ) )
                     .Where( s => givingIds.Contains( s.AuthorizedPersonAlias.Person.GivingId ) && s.IsActive == true );
 
+                /* BEMA.FE1.Start */
                 var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
-                var showEventRegistrationPayments = GetAttributeValue( "ShowEventRegistrationPayments" ).AsBoolean();
-                schedules = schedules.Where( s => ( s.TransactionTypeValue.Guid == txnType.Guid ) == showEventRegistrationPayments );
-
+                var showEventRegistrationPayments = GetAttributeValue( BemaAttributeKeys.ShowEventRegistrationPayments ).AsBoolean();
+                if ( !showEventRegistrationPayments )
+                {
+                    schedules = schedules.Where( s => !( s.TransactionTypeValue.Guid == txnType.Guid ) );
+                }
+                /* BEMA.FE1.End */
 
                 // filter the list if necessary
                 var gatewayFilterGuid = GetAttributeValue( AttributeKey.GatewayFilter ).AsGuidOrNull();
