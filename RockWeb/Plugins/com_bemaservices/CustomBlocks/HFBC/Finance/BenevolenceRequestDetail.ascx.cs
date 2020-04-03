@@ -146,6 +146,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 item.LoadAttributes();
 
                 phAttributes.Controls.Clear();
+				/* BEMA: Changed from 2 to 3 */
                 Rock.Attribute.Helper.AddEditControls( item, phAttributes, false, BlockValidationGroup, 3 );
 
                 confirmExit.Enabled = true;
@@ -341,6 +342,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 benevolenceRequest.ResultSummary = dtbSummary.Text;
                 benevolenceRequest.CampusId = cpCampus.SelectedCampusId;
                 benevolenceRequest.ProvidedNextSteps = dtbProvidedNextSteps.Text;
+				/* BEMA: Commented out */
                 //benevolenceRequest.GovernmentId = dtbGovernmentId.Text;
 
                 if ( lapAddress.Location != null )
@@ -407,7 +409,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     {
                         benevolenceRequestService.Add( benevolenceRequest );
                     }
-
+					/* Bema.Start */
                     // Setting Person SSN in Person Attribute
                     if ( GetAttributeValue( "SSNPersonAttribute" ).AsGuidOrNull() != null )
                     {
@@ -435,6 +437,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                             person.SaveAttributeValues( rockContext );
                         }
                     }
+					/* BEMA.End */
 
                     // get attributes
                     benevolenceRequest.LoadAttributes();
@@ -585,7 +588,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                             pnbWorkPhone.Enabled = false;
                         }
                     }
-
+					
+					/* BEMA.Start */	
                     // Loading Person SSN from Person Attribute
                     if ( GetAttributeValue( "SSNPersonAttribute" ).AsGuidOrNull() != null )
                     {
@@ -615,6 +619,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                             rtbGovernmentId.Text = otherIdValue;
                         }
                     }
+					/* BEMA.End */
 
                     ebEmail.Text = person.Email;
                     ebEmail.Enabled = false;
@@ -743,6 +748,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             dtbFirstName.Text = benevolenceRequest.FirstName;
             dtbLastName.Text = benevolenceRequest.LastName;
+			// BEMA: Commented Out
             //dtbGovernmentId.Text = benevolenceRequest.GovernmentId;
             ebEmail.Text = benevolenceRequest.Email;
             dtbRequestText.Text = benevolenceRequest.RequestText;
@@ -824,7 +830,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     ppCaseWorker.SetValue( null );
                 }
             }
-
+			/* BEMA.Start */
             // Loading Person SSN from Person Attribute
             if( GetAttributeValue( "SSNPersonAttribute" ).AsGuidOrNull() != null )
             {
@@ -862,6 +868,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     }
                 }
             }
+			/* Bema.End */
 
             BindGridFromViewState();
 
@@ -869,6 +876,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             BindDocuments( true );
 
             benevolenceRequest.LoadAttributes();
+			//BEMA: Columns changed from 2 to 3
             Rock.Attribute.Helper.AddEditControls( benevolenceRequest, phAttributes, true, BlockValidationGroup, 3 );
 
             // call the OnSelectPerson of the person picker which will update the UI based on the selected person
