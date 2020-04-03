@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Entity;
@@ -12,6 +12,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -418,7 +419,7 @@ namespace RockWeb.Plugins.org_bemaservices.PastoralCare
 
                     // Find the summary activity and activate it.
                     WorkflowActivityType workflowActivityType = workflow.WorkflowType.ActivityTypes.Where( at => at.Name.Contains( "Summary" ) ).FirstOrDefault();
-                    WorkflowActivity workflowActivity = WorkflowActivity.Activate( workflowActivityType, workflow, rockContext );
+                    WorkflowActivity workflowActivity = WorkflowActivity.Activate( WorkflowActivityTypeCache.Get(workflowActivityType.Id, rockContext), workflow, rockContext );
 
                 }
                 rockContext.SaveChanges();
