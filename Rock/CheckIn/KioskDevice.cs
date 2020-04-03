@@ -62,8 +62,8 @@ namespace Rock.CheckIn
         #region Lifespan
 
         /// <summary>
-        /// The amount of time that this item will live in the cache before expiring. If null, then the
-        /// Default Lifespan is used.
+        /// The amount of time that this item will live in the cache before expiring. This is set to the time from now
+        /// until midnight for each cache item instance.
         /// </summary>
         public override TimeSpan? Lifespan
         {
