@@ -2324,7 +2324,7 @@ TransactionAccountDetails: [
 
             tdWhenConfirm.Description = schedule != null ? schedule.ToString() : "Today";
             /* BEMA.FE3.Start */
-            if ( schedule.EndDate.HasValue )
+            if ( schedule != null && schedule.EndDate != null && schedule.EndDate.HasValue )
             {
                 tdWhenConfirm.Description = tdWhenConfirm.Description + " and ending on " + schedule.EndDate.Value.ToShortDateString ();
             }
