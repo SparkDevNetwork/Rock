@@ -33,7 +33,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /// <summary>
     /// Generates a list of scheduled transactions for the current person with edit/transfer and delete buttons.
     /// </summary>
-    [DisplayName( "Scheduled Filtered Transaction List Lava" )]
+    [DisplayName( "Scheduled Transaction List Lava" )]
     [Category( "BEMA Services > Finance" )]
     [Description( "Block that shows a list of scheduled transactions for the currently logged in user with the ability to modify the formatting using a lava template." )]
 
@@ -98,7 +98,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
     [BooleanField( "Show Event Registration Payments" )]
 
-    public partial class ScheduledFilteredTransactionListLiquid : RockBlock
+    public partial class ScheduledTransactionListLiquid : RockBlock
     {
         /// <summary>
         /// Keys to use for Block Attributes
