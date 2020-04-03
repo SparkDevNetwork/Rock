@@ -634,7 +634,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             if ( registrantPersonAlias != null )
             {
                 lCurrentRegistrantName.Text = registrantPersonAlias.Person.FullName;
-                lSpecialtyLink.Text = String.Format( "<a target='_blank' href='{0}'/>View Specialty Descriptions", GetAttributeValue( "SpecialtyDescriptionLink" ) );
+                lSpecialtyLink.Text = String.Format( "<a target='_blank' href='{0}'/>View Specialty Descriptions</a>", GetAttributeValue( "SpecialtyDescriptionLink" ) );
                 var categoryId = PageParameter( CATEGORY_ID_PARAM_NAME ).AsIntegerOrNull();
                 if ( categoryId == null || categoryId == 0 )
                 {
@@ -5915,6 +5915,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                     var primaryAlias = new PersonAliasService( new RockContext() ).Get( primaryRegistrant.PersonAliasId );
                     if ( primaryAlias != null )
                     {
+                        decimal discountAmount = 10.0m * MultiEventRegistrants.Count();
                         foreach ( var registrationInformation in RegistrationInformationList )
                         {
                             if ( registrationInformation.RegistrationState != null )
@@ -5935,8 +5936,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                                     }
                                     else
                                     {
-                                        registrationInformation.RegistrationState.DiscountAmount = 20.0m;
-
+                                        registrationInformation.RegistrationState.DiscountAmount = discountAmount;
                                     }
                                     SaveViewState();
                                 }
