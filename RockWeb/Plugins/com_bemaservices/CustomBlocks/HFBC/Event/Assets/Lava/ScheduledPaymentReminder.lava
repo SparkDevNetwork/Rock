@@ -1,0 +1,50 @@
+﻿{{ 'Global' | Attribute:'EmailHeader' }}
+{% capture currencySymbol %}{{ 'Global' | Attribute:'CurrencySymbol' }}{% endcapture %}
+{% capture externalSite %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}{% endcapture %}
+
+<h1>{{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} Scheduled Payment Reminder</h1>
+
+<p>
+    You have an upcoming payment for {{RegistrationInstance.Name}} of {{ ScheduledAmount | FormatAsCurrency }} on {{ ScheduledTransaction.StartDate | Date:"MMMM d, yyyy" }}. The
+    {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | Downcase | Pluralize  }} for this
+    {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm }} are below.
+</p>
+
+{% assign registrants = Registration.Registrants | Where:'OnWaitList', false %}
+{% assign registrantCount = registrants | Size %}
+{% if registrantCount > 0 %}
+	<ul>
+	{% for registrant in registrants %}
+		<li>{{ registrant.PersonAlias.Person.FullName }}</li>
+	{% endfor %}
+	</ul>
+{% endif %}
+
+{% assign waitlist = Registration.Registrants | Where:'OnWaitList', true %}
+{% assign waitListCount = waitlist | Size %}
+{% if waitListCount > 0 %}
+    <p>
+        The following {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
+		{% if waitListCount > 1 %}are{% else %}is{% endif %} still on the wait list:
+   </p>
+
+    <ul>
+    {% for registrant in waitlist %}
+        <li>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<p>
+    If you would like to cancel the payment for this {{ RegistrationInstance.RegistrationTemplate.RegistrationTerm | Downcase }}, you can do so
+    using our <a href='{{ externalSite }}/page/599&rckipid={{ Registration.PersonAlias.Person | PersonTokenCreate }}'>
+    event registration payments page</a>.
+</p>
+
+<p>
+    If you have any questions please contact {{ RegistrationInstance.ContactName }} at {{ RegistrationInstance.ContactEmail }}.
+</p>
+
+{{ 'Global' | Attribute:'EmailFooter' }}

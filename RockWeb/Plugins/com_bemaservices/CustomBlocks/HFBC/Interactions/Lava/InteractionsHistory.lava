@@ -1,0 +1,374 @@
+<!--
+    Interactions History And Interaction Assignments
+    @description Simply displays the interactions that occurred on the person as well as the person assigned interactions
+    @author Daniel Rychlik daniel.rychlik@bemaservices.com, Tyler Strout tyler.strout@bemaservices.com
+    @date 3/1/2018
+		
+    // Development Log
+    05/11/2018 DJR - Added the block to the members portal but it required the person id from the authenticated user.
+	05/11/2018 TAS - Added 2 more include parameters
+					- GroupId (Optional) is used as a trigger to determine what page the user should be redirected to
+					- WorkflowPage (Optional) is used dynamically change the href location
+	10/02/2018 TAS - Added parameter to enable filtering interactions based on passed in Person Ids
+					- FilterAuthors (Optional) is used to filter interactions based on the author
+	01/28/2019 TAS - Removed Develop button
+				   - Removed WorkflowPage piece and added Hardcoded Paths depending on current URL
+
+	
+-->
+
+<!--Get the note type id for Interaction Note Type from the GUID-->
+{% assign interactionNoteTypeId = 0 %}
+{% notetype where:'Guid == "C51DD053-8D1E-412B-A001-4D6AA3A8DE1E"' %}
+    {% assign interactionNoteTypeId = notetypeItems[0].Id %}
+{% endnotetype %}
+
+<!--Get the note type id for Interaction Assignments Note Type from the GUID-->
+{% assign interactionAssignmentNoteTypeId = 0 %}
+{% notetype where:'Guid == "537D9DE4-003E-4686-A6C6-A686FE9B72CD"' %}
+    {% assign interactionAssignmentNoteTypeId = notetypeItems[0].Id %}
+{% endnotetype %}
+
+<!--Trying to get person from passed parameter -->
+{% if ParameterPerson != null %}
+	{% assign personId = ParameterPerson %}
+{% else %}
+	<!--Get this person's id-->
+	{% assign personId = 'Global' | PageParameter:'PersonId' %}
+{% endif %}
+
+<!--Set the PersonId from the Logged in user if personId is not captured from the PageParameter.  This applies to the member portal-->
+{% if personId == '' %}
+    {% assign personId = Person.Id %}
+{% endif %}
+
+<!--Get parameter for displaying name in header-->
+{% if ParameterDisplayName != null %}
+	{% assign headerText = '<strong>'|Plus:ParameterDisplayName|Plus:'</strong> Interactions' %}
+{% else %}
+	{% assign headerText = 'Interactions' %}
+{% endif %}
+
+{% if ParameterLoopIndex != null %}
+	{% assign historySelectorName = 'interactionsHistory'|Plus:ParameterLoopIndex %}
+	{% assign assignmentsSelectorName = 'assignmentsHistory'|Plus:ParameterLoopIndex %}
+{% else %}
+	{% assign historySelectorName = 'interactionsHistory' %}
+	{% assign assignmentsSelectorName = 'assignmentsHistory' %}
+{% endif %}
+
+<!--Get the tab id from the url-->
+{% assign url = 'Global' | Page:'Url' %}
+{% assign urlParts = url | Split:'/' %}
+{% for urlPart in urlParts %}
+	{% if urlPart == 'AssignmentHistory' %}
+		<script>
+			$('#tabList a[href="#{{ assignmentsSelectorName }}"]').tab("show");
+		</script>
+	{% endif %}
+{% endfor %}
+
+
+<!--Get the id of the log interaction work flow-->
+{% assign logInteractionWorkFlowTypeId = 0 %}
+{% workflowtype where:'Guid == "E5DBEB87-0360-43C3-AD1A-BCE31ACD7E5B"' %}
+    {% assign size = workflowtypeItems | Size %}
+    {% if size > 0 %}
+        {% assign logInteractionWorkFlowTypeId = workflowtypeItems[0].Id %}
+    {% endif %}
+{% endworkflowtype %}
+
+<!--Get the id of the assign interaction work flow-->
+{% assign assignInteractionWorkFlowTypeId = 0 %}
+{% workflowtype where:'Guid == "4B71404A-B007-4D31-88F0-0B6A0E22969C"' %}
+    {% assign size = workflowtypeItems | Size %}
+    {% if size > 0 %}
+        {% assign assignInteractionWorkFlowTypeId = workflowtypeItems[0].Id %}
+    {% endif %}
+{% endworkflowtype %}
+
+
+<!--Get the id of the assign interaction work flow-->
+{% assign deleteAssignmentWorkFlowTypeId = 0 %}
+{% workflowtype where:'Guid == "35430EFB-C956-4389-92B9-47C7F226EBD7"' %}
+    {% assign size = workflowtypeItems | Size %}
+    {% if size > 0 %}
+        {% assign deleteAssignmentWorkFlowTypeId = workflowtypeItems[0].Id %}
+    {% endif %}
+{% endworkflowtype %}
+
+<!-- Getting URL Information -->
+{% assign urlScheme = 'Global' | Page:'Scheme' %}
+{% assign urlHost = 'Global' | Page:'Host' %}
+{% capture urlFull %}{{ urlScheme }}://{{urlHost}}{% endcapture %}
+
+{% if urlHost == 'members.hfbc.org' %}
+	{% assign activeHistoryListItemTab = "inactive" %}
+	{% assign activeAssignmentListItemTab = "active" %}
+	{% capture AssignWorkflowPath %}{{ urlFull}}/page/815{% endcapture %}
+	{% capture LogWorkflowPath %}{{ urlFull}}/page/813{% endcapture %}
+{% elseif urlHost == 'rock.hfbc.org' %}
+	{% assign activeAssignmentListItemTab = "active" %}
+	{% capture AssignWorkflowPath %}{{ urlFull}}/WorkflowEntry/32{% endcapture %}
+	{% capture LogWorkflowPath %}{{ urlFull}}/WorkflowEntry/31{% endcapture %}
+{% endif %}
+
+<style>
+	
+	.center-col {
+		text-align: center;
+	}
+	
+	.assignment-complete {
+		color: RGBA(0,0,0,.70);
+		background-color: #def;
+	}
+	
+	.btn-circle.btn-xl {
+		width: 70px;
+		height: 70px;
+		padding: 10px 16px;
+		border-radius: 35px;
+		font-size: 24px;
+		line-height: 1.33;
+	}
+
+	.btn-circle {
+		width: 30px;
+		height: 30px;
+		padding: 6px 0px;
+		border-radius: 15px;
+		text-align: center;
+		font-size: 12px;
+		line-height: 1.42857;
+	}
+	
+</style>
+
+<section class="panel panel-persondetailsa">
+	<div class="panel-heading rollover-container clearfix">
+		<h3 class="panel-title pull-left"><i class="fa fa-history"></i> {{headerText}}</h3> 
+		<div class="actions rollover-item pull-right">
+			<a href="{{ LogWorkflowPath }}?PersonId={{ personId }}&GroupId={{ GroupId }}" class="btn"><i class="fas fa-street-view"></i> Log</a>
+			<a href="{{ AssignWorkflowPath }}?PersonId={{ personId }}&GroupId={{ GroupId }}" class="btn"><i class="fab fa-telegram-plane"></i> Assign</a>
+			<!--<a href="{{ 'Global' | Attribute:'InternalApplicationRoot' }}WorkflowEntry/34?PersonId={{ personId }}" class="btn"><i class="fab fa-telegram-plane"></i> Assign(In Develop)</a>-->
+		</div>
+	</div>
+	<div class="panel-body">
+		<ul id="tabList" class="nav nav-tabs" role="tablist">
+			<li role="presentation" class="{{ activeHistoryListItemTab }}"><a href="#{{historySelectorName}}" role="tab" data-toggle="tab"><i class="fa fa-history"></i> History</a></li>
+			<li role="presentation" class="{{ activeAssignmentListItemTab }}"><a href="#{{assignmentsSelectorName}}" role="tab" data-toggle="tab"><i class="fa fa-users"></i> Assignments</a></li>
+		</ul>
+		
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane fade in {{ activeHistoryListItemTab }}" id="{{historySelectorName}}">
+				<table class="grid-table table table-bordered table-striped table-hover">
+					<thead>
+						<tr>
+							<th>Action</th>
+							<th>Summary</th>
+							<th>Created By</th>
+							<th class="center-col">Completed</th>
+							<th class="center-col">Date</th>
+						</tr>
+					</thead>
+				
+					<!--Fetch out the notes for the person by the note type id-->
+					{% note where:'EntityId == {{ personId }} && NoteTypeId == {{ interactionNoteTypeId }}' %}
+					<tbody>
+						<!--Loop the note items and pull out the attribute values-->
+						{% for noteItem in noteItems %}
+							<tr>
+								<td>
+									<!--Interaction Type-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20723' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% definedvalue where:'Guid == "{{ attributevalueItems[0].Value }}"'%}
+											{{ definedvalueItems }}
+										{% enddefinedvalue %}
+									{% endif %}
+									{% endattributevalue %}
+								</td>
+								<td>{{ noteItem.Text }}</td>
+								<td>
+									<!--Assigned To Person-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20722' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% personalias where:'Guid == "{{ attributevalueItems[0].Value }}"'%}
+											{{ personaliasItems[0].Person.FullName }}
+										{% endpersonalias %}
+									{% endif %}
+									{% endattributevalue %}
+								</td>
+								<td class="center-col">
+									<!--Is Completed-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20751' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% if attributevalueItems[0].Value == 'True' %}
+											<i class="fas fa-check-circle"></i>
+										{% endif %}
+									{% endif %}
+									{% endattributevalue %}
+								</td>
+								<td class="center-col">
+									<!--Date Attribute for the Note Type-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20737' %}
+									{% assign size = attributevalueItems | Size %}
+										{% if size > 0 %}
+											{{ attributevalueItems[0].Value | Date:'M/d/yyyy' }}
+										{% endif %}
+									{% endattributevalue %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				{% endnote %}
+				</table>
+			</div>
+			
+			
+			<div role="tabpanel" class="tab-pane fade in {{ activeAssignmentListItemTab }}" id="{{assignmentsSelectorName}}">
+				<table class="grid-table table table-bordered table-striped table-hover">
+					<thead>
+						<tr>
+							<th>Action</th>
+							<th>Summary</th>
+							<th class="center-col">Individual</th>
+							<th>Contact Info</th>
+							<th class="center-col">Completed</th>
+							<th class="center-col">To Complete By</th>
+							<th></th>
+						</tr>
+					</thead>
+					
+					<!--Fetch out the notes for the person by the note type id-->
+					{% note where:'EntityId == {{ personId }} && NoteTypeId == {{ interactionAssignmentNoteTypeId }}' %}
+					<tbody>
+					    <!--Loop the note items and pull out the attribute values-->
+						{% for noteItem in noteItems %}
+						
+							<!--Is Completed-->
+							{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20759' %}
+							{% assign size = attributevalueItems | Size %}
+							{% assign IsCompleted = 'False' %}
+							{% if size > 0 %}
+								{% assign IsCompleted = attributevalueItems[0].Value %}
+							{% endif %}
+							{% endattributevalue %}
+						
+						    <tr {%if IsCompleted == 'True' %} class="assignment-complete" {% endif %}>
+							    <td>
+							    	<!--Interaction Type-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20754' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% definedvalue where:'Guid == "{{ attributevalueItems[0].Value }}"'%}
+											{{ definedvalueItems }}
+										{% enddefinedvalue %}
+									{% endif %}
+									{% endattributevalue %}
+							    </td>
+							    <td>{{ noteItem.Text }}</td>
+								
+							    <td class="center-col">
+									<!--Get the EntityId For the assign interaction-->
+									{% assign entityId = 0 %}
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20767' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% assign entityId = attributevalueItems[0].Value %}
+									{% endif %}
+									{% endattributevalue %}
+									
+							    	<!--This Individual-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20756' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% personalias where:'Guid == "{{ attributevalueItems[0].Value }}"'%}
+											<div class="text-center">
+												<img class="rounded" src="{{ personaliasItems[0].Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+												<p>
+												<a href="{{ 'Global' | Attribute:'InternalApplicationRoot' }}WorkflowEntry/{{ logInteractionWorkFlowTypeId }}?PersonId={{ personaliasItems[0].PersonId }}&AssignInteractionId={{ entityId }}">{{ personaliasItems[0].Person.FullName }}</a>
+												</p>
+											</div>
+											<!--
+											<div class="col-md-6">
+												<img src="{{ personaliasItems[0].Person.PhotoUrl }}&height=60&width=60&mode=crop&scale=both" height="60" class="pull-left margin-r-sm" />
+												<p>
+												<a href="{{ 'Global' | Attribute:'InternalApplicationRoot' }}WorkflowEntry/{{ logInteractionWorkFlowTypeId }}?PersonId={{ personaliasItems[0].PersonId }}&AssignInteractionId={{ entityId }}">{{ personaliasItems[0].Person.FullName }}</a>
+												</p>
+											</div>-->
+										{% endpersonalias %}
+									{% endif %}
+									{% endattributevalue %}
+							    </td>
+								
+								<td>
+									<!--Individual Contact Information-->
+									<!--Get the EntityId For the assign interaction-->
+									{% assign entityId = 0 %}
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20767' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% assign entityId = attributevalueItems[0].Value %}
+									{% endif %}
+									{% endattributevalue %}
+									
+							    	<!--This Individual-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20756' %}
+									{% assign size = attributevalueItems | Size %}
+									{% if size > 0 %}
+										{% personalias where:'Guid == "{{ attributevalueItems[0].Value }}"'%}
+											<ul>
+												{% for phone in personaliasItems[0].Person.PhoneNumbers %}
+													<li>{{ phone.NumberTypeValue.Value }}: {{ phone.NumberFormatted }}</li>
+												{% endfor %}
+												<li>Email: {{ personaliasItems[0].Person.Email }}</li>
+											</ul>
+										{% endpersonalias %}
+									{% endif %}
+									{% endattributevalue %}
+								</td>
+							    <td class="center-col">
+									<!--IsCompleted-->
+									{% if IsCompleted == 'True' %}
+										<i class="fas fa-check-circle"></i>
+									{% endif %}
+							    </td>
+							    <td class="center-col">
+							    	<!--Date To Be Completed-->
+									{% attributevalue where:'EntityId == {{ noteItem.Id }} && AttributeId == 20758' %}
+									{% assign size = attributevalueItems | Size %}
+										{% if size > 0 %}
+											{% assign dateNow = 'Now' | Date:'M/d/yyyy' %}
+											{% assign diff = dateNow | DateDiff:attributevalueItems[0].Value,'d' %}
+											{% if diff < 0 and IsCompleted == 'False' %}
+												<span class="label label-danger">{{ attributevalueItems[0].Value | Date:'M/d/yyyy' }}</span>
+											{% elseif diff == 0 and IsCompleted == 'False' %}
+												<span class="label label-warning">{{ attributevalueItems[0].Value | Date:'M/d/yyyy' }}</span>
+											{% elseif diff == 1 or diff == 2 and IsCompleted == 'False' %}
+												<span class="label label-info">{{ attributevalueItems[0].Value | Date:'M/d/yyyy' }}</span>
+											{% elseif IsCompleted == 'True' %}
+												<span class="label label-success">{{ attributevalueItems[0].Value | Date:'M/d/yyyy' }}</span>
+											{% else %}
+												{{ attributevalueItems[0].Value | Date:'M/d/yyyy' }} 
+											{% endif %}
+										{% endif %}
+									{% endattributevalue %}
+							    </td>
+								<td class="center-col">
+									<a href="{{ 'Global' | Attribute:'InternalApplicationRoot' }}WorkflowEntry/{{ deleteAssignmentWorkFlowTypeId }}?PersonId={{ personId }}&NoteId={{ noteItem.Id }}" class="btn btn-danger btn-circle"><i class="far fa-trash-alt"></i></a>
+								</td>
+						    </tr>
+
+						{% endfor %}
+					</tbody>
+				    {% endnote %}
+				</table>
+			</div>
+		</div>
+	</div>
+</section>

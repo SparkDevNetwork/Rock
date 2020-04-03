@@ -1,0 +1,12 @@
+﻿<div class='panel panel-default'>
+    <div class='panel-heading'>
+        <h4>{{Person.PersonName}}</h4>
+    </div>
+    <ul class="list-group list-group-panel">
+        {% for registrant in Person.Registrants %}
+        <li class="list-group-item">
+                {{registrant.Registration.RegistrationInstance.RegistrationTemplate.Name}} - {{registrant.Registration.RegistrationInstance.Name}}{% if registrant.OnWaitList %} (Waitlist){% endif %}          
+        </li>
+        {% endfor %}
+    </ul>
+</div>
