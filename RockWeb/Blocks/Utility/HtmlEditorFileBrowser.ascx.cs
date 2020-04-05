@@ -423,7 +423,7 @@ namespace RockWeb.Blocks.Utility
                 hfIsRestrictedFolder.Value = isRestricted.ToString();
                 hfIsUploadRestrictedFolder.Value = isUploadRestricted.ToString();
 
-                string imageFileTypeWhiteList = PageParameter( "imageFileTypeWhiteList" );
+                string imageFileTypeWhiteList = PageParameter( "ImageFileTypeWhiteList" );
                 if ( string.IsNullOrWhiteSpace( imageFileTypeWhiteList ) )
                 {
                     imageFileTypeWhiteList = "*.*";

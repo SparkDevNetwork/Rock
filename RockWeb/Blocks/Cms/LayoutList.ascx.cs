@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private static class PageParameterKey
         {
-            public const string SiteId = "siteId";
+            public const string SiteId = "SiteId";
         }
 
         #endregion
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Cms
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gLayouts_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "layoutId", 0, "siteId", hfSiteId.ValueAsInt() );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "LayoutId", 0, "SiteId", hfSiteId.ValueAsInt() );
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gLayouts_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "layoutId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "LayoutId", e.RowKeyId );
         }
 
         /// <summary>

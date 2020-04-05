@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                string scheduleIdParam = PageParameter( "scheduleId" );
+                string scheduleIdParam = PageParameter( "ScheduleId" );
                 if ( !string.IsNullOrWhiteSpace( scheduleIdParam ) )
                 {
                     ShowDetail( scheduleIdParam.AsInteger(), PageParameter( "ParentCategoryId" ).AsIntegerOrNull() );
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Core
             {
                 var rockContext = new RockContext();
                 Schedule schedule;
-                int? itemId = PageParameter( "scheduleId" ).AsIntegerOrNull();
+                int? itemId = PageParameter( "ScheduleId" ).AsIntegerOrNull();
                 if ( itemId.HasValue && itemId > 0 )
                 {
                     schedule = new ScheduleService( rockContext ).Get( itemId.Value );

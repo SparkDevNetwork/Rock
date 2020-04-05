@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Reporting
                     pageNumber = PageParameter( "Page" ).AsInteger();
                 }
 
-                ShowList( PageParameter( "componentId" ).AsInteger() );
+                ShowList( PageParameter( "ComponentId" ).AsInteger() );
             }
         }
 
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Reporting
         {
             _personId = GetPersonId();
             ppPerson.Visible = !_personId.HasValue;
-            ShowList( PageParameter( "componentId" ).AsInteger() );
+            ShowList( PageParameter( "ComponentId" ).AsInteger() );
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Reporting
 
             pageNumber = 0;
 
-            ShowList( PageParameter( "componentId" ).AsInteger() );
+            ShowList( PageParameter( "ComponentId" ).AsInteger() );
         }
 
         #endregion

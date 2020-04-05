@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentChannels_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "contentChannelId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ContentChannelId", 0 );
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gContentChannels_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "contentChannelId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "ContentChannelId", e.RowKeyId );
         }
 
         /// <summary>

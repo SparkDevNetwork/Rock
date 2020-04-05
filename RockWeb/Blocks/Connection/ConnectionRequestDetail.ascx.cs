@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         private static class PageParameterKey
         {
-            public const string WorkflowId = "workflowId";
+            public const string WorkflowId = "WorkflowId";
             public const string ConnectionRequestId = "ConnectionRequestId";
             public const string ConnectionOpportunityId = "ConnectionOpportunityId";
         }
