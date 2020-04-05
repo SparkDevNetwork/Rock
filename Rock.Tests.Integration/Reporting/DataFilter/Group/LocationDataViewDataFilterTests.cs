@@ -18,6 +18,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 {
@@ -37,15 +38,15 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
         [TestProperty( "Feature", TestFeatures.Groups )]
         public void GroupFilters_RelatedDataViewLocation_CanSerializeSettings()
         {
-            var settingsSource = new global::Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
+            var settingsSource = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
 
-            settingsSource.DataViewGuid = GroupsModuleTestHelper.Constants.DataViewLocationsOutsideArizonaGuid;
+            settingsSource.DataViewGuid = TestGuids.Groups.DataViewLocationsOutsideArizonaGuid.AsGuid();
 
             var settingsString = settingsSource.ToSelectionString();
 
-            var settingsTarget = new global::Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings( settingsString );
+            var settingsTarget = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings( settingsString );
 
-            Assert.AreEqual( GroupsModuleTestHelper.Constants.DataViewLocationsOutsideArizonaGuid, settingsTarget.DataViewGuid );
+            Assert.That.AreEqual( TestGuids.Groups.DataViewLocationsOutsideArizonaGuid, settingsTarget.DataViewGuid );
         }
 
         /// <summary>
@@ -56,20 +57,20 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
         [TestProperty( "Feature", TestFeatures.Groups )]
         public void GroupFilters_RelatedDataViewLocation_ShouldReturnGroupsWithAtLeastOneRelatedLocation()
         {
-            var settings = new global::Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
+            var settings = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
 
-            settings.DataViewGuid = GroupsModuleTestHelper.Constants.DataViewLocationsInsideArizonaGuid;
+            settings.DataViewGuid = TestGuids.Groups.DataViewLocationsInsideArizonaGuid.AsGuid();
 
             var groupQuery = GetGroupQueryWithLocationDataViewFilter( settings );
 
             var results = groupQuery.ToList();
 
-            Assert.IsTrue( results.Count > 0, "The result set must contain at least one group." );
+            Assert.That.IsTrue( results.Count > 0, "The result set must contain at least one group." );
 
             // Verify all Groups have at least one Location where State = "AZ".
             var countOfGroupsNotInArizona = results.Where( x => !x.GroupLocations.Any( gl => gl.Location.State == "AZ" ) ).Count();
             
-            Assert.IsTrue( countOfGroupsNotInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
+            Assert.That.IsTrue( countOfGroupsNotInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
         }
 
         /// <summary>
@@ -80,20 +81,20 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
         [TestProperty( "Feature", TestFeatures.Groups )]
         public void GroupFilters_RelatedDataViewLocation_ShouldNotReturnGroupWithNoRelatedLocations()
         {
-            var settings = new global::Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
+            var settings = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings();
 
-            settings.DataViewGuid = GroupsModuleTestHelper.Constants.DataViewLocationsOutsideArizonaGuid;
+            settings.DataViewGuid = TestGuids.Groups.DataViewLocationsOutsideArizonaGuid.AsGuid();
 
             var groupQuery = GetGroupQueryWithLocationDataViewFilter( settings );
 
             var results = groupQuery.ToList();
 
-            Assert.IsTrue( results.Count > 0, "The result set must contain at least one group." );
+            Assert.That.IsTrue( results.Count > 0, "The result set must contain at least one group." );
 
             // Verify that there are no Groups in the result set having any Location where State = "AZ".
             var countOfGroupsInArizona = results.Where( x => x.GroupLocations.Any( gl => gl.Location.State == "AZ" ) ).Count();
 
-            Assert.IsTrue( countOfGroupsInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
+            Assert.That.IsTrue( countOfGroupsInArizona == 0, "The result set contains one or more groups that do not match the location filter." );
         }
 
         /// <summary>
@@ -103,7 +104,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
         /// <returns></returns>
         private IQueryable<Rock.Model.Group> GetGroupQueryWithLocationDataViewFilter( global::Rock.Reporting.DataFilter.Group.LocationDataViewFilter.FilterSettings settings )
         {
-            var settingsFilter = new global::Rock.Reporting.DataFilter.Group.LocationDataViewFilter();
+            var settingsFilter = new Rock.Reporting.DataFilter.Group.LocationDataViewFilter();
 
             var dataContext = new RockContext();
 
@@ -111,9 +112,9 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
 
             var parameterExpression = groupService.ParameterExpression;
 
-            var predicate = settingsFilter.GetExpression( typeof( global::Rock.Model.Group ), groupService, parameterExpression, settings.ToSelectionString() );
+            var predicate = settingsFilter.GetExpression( typeof( Rock.Model.Group ), groupService, parameterExpression, settings.ToSelectionString() );
 
-            var groupQuery = GetFilteredEntityQuery<global::Rock.Model.Group>( dataContext, predicate, parameterExpression );
+            var groupQuery = GetFilteredEntityQuery<Rock.Model.Group>( dataContext, predicate, parameterExpression );
 
             return groupQuery;
         }
