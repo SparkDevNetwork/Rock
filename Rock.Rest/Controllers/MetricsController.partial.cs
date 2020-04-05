@@ -102,6 +102,17 @@ namespace Rock.Rest.Controllers
                         metricYTDData.LastValue = lastMetricCumulativeValues.Sum( a => a.YValue ).HasValue ? Math.Round( lastMetricCumulativeValues.Sum( a => a.YValue ).Value, roundYValues ? 0 : 2 ) : (decimal?)null;
                     }
 
+                    var previousMetricValue = qryMeasureValues.OrderByDescending(a => a.MetricValueDateTime).Skip(1).FirstOrDefault();
+                    if ( previousMetricValue != null )
+                    {
+                        metricYTDData.PreviousValueDate = previousMetricValue.MetricValueDateTime.HasValue ? previousMetricValue.MetricValueDateTime.Value.Date : DateTime.MinValue;
+
+                        // get a sum of the values that for whole 24 hour day of the previous Date
+                        DateTime previousValueDateEnd = metricYTDData.PreviousValueDate.AddDays(1);
+                        var previousMetricCumulativeValues = qryMeasureValues.Where(a => a.MetricValueDateTime.HasValue && a.MetricValueDateTime.Value >= metricYTDData.PreviousValueDate && a.MetricValueDateTime.Value < previousValueDateEnd);
+                        metricYTDData.PreviousValue = previousMetricCumulativeValues.Sum(a => a.YValue).HasValue ? Math.Round(previousMetricCumulativeValues.Sum(a => a.YValue).Value, roundYValues ? 0 : 2) : (decimal?)null;
+                    }
+
                     decimal? sum = qryMeasureValues.Sum( a => a.YValue );
                     metricYTDData.CumulativeValue = sum.HasValue ? Math.Round( sum.Value, roundYValues ? 0 : 2 ) : (decimal?)null;
 
@@ -187,6 +198,24 @@ namespace Rock.Rest.Controllers
         /// </value>
         [DataMember]
         public DateTime LastValueDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the previous value.
+        /// </summary>
+        /// <value>
+        /// The last value.
+        /// </value>
+        [DataMember]
+        public object PreviousValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last value date.
+        /// </summary>
+        /// <value>
+        /// The last value date.
+        /// </value>
+        [DataMember]
+        public DateTime PreviousValueDate { get; set; }
 
         /// <summary>
         /// Gets or sets the cumulative value.
