@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Finance
         private void gBusinessList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "businessId", "0" );
+            parms.Add( "BusinessId", "0" );
             NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 
@@ -173,7 +173,7 @@ namespace RockWeb.Blocks.Finance
         {
             var parms = new Dictionary<string, string>();
             var businessId = e.RowKeyId;
-            parms.Add( "businessId", businessId.ToString() );
+            parms.Add( "BusinessId", businessId.ToString() );
             NavigateToLinkedPage( AttributeKey.DetailPage, parms );
         }
 

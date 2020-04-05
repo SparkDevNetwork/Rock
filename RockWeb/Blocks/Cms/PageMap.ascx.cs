@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private static class PageParameterKey
         {
-            public const string PageSearch = "pageSearch";
+            public const string PageSearch = "PageSearch";
             public const string Page = "Page";
         }
 

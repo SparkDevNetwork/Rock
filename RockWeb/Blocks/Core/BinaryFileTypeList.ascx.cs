@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "binaryFileTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "BinaryFileTypeId", 0 );
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "binaryFileTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "BinaryFileTypeId", e.RowKeyId );
         }
 
         /// <summary>

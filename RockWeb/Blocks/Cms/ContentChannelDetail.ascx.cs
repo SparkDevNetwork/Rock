@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                int? contentChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull( );
+                int? contentChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull( );
                 if( contentChannelId.HasValue )
                 {
                     upnlContent.Visible = true;
@@ -198,7 +198,7 @@ namespace RockWeb.Blocks.Cms
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? contentChannelId = PageParameter( pageReference, "contentChannelId" ).AsIntegerOrNull();
+            int? contentChannelId = PageParameter( pageReference, "ContentChannelId" ).AsIntegerOrNull();
             if ( contentChannelId != null )
             {
                 ContentChannel contentChannel = new ContentChannelService( new RockContext() ).Get( contentChannelId.Value );
@@ -384,7 +384,7 @@ namespace RockWeb.Blocks.Cms
                 } );
 
                 var pageReference = RockPage.PageReference;
-                pageReference.Parameters.AddOrReplace( "contentChannelId", contentChannel.Id.ToString() );
+                pageReference.Parameters.AddOrReplace( "ContentChannelId", contentChannel.Id.ToString() );
                 Response.Redirect( pageReference.BuildUrl(), false );
             }
         }

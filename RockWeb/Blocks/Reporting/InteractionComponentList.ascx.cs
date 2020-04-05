@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            _channelId = PageParameter( "channelId" ).AsIntegerOrNull();
+            _channelId = PageParameter( "ChannelId" ).AsIntegerOrNull();
             if ( !_channelId.HasValue )
             {
                 upnlContent.Visible = false;

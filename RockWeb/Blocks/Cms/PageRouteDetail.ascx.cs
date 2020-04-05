@@ -62,7 +62,7 @@ namespace RockWeb.Blocks.Cms
 
             nbErrorMessage.Visible = false;
 
-            var pageRouteId = PageParameter( "pageRouteId" ).AsInteger();
+            var pageRouteId = PageParameter( "PageRouteId" ).AsInteger();
 
             if ( !Page.IsPostBack )
             {

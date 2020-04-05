@@ -712,14 +712,14 @@ namespace RockWeb.Blocks.Event
                                 else
                                 {
                                     if ( SignInline &&
-                                        !PageParameter( "redirected" ).AsBoolean() &&
+                                        !PageParameter( "Redirected" ).AsBoolean() &&
                                         DigitalSignatureComponent != null &&
                                         !string.IsNullOrWhiteSpace( DigitalSignatureComponent.CookieInitializationUrl ) )
                                     {
                                         // Redirect for Digital Signature Cookie Initialization
                                         var returnUrl = ResolvePublicUrl( Request.Url.PathAndQuery );
-                                        returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "redirected=True";
-                                        string redirectUrl = string.Format( "{0}?redirect_uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
+                                        returnUrl = returnUrl + ( returnUrl.Contains( "?" ) ? "&" : "?" ) + "Redirected=True";
+                                        string redirectUrl = string.Format( "{0}?Redirect_Uri={1}", DigitalSignatureComponent.CookieInitializationUrl, HttpUtility.UrlEncode( returnUrl ) );
                                         Response.Redirect( redirectUrl, false );
                                     }
                                     else

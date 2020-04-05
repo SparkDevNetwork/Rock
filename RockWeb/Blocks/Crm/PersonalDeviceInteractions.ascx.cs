@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Crm
             gfInteractions.ApplyFilterClick += gfInteractions_ApplyFilterClick;
             gfInteractions.DisplayFilterValue += gfInteractions_DisplayFilterValue;
 
-            _personalDeviceId = PageParameter( "personalDeviceId" ).AsIntegerOrNull();
+            _personalDeviceId = PageParameter( "PersonalDeviceId" ).AsIntegerOrNull();
             if ( _personalDeviceId.HasValue )
             {
                 gfInteractions.SaveUserPreference( FilterSetting.PresentDevices, string.Empty );

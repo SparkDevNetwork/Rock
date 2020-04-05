@@ -161,11 +161,11 @@ namespace RockWeb.Blocks.Cms
 
                 tglStatus.Checked = GetUserPreference( STATUS_FILTER_SETTING ).AsBoolean();
 
-                SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+                SelectedChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull();
 
                 if ( !SelectedChannelId.HasValue )
                 {
-                    var selectedChannelGuid = PageParameter( "contentChannelGuid" ).AsGuidOrNull();
+                    var selectedChannelGuid = PageParameter( "ContentChannelGuid" ).AsGuidOrNull();
 
                     if ( selectedChannelGuid.HasValue )
                     {
@@ -358,7 +358,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( SelectedChannelId.HasValue )
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", 0, "contentChannelId", SelectedChannelId.Value );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ContentItemId", 0, "ContentChannelId", SelectedChannelId.Value );
             }
         }
 
@@ -372,7 +372,7 @@ namespace RockWeb.Blocks.Cms
             var contentItem = new ContentChannelItemService( new RockContext() ).Get( e.RowKeyId );
             if ( contentItem != null )
             {
-                NavigateToLinkedPage( AttributeKey.DetailPage, "contentItemId", contentItem.Id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ContentItemId", contentItem.Id );
             }
         }
 
