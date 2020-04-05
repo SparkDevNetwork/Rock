@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.props')" />
+  <Import Project="..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.props" Condition="Exists('..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -56,14 +56,18 @@
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\RockWeb\Bin\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\MSTest.TestFramework.1.2.1\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
+      <HintPath>..\packages\MSTest.TestFramework.2.1.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\MSTest.TestFramework.1.2.1\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
+      <HintPath>..\packages\MSTest.TestFramework.2.1.0\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -77,8 +81,12 @@
   <ItemGroup>
     <Compile Include="Achievement\AccumulativeAchievementTests.cs" />
     <Compile Include="Achievement\StreakAchievementTests.cs" />
-    <Compile Include="Constants\Constants.cs" />
+    <Compile Include="Attendances\AttendanceCodeTests.cs" />
+    <Compile Include="Communications\Transport\MailgunTests.cs" />
+    <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
+    <Compile Include="TestFramework\DatabaseIntegrationTestClassBase.cs" />
+    <Compile Include="DotLiquid\TemplateTests.cs" />
     <Compile Include="Interactions\PageViewTests.cs" />
     <Compile Include="Model\AttendanceOccurrenceTests.cs" />
     <Compile Include="Model\BenevolenceRequestTests.cs" />
@@ -90,18 +98,15 @@
     <Compile Include="Model\MetricValueTests.cs" />
     <Compile Include="Model\RegistrationTests.cs" />
     <Compile Include="Model\StepTests.cs" />
-    <Compile Include="Utility\HttpSimulator.cs" />
-    <Compile Include="Utility\ReflectionHelper.cs" />
-    <Compile Include="Utility\SimulatedHttpRequest.cs" />
+    <Compile Include="Lava\LegacyLavaUpdaterTest.cs" />
+    <Compile Include="Model\DeviceTests.cs" />
+    <Compile Include="ThirdPartyIntegrations\NcoaApi\TrueNcoaApiTests.cs" />
     <Compile Include="Rest\ControllersTests\AttendanceControllerTests.cs" />
     <Compile Include="Attendances\AttendanceBulkImportTest.cs" />
-    <Compile Include="Communications\CommunicationsModuleTestHelper.cs" />
     <Compile Include="Communications\SmsTests.cs" />
     <Compile Include="Core\CoreModuleTestHelper.cs" />
     <Compile Include="Core\SundayDateTest.cs" />
-    <Compile Include="Crm\StepsTests.cs" />
     <Compile Include="DatabaseTests.cs" />
-    <Compile Include="Migrations\MigrationTests.cs" />
     <Compile Include="Model\StreakTypeServiceTests.cs" />
     <Compile Include="Model\AttendanceCodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -110,7 +115,6 @@
     <Compile Include="Reporting\DataFilter\TextPropertyFilterSettings.cs" />
     <Compile Include="Reporting\ReportingModuleTestHelper.cs" />
     <Compile Include="Reporting\DataFilter\DataFilterTestBase.cs" />
-    <Compile Include="Reporting\DataFilter\Group\GroupsModuleTestHelper.cs" />
     <Compile Include="Reporting\DataFilter\Group\LocationDataViewDataFilterTests.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepDataViewDataFilterTests.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepsTakenDataFilterTests.cs" />
@@ -125,7 +129,7 @@
     </Compile>
     <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
     <Compile Include="TestData\TestDataHelper.cs" />
-    <Compile Include="Utility\ArrayExtensions.cs" />
+    <Compile Include="Workflow\Action\BackgroundCheckRequestTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -154,6 +158,10 @@
       <Project>{add1edd0-a4cb-4e82-b6ad-6ad1d556deae}</Project>
       <Name>Rock.Rest</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.Tests.Shared\Rock.Tests.Shared.csproj">
+      <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
+      <Name>Rock.Tests.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>
@@ -173,18 +181,15 @@
   <ItemGroup />
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
+  </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.props'))" />
-    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets'))" />
+    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.props'))" />
+    <Error Condition="!Exists('..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.targets'))" />
   </Target>
-  <Import Project="..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.1.2.1\build\net45\MSTest.TestAdapter.targets')" />
-  <PropertyGroup>
-    <PostBuildEvent>IF EXIST "$(ProjectDir)app.ConnectionStrings.config" xcopy "$(ProjectDir)app.ConnectionStrings.config" "$(TargetDir)" /y</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>IF EXIST "$(SolutionDir)RockWeb\web.ConnectionStrings.config" copy "$(SolutionDir)RockWeb\web.ConnectionStrings.config" "$(ProjectDir)app.ConnectionStrings.config" /y</PreBuildEvent>
-  </PropertyGroup>
+  <Import Project="..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.targets" Condition="Exists('..\packages\MSTest.TestAdapter.2.1.0\build\net45\MSTest.TestAdapter.targets')" />
 </Project>

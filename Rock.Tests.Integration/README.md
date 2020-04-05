@@ -4,6 +4,8 @@ The goal of this project is to be a permanent place to store tests that require 
 
 > *NOTE: Use a fresh database with the PowerTools &gt; SampleData loaded so we all are testing against the same expected sample data.  If your test needs different data, you are responsible for adding it and cleaning it up as to not interfere with other tests.*
 
+> *A Rock.SampleData project is currently under construction, which will replace the PowerTools &gt; SampleData block. It will contain all of the actions needed to populate a new Rock database with a rich set of sample data, suitable for developer and QA testing. The database created by Rock.SampleData will contain all of the well-known data required to complete the integration tests contained in this project.*
+
 ## Setup Instructions
 
 1. Create an `app.ConnectionStrings.config` file in this project.
@@ -41,8 +43,6 @@ namespace Rock.Tests.Integration.Model
 }
 ```
 
-> NOTE: The existing `Rock.Tests` project is an XUnit type project, but it will be converted to MS Test. 
-
 ## MSTest LifeCycle
 
 The following decorators can give you more control over setup and cleanup for your test suite:
@@ -57,32 +57,3 @@ The following decorators can give you more control over setup and cleanup for yo
 
 ## Running a Test
 To run or debug a test, simply right-click the class name and choose `Run Tests` or `Debug Tests` -- but you should probably set a breakpoint in your test if you're going to select Debug Tests.  Alternatively you can choose the Test > Windows > Test Explorer from the menu to run tests a bit easier.
-
-## Side Note: Conversion Game Plan
-Any tests that require a database will need to be moved from the existing `Rock.Tests` project into the proper class in this project.   So, tests like this...
-
-```csharp
-        [Fact]
-        public void GraduatesThisYear()
-        {
-            InitGlobalAttributesCache();
-            var Person = new Person();
-            Person.GradeOffset = 1;
-
-            Assert.True( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
-        }
-```
-
-...needs to become something like this:
-
-```csharp
-        [TestMethod]
-        public void GraduatesThisYear()
-        {
-            InitGlobalAttributesCache();
-            var Person = new Person();
-            Person.GradeOffset = 1;
-
-            Assert.IsTrue( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
-        }
-   ```

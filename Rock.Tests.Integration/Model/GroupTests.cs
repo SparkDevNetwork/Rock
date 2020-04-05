@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rock;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Model
 {
@@ -59,8 +58,8 @@ namespace Rock.Tests.Integration.Model
             [TestCleanup]
             public void Cleanup()
             {
-                
-               
+
+
             }
 
             #endregion
@@ -74,14 +73,14 @@ namespace Rock.Tests.Integration.Model
             public void GetGroupMembersExcludeArchived()
             {
                 List<GroupMember> deceasedList = new List<GroupMember>();
-               
+
                 using ( var rockContext = new RockContext() )
                 {
-                    deceasedList = new GroupMemberService( rockContext ).Queryable(true).ToList();
+                    deceasedList = new GroupMemberService( rockContext ).Queryable( true ).ToList();
                 }
 
-                var areAnyArchived = deceasedList.Any( x => x.IsArchived);
-                Assert.IsFalse( areAnyArchived );
+                var areAnyArchived = deceasedList.Any( x => x.IsArchived );
+                Assert.That.IsFalse( areAnyArchived );
             }
 
             /// <summary>
@@ -97,15 +96,15 @@ namespace Rock.Tests.Integration.Model
                 {
 
                     deceasedList = new GroupMemberService( rockContext ).Queryable( true ).ToList();
-                    
+
                     foreach ( GroupMember deceasedgMember in deceasedList )
                     {
                         if ( deceasedgMember.Person.IsDeceased )
                         {
-                            Assert.IsTrue( deceasedgMember.Person.IsDeceased );
+                            Assert.That.IsTrue( deceasedgMember.Person.IsDeceased );
                         }
                     }
-                    Assert.Fail();
+                    Assert.That.Fail();
                 }
             }
 

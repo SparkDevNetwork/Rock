@@ -22,6 +22,7 @@ using Rock.Data;
 using Rock.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data.Entity;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Model
 {
@@ -106,7 +107,7 @@ namespace Rock.Tests.Integration.Model
 
             bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) ).Any();
 
-            Assert.IsFalse( hasMatchIsBad );
+            Assert.That.IsFalse( hasMatchIsBad );
         }
 
         #endregion
@@ -125,7 +126,7 @@ namespace Rock.Tests.Integration.Model
                 code = AttendanceCodeService.GetNew( 0, 0, 3, false );
             }
 
-            Assert.AreEqual( "002", code.Code );
+            Assert.That.AreEqual( "002", code.Code );
         }
 
         /// <summary>
@@ -143,8 +144,8 @@ namespace Rock.Tests.Integration.Model
                 codeList.Add( code.Code );
             }
 
-            Assert.IsFalse( codeList.Any( s => s.Contains( "911" ) ) );
-            Assert.IsFalse( codeList.Any( s => s.Contains( "666" ) ) );
+            Assert.That.IsFalse( codeList.Any( s => s.Contains( "911" ) ) );
+            Assert.That.IsFalse( codeList.Any( s => s.Contains( "666" ) ) );
         }
 
         /// <summary>
@@ -153,7 +154,6 @@ namespace Rock.Tests.Integration.Model
         /// exception is acceptable to let the administrator know there is a
         /// configuration problem.
         /// </summary>
-        [Ignore( "Known issue in v8 and earlier. Remove this ignore when fixed." )]
         [TestMethod]
         public void NumericCodeWithLengthOf2ShouldNotGoBeyond99()
         {
@@ -169,13 +169,13 @@ namespace Rock.Tests.Integration.Model
 
                 // should not be longer than 2 characters
                 // This is a known bug in v7.4 and earlier, and possibly fixed via PR #3071
-                Assert.IsTrue( codeList.Last().Length == 2, "last code was " + codeList.Last().Length + " characters long." );
+                Assert.That.IsTrue( codeList.Last().Length == 2, "last code was " + codeList.Last().Length + " characters long." );
             }
             catch ( TimeoutException )
             {
                 // An exception in this case is considered better than hanging (since there is 
                 // no actual solution).
-                Assert.IsTrue( true );
+                Assert.That.IsTrue( true );
             }
         }
 
@@ -197,7 +197,7 @@ namespace Rock.Tests.Integration.Model
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join( ", ", duplicates ) );
+            Assert.That.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join( ", ", duplicates ) );
         }
 
         /// <summary>
@@ -218,7 +218,7 @@ namespace Rock.Tests.Integration.Model
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join(", ", duplicates ) );
+            Assert.That.IsTrue( duplicates.Count() == 0, "repeated codes: " + string.Join(", ", duplicates ) );
         }
 
         /// <summary>
@@ -249,13 +249,13 @@ namespace Rock.Tests.Integration.Model
             }
             catch ( InvalidOperationException )
             {
-                Assert.IsTrue( true );
+                Assert.That.IsTrue( true );
             }
             catch ( TimeoutException )
             {
                 // An exception in this case is considered better than hanging (since there is 
                 // no actual solution).
-                Assert.IsTrue( true );
+                Assert.That.IsTrue( true );
             }
         }
 
@@ -271,7 +271,7 @@ namespace Rock.Tests.Integration.Model
                 code = AttendanceCodeService.GetNew( 0, 0, 3, false );
             }
 
-            Assert.AreEqual( "100", code.Code );
+            Assert.That.AreEqual( "100", code.Code );
         }
 
         #endregion
@@ -294,7 +294,7 @@ namespace Rock.Tests.Integration.Model
 
             bool hasMatchIsBad = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) ).Any();
 
-            Assert.IsFalse( hasMatchIsBad );
+            Assert.That.IsFalse( hasMatchIsBad );
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace Rock.Tests.Integration.Model
                                     .Where( group => group.Count() > 1 )
                                     .Select( group => group.Key );
 
-            Assert.IsTrue( duplicates.Count() == 0 );
+            Assert.That.IsTrue( duplicates.Count() == 0 );
         }
 
         #endregion
@@ -344,7 +344,6 @@ namespace Rock.Tests.Integration.Model
         /// individually each part has no bad codes.  For example, "A6" + "66" should
         /// not appear since combined it would be "A666".
         /// </summary>
-        [Ignore( "Known issue in v8 and earlier. Remove this ignore when fixed." )]
         [TestMethod]
         public void AlphaNumericWithNumericCodesShouldSkipBadCodes()
         {
@@ -364,13 +363,13 @@ namespace Rock.Tests.Integration.Model
                 var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
                 bool hasMatchIsBad = matches.Any();
 
-                Assert.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
+                Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
             }
             catch( TimeoutException )
             {
                 // If an infinite loop was detected, but we tried at least 600 codes then
                 // we'll consider this a pass.
-                Assert.IsTrue( attemptCombination >= 600 );
+                Assert.That.IsTrue( attemptCombination >= 600 );
             }
         }
 
@@ -379,7 +378,7 @@ namespace Rock.Tests.Integration.Model
         #region Alpha only + numeric only codes
 
         /// <summary>
-        /// This is the configuration that churches like Central Christian Church use for thier
+        /// This is the configuration that churches like Central Christian Church use for their
         /// Children's check-in.
         /// </summary>
         [TestMethod]
@@ -403,14 +402,14 @@ namespace Rock.Tests.Integration.Model
 
             bool hasMatchIsBad = matches.Any();
 
-            Assert.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
+            Assert.That.IsFalse( hasMatchIsBad, "bad codes were: " + string.Join( ", ", matches ) );
         }
 
         /// <summary>
         /// Codes containing parts combined into noGood codes, such as "P" + "55",
         /// should not occur.
         /// </summary>
-        [Ignore("Known issue in v8 and earlier. Remove this ignore when fixed.")]
+        [Ignore("Known issue in v10 and earlier. Remove this ignore when fixed.")]
         [TestMethod]
         public void AlphaOnlyWithNumericOnlyCodesShouldSkipBadCodes()
         {
@@ -425,7 +424,7 @@ namespace Rock.Tests.Integration.Model
             var matches = codeList.Where( c => AttendanceCodeService.noGood.Any( ng => c.Contains( ng ) ) );
             bool hasMatchIsBad = matches.Any();
 
-            Assert.IsFalse( hasMatchIsBad , "bad codes were: " + string.Join(", ", matches ) );
+            Assert.That.IsFalse( hasMatchIsBad , "bad codes were: " + string.Join(", ", matches ) );
         }
         
         #endregion
