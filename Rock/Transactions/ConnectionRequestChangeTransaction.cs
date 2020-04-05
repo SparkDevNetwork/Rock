@@ -68,7 +68,16 @@ namespace Rock.Transactions
                 if ( State != EntityState.Deleted )
                 {
                     ConnectionRequestGuid = connectionRequest.Guid;
-                    PersonId = connectionRequest.PersonAlias != null ? connectionRequest.PersonAlias.PersonId : (int?)null;
+
+                    if ( connectionRequest.PersonAlias != null )
+                    {
+                        PersonId = connectionRequest.PersonAlias.PersonId;
+                    }
+                    else if ( connectionRequest.PersonAliasId != default )
+                    {
+                        PersonId = new PersonAliasService( new RockContext() ).GetPersonId( connectionRequest.PersonAliasId );
+                    }
+                    
                     if ( connectionRequest.ConnectionOpportunity != null )
                     {
                         ConnectionTypeId = connectionRequest.ConnectionOpportunity.ConnectionTypeId;
@@ -96,12 +105,12 @@ namespace Rock.Transactions
                         var dbStateProperty = entry.Property( "ConnectionState" );
                         if ( dbStateProperty != null )
                         {
-                            PreviousConnectionState = (ConnectionState)dbStateProperty.OriginalValue;
+                            PreviousConnectionState = ( ConnectionState ) dbStateProperty.OriginalValue;
                         }
                         var dbStatusProperty = entry.Property( "ConnectionStatusId" );
                         if ( dbStatusProperty != null )
                         {
-                            PreviousConnectionStatusId = (int)dbStatusProperty.OriginalValue;
+                            PreviousConnectionStatusId = ( int ) dbStatusProperty.OriginalValue;
                         }
 
                         var dbAssignedGroupIdProperty = entry.Property( "AssignedGroupId" );
@@ -119,122 +128,124 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            // Verify that valid ids were saved
-            if ( ConnectionOpportunityId.HasValue && PersonId.HasValue )
+            if ( !( ConnectionOpportunityId.HasValue && PersonId.HasValue ) )
             {
-                // Get all the workflows from cache
-                var cachedWorkflows = ConnectionWorkflowService.GetCachedTriggers();
+                return;
+            }
 
-                // If any workflows exist
-                if ( cachedWorkflows != null && cachedWorkflows.Any() )
+            // Get all the workflows from cache
+            var cachedWorkflows = ConnectionWorkflowService.GetCachedTriggers();
+
+            if ( cachedWorkflows == null || !cachedWorkflows.Any() )
+            {
+                return;
+            }
+
+            var workflows = cachedWorkflows
+                .Where( w =>
+                    w.TriggerType != ConnectionWorkflowTriggerType.ActivityAdded &&
+                    w.TriggerType != ConnectionWorkflowTriggerType.Manual &&
+                    (
+                        ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value ) ||
+                        ( w.ConnectionTypeId.HasValue )
+                    )
+                )
+                .ToList();
+
+            if ( workflows.Any() )
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    var workflows = cachedWorkflows
+                    // Get the current txn's connection type id
+                    if ( !ConnectionTypeId.HasValue )
+                    {
+                        ConnectionTypeId = new ConnectionOpportunityService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( o => o.Id == ConnectionOpportunityId.Value )
+                            .Select( o => o.ConnectionTypeId )
+                            .FirstOrDefault();
+                    }
+
+                    // Further filter the connection type workflows by the connection type id
+                    workflows = workflows
                         .Where( w =>
-                            w.TriggerType != ConnectionWorkflowTriggerType.ActivityAdded &&
-                            w.TriggerType != ConnectionWorkflowTriggerType.Manual &&
-                            (
-                                ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value ) ||
-                                ( w.ConnectionTypeId.HasValue )
-                            )
-                        )
+                            ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value ) ||
+                            ( ConnectionTypeId.HasValue && w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == ConnectionTypeId.Value ) )
                         .ToList();
 
-                    if ( workflows.Any() )
+                    // Loop through connectionWorkflows and launch appropriate workflow
+                    foreach ( var connectionWorkflow in workflows )
                     {
-                        using ( var rockContext = new RockContext() )
+                        switch ( connectionWorkflow.TriggerType )
                         {
-                            // Get the current txn's connection type id
-                            if ( !ConnectionTypeId.HasValue )
-                            {
-                                ConnectionTypeId = new ConnectionOpportunityService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( o => o.Id == ConnectionOpportunityId.Value )
-                                    .Select( o => o.ConnectionTypeId )
-                                    .FirstOrDefault();
-                            }
-
-                            // Further filter the connection type workflows by the connection type id
-                            workflows = workflows
-                                .Where( w =>
-                                    ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == ConnectionOpportunityId.Value ) ||
-                                    ( ConnectionTypeId.HasValue && w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == ConnectionTypeId.Value ) )
-                                .ToList();
-
-                            // Loop through connectionWorkflows and launch appropriate workflow
-                            foreach ( var connectionWorkflow in workflows )
-                            {
-                                switch ( connectionWorkflow.TriggerType )
+                            case ConnectionWorkflowTriggerType.RequestStarted:
                                 {
-                                    case ConnectionWorkflowTriggerType.RequestStarted:
-                                        {
-                                            if ( State == EntityState.Added )
-                                            {
-                                                LaunchWorkflow( rockContext, connectionWorkflow, "Request Started" );
-                                            }
-                                            break;
-                                        }
-
-                                    case ConnectionWorkflowTriggerType.RequestAssigned:
-                                        {
-                                            if ( ConnectorPersonAliasId.HasValue &&
-                                                !ConnectorPersonAliasId.Equals( PreviousConnectorPersonAliasId ) )
-                                            {
-                                                LaunchWorkflow( rockContext, connectionWorkflow, "Request Assigned" );
-                                            }
-                                            break;
-                                        }
-
-                                    case ConnectionWorkflowTriggerType.RequestConnected:
-                                        {
-                                            if ( State == EntityState.Modified &&
-                                                PreviousConnectionState != ConnectionState.Connected &&
-                                                ConnectionState == ConnectionState.Connected )
-                                            {
-                                                LaunchWorkflow( rockContext, connectionWorkflow, "Request Completed" );
-                                            }
-                                            break;
-                                        }
-
-                                    case ConnectionWorkflowTriggerType.RequestTransferred:
-                                        {
-                                            if ( State == EntityState.Modified &&
-                                                !PreviousConnectionOpportunityId.Equals( ConnectionOpportunityId ) )
-                                            {
-                                                LaunchWorkflow( rockContext, connectionWorkflow, "Request Transferred" );
-                                            }
-                                            break;
-                                        }
-
-                                    case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
-                                        {
-                                            if ( State == EntityState.Modified &&
-                                                !PreviousAssignedGroupId.HasValue &&
-                                                AssignedGroupId.HasValue )
-                                            {
-                                                LaunchWorkflow( rockContext, connectionWorkflow, "Group Assigned" );
-                                            }
-                                            break;
-                                        }
-
-                                    case ConnectionWorkflowTriggerType.StatusChanged:
-                                        {
-                                            if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, PreviousConnectionStatusId, ConnectionStatusId ) )
-                                            {
-                                                LaunchWorkflow( rockContext, connectionWorkflow, "Status Changed" );
-                                            }
-                                            break;
-                                        }
-
-                                    case ConnectionWorkflowTriggerType.StateChanged:
-                                        {
-                                            if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, PreviousConnectionState, ConnectionState ) )
-                                            {
-                                                LaunchWorkflow( rockContext, connectionWorkflow, "State Changed" );
-                                            }
-                                            break;
-                                        }
+                                    if ( State == EntityState.Added )
+                                    {
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "Request Started" );
+                                    }
+                                    break;
                                 }
-                            }
+
+                            case ConnectionWorkflowTriggerType.RequestAssigned:
+                                {
+                                    if ( ConnectorPersonAliasId.HasValue &&
+                                        !ConnectorPersonAliasId.Equals( PreviousConnectorPersonAliasId ) )
+                                    {
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "Request Assigned" );
+                                    }
+                                    break;
+                                }
+
+                            case ConnectionWorkflowTriggerType.RequestConnected:
+                                {
+                                    if ( State == EntityState.Modified &&
+                                        PreviousConnectionState != ConnectionState.Connected &&
+                                        ConnectionState == ConnectionState.Connected )
+                                    {
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "Request Completed" );
+                                    }
+                                    break;
+                                }
+
+                            case ConnectionWorkflowTriggerType.RequestTransferred:
+                                {
+                                    if ( State == EntityState.Modified &&
+                                        !PreviousConnectionOpportunityId.Equals( ConnectionOpportunityId ) )
+                                    {
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "Request Transferred" );
+                                    }
+                                    break;
+                                }
+
+                            case ConnectionWorkflowTriggerType.PlacementGroupAssigned:
+                                {
+                                    if ( State == EntityState.Modified &&
+                                        !PreviousAssignedGroupId.HasValue &&
+                                        AssignedGroupId.HasValue )
+                                    {
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "Group Assigned" );
+                                    }
+                                    break;
+                                }
+
+                            case ConnectionWorkflowTriggerType.StatusChanged:
+                                {
+                                    if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, PreviousConnectionStatusId, ConnectionStatusId ) )
+                                    {
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "Status Changed" );
+                                    }
+                                    break;
+                                }
+
+                            case ConnectionWorkflowTriggerType.StateChanged:
+                                {
+                                    if ( State == EntityState.Modified && QualifiersMatch( rockContext, connectionWorkflow, PreviousConnectionState, ConnectionState ) )
+                                    {
+                                        LaunchWorkflow( rockContext, connectionWorkflow, "State Changed" );
+                                    }
+                                    break;
+                                }
                         }
                     }
                 }
