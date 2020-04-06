@@ -136,13 +136,9 @@
                             <span class="display-inline-block width-full push-half-bottom">{{ video.Title }}
 
                                 {% if CurrentPerson and CurrentPerson != empty %}
-                                    <span class="wistia_embed wistia_async_{{ videoId }} popover=true popoverContent=link clickable text-center pull-right" style="display:inline; position:relative">
-                                        <a href="#" class="btn btn-xs btn-primary">Play Video</a>
-                                    </span>
-
-                                    <script src="https://fast.wistia.com/embed/medias/{{ videoId }}.jsonp" async></script>
-                                    <script src="https://fast.wistia.com/assets/external/E-v1.js" async=""></script>
-
+                                    <div class="pull-right">
+                                        {[ wistiaButton id:'{{ videoId }}' buttontext:'' buttonclasses:'btn-xs' contentchannelitemid:'{{ cciid }}' entitytypeid:'' entityid:'' ]}
+                                    </div>
                                 {% else %}
                                     <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
                                 {% endif %}
@@ -166,7 +162,7 @@
                         <br><br>
                     {% endcapture %}
 
-                    {[ card cciid:'{{ cciid }}' title:'{{ child.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content }}' imageurl:'{{ imageurl }}' ]}
+                    {[ card cciid:'{{ cciid }}' title:'{{ child.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content | Escape }}' imageurl:'{{ imageurl }}' ]}
 
                 {% endfor %}
             {% endcontentchannelitem %}

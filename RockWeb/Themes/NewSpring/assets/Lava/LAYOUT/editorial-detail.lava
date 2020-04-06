@@ -141,13 +141,8 @@
             
             {% if video != empty %}
                 <p id="video" class="text-center">
-                    <span class="wistia_embed wistia_async_{{ video }} popover=true popoverContent=link clickable text-center" style="display:inline; position:relative">
-                        <a href="#" class="btn btn-primary">Play Video</a>
-                    </span>
+                    {[ wistiaButton id:'{{ video }}' buttontext:'' buttonclasses:'' contentchannelitemid:'{{ Item.Id }}' entitytypeid:'' entityid:'' ]}
                 </p>
-            
-                <script src="https://fast.wistia.com/embed/medias/{{ video }}.jsonp" async></script>
-                <script src="https://fast.wistia.com/assets/external/E-v1.js" async=""></script>
 
             {% endif %}
 
