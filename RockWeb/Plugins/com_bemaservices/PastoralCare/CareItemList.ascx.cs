@@ -574,7 +574,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
             TypeSummary typeSummary = null;
 
-            if ( SelectedTypeId.HasValue )
+            if ( SelectedTypeId.HasValue && SummaryState != null )
             {
                 typeSummary = SummaryState.Where( t => t.Id == SelectedTypeId.Value ).FirstOrDefault();
             }
@@ -772,6 +772,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                         AttributeField boundField = new AttributeField();
                         boundField.DataField = attribute.Key;
                         boundField.AttributeId = attribute.Id;
+                        boundField.ExcelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
                         boundField.HeaderText = attribute.Name;
                         boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
 

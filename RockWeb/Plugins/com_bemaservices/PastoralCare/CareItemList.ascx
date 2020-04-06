@@ -55,7 +55,7 @@
                         </Rock:RockDropDownList>
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gItems" runat="server" OnRowSelected="gItems_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gItems_RowDataBound">
+                    <Rock:Grid ID="gItems" runat="server" OnRowSelected="gItems_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gItems_RowDataBound" ExportSource="ColumnOutput">
                         <Columns>
                             <Rock:SelectField />
                             <Rock:RockBoundField DataField="ContactDateTime" HeaderText="Request Date" SortExpression="CareItem.ContactDateTime" />
