@@ -30,7 +30,6 @@
     <copyright>Free to distribute. Do not sell.</copyright>
     <webMaster>web@newspring.cc (NewSpring Web)</webMaster>
     <category>{{ channelNameParts[1] }}</category>
-    <hiddenAttributes>{{ channelHiddenAttributeGuids }}</hiddenAttributes>
     <generator>Rock RMS, https://www.rockrms.com/</generator>
 
     {% if Channel.TimeToLive > 0 %}
@@ -100,7 +99,7 @@
         {% assign itemActualDate = item | Attribute:'ActualDate' | Date:'ddd, dd MMM yyyy HH:mm:00 EST' %}
         {% assign itemWistia = item | Attribute:'Video','RawValue' %}
         {% capture itemWistiaEmbed %}{[ wistiaEmbed id:'{{ itemWistia }}' ]}{% endcapture %}
-        
+
         <item>
             <title><![CDATA[{% if parentTitle and parentTitle != empty %}{{ parentTitle }}: {% endif %}{{ item.Title }}]]></title>
             <link>{{ itemLink | Trim }}</link>
