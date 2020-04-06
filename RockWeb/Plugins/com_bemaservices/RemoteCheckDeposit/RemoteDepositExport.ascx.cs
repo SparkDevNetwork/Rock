@@ -354,12 +354,29 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
 
                 fileFormat.LoadAttributes( rockContext );
 
+                // Create a counter for each day's exports
+                string counterKey = "com.bemaservices.RemoteCheckDeposit.CounterKey";
+                string valueFromKey = Rock.Web.SystemSettings.GetValue(counterKey);
+                int counter = 1;
+                if ( valueFromKey.IsNotNullOrWhiteSpace() && valueFromKey.Split('|').Count() == 2 )
+                {
+                    var keyArray = valueFromKey.Split('|');
+                    if ( keyArray[0].AsDateTime() >= RockDateTime.Today )
+                    {
+                        counter = keyArray[1].AsInteger() + 1;
+                    }
+                }
+                //Set key to DateTime of Today with a counter of 1
+                string keyString = RockDateTime.Today.ToString() + "|" + counter.ToString();
+                Rock.Web.SystemSettings.SetValue(counterKey, keyString);
+
                 //
                 // Get the final filename for the export.
                 //
                 var mergeFields = new Dictionary<string, object>
                 {
-                    {  "FileFormat", fileFormat }
+                    {  "FileFormat", fileFormat },
+                    { "Counter", counter }
                 };
                 var filename = fileFormat.FileNameTemplate.ResolveMergeFields( mergeFields );
 

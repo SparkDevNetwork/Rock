@@ -5,13 +5,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{03B280A2-5333-4419-B570-7DF521AFB3CB}</ProjectGuid>
+    <ProjectGuid>{F5210B1F-CCDD-44BE-880E-2F2AD331939D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.bemaservices.RemoteCheckDeposit</RootNamespace>
-    <AssemblyName>com.bemaservices.RemoteCheckDeposit</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <RootNamespace>com.bemaservices.MailChimp</RootNamespace>
+    <AssemblyName>com.bemaservices.MailChimp</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -32,27 +33,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotLiquid">
-      <HintPath>..\RockWeb\Bin\DotLiquid.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer">
-      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    <Reference Include="MailChimp.Net.V3, Version=2.1.0.0, Culture=neutral, PublicKeyToken=37d26d538413c581, processorArchitecture=MSIL">
+      <HintPath>..\packages\MailChimp.Net.V3.2.1.0.0\lib\net45\MailChimp.Net.V3.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="Rock">
-      <HintPath>..\RockWeb\Bin\Rock.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Quartz">
+      <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -61,63 +59,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Attributes\DateFieldAttribute.cs" />
-    <Compile Include="Attributes\DateTimeFieldAttribute.cs" />
-    <Compile Include="Attributes\IntegerFieldAttribute.cs" />
-    <Compile Include="Attributes\MoneyFieldAttribute.cs" />
-    <Compile Include="Attributes\TextFieldAttribute.cs" />
-    <Compile Include="Attributes\VariableBinaryFieldAttribute.cs" />
-    <Compile Include="Attributes\VariableTextFieldAttribute.cs" />
-    <Compile Include="BinaryReaderExtensions.cs" />
-    <Compile Include="BinaryWriterExtensions.cs" />
-    <Compile Include="ExportOptions.cs" />
-    <Compile Include="FieldAttribute.cs" />
-    <Compile Include="FileFormatTypeComponent.cs" />
-    <Compile Include="FileFormatTypeContainer.cs" />
-    <Compile Include="FileFormatTypes\BankOfAmericaMerrillLynch.cs" />
-    <Compile Include="FileFormatTypes\Regions.cs" />
-    <Compile Include="FileFormatTypes\FifthThirdBank.cs" />
-    <Compile Include="FileFormatTypes\BBVACompass.cs" />
-    <Compile Include="FileFormatTypes\BBandT.cs" />
-    <Compile Include="FileFormatTypes\BankOfTheWest.cs" />
-    <Compile Include="FileFormatTypes\X937DSTU.cs" />
-    <Compile Include="Micr.cs" />
+    <Compile Include="Jobs\MailChimpSync.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Migrations\001_AddSystemData.cs" />
-    <Compile Include="Migrations\003_AddAttributes.cs" />
-    <Compile Include="Migrations\002_AddPages.cs" />
-    <Compile Include="Model\ImageCashLetterFileFormat.cs" />
-    <Compile Include="Model\ImageCashLetterFileFormatService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Record.cs" />
-    <Compile Include="Records\BundleControl.cs" />
-    <Compile Include="Records\BundleHeader.cs" />
-    <Compile Include="Records\CashLetterControl.cs" />
-    <Compile Include="Records\CashLetterHeader.cs" />
-    <Compile Include="Records\CashLetterHeaderRecordType10.cs" />
-    <Compile Include="Records\CheckDetail.cs" />
-    <Compile Include="Records\CheckDetailAddendumA.cs" />
-    <Compile Include="Records\CreditDetail.cs" />
-    <Compile Include="Records\CreditReconciliation.cs" />
-    <Compile Include="Records\FileControl.cs" />
-    <Compile Include="Records\FileHeader.cs" />
-    <Compile Include="Records\FileHeaderRecordType01.cs" />
-    <Compile Include="Records\ImageViewData.cs" />
-    <Compile Include="Records\ImageViewDataRecordType52.cs" />
-    <Compile Include="Records\ImageViewDetail.cs" />
-    <Compile Include="StringExtensions.cs" />
     <Compile Include="SystemGuid\Attribute.cs" />
-    <Compile Include="SystemGuid\Block.cs" />
-    <Compile Include="SystemGuid\BlockType.cs" />
-    <Compile Include="SystemGuid\EntityType.cs" />
-    <Compile Include="SystemGuid\Page.cs" />
-    <Compile Include="X937File.cs" />
+    <Compile Include="SystemGuid\SystemDefinedTypes.cs" />
+    <Compile Include="Utility\MailChimpApi.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="App.config" />
+    <None Include="app.config" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock\Rock.csproj">
+      <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
+      <Name>Rock</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -142,8 +107,8 @@
   <!-- Prepare the files to be zipped -->
   <Target Name="CopyFiles" DependsOnTargets="DeleteFiles">
     <ItemGroup>
-      <CopyFiles Include="$(OutputPath)com.bemaservices.RemoteCheckDeposit.dll;" />
-      <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\RemoteCheckDeposit\**\*.*" />
+      <CopyFiles Include="$(OutputPath)com.bemaservices.MailChimp.dll;" />
+      <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\MailChimp\**\*.*" />
       <VersionFile Include="builds\.version" />
     </ItemGroup>
     <MakeDir Directories="$(BuildDir)\tmp" Condition="!Exists('$(BuildDir)\tmp')" />
@@ -153,7 +118,7 @@
     <MakeDir Directories="$(BuildDir)\tmp\install" Condition="!Exists('$(BuildDir)\tmp\install')" />
     <MakeDir Directories="$(BuildDir)\tmp\uninstall" Condition="!Exists('$(BuildDir)\tmp\uninstall')" />
     <Copy SourceFiles="@(CopyFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
-    <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\RemoteCheckDeposit\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\MailChimp\%(RecursiveDir)%(Filename)%(Extension)')" />
     <!-- Just put the .version file into the install and uninstall folder so that those folders are created in the zip -->
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\install" />
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\uninstall" />
@@ -174,7 +139,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(PackageOut)" Condition="!Exists('$(PackageOut)')" />
     <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
-    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\RemoteCheckDeposit-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
+    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\MailChimp-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
   </Target>
   <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
