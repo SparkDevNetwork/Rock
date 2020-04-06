@@ -108,9 +108,12 @@ namespace RockWeb.Blocks.Event
                 RegistrationInstanceService instanceService = new RegistrationInstanceService( rockContext );
                 var qry = instanceService.Queryable()
                     .Where( i =>
-                        (i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue) &&
-                        (i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue) &&
+                        ( i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue ) &&
+                        ( i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue ) &&
                         i.IsActive )
+                    .AsEnumerable()
+                    .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                    .AsQueryable()
                     .OrderBy( i => i.StartDateTime );
 
                 var sortProperty = gRegInstances.SortProperty;

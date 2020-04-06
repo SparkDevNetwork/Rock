@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 
 using Quartz;
@@ -108,18 +109,22 @@ namespace Rock.Jobs
                                     if ( metric.DataView != null )
                                     {
                                         var errorMessages = new List<string>();
-                                        var qry = metric.DataView.GetQuery( null, null, out errorMessages );
                                         if ( metricPartitions.Count > 1 || metricPartitions.First().EntityTypeId.HasValue )
                                         {
                                             throw new NotImplementedException( "Partitioned Metrics using DataViews is not supported." );
                                         }
                                         else
                                         {
+                                            Stopwatch stopwatch = Stopwatch.StartNew();
+                                            var qry = metric.DataView.GetQuery( null, null, out errorMessages );
                                             var resultValue = new ResultValue();
                                             resultValue.Value = Convert.ToDecimal( qry.Count() );
+                                            stopwatch.Stop();
                                             resultValue.Partitions = new List<ResultValuePartition>();
                                             resultValue.MetricValueDateTime = scheduleDateTime;
                                             resultValues.Add( resultValue );
+                                            DataViewService.AddRunDataViewTransaction( metric.DataView.Id,
+                                                        Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                                         }
                                     }
                                 }

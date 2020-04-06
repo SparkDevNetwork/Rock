@@ -37,9 +37,31 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows a graph of email statistics optionally limited to a specific communication or communication list." )]
 
-    [TextField( "Series Colors", "A comma-delimited list of colors that the Clients chart will use.", false, "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766", order: 0 )]
+    #region Block Attributes
+
+    [TextField(
+        "Series Colors",
+        Description = "A comma-delimited list of colors that the Clients chart will use.",
+        IsRequired = false,
+        DefaultValue = "#5DA5DA,#60BD68,#FFBF2F,#F36F13,#C83013,#676766",
+        Key = AttributeKey.SeriesColors,
+        Order = 0 )]
+
+    #endregion Block Attributes
     public partial class EmailAnalytics : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string SeriesColors = "SeriesColors";
+        }
+
+        #endregion Attribute Keys
+
         #region Properties that are used by the markup file
 
         /// <summary>
@@ -300,7 +322,7 @@ namespace RockWeb.Blocks.Communication
 
             TimeSpan roundTimeSpan = TimeSpan.FromDays( 1 );
 
-            this.SeriesColorsJSON = this.GetAttributeValue( "SeriesColors" ).SplitDelimitedValues().ToArray().ToJson();
+            this.SeriesColorsJSON = this.GetAttributeValue( AttributeKey.SeriesColors ).SplitDelimitedValues().ToArray().ToJson();
             this.LineChartTimeFormat = "LL";
 
             if ( interactionsList.Any() )

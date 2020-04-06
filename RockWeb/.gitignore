@@ -1,5 +1,8 @@
 /bin/*/*.dll
 /bin/*.dll
+!/bin/roslyn/*.dll
+!/bin/Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll
+
 /bin/*.pdb
 /bin/*.xml
 

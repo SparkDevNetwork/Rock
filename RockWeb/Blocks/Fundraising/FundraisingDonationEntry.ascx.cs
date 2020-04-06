@@ -121,13 +121,13 @@ namespace RockWeb.Blocks.Fundraising
                 //
                 if ( GetAttributeValue( "AllowAutomaticSelection" ).AsBoolean( false ) && groupMember == null )
                 {
-                    var members = group.Members.Where( m => m.GroupRole.Guid == "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid() ).ToList();
+                    var members = group.Members.Where( m => ! m.GroupRole.IsLeader ).ToList();
                     if ( members.Count == 1 && members[0].GroupMemberStatus == GroupMemberStatus.Active )
                     {
                         group.LoadAttributes( rockContext );
                         if ( string.IsNullOrWhiteSpace( group.GetAttributeValue( "RegistrationInstance" ) ) )
                         {
-                            groupMember = group.Members.First();
+                            groupMember = members.First();
                         }
                     }
                 }
@@ -165,10 +165,11 @@ namespace RockWeb.Blocks.Fundraising
         protected void PopulateGroupDropDown()
         {
             var rockContext = new RockContext();
-            Guid groupTypeFundraisingOpportunity = "4BE7FC44-332D-40A8-978E-47B7035D7A0C".AsGuid();
+            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+
             Guid? rootGroup = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
 
-            var groupQuery = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.Guid == groupTypeFundraisingOpportunity && a.IsActive && a.Members.Any() );
+            var groupQuery = new GroupService( rockContext ).Queryable().Where( a => ( a.GroupTypeId == groupTypeIdFundraising || a.GroupType.InheritedGroupTypeId == groupTypeIdFundraising ) && a.IsActive && a.Members.Any() );
 
             if ( rootGroup.HasValue )
             {

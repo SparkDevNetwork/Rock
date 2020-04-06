@@ -673,6 +673,11 @@ namespace Rock.SystemGuid
         public const string REGISTRATION_SEND_PAYMENT_REMINDERS = "2828BBCF-B3FC-4707-B063-086748853978";
 
         /// <summary>
+        /// The Registration Template Placement page guid
+        /// </summary>
+        public const string REGISTRATION_TEMPLATE_PLACEMENT = "02E7D8EC-E0F1-4632-9641-77772144A4CA";
+
+        /// <summary>
         /// The registration wait list confirmation
         /// </summary>
         public const string REGISTRATION_WAIT_LIST_CONFIRMATION = "4BF84D3F-DE7B-4F8B-814A-1E728E69C105";
@@ -1411,6 +1416,11 @@ namespace Rock.SystemGuid
         /// ParentPage: Check-in Configuration
         /// </summary>
         public const string SCHEDULE_BUILDER = "A286D16B-FDDF-4D89-B98F-D51188B611E6";
+
+        /// <summary>
+        /// The schedule confirmation page guid
+        /// </summary>
+        public const string SCHEDULE_CONFIRMATION = "EA14B522-E2A6-4CA7-8AF0-9CDF0B84C8CF";
 
         /// <summary>
         /// Gets the Scheduled Job Detail page guid

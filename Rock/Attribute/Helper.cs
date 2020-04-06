@@ -108,6 +108,8 @@ namespace Rock.Attribute
                 if ( customGridOptionsBlock )
                 {
                     entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey, category: "CustomSetting" ) );
+                    entityProperties.Add( new TextFieldAttribute( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey, category: "CustomSetting" ) );
+                    entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
                 }
 
                 bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
@@ -962,6 +964,18 @@ namespace Rock.Attribute
         /// <param name="target">The target.</param>
         public static void CopyAttributes( Rock.Attribute.IHasAttributes source, Rock.Attribute.IHasAttributes target )
         {
+            CopyAttributes( source, target, null );
+        }
+
+
+        /// <summary>
+        /// Copies the attributes from one entity to another
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="target">The target.</param>
+        /// <param name="rockContext">The rock context.</param>
+        public static void CopyAttributes( Rock.Attribute.IHasAttributes source, Rock.Attribute.IHasAttributes target, RockContext rockContext )
+        {
             if ( source != null && target != null )
             {
                 // Copy Attributes
@@ -984,12 +998,15 @@ namespace Rock.Attribute
                     target.AttributeValues = new Dictionary<string, AttributeValueCache>();
                     foreach ( var item in source.AttributeValues )
                     {
+                        var attribute = source.Attributes[item.Key];
+                        var fieldType = attribute.FieldType.Field as Field.FieldType;
+
                         var value = item.Value;
-                        if ( value != null )
+                        if (fieldType != null && value != null )
                         {
                             var attributeValue = new AttributeValueCache();
                             attributeValue.AttributeId = value.AttributeId;
-                            attributeValue.Value = value.Value;
+                            attributeValue.Value = fieldType.GetCopyValue(value.Value, rockContext);
                             target.AttributeValues.Add( item.Key, attributeValue );
                         }
                         else

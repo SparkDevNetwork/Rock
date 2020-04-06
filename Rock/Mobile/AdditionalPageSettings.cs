@@ -29,5 +29,13 @@ namespace Rock.Mobile
         /// The lava event handler.
         /// </value>
         public string LavaEventHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CSS styles specific to this block.
+        /// </summary>
+        /// <value>
+        /// The CSS styles specific to this block.
+        /// </value>
+        public string CssStyles { get; set; }
     }
 }

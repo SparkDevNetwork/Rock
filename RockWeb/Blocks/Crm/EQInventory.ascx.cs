@@ -633,33 +633,40 @@ namespace Rockweb.Blocks.Crm
             Assessment assessment = null;
             Assessment previouslyCompletedAssessment = null;
 
-            // This is a computed property so it cannot be in the linq query
-            int primaryAliasId = _targetPerson.PrimaryAliasId.Value;
-
             // A "0" value indicates that the block should create a new assessment instead of looking for an existing one, so keep assessment null. e.g. a user directed re-take
             if ( _assessmentId != 0 )
             {
                 var assessments = new AssessmentService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( a => a.PersonAliasId == primaryAliasId )
-                .Where( a => a.AssessmentTypeId == assessmentType.Id )
+                .Where( a => a.PersonAlias != null
+                             && a.PersonAlias.PersonId == _targetPerson.Id
+                             && a.AssessmentTypeId == assessmentType.Id )
                 .OrderByDescending( a => a.CompletedDateTime ?? a.RequestedDateTime )
                 .ToList();
 
-                if ( assessments.Count > 0 )
+                if ( _assessmentId == null && assessments.Count == 0 )
                 {
-                    // If there are any results then pick the first one. If the assesement ID was specified then the query will only return one result
-                    assessment = assessments[0];
+                    // For this to happen the user has to have never taken the assessment, the user isn't using a link with the assessment ID, AND they are arriving at the block directly rather than through the assessment list block.
+                    // So treat this as a user directed take/retake.
+                    _assessmentId = 0;
                 }
-                if ( assessments.Count > 1 )
+                else
                 {
-                    // If there are more than one result then we need to pick the right one (see developer note)
-                    // If the most recent assessment is "Completed" then it is already set as the assessment and we can move on. Otherwise check if there are previoulsy completed assessments.
-                    if ( assessment.Status == AssessmentRequestStatus.Pending )
+                    if ( assessments.Count > 0 )
                     {
-                        // If the most recent assessment is pending then check for a prior completed one
-                        previouslyCompletedAssessment = assessments.Where( a => a.Status == AssessmentRequestStatus.Complete ).FirstOrDefault();
+                        // If there are any results then pick the first one. If the assesement ID was specified then the query will only return one result
+                        assessment = assessments[0];
+                    }
+                    if ( assessments.Count > 1 )
+                    {
+                        // If there are more than one result then we need to pick the right one (see developer note)
+                        // If the most recent assessment is "Completed" then it is already set as the assessment and we can move on. Otherwise check if there are previoulsy completed assessments.
+                        if ( assessment.Status == AssessmentRequestStatus.Pending )
+                        {
+                            // If the most recent assessment is pending then check for a prior completed one
+                            previouslyCompletedAssessment = assessments.Where( a => a.Status == AssessmentRequestStatus.Complete ).FirstOrDefault();
+                        }
                     }
                 }
             }

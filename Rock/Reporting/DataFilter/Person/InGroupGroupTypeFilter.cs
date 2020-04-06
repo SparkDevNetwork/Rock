@@ -377,7 +377,7 @@ function() {
                     groupTypeId = groupType.Id;
                 }
 
-                var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => xx.Group.GroupTypeId == groupTypeId && xx.Group.IsArchived != true );
+                var groupMemberServiceQry = groupMemberService.Queryable( true ).Where( xx => xx.Group.GroupTypeId == groupTypeId && xx.Group.IsArchived != true );
 
                 bool? groupStatus = null;
                 if ( selectionValues.Length >= 4 )

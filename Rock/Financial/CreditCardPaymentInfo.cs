@@ -27,12 +27,14 @@ namespace Rock.Financial
     public class CreditCardPaymentInfo : PaymentInfo
     {
         /// <summary>
-        /// The name on card
+        /// Either the FullName on the card or the FirstName.
+        /// If the gateway has first and last name as seperate fields, set this to the first name;
         /// </summary>
         public string NameOnCard { get; set; }
 
         /// <summary>
-        /// The last name on card (Only used if gateway provider requires split first name and last name fields
+        /// The last name on card (Only used if gateway provider requires split first name and last name fields).
+        /// If so, the FirstNameOnCard is <see cref="NameOnCard" />
         /// </summary>
         public string LastNameOnCard { get; set; }
 

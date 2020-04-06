@@ -233,7 +233,7 @@ namespace Rock.Model
         {
             int totalPayments = 0;
             int totalAlreadyDownloaded = 0;
-            int totalNoMatchingTransaction = 0;
+            List<Payment> paymentsWithoutTransaction = new List<Payment>();
             int totalAdded = 0;
             int totalReversals = 0;
             int totalFailures = 0;
@@ -387,6 +387,17 @@ namespace Rock.Model
                                 transaction.FinancialPaymentDetail.ExpirationMonthEncrypted = financialPaymentDetail.ExpirationMonthEncrypted;
                                 transaction.FinancialPaymentDetail.ExpirationYearEncrypted = financialPaymentDetail.ExpirationYearEncrypted;
                                 transaction.FinancialPaymentDetail.BillingLocationId = financialPaymentDetail.BillingLocationId;
+                                if ( financialPaymentDetail.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
+                                {
+                                    // if Rock doesn't have the GatewayPersonIdentifier, get it from the downloaded payment (if it has a value)
+                                    transaction.FinancialPaymentDetail.GatewayPersonIdentifier = payment.GatewayPersonIdentifier;
+                                }
+                                else
+                                {
+                                    transaction.FinancialPaymentDetail.GatewayPersonIdentifier = financialPaymentDetail.GatewayPersonIdentifier;
+                                }
+
+                                transaction.FinancialPaymentDetail.FinancialPersonSavedAccountId = financialPaymentDetail.FinancialPersonSavedAccountId;
                             }
 
                             if ( currencyTypeValue != null )
@@ -519,7 +530,7 @@ namespace Rock.Model
                         }
                         else
                         {
-                            totalNoMatchingTransaction++;
+                            paymentsWithoutTransaction.Add( payment );
                         }
                     }
                     else
@@ -611,10 +622,24 @@ namespace Rock.Model
                 ( totalStatusChanges == 1 ? "payment was" : "payments were" ) );
             }
 
-            if ( totalNoMatchingTransaction > 0 )
+            if ( paymentsWithoutTransaction.Any() )
             {
-                sb.AppendFormat( "<li>{0} {1} could not be matched to an existing scheduled payment profile or a previous transaction.</li>", totalNoMatchingTransaction.ToString( "N0" ),
-                    ( totalNoMatchingTransaction == 1 ? "payment" : "payments" ) );
+                var scheduledPaymentList = paymentsWithoutTransaction.Where( a => a.GatewayScheduleId.IsNotNullOrWhiteSpace() ).Select( a => a.GatewayScheduleId ).ToList();
+                if ( scheduledPaymentList.Any() )
+                {
+                    sb.Append( $@"<li>The following {scheduledPaymentList.Count.ToString( "N0" )} gateway payments could not be matched to an existing scheduled payment profile:
+<pre>{scheduledPaymentList.AsDelimited( "\n" )}</pre>
+</li>" );
+                }
+
+                var previousTransactionList = paymentsWithoutTransaction.Where( a => a.GatewayScheduleId.IsNullOrWhiteSpace() ).Select( a => a.TransactionCode ).ToList();
+
+                if ( previousTransactionList.Any() )
+                {
+                    sb.Append( $@"<li>The following {previousTransactionList.Count.ToString( "N0" )} gateway payments could not be matched to a previous transaction:
+<pre>{previousTransactionList.AsDelimited( "\n" )}</pre>
+</li>" );
+                }
             }
 
             sb.AppendFormat( "<li>{0} {1} added.</li>", totalAdded.ToString( "N0" ),

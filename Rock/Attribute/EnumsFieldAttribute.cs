@@ -20,7 +20,7 @@ using System.Collections.Generic;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting checkbox options from an enum.
+    /// Field Attribute for selecting checkbox options from an enum. Value is stored as a comma delimited list of the numeric value of the Enums.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EnumsFieldAttribute : SelectFieldAttribute
@@ -29,29 +29,13 @@ namespace Rock.Attribute
         private const string ENUM_SOURCE_TYPE_KEY = "enumSourceTypeKey";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EnumsFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="EnumFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         public EnumsFieldAttribute( string name )
             : base( name )
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EnumFieldAttribute" /> class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="enumSourceType">Type of the enum source.</param>
-        /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.  If multiple values are supported (i.e. checkbox) each value should be delimited by a comma</param>
-        /// <param name="category">The category.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="key">The key.</param>
-        public EnumsFieldAttribute( string name, string description, Type enumSourceType, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
-            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName )
-        {
-            this.EnumSourceType = enumSourceType;
+            FieldTypeClass = typeof( Rock.Field.Types.SelectMultiFieldType ).FullName;
         }
 
         /// <summary>
@@ -82,6 +66,23 @@ namespace Rock.Attribute
                 var listSource = string.Join( ",", list );
                 FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
             }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EnumFieldAttribute" /> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="enumSourceType">Type of the enum source.</param>
+        /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.  If multiple values are supported (i.e. checkbox) each value should be delimited by a comma</param>
+        /// <param name="category">The category.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
+        public EnumsFieldAttribute( string name, string description, Type enumSourceType, bool required = false, string defaultValue = "", string category = "", int order = 0, string key = null )
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.SelectMultiFieldType ).FullName )
+        {
+            EnumSourceType = enumSourceType;
         }
     }
 }

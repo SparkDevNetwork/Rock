@@ -767,11 +767,33 @@ var barChart = new Chart(barCtx, {{
         /// <returns></returns>
         protected bool ValidateFilter()
         {
+            nbNoData.Visible = false;
             nbGroupWarning.Visible = nbPersonWarning.Visible = nbDataviewWarning.Visible = false;
             switch ( hfTabs.Value )
             {
                 case "group":
-                    return gpGroups.GroupId != null ? true : !( nbGroupWarning.Visible = true );
+                    {
+                        if ( gpGroups.GroupId != null )
+                        {
+                            nbGroupWarning.Visible = false;
+                            var group = new GroupService( new RockContext() ).Get( gpGroups.GroupId.Value );
+                            if ( group != null && !group.DisableScheduling )
+                            {
+                                nbSchedulingDisabled.Visible = false;
+                                return true;
+                            }
+                            else
+                            {
+                                nbSchedulingDisabled.Visible = true;
+                                nbSchedulingDisabled.Text = string.Format( "Scheduling is disabled for the {0} group.", group.Name );
+                            }
+                        }
+                        else
+                        {
+                            nbGroupWarning.Visible = true;
+                        }
+                        return false;
+                    }
                 case "person":
                     return ppPerson.PersonAliasId != null ? true : !( nbPersonWarning.Visible = true );
                 case "dataview":

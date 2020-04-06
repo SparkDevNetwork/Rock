@@ -430,7 +430,13 @@ namespace RockWeb
         {
             try
             {
-                UserLoginService.UpdateLastLogin( UserLogin.GetCurrentUserName() );
+                // get a current context so that we can set it inside the thread (which doesn't have a context)
+                var thisContext = HttpContext.Current;
+                Task.Run( () => {
+                    HttpContext.Current = thisContext;
+                    var currentUserName = UserLogin.GetCurrentUserName();
+                    UserLoginService.UpdateLastLogin( currentUserName );
+                } );
             }
             catch { }
 
@@ -902,6 +908,8 @@ namespace RockWeb
             // Cache all the Field Types
             foreach ( var fieldType in new Rock.Model.FieldTypeService( rockContext ).Queryable().AsNoTracking() )
             {
+                // improve performance of loading FieldTypeCache by doing LoadAttributes using an existing rockContext before doing FieldTypeCache.Get to avoid calling LoadAttributes with new context per FieldTypeCache
+                fieldType.LoadAttributes( rockContext );
                 FieldTypeCache.Get( fieldType );
             }
 
@@ -937,19 +945,14 @@ namespace RockWeb
 
             foreach ( var attribute in attributeQuery.AsNoTracking().ToList() )
             {
+                // improve performance of loading AttributeCache by doing LoadAttributes using an existing rockContext before doing AttributeCache.Get to avoid calling LoadAttributes with new context per AttributeCache
+                attribute.LoadAttributes( rockContext );
                 if ( qualifiers.ContainsKey( attribute.Id ) )
                     Rock.Web.Cache.AttributeCache.Get( attribute, qualifiers[attribute.Id] );
                 else
                     Rock.Web.Cache.AttributeCache.Get( attribute, new Dictionary<string, string>() );
             }
-
-            // cache all the Country Defined Values since those can be loaded in just a few millisecond here, but take around 1-2 seconds if first loaded when formatting an address
-            foreach ( var definedValue in new Rock.Model.DefinedValueService( rockContext ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES.AsGuid() ).AsNoTracking() )
-            {
-                DefinedValueCache.Get( definedValue );
-            }
         }
-
 
         /// <summary>
         /// Sets flag for serious error

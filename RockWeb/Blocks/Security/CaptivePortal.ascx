@@ -41,7 +41,7 @@
 
                 <div>
                     <div style="display: inline-block;">
-                        <Rock:RockCheckBox ID="cbAcceptTAC" runat="server" ValidationGroup="CaptivePortal" />
+                        <Rock:RockCheckBoxList ID="cblAcceptTAC" runat="server" ValidationGroup="CaptivePortal"></Rock:RockCheckBoxList>
                     </div>
                 </div>
 

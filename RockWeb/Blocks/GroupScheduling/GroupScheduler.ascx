@@ -75,6 +75,7 @@
 
                     <asp:Panel ID="pnlSchedulerContainer" runat="server" CssClass="col-lg-10 col-md-9">
                         <Rock:NotificationBox ID="nbFilterInstructions" runat="server" CssClass="margin-all-md" NotificationBoxType="Info" Visible="true" Text="Select a group, schedule and at least one location to start scheduling." />
+                        <Rock:NotificationBox ID="nbSchedulingDisabled" runat="server" CssClass="margin-all-md" NotificationBoxType="Warning" Visible="false" />
 
                         <%-- Scheduling: container for the scheduler scheduled containers --%>
                         <asp:Panel ID="pnlScheduler" runat="server" CssClass="resource-area">

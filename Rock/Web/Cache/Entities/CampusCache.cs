@@ -298,14 +298,34 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
-        /// Returns all campuses from cache
+        /// Returns all campuses from cache ordered by the campus's order property.
         /// </summary>
-        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        public static new List<CampusCache> All()
+        {
+            // Calls the method below including inactive campuses too.
+            return All( true );
+        }
+
+        /// <summary>
+        /// Returns all campuses from cache ordered by the campus's order property.
+        /// </summary>
+        /// <param name="includeInactive">if set to true to include inactive campuses; otherwise set to false to exclude them.</param>
         /// <returns></returns>
         public static List<CampusCache> All( bool includeInactive )
         {
-            var allCampuses = All();
-            return includeInactive ? allCampuses : allCampuses.Where( c => c.IsActive.HasValue && c.IsActive.Value ).ToList();
+            // WARNING: We need to call the All(RockContext) static method here, not the All(bool) or All() static method.
+            // Otherwise a stack overflow loop will occur.
+            var allCampuses = All( null );
+
+            if ( includeInactive )
+            {
+                return allCampuses.OrderBy( c => c.Order ).ToList();
+            }
+            else
+            {
+                return allCampuses.Where( c => c.IsActive.HasValue && c.IsActive.Value ).OrderBy( c => c.Order ).ToList();
+            }
         }
 
         #endregion

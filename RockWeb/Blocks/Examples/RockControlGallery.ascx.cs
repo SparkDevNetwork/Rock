@@ -197,6 +197,8 @@ namespace RockWeb.Blocks.Examples
                 rblExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
                 rblExampleHorizontal.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
+                liExample.Value = "[{'Value':'Small'},{'Value':'Medium'},{'Value':'Large'}]";
+
                 campExample.Campuses = CampusCache.All();
                 campsExample.Campuses = CampusCache.All();
 

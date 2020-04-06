@@ -5,7 +5,8 @@
 
         <asp:HiddenField ID="hfScheduledTransactionId" runat="server" />
         <asp:HiddenField ID="hfFinancialGatewayId" runat="server" />
-        <Rock:HiddenFieldWithClass ID="hfAddPaymentInfoVisible" CssClass="js-add-payment-visible" runat="server" />
+        <Rock:HiddenFieldWithClass ID="hfChangePaymentInfoVisible" CssClass="js-change-paymentinfo-visible" runat="server" />
+        <Rock:HiddenFieldWithClass ID="hfSaveNewAccount" CssClass="js-save-new-account" runat="server" />
 
         <%-- Message for any configuration warnings --%>
         <Rock:NotificationBox ID="nbConfigurationNotification" runat="server" Visible="false" />
@@ -16,31 +17,49 @@
         <asp:Panel ID="pnlPromptForChanges" runat="server">
             <Rock:CampusAccountAmountPicker ID="caapPromptForAccountAmounts" runat="server" />
 
-            <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency"  FormGroupCssClass="margin-t-md" />
+            <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Frequency" FormGroupCssClass="margin-t-md" />
 
             <div class="margin-t-md">
                 <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Next Gift" />
             </div>
 
             <Rock:RockControlWrapper ID="rcsPaymentMethod" runat="server" FormGroupCssClass="form-group-auto" Label="Payment Method">
-                <asp:Panel ID="pnlSelectSavedAccount" runat="server" CssClass="form-control-group js-person-saved-account">
-                    <Rock:RockDropDownList ID="ddlPersonSavedAccount" runat="server" />
-                    <a class="js-add-payment btn btn-default">Add</a>
+
+                <%-- If no saved account, choose between existing, or click change to show hosted payment --%>
+                <asp:Panel ID="pnlUseExistingPaymentNoSavedAccounts" runat="server" CssClass="js-use-existing-payment-method-no-saved-accounts">
+                    <asp:Literal ID="lUseExistingPaymentMethodNoSavedAccounts" runat="server" /><asp:LinkButton runat="server" ID="btnChangeFromExistingToHostedPayment" CssClass="margin-l-sm" OnClick="btnChangeToHostedPayment_Click">Change</asp:LinkButton>
                 </asp:Panel>
+
+                <%-- If the are saved accounts, choose between existing, a saved account, or click 'add method' to show hosted paymemnt --%>
+                <asp:Panel ID="pnlUseExistingPaymentWithSavedAccounts" runat="server" CssClass="js-use-existing-payment-method-with-saved-accounts">
+                    <Rock:RockRadioButtonList ID="rblExistingPaymentOrPersonSavedAccount" runat="server" Required="true" />
+                    <asp:LinkButton runat="server" ID="btnChangeFromExistingOrSavedAccountToHostedPayment" OnClick="btnChangeToHostedPayment_Click">Add Method</asp:LinkButton>
+                </asp:Panel>
+
+                <%-- If clicking 'change' on using existing, or clicking 'add method', show hosted payment  --%>
+                <asp:Panel ID="pnlHostedPaymentControl" CssClass="js-hosted-payment-control margin-t-md" runat="server">
+                    <Rock:RockControlWrapper ID="rcwHostedPaymentControl" runat="server" Label="Add New Account">
+                        <Rock:NotificationBox ID="nbPaymentTokenError" runat="server" NotificationBoxType="Validation" Visible="false" />
+                        <Rock:DynamicPlaceholder ID="phHostedPaymentControl" runat="server" />
+                        <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" />
+                    </Rock:RockControlWrapper>
+
+                    <%-- Save as Saved Account --%>
+                    <a class="js-show-saved-account-prompt">Save Account</a>
+                    <div class="js-saved-account-prompt margin-t-md">
+                        <Rock:RockTextBox ID="tbSaveAccount" runat="server" Label="Account Name" Required="false" Help="To save this payment information as a saved account, specify a name for the saved account." />
+                    </div>
+                </asp:Panel>
+
             </Rock:RockControlWrapper>
-
-            <div class="js-add-payment-new margin-b-md" style="display: none">
-                <Rock:NotificationBox ID="nbPaymentTokenError" runat="server" NotificationBoxType="Validation" Visible="false" />
-                <Rock:DynamicPlaceholder ID="phHostedPaymentControl" runat="server" />
-
-                <Rock:AddressControl ID="acBillingAddress" runat="server" UseStateAbbreviation="true" UseCountryAbbreviation="false" Label="" ShowAddressLine2="false" />
-            </div>
 
             <Rock:NotificationBox ID="nbUpdateScheduledPaymentWarning" runat="server" NotificationBoxType="Validation" Visible="false" />
 
             <div class="actions">
-                <%-- NOTE: When in New Payment mode, btnUpdateScheduledPayment ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback --%>
-                <Rock:BootstrapButton ID="btnUpdateScheduledPayment" runat="server" Text="Update" CssClass="btn btn-primary js-submit-hostedpaymentinfo" OnClick="btnUpdateScheduledPayment_Click" DataLoadingText="Updating..." />
+                <%-- NOTE: When in New Payment mode, btnUpdateScheduledPayment ends up telling the HostedPaymentControl (via the js-submit-hostedpaymentinfo hook) to request a token, which will cause the _hostedPaymentInfoControl_TokenReceived postback
+                    btnUpdateScheduledPayment_Click will only fire if using a saved payment (see $('.js-submit-hostedpaymentinfo').off().on('click').. )
+                --%>
+                <Rock:BootstrapButton ID="btnUpdateScheduledPayment" runat="server" Text="Update" CssClass="btn btn-primary js-submit-hostedpaymentinfo margin-t-md" OnClick="btnUpdateScheduledPayment_Click" DataLoadingText="Updating..." />
             </div>
         </asp:Panel>
 
@@ -51,66 +70,34 @@
 
         <script type="text/javascript">
 
-            function showPaymentInfo(animate) {
-                var $addPaymentNew = $('.js-add-payment-new');
-                var $addPaymentVisible = $('.js-add-payment-visible');
-                var $updateWithSavedAccount = $('.js-update-with-saved-account');
-
-                var showNewPaymentInfo = $addPaymentVisible.val() == 1;
-                if (showNewPaymentInfo) {
-                    $updateWithSavedAccount.hide();
-                    if (animate) {
-                        $addPaymentNew.slideDown();
-                    }
-                    else {
-                        $addPaymentNew.show();
-                    }
-                }
-                else {
-                    function showUpdateWithSavedAccount() {
-                        $updateWithSavedAccount.show();
-                    }
-
-                    if (animate) {
-                        promise = $addPaymentNew.slideUp(showUpdateWithSavedAccount);
-                    }
-                    else {
-                        promise = $addPaymentNew.hide(showUpdateWithSavedAccount);
-                    }
-                }
-            }
-
             Sys.Application.add_load(function () {
-
-                showPaymentInfo(false);
-
 
                 $('.js-submit-hostedpaymentinfo').off().on('click', function (e) {
                     // only get a payment token if prompting for a new payment
-                    if ($('.js-add-payment-new').is(":visible")) {
-                        debugger
+                    if ($('.js-hosted-payment-control').is(":visible")) {
+                        // prevent the btnUpdateScheduledPayment_Click autopostback event from firing by doing stopImmediatePropagation and returning false
                         e.stopImmediatePropagation();
                         <%=HostPaymentInfoSubmitScript%>
                         return false;
                     }
                 });
 
-                $('.js-add-payment').off().on('click', function () {
-                    var $addPaymentNew = $('.js-add-payment-new');
-                    var $addPaymentVisible = $('.js-add-payment-visible');
-                    if ($addPaymentVisible.val() == '1') {
-                        $addPaymentVisible.val(0);
-                    } else {
-                        $addPaymentVisible.val(1);
+                var $savedAccountPrompt = $('.js-saved-account-prompt');
+                $savedAccountPrompt.hide();
+
+                $('.js-show-saved-account-prompt').off().on('click', function () {
+                    if ($savedAccountPrompt.is(':visible')) {
+                        $savedAccountPrompt.slideUp();
+                        $('.js-save-new-account').val(0);
                     }
-
-                    showPaymentInfo(true);
+                    else {
+                        $savedAccountPrompt.slideDown();
+                        $('.js-save-new-account').val(1);
+                    }
                 })
-
+                
             });
         </script>
-
-
 
     </ContentTemplate>
 </asp:UpdatePanel>

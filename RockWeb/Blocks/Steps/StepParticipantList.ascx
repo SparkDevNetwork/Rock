@@ -1,5 +1,4 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="StepParticipantList.ascx.cs" Inherits="RockWeb.Blocks.Steps.StepParticipantList" %>
-
 <script type="text/javascript">
     Sys.Application.add_load(function () {
         $('.js-member-note').tooltip();
@@ -46,7 +45,7 @@
                                 </div>
                                 <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                             </Rock:GridFilter>
-                            <Rock:Grid ID="gSteps" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gSteps_Edit" CssClass="js-grid-group-members" OnRowDataBound="gSteps_RowDataBound" ExportSource="ColumnOutput" >
+                            <Rock:Grid ID="gSteps" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gSteps_Edit" CssClass="js-grid-step-list" OnRowDataBound="gSteps_RowDataBound" ExportSource="ColumnOutput" >
                                 <Columns>
                                     <Rock:SelectField></Rock:SelectField>
                                     <Rock:RockLiteralField ID="lExportFullName" HeaderText="Name" Visible="false" ExcelExportBehavior="AlwaysInclude" />

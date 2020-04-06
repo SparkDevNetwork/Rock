@@ -1065,11 +1065,11 @@ mission. We are so grateful for your commitment.</p>
             }
 
             // get the FinancialGateway's GatewayComponent so we can show a warning if they have an unsupported gateway.
-            bool unsupportedGateway = ( FinancialGateway.GetGatewayComponent() is IHostedGatewayComponent ) == false;
+            var hostedGatewayComponent = FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
 
             var testGatewayGuid = Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY.AsGuid();
 
-            if ( unsupportedGateway )
+            if ( hostedGatewayComponent == null )
             {
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Unsupported Gateway", "This block only support Gateways that have a hosted payment interface." );
                 pnlTransactionEntry.Visible = false;
@@ -2590,6 +2590,8 @@ mission. We are so grateful for your commitment.</p>
                 paymentInfo.LastName = tbLastName.Text;
             }
 
+            paymentInfo.FinancialPersonSavedAccountId = ddlPersonSavedAccount.SelectedValueAsId();
+
             // get the payment comment
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
             mergeFields.Add( "TransactionDateTime", RockDateTime.Now );
@@ -2932,6 +2934,7 @@ mission. We are so grateful for your commitment.</p>
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
             nbProcessTransactionError.Visible = false;
+            nbPaymentTokenError.Visible = false;
 
             if ( this.IsScheduledTransaction() )
             {

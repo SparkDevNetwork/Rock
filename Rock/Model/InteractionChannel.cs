@@ -226,6 +226,36 @@ namespace Rock.Model
 
         private bool _isActive = true;
 
+        /// <summary>
+        /// Gets or sets the channel custom 1 label.
+        /// </summary>
+        /// <value>
+        /// The channel custom 1 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustom1Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom 2 label.
+        /// </summary>
+        /// <value>
+        /// The channel custom 2 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustom2Label { get; set; }
+
+        /// <summary>
+        /// Gets or sets the channel custom indexed 1 label.
+        /// </summary>
+        /// <value>
+        /// The channel custom indexed 1 label.
+        /// </value>
+        [DataMember]
+        [MaxLength( 100 )]
+        public string ChannelCustomIndexed1Label { get; set; }
+
         #endregion
 
         #region Virtual Properties

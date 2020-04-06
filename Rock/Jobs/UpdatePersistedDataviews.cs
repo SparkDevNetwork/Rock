@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -85,7 +86,6 @@ namespace Rock.Jobs
                         {
                             context.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
                             dataView.PersistResult( sqlCommandTimeout );
-                            dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
                             persistContext.SaveChanges();
                             updatedDataViewCount++;
                         }

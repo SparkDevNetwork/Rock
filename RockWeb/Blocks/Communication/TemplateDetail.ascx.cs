@@ -43,15 +43,36 @@ namespace RockWeb.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
 
-    [BooleanField( "Personal Templates View", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", false, "", 0 )]
-    [BinaryFileTypeField( "Attachment Binary File Type",
-        description: "The FileType to use for files that are attached to an sms or email communication",
-        required: true,
-        defaultBinaryFileTypeGuid: Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
-        order: 1,
-        key: "AttachmentBinaryFileType" )]
+    #region Block Attributes
+    [BooleanField(
+        "Personal Templates View",
+        Description = "Is this block being used to display personal templates (only templates that current user is allowed to edit)?",
+        DefaultBooleanValue = false,
+        Order = 0,
+        Key = AttributeKey.PersonalTemplatesView )]
+    [BinaryFileTypeField(
+        "Attachment Binary File Type",
+        Description = "The FileType to use for files that are attached to an sms or email communication",
+        IsRequired = true,
+        DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
+        Order = 1,
+        Key = AttributeKey.AttachmentBinaryFileType )]
+    #endregion Block Attributes
     public partial class TemplateDetail : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string PersonalTemplatesView = "PersonalTemplatesView";
+            public const string AttachmentBinaryFileType = "AttachmentBinaryFileType";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -210,7 +231,7 @@ namespace RockWeb.Blocks.Communication
 
             rockContext.SaveChanges();
 
-            var personalView = GetAttributeValue( "PersonalTemplatesView" ).AsBoolean();
+            var personalView = GetAttributeValue( AttributeKey.PersonalTemplatesView ).AsBoolean();
             if ( newTemplate )
             {
                 communicationTemplate = communicationTemplateService.Get( communicationTemplate.Id );
@@ -493,7 +514,7 @@ namespace RockWeb.Blocks.Communication
             tbBCCList.ReadOnly = restrictedEdit;
             tbEmailSubject.ReadOnly = restrictedEdit;
             fupAttachments.Visible = !restrictedEdit;
-            fupAttachments.BinaryFileTypeGuid = this.GetAttributeValue( "AttachmentBinaryFileType" ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+            fupAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             // Allow these to be Editable if they are IsSystem, but not if they don't have EDIT Auth
             tbDescription.ReadOnly = readOnly;
             imgTemplatePreview.Enabled = !readOnly;

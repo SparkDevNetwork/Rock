@@ -26,11 +26,11 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Blocks.Types.Web.Events;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Event

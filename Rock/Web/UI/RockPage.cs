@@ -1249,15 +1249,6 @@ namespace Rock.Web.UI
                                     {
                                         blockControl.GetBreadCrumbs( PageReference ).ForEach( c => PageReference.BreadCrumbs.Add( c ) );
                                     }
-
-                                    // If the blocktype's security actions have not yet been loaded, load them now
-                                    block.BlockType.SetSecurityActions( blockControl );
-                                }
-
-                                if ( control is RockBlockTypeWrapper wrapper )
-                                {
-                                    // If the blocktype's security actions have not yet been loaded, load them now
-                                    block.BlockType.SetSecurityActions( wrapper.Block.GetType() );
                                 }
                             }
 
@@ -1343,7 +1334,7 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aBlockConfig );
                             aBlockConfig.Attributes.Add( "class", "btn block-config js-block-config" );
                             aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
-                            aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
+                            aBlockConfig.Attributes.Add( "Title", "Block Configuration (Alt-B)" );
                             HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                             aBlockConfig.Controls.Add( iBlockConfig );
                             iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
@@ -1358,7 +1349,7 @@ namespace Rock.Web.UI
                             aPageProperties.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                             aPageProperties.Attributes.Add( "class", "btn properties js-page-properties" );
                             aPageProperties.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", _pageCache.Id ) ) + "')" );
-                            aPageProperties.Attributes.Add( "Title", "Page Properties" );
+                            aPageProperties.Attributes.Add( "Title", "Page Properties (Alt+P)" );
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
                             iPageProperties.Attributes.Add( "class", "fa fa-cog" );
@@ -1373,7 +1364,7 @@ namespace Rock.Web.UI
                             aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                             aChildPages.Attributes.Add( "class", "btn page-child-pages js-page-child-pages" );
                             aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", _pageCache.Id ) ) + "')" );
-                            aChildPages.Attributes.Add( "Title", "Child Pages" );
+                            aChildPages.Attributes.Add( "Title", "Child Pages (Alt+L)" );
                             HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                             aChildPages.Controls.Add( iChildPages );
                             iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
@@ -1383,7 +1374,7 @@ namespace Rock.Web.UI
                             buttonBar.Controls.Add( aPageZones );
                             aPageZones.Attributes.Add( "class", "btn page-zones js-page-zones" );
                             aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
-                            aPageZones.Attributes.Add( "Title", "Page Zones" );
+                            aPageZones.Attributes.Add( "Title", "Page Zones (Alt+Z)" );
                             HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                             aPageZones.Controls.Add( iPageZones );
                             iPageZones.Attributes.Add( "class", "fa fa-columns" );
@@ -1401,7 +1392,7 @@ namespace Rock.Web.UI
                             aPageSecurity.Controls.Add( iPageSecurity );
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
-                            // ShorLink Properties
+                            // ShortLink Properties
                             HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
                             buttonBar.Controls.Add( aShortLink );
                             aShortLink.ID = "aShortLink";
@@ -1548,17 +1539,6 @@ namespace Rock.Web.UI
         protected override void OnLoadComplete( EventArgs e )
         {
             base.OnLoadComplete( e );
-
-            // create a page view transaction if enabled
-            // moved this from OnLoad so we could get the updated title (if Lava or the block changed it)
-            if ( !Page.IsPostBack && _pageCache != null )
-            {
-                if ( _pageCache.Layout.Site.EnablePageViews )
-                {
-                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache );
-                    pageViewTransaction.Enqueue();
-                }
-            }
         }
 
         /// <summary>
@@ -1722,10 +1702,22 @@ namespace Rock.Web.UI
         {
             base.OnSaveStateComplete( e );
 
+            TimeSpan tsDuration = RockDateTime.Now.Subtract( ( DateTime ) Context.Items["Request_Start_Time"] );
+
+            // create a page view transaction if enabled
+            // Earlier it was moved to OnLoadComplete from OnLoad so we could get the updated title (if Lava or the block changed it)
+            // Then it was moved from OnLoadComplete so we could get the Page Load Time
+            if ( !Page.IsPostBack && _pageCache != null )
+            {
+                if ( _pageCache.Layout.Site.EnablePageViews )
+                {
+                    var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ), this.Site, this._pageCache, null, tsDuration.TotalSeconds );
+                    pageViewTransaction.Enqueue();
+                }
+            }
+
             if ( phLoadStats != null )
             {
-                TimeSpan tsDuration = RockDateTime.Now.Subtract( (DateTime)Context.Items["Request_Start_Time"] );
-
                 var customPersister = this.PageStatePersister as RockHiddenFieldPageStatePersister;
 
                 if ( customPersister != null )
@@ -2014,7 +2006,8 @@ Sys.Application.add_load(function () {
             string virtualPath = this.ResolveRockUrl( url );
             if ( Context.Request != null && Context.Request.Url != null )
             {
-                return string.Format( "{0}://{1}{2}", Context.Request.Url.Scheme, Context.Request.Url.Authority, virtualPath );
+                string protocol = WebRequestHelper.IsSecureConnection(Context) ? "https" : Context.Request.Url.Scheme;
+                return string.Format( "{0}://{1}{2}", protocol, Context.Request.Url.Authority, virtualPath );
             }
 
             return GlobalAttributesCache.Get().GetValue("PublicApplicationRoot").EnsureTrailingForwardslash() + virtualPath.RemoveLeadingForwardslash();
@@ -2993,17 +2986,92 @@ Sys.Application.add_load(function () {
         /// <param name="src">The source.</param>
         public static void AddScriptSrcToHead( Page page, string scriptId, string src )
         {
+            AddScriptSrcToHead( page, scriptId, src, null );
+        }
+
+        /// <summary>
+        /// Adds a script tag with the specified id, source, and attributes to head (if it doesn't already exist)
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="scriptId">The script identifier.</param>
+        /// <param name="src">The source.</param>
+        /// <param name="additionalAttributes">The additional attributes.</param>
+        public static void AddScriptSrcToHead( Page page, string scriptId, string src, Dictionary<string, string> additionalAttributes )
+        {
             if ( page != null && page.Header != null )
             {
                 var header = page.Header;
 
                 if ( !header.Controls.OfType<Literal>().Any( a => a.ID == scriptId ) )
                 {
-                    Literal l = new Literal {
-                        ID = scriptId,
-                        Text = $"<script id='{scriptId}' src='{src}'></script>"
+                    Literal l = new Literal
+                    {
+                        ID = scriptId
                     };
 
+                    StringBuilder sbScriptTagHTML = new StringBuilder();
+                    sbScriptTagHTML.Append( $"<script id='{scriptId}' src='{src}'" );
+                    string additionalAttributesHtml = additionalAttributes?.Select( a => $"{a.Key}='{a.Value}'" ).ToList().AsDelimited( " " );
+                    if ( additionalAttributesHtml.IsNotNullOrWhiteSpace() )
+                    {
+                        sbScriptTagHTML.Append( $" {additionalAttributesHtml}" );
+                    }
+
+                    sbScriptTagHTML.Append( "></script>" );
+                    l.Text = sbScriptTagHTML.ToString();
+                    header.Controls.Add( l );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId and css
+        /// </summary>
+        /// <param name="styleTagId">The script identifier.</param>
+        /// <param name="src">The source.</param>
+        public void AddStyleToHead( string styleTagId, string src )
+        {
+            RockPage.AddStyleToHead( this.Page, styleTagId, src );
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId and css
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="styleTagId">The style tag identifier.</param>
+        /// <param name="css">The CSS.</param>
+        public static void AddStyleToHead( Page page, string styleTagId, string css )
+        {
+            AddStyleToHead( page, styleTagId, css, null );
+        }
+
+        /// <summary>
+        /// Adds a style tag with the specified styleTagId, css, and attributes to head (if it doesn't already exist)
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <param name="styleTagId">The style tag identifier.</param>
+        /// <param name="css">The CSS.</param>
+        /// <param name="additionalAttributes">The additional attributes.</param>
+        public static void AddStyleToHead( Page page, string styleTagId, string css, Dictionary<string, string> additionalAttributes )
+        {
+            if ( page != null && page.Header != null )
+            {
+                var header = page.Header;
+                if ( !header.Controls.OfType<Literal>().Any( a => a.ID == styleTagId ) )
+                {
+                    Literal l = new Literal
+                    {
+                        ID = styleTagId
+                    };
+                    StringBuilder sbStyleTagHTML = new StringBuilder();
+                    sbStyleTagHTML.Append( $"<style id='{styleTagId}'" );
+                    string additionalAttributesHtml = additionalAttributes?.Select( a => $"{a.Key}='{a.Value}'" ).ToList().AsDelimited( " " );
+                    if ( additionalAttributesHtml.IsNotNullOrWhiteSpace() )
+                    {
+                        sbStyleTagHTML.Append( $" {additionalAttributesHtml}" );
+                    }
+                    sbStyleTagHTML.Append( $">\n{css}\n</style>" );
+                    l.Text = sbStyleTagHTML.ToString();
                     header.Controls.Add( l );
                 }
             }

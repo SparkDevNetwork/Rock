@@ -708,9 +708,7 @@ namespace Rock.Model
                 return;
             }
 
-            var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-            var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
-            var preferredCommunicationTypeAttribute = AttributeCache.Get( SystemGuid.Attribute.GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM.AsGuid() );
+
             var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
             var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
 
@@ -733,6 +731,9 @@ namespace Rock.Model
                 .AsNoTracking()
                 .ToList();
 
+            var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+            var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+
             foreach ( var newMember in newMemberInList )
             {
                 var communicationRecipient = new CommunicationRecipient
@@ -742,41 +743,9 @@ namespace Rock.Model
                     CommunicationId = Id
                 };
 
-                switch ( CommunicationType )
-                {
-                    case CommunicationType.Email:
-                        communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                        break;
-                    case CommunicationType.SMS:
-                        communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
-                        break;
-                    case CommunicationType.RecipientPreference:
-                        newMember.LoadAttributes();
-
-                        if ( preferredCommunicationTypeAttribute != null )
-                        {
-                            var recipientPreference = ( CommunicationType? ) newMember
-                                .GetAttributeValue( preferredCommunicationTypeAttribute.Key ).AsIntegerOrNull();
-
-                            switch ( recipientPreference )
-                            {
-                                case CommunicationType.SMS:
-                                    communicationRecipient.MediumEntityTypeId = smsMediumEntityType.Id;
-                                    break;
-                                case CommunicationType.Email:
-                                    communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                                    break;
-                                default:
-                                    communicationRecipient.MediumEntityTypeId = emailMediumEntityType.Id;
-                                    break;
-                            }
-                        }
-
-                        break;
-
-                    default:
-                        throw new Exception( "Unexpected CommunicationType: " + CommunicationType.ConvertToString() );
-                }
+                communicationRecipient.MediumEntityTypeId = DetermineMediumEntityTypeId( emailMediumEntityType.Id, smsMediumEntityType.Id, CommunicationType,
+                                                                newMember.CommunicationPreference,
+                                                                newMember.Person.CommunicationPreference );
 
                 communicationRecipientService.Add( communicationRecipient );
             }
@@ -792,6 +761,44 @@ namespace Rock.Model
             }
 
             rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Determines the medium entity type identifier.
+        /// Given the email and sms medium entity type ids and the available communication preferences
+        /// this method will determine which medium entity type id should be used and return that id.
+        /// If a preference could not be determined the email medium entity type id will be returned.
+        /// </summary>
+        /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
+        /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
+        /// <param name="recipientPreference">The recipient preference.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception">Unexpected CommunicationType: " + currentCommunicationPreference.ConvertToString()</exception>
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, params CommunicationType[] recipientPreference )
+        {
+            for ( var i = 0; i < recipientPreference.Length; i++ )
+            {
+                var currentCommunicationPreference = recipientPreference[i];
+                var hasNextCommunicaitonPreference = ( i + 1 ) < recipientPreference.Length;
+
+                switch ( currentCommunicationPreference )
+                {
+                    case CommunicationType.Email:
+                        return emailMediumEntityTypeId;
+                    case CommunicationType.SMS:
+                        return smsMediumEntityTypeId;
+                    case CommunicationType.RecipientPreference:
+                        if ( hasNextCommunicaitonPreference )
+                        {
+                            break;
+                        }
+                        return emailMediumEntityTypeId;
+                    default:
+                        throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "recipientPreference" );
+                }
+            }
+
+            return emailMediumEntityTypeId;
         }
 
         /// <summary>
@@ -898,7 +905,7 @@ namespace Rock.Model
 
             var delayTime = RockDateTime.Now.AddMinutes( -10 );
 
-             lock ( _obj )
+            lock ( _obj )
             {
                 recipient = new CommunicationRecipientService( rockContext ).Queryable().Include( r => r.Communication ).Include( r => r.PersonAlias.Person )
                     .Where( r =>
@@ -993,6 +1000,7 @@ namespace Rock.Model
         /// <summary>
         /// RecipientPreference
         /// </summary>
+        [Display( Name = "No Preference" )]
         RecipientPreference = 0,
 
         /// <summary>

@@ -29,7 +29,6 @@
 
 </section>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.0/js/swiper.js"></script>
 <script>
   var swiper = new Swiper('#{{ swiperid }}', {
       slidesPerView: 3.3,
@@ -73,5 +72,9 @@
       {% if initialslide and initialslide != empty %},
         initialSlide: {{ initialslide }}
       {% endif %}
+  });
+  
+  $(document).ready(function(){
+    swiper.update();
   });
 </script>

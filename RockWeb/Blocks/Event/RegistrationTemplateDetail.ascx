@@ -431,6 +431,9 @@
                         <Rock:HiddenFieldWithClass ID="hfHasRegistrations" runat="server" CssClass="js-has-registrations" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-template" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                            <asp:LinkButton ID="btnPlacements" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnPlacements_Click">
+                                <i class="fa fa-random"></i>
+                            </asp:LinkButton>
                             <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>

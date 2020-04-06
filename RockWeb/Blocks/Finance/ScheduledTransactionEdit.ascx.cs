@@ -307,7 +307,18 @@ achieve our mission.  We are so grateful for your commitment.
                 return;
             }
 
-            if ( Gateway == null || ( this.Gateway is IHostedGatewayComponent ) )
+            var hostedGatewayComponent = this.Gateway as IHostedGatewayComponent;
+            bool isHostedGateway = false;
+            if ( hostedGatewayComponent != null )
+            {
+                var scheduledTransaction = GetScheduledTransaction( false );
+                if ( scheduledTransaction != null )
+                {
+                    isHostedGateway = hostedGatewayComponent.GetSupportedHostedGatewayModes( scheduledTransaction.FinancialGateway ).Contains( HostedGatewayMode.Hosted );
+                }
+            }
+
+            if ( isHostedGateway )
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Configuration", "This page is not configured to allow edits for the payment gateway associated with the selected transaction." );
@@ -339,8 +350,9 @@ achieve our mission.  We are so grateful for your commitment.
             divCCPaymentInfo.RemoveCssClass( "active" );
             divACHPaymentInfo.RemoveCssClass( "active" );
 
-            if ( !Gateway.IsUpdatingSchedulePaymentMethodSupported )
+            if ( !Gateway.IsUpdatingSchedulePaymentMethodSupported || Gateway is IThreeStepGatewayComponent )
             {
+                // This block doesn't support ThreeStepGateway payment entry, but the "No Change" option is OK
                 divPaymentMethodModification.Visible = false;
             }
 
@@ -1162,7 +1174,8 @@ achieve our mission.  We are so grateful for your commitment.
             }
             else
             {
-                paymentInfo = new PaymentInfo();
+                // no change
+                paymentInfo = new ReferencePaymentInfo();
             }
 
             if ( paymentInfo != null )

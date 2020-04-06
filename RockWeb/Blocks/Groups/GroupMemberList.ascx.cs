@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -40,15 +41,16 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Lists all the members of the given group." )]
 
-    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter", false )]
-    [LinkedPage( "Detail Page" )]
-    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 2, "PersonProfilePage" )]
-    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 3 )]
-    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 3 )]
-    [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 4 )]
-    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 5, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
-    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 6, SHOW_DATE_ADDED_KEY )]
-    [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 7 )]
+    [TextField( "Block Title", "The text used in the title/header bar for this block.", true, "Group Members", "", 0 )]
+    [LinkedPage( "Detail Page", order: 1 )]
+    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter", false, order: 2 )]
+    [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 3, "PersonProfilePage" )]
+    [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 4 )]
+    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order:5 )]
+    [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 6 )]
+    [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
+    [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
+    [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 9 )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
         private const string SHOW_FIRST_LAST_ATTENDANCE_KEY = "ShowAttendance";
@@ -428,7 +430,7 @@ namespace RockWeb.Blocks.Groups
                 sbNameHtml.Append( groupMember.Person.FullName );
                 if ( groupMember.Person.TopSignalColor.IsNotNullOrWhiteSpace() )
                 {
-                    sbNameHtml.Append( groupMember.Person.GetSignalMarkup() );
+                    sbNameHtml.Append( " " + groupMember.Person.GetSignalMarkup() );
                 }
 
                 if ( _hasGroupRequirements )
@@ -1034,7 +1036,20 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { "PersonId" };
-            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( "###", "{0}" );
+
+            /*
+             * 2020-02-27 - JPH
+             *
+             * The LinkedPageUrl() method now has logic to prevent JavaScript Injection attacks. See the following:
+             * https://app.asana.com/0/1121505495628584/1162600333693130/f
+             * https://github.com/SparkDevNetwork/Rock/commit/4d0a4917282121d8ea55064d4f660a9b1c476946#diff-4a0cf24007088762bcf634d2ca28f30a
+             *
+             * Because of this, the "###" we pass into this method below will be returned encoded.
+             * We now need to search for the encoded version within our usage of the Replace() method.
+             *
+             * Reason: XSS Prevention
+             */
+            hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
             hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
@@ -1236,7 +1251,10 @@ namespace RockWeb.Blocks.Groups
             rFilter.Visible = true;
             gGroupMembers.Visible = true;
 
-            lHeading.Text = string.Format( "{0} {1}", _groupTypeCache.GroupTerm, _groupTypeCache.GroupMemberTerm.Pluralize() );
+            string blockTitle = GetAttributeValue( "BlockTitle" );
+            lHeading.Text = !string.IsNullOrWhiteSpace( blockTitle )
+                ? blockTitle
+                : string.Format( "{0} {1}", _groupTypeCache.GroupTerm, _groupTypeCache.GroupMemberTerm.Pluralize() );
 
             _fullNameField = gGroupMembers.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lExportFullName" ).FirstOrDefault();
             _nameWithHtmlField = gGroupMembers.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lNameWithHtml" ).FirstOrDefault();

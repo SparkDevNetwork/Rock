@@ -13,17 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-
+using System.Web;
 using Quartz;
 
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -72,128 +74,169 @@ namespace Rock.Jobs
             bool runStatisticsUpdate = dataMap.GetBoolean( "RunStatisticsUpdate" );
 
             int commandTimeout = dataMap.GetString( "CommandTimeout" ).AsInteger();
-            int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
-            int minimunFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
-            int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
-            bool useONLINEIndexRebuild = dataMap.GetString( "UseONLINEIndexRebuild" ).AsBoolean();
-
-            string alertEmail = dataMap.GetString( "AlertEmail" );
-
             StringBuilder resultsMessage = new StringBuilder();
-            Stopwatch stopwatch;
-
-            bool errorsFound = false;
+            bool hasIntegrityCheckPassed = false;
 
             // run integrity check
             if ( runIntegrityCheck )
             {
-                string databaseName = new RockContext().Database.Connection.Database;
-                string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
-
-                stopwatch = Stopwatch.StartNew();
-                int errors = DbService.ExecuteCommand( integrityQuery, System.Data.CommandType.Text, null, commandTimeout );
-                stopwatch.Stop();
-
-                resultsMessage.Append( $"Integrity Check took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
-                
-
-                if ( errors > 0 )
+                try
                 {
-                    // oh no...
-                    errorsFound = true;
-                    string errorMessage = $"Some errors were reported when running a database integrity check on your Rock database. We'd recommend running the command below under 'Admin Tools > Power Tools > SQL Command' to get further details. <p>DBCC CHECKDB ('{ databaseName }') WITH NO_INFOMSGS, ALL_ERRORMSGS</p>";
+                    string alertEmail = dataMap.GetString( "AlertEmail" );
+                    hasIntegrityCheckPassed = IntegrityCheck( commandTimeout, alertEmail, resultsMessage );
 
-                    var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null );
-                    mergeFields.Add( "ErrorMessage", errorMessage );
-                    mergeFields.Add( "Errors", errors );
-
-                    resultsMessage.Append( errorMessage );
-
-                    if ( alertEmail.IsNotNullOrWhiteSpace() )
-                    {
-                        var globalAttributes = GlobalAttributesCache.Get();
-                        string emailHeader = globalAttributes.GetValue( "EmailHeader" );
-                        string emailFooter = globalAttributes.GetValue( "EmailFooter" );
-                        string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";
-
-                        var emailMessage = new RockEmailMessage();
-                        var alertEmailList = alertEmail.Split( ',' ).ToList();
-                        var recipients = alertEmailList.Select( a => RockEmailMessageRecipient.CreateAnonymous( a, mergeFields ) ).ToList();
-                        emailMessage.Subject = "Rock: Database Integrity Check Error";
-                        emailMessage.Message = messageBody;
-                        emailMessage.Send();
-                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex, HttpContext.Current );
+                    ExceptionLogService.LogException( resultsMessage.ToString() );
+                    throw;
                 }
             }
 
-            if ( !errorsFound )
+            if ( hasIntegrityCheckPassed )
             {
                 // rebuild fragmented indexes
                 if ( runIndexRebuild )
                 {
-                    Dictionary<string, object> parms = new Dictionary<string, object>();
-                    parms.Add( "@PageCountLimit", minimumIndexPageCount );
-                    parms.Add( "@MinFragmentation", minimunFragmentationPercentage );
-                    parms.Add( "@MinFragmentationRebuild", rebuildThresholdPercentage );
-                    parms.Add( "@UseONLINEIndexRebuild", useONLINEIndexRebuild );
-
-                    stopwatch = Stopwatch.StartNew();
-                    DbService.ExecuteCommand( "spDbaRebuildIndexes", System.Data.CommandType.StoredProcedure, parms, commandTimeout );
-                    stopwatch.Stop();
-
-                    resultsMessage.Append( $", Index Rebuild took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+                    try
+                    {
+                        RebuildFragmentedIndexes( dataMap, commandTimeout, resultsMessage );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, HttpContext.Current );
+                        ExceptionLogService.LogException( resultsMessage.ToString() );
+                        throw;
+                    }
                 }
 
                 // update statistics
                 if ( runStatisticsUpdate )
                 {
-                    // derived from http://www.sqlservercentral.com/scripts/Indexing/31823/
-                    // NOTE: Can't use sp_MSForEachtable because it isn't supported on AZURE (and it is undocumented)
-                    // NOTE: Can't use sp_updatestats because it requires membership in the sysadmin fixed server role, or ownership of the database (dbo)
-                    string statisticsQuery = @"
-DECLARE updatestats CURSOR
-FOR
-SELECT TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = 'dbo'
-ORDER BY TABLE_NAME
-
-OPEN updatestats
-
-DECLARE @tablename NVARCHAR(max)
-DECLARE @Statement NVARCHAR(max)
-
-FETCH NEXT
-FROM updatestats
-INTO @tablename
-
-WHILE (@@FETCH_STATUS = 0)
-BEGIN
-	PRINT N'UPDATING STATISTICS [' + @tablename + ']'
-	SET @Statement = 'UPDATE STATISTICS [' + @tablename + ']'
-
-	EXEC sp_executesql @Statement
-
-	FETCH NEXT
-	FROM updatestats
-	INTO @tablename
-END
-
-CLOSE updatestats
-
-DEALLOCATE updatestats
-";
-
-                    stopwatch = Stopwatch.StartNew();
-                    DbService.ExecuteCommand( statisticsQuery, System.Data.CommandType.Text, null, commandTimeout );
-                    stopwatch.Stop();
-
-                    resultsMessage.Append( $", Statistics Update took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+                    try
+                    {
+                        UpdateStatistics( commandTimeout, resultsMessage );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex, HttpContext.Current );
+                        ExceptionLogService.LogException( resultsMessage.ToString() );
+                        throw;
+                    }
                 }
             }
 
             context.Result = resultsMessage.ToString().TrimStart( ',' );
         }
 
+        private bool IntegrityCheck( int commandTimeout, string alertEmail, StringBuilder resultsMessage )
+        {
+            string databaseName = new RockContext().Database.Connection.Database;
+            string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
+            bool checkPassed = true;
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            int errors = DbService.ExecuteCommand( integrityQuery, System.Data.CommandType.Text, null, commandTimeout );
+            stopwatch.Stop();
+
+            resultsMessage.Append( $"Integrity Check took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+                
+
+            if ( errors > 0 )
+            {
+                // oh no...
+                checkPassed = false;
+                string errorMessage = $"Some errors were reported when running a database integrity check on your Rock database. We'd recommend running the command below under 'Admin Tools > Power Tools > SQL Command' to get further details. <p>DBCC CHECKDB ('{ databaseName }') WITH NO_INFOMSGS, ALL_ERRORMSGS</p>";
+
+                var mergeFields = Lava.LavaHelper.GetCommonMergeFields( null, null );
+                mergeFields.Add( "ErrorMessage", errorMessage );
+                mergeFields.Add( "Errors", errors );
+
+                resultsMessage.Append( errorMessage );
+
+                if ( alertEmail.IsNotNullOrWhiteSpace() )
+                {
+                    var globalAttributes = GlobalAttributesCache.Get();
+                    string emailHeader = globalAttributes.GetValue( "EmailHeader" );
+                    string emailFooter = globalAttributes.GetValue( "EmailFooter" );
+                    string messageBody = $"{emailHeader} {errorMessage} <p><small>This message was generated from the Rock Database Maintenance Job</small></p>{emailFooter}";
+
+                    var emailMessage = new RockEmailMessage();
+                    var alertEmailList = alertEmail.Split( ',' ).ToList();
+                    var recipients = alertEmailList.Select( a => RockEmailMessageRecipient.CreateAnonymous( a, mergeFields ) ).ToList();
+                    emailMessage.Subject = "Rock: Database Integrity Check Error";
+                    emailMessage.Message = messageBody;
+                    emailMessage.Send();
+                }
+            }
+
+            return checkPassed;
+        }
+
+        private void RebuildFragmentedIndexes( JobDataMap dataMap, int commandTimeout, StringBuilder resultsMessage )
+        {
+            int minimumIndexPageCount = dataMap.GetString( "MinimumIndexPageCount" ).AsInteger();
+            int minimunFragmentationPercentage = dataMap.GetString( "MinimumFragmentationPercentage" ).AsInteger();
+            int rebuildThresholdPercentage = dataMap.GetString( "RebuildThresholdPercentage" ).AsInteger();
+            bool useONLINEIndexRebuild = dataMap.GetString( "UseONLINEIndexRebuild" ).AsBoolean();
+
+            Dictionary<string, object> parms = new Dictionary<string, object>();
+            parms.Add( "@PageCountLimit", minimumIndexPageCount );
+            parms.Add( "@MinFragmentation", minimunFragmentationPercentage );
+            parms.Add( "@MinFragmentationRebuild", rebuildThresholdPercentage );
+            parms.Add( "@UseONLINEIndexRebuild", useONLINEIndexRebuild );
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            DbService.ExecuteCommand( "spDbaRebuildIndexes", System.Data.CommandType.StoredProcedure, parms, commandTimeout );
+            stopwatch.Stop();
+
+            resultsMessage.Append( $", Index Rebuild took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+        }
+
+        private void UpdateStatistics(int commandTimeout, StringBuilder resultsMessage )
+        {
+            // derived from http://www.sqlservercentral.com/scripts/Indexing/31823/
+            // NOTE: Can't use sp_MSForEachtable because it isn't supported on AZURE (and it is undocumented)
+            // NOTE: Can't use sp_updatestats because it requires membership in the sysadmin fixed server role, or ownership of the database (dbo)
+            string statisticsQuery = @"
+                DECLARE updatestats CURSOR
+                FOR
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = 'dbo'
+                ORDER BY TABLE_NAME
+
+                OPEN updatestats
+
+                DECLARE @tablename NVARCHAR(max)
+                DECLARE @Statement NVARCHAR(max)
+
+                FETCH NEXT
+                FROM updatestats
+                INTO @tablename
+
+                WHILE (@@FETCH_STATUS = 0)
+                BEGIN
+	                PRINT N'UPDATING STATISTICS [' + @tablename + ']'
+	                SET @Statement = 'UPDATE STATISTICS [' + @tablename + ']'
+
+	                EXEC sp_executesql @Statement
+
+	                FETCH NEXT
+	                FROM updatestats
+	                INTO @tablename
+                END
+
+                CLOSE updatestats
+
+                DEALLOCATE updatestats";
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            DbService.ExecuteCommand( statisticsQuery, System.Data.CommandType.Text, null, commandTimeout );
+            stopwatch.Stop();
+
+            resultsMessage.Append( $", Statistics Update took {( stopwatch.ElapsedMilliseconds / 1000 )}s" );
+        }
     }
 }

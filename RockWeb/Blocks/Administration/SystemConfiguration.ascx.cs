@@ -17,18 +17,13 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Xml;
 
 using Rock;
-using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Attribute;
 using System.Configuration;
 using Microsoft.Web.XmlTransform;
 using Rock.SystemKey;
@@ -44,6 +39,21 @@ namespace RockWeb.Blocks.Administration
     [Description( "Used for making configuration changes to configurable items in the web.config." )]
     public partial class SystemConfiguration : Rock.Web.UI.RockBlock
     {
+        #region Defaults
+
+        /// <summary>
+        /// Default setting values
+        /// </summary>
+        private static class SettingDefault
+        {
+            /// <summary>
+            /// The cookie timeout
+            /// </summary>
+            public const int CookieTimeout = 43200;
+        }
+
+        #endregion Defaults
+
         #region Fields
 
         // used for private variables
@@ -102,6 +112,7 @@ namespace RockWeb.Blocks.Administration
 
             BindOtherAppSettings();
             BindMaxFileSize();
+            BindCookieTimeout();
 
             BindExperimentalSettings();
         }
@@ -162,6 +173,7 @@ namespace RockWeb.Blocks.Administration
 
             var section = ( System.Web.Configuration.SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
             section.HttpRuntime.MaxRequestLength = int.Parse( numbMaxSize.Text ) * 1024;
+            section.Authentication.Forms.Timeout = TimeSpan.FromMinutes( numCookieTimeout.IntegerValue ?? SettingDefault.CookieTimeout );
 
             rockWebConfig.Save();
 
@@ -231,6 +243,23 @@ namespace RockWeb.Blocks.Administration
                 //numbMaxSize.MinimumValue = Math.Round(section.RequestLengthDiskThreshold * 10.48576, 0 ).ToString();
                 //numbMaxSize.ToolTip = string.Format( "between {0} and {1} MB", section.RequestLengthDiskThreshold, numbMaxSize.MaximumValue );
             }
+        }
+
+        /// <summary>
+        /// Binds the cookie timeout.
+        /// </summary>
+        private void BindCookieTimeout()
+        {
+            var rockWebConfig = WebConfigurationManager.OpenWebConfiguration( "~" );
+            var systemWebSection = ( SystemWebSectionGroup ) rockWebConfig.GetSectionGroup( "system.web" );
+
+            if ( systemWebSection == null )
+            {
+                numCookieTimeout.IntegerValue = SettingDefault.CookieTimeout;
+                return;
+            }
+
+            numCookieTimeout.IntegerValue = ( int ) systemWebSection.Authentication.Forms.Timeout.TotalMinutes;
         }
 
         /// <summary>

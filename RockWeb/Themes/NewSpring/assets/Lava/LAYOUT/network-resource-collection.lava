@@ -1,5 +1,5 @@
 {% assign category = Item | Attribute:'Category' %}
-{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign currentUrl = 'Global' | Page:'Url' | Url:'pathandquery' %}
 
 {% capture pageTitle %}{% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }}{% endcapture %}
 {% capture browserTitle %}{{ Item.Title | Replace:"'","’" }} | {% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }} | Resources | NewSpring Network{% endcapture %}
@@ -109,17 +109,19 @@
         {% for result in results %}[[ item ]]
             {% contentchannelitem id:'{{ result.Id }}' iterator:'children' %}
                 {% for child in children %}
-
                     {% assign id = child.Id %}
                     {% assign cciid = child.Id %}
-                    {% assign type = forloop.index | Prepend:'Week ' %}
+                    {% assign type = result.Index | Plus:1 | Prepend:'Week ' %}
                     {% assign video = child | Attribute:'Video','RawValue' %}
+                    {% assign parentimage = child.ParentItems | First | Property:'ContentChannelItem','Object' | Attribute:'ImageLandscape','Url' %}
                     {% assign childimage = child | Attribute:'ImageLandscape','Url' %}
                     {% capture imageurl %}
                         {% if childimage and childimage != empty %}
                             {{ childimage }}
                         {% elseif video and video != empty %}
                             {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+                        {% elseif parentimage and parentimage != empty %}
+                            {{ parentimage }}
                         {% endif %}
                     {% endcapture %}
                     {% assign imageurl = imageurl | Trim %}
