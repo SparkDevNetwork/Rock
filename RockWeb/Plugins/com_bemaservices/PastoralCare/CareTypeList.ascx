@@ -24,9 +24,14 @@
                                 </li>
                             </ItemTemplate>
                         </asp:Repeater>
-                        <li runat="server" id="liSharedAttributes">
-                            <asp:LinkButton ID="lbSharedAttributes" runat="server" OnClick="lbSharedAttributes_Click">
-                                        <h3>Shared Attributes </h3>
+                        <li runat="server" id="liSharedCareItemAttributes">
+                            <asp:LinkButton ID="lbSharedCareItemAttributes" runat="server" OnClick="lbSharedCareItemAttributes_Click">
+                                        <h3>Shared Care Item Attributes </h3>
+                            </asp:LinkButton>
+                        </li>
+                        <li runat="server" id="liSharedCareContactAttributes">
+                            <asp:LinkButton ID="lbSharedCareContactAttributes" runat="server" OnClick="lbSharedCareContactAttributes_Click">
+                                        <h3>Shared Care Contact Attributes </h3>
                             </asp:LinkButton>
                         </li>
                     </ul>

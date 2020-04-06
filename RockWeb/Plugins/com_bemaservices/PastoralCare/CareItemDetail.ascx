@@ -19,6 +19,9 @@
                 <h1 class="panel-title">
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                </div>
             </div>
             <asp:Panel ID="pnlReadDetails" runat="server">
 
@@ -82,16 +85,23 @@
                             <Rock:PersonPicker runat="server" ID="ppPerson" Label="Person" Required="true" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:PersonPicker ID="ppContactorEdit" runat="server" Label="Requester" Required="True" />
-                        </div>
-                        <div class="col-md-3">
-                            <Rock:DateTimePicker ID="dtpContactDate" runat="server" Label="Request Date" Required="true" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+
                         </div>
                         <div class="col-md-3">
                             <Rock:RockCheckBoxList ID="cblCareTypes" runat="server" Label="Care Types"
                                 Help="Care Types that this item is tied to (at least one is required)."
                                 OnSelectedIndexChanged="cblCareTypes_SelectedIndexChanged" AutoPostBack="true"
                                 RepeatDirection="Horizontal" Required="true" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <Rock:PersonPicker ID="ppContactorEdit" runat="server" Label="Requester" Required="True" />
+                        </div>
+                        <div class="col-md-3">
+                            <Rock:DateTimePicker ID="dtpContactDate" runat="server" Label="Request Date" Required="true" />
+
                         </div>
                     </div>
 
@@ -117,7 +127,6 @@
                         <Rock:RockBoundField DataField="Date" HeaderText="Date" />
                         <Rock:RockBoundField DataField="Contactor" HeaderText="Contactor" />
                         <Rock:RockBoundField DataField="Description" HeaderText="Description" />
-                        <Rock:DeleteField OnClick="gCareContacts_Delete" />
                     </Columns>
                 </Rock:Grid>
             </div>
@@ -136,6 +145,8 @@
                     </div>
                 </div>
                 <Rock:RockTextBox ID="tbNote" runat="server" Label="Description" TextMode="MultiLine" Rows="4" ValidationGroup="Contact" />
+                <Rock:DynamicPlaceholder ID="phContactAttributes" runat="server" />
+
             </Content>
         </Rock:ModalDialog>
 

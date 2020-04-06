@@ -219,6 +219,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
             personId = ppContactor.PersonId;
             rFilter.SaveUserPreference( "Contactor", "Contactor", personId.HasValue ? personId.Value.ToString() : string.Empty );
+            rFilter.SaveUserPreference( "Status", "Status", ddlStatus.SelectedValue );
 
             if ( AvailableAttributes != null )
             {
@@ -548,6 +549,8 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                 {
                     ppContactor.SetValue( personService.Get( personId.Value ) );
                 }
+                ddlStatus.SetValue( rFilter.GetUserPreference( "Status" ) );
+
             }
 
             BindAttributes();
@@ -571,7 +574,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
             TypeSummary typeSummary = null;
 
-            if ( SelectedTypeId.HasValue )
+            if ( SelectedTypeId.HasValue && SummaryState != null )
             {
                 typeSummary = SummaryState.Where( t => t.Id == SelectedTypeId.Value ).FirstOrDefault();
             }
@@ -591,6 +594,19 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                         .Queryable().AsNoTracking()
                         .Where( r =>
                             r.CareTypeId == SelectedTypeId.Value );
+
+                    // Filter by Status
+                    string statusFilter = ddlStatus.SelectedValue;
+                    if ( statusFilter == "Active" )
+                    {
+                        careTypeItems = careTypeItems
+                            .Where( i => i.CareItem.IsActive );
+                    }
+                    else if ( statusFilter == "Inactive" )
+                    {
+                        careTypeItems = careTypeItems
+                            .Where( i => !i.CareItem.IsActive );
+                    }
 
                     // Filter by  Date.
                     var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( sdrpDateRange.DelimitedValues );
@@ -756,6 +772,7 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
                         AttributeField boundField = new AttributeField();
                         boundField.DataField = attribute.Key;
                         boundField.AttributeId = attribute.Id;
+                        boundField.ExcelExportBehavior = ExcelExportBehavior.IncludeIfVisible;
                         boundField.HeaderText = attribute.Name;
                         boundField.ItemStyle.HorizontalAlign = HorizontalAlign.Left;
 
