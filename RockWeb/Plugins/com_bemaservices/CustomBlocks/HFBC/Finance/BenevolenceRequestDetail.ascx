@@ -54,18 +54,19 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <Rock:EmailBox ID="ebEmail" runat="server" Label="Email" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Email" />
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <Rock:LocationAddressPicker ID="lapAddress" runat="server" Label="Address" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="Location" />
                     </div>
-                    <div class="col-md-4">
-                        <Rock:DataTextBox ID="dtbGovernmentId" runat="server" Label="Government ID" SourceTypeName="Rock.Model.BenevolenceRequest, Rock" PropertyName="GovernmentId" />
-                    	/* Bema.Start */
-						<Rock:SSNBox ID="ssnbSSN" runat="server" Label="Social Security Number" />
-						/* Bema.End */
-					</div>
+                    <div class="col-md-3">
+                        <Rock:RockTextBox ID="rtbGovernmentId" runat="server" Label="Government ID" />
+                    </div>
+                    <div class="col-md-3">
+                        <Rock:SSNBox ID="ssnbSSN" runat="server" Label="Social Security Number" />
+                        <!--<Rock:RockTextBox ID="tbSocialSecurityNumber" runat="server" Label="Social Security Number" />-->
+                    </div>
                 </div>
 
                 <div class="row">
