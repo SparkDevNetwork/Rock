@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-default panel-groupscheduler">
+        <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block panel-groupscheduler">
             <%-- Panel Header --%>
             <div class="panel-heading">
                 <h1 class="panel-title">
@@ -39,7 +39,7 @@
                         This block is not supported on mobile.
                     </div>
                 </div>
-                <div class="row row-eq-height hidden-xs">
+                <div class="row row-eq-height w-100 hidden-xs">
                     <%-- Filter Options --%>
                     <div class="col-lg-2 col-md-3 col-sm-3 col-xs-3 filter-options">
                         <asp:HiddenField ID="hfGroupId" runat="server" />
@@ -105,7 +105,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="panel panel-default resource-list">
+                                        <div class="panel panel-block resource-list">
 
                                             <div class="panel-heading">
                                                 <h1 class="panel-title">
@@ -187,7 +187,7 @@
                                                     <Rock:HiddenFieldWithClass ID="hfLocationScheduleMinimumCapacity" runat="server" CssClass="js-minimum-capacity" />
                                                     <Rock:HiddenFieldWithClass ID="hfLocationScheduleDesiredCapacity" runat="server" CssClass="js-desired-capacity" />
                                                     <Rock:HiddenFieldWithClass ID="hfLocationScheduleMaximumCapacity" runat="server" CssClass="js-maximum-capacity" />
-                                                    <div class="panel panel-default">
+                                                    <div class="panel panel-block">
                                                         <div class="panel-heading">
                                                             <h1 class="panel-title">
                                                                 <asp:Literal ID="lLocationTitle" runat="server" />
