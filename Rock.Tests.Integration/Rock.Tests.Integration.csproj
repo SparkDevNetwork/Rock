@@ -85,6 +85,7 @@
     <Compile Include="Communications\Transport\MailgunTests.cs" />
     <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
+    <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="TestFramework\DatabaseIntegrationTestClassBase.cs" />
     <Compile Include="DotLiquid\TemplateTests.cs" />
     <Compile Include="Interactions\PageViewTests.cs" />
@@ -178,7 +179,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Constants\" />
+  </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

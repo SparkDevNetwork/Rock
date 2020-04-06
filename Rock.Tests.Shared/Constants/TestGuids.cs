@@ -26,12 +26,11 @@ namespace Rock.Tests.Shared
             public const string PrayerRequestFinancesAndJob = "C35752E2-A575-4182-8B5A-8AE9D0694B97";
             public const string PrayerRequestComfortAndGrief = "D12837CF-EEE7-4822-9899-36E8884CD848";
             public const string PrayerRequestHealthIssues = "5C63A5B0-B2CF-4476-8F0E-D415BEE163D8";
-
-            //public const string SystemEmailPrayer = "3F590006-8D2B-4CDA-9CD9-9F54DB941403";
-            public const string SystemEmailSystem = "9AF1FA93-089B-44B7-83A3-48E0031CCC1D";
-
+            public const string PrayerRequestFinancesOther = "B74A8CF7-5B19-4F2A-B527-9665829F6369";
             public const string PrayerRequestFinancesOnly = "DA235296-0E77-4352-A5F7-08C66AF92726";
             public const string PrayerRequestJobOnly = "99136D63-6ACD-4496-8D08-793EE917978B";
+
+            public const string SystemEmailSystem = "9AF1FA93-089B-44B7-83A3-48E0031CCC1D";
         }
 
         public static class Communications
@@ -82,11 +81,11 @@ namespace Rock.Tests.Shared
 
         public static class PrayerRequestGuid
         {
-            public const string AllChurchWeek1 = "197F4092-B593-4A4D-9A89-74FACE0052A2";
+            public const string AllChurchForEmployment = "197F4092-B593-4A4D-9A89-74FACE0052A2";
             public const string TedDeckerForEmployment = "07F335E8-167C-42E5-B6BF-39756092BBB0";
             public const string MariahJacksonForMother = "DAAB8E38-A5C2-4132-A64E-B17ADE9E40B5";
-            public const string BenJonesWeek2 = "D049FA48-1558-49B9-BD8D-A4E3F9D0B0CF";
-            public const string BrianJonesForFriend = "3DEDEED8-D260-4121-8F0F-52E420A799DB";
+            public const string BenJonesForCarFinance = "D049FA48-1558-49B9-BD8D-A4E3F9D0B0CF";
+            public const string SarahSimmonsForFinancialWisdom = "3DEDEED8-D260-4121-8F0F-52E420A799DB";
         }
 
         public static class PrayerRequestCommentGuid
