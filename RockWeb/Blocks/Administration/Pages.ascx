@@ -18,7 +18,7 @@
          </Rock:ModalDialog>
 
         <div class="grid">
-            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit" ShowActionsInHeader="false">
+            <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" RowItemText="page" OnRowSelected="rGrid_Edit" ShowActionsInHeader="false" ShowConfirmDeleteDialog="false">
                 <Columns>
                     <Rock:ReorderField />
                     <Rock:RockBoundField DataField="Id" HeaderText="Id" />
@@ -29,6 +29,13 @@
                 </Columns>
             </Rock:Grid>
         </div>
+
+        <Rock:ModalDialog ID="mdDeleteModal" runat="server" ValidationGroup="vgDeleteModal" Title="Are you sure?" OnSaveClick="mdDeleteModal_SaveClick" SaveButtonText="Delete" Visible="false">
+            <Content>
+                <p>Are you sure you want to delete this page?</p>
+                <Rock:RockCheckBox ID="cbDeleteInteractions" runat="server" Text="Delete any interactions for this page" Checked="true" />
+            </Content>
+        </Rock:ModalDialog>
 
         <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
 

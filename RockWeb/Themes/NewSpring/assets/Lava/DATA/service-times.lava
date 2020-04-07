@@ -22,7 +22,7 @@
                 {% endif %}
             {% endif %}
             {% if servicetype == 'Fuse' %}
-                <br><a href="{{ getDirections }}" class="btn btn-primary btn-sm push-half-top" target="_blank">Get Directions</a>
+                <br><a href="{{ getDirections }}" target="_blank">Get Directions</a>
                 <br>
             {% endif %}
             <br>

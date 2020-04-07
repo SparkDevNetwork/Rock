@@ -293,6 +293,11 @@ namespace Rock.SystemGuid
         public const string SCHEDULE = "0B2C38A7-D79C-4F85-9757-F1B045D32C8A";
 
         /// <summary>
+        /// The guid for the Rock.Workflow.Action.SendEmail entity
+        /// </summary>
+        public const string SEND_EMAIL = "66197B01-D1F0-4924-A315-47AD54E030DE";
+
+        /// <summary>
         /// The Service Job entity type
         /// </summary>
         public const string SERVICE_JOB = "52766196-A72F-4F60-997A-78E19508843D";

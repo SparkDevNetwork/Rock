@@ -1644,7 +1644,7 @@ namespace RockWeb.Blocks.Steps
 
             var stepService = new StepService( dataContext );
 
-            var stepsQuery = stepService.Queryable()
+            var stepsQuery = stepService.Queryable().AsNoTracking()
                                 .Where( x => x.StepTypeId == _stepTypeId );
 
             var hasStepData = stepsQuery.Any();
@@ -1694,10 +1694,10 @@ namespace RockWeb.Blocks.Steps
             var stepService = new StepService( dataContext );
 
             // Get the Steps associated with the current Step Type.
-            var stepsStartedQuery = stepService.Queryable()
+            var stepsStartedQuery = stepService.Queryable().AsNoTracking()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.StartDateTime != null );
 
-            var stepsCompletedQuery = stepService.Queryable()
+            var stepsCompletedQuery = stepService.Queryable().AsNoTracking()
                 .Where( x => x.StepTypeId == _stepTypeId && x.StepType.IsActive && x.CompletedDateTime != null );
 
             var dateRange = reportPeriod.GetDateRange();

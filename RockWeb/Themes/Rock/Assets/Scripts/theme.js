@@ -1,7 +1,6 @@
 function BindNavEvents() {
   $(document).ready(function() {
     var bodyElement = $('body'),
-    topNavElement = $('.navbar-fixed-top'),
     navElement = $('.navbar-side'),
     hoverDelay = 200,
     hideDelay = 150;
@@ -21,10 +20,12 @@ function BindNavEvents() {
           $this[0].navHoverTimeout = setTimeout(function() {
             $this.addClass('open');
             $('.navbar-static-side').addClass('open-secondary-nav');
-            $('body')
-              .addClass('nav-open')
-              .css('padding-right', Rock.controls.util.getScrollbarWidth());
-              $('.navbar-fixed-top').css('right', Rock.controls.util.getScrollbarWidth());
+            $('body').addClass('nav-open');
+            if ($(document).height() > $(window).height()) {
+                var scrollWidth = Rock.controls.util.getScrollbarWidth();
+                $('body').css('padding-right', scrollWidth);
+                $('.navbar-fixed-top').css('right', scrollWidth);
+            }
             $this[0].navHoverTimeout = undefined;
           }, hoverDelay);
         }

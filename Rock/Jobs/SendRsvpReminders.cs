@@ -391,6 +391,11 @@ namespace Rock.Jobs
         /// <returns>1 if the communication was successfully sent, otherwise 0.</returns>
         private int SendReminderEmail( Person person, SystemCommunication reminder, Dictionary<string, object> lavaMergeFields )
         {
+            if ( !person.IsEmailActive )
+            {
+                return 0;
+            }
+
             var recipient = new RockEmailMessageRecipient( person, lavaMergeFields );
             var message = new RockEmailMessage( reminder );
             message.SetRecipients( new List<RockEmailMessageRecipient>() { recipient } );

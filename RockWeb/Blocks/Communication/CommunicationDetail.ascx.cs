@@ -1747,7 +1747,7 @@ namespace RockWeb.Blocks.Communication
                 var interactions = new InteractionService( dataContext )
                     .Queryable()
                     .Include( a => a.PersonAlias.Person )
-                    .Where( r => r.InteractionComponent.Channel.Guid == interactionChannelGuid && r.InteractionComponent.EntityId == CommunicationId.Value );
+                    .Where( r => r.InteractionComponent.InteractionChannel.Guid == interactionChannelGuid && r.InteractionComponent.EntityId == CommunicationId.Value );
 
                 var sortProperty = gInteractions.SortProperty;
                 if ( sortProperty != null )
@@ -2152,7 +2152,7 @@ namespace RockWeb.Blocks.Communication
 
             var interactionQuery = interactionService.Queryable()
                                     .AsNoTracking()
-                                    .Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id
+                                    .Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelCommunication.Id
                                     && a.InteractionComponent.EntityId.Value == communicationId );
 
             return interactionQuery;

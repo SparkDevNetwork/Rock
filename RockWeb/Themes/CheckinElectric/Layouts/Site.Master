@@ -7,6 +7,7 @@
     <title></title>
 
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
@@ -21,9 +22,34 @@
     </form>
 
     <script>
+        function checkinSounds() {
+            var tapSound = new Howl({
+                src: ['/Assets/Sounds/CheckIn/tap.mp3'],
+                volume: 0.4
+            });
+
+            var successSound = new Howl({
+                src: ['/Assets/Sounds/CheckIn/success.mp3'],
+                volume: 0.8
+            });
+
+            if ($('.block-instance.success').length){
+                success.play();
+            }
+
+            $("a, button").on("click", function(){
+                tapSound.play();
+            });
+        }
+
         // add quick fade-in effect to the page
         $(document).ready(function () {
             $("#form1").rockFadeIn();
+                checkinSounds();
+
+                $(document).on("shown.bs.modal", function (event) {
+                    checkinSounds();
+                });
         });
     </script>
 </body>

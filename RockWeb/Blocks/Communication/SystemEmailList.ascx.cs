@@ -57,6 +57,18 @@ namespace RockWeb.Blocks.Communication
 
         #endregion
 
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string EmailId = "emailId";
+        }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -158,7 +170,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_AddClick( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "emailId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.EmailId, 0 );
         }
 
         /// <summary>
@@ -168,7 +180,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gEmailTemplates_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "emailId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.EmailId, e.RowKeyId );
         }
 
         /// <summary>

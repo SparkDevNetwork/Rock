@@ -35,6 +35,8 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.11"
+        [Obsolete( "Use InteractionChannelId instead", false )]
         public int ChannelId { get; set; }
 
         /// <summary />
@@ -51,6 +53,9 @@ namespace Rock.Client
 
         /// <summary />
         public string ForeignKey { get; set; }
+
+        /// <summary />
+        public int InteractionChannelId { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -93,12 +98,15 @@ namespace Rock.Client
         public void CopyPropertiesFrom( InteractionComponent source )
         {
             this.Id = source.Id;
+            #pragma warning disable 612, 618
             this.ChannelId = source.ChannelId;
+            #pragma warning restore 612, 618
             this.ComponentData = source.ComponentData;
             this.ComponentSummary = source.ComponentSummary;
             this.EntityId = source.EntityId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.InteractionChannelId = source.InteractionChannelId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.CreatedDateTime = source.CreatedDateTime;
@@ -117,7 +125,7 @@ namespace Rock.Client
     public partial class InteractionComponent : InteractionComponentEntity
     {
         /// <summary />
-        public InteractionChannel Channel { get; set; }
+        public InteractionChannel InteractionChannel { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

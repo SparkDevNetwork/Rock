@@ -1552,7 +1552,7 @@ Update Family Status: {updateFamilyStatus}
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.InteractionDateTime >= startDate &&
-                            a.InteractionComponent.Channel.Guid == interactionItem.Guid &&
+                            a.InteractionComponent.InteractionChannel.Guid == interactionItem.Guid &&
                             a.PersonAlias != null )
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()

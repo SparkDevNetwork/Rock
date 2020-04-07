@@ -59,7 +59,7 @@
                         <div class="col-md-7 transaction-matching-details">
                             <div class="header">
                                 <div class="row">
-                                    <div id="individual_details" class="col-md-6">
+                                    <div id="individual_details" class="col-md-6 col-lg-5">
                                         <Rock:RockDropDownList ID="ddlIndividual" runat="server" EnhanceForLongLists="true" Label="Individual" Help="Select a person that has previously been matched to the bank account. If the person isn't in this list, use the 'Assign to New' to select the matching person." AutoPostBack="true" OnSelectedIndexChanged="ddlIndividual_SelectedIndexChanged" />
                                         <span id="badgeIndividualCount" runat="server" class="pull-right badge badge-danger"
                                             style="position: relative; top: -58px; left: 10px"></span>
@@ -119,7 +119,7 @@
                                         </asp:Panel>
                                     </div>
 
-                                    <div id="account_entry" class="col-md-6 body">
+                                    <div id="account_entry" class="col-md-6 col-lg-7 body">
                                         <Rock:RockControlWrapper ID="rcwAccountSplit" runat="server">
                                             <div class="form-horizontal label-auto js-accounts">
                                                 <asp:Repeater ID="rptAccounts" runat="server">

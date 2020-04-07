@@ -1,5 +1,5 @@
 {% assign category = Item | Attribute:'Category' %}
-{% assign currentUrl = 'Global' | Page:'Url' %}
+{% assign currentUrl = 'Global' | Page:'Url' | Url:'pathandquery' %}
 
 {% capture pageTitle %}{% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }}{% endcapture %}
 {% capture browserTitle %}{{ Item.Title | Replace:"'","’" }} | {% if category != empty %}{{ category }} {% endif %}{{ Item.ContentChannel.Name | Replace:' - ',' ' | Singularize }} | Resources | NewSpring Network{% endcapture %}
@@ -109,17 +109,19 @@
         {% for result in results %}[[ item ]]
             {% contentchannelitem id:'{{ result.Id }}' iterator:'children' %}
                 {% for child in children %}
-
                     {% assign id = child.Id %}
                     {% assign cciid = child.Id %}
-                    {% assign type = forloop.index | Prepend:'Week ' %}
+                    {% assign type = result.Index | Plus:1 | Prepend:'Week ' %}
                     {% assign video = child | Attribute:'Video','RawValue' %}
+                    {% assign parentimage = child.ParentItems | First | Property:'ContentChannelItem','Object' | Attribute:'ImageLandscape','Url' %}
                     {% assign childimage = child | Attribute:'ImageLandscape','Url' %}
                     {% capture imageurl %}
                         {% if childimage and childimage != empty %}
                             {{ childimage }}
                         {% elseif video and video != empty %}
                             {[ getImageFromVideoId id:'{{ video }}' resolution:'1000x500' ]}
+                        {% elseif parentimage and parentimage != empty %}
+                            {{ parentimage }}
                         {% endif %}
                     {% endcapture %}
                     {% assign imageurl = imageurl | Trim %}
@@ -134,13 +136,9 @@
                             <span class="display-inline-block width-full push-half-bottom">{{ video.Title }}
 
                                 {% if CurrentPerson and CurrentPerson != empty %}
-                                    <span class="wistia_embed wistia_async_{{ videoId }} popover=true popoverContent=link clickable text-center pull-right" style="display:inline; position:relative">
-                                        <a href="#" class="btn btn-xs btn-primary">Play Video</a>
-                                    </span>
-
-                                    <script src="https://fast.wistia.com/embed/medias/{{ videoId }}.jsonp" async></script>
-                                    <script src="https://fast.wistia.com/assets/external/E-v1.js" async=""></script>
-
+                                    <div class="pull-right">
+                                        {[ wistiaButton id:'{{ videoId }}' buttontext:'' buttonclasses:'btn-xs' contentchannelitemid:'{{ cciid }}' entitytypeid:'' entityid:'' ]}
+                                    </div>
                                 {% else %}
                                     <a href="/sign-in?returnurl={{ currentUrl }}" class="pull-right btn btn-xs btn-primary" target="_blank">Sign In</a>
                                 {% endif %}
@@ -164,7 +162,7 @@
                         <br><br>
                     {% endcapture %}
 
-                    {[ card cciid:'{{ cciid }}' title:'{{ child.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content }}' imageurl:'{{ imageurl }}' ]}
+                    {[ card cciid:'{{ cciid }}' title:'{{ child.Title | Replace:"'","’" }}' titlesize:'h3' type:'{{ type }}' content:'{{ content | Escape }}' imageurl:'{{ imageurl }}' ]}
 
                 {% endfor %}
             {% endcontentchannelitem %}
