@@ -1049,6 +1049,7 @@ namespace Rock.Client.SystemGuid
         public const string PAGE_MAP = "EC7A06CD-AAB5-4455-962E-B4043EA2440E";
         public const string PAGE_PROPERTIES = "37759B50-DB4A-440D-A83B-4EF3B4727B1E";
         public const string PAGE_ROUTE_DETAIL = "649A2B1E-7A15-4DA8-AF67-17874B6FE98F";
+        public const string PAGE_VIEWS = "E556D6C5-E2DB-4041-81AB-4F582008155C";
         public const string PEOPLE = "97ECDC48-6DF6-492E-8C72-161F76AE111B";
         public const string PERSON_ATTRIBUTES = "7BA1FAF4-B63C-4423-A818-CC794DDB14E3";
         public const string PERSON_PAGE_VIEWS = "82E9CDDB-A60E-4C0E-9306-C07BEAAD5F70";
@@ -1202,6 +1203,7 @@ namespace Rock.Client.SystemGuid
         public const string MIGRATE_FAMILY_CHECKIN_IDS = "E782C667-EF07-4AD2-86B7-01C1935AAF5B";
         public const string MIGRATE_HISTORY_SUMMARY_DATA = "CF2221CC-1E0A-422B-B0F7-5D81AF1DDB14";
         public const string REBUILD_STREAK = "BFBB9524-10E8-42CF-BCD3-0CC7D2B22C3A";
+        public const string ROCK_CLEANUP = "1A8238B1-038A-4295-9FDE-C6D93002A5D7";
         public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
     }
 

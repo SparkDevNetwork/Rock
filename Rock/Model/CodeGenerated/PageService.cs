@@ -155,6 +155,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.KeyWords = source.KeyWords;
             target.LayoutId = source.LayoutId;
+            target.MedianPageLoadTime = source.MedianPageLoadTime;
             target.MenuDisplayChildPages = source.MenuDisplayChildPages;
             target.MenuDisplayDescription = source.MenuDisplayDescription;
             target.MenuDisplayIcon = source.MenuDisplayIcon;
