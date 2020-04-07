@@ -110,7 +110,7 @@ namespace Rockweb.Blocks.Crm
    You will rank high, medium or low in each of the following five modes.
 </p>
 
-{[ chart type:'bar' ]}
+{[ chart type:'bar' yaxismin:'0' ]}
     [[ dataitem label:'Winning' value:'{{Winning}}' fillcolor:'#E15759' ]] [[ enddataitem ]]
     [[ dataitem label:'Resolving' value:'{{Resolving}}' fillcolor:'#5585B7' ]] [[ enddataitem ]]
     [[ dataitem label:'Compromising' value:'{{Compromising}}' fillcolor:'#6399D1' ]] [[ enddataitem ]]
