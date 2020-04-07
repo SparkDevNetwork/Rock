@@ -2029,7 +2029,9 @@
     <Content Include="Migrations\202003051854011_AttendanceAnalyticsExports_spCheckin_AttendanceAnalyticsQuery_NonAttendees_down.sql">
       <DependentUpon>202003051854011_AttendanceAnalyticsExports.cs</DependentUpon>
     </Content>
-    <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql" />
+    <Content Include="Migrations\202003311924098_Rollup_0331_FixChartYAxisShortcode.sql">
+      <DependentUpon>202003311924098_Rollup_0331.cs</DependentUpon>
+    </Content>
     <Content Include="Migrations\Version 10.0\Version 1.10.2\201911122101551_PergeMerge_spCrm_PersonMerge.sql">
       <DependentUpon>201911122101551_PergeMerge.cs</DependentUpon>
     </Content>
