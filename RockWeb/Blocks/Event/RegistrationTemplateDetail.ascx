@@ -627,6 +627,7 @@
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbFeeIsRequired" runat="server" Label="Is Required" ValidationGroup="Fee" Text="Yes" Help="Checking this will mark the fee for new registrations required." />
+                        <Rock:RockCheckBox ID="cbHideWhenNoneRemaining" runat="server" Label="Hide When None Remaining" ValidationGroup="Fee" Text="Yes" Help="If checked then items that have 0 remaining will not display. If not checked then the items will display but will not be selectable." />
                     </div>
                 </div>
             </Content>

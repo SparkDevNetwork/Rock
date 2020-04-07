@@ -102,6 +102,7 @@ namespace Rock.Model
             target.FeeType = source.FeeType;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.HideWhenNoneRemaining = source.HideWhenNoneRemaining;
             target.IsActive = source.IsActive;
             target.IsRequired = source.IsRequired;
             target.Name = source.Name;

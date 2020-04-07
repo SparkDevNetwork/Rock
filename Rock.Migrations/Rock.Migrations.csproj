@@ -177,6 +177,10 @@
     <Compile Include="Migrations\202004070848464_AddContentChannelCategory.Designer.cs">
       <DependentUpon>202004070848464_AddContentChannelCategory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202004071636065_RegistrationFeeHideWhenNone.cs" />
+    <Compile Include="Migrations\202004071636065_RegistrationFeeHideWhenNone.Designer.cs">
+      <DependentUpon>202004071636065_RegistrationFeeHideWhenNone.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1245,6 +1249,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202004070848464_AddContentChannelCategory.resx">
       <DependentUpon>202004070848464_AddContentChannelCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004071636065_RegistrationFeeHideWhenNone.resx">
+      <DependentUpon>202004071636065_RegistrationFeeHideWhenNone.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
