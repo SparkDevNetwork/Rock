@@ -238,6 +238,13 @@
                         <Rock:RockCheckBox ID="cbCopyPageIncludeChildPages" runat="server" Text="Include Child Pages" Checked="true" />
                     </Content>
                 </Rock:ModalDialog>
+
+                <Rock:ModalDialog ID="mdDeleteModal" runat="server" ValidationGroup="vgDeleteModal" Title="Are you sure?" OnSaveClick="mdDeleteModal_DeleteClick" SaveButtonText="Delete" Visible="false">
+                    <Content>
+                        <p>Are you sure you want to delete this page?</p>
+                        <Rock:RockCheckBox ID="cbDeleteInteractions" runat="server" Text="Delete any interactions for this page" Checked="true" />
+                    </Content>
+                </Rock:ModalDialog>
                 
             </asp:Panel>
         </asp:Panel>

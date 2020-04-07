@@ -84,6 +84,7 @@
     <Compile Include="Migrations\05_CheckrWarnOfRecent.cs" />
     <Compile Include="Migrations\04_CheckrActionActive.cs" />
     <Compile Include="Migrations\07_CheckrUpdateWorkflowActionForm.cs" />
+    <Compile Include="Migrations\10_CustomActionsConfigsAttributes.cs" />
     <Compile Include="Migrations\09_UpdateExistingPmmPackages.cs" />
     <Compile Include="Migrations\08_CheckrSetDefaultBackgroundCheckProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Reporting
                     var interactionComponentQry = new InteractionComponentService( rockContext )
                         .Queryable().AsNoTracking()
                         .Where( a =>
-                            a.ChannelId == _channelId.Value );
+                            a.InteractionChannelId == _channelId.Value );
 
                     var personId = GetPersonId();
                     if ( personId.HasValue )

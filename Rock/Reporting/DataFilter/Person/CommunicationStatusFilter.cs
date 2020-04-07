@@ -245,7 +245,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 var interactionChannelCommunication = new InteractionChannelService( rockContext ).Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() );
                 var interactionQuery = new InteractionService( rockContext ).Queryable()
-                                                .Where( a => a.InteractionComponent.ChannelId == interactionChannelCommunication.Id &&
+                                                .Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelCommunication.Id &&
                                                 a.InteractionComponent.EntityId.Value == communicationId );
                 CommunicationRecipientStatus[] sentStatus = new CommunicationRecipientStatus[] { CommunicationRecipientStatus.Opened, CommunicationRecipientStatus.Delivered };
 

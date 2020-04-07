@@ -173,13 +173,14 @@ namespace Rock.Model
         /// <param name="timeToRunMS">The time to run dataview in milliseconds.</param>
         /// /// <param name="persistedLastRunDuration">The time to persist dataview in milliseconds.</param>
         /// <returns></returns>
-        public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunMS, int? persistedLastRunDuration = null )
+        public static void AddRunDataViewTransaction( int dataViewId, int? timeToRunMS = null, int? persistedLastRunDuration = null )
         {
             var transaction = new Rock.Transactions.RunDataViewTransaction();
             transaction.DataViewId = dataViewId;
+            transaction.LastRunDateTime = RockDateTime.Now;
+
             if ( timeToRunMS.HasValue )
             {
-                transaction.LastRunDateTime = RockDateTime.Now;
                 transaction.TimeToRunMS = timeToRunMS;
             }
 

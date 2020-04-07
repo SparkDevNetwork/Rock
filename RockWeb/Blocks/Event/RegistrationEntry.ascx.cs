@@ -124,6 +124,7 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
         private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
+        private const string AUTO_APPLIED_DISCOUNT = "AutoAppliedDiscount";
 
         private enum PanelIndex
         {
@@ -277,6 +278,14 @@ namespace RockWeb.Blocks.Event
         /// The default payment.
         /// </value>
         private decimal? defaultPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the discount was applied automatically
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic applied discount]; otherwise, <c>false</c>.
+        /// </value>
+        private bool autoAppliedDiscount { get; set; }
 
         /// <summary>
         /// Gets the registration template.
@@ -483,7 +492,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    var registrationInstanceId = this.PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+                    int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
                     if ( registrationInstanceId.HasValue )
                     {
                         financialGateway = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, s => s.RegistrationTemplate.FinancialGateway );
@@ -620,6 +629,7 @@ namespace RockWeb.Blocks.Event
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
             defaultPayment = ViewState[DEFAULT_PAYMENT_KEY] as decimal?;
+            autoAppliedDiscount = ViewState[DEFAULT_PAYMENT_KEY] as bool? ?? false;
 
             CreateDynamicControls( false );
         }
@@ -750,20 +760,38 @@ namespace RockWeb.Blocks.Event
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
-            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
+            int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
 
+            string pageTitle;
             if ( registrationInstanceId.HasValue )
             {
-                string registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
-
-                RockPage.Title = registrationInstanceName;
-                breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
+                pageTitle = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, s => s.Name );
             }
-            else if ( registrationSlug.IsNotNullOrWhiteSpace() )
+            else
+            {
+                pageTitle = this.PageCache.PageTitle;
+            }
+
+            RockPage.Title = pageTitle;
+            breadCrumbs.Add( new BreadCrumb( pageTitle, pageReference ) );
+
+            return breadCrumbs;
+        }
+
+        /// <summary>
+        /// Gets the registration instance identifier from URL.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetRegistrationInstanceIdFromURL()
+        {
+            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
+            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? registrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
+
+            if ( registrationInstanceId == null && registrationSlug.IsNotNullOrWhiteSpace() )
             {
                 var dateTime = RockDateTime.Now;
-                var linkage = new EventItemOccurrenceGroupMapService( new RockContext() )
+                registrationInstanceId = new EventItemOccurrenceGroupMapService( new RockContext() )
                     .Queryable()
                     .AsNoTracking()
                     .Where( l => l.UrlSlug == registrationSlug )
@@ -773,20 +801,14 @@ namespace RockWeb.Blocks.Event
                     .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
                     .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
                     .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .FirstOrDefault();
-
-                if ( linkage != null )
-                {
-                    RockPage.Title = linkage.RegistrationInstance.Name;
-                    breadCrumbs.Add( new BreadCrumb( linkage.RegistrationInstance.Name, pageReference ) );
-                }
+                    .Select( a => a.RegistrationInstanceId ).FirstOrDefault();
             }
-            else
+            else if ( registrationId.HasValue )
             {
-                breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
+                registrationInstanceId = new RegistrationService( new RockContext() ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
             }
 
-            return breadCrumbs;
+            return registrationInstanceId;
         }
 
         /// <summary>
@@ -814,6 +836,7 @@ namespace RockWeb.Blocks.Event
             ViewState[CURRENT_FORM_INDEX_KEY] = CurrentFormIndex;
             ViewState[MINIMUM_PAYMENT_KEY] = minimumPayment;
             ViewState[DEFAULT_PAYMENT_KEY] = defaultPayment;
+            ViewState[AUTO_APPLIED_DISCOUNT] = autoAppliedDiscount;
 
             return base.SaveViewState();
         }
@@ -4198,7 +4221,7 @@ namespace RockWeb.Blocks.Event
 
             if ( CurrentPanel == PanelIndex.PanelSummary && !( RegistrationState.RegistrationId.HasValue && RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() ) )
             {
-                AutoApplyDiscounts();
+                autoAppliedDiscount = AutoApplyDiscounts();
             }
 
             pnlRegistrarInfoPrompt.Visible = CurrentPanel == PanelIndex.PanelSummary;
@@ -4430,17 +4453,8 @@ namespace RockWeb.Blocks.Event
 
                 ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
 
-                var financialGateway = this.FinancialGateway;
-
-                if ( financialGateway != null )
-                {
-                    bool usingNMIThreeStep = financialGateway.GetGatewayComponent() is Rock.NMI.Gateway;
-                    if ( usingNMIThreeStep )
-                    {
-                        var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
-                        ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
-                    }
-                }
+                var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
             }
         }
 
@@ -5128,10 +5142,11 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
+                    tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
+
                     if ( !AllowDiscountCodeEntry() )
                     {
                         tbDiscountCode.Enabled = false;
-                        tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
 
                         // If we cannot edit and there is no existing value then just hide the discount div.
                         divDiscountCode.Visible = tbDiscountCode.Text.IsNotNullOrWhiteSpace();
@@ -5477,12 +5492,12 @@ namespace RockWeb.Blocks.Event
         private bool AllowDiscountCodeEntry()
         {
             // Check if a discount code has already been applied and return false if true
-            if ( RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() )
+            if ( RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() && autoAppliedDiscount == false )
             {
                 return false;
             }
 
-            // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registratin and the cost has not been calculated yet.
+            // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registration and the cost has not been calculated yet.
             decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
             if ( ( balanceDue <= ( decimal ) 0.00 ) && ( RegistrationState.RegistrationId != null ) )
             {
@@ -5498,12 +5513,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ShowDiscountCode()
         {
-            if ( RegistrationTemplate == null )
-            {
-                return false;
-            }
-
-            if ( !RegistrationTemplate.Discounts.Any() )
+            if ( RegistrationTemplate == null || !RegistrationTemplate.Discounts.Any() )
             {
                 return false;
             }
@@ -5604,78 +5614,83 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Applies the first automatic discount that matches the set limits.
         /// </summary>
-        private void AutoApplyDiscounts()
+        /// <returns>returns true if a discount was applied, false if not.</returns>
+        private bool AutoApplyDiscounts()
         {
-            if ( RegistrationState != null )
+            if ( RegistrationState == null )
             {
-                var discounts = RegistrationTemplate.Discounts
-                        .Where( d => d.AutoApplyDiscount )
-                        .OrderBy( d => d.Order )
-                        .ToList();
+                return false;
+            }
 
-                foreach ( var discount in discounts )
+            var discounts = RegistrationTemplate.Discounts
+                    .Where( d => d.AutoApplyDiscount )
+                    .OrderBy( d => d.Order )
+                    .ToList();
+
+            foreach ( var discount in discounts )
+            {
+                RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
+                bool validDiscount = true;
+
+                if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
                 {
-                    RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
-                    bool validDiscount = true;
+                    nbDiscountCode.Visible = true;
+                    validDiscount = false;
+                }
 
-                    if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
-                    {
-                        nbDiscountCode.Visible = true;
-                        validDiscount = false;
-                    }
+                if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
+                {
+                    nbDiscountCode.Visible = true;
+                    validDiscount = false;
+                }
 
-                    if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
-                    {
-                        nbDiscountCode.Visible = true;
-                        validDiscount = false;
-                    }
+                if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
+                {
+                    nbDiscountCode.Visible = true;
+                    validDiscount = false;
+                }
 
-                    if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
+                if ( validDiscount && discount.MaxUsage.HasValue && RegistrationInstanceState != null )
+                {
+                    using ( var rockContext = new RockContext() )
                     {
-                        nbDiscountCode.Visible = true;
-                        validDiscount = false;
-                    }
-
-                    if ( validDiscount && discount.MaxUsage.HasValue && RegistrationInstanceState != null )
-                    {
-                        using ( var rockContext = new RockContext() )
+                        var instances = new RegistrationService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r =>
+                                r.RegistrationInstanceId == RegistrationInstanceState.Id &&
+                                ( !RegistrationState.RegistrationId.HasValue || r.Id != RegistrationState.RegistrationId.Value ) &&
+                                r.DiscountCode == discount.Code )
+                            .Count();
+                        if ( instances >= discount.MaxUsage.Value )
                         {
-                            var instances = new RegistrationService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( r =>
-                                    r.RegistrationInstanceId == RegistrationInstanceState.Id &&
-                                    ( !RegistrationState.RegistrationId.HasValue || r.Id != RegistrationState.RegistrationId.Value ) &&
-                                    r.DiscountCode == discount.Code )
-                                .Count();
-                            if ( instances >= discount.MaxUsage.Value )
-                            {
-                                nbDiscountCode.Visible = true;
-                                validDiscount = false;
-                            }
+                            nbDiscountCode.Visible = true;
+                            validDiscount = false;
                         }
-                    }
-
-                    if ( validDiscount && discount.MaxRegistrants.HasValue )
-                    {
-                        for ( int i = 0; i < RegistrationState.Registrants.Count; i++ )
-                        {
-                            RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;
-                        }
-                    }
-
-                    RegistrationState.DiscountCode = validDiscount ? discount.Code : string.Empty;
-                    RegistrationState.DiscountPercentage = validDiscount ? discount.DiscountPercentage : 0.0m;
-                    RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
-
-                    if ( validDiscount )
-                    {
-                        nbDiscountCode.Visible = true;
-                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
-                        nbDiscountCode.Text = string.Format( "The {0} '{1}' was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code );
-                        break;
                     }
                 }
+
+                if ( validDiscount && discount.MaxRegistrants.HasValue )
+                {
+                    for ( int i = 0; i < RegistrationState.Registrants.Count; i++ )
+                    {
+                        RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;
+                    }
+                }
+
+                RegistrationState.DiscountCode = validDiscount ? discount.Code : string.Empty;
+                RegistrationState.DiscountPercentage = validDiscount ? discount.DiscountPercentage : 0.0m;
+                RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
+
+                if ( validDiscount )
+                {
+                    nbDiscountCode.Visible = true;
+                    nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
+                    nbDiscountCode.Text = string.Format( "The {0} '{1}' was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code );
+                    return true;
+                }
             }
+
+            return false;
         }
 
         #endregion

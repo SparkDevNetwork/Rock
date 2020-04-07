@@ -607,7 +607,7 @@ We have unsubscribed you from the following lists:
                 var communicationListQry = groupService.Queryable()
                     .Where( a => a.GroupTypeId == communicationListGroupTypeId && a.IsActive && a.Members.Any( m => m.PersonId == personId && m.GroupMemberStatus == GroupMemberStatus.Active ) );
 
-                var categoryGuids = this.GetAttributeValue( "CommunicationListCategories" ).SplitDelimitedValues().AsGuidList();
+                var categoryGuids = this.GetAttributeValue( AttributeKey.CommunicationListCategories ).SplitDelimitedValues().AsGuidList();
 
                 var communicationLists = communicationListQry.ToList();
                 var viewableCommunicationLists = new List<Group>();

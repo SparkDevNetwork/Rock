@@ -295,6 +295,19 @@ namespace Rock.Data
         /// <param name="guid">The unique identifier.</param>
         public void UpdateMobileBlockType( string name, string description, string entityName, string guid )
         {
+            UpdateMobileBlockType( name, description, entityName, "Mobile", guid );
+        }
+
+        /// <summary>
+        /// Updates the type of the mobile block.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="entityName">Name of the entity.</param>
+        /// <param name="category">The category.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void UpdateMobileBlockType( string name, string description, string entityName, string category, string guid )
+        {
             Migration.Sql( $@"
                 DECLARE @entityTypeId INT = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{entityName}')
 
@@ -307,7 +320,7 @@ namespace Rock.Data
                 BEGIN
 	                UPDATE [BlockType]
 	                SET [IsSystem] = 1,
-		                [Category] = 'Mobile',
+		                [Category] = '{category}',
 		                [Name] = '{name}',
 		                [Description] = '{description.Replace( "'", "''" )}',
 		                [Guid] = '{guid.ToUpper()}'

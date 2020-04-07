@@ -139,6 +139,9 @@ $('.js-panel-toggle').on('click', function (e) {
             // get list of original values
             Dictionary<string, string> originalValues = GetVariables( _variableFile );
 
+            // get list of current overrides
+            Dictionary<string, string> overrideValues = GetVariables( _variableOverrideFile );
+
             StringBuilder overrideFile = new StringBuilder();
 
             if ( pnlFontAwesomeSettings.Visible )
@@ -206,6 +209,43 @@ $('.js-panel-toggle').on('click', function (e) {
                         }
                     }
                 }
+                else if ( control is Rock.Web.UI.Controls.ImageUploader )
+                {
+                    var fileUploader = ( Rock.Web.UI.Controls.ImageUploader ) control;
+                    var fileName = fileUploader.NonBinaryFileSrc.Replace("~", "");
+
+                    string variableName = fileUploader.ID.Replace( " ", "-" ).ToLower();
+
+                    // Check if there is an override value and it doesn't match the current value then we need
+                    // to clean-up (delete) the file
+                    if ( overrideValues.ContainsKey( variableName ) )
+                    {
+                        if ( fileName.ToLower() != overrideValues[variableName].ToLower().Replace( "'", "" ) )
+                        {
+                            var fileSystemPath = Server.MapPath( "~" + overrideValues[variableName].Replace( "'", "" ).Replace( "\"", "" ) );
+
+                            // Delete file
+                            if ( File.Exists( fileSystemPath ) )
+                            {
+                                File.Delete( fileSystemPath );
+                            }
+                        }
+                    }
+
+                    // find original value
+                    if ( originalValues.ContainsKey( variableName ) )
+                    {
+                        string originalValue = originalValues[variableName].Replace( "'", "" ).Replace( "\"", "" );
+
+                        var originalFile = originalValue.Replace( "../", string.Format( "{0}Themes/{1}/", Request.ApplicationPath, _themeName ) );
+
+                        if ( originalFile.ToLower() != fileName.ToLower() )
+                        {
+                            overrideFile.Append( string.Format( "@{0}: '{1}';{2}", variableName, fileName, Environment.NewLine ) );
+                        }
+                    }
+                }
+
             }
 
             File.WriteAllText( _variableOverrideFile, overrideFile.ToString() );
@@ -361,11 +401,6 @@ $('.js-panel-toggle').on('click', function (e) {
             bool inPanel = false;
             List<string> lessColorFunctions = new List<string>() { "lighten", "darken", "saturate", "desaturate", "fadein", "fadeout", "fade", "spin", "mix" };
 
-            /*Rock.Web.UI.Controls.ImageUploader fupTest = new Rock.Web.UI.Controls.ImageUploader();
-            fupTest.ID = "test";
-            fupTest.BinaryFileTypeGuid
-            phThemeControls.Controls.Add( fupTest );*/
-
             if ( !string.IsNullOrWhiteSpace( _themeName ) )
             {
                 if ( !File.Exists( _variableFile ) || !File.Exists( _variableOverrideFile ) )
@@ -486,9 +521,17 @@ $('.js-panel-toggle').on('click', function (e) {
                             {
                                 variableType = VariableType.Color;
                             }
+                            else if ( variableParts[2].Contains( "#image" ) && !variableParts[1].StartsWith( "@" ) )
+                            {
+                                variableType = VariableType.Image;
+                            }
 
                             // get help
-                            helpText = variableParts[2].Replace( "#color", string.Empty ).Replace( "//", string.Empty ).Trim();
+                            helpText = variableParts[2]
+                                            .Replace( "#color", string.Empty )
+                                            .Replace("#image", string.Empty)
+                                            .Replace( "//", string.Empty )
+                                            .Trim();
                         }
 
                         // get variable name
@@ -550,6 +593,69 @@ $('.js-panel-toggle').on('click', function (e) {
                                     break;
                                 }
 
+                            case VariableType.Image:
+                                {
+                                    var imgUploader = new Rock.Web.UI.Controls.ImageUploader();
+                                    imgUploader.ID = variableKey;
+                                    imgUploader.IsBinaryFile = false;
+                                    imgUploader.NoPictureUrl = "";
+                                    imgUploader.Label = variableName;
+                                    imgUploader.RootFolder = "~/Content/Themes/" + _themeName;
+                                    //imgUploader.ImageRemoved += ImgUploader_ImageRemoved;
+                                    imgUploader.FormGroupCssClass = "clearable-input";
+
+                                    /*if ( variableValue.IsNotNullOrWhiteSpace() )
+                                    {
+                                        imgUploader.NoPictureUrl = "~" + variableValue.Replace( "'", "" ).Replace( "\"", "" );
+                                    }
+                                    else
+                                    {
+                                        imgUploader.NoPictureUrl = "";
+                                    }*/
+
+                                    // check if override of the variable exists
+                                    if ( overrides.ContainsKey( variableKey ) )
+                                    {
+                                        imgUploader.NonBinaryFileSrc = "~" + overrides[variableKey].Replace( "'", "" );
+
+                                        // add restore logic
+                                        var overrideImagePath = variableValue.Replace( "~", "" ).Replace( "'", "" ).Replace( "\"","" ).Replace( "../", string.Format( "{0}Themes/{1}/", Request.ApplicationPath, _themeName ) );
+                                        overrideControl.Text = string.Format( "<i class='fa fa-times js-image-override variable-override' style='opacity: 1;' data-control='{0}' data-original-value='~{1}'></i>", variableKey, overrideImagePath );
+                                    }
+                                    else
+                                    {
+                                        var originalFile = variableValue.Replace( "'", "" ).Replace("\"", "").Trim();
+
+                                        // Adjust "../Assets/Themes/header.png" to "~/Assets/Themes/header.png"
+                                        if ( originalFile.StartsWith( "../" ) )
+                                        {
+                                            originalFile = originalFile.Replace( "../", string.Format( "/Themes/{0}/", _themeName ) );
+                                        }
+
+                                        imgUploader.NonBinaryFileSrc = "~" + originalFile;
+                                    }
+
+                                    if ( !string.IsNullOrWhiteSpace( helpText ) )
+                                    {
+                                        imgUploader.Help = helpText;
+                                    }
+
+                                    // Strip quotes from file path of the no image url
+                                    imgUploader.NoPictureUrl = imgUploader.NoPictureUrl.Replace( "'", string.Empty ).Replace( "\"", string.Empty );
+
+                                    Literal beginWrapper = new Literal();
+                                    beginWrapper.Text = "<div class='clearfix'>";
+
+                                    AddControl( beginWrapper, inPanel );
+                                    AddControl( imgUploader, inPanel );
+                                    AddControl( overrideControl, inPanel );
+
+                                    Literal endWrapper = new Literal();
+                                    endWrapper.Text = "</div>";
+                                    AddControl( endWrapper, inPanel );
+
+                                    break;
+                                }
                             default:
                                 {
                                     if ( phThemeControls.FindControl( variableName ) == null )
@@ -609,6 +715,14 @@ $('.js-panel-toggle').on('click', function (e) {
                 }
             }
         }
+
+        /*private void ImgUploader_ImageRemoved( object sender, ImageUploaderEventArgs e )
+        {
+            // Clear out the image from the control
+            var imgUploader = (Rock.Web.UI.Controls.ImageUploader) sender;
+
+            imgUploader.NonBinaryFileSrc = string.Empty;
+        }*/
 
         /// <summary>
         /// Adds the control.
@@ -691,7 +805,12 @@ $('.js-panel-toggle').on('click', function (e) {
             /// <summary>
             /// The number
             /// </summary>
-            Number
+            Number,
+
+            /// <summary>
+            /// The image
+            /// </summary>
+            Image
         }
     }
 }

@@ -170,7 +170,7 @@ namespace RockWeb.Blocks.Cms
                         {
                             PersonAliasPersonId = pa.PersonId,
                             pv.InteractionDateTime,
-                            pv.InteractionComponent.Channel.ChannelEntityId,
+                            pv.InteractionComponent.InteractionChannel.ChannelEntityId,
                             pv.InteractionSessionId,
                             PagePageTitle = pv.InteractionComponent.Name
                         } );
@@ -287,7 +287,7 @@ namespace RockWeb.Blocks.Cms
 
                         var qryGuests = new InteractionService( rockContext ).Queryable().AsNoTracking()
                                         .Where(
-                                            i => i.InteractionComponent.Channel.ChannelEntityId == site.Id
+                                            i => i.InteractionComponent.InteractionChannel.ChannelEntityId == site.Id
                                             && i.InteractionDateTime > last15Minutes
                                             && i.PersonAliasId == null
                                             && i.InteractionSession.DeviceType.ClientType != "Other"

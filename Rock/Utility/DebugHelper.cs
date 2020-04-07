@@ -169,7 +169,9 @@ namespace Rock
                     {
                         if ( p.SqlDbType == System.Data.SqlDbType.NVarChar )
                         {
-                            var sqlValue = ( (SqlString)p.SqlValue ).Value.Truncate( 255 );
+                            var sqlString = ( SqlString ) p.SqlValue;
+                            string sqlValue = sqlString.IsNull ? "null" : sqlString.Value?.Truncate( 255 );
+
                             return string.Format( "@{0} {1}({2}) = '{3}'", p.ParameterName, p.SqlDbType, p.Size, sqlValue?.Replace( "'", "''" ) );
                         }
 

@@ -226,6 +226,21 @@ namespace Rock.Model
         [DataMember]
         public string EnabledLavaCommands { get; set; }
 
+        /// <summary>
+        /// Gets the send date key.
+        /// </summary>
+        /// <value>
+        /// The send date key.
+        /// </value>
+        [DataMember]
+        public int? SendDateKey
+        {
+            get => ( SendDateTime == null || SendDateTime.Value == default ) ?
+                        ( int? ) null :
+                        SendDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
         #region Email Fields
 
         /// <summary>
@@ -495,6 +510,14 @@ namespace Rock.Model
         [DataMember]
         public virtual CommunicationTemplate CommunicationTemplate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the send source date.
+        /// </summary>
+        /// <value>
+        /// The send source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate SendSourceDate { get; set; }
         #endregion
 
         #region ISecured
@@ -952,6 +975,10 @@ namespace Rock.Model
 
             // the Migration will manually add a ON DELETE SET NULL for CommunicationTemplateId
             this.HasOptional( c => c.CommunicationTemplate ).WithMany().HasForeignKey( c => c.CommunicationTemplateId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasOptional( r => r.SendSourceDate ).WithMany().HasForeignKey( r => r.SendDateKey ).WillCascadeOnDelete( false );
         }
     }
 
