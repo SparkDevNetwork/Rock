@@ -1448,7 +1448,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                         if ( !string.IsNullOrEmpty( this.GetAttributeValue( "PersonDetailPage" ) ) )
                         {
                             var parms = new Dictionary<string, string>();
-                            parms.Add( "PersonId", Person.Id.ToString() );
+                            if(Person != null && Person.Id != 0){
+                                parms.Add( "PersonId", Person.Id.ToString() );
+                            }
+
+                            if(_group != null && _group.Id != 0){
+                                parms.Add( "GroupId", _group.Id.ToString() );
+                            }
+
                             NavigateToLinkedPage( "PersonDetailPage", parms );
                         }
                         else
@@ -1474,7 +1481,25 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            /* BEMA.FE1.Start */
+            if ( !string.IsNullOrEmpty( this.GetAttributeValue( "PersonDetailPage" ) ) )
+            {
+                var parms = new Dictionary<string, string>();
+                if(Person != null && Person.Id != 0){
+                    parms.Add( "PersonId", Person.Id.ToString() );
+                }
+
+                if(_group != null && _group.Id != 0){
+                    parms.Add( "GroupId", _group.Id.ToString() );
+                }
+
+                NavigateToLinkedPage( "PersonDetailPage", parms );
+            }
+            else
+            {
+                Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            }
+            /* BEMA.FE1.End */        
         }
 
         /// <summary>
@@ -1524,7 +1549,25 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                 rockContext.SaveChanges();
             }
 
-            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            /* BEMA.FE1.Start */
+            if ( !string.IsNullOrEmpty( this.GetAttributeValue( "PersonDetailPage" ) ) )
+            {
+                var parms = new Dictionary<string, string>();
+                if(Person != null && Person.Id != 0){
+                    parms.Add( "PersonId", Person.Id.ToString() );
+                }
+
+                if(_group != null && _group.Id != 0){
+                    parms.Add( "GroupId", _group.Id.ToString() );
+                }
+
+                NavigateToLinkedPage( "PersonDetailPage", parms );
+            }
+            else
+            {
+                Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            }
+            /* BEMA.FE1.End */
         }
 
         #endregion
