@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29920.165
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1022
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43B5D55-BED0-4E74-BF97-9327F9A9D656}"
 	ProjectSection(WebsiteProperties) = preProject
@@ -95,6 +95,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.MinistrySafe", "com.bemaservices.MinistrySafe\com.bemaservices.MinistrySafe.csproj", "{A3CA2838-987D-483D-9A0C-431D5A847E22}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.MailChimp", "com.bemaservices.MailChimp\com.bemaservices.MailChimp.csproj", "{F5210B1F-CCDD-44BE-880E-2F2AD331939D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.hfbc.Autobuild", "org.hfbc.Autobuild\org.hfbc.Autobuild.csproj", "{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -238,6 +240,10 @@ Global
 		{F5210B1F-CCDD-44BE-880E-2F2AD331939D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5210B1F-CCDD-44BE-880E-2F2AD331939D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5210B1F-CCDD-44BE-880E-2F2AD331939D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
