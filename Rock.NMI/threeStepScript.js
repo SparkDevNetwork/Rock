@@ -29,7 +29,10 @@
 
         // If there is a payment type selection, use the selected one.
         // If there isn't a payment type selection (like on the registration blocks) it is CreditCard
-        var paymentType = $('.js-payment-tab').val() ?? 'CreditCard';
+        var paymentType = $('.js-payment-tab').val();
+        if (!paymentType) {
+            paymentType = 'CreditCard';
+        }
 
         if (typeof (Page_ClientValidate) == 'function') {
             if (Page_IsValid && Page_ClientValidate(validationGroup)) {
