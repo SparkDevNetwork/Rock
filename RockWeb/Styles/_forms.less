@@ -327,6 +327,10 @@ dl:not(.dl-horizontal) {
 // 4. Control Specific Styling
 // -------------------------
 
+.form-control > option[disabled] {
+  color: fade(@input-color, 50%); // Select fields don't obey opacity
+}
+
 .input-group-edit {
   .input-group-addon {
     background-color: @brand-success;
