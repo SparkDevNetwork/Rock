@@ -33,6 +33,7 @@ using Newtonsoft.Json;
 using Rock.Web;
 using System.Web.UI.WebControls;
 using Rock.UniversalSearch;
+using System.Text;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -303,6 +304,7 @@ namespace RockWeb.Blocks.Cms
             ContentChannel contentChannel;
 
             ContentChannelService contentChannelService = new ContentChannelService( rockContext );
+            CategoryService categoryService = new CategoryService( rockContext );
 
             int contentChannelId = hfId.Value.AsInteger();
 
@@ -339,6 +341,16 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.ItemUrl = tbContentChannelItemPublishingPoint.Text;
                 contentChannel.IsTaggingEnabled = cbEnableTag.Checked;
                 contentChannel.ItemTagCategoryId = cbEnableTag.Checked ? cpCategory.SelectedValueAsInt() : (int?)null;
+
+                // Add any categories
+                contentChannel.Categories.Clear();
+                foreach ( var categoryId in cpCategories.SelectedValuesAsInt() )
+                {
+                    contentChannel.Categories.Add( categoryService.Get( categoryId ) );
+                }
+
+                // Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime just in case Categories changed
+                contentChannel.ModifiedDateTime = RockDateTime.Now;
 
                 contentChannel.ChildContentChannels = new List<ContentChannel>();
                 contentChannel.ChildContentChannels.Clear();
@@ -752,6 +764,8 @@ namespace RockWeb.Blocks.Cms
                 tbName.Text = contentChannel.Name;
                 tbDescription.Text = contentChannel.Description;
                 ddlChannelType.SetValue( contentChannel.ContentChannelTypeId );
+                var categoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
+                cpCategories.SetValues( categoryIds );
                 cbIsStructuredContent.Checked = contentChannel.IsStructuredContent;
                 if ( contentChannel.IsStructuredContent )
                 {
@@ -855,6 +869,12 @@ namespace RockWeb.Blocks.Cms
             }
             lIcon.Text = string.Format("<i class='{0}'></i>", cssIcon);
             lTitle.Text = title.FormatAsHtmlTitle();
+            var categoriesHtml = new StringBuilder();
+            foreach ( var category in contentChannel.Categories.OrderBy( a => a.Order ) )
+            {
+                categoriesHtml.AppendLine( string.Format( "<span class='label label-info' data-toggle='tooltip' title='{0}'>{0}</span>", category.Name ) );
+            }
+            lCategories.Text = categoriesHtml.ToString();
             hlContentChannel.Text = contentChannel.ContentChannelType != null ? contentChannel.ContentChannelType.Name : string.Empty;
         }
 

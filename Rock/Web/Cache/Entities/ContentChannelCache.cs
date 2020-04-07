@@ -164,6 +164,15 @@ namespace Rock.Web.Cache
         public bool IsIndexEnabled { get; private set; }
 
         /// <summary>
+        /// Gets or sets the category ids.
+        /// </summary>
+        /// <value>
+        /// The category ids.
+        /// </value>
+        [DataMember]
+        public List<int> CategoryIds { get; private set; }
+
+        /// <summary>
         /// Gets the supported actions.
         /// </summary>
         /// <value>
@@ -343,6 +352,7 @@ namespace Rock.Web.Cache
             ContentControlType = contentChannel.ContentControlType;
             RootImageDirectory = contentChannel.RootImageDirectory;
             IsIndexEnabled = contentChannel.IsIndexEnabled;
+            CategoryIds = contentChannel.Categories.Select( c => c.Id ).ToList();
         }
 
         /// <summary>
