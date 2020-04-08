@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -27,6 +26,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -118,6 +118,33 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string QueryHint { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last run date time.
+        /// </summary>
+        /// <value>
+        /// The last run date time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRunDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the persisted last run duration in mulliseconds.
+        /// </summary>
+        /// <value>
+        /// The persisted last run duration in mulliseconds.
+        /// </value>
+        [DataMember]
+        public int? RunCount { get; set; }
+
+        /// <summary>
+        /// The amount of time in milliseconds that it took to run the <see cref="DataView"/>
+        /// </summary>
+        /// <value>
+        /// The time to run in ms.
+        /// </value>
+        [DataMember]
+        public int? TimeToRunMS { get; set; }
 
         #endregion
 

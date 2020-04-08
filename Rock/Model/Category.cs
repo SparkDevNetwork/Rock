@@ -14,16 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -210,7 +210,7 @@ namespace Rock.Model
                             {
                                 var supportedActions = new Dictionary<string, string>();
                                 supportedActions.Add( Authorization.VIEW, "The roles and/or users that have access to view." );
-                                supportedActions.Add( "Tag", "The roles and/or users that have access to tag items." );
+                                supportedActions.Add( Authorization.TAG, "The roles and/or users that have access to tag items." );
                                 supportedActions.Add( Authorization.EDIT, "The roles and/or users that have access to edit." );
                                 supportedActions.Add( Authorization.ADMINISTRATE, "The roles and/or users that have access to administrate." );
                                 return supportedActions;
@@ -293,7 +293,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             CategoryCache.UpdateCachedEntity( this.Id, entityState );
         }

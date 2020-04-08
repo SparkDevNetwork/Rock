@@ -10,20 +10,24 @@
                 </div>
                 <div class="panel-body">
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                
+
                     <div class="grid grid-panel">
+                        <Rock:GridFilter ID="gfShortLink" runat="server">
+                            <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
+                            <Rock:RockTextBox ID="txtToken" runat="server" Label="Token" />
+                        </Rock:GridFilter>
                         <Rock:Grid ID="gShortLinks" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gShortLinks_Edit">
                             <Columns>
-                                <Rock:RockBoundField DataField="ShortLink" HeaderText="Shortened Url" SortExpression="ShortLink" />
-                                <Rock:RockBoundField DataField="SiteName" HeaderText="Site" SortExpression="SiteName" />
+                                <Rock:RockBoundField DataField="ShortLink" HeaderText="Shortened URL" SortExpression="ShortLink" />
+                                <Rock:RockBoundField DataField="SiteName" HeaderText="Site" SortExpression="SiteName" ColumnPriority="Tablet" />
                                 <Rock:RockBoundField DataField="Token" HeaderText="Token" SortExpression="Token" />
-                                <Rock:RockTemplateFieldUnselected>
+                                <Rock:RockTemplateFieldUnselected HeaderStyle-CssClass="grid-columncommand" ItemStyle-CssClass="grid-columncommand" ColumnPriority="Tablet">
                                     <ItemTemplate>
-                                        <button 
+                                        <button
                                             data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy to Clipboard"
-                                            class="btn btn-default btn-sm js-copy-clipboard" data-clipboard-text='<%# Eval( "ShortLink" ) %>'
+                                            class="btn btn-sm btn-square btn-default js-copy-clipboard" data-clipboard-text='<%# Eval( "ShortLink" ) %>'
                                             onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
-                                            <i class='fa fa-clone'></i>
+                                            <i class='fa fa-clipboard'></i>
                                         </button>
                                     </ItemTemplate>
                                 </Rock:RockTemplateFieldUnselected>

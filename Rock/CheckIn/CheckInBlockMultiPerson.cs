@@ -14,15 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web;
-using Rock.Web.UI;
 
 namespace Rock.CheckIn
 {

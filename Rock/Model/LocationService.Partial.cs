@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -29,8 +30,8 @@ namespace Rock.Model
     public partial class LocationService
     {
         /// <summary>
-        /// Returns the first
-        /// <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Note: if <paramref name="street1"/> is blank, null will be returned.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
         /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
@@ -48,8 +49,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the first
-        /// <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Returns the first <see cref="Rock.Model.Location" /> where the address matches the provided address, otherwise the address will be saved as a new location.
+        /// Note: if <paramref name="street1"/> is blank, null will be returned.
+        /// Note: The location search IS NOT constrained by the provided group. Providing the group will cause this method to search that groups locations first, giving a faster result.
         /// </summary>
         /// <param name="street1">A <see cref="string" /> representing the Address Line 1 to search by.</param>
         /// <param name="street2">A <see cref="string" /> representing the Address Line 2 to search by.</param>
@@ -57,7 +59,7 @@ namespace Rock.Model
         /// <param name="state">A <see cref="string" /> representing the State to search by.</param>
         /// <param name="postalCode">A <see cref="string" /> representing the Zip/Postal code to search by</param>
         /// <param name="country">A <see cref="string" /> representing the Country to search by</param>
-        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first</param>
+        /// <param name="group">The <see cref="Group"/> (usually a Family) that should be searched first. This is NOT a search constraint.</param>
         /// <param name="verifyLocation">if set to <c>true</c> [verify location].</param>
         /// <param name="createNewLocation">if set to <c>true</c> a new location will be created if it does not exists.</param>
         /// <returns>
@@ -65,11 +67,13 @@ namespace Rock.Model
         /// </returns>
         public Location Get( string street1, string street2, string city, string state, string postalCode, string country, Group group, bool verifyLocation = true, bool createNewLocation = true )
         {
-            // Make sure it's not an empty address
-            if ( string.IsNullOrWhiteSpace( street1 ) )
-            {
-                return null;
-            }
+            //// Make sure it's not an empty address
+            //// This will not be checked anymore to enable a location to save with whatever info is available. Sometimes the only info given or legible on the card is the city and state.
+            //// If there are any downstream effects of this change do not fix them by uncommenting this code without speaking to the architect first.
+            //if ( string.IsNullOrWhiteSpace( street1 ) )
+            //{
+            //    return null;
+            //}
 
             // Try to find a location that matches the values, this is not a case sensitive match
             var foundLocation = Search( new Location { Street1 = street1, Street2 = street2, City = city, State = state, PostalCode = postalCode, Country = country }, group );
@@ -622,6 +626,18 @@ namespace Rock.Model
     SELECT L.* FROM CTE
     INNER JOIN [Location] L ON L.[Id] = CTE.[Id]
             ", deviceId, childQuery ) );
+        }
+
+        /// <summary>
+        /// Gets the locations for the Group and Schedule
+        /// </summary>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        /// <param name="groupId">The group identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Location> GetByGroupSchedule( int scheduleId, int groupId )
+        {
+            var groupLocationQuery = new GroupLocationService( this.Context as RockContext ).Queryable().Where( gl => gl.Schedules.Any( s => s.Id == scheduleId ) && gl.GroupId == groupId );
+            return this.Queryable().Where( l => groupLocationQuery.Any( gl => gl.LocationId == l.Id ) );
         }
     }
 }

@@ -71,7 +71,7 @@ namespace Rock.Model
             cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
 
             // store our Command to be later retrieved by EndGet
-            context.Items.Add( "cmd", cmd );
+            context.AddOrReplaceItem( "cmd", cmd );
 
             // start async DB read
             return cmd.BeginExecuteReader(

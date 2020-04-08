@@ -17,16 +17,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a location
     /// </summary>
     public class LocationItemPicker : ItemPicker
     {
@@ -149,9 +148,39 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public override string ItemRestUrl
         {
-            get { return "~/api/locations/getchildren/"; }
+            get
+            {
+                if ( IncludeInactive )
+                {
+                    return "~/api/locations/getchildren/";
+                }
+                else
+                {
+                    return "~/api/locations/getactivechildren/";
+                }
+            }
         }
 
-        
+        /// <summary>
+        /// Private reference to IncludeInactive.
+        /// </summary>
+        private bool? _includeInactive;
+
+        /// <summary>
+        /// Determines whether or not to include active locations.
+        /// </summary>
+        public bool IncludeInactive
+        {
+            get
+            {
+                return _includeInactive ?? false;
+            }
+            set
+            {
+                _includeInactive = value;
+            }
+        }
+
+
     }
 }

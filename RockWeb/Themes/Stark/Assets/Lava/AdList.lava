@@ -1,5 +1,6 @@
 ﻿<div class="row announcement-list">
   {% for item in Items %}
+  {%- assign itemContent = item.Content | Trim -%}
   {%- assign itemPrimarySlug = item.PrimarySlug | Trim -%}
   {%- if LinkedPages.DetailPage contains '{Slug}' and itemPrimarySlug != '' -%}
     {%- assign itemLink = LinkedPages.DetailPage | Replace:'{Slug}',item.PrimarySlug | Prepend:'/' -%}
@@ -11,12 +12,18 @@
     {%- endif -%}
   {%- endif -%}
   <div class="col-md-4 col-sm-6 announcement">
-    <a href="{{ itemLink }}">{{ item | Attribute:'Image' }}</a>
+    {%- if itemContent == '' -%}
+      {{ item | Attribute:'Image' }}
+    {% else %}
+      <a href="{{ itemLink }}">{{ item | Attribute:'Image' }}</a>
+    {% endif %}
     <h2 class="announcement-title">{{ item.Title }}</h2>
     <p class="announcement-text">{{ item | Attribute:'SummaryText' }}</p>
+    {%- if itemContent != '' -%}
     <p>
       <a class="view-details btn btn-default" href="{{ itemLink }}" role="button">View details »</a>
     </p>
+    {%- endif -%}
   </div>
   {% capture breakNow %}{{ forloop.index | Modulo:3 }}{% endcapture %}
   {% if breakNow == 0 -%}
@@ -24,4 +31,4 @@
 <div class="row announcement-list">
   {% endif -%}
   {% endfor -%}
-</div> 
+</div>

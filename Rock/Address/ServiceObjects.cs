@@ -16,12 +16,9 @@
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-//using System.Data.Spatial;
 
-using Rock;
 using Rock.Attribute;
 using Rock.ServiceObjects.GeoCoder;
-using Rock.Web.UI;
 
 namespace Rock.Address
 {

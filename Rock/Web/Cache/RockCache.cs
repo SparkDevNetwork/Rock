@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
 
 namespace Rock.Web.Cache
@@ -68,23 +69,6 @@ namespace Rock.Web.Cache
             {
                 cacheManager?.Clear();
             }
-        }
-
-        /// <summary>
-        /// Updates the cache hit miss.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="hit">if set to <c>true</c> [hit].</param>
-        internal static void UpdateCacheHitMiss( string key, bool hit )
-        {
-            var httpContext = System.Web.HttpContext.Current;
-            if ( httpContext == null || !httpContext.Items.Contains( "Cache_Hits" ) )
-            {
-                return;
-            }
-
-            var cacheHits = httpContext.Items["Cache_Hits"] as Dictionary<string, bool>;
-            cacheHits?.AddOrIgnore( key, hit );
         }
 
         #endregion
@@ -199,8 +183,6 @@ namespace Rock.Web.Cache
             var value = region.IsNotNullOrWhiteSpace() ?
                 RockCacheManager<object>.Instance.Cache.Get( key, region ) :
                 RockCacheManager<object>.Instance.Cache.Get( key );
-
-            UpdateCacheHitMiss( key, value != null );
 
             if ( value != null )
             {
@@ -325,7 +307,7 @@ namespace Rock.Web.Cache
                     }
 
                     var value = RockCacheManager<List<string>>.Instance.Cache.Get( cacheTag, CACHE_TAG_REGION_NAME ) ?? new List<string>();
-                    if ( value.FirstOrDefault( v => v.Contains( key ) ) == null )
+                    if ( !value.Contains(key) )
                     {
                         value.Add( key );
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( cacheTag, CACHE_TAG_REGION_NAME, value );
@@ -621,6 +603,18 @@ namespace Rock.Web.Cache
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets all model cache types.
+        /// </summary>
+        /// <returns></returns>
+        public static List<Type> GetAllModelCacheTypes()
+        {
+            return System.Reflection.Assembly.GetExecutingAssembly().GetTypes().Where( t =>
+                t.BaseType != null &&
+                t.BaseType.IsGenericType &&
+                t.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) ).ToList();
         }
         
         #endregion

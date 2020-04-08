@@ -56,6 +56,9 @@ namespace Rock.Client
         public int? ConnectionStatusValueId { get; set; }
 
         /// <summary />
+        public int? ContributionFinancialAccountId { get; set; }
+
+        /// <summary />
         public DateTime? DeceasedDate { get; set; }
 
         /// <summary />
@@ -81,6 +84,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? GivingGroupId { get; set; }
+
+        /// <summary />
+        public int GivingLeaderId { get; set; }
 
         /// <summary>
         /// The Grade Offset of the person, which is the number of years until their graduation date. See GradeFormatted to see their current Grade. [Readonly]
@@ -112,12 +118,6 @@ namespace Rock.Client
         public int? MaritalStatusValueId { get; set; }
 
         /// <summary />
-        public int? MetaPersonicxLifestageClusterId { get; set; }
-
-        /// <summary />
-        public int? MetaPersonicxLifestageGroupId { get; set; }
-
-        /// <summary />
         public string MiddleName { get; set; }
 
         /// <summary>
@@ -130,6 +130,9 @@ namespace Rock.Client
 
         /// <summary />
         public int? PhotoId { get; set; }
+
+        /// <summary />
+        public int? PrimaryCampusId { get; set; }
 
         /// <summary />
         public int? PrimaryFamilyId { get; set; }
@@ -213,6 +216,7 @@ namespace Rock.Client
             this.BirthYear = source.BirthYear;
             this.CommunicationPreference = source.CommunicationPreference;
             this.ConnectionStatusValueId = source.ConnectionStatusValueId;
+            this.ContributionFinancialAccountId = source.ContributionFinancialAccountId;
             this.DeceasedDate = source.DeceasedDate;
             this.Email = source.Email;
             this.EmailNote = source.EmailNote;
@@ -222,6 +226,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.Gender = source.Gender;
             this.GivingGroupId = source.GivingGroupId;
+            this.GivingLeaderId = source.GivingLeaderId;
             this.GradeOffset = source.GradeOffset;
             this.GraduationYear = source.GraduationYear;
             this.InactiveReasonNote = source.InactiveReasonNote;
@@ -231,12 +236,11 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.LastName = source.LastName;
             this.MaritalStatusValueId = source.MaritalStatusValueId;
-            this.MetaPersonicxLifestageClusterId = source.MetaPersonicxLifestageClusterId;
-            this.MetaPersonicxLifestageGroupId = source.MetaPersonicxLifestageGroupId;
             this.MiddleName = source.MiddleName;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NickName = source.NickName;
             this.PhotoId = source.PhotoId;
+            this.PrimaryCampusId = source.PrimaryCampusId;
             this.PrimaryFamilyId = source.PrimaryFamilyId;
             this.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             this.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
@@ -282,16 +286,7 @@ namespace Rock.Client
         public string GivingId { get; set; }
 
         /// <summary />
-        public int GivingLeaderId { get; set; }
-
-        /// <summary />
         public DefinedValue MaritalStatusValue { get; set; }
-
-        /// <summary />
-        public MetaPersonicxLifestageCluster MetaPersonicxLifestageCluster { get; set; }
-
-        /// <summary />
-        public MetaPersonicxLifestageGroup MetaPersonicxLifestageGroup { get; set; }
 
         /// <summary />
         public ICollection<PhoneNumber> PhoneNumbers { get; set; }

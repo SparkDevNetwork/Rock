@@ -19,13 +19,14 @@ using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    ///
+    /// Control that can be used to select a person
     /// </summary>
     public class PersonPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {
@@ -368,7 +369,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the person's primary alias identifier.
+        /// Gets the selected person's primary alias identifier.
         /// </summary>
         /// <value>
         /// The person alias identifier.
@@ -390,7 +391,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the selected value.
+        /// Gets or sets the Id of the selected person. See also <seealso cref="PersonId"/>.
         /// </summary>
         /// <value>
         /// The selected value.

@@ -15,13 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.Compilation;
 
 using Quartz;
-
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -75,6 +72,9 @@ namespace Rock.Model
                 string thetype = string.Format( "{0}, {1}", job.Class, job.Assembly );
                 type = Type.GetType( thetype );
             }
+
+            int? jobEntityTypeId = Rock.Web.Cache.EntityTypeCache.Get( "Rock.Model.ServiceJob" ).Id;
+            Rock.Attribute.Helper.UpdateAttributes( type, jobEntityTypeId, "Class", type.FullName );
 
             // load up job attributes (parameters) 
             job.LoadAttributes();

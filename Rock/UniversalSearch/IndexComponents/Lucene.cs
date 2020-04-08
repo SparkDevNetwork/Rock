@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Web;
+
 using Lucene.Net.Analysis;
 using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Miscellaneous;
@@ -34,12 +35,15 @@ using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
+
 using Newtonsoft.Json.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
 using Rock.UniversalSearch.IndexModels.Attributes;
 using Rock.Web.Cache;
+using Document = Lucene.Net.Documents.Document;
 
 namespace Rock.UniversalSearch.IndexComponents
 {
@@ -62,7 +66,7 @@ namespace Rock.UniversalSearch.IndexComponents
         private static IndexSearcher _indexSearcher = null;
         private static FSDirectory _directory;
         private static Timer _timer = null;
-        private static readonly string _path = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "App_Data", "LuceneSearchIndex" );
+        private static readonly string _path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/LuceneSearchIndex" );
         private static readonly object _lockWriter = new object();
         #endregion
 

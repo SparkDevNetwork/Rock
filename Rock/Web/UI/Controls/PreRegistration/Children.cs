@@ -21,8 +21,6 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Humanizer;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {

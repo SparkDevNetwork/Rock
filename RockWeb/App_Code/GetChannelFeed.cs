@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using Rock;
@@ -42,7 +43,16 @@ namespace RockWeb
             request = context.Request;
             response = context.Response;
 
-            RockContext rockContext = new RockContext();
+            string cacheKey = "Rock:GetChannelFeed:" + request.RawUrl;
+            var contentCache = RockCache.Get( cacheKey );
+            var mimeTypeCache = RockCache.Get( cacheKey + ":MimeType" );
+            if ( mimeTypeCache != null && contentCache != null )
+            {
+                response.ContentType = ( string ) mimeTypeCache;
+                response.Write( ( string ) contentCache );
+                response.StatusCode = 200;
+                return;
+            }
 
             if ( request.HttpMethod != "GET" && request.HttpMethod != "HEAD" )
             {
@@ -71,7 +81,7 @@ namespace RockWeb
                 return;
             }
 
-            ContentChannel channel = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" ).FirstOrDefault( c => c.Id == channelId.Value );
+            var channel = ContentChannelCache.Get( channelId.Value );
 
             if ( channel == null )
             {
@@ -160,23 +170,27 @@ namespace RockWeb
             }
 
             // get channel items
+            var rockContext = new RockContext();
             ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
 
-            var content = contentService.Queryable( "ContentChannelType" )
-                            .Where( c =>
-                                c.ContentChannelId == channel.Id &&
-                                ( c.Status == ContentChannelItemStatus.Approved || c.ContentChannel.ContentChannelType.DisableStatus || c.ContentChannel.RequiresApproval == false ) &&
-                                c.StartDateTime <= RockDateTime.Now );
+            var content = contentService.Queryable().AsNoTracking().Where( c =>
+                c.ContentChannelId == channel.Id &&
+                c.StartDateTime <= RockDateTime.Now );
+
+            if ( !channel.ContentChannelType.DisableStatus && channel.RequiresApproval )
+            {
+                content = content.Where( cci => cci.Status == ContentChannelItemStatus.Approved );
+            }
 
             if ( channel.ContentChannelType.DateRangeType == ContentChannelDateType.DateRange )
             {
                 if ( channel.ContentChannelType.IncludeTime )
                 {
-                    content = content.Where( c => c.ExpireDateTime >= RockDateTime.Now );
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime >= RockDateTime.Now );
                 }
                 else
                 {
-                    content = content.Where( c => c.ExpireDateTime > RockDateTime.Today );
+                    content = content.Where( c => !c.ExpireDateTime.HasValue || c.ExpireDateTime > RockDateTime.Today );
                 }
             }
 
@@ -189,9 +203,9 @@ namespace RockWeb
                 content = content.OrderByDescending( c => c.StartDateTime );
             }
 
-            content = content.Take( rssItemLimit );
+            var contentItems = content.Take( rssItemLimit ).ToList();
 
-            foreach ( var item in content )
+            foreach ( var item in contentItems )
             {
                 item.Content = item.Content.ResolveMergeFields( mergeFields );
 
@@ -209,12 +223,23 @@ namespace RockWeb
                 }
             }
 
-            mergeFields.Add( "Items", content );
+            mergeFields.Add( "Items", contentItems );
 
             mergeFields.Add( "RockVersion", Rock.VersionInfo.VersionInfo.GetRockProductVersionNumber() );
 
-            response.Write( rssTemplate.ResolveMergeFields( mergeFields ) );
+            var outputContent = rssTemplate.ResolveMergeFields( mergeFields );
+            response.Write( outputContent );
 
+            var cacheDuration = dvRssTemplate.GetAttributeValue( "CacheDuration" ).AsInteger();
+            if ( cacheDuration > 0 )
+            {
+                var expiration = RockDateTime.Now.AddMinutes( cacheDuration );
+                if ( expiration > RockDateTime.Now )
+                {
+                    RockCache.AddOrUpdate( cacheKey + ":MimeType", null, response.ContentType, expiration );
+                    RockCache.AddOrUpdate( cacheKey, null, outputContent, expiration );
+                };
+            }
         }
 
         /// <summary>

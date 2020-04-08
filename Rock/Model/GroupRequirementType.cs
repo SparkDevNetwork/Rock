@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -187,11 +188,28 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
+        [RockObsolete("1.10")]
+        [Obsolete( "Use GetMergeObjects(group, person) instead") ]
         public Dictionary<string, object> GetMergeObjects( Group group )
         {
             Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
             mergeObjects.Add( "Group", group );
             mergeObjects.Add( "GroupRequirementType", this );
+            return mergeObjects;
+        }
+
+        /// <summary>
+        /// Gets the merge objects that can be used in the SQL Expression. Set the person parameter if checking a specific person, otherwise pass person as null.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMergeObjects( Group group, Person person )
+        {
+            Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+            mergeObjects.Add( "Group", group );
+            mergeObjects.Add( "GroupRequirementType", this );
+            mergeObjects.Add( "Person", person );
 
             return mergeObjects;
         }

@@ -15,21 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using System.Collections.Generic;
-using Rock.Extension;
-using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a remote authentication component
     /// </summary>
     public class RemoteAuthsPicker : RockCheckBoxList
     {

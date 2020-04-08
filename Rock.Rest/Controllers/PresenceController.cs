@@ -21,10 +21,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -53,7 +53,8 @@ namespace Rock.Rest.Controllers
                     var interactionService = new InteractionService( rockContext );
                     var interactionComponentService = new InteractionComponentService( rockContext );
 
-                    var epochTime = new DateTime( 1970, 1, 1, 0, 0, 0, 0 ).ToLocalTime();
+                    // Can't set to local time here as it won't compute DST correctly later.
+                    var epochTime = new DateTime( 1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc );
 
                     foreach ( var macPresence in presenceList.Where( l => l.Mac != null && l.Mac != "" ) )
                     {
@@ -72,8 +73,8 @@ namespace Rock.Rest.Controllers
                             foreach ( var presence in macPresence.Presence )
                             {
                                 // Calc data needed for new and existing data
-                                DateTime interactionStart = epochTime.AddSeconds( presence.Arrive );
-                                DateTime interactionEnd = epochTime.AddSeconds( presence.Depart );
+                                DateTime interactionStart = epochTime.AddSeconds( presence.Arrive ).ToLocalTime();
+                                DateTime interactionEnd = epochTime.AddSeconds( presence.Depart ).ToLocalTime();
                                 TimeSpan ts = interactionEnd.Subtract( interactionStart );
                                 string duration = ( ts.TotalMinutes >= 60 ? $"{ts:%h} hours and " : "" ) + $"{ts:%m} minutes";
 
@@ -85,14 +86,14 @@ namespace Rock.Rest.Controllers
                                         var component = interactionComponentService
                                             .Queryable().AsNoTracking()
                                             .Where( c =>
-                                                c.ChannelId == interactionChannel.Id &&
+                                                c.InteractionChannelId == interactionChannel.Id &&
                                                 c.Name == presence.Space )
                                             .FirstOrDefault();
                                         if ( component == null )
                                         {
                                             component = new InteractionComponent();
                                             interactionComponentService.Add( component );
-                                            component.ChannelId = interactionChannel.Id;
+                                            component.InteractionChannelId = interactionChannel.Id;
                                             component.Name = presence.Space;
                                             rockContext.SaveChanges();
                                         }

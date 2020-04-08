@@ -42,9 +42,9 @@ namespace RockWeb.Blocks.Core
     [TextField( "No Campus Text", "The text displayed when no campus context is selected.", true, "Select Campus", order: 3 )]
     [TextField( "Clear Selection Text", "The text displayed when a campus can be unselected. This will not display when the text is empty.", false, "", order: 4 )]
     [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
-    [BooleanField("Include Inactive Campuses", "Should inactive campuses be listed as well?", false, "", order: 6)]
-    [BooleanField("Default To Current User's Campus", "Will use the campus of the current user if no context is provided.", order: 7, key:"DefaultToCurrentUser")]
-    [CustomDropdownListField("Alignment", "Determines the alignment of the dropdown.", "1^Left,2^Right", true, "1", order: 8)]
+    [BooleanField( "Include Inactive Campuses", "Should inactive campuses be listed as well?", false, "", order: 6 )]
+    [BooleanField( "Default To Current User's Campus", "Will use the campus of the current user if no context is provided.", order: 7, key: "DefaultToCurrentUser" )]
+    [CustomDropdownListField( "Alignment", "Determines the alignment of the dropdown.", "1^Left,2^Right", true, "1", order: 8 )]
     public partial class CampusContextSetter : RockBlock
     {
         #region Base Control Methods
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Core
 
             LoadDropdowns();
 
-            if (GetAttributeValue("Alignment") == "2" )
+            if ( GetAttributeValue( "Alignment" ) == "2" )
             {
                 ulDropdownMenu.AddCssClass( "dropdown-menu-right" );
             }
@@ -100,7 +100,7 @@ namespace RockWeb.Blocks.Core
             var campusEntityType = EntityTypeCache.Get( typeof( Campus ) );
             var currentCampus = RockPage.GetCurrentContext( campusEntityType ) as Campus;
 
-            var campusIdString = Request.QueryString["campusId"];
+            var campusIdString = Request.QueryString["CampusId"];
             if ( campusIdString != null )
             {
                 var campusId = campusIdString.AsInteger();
@@ -110,9 +110,14 @@ namespace RockWeb.Blocks.Core
                 currentCampus = SetCampusContext( campusId, false );
             }
 
+            // if the currentCampus isn't determined yet, and DefaultToCurrentUser, and the person has a CampusId, use that as the campus context
             if ( currentCampus == null && GetAttributeValue( "DefaultToCurrentUser" ).AsBoolean() && CurrentPerson != null )
             {
-                currentCampus = CurrentPerson.GetFamily().Campus;
+                var campusId = CurrentPerson.GetFamily().CampusId;
+                if ( campusId.HasValue )
+                {
+                    currentCampus = SetCampusContext( campusId.Value, false );
+                }
             }
 
             if ( currentCampus != null )
@@ -126,8 +131,8 @@ namespace RockWeb.Blocks.Core
                 lCurrentSelection.Text = GetAttributeValue( "NoCampusText" );
             }
 
-            bool includeInactive =  GetAttributeValue( "IncludeInactiveCampuses" ).AsBoolean();
-            var campusList = CampusCache.All(includeInactive)
+            bool includeInactive = GetAttributeValue( "IncludeInactiveCampuses" ).AsBoolean();
+            var campusList = CampusCache.All( includeInactive )
                 .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
                 .ToList();
 
@@ -185,10 +190,10 @@ namespace RockWeb.Blocks.Core
             // Only redirect if refreshPage is true
             if ( refreshPage )
             {
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "campusId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "CampusId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "campusId", campusId.ToString() );
+                    queryString.Set( "CampusId", campusId.ToString() );
                     Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
                 }
                 else

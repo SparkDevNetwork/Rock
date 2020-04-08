@@ -35,6 +35,9 @@ namespace Rock.Utility.Settings.DataAutomation
             IsNoAttendanceInGroupTypeEnabled = true;
             NoAttendanceInGroupTypeDays = 500;
 
+            IsNoSiteLoginEnabled = true;
+            NoSiteLoginPeriod = 500;
+
             IsNoPrayerRequestEnabled = true;
             NoPrayerRequestPeriod = 500;
 
@@ -93,6 +96,22 @@ namespace Rock.Utility.Settings.DataAutomation
         /// The no attendance in group type days.
         /// </value>
         public int NoAttendanceInGroupTypeDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is no site login enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is no site login enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsNoSiteLoginEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the no site login period.
+        /// </summary>
+        /// <value>
+        /// The no site login period.
+        /// </value>
+        public int NoSiteLoginPeriod { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is no prayer request enabled.

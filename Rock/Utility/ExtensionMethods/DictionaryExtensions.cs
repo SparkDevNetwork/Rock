@@ -20,10 +20,12 @@ using System.Collections.Generic;
 namespace Rock
 {
     /// <summary>
-    /// Dictionary Extensions
+    /// Dictionary Extensions that don't reference Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
+        /*** NOTE: When using these extensions against a <see cref="System.Collections.Concurrent.ConcurrentDictionary"/>, it will end up using the ThreadSafe versions of these methods. See https://stackoverflow.com/a/10112281/1755417  ***/
+
         #region Dictionary<TKey, TValue> extension methods
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds the or replace.
+        /// Adds or replaces an item in a Dictionary.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -76,7 +78,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Adds if not empty.
+        /// Adds a string value to a Dictionary if it is not blank.
         /// </summary>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
@@ -101,7 +103,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets value for the specified key, or null if the dictionary doesn't contain the key
+        /// Gets value for the specified key, or null if the dictionary doesn't contain the key.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
         /// <typeparam name="TValue">The type of the value.</typeparam>
@@ -184,6 +186,25 @@ namespace Rock
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        public static DateTime? GetValueOrNull<TKey>( this IDictionary<TKey, DateTime> dictionary, TKey key )
+        {
+            if ( dictionary.ContainsKey( key ) )
+            {
+                return dictionary[key];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the value or null.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <param name="dictionary">The dictionary.</param>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public static Guid? GetValueOrNull<TKey>( this IDictionary<TKey, Guid> dictionary, TKey key )
         {
             if ( dictionary.ContainsKey( key ) )
@@ -197,21 +218,23 @@ namespace Rock
         }
 
         /// <summary>
-        /// Gets ConfigurationValue's Value for the specified key, or null if the dictionary doesn't contain the key or the ConfigurationValue is null
+        /// Gets the value associated with the specified key or a default value if the key is not found.
         /// </summary>
         /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="dictionary">The dictionary.</param>
         /// <param name="key">The key.</param>
+        /// <param name="defaultValue">The default value returned if the key does not exist.</param>
         /// <returns></returns>
-        public static string GetValueOrNull<TKey>( this IDictionary<TKey, Rock.Field.ConfigurationValue> dictionary, TKey key )
+        public static TValue GetValueOrDefault<TKey, TValue>( this IDictionary<TKey, TValue> dictionary, TKey key, TValue defaultValue )
         {
-            if ( dictionary.ContainsKey( key ) && dictionary[key] != null )
+            if ( dictionary.ContainsKey( key ) )
             {
-                return dictionary[key].Value;
+                return dictionary[key];
             }
             else
             {
-                return null;
+                return defaultValue;
             }
         }
 

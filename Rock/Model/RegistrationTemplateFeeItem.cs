@@ -129,7 +129,7 @@ namespace Rock.Model
         /// <param name="registrationInstance">The registration instance.</param>
         /// <returns></returns>
         [RockObsolete("1.8")]
-        [Obsolete("Use the override that includes otherRegistrant instead.")]
+        [Obsolete("Use the override that includes otherRegistrant instead.", true )]
         public int? GetUsageCountRemaining( RegistrationInstance registrationInstance )
         {
             return GetUsageCountRemaining( registrationInstance, null );

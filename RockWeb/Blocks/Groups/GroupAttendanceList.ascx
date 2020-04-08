@@ -5,13 +5,13 @@
 
         <div class="panel panel-block">
 
-            <div class="panel-heading clearfix">
+            <div class="panel-heading">
                 <h1 class="panel-title pull-left">
                     <i class="fa fa-check-square-o"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="Group Attendance" />
                 </h1>
 
-                <Rock:ButtonDropDownList ID="bddlCampus" runat="server" FormGroupCssClass="panel-options pull-right" Title="All Campuses" SelectionStyle="Checkmark" OnSelectionChanged="bddlCampus_SelectionChanged" DataTextField="Name" DataValueField="Id" />
+                <Rock:ButtonDropDownList ID="bddlCampus" runat="server" FormGroupCssClass="panel-options pull-right dropdown-right" Title="All Campuses" SelectionStyle="Checkmark" OnSelectionChanged="bddlCampus_SelectionChanged" DataTextField="Name" DataValueField="Id" />
 
             </div>
 
@@ -33,11 +33,11 @@
 		                            <small><%#Eval("ParentLocationPath")%></small>
 		                        </ItemTemplate>
 		                    </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" SortExpression="ScheduleName" ColumnPriority="Tablet" />
+                            <Rock:RockBoundField DataField="ScheduleName" HeaderText="Schedule" SortExpression="ScheduleName" ColumnPriority="Tablet" HtmlEncode="false" />
                             <Rock:BoolField DataField="AttendanceEntered" HeaderText="Attendance Entered" SortExpression="AttendanceEntered" />
                             <Rock:BoolField DataField="DidNotOccur" HeaderText="Didn't Meet" SortExpression="DidNotOccur" />
                             <Rock:RockBoundField DataField="DidAttendCount" HeaderText="Attendance Count" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:N0}" SortExpression="DidAttendCount" HeaderStyle-HorizontalAlign="Right" />
-                            <Rock:RockBoundField DataField="AttendanceRate" HeaderText="Percent Attended" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="AttendanceRate" HeaderStyle-HorizontalAlign="Right"/>
+                            <Rock:RockBoundField DataField="PercentMembersAttended" HtmlEncode="false" HeaderText="% Members Attended&nbsp;<i class='fa fa-info-circle' data-toggle='tooltip' data-placement='top' title='The percentage of members that were marked &quot;Did Attend&quot;.'></i>" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:P0}" SortExpression="PercentMembersAttended" HeaderStyle-HorizontalAlign="Right"/>
                             <Rock:RockBoundField DataField="Notes" HeaderText="Notes" HtmlEncode="false" ColumnPriority="Desktop" SortExpression="Notes"/>
                             <Rock:EditField IconCssClass="fa fa-check-square-o" OnClick="gOccurrences_Edit" ToolTip="Enter Attendance" />
                             <Rock:DeleteField OnClick="gOccurrences_Delete" />

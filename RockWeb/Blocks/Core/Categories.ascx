@@ -72,7 +72,7 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
-                        <Rock:DataTextBox ID="tbHighlightColor" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="HighlightColor" />
+                        <Rock:ColorPicker ID="cpHighlight" runat="server" Label="Highlight Color" />
                     </div>
 
                 </div>

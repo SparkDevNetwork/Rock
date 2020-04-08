@@ -14,12 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Rock.Store
 {
@@ -29,7 +24,7 @@ namespace Rock.Store
     public class StoreServiceBase
     {
         /// <summary>
-        /// Internal variable to store the url to the store.
+        /// Internal variable to store the URL to the store.
         /// </summary>
         protected string _rockStoreUrl = string.Empty;
 

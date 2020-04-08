@@ -16,20 +16,19 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Core.Objects;
 using System.Linq;
 using System.Text;
 using System.Web;
+
 using Humanizer;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Jobs
 {
@@ -82,6 +81,7 @@ namespace Rock.Jobs
                 var currentDate = RockDateTime.Today;
                 var cutoffDays = dataMap.GetString( "CutoffDate" ).AsIntegerOrNull() ?? 30;
 
+                // Do not filter registrations by template or instance cost, it will miss $0 registrations that have optional fees.
                 var registrations = registrationService.Queryable( "RegistrationInstance" )
                                                 .Where( r =>
                                                          r.RegistrationInstance.RegistrationTemplate.IsActive
@@ -90,7 +90,6 @@ namespace Rock.Jobs
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject.Length > 0
-                                                         && (r.RegistrationInstance.RegistrationTemplate.Cost != 0 || (r.RegistrationInstance.Cost != null && r.RegistrationInstance.Cost != 0))
                                                          && (r.RegistrationInstance.EndDateTime == null || currentDate <= System.Data.Entity.SqlServer.SqlFunctions.DateAdd("day", cutoffDays,  r.RegistrationInstance.EndDateTime) ) )
                                                  .ToList();
 
@@ -111,7 +110,7 @@ namespace Rock.Jobs
 
                             var emailMessage = new RockEmailMessage();
                             emailMessage.AdditionalMergeFields = mergeObjects;
-                            emailMessage.AddRecipient( new RecipientData( registration.ConfirmationEmail, mergeObjects ) );
+                            emailMessage.AddRecipient( registration.GetConfirmationRecipient( mergeObjects ) );
                             emailMessage.FromEmail = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail;
                             emailMessage.FromName = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject;
                             emailMessage.Subject = registration.RegistrationInstance.RegistrationTemplate.PaymentReminderFromName;

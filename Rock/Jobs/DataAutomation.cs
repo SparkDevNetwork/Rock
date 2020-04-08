@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,7 +26,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
 using Rock.Web.Cache;
-using Rock.Attribute;
 
 namespace Rock.Jobs
 {
@@ -230,6 +229,7 @@ Update Family Status: {updateFamilyStatus}
                     personIds = GetPeopleWhoContributed( settings.IsLastContributionEnabled, settings.LastContributionPeriod, rockContext );
                     personIds.AddRange( GetPeopleWhoAttendedServiceGroup( settings.IsAttendanceInServiceGroupEnabled, settings.AttendanceInServiceGroupPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsAttendanceInGroupTypeEnabled, settings.AttendanceInGroupType, null, settings.AttendanceInGroupTypeDays, rockContext ) );
+                    personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsSiteLoginEnabled, settings.SiteLoginPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsPrayerRequestEnabled, settings.PrayerRequestPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsPersonAttributesEnabled, settings.PersonAttributes, null, settings.PersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsInteractionsEnabled, settings.Interactions, rockContext ) );
@@ -419,6 +419,7 @@ Update Family Status: {updateFamilyStatus}
                     personIds = GetPeopleWhoContributed( settings.IsNoLastContributionEnabled, settings.NoLastContributionPeriod, rockContext );
                     personIds.AddRange( GetPeopleWhoAttendedGroupType( settings.IsNoAttendanceInGroupTypeEnabled, null, settings.AttendanceInGroupType, settings.NoAttendanceInGroupTypeDays, rockContext ) );
                     personIds.AddRange( GetPeopleWhoSubmittedPrayerRequest( settings.IsNoPrayerRequestEnabled, settings.NoPrayerRequestPeriod, rockContext ) );
+                    personIds.AddRange( GetPeopleWhoHaveSiteLogins( settings.IsNoSiteLoginEnabled, settings.NoSiteLoginPeriod, rockContext ) );
                     personIds.AddRange( GetPeopleWithPersonAttributUpdates( settings.IsNoPersonAttributesEnabled, null, settings.PersonAttributes, settings.NoPersonAttributesDays, rockContext ) );
                     personIds.AddRange( GetPeopleWithInteractions( settings.IsNoInteractionsEnabled, settings.NoInteractions, rockContext ) );
 
@@ -570,15 +571,14 @@ Update Family Status: {updateFamilyStatus}
                         var startPeriod = RockDateTime.Now.AddDays( -settings.IgnoreIfManualUpdatePeriod );
 
                         // Find any families that has a campus manually added/updated within the configured number of days
-                        var personEntityTypeId = EntityTypeCache.Get( typeof( Person ) ).Id;
+                        var groupEntityTypeId = EntityTypeCache.Get( typeof( Group ) ).Id;
                         var familyIdsWithManualUpdate = new HistoryService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( m =>
                                 m.CreatedDateTime >= startPeriod &&
-                                m.EntityTypeId == personEntityTypeId &&
-                                m.RelatedEntityId.HasValue &&
+                                m.EntityTypeId == groupEntityTypeId &&
                                 m.ValueName == "Campus" )
-                            .Select( a => a.RelatedEntityId.Value )
+                            .Select( a => a.EntityId )
                             .ToList()
                             .Distinct();
 
@@ -607,14 +607,17 @@ Update Family Status: {updateFamilyStatus}
                             .ToList();
                     }
 
-                    // Query all of the giving tied to a campus 
+                    // Query all of the transactions that are considered as "giving activity" and are associated with a campus.
                     if ( settings.IsMostFamilyGivingEnabled )
                     {
+                        int transactionTypeContributionId = DefinedValueCache.GetOrThrow( "Transaction Type/Contribution", Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() ).Id;
+
                         var startPeriod = RockDateTime.Now.AddDays( -settings.MostFamilyAttendancePeriod );
                         personCampusGiving = new FinancialTransactionDetailService( rockContext )
                             .Queryable().AsNoTracking()
                             .Where( a =>
                                 a.Transaction != null &&
+                                a.Transaction.TransactionTypeValueId == transactionTypeContributionId &&
                                 a.Transaction.TransactionDateTime.HasValue &&
                                 a.Transaction.TransactionDateTime >= startPeriod &&
                                 a.Transaction.AuthorizedPersonAlias != null &&
@@ -1042,7 +1045,7 @@ Update Family Status: {updateFamilyStatus}
                                     History.EvaluateChange( familyChanges, groupLocation.GroupLocationTypeValue.Value + " Location", string.Empty, groupLocation.Location.ToString() );
                                 }
 
-                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false,null, SOURCE_OF_CHANGE );
+                                HistoryService.SaveChanges( rockContext, typeof( Person ), familyChangesGuid, personId, familyChanges, false, null, SOURCE_OF_CHANGE );
                             }
 
                             // If user configured the job to copy home phone and this person does not have a home phone, copy the first home phone number from another adult in original family(s)
@@ -1431,6 +1434,33 @@ Update Family Status: {updateFamilyStatus}
         }
 
         /// <summary>
+        /// Gets the people who have logged into rock.
+        /// </summary>
+        /// <param name="enabled">if set to <c>true</c> [enabled].</param>
+        /// <param name="periodInDays">The period in days.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        private List<int> GetPeopleWhoHaveSiteLogins( bool enabled, int periodInDays, RockContext rockContext )
+        {
+            if ( enabled )
+            {
+                var startDate = RockDateTime.Now.AddDays( -periodInDays );
+
+                return new UserLoginService( rockContext )
+                    .Queryable().AsNoTracking()
+                    .Where( u =>
+                        u.LastActivityDateTime >= startDate ||
+                        u.LastActivityDateTime >= startDate )
+                    .Where( u => u.PersonId != null )
+                    .Select( u => u.PersonId ?? 0 )
+                    .Distinct()
+                    .ToList();
+            }
+
+            return new List<int>();
+        }
+
+        /// <summary>
         /// Gets the people who submitted prayer request.
         /// </summary>
         /// <param name="enabled">if set to <c>true</c> [enabled].</param>
@@ -1511,9 +1541,10 @@ Update Family Status: {updateFamilyStatus}
         {
             if ( enabled && interactionItems != null && interactionItems.Any() )
             {
+                var enabledInteractions = interactionItems.Where( i => i.IsInteractionTypeEnabled );
                 var personIdList = new List<int>();
 
-                foreach ( var interactionItem in interactionItems )
+                foreach ( var interactionItem in enabledInteractions )
                 {
                     var startDate = RockDateTime.Now.AddDays( -interactionItem.LastInteractionDays );
 
@@ -1521,7 +1552,7 @@ Update Family Status: {updateFamilyStatus}
                         .Queryable().AsNoTracking()
                         .Where( a =>
                             a.InteractionDateTime >= startDate &&
-                            a.InteractionComponent.Channel.Guid == interactionItem.Guid &&
+                            a.InteractionComponent.InteractionChannel.Guid == interactionItem.Guid &&
                             a.PersonAlias != null )
                         .Select( a => a.PersonAlias.PersonId )
                         .Distinct()

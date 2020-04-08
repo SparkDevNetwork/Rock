@@ -18,17 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Data;
-using Rock.Model;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class WorkflowFormActionList : CompositeControl
     {
@@ -97,7 +97,14 @@ namespace Rock.Web.UI.Controls
             _activityControls = new List<RockDropDownList>();
             _responseControls = new List<RockTextBox>();
 
-            string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            // Unpack the field values from a delimited string, and then decode any .
+            // Any delimiters that are part of a field value are URL-encoded.
+
+            var nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
+                .AsEnumerable()
+                .Select( s => HttpUtility.UrlDecode( s ) )
+                .ToArray();
+
             for ( int i = 0; i < nameValues.Length; i++ )
             {
                 string[] nameValueResponse = nameValues[i].Split( new char[] { '^' } );
@@ -253,25 +260,25 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _actionControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Button Type
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-2" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _buttonHtmlControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Activity Value
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-3" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _activityControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Response
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-4" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _responseControls[i].RenderControl( writer );
-                writer.RenderEndTag();  
+                writer.RenderEndTag();
 
                 // Write Remove Button
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-sm-1" );
@@ -312,35 +319,49 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterClientScript()
         {
+            // Add client script to pack the field values into a delimited string.
+            // Any delimiters that are part of a field value are URL-encoded.
             string script = @"
     function updateFormActions( e ) {
         var $actionList = e.closest('div.form-action-list');
         var newValue = '';
-        $actionList.find('div.form-action-rows:first').children('div.form-row').each(function( index ) {
-            newValue += 
-                $(this).find('.form-action-key:first').val() + '^' + 
-                $(this).find('.form-action-button:first').val() + '^' + 
-                $(this).find('.form-action-value:first').val() + '^' + 
-                $(this).find('.form-action-response:first').val() + '|'
+        var valueDelimiters = ['^', '|'];
+
+        var replaceDelimiters = function(input) {
+            valueDelimiters.forEach(function (v, i, a) {
+                var re = new RegExp('\\' + v, 'g');
+                if (input.indexOf(v) > -1) {
+                    input = input.replace(re, encodeURIComponent(v));
+                }
+            });
+            return input;
+        };
+
+        $actionList.find('div.form-action-rows').first().children('div.form-row').each(function( index ) {
+                newValue +=
+                    replaceDelimiters( $(this).find('.form-action-key').first().val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-button').first().val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-value').first().val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-response').first().val() ) + '|'
         });
-        $actionList.children('input:first').val(newValue);            
+        $actionList.children('input').first().val(newValue);
     }
 
-    $('a.form-action-add').click(function (e) {
+    $('a.form-action-add').on('click', function (e) {
         e.preventDefault();
         var $actionList = $(this).closest('.form-action-list');
-        $actionList.find('div.form-action-rows:first').append($actionList.find('.js-value-html').val());
+        $actionList.find('div.form-action-rows').first().append($actionList.find('.js-value-html').val());
     });
 
     $(document).on('click', 'a.form-action-remove', function (e) {
         e.preventDefault();
         var $rows = $(this).closest('div.form-action-rows');
         $(this).closest('div.form-row').remove();
-        updateFormActions($rows);            
+        updateFormActions($rows);
     });
 
     $(document).on('focusout', '.js-form-action-input', function (e) {
-        updateFormActions($(this));            
+        updateFormActions($(this));
     });
 ";
 

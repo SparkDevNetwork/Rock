@@ -16,12 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Web.Cache;
-using Rock.Security;
 using Rock.Data;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Extension
 {
@@ -56,6 +57,17 @@ namespace Rock.Extension
         /// Gets the id.
         /// </summary>
         public int Id { get { return 0; } }
+
+        /// <summary>
+        /// Gets the description that is declared as an attribute of the component.
+        /// </summary>
+        /// <value>
+        /// The description.
+        /// </value>
+        public virtual string Description
+        {
+            get => ( GetType()?.GetCustomAttributes( typeof( DescriptionAttribute ), false )?.FirstOrDefault() as DescriptionAttribute )?.Description;
+        }
 
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.

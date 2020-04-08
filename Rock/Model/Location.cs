@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Entity.Spatial;
 using System.Linq;
@@ -27,7 +28,6 @@ using System.Text;
 
 using Rock.Data;
 using Rock.Web.Cache;
-using System.Data.Entity;
 
 namespace Rock.Model
 {
@@ -655,7 +655,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( Rock.Data.DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Rock.Data.DbContext dbContext, EntityState state )
         {
             if ( ImageId.HasValue )
             {
@@ -703,14 +703,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns true if the Location has one of the following: Street1, Street2, City. Otherwise returns false.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is minimum viable address]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsMinimumViableAddress()
+        {
+            if (this.Street1.IsNullOrWhiteSpace() &&
+                this.Street2.IsNullOrWhiteSpace() &&
+                this.City.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Gets the full street address.
         /// </summary>
         /// <returns></returns>
         public string GetFullStreetAddress()
         {
-            if (string.IsNullOrWhiteSpace(this.Street1) &&
-                string.IsNullOrWhiteSpace(this.Street2) &&
-                string.IsNullOrWhiteSpace(this.City))
+            if ( !IsMinimumViableAddress() )
             {
                 return string.Empty;
             }
@@ -817,7 +833,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             // Make sure CampusCache.All is cached using the dbContext (to avoid deadlock if snapshot isolation is disabled)
             var campusId = this.GetCampusId( dbContext as RockContext );

@@ -15,12 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Data.Entity;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Web.Cache;
+using System.Data;
 
 namespace Rock.Model
 {
@@ -41,7 +42,7 @@ namespace Rock.Model
         /// <param name="loadSummaryData">if set to <c>true</c> [load summary data].</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttendanceService class methods instead" )]
+        [Obsolete( "Use AttendanceService class methods instead", true )]
         public List<ScheduleOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime, DateTime? toDateTime,
             List<int> locationIds, List<int> scheduleIds, bool loadSummaryData )
         {
@@ -60,7 +61,7 @@ namespace Rock.Model
         /// <param name="campusId">The campus identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttendanceService class methods instead" )]
+        [Obsolete( "Use AttendanceService class methods instead", true )]
         public List<ScheduleOccurrence> GetGroupOccurrences( Group group, DateTime? fromDateTime, DateTime? toDateTime, 
             List<int> locationIds, List<int> scheduleIds, bool loadSummaryData, int? campusId )
         {
@@ -376,7 +377,7 @@ namespace Rock.Model
         /// <param name="group">The group.</param>
         /// <param name="occurrence">The occurrence.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttendanceService class methods instead" )]
+        [Obsolete( "Use AttendanceService class methods instead", true )]
         public void LoadSummaryData( Group group, ScheduleOccurrence occurrence )
         {
             if ( group != null && occurrence != null )
@@ -421,7 +422,7 @@ namespace Rock.Model
         /// <param name="occurrence">The occurrence.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use AttendanceService class methods instead" )]
+        [Obsolete( "Use AttendanceService class methods instead", true )]
         public IQueryable<Attendance> GetAttendance( Group group, ScheduleOccurrence occurrence )
         {
             if ( group != null && occurrence != null )

@@ -21,6 +21,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Reporting;
 using Rock.Security;
@@ -57,6 +58,11 @@ namespace Rock.Web.UI.Controls
         public RockCheckBox cbIncludeFilter;
 
         /// <summary>
+        /// If the component has a Description this will be rendered with a description
+        /// </summary>
+        protected NotificationBox nbComponentDescription;
+
+        /// <summary>
         /// The filter controls
         /// </summary>
         protected Control[] filterControls;
@@ -68,8 +74,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            ReportingHelper.RegisterJavascriptInclude( this );
         }
 
         /// <summary>
@@ -249,6 +253,24 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["FilterMode"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide filter criteria].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide filter criteria]; otherwise, <c>false</c>.
+        /// </value>
+        public bool HideDescription
+        {
+            get
+            {
+                return ViewState["HideDescription"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["HideDescription"] = value;
             }
         }
 
@@ -550,6 +572,11 @@ namespace Rock.Web.UI.Controls
             cbIncludeFilter.TextCssClass = "control-label";
             Controls.Add( cbIncludeFilter );
             cbIncludeFilter.ID = this.ID + "_cbIncludeFilter";
+
+            nbComponentDescription = new NotificationBox();
+            nbComponentDescription.NotificationBoxType = NotificationBoxType.Info;
+            nbComponentDescription.ID = this.ID + "_nbComponentDescription";
+            Controls.Add( nbComponentDescription );
         }
 
         /// <summary>
@@ -571,7 +598,7 @@ namespace Rock.Web.UI.Controls
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
+                       string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article').first(); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description').first().html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
             }
 
@@ -678,6 +705,13 @@ namespace Rock.Web.UI.Controls
 
             if ( component != null && !HideFilterCriteria )
             {
+                if ( !string.IsNullOrEmpty( component.Description ) && !HideDescription )
+                {
+                    nbComponentDescription.Text = component.Description;
+                    nbComponentDescription.CssClass = "filter-field-description";
+                    nbComponentDescription.RenderControl( writer );
+                }
+
                 component.RenderControls( FilteredEntityType, this, writer, filterControls, this.FilterMode );
             }
 
@@ -697,7 +731,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlFilterType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
         {
             FilterEntityTypeName = ( ( DropDownList ) sender ).SelectedValue;
 
@@ -707,7 +746,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        void lbDelete_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Click event of the lbDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void lbDelete_Click( object sender, EventArgs e )
         {
             if ( DeleteClick != null )
             {
@@ -724,7 +768,5 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [selection changed].
         /// </summary>
         public event EventHandler SelectionChanged;
-
-
     }
 }

@@ -222,10 +222,10 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             string script = @"
-    $('input.js-form-attribute-show-pre-html').change(function(){
+    $('input.js-form-attribute-show-pre-html').on('change', function(){
         $(this).closest('td').find('div.js-form-attribute-pre-html').slideToggle();
     });
-    $('input.js-form-attribute-show-post-html').change(function(){
+    $('input.js-form-attribute-show-post-html').on('change', function(){
         $(this).closest('td').find('div.js-form-attribute-post-html').slideToggle();
     });
 ";
@@ -318,7 +318,7 @@ namespace Rock.Web.UI.Controls
                 _tbPreHtml.RenderControl( writer );
                 writer.RenderEndTag();
                 writer.RenderEndTag();
-                
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 

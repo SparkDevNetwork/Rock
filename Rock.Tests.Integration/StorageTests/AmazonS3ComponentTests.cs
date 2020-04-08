@@ -14,20 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Rock.Storage.AssetStorage;
 using Rock.Model;
-
-using Subtext.TestLibrary;
+using Rock.Storage.AssetStorage;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.StorageTests
 {
@@ -101,7 +93,7 @@ namespace Rock.Tests.Integration.StorageTests
             asset.Key = assetStorageProvider.GetAttributeValue( "RootFolder" );
             asset.Type = AssetType.Folder;
 
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
+            Assert.That.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
         }
 
         /// <summary>
@@ -118,12 +110,12 @@ namespace Rock.Tests.Integration.StorageTests
             var asset = new Asset();
             asset.Name = "SubFolder1/";
             asset.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
+            Assert.That.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
 
             asset = new Asset();
             asset.Name = "SubFolder1/SubFolder1a/";
             asset.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
+            Assert.That.IsTrue( s3Component.CreateFolder( assetStorageProvider, asset ) );
         }
 
         /// <summary>
@@ -143,7 +135,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
                 bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
-                Assert.IsTrue( hasUploaded );
+                Assert.That.IsTrue( hasUploaded );
             }
         }
 
@@ -164,7 +156,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.AssetStream = new FileStream( @"TestData\test.jpg", FileMode.Open );
 
                 bool hasUploaded = s3Component.UploadObject( assetStorageProvider, asset );
-                Assert.IsTrue( hasUploaded );
+                Assert.That.IsTrue( hasUploaded );
             }
         }
 
@@ -183,11 +175,11 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Key = ( "UnitTestFolder/" );
 
                 var assetList = s3Component.ListObjects( assetStorageProvider, asset );
-                Assert.IsTrue( assetList.Any( a => a.Name == "UnitTestFolder" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1a" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "UnitTestFolder" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "SubFolder1" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "SubFolder1a" ) );
             }
         }
 
@@ -207,10 +199,10 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Type = AssetType.Folder;
 
                 var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "SubFolder1a" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "SubFolder1" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "SubFolder1a" ) );
             }
         }
 
@@ -272,10 +264,10 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Type = AssetType.Folder;
 
                 var assetList = s3Component.ListObjectsInFolder( assetStorageProvider, asset );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-6" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-6" ) );
             }
         }
 
@@ -310,7 +302,7 @@ namespace Rock.Tests.Integration.StorageTests
                     valid = false;
                 }
 
-                Assert.IsTrue( valid );
+                Assert.That.IsTrue( valid );
             }
         }
 
@@ -347,7 +339,7 @@ namespace Rock.Tests.Integration.StorageTests
                     valid = false;
                 }
 
-                Assert.IsTrue( valid );
+                Assert.That.IsTrue( valid );
             }
         }
 
@@ -368,18 +360,18 @@ namespace Rock.Tests.Integration.StorageTests
 
                 var assetList = s3Component.ListFoldersInFolder( GetAssetStorageProvider(), asset );
 
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-1" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-2" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-3" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-4" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-5" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-6" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-7" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-8" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestFolder-9" ) );
-                Assert.IsFalse( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
-                Assert.IsFalse( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-1" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-2" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-3" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-4" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-5" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-6" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-7" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-8" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-9" ) );
+                Assert.That.IsFalse( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
+                Assert.That.IsFalse( assetList.Any( a => a.Name == "TestFile-1368.txt" ) );
             }
         }
 
@@ -400,9 +392,9 @@ namespace Rock.Tests.Integration.StorageTests
 
                 var assetList = s3Component.ListFilesInFolder( assetStorageProvider, asset );
 
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
-                Assert.IsFalse( assetList.Any( a => a.Name == "SubFolder1a" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" || a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
+                Assert.That.IsFalse( assetList.Any( a => a.Name == "SubFolder1a" ) );
             }
         }
 
@@ -428,19 +420,19 @@ namespace Rock.Tests.Integration.StorageTests
 
                 if ( origAssetList.Count == 1 )
                 {
-                    Assert.IsTrue( s3Component.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
+                    Assert.That.IsTrue( s3Component.RenameAsset( assetStorageProvider, asset, "TestUploadObjectByKeyRenamed.jpg" ) );
 
                     asset = new Asset();
                     asset.Type = AssetType.File;
                     asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByKey";
 
                     var assetList = s3Component.ListObjects( assetStorageProvider, asset );
-                    Assert.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
-                    Assert.IsFalse( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" ) );
+                    Assert.That.IsTrue( assetList.Any( a => a.Name == "TestUploadObjectByKeyRenamed.jpg" ) );
+                    Assert.That.IsFalse( assetList.Any( a => a.Name == "TestUploadObjectByKey.jpg" ) );
                 }
                 else
                 {
-                    Assert.Inconclusive( "File (UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg) was not present for 'rename' test." );
+                    Assert.That.Inconclusive( "File (UnitTestFolder/SubFolder1/TestUploadObjectByKey.jpg) was not present for 'rename' test." );
                 }
             }
         }
@@ -459,7 +451,7 @@ namespace Rock.Tests.Integration.StorageTests
             asset.Type = AssetType.File;
 
             bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
-            Assert.IsTrue( hasDeleted );
+            Assert.That.IsTrue( hasDeleted );
         }
 
         /// <summary>
@@ -475,7 +467,7 @@ namespace Rock.Tests.Integration.StorageTests
             var assetSetup = new Asset();
             assetSetup.Name = "DELETE_FOLDER/";
             assetSetup.Type = AssetType.Folder;
-            Assert.IsTrue( s3Component.CreateFolder( assetStorageProvider, assetSetup ) );
+            Assert.That.IsTrue( s3Component.CreateFolder( assetStorageProvider, assetSetup ) );
 
             // Now we can run our test...
             Asset asset = new Asset();
@@ -483,7 +475,7 @@ namespace Rock.Tests.Integration.StorageTests
             asset.Type = AssetType.Folder;
 
             bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
-            Assert.IsTrue( hasDeleted );
+            Assert.That.IsTrue( hasDeleted );
         }
 
         #region Utility Methods to help us fake the HttpContext
@@ -501,7 +493,7 @@ namespace Rock.Tests.Integration.StorageTests
             get { return testContextInstance; }
             set { testContextInstance = value; }
         }
-    
+
         /// <summary>
         /// Ensures the folder exists for the upcoming test.
         /// </summary>

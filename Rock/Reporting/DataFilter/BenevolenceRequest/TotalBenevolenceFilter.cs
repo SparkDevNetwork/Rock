@@ -18,12 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -175,8 +174,6 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
-
-            RegisterFilterCompareChangeScript(filterControl);
         }
 
         /// <summary>

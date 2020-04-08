@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Administration
             var breadCrumbs = new List<BreadCrumb>();
 
             int controllerId = int.MinValue;
-            if ( int.TryParse( PageParameter( "controller" ), out controllerId ) )
+            if ( int.TryParse( PageParameter( "Controller" ), out controllerId ) )
             {
                 var controller = new RestControllerService( new RockContext() ).Get( controllerId );
                 if ( controller != null )
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Administration
         public void BindGrid()
         {
             int controllerId = int.MinValue;
-            if ( int.TryParse( PageParameter( "controller" ), out controllerId ) )
+            if ( int.TryParse( PageParameter( "Controller" ), out controllerId ) )
             {
                 var service = new RestActionService( new RockContext() );
                 var sortProperty = gActions.SortProperty;

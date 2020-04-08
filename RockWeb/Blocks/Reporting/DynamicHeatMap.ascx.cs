@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Web;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
@@ -288,7 +289,7 @@ namespace RockWeb.Blocks.Reporting
                         var location = locationService.Get( campus.LocationId.Value );
                         if ( location != null && location.GeoPoint != null )
                         {
-                            CampusMarkersData += string.Format( "{{ location: new google.maps.LatLng({0},{1}), campusName:'{2}' }},", location.GeoPoint.Latitude, location.GeoPoint.Longitude, campus.Name );
+                            CampusMarkersData += string.Format( "{{ location: new google.maps.LatLng({0},{1}), campusName:'{2}' }},", location.GeoPoint.Latitude, location.GeoPoint.Longitude, HttpUtility.JavaScriptStringEncode( campus.Name ) );
                         }
                     }
                 }

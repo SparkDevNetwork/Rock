@@ -38,7 +38,7 @@
                         <Rock:RockDropDownList ID="ddlNotificationStatus" runat="server" Label="Notification Status" />
                         <Rock:RockTextBox ID="tbNotificationEmails" runat="server" Label="Notification Emails" Help="Additional email addresses that the notification email should be sent to for this job. Emails are sent using the 'Job Notification' system email template. If there are recipients defined in the template, it will send a job notification to those, too. <span class='tip tip-lava'></span>"/>
                         <Rock:NotificationBox ID="nbJobTypeError" runat="server" NotificationBoxType="Danger" Dismissable="true" />
-                        <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" OnSelectedIndexChanged="ddlJobTypes_SelectedIndexChanged" AutoPostBack="true"  Required="true" />
+                        <Rock:RockDropDownList ID="ddlJobTypes" runat="server" Label="Job Type" EnhanceForLongLists="true" OnSelectedIndexChanged="ddlJobTypes_SelectedIndexChanged" AutoPostBack="true"  Required="true" />
                         <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
                         <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" Visible="false" />
                     </div>

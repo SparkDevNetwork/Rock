@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Reporting
     [LinkedPage( "Session List Page", "Page reference to the session list page. This will be included as a variable in the Lava.", false, order: 0 )]
     [LinkedPage( "Component List Page", "Page reference to the component list page. This will be included as a variable in the Lava.", false, order: 1 )]
     [CodeEditorField( "Default Template", "The Lava template to use as default.", Rock.Web.UI.Controls.CodeEditorMode.Lava, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 300, false, order: 2, defaultValue: @"{% if InteractionChannel != null and InteractionChannel != '' %}
-    <a href = '{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else  %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}' >
+    <a href = '{% if InteractionChannel.UsesSession == true %}{{ SessionListPage }}{% else %}{{ ComponentListPage }}{% endif %}?ChannelId={{ InteractionChannel.Id }}' >
         <div class='panel panel-widget'>
             <div class='panel-heading clearfix'>
                 {% if InteractionChannel.Name != '' %}<h1 class='panel-title pull-left'>{{ InteractionChannel.Name }}</h1>{% endif %}
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( personId.HasValue )
                 {
                     var interactionQry = new InteractionService( rockContext ).Queryable();
-                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponent.ChannelId == a.Id ) );
+                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponent.InteractionChannelId == a.Id ) );
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times

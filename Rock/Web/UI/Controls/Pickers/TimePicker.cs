@@ -16,12 +16,11 @@
 //
 using System;
 using System.Web.UI;
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a time of day
     /// </summary>
     public class TimePicker : DataTextBox
     {

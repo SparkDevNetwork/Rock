@@ -25,21 +25,19 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI
 {
     /// <summary>
-    /// A Block used on the person detail page
+    /// Block displaying some information about a person model
     /// </summary>
     [ContextAware( typeof(Person) )]
-    public class PersonBlock : RockBlock
+    public abstract class PersonBlock : ContextEntityBlock
     {
-        #region Properties
-
         /// <summary>
-        /// The current person being viewed
+        /// The current entity as a person being viewed
         /// </summary>
-        public Person Person { get; set; }
-
-        #endregion
-
-        #region Base Control Methods
+        public Person Person
+        {
+            get => Entity as Person;
+            set => Entity = value;
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -49,17 +47,14 @@ namespace Rock.Web.UI
         {
             base.OnInit( e );
 
-            Person = this.ContextEntity<Person>();
-
             if ( Person == null )
             {
-                // check the query string and attempt to load the person from it
-                if ( Request["PersonId"] != null )
-                {
-                    int personId = Request["PersonId"].AsInteger();
+                var personId = PageParameter( "PersonId" ).AsIntegerOrNull();
 
-                    Person = new PersonService( new RockContext() ).Get( personId );
-                    Person.LoadAttributes();
+                if ( personId.HasValue )
+                {
+                    Person = new PersonService( new RockContext() ).Get( personId.Value );
+                    Person?.LoadAttributes();
                 }
 
                 if ( Person == null )
@@ -77,10 +72,10 @@ namespace Rock.Web.UI
         {
             base.OnLoad( e );
 
-            if ( !Page.IsPostBack && 
-                CurrentPersonAlias != null && 
+            if ( !Page.IsPostBack &&
+                CurrentPersonAlias != null &&
                 Context.Items["PersonViewed"] == null &&
-                Person != null && 
+                Person != null &&
                 Person.PrimaryAlias != null &&
                 Person.PrimaryAlias.Id != CurrentPersonAlias.Id )
             {
@@ -92,11 +87,9 @@ namespace Rock.Web.UI
                 transaction.IPAddress = Request.UserHostAddress;
                 RockQueue.TransactionQueue.Enqueue( transaction );
 
-                Context.Items.Add( "PersonViewed", "Handled" );
+                Context.AddOrReplaceItem( "PersonViewed", "Handled" );
             }
         }
-
-        #endregion
 
         #region Methods
 
@@ -105,6 +98,8 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="groupTypeGuid">The group type GUID.</param>
         /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "This method moved to the campus badge.", false )]
         public IEnumerable<Group> PersonGroups( string groupTypeGuid )
         {
             return PersonGroups( new Guid( groupTypeGuid ) );
@@ -114,13 +109,15 @@ namespace Rock.Web.UI
         /// The groups of a particular type that current person belongs to
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Group> PersonGroups(Guid groupTypeGuid)
+        [RockObsolete( "1.10" )]
+        [Obsolete( "This method moved to the campus badge.", false )]
+        public IEnumerable<Group> PersonGroups( Guid groupTypeGuid )
         {
             string itemKey = "RockGroups:" + groupTypeGuid.ToString();
 
             if ( Context.Items.Contains( itemKey ) )
             {
-                return PersonGroups( (int)Context.Items[itemKey] );
+                return PersonGroups( ( int ) Context.Items[itemKey] );
             }
 
             var groupType = GroupTypeCache.Get( groupTypeGuid );
@@ -138,6 +135,8 @@ namespace Rock.Web.UI
         /// The groups of a particular type that current person belongs to
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.10" )]
+        [Obsolete( "This method moved to the campus badge.", false )]
         public IEnumerable<Group> PersonGroups( int groupTypeId )
         {
             string itemKey = "RockGroups:" + groupTypeId.ToString();
@@ -160,8 +159,8 @@ namespace Rock.Web.UI
                     .Where( m =>
                         m.PersonId == Person.Id &&
                         m.Group.GroupTypeId == groupTypeId )
-                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )   
-                    .ThenByDescending( m => m.Group.Name)
+                    .OrderBy( m => m.GroupOrder ?? int.MaxValue )
+                    .ThenByDescending( m => m.Group.Name )
                     .Select( m => m.Group )
                     .OrderByDescending( g => g.Name )
                     .ToList();
@@ -177,5 +176,4 @@ namespace Rock.Web.UI
 
         #endregion
     }
-
 }

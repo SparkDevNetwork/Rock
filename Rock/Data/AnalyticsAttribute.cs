@@ -15,8 +15,6 @@
 // </copyright>
 //
 using System;
-using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Data
 {

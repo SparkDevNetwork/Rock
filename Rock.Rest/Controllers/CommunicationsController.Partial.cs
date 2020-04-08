@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Web.Http;
+
 using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers

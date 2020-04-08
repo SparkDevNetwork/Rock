@@ -14,16 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
 using System.IO;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation 
+    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation
     /// </summary>
     [ToolboxData( "<{0}:PersonLink runat=server></{0}:PersonLink>" )]
     public class PersonLink : HtmlAnchor
@@ -122,21 +120,21 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
     $('.popover-person').popover({
-        placement: 'right', 
+        placement: 'right',
         trigger: 'manual',
         delay: 500,
         html: true,
         content: function() {
             var dataUrl = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  $(this).attr('personid');
 
-            var result = $.ajax({ 
-                                type: 'GET', 
-                                url: dataUrl, 
-                                dataType: 'json', 
+            var result = $.ajax({
+                                type: 'GET',
+                                url: dataUrl,
+                                dataType: 'json',
                                 contentType: 'application/json; charset=utf-8',
                                 async: false }).responseText;
-            
-            var resultObject = jQuery.parseJSON(result);
+
+            var resultObject = JSON.parse(result);
 
             return resultObject.PickerItemDetailsHtml;
 

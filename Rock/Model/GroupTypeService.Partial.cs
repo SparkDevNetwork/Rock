@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -70,7 +71,48 @@ namespace Rock.Model
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
-        /// WARNING: This will fail (max recursion) if there is a circular reference in the GroupTypeAssociation table.
+        /// WARNING: It is possible for a user to create a circular reference in the GroupTypeAssociation table that will cause this query to get stuck.
+        /// The MaxRecursion number will control the depth and prevent this.
+        /// </summary>
+        /// <param name="parentGroupTypeId">The parent group type identifier.</param>
+        /// <param name="maxRecursion">The maximum recursion.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see>.
+        /// </returns>
+        public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId, int maxRecursion )
+        {
+            return this.ExecuteQuery(
+                $@"
+                WITH CTE ([RecursionLevel], [GroupTypeId], [ChildGroupTypeId])
+                AS (
+                    SELECT
+                          0 AS [RecursionLevel]
+                        , [GroupTypeId]
+                        , [ChildGroupTypeId]
+                    FROM [GroupTypeAssociation]
+                    WHERE [GroupTypeId] = {parentGroupTypeId}
+
+                    UNION ALL
+
+                    SELECT acte.[RecursionLevel] + 1 AS [RecursionLevel]
+                        , [a].[GroupTypeId]
+                        , [a].[ChildGroupTypeId]
+                    FROM [GroupTypeAssociation] [a]
+                    JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
+                    WHERE acte.[ChildGroupTypeId] <> acte.[GroupTypeId]
+                        AND [a].[ChildGroupTypeId] <> acte.[GroupTypeId] -- and the child group type can't be a parent group type
+                        AND (acte.RecursionLevel + 1 ) < {maxRecursion}
+                )
+
+                SELECT *
+                FROM [GroupType]
+                WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
+                OPTION ( MAXRECURSION {maxRecursion} )" );
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupType</see> that are descendants of a specified group type.
+        /// WARNING: This has MAXRECURSION set to 10 to prevent the query from getting stuck on a circular reference in the GroupTypeAssociation table.
         /// </summary>
         /// <param name="parentGroupTypeId">The parent group type identifier.</param>
         /// <returns>
@@ -78,19 +120,7 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<GroupType> GetAllAssociatedDescendents( int parentGroupTypeId )
         {
-            return this.ExecuteQuery(
-                @"
-                WITH CTE AS (
-		            SELECT [GroupTypeId],[ChildGroupTypeId] FROM [GroupTypeAssociation] WHERE [GroupTypeId] = {0}
-		            UNION ALL
-		            SELECT [a].[GroupTypeId],[a].[ChildGroupTypeId] FROM [GroupTypeAssociation] [a]
-		            JOIN CTE acte ON acte.[ChildGroupTypeId] = [a].[GroupTypeId]
-                    WHERE acte.[ChildGroupTypeId] <> acte.[GroupTypeId]
-                 )
-                SELECT *
-                FROM [GroupType]
-                WHERE [Id] IN ( SELECT [ChildGroupTypeId] FROM CTE )
-                ", parentGroupTypeId );
+            return GetAllAssociatedDescendents( parentGroupTypeId, 10 );
         }
 
         /// <summary>
@@ -134,6 +164,8 @@ namespace Rock.Model
 		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
 		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
                       WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+					  -- and the child group type can't be a parent group type
+					  AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
                 )
                 SELECT GT3.*
                 FROM CTE
@@ -170,6 +202,8 @@ namespace Rock.Model
 		                INNER JOIN CTE ON CTE.[ChildGroupTypeId] = GTA.[GroupTypeId]
 		                INNER JOIN [GroupType] GT2 ON GT2.[Id] = GTA.[GroupTypeId]
                       WHERE CTE.[ChildGroupTypeId] <> CTE.[GroupTypeId]
+					  -- and the child group type can't be a parent group type
+					  AND GTA.[ChildGroupTypeId] <> CTE.[GroupTypeId]
                 )
                 SELECT GT3.Id as 'GroupTypeId', SUBSTRING( CONVERT(nvarchar(500), CTE.HierarchyPath + ' > ' + GT3.Name), 4, 500) AS 'Path'
                 FROM CTE
@@ -258,6 +292,32 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets a list of inactive reasons allowed for the group type
+        /// </summary>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public List<DefinedValueCache> GetInactiveReasonsForGroupType( int groupTypeId )
+        {
+            return GetInactiveReasonsForGroupType( GroupTypeCache.Get( groupTypeId ).Guid );
+        }
+
+        /// <summary>
+        /// Gets a list of inactive reasons allowed for the group type
+        /// </summary>
+        /// <param name="groupTypeGuid">The group type unique identifier.</param>
+        /// <returns></returns>
+        public List<DefinedValueCache> GetInactiveReasonsForGroupType( Guid groupTypeGuid )
+        {
+            var inactiveDefinedTypeGuid = Rock.SystemGuid.DefinedType.GROUPTYPE_INACTIVE_REASONS.AsGuid();
+            string key = Rock.SystemKey.GroupTypeAttributeKey.INACTIVE_REASONS_GROUPTYPE_FILTER;
+
+            return DefinedTypeCache.Get( inactiveDefinedTypeGuid )
+                .DefinedValues
+                .Where( r => !r.GetAttributeValues( key ).Any() || r.GetAttributeValues( key ).Contains( groupTypeGuid.ToString() ) )
+                .ToList();
         }
     }
 

@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Text;
 using Rock.Data;
 using Rock.Web.Cache;
+
 using Z.EntityFramework.Plus;
 
 namespace Rock.Model
@@ -159,7 +161,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetGeofencedFamilies( List<DbGeography> geofences )
         {
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             var groupLocationService = new GroupLocationService( rockContext );
 
             var familyGroupTypeId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Id;
@@ -179,7 +181,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetGeofencingGroups( int personId, int groupTypeId )
         {
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             var personService = new PersonService( rockContext );
             var personGeopoints = personService.GetGeopoints( personId );
             return GetGeofencingGroups( personGeopoints, groupTypeId );
@@ -193,12 +195,12 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetGeofencingGroups( int personId, Guid groupTypeGuid )
         {
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             var personService = new PersonService( rockContext );
             var personGeopoints = personService.GetGeopoints( personId );
             return GetGeofencingGroups( personGeopoints, groupTypeGuid );
         }
-        
+
         /// <summary>
         /// Gets the groups of a selected type that have a geofence location that surrounds any of the
         /// selected points
@@ -247,7 +249,7 @@ namespace Rock.Model
         /// <returns></returns>
         public Group GetNearestGroup( int personId, int groupTypeId )
         {
-            var rockContext = (RockContext)this.Context;
+            var rockContext = ( RockContext ) this.Context;
             var personService = new PersonService( rockContext );
             var personGeopoint = personService.GetGeopoints( personId ).FirstOrDefault();
             if ( personGeopoint != null )
@@ -356,7 +358,7 @@ namespace Rock.Model
         /// <param name="includeNoCampus">if campus set and set to <c>true</c> [include groups with no campus].</param>
         /// <param name="limitToPublic">if set to <c>true</c> [limit to public groups].</param>
         /// <returns></returns>
-        public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation, int campusId, bool includeNoCampus, bool limitToPublic = false)
+        public IQueryable<Group> GetChildren( int id, int rootGroupId, bool limitToSecurityRoleGroups, List<int> groupTypeIncludedIds, List<int> groupTypeExcludedIds, bool includeInactiveGroups, bool limitToShowInNavigation, int campusId, bool includeNoCampus, bool limitToPublic = false )
         {
             var qry = Queryable();
 
@@ -403,13 +405,13 @@ namespace Rock.Model
                 }
             }
 
-            if ( groupTypeIncludedIds.Any() )
+            if ( groupTypeIncludedIds != null && groupTypeIncludedIds.Any() )
             {
                 // if groupTypeIncludedIds is specified, only get grouptypes that are in the groupTypeIncludedIds
                 // NOTE: no need to factor in groupTypeExcludedIds since included would take precendance and the excluded ones would already not be included
                 qry = qry.Where( a => groupTypeIncludedIds.Contains( a.GroupTypeId ) );
             }
-            else if (groupTypeExcludedIds.Any() )
+            else if ( groupTypeExcludedIds != null && groupTypeExcludedIds.Any() )
             {
                 qry = qry.Where( a => !groupTypeExcludedIds.Contains( a.GroupTypeId ) );
             }
@@ -423,22 +425,104 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of a specified group.
+        /// Gets the group descendents Common Table Expression.
         /// </summary>
-        /// <param name="parentGroupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to retrieve descendants for.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of referenced group.</returns>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
+        /// <returns></returns>
+        private string GetGroupDescendentsCTESql( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            StringBuilder cteBuilder = new StringBuilder( "with CTE as" );
+            cteBuilder.AppendLine( "(" );
+            cteBuilder.AppendLine( $"select * from [Group] where [ParentGroupId]={parentGroupId} and [IsArchived] = 0" );
+            if ( !includeInactiveChildGroups )
+            {
+                cteBuilder.AppendLine( " and [IsActive] = 1" );
+            }
+            cteBuilder.AppendLine( "union all" );
+            cteBuilder.AppendLine( "select a.* from [Group] [a]" );
+
+
+
+            cteBuilder.AppendLine( "inner join CTE pcte on pcte.Id = [a].[ParentGroupId] where [a].[IsArchived] = 0" );
+            if ( !includeInactiveChildGroups )
+            {
+                cteBuilder.AppendLine( " and a.[IsActive] = 1" );
+            }
+            cteBuilder.AppendLine( ")" );
+
+
+            return cteBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of a specified group.
+        /// </summary>
+        /// <param name="parentGroupId">An <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Group" /> to retrieve descendents for.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
+        /// </returns>
+        [RockObsolete( "1.9" )]
+        [Obsolete( "Use GetAllDescendentGroups, GetAllDescendentGroupIds, or GetAllDescendentsGroupTypes instead, depending on the least amount of information that you need" )]
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
-            return this.ExecuteQuery(
-                @"
-                with CTE as (
-                select * from [Group] where [ParentGroupId]={0}
-                union all
-                select [a].* from [Group] [a]
-                inner join CTE pcte on pcte.Id = [a].[ParentGroupId]
-                )
-                select * from CTE
-                ", parentGroupId );
+            return GetAllDescendentGroups( parentGroupId, true );
+        }
+
+        /// <summary>
+        /// Returns a list of <see cref="Rock.Model.Group">Groups</see> that are descendents of a specified group.
+        /// </summary>
+        /// <param name="parentGroupId">An <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.Group" /> to retrieve descendents for.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendents of referenced group.
+        /// </returns>
+        public List<Group> GetAllDescendentGroups( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            var cte = GetGroupDescendentsCTESql( parentGroupId, includeInactiveChildGroups );
+
+            var sql = $@"
+                {cte}
+                select * from CTE";
+
+            return this.ExecuteQuery( sql ).ToList();
+        }
+
+        /// <summary>
+        /// Gets all descendent group ids that are descendents of a specified group.
+        /// </summary>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
+        /// <returns></returns>
+        public List<int> GetAllDescendentGroupIds( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            var cte = GetGroupDescendentsCTESql( parentGroupId, includeInactiveChildGroups );
+
+            var sql = $@"
+                {cte}
+                select Id from CTE";
+
+            return ( this.Context as RockContext ).Database.SqlQuery<int>( sql ).ToList();
+        }
+
+        /// <summary>
+        /// Returns a List of <see cref="GroupTypeCache">Group Types</see> of the groups that are descendents of the specified parentGroupId
+        /// </summary>
+        /// <param name="parentGroupId">The parent group identifier.</param>
+        /// <param name="includeInactiveChildGroups">if set to <c>true</c> [include inactive child groups].</param>
+        /// <returns></returns>
+        public List<GroupTypeCache> GetAllDescendentsGroupTypes( int parentGroupId, bool includeInactiveChildGroups )
+        {
+            var cte = GetGroupDescendentsCTESql( parentGroupId, includeInactiveChildGroups );
+
+            var sql = $@"
+                {cte}
+                select distinct GroupTypeId from CTE";
+
+            var groupTypeIds = ( this.Context as RockContext ).Database.SqlQuery<int>( sql );
+
+
+            return groupTypeIds.Select( a => GroupTypeCache.Get( a ) ).ToList();
         }
 
         /// <summary>
@@ -446,23 +530,23 @@ namespace Rock.Model
         /// </summary>
         /// <param name="childGroupId">The child group identifier.</param>
         /// <returns>
-        /// An enumerable collection of the group Ids that are descendants of referenced groupId.
+        /// An enumerable collection of the group Ids that are descendents of referenced groupId.
         /// </returns>
         public IOrderedEnumerable<int> GetAllAncestorIds( int childGroupId )
         {
             var result = this.Context.Database.SqlQuery<int>(
                 @"
                 with CTE as (
-                select *, 0 as [Level] from [Group] where [Id]={0}
+                select *, 0 as [Level] from [Group] where [Id]={0} and [IsArchived] = 0
                 union all
                 select [a].*, [Level] + 1 as [Level] from [Group] [a]
-                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]
+                inner join CTE pcte on pcte.ParentGroupId = [a].[Id]  and a.[IsArchived] = 0
                 )
                 select Id from CTE where Id != {0} order by Level
                 ", childGroupId );
 
             // already ordered within the sql, so do a dummy order by to get IOrderedEnumerable
-            return result.OrderBy(a => 0);
+            return result.OrderBy( a => 0 );
         }
 
         /// <summary>
@@ -477,13 +561,13 @@ namespace Rock.Model
                 (
 	                SELECT [ParentGroupId], CAST ( [Name] AS VARCHAR(MAX) ) AS [Name]
 	                FROM [Group] 
-	                WHERE [Id] = {0}
+	                WHERE [Id] = {0} and [IsArchived] = 0
 	
 	                UNION ALL
 	
 	                SELECT G.[ParentGroupId], CAST ( G.[Name] + ' > ' + CTE.[Name] AS VARCHAR(MAX) )
 	                FROM [Group] G
-	                INNER JOIN CTE ON CTE.[ParentGroupId] = G.[Id]
+	                INNER JOIN CTE ON CTE.[ParentGroupId] = G.[Id] where g.[IsArchived] = 0
                 )
 
                 SELECT [Name]
@@ -500,35 +584,20 @@ namespace Rock.Model
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        public bool GroupHasMember(Guid groupGuid, int? personId )
+        public bool GroupHasMember( Guid groupGuid, int? personId )
         {
-            if (personId == null)
+            if ( personId == null )
             {
                 return false;
             }
 
             Group group = this.GetByGuid( groupGuid );
-            if (group ==  null)
+            if ( group == null )
             {
                 return false;
             }
 
             return group.Members.Where( m => m.PersonId == personId ).Any();
-        }
-
-        /// <summary>
-        /// Groups the members not meeting requirements.
-        /// </summary>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="includeWarnings">if set to <c>true</c> [include warnings].</param>
-        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
-        /// <returns></returns>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use GroupMembersNotMeetingRequirements( roup, includeWarnings, includeInactive) instead", true )]
-        public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( int groupId, bool includeWarnings, bool includeInactive = false )
-        {
-            var group = new GroupService( this.Context as RockContext ).Get( groupId );
-            return GroupMembersNotMeetingRequirements( group, includeWarnings, includeInactive );
         }
 
         /// <summary>
@@ -541,7 +610,7 @@ namespace Rock.Model
         public Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> GroupMembersNotMeetingRequirements( Group group, bool includeWarnings, bool includeInactive = false )
         {
             Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>> results = new Dictionary<GroupMember, Dictionary<PersonGroupRequirementStatus, DateTime>>();
-            
+
             var rockContext = this.Context as RockContext;
             var groupRequirementService = new GroupRequirementService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
@@ -556,20 +625,27 @@ namespace Rock.Model
             }
 
             var qryGroupMembers = groupMemberService.Queryable().Where( a => a.GroupId == group.Id );
-            var qryGroupMemberRequirements = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id );
+            var groupMemberRequirementList = groupMemberRequirementService.Queryable().Where( a => a.GroupMember.GroupId == group.Id ).Select( a => new
+            {
+                a.GroupMemberId,
+                a.RequirementWarningDateTime,
+                a.RequirementFailDateTime,
+                a.RequirementMetDateTime,
+                a.GroupRequirement
+            } ).ToList();
 
             if ( !includeInactive )
             {
                 qryGroupMembers = qryGroupMembers.Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
             }
 
-            var groupMembers = qryGroupMembers.ToList();
+            var groupMemberList = qryGroupMembers.Include( a => a.GroupMemberRequirements ).ToList();
 
             // get a list of group member ids that don't meet all the requirements
-            List<int> qryGroupMemberIdsThatLackGroupRequirements = groupMembers
+            List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
-                        .Where( r => 
+                        .Where( r =>
                             !r.GroupRoleId.HasValue ||
                             r.GroupRoleId.Value == a.GroupRoleId )
                         .Select( x => x.Id )
@@ -581,37 +657,37 @@ namespace Rock.Model
                 .Select( a => a.Id )
                 .ToList();
 
-            IEnumerable<GroupMember> qryMembersWithIssues;
+            IEnumerable<GroupMember> membersWithIssuesList;
 
             if ( includeWarnings )
             {
-                IQueryable<int> qryGroupMemberIdsWithRequirementWarnings = qryGroupMemberRequirements
-                    .Where( 
-                        a => 
-                            a.RequirementWarningDateTime != null || 
+                List<int> groupMemberIdsWithRequirementWarningsList = groupMemberRequirementList
+                    .Where(
+                        a =>
+                            a.RequirementWarningDateTime != null ||
                             a.RequirementFailDateTime != null )
                     .Select( a => a.GroupMemberId )
-                    .Distinct();
+                    .Distinct().ToList();
 
-                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) || qryGroupMemberIdsWithRequirementWarnings.Contains( a.Id ) );
+                membersWithIssuesList = groupMemberList.Where( a => groupMemberIdsThatLackGroupRequirementsList.Contains( a.Id ) || groupMemberIdsWithRequirementWarningsList.Contains( a.Id ) );
             }
             else
             {
-                qryMembersWithIssues = groupMembers.Where( a => qryGroupMemberIdsThatLackGroupRequirements.Contains( a.Id ) );
+                membersWithIssuesList = groupMemberList.Where( a => groupMemberIdsThatLackGroupRequirementsList.Contains( a.Id ) );
             }
 
-            var qry = qryMembersWithIssues.Select( a => new
+            var groupMemberWithIssuesList = membersWithIssuesList.Select( a => new
             {
                 GroupMember = a,
-                GroupRequirementStatuses = qryGroupMemberRequirements.Where( x => x.GroupMemberId == a.Id )
-            } );
+                GroupRequirementStatuses = groupMemberRequirementList.Where( x => x.GroupMemberId == a.Id )
+            } ).ToList();
 
             var currentDateTime = RockDateTime.Now;
 
-            foreach (var groupMemberWithIssues in qry)
+            foreach ( var groupMemberWithIssues in groupMemberWithIssuesList )
             {
                 Dictionary<PersonGroupRequirementStatus, DateTime> statuses = new Dictionary<PersonGroupRequirementStatus, DateTime>();
-                
+
                 // populate where the status is known
                 foreach ( var requirementStatus in groupMemberWithIssues.GroupRequirementStatuses )
                 {
@@ -621,12 +697,12 @@ namespace Rock.Model
 
                     DateTime occurrenceDate = new DateTime();
 
-                    if ( requirementStatus.RequirementMetDateTime == null)
+                    if ( requirementStatus.RequirementMetDateTime == null )
                     {
                         status.MeetsGroupRequirement = MeetsGroupRequirement.NotMet;
-                        occurrenceDate = requirementStatus.RequirementFailDateTime ?? currentDateTime; 
+                        occurrenceDate = requirementStatus.RequirementFailDateTime ?? currentDateTime;
                     }
-                    else if (requirementStatus.RequirementWarningDateTime.HasValue)
+                    else if ( requirementStatus.RequirementWarningDateTime.HasValue )
                     {
                         status.MeetsGroupRequirement = MeetsGroupRequirement.MeetsWithWarning;
                         occurrenceDate = requirementStatus.RequirementWarningDateTime.Value;
@@ -636,14 +712,14 @@ namespace Rock.Model
                         status.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
                         occurrenceDate = requirementStatus.RequirementMetDateTime.Value;
                     }
-                    
+
                     statuses.Add( status, occurrenceDate );
                 }
 
                 // also add any groupRequirements that they don't have statuses for (and therefore haven't met)
-                foreach (var groupRequirement in qryGroupRequirements)
+                foreach ( var groupRequirement in qryGroupRequirements )
                 {
-                    if ( !statuses.Any( x => x.Key.GroupRequirement.Id == groupRequirement.Id) )
+                    if ( !statuses.Any( x => x.Key.GroupRequirement.Id == groupRequirement.Id ) )
                     {
                         PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
                         status.GroupRequirement = groupRequirement;
@@ -665,7 +741,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the new family.
+        /// Saves the new family to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="familyMembers">The family members.</param>
@@ -680,7 +756,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Saves the new group.
+        /// Saves the new group to the database
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="groupTypeId">The group type identifier.</param>
@@ -741,7 +817,7 @@ namespace Rock.Model
                         groupMember.Group = group;
                     }
 
-                    if ( !groupMember.IsValidGroupMember(rockContext) )
+                    if ( !groupMember.IsValidGroupMember( rockContext ) )
                     {
                         throw new GroupMemberValidationException( groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" ) );
                     }
@@ -774,7 +850,7 @@ namespace Rock.Model
 
                             if ( !oldValue.Equals( newValue ) )
                             {
-                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue );
+                                Rock.Attribute.Helper.SaveAttributeValue( person, attributeCache, newValue, rockContext );
                             }
                         }
                     }
@@ -805,7 +881,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -823,7 +899,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -843,7 +919,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -874,7 +950,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -886,7 +962,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -901,7 +977,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -911,7 +987,7 @@ namespace Rock.Model
         /// <param name="modifiedBy">The modified by.</param>
         /// <param name="isMailingLocation">Sets the Is Mailing option on the new address.</param>
         /// <param name="isMappedLocation">Sets the Is Mapped option on the new address.</param>
-        public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid, 
+        public static void AddNewGroupAddress( RockContext rockContext, Group group, string locationTypeGuid,
             int? locationId, bool moveExistingToPrevious, string modifiedBy, bool isMailingLocation, bool isMappedLocation )
         {
             if ( locationId.HasValue )
@@ -922,7 +998,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -934,7 +1010,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -948,7 +1024,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds the new group address.
+        /// Adds the new group address (it is doesn't already exist) and saves changes to the database.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="group">The group.</param>
@@ -1042,12 +1118,56 @@ namespace Rock.Model
             }
 
             string message;
-            if ( !CanDelete( item, out message ) )
+            if ( !CanDelete( item, out message, true ) )
             {
                 return false;
             }
 
+            // As discussed in https://github.com/SparkDevNetwork/Rock/issues/3640, we are going to delete
+            // the association from any registrations that have a reference to this group (as long as there
+            // no RegistrationRegistrant's tied to the group -- which was checked in the local CanDelete below).
+            var registrationService = new RegistrationService( this.Context as RockContext );
+            foreach ( var registration in registrationService.Queryable().Where( a => a.GroupId == item.Id ) )
+            {
+                registration.GroupId = null;
+            }
+
             return base.Delete( item );
+        }
+
+        /// <summary>
+        /// Determines whether the specified group can be deleted.
+        /// Performs some additional checks that are missing from the
+        /// auto-generated GroupService.CanDelete().
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <param name="includeSecondLvl">If set to true, verifies that the item is not referenced by any second level relationships.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool CanDelete( Group item, out string errorMessage, bool includeSecondLvl )
+        {
+            errorMessage = string.Empty;
+
+            bool canDelete = CanDelete( item, out errorMessage );
+
+            if ( canDelete && includeSecondLvl )
+            {
+                if ( new Service<RegistrationRegistrant>( this.Context ).Queryable().Any( r => r.GroupMember.GroupId == item.Id ) )
+                {
+                    errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );
+                    return false;
+                }
+
+                if ( new Service<EventItemOccurrence>( this.Context ).Queryable().Any( o => o.Linkages.Any( l => l.GroupId == item.Id ) ) )
+                {
+                    errorMessage += string.Format( "This {0} is assigned to a {1} linkage.", Group.FriendlyTypeName, EventItemOccurrence.FriendlyTypeName );
+                    return false;
+                }
+            }
+
+            return canDelete;
         }
 
         /// <summary>
@@ -1080,7 +1200,7 @@ namespace Rock.Model
         /// <param name="group">The group.</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <param name="removeFromAuthTables">if set to <c>true</c> remove from auth if this group is a security role.</param>
-        public void Archive( Group group, int? currentPersonAliasId, bool removeFromAuthTables)
+        public void Archive( Group group, int? currentPersonAliasId, bool removeFromAuthTables )
         {
             group.IsArchived = true;
             group.ArchivedByPersonAliasId = currentPersonAliasId;
@@ -1090,7 +1210,7 @@ namespace Rock.Model
             if ( removeFromAuthTables && isSecurityRoleGroup )
             {
                 AuthService authService = new AuthService( this.Context as RockContext );
-                
+
                 foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                 {
                     authService.Delete( auth );
@@ -1110,9 +1230,24 @@ namespace Rock.Model
         /// <returns></returns>
         public bool ExistsAsArchived( Group group, int personId, int groupRoleId, out GroupMember archivedGroupMember )
         {
+            archivedGroupMember = GetArchivedGroupMember( group, personId, groupRoleId );
+            return archivedGroupMember != null;
+        }
+
+        /// <summary>
+        /// If there is an Archived Member of the group for the specified personId and groupRoleId, returns the archived group member record, otherwise returns null
+        /// (if there are multiple, this will return the most recently archived record)
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="groupRoleId">The group role identifier.</param>
+        /// <returns></returns>
+        public GroupMember GetArchivedGroupMember( Group group, int personId, int groupRoleId )
+        {
+            GroupMember archivedGroupMember;
             var groupMemberService = new GroupMemberService( this.Context as RockContext );
             archivedGroupMember = groupMemberService.GetArchived().Where( a => a.GroupId == group.Id && a.PersonId == personId && a.GroupRoleId == groupRoleId ).OrderByDescending( a => a.ArchivedDateTime ).FirstOrDefault();
-            return archivedGroupMember != null;
+            return archivedGroupMember;
         }
 
         /// <summary>
@@ -1121,9 +1256,21 @@ namespace Rock.Model
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>
+        [Obsolete( "Please use the static method with no parameters. The group parameter is inconsequential.", false )]
+        [RockObsolete( "1.9" )]
         public bool AllowsDuplicateMembers( Group group )
         {
-            bool allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
+            return AllowsDuplicateMembers();
+        }
+
+        /// <summary>
+        /// Returns true if duplicate group members are allowed in groups
+        /// Normally this is false, but there is a web.config option to allow it
+        /// </summary>
+        /// <returns></returns>
+        public static bool AllowsDuplicateMembers()
+        {
+            var allowDuplicateGroupMembers = System.Configuration.ConfigurationManager.AppSettings["AllowDuplicateGroupMembers"].AsBoolean();
             return allowDuplicateGroupMembers;
         }
 
@@ -1143,6 +1290,7 @@ namespace Rock.Model
         }
     }
 
+    #region Extension Methods
     /// <summary>
     /// 
     /// </summary>
@@ -1215,5 +1363,53 @@ namespace Rock.Model
         {
             return group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active );
         }
+
+        /// <summary>
+        /// Groups that have active leaders.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public static IQueryable<Group> HasActiveLeader( this IQueryable<Group> group )
+        {
+            return group
+                    .Where( g => g.Members.Any( m =>
+                                    m.GroupMemberStatus == GroupMemberStatus.Active &&
+                                    m.GroupRole.IsLeader ) );
+        }
+
+        /// <summary>
+        /// Groups with the specified Group Type Id.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="groupTypeId">The group type identifier.</param>
+        /// <returns></returns>
+        public static IQueryable<Group> IsGroupType( this IQueryable<Group> group, int groupTypeId )
+        {
+            return group
+                    .Where( g => g.GroupTypeId == groupTypeId );
+        }
+
+        /// <summary>
+        /// Groups that are active.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public static IQueryable<Group> IsActive( this IQueryable<Group> group )
+        {
+            return group
+                    .Where( g => g.IsActive );
+        }
+
+        /// <summary>
+        /// Groups that have a Schedule Id.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <returns></returns>
+        public static IQueryable<Group> HasSchedule( this IQueryable<Group> group )
+        {
+            return group
+                    .Where( g => g.ScheduleId != null );
+        }
     }
+    #endregion
 }

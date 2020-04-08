@@ -20,9 +20,9 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -446,10 +446,9 @@ namespace Rock.Reporting.DataFilter.Group
             {
                 var fakeGroup = new Rock.Model.Group { GroupTypeId = groupTypeId.Value };
                 Rock.Attribute.Helper.LoadAttributes( fakeGroup );
-                foreach ( var attribute in fakeGroup.Attributes.Select( a => a.Value ) )
-                {
-                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute );
-                }
+
+                var attributeList = fakeGroup.Attributes.Select( a => a.Value ).ToList();
+                EntityHelper.AddEntityFieldsForAttributeList( entityAttributeFields, attributeList );
             }
 
             int index = 0;

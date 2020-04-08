@@ -19,9 +19,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.Web.XmlTransform;
+
 using NuGet;
-using Rock.Model;
 
 namespace Rock.Services.NuGet
 {
@@ -71,8 +70,7 @@ namespace Rock.Services.NuGet
             foreach ( var assemblyReference in e.Package.AssemblyReferences )
             {
                 string referencePath = Path.Combine( ( (ProjectManager)_projectManager ).PathResolver.GetInstallPath( e.Package ), assemblyReference.Path );
-                string relativeReferencePath = PathUtility.GetRelativePath( _projectManager.Project.Root, referencePath );
-                string fileName = Path.GetFileName( relativeReferencePath );
+                string fileName = assemblyReference.Path.Substring( "lib\\".Length );
                 string fullPath = _projectManager.Project.GetFullPath( Path.Combine( "bin", fileName ) );
                 _projectManager.Project.AddFile( fullPath, assemblyReference.GetStream() );
             }

@@ -15,20 +15,27 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute for selecting radio button options.
+    /// Field Attribute used to display a list of options as checkboxes.  Value is saved as a | delimited list
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomRadioListFieldAttribute : SelectFieldAttribute
     {
         private const string VALUES = "values";
         private const string FIELDTYPE = "fieldtype";
+
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomRadioListFieldAttribute"/> class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public CustomRadioListFieldAttribute( string name )
+            : this( name, string.Empty, string.Empty )
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomRadioListFieldAttribute" /> class.
@@ -37,7 +44,7 @@ namespace Rock.Attribute
         /// <param name="description">The description.</param>
         /// <param name="listSource">The source of the values to display in a list.  Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
-        /// <param name="defaultValue">The default value.  If multiple values are supported (i.e. checkbox) each value should be delimited by a comma</param>
+        /// <param name="defaultValue">The default value. If multiple values are supported (i.e. checkbox) each value should be delimited by a comma</param>
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
@@ -47,5 +54,31 @@ namespace Rock.Attribute
             FieldConfigurationValues.Add( VALUES, new Field.ConfigurationValue( listSource ) );
             FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
+
+        /// <summary>
+        /// The source of the values to display in a list. Format is either 'value1,value2,value3,...', 'value1^text1,value2^text2,value3^text3,...', or a SQL Select statement that returns result set with a 'Value' and 'Text' column.
+        /// </summary>
+        /// <value>
+        /// The list source.
+        /// </value>
+        public string ListSource
+        {
+            get => FieldConfigurationValues.GetValueOrNull( VALUES );
+            set => FieldConfigurationValues.AddOrReplace( VALUES, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// The default value. If multiple values are supported (i.e. CheckBox) each value should be delimited by a comma.
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public override string DefaultValue
+        {
+            get => base.DefaultValue;
+            set => base.DefaultValue = value;
+        }
     }
+
+
 }

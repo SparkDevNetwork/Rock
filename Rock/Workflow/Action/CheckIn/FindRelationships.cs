@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
 using System.Linq;
-using System.Runtime.Caching;
 
 using Rock.CheckIn;
 using Rock.Data;

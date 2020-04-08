@@ -121,13 +121,13 @@ namespace RockWeb.Blocks.Fundraising
                 //
                 if ( GetAttributeValue( "AllowAutomaticSelection" ).AsBoolean( false ) && groupMember == null )
                 {
-                    var members = group.Members.Where( m => m.GroupRole.Guid == "F82DF077-9664-4DA8-A3D9-7379B690124D".AsGuid() ).ToList();
+                    var members = group.Members.Where( m => ! m.GroupRole.IsLeader ).ToList();
                     if ( members.Count == 1 && members[0].GroupMemberStatus == GroupMemberStatus.Active )
                     {
                         group.LoadAttributes( rockContext );
                         if ( string.IsNullOrWhiteSpace( group.GetAttributeValue( "RegistrationInstance" ) ) )
                         {
-                            groupMember = group.Members.First();
+                            groupMember = members.First();
                         }
                     }
                 }
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Fundraising
             if ( baseGroup != null )
             {
                 groupIds.Add( baseGroup.Id );
-                groupIds.AddRange( service.GetAllDescendents( baseGroup.Id ).Select( g => g.Id ) );
+                groupIds.AddRange( service.GetAllDescendentGroupIds( baseGroup.Id, false ) );
             }
 
             return groupIds;
@@ -165,10 +165,11 @@ namespace RockWeb.Blocks.Fundraising
         protected void PopulateGroupDropDown()
         {
             var rockContext = new RockContext();
-            Guid groupTypeFundraisingOpportunity = "4BE7FC44-332D-40A8-978E-47B7035D7A0C".AsGuid();
+            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+
             Guid? rootGroup = GetAttributeValue( "RootGroup" ).AsGuidOrNull();
 
-            var groupQuery = new GroupService( rockContext ).Queryable().Where( a => a.GroupType.Guid == groupTypeFundraisingOpportunity && a.IsActive && a.Members.Any() );
+            var groupQuery = new GroupService( rockContext ).Queryable().Where( a => ( a.GroupTypeId == groupTypeIdFundraising || a.GroupType.InheritedGroupTypeId == groupTypeIdFundraising ) && a.IsActive && a.Members.Any() );
 
             if ( rootGroup.HasValue )
             {
@@ -185,7 +186,9 @@ namespace RockWeb.Blocks.Fundraising
             {
                 fundraisingOpportunity.LoadAttributes( rockContext );
                 var dateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( fundraisingOpportunity.GetAttributeValue( "OpportunityDateRange" ) );
-                if ( RockDateTime.Now <= ( dateRange.End ?? DateTime.MaxValue ) )
+                var allowDonationsUntil = fundraisingOpportunity.GetAttributeValue( "AllowDonationsUntil" ).AsDateTime();
+                var untilDate = allowDonationsUntil ?? dateRange.End ?? DateTime.MaxValue;
+                if ( RockDateTime.Now <= untilDate )
                 {
                     var listItem = new ListItem( fundraisingOpportunity.GetAttributeValue( "OpportunityTitle" ), fundraisingOpportunity.Id.ToString() );
                     if ( listItem.Text.IsNullOrWhiteSpace() )

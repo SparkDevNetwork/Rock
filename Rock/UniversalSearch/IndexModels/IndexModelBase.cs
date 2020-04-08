@@ -19,11 +19,11 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using Rock.Attribute;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexModels
 {

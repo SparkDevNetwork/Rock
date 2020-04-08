@@ -50,13 +50,15 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Hide Inactive Group Member Status", "Set this to true to hide the radiobox for the 'Inactive' group member status.", false, order: 8 )]
     [BooleanField( "Hide Group Member Role", "Set this to true to hide the drop down list for the 'Role' when editing a group member. If set to 'true' then the default group role will be used when adding a new member.", false, order: 9 )]
     [BooleanField( "Hide Group Description Edit", "Set this to true to hide the edit box for group 'Description'.", false, key: "HideGroupDescriptionEdit", order: 10 )]
-    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 11 )]
-    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 12 )]
-    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 13 )]
-    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 14 )]
-    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
-    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
-    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
+    [BooleanField( "Enable Group Capacity Edit", "Enables changing Group Capacity when editing a group. Note: The group type must have a 'Group Capacity Rule'.", false, "", 11 )]
+    [CodeEditorField( "Lava Template", "The lava template to use to format the group details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, "{% include '~~/Assets/Lava/GroupDetail.lava' %}", "", 12 )]
+    [BooleanField( "Enable Location Edit", "Enables changing locations when editing a group.", false, "", 13 )]
+    [BooleanField( "Allow Group Member Delete", "Should deleting of group members be allowed?", true, "", 14 )]
+    [CodeEditorField( "Edit Group Pre-HTML", "HTML to display before the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 15 )]
+    [CodeEditorField( "Edit Group Post-HTML", "HTML to display after the edit group panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 16 )]
+    [CodeEditorField( "Edit Group Member Pre-HTML", "HTML to display before the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 17 )]
+    [CodeEditorField( "Edit Group Member Post-HTML", "HTML to display after the edit group member panel.", CodeEditorMode.Html, CodeEditorTheme.Rock, 200, false, "", "HTML Wrappers", 18 )]
+    [BooleanField( "Enable Communication Preference", "Determines if the currently logged in individual should be allow to set their communication preference for the group.", false, "", 19 )]
     public partial class GroupDetailLava : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -150,6 +152,16 @@ namespace RockWeb.Blocks.Groups
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether enable communication preference has been set.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the enable communication preference has been set; otherwise, <c>false</c>.
+        /// </value>
+        private bool EnableCommunicationPreference
+        {
+            get { return this.GetAttributeValue( "EnableCommunicationPreference" ).AsBooleanOrNull() ?? false; }
+        }
         #endregion
 
         #region Base Control Methods
@@ -226,6 +238,7 @@ namespace RockWeb.Blocks.Groups
             if ( !IsPostBack )
             {
                 BlockSetup();
+                BindCommunicationPreference();
             }
 
             // add a navigate event to capture when someone presses the back button
@@ -294,6 +307,11 @@ namespace RockWeb.Blocks.Groups
 
                     group.Schedule.WeeklyDayOfWeek = dowWeekly.SelectedDayOfWeek;
                     group.Schedule.WeeklyTimeOfDay = timeWeekly.SelectedTime;
+                }
+
+                if ( nbGroupCapacity.Visible )
+                {
+                    group.GroupCapacity = nbGroupCapacity.Text.AsIntegerOrNull();
                 }
 
                 // set attributes
@@ -401,7 +419,7 @@ namespace RockWeb.Blocks.Groups
                 if ( existingGroupMember != null )
                 {
                     // if so, don't add and show error message
-                    var person = new PersonService( rockContext ).Get( (int)ppGroupMemberPerson.PersonId );
+                    var person = new PersonService( rockContext ).Get( ( int ) ppGroupMemberPerson.PersonId );
 
                     nbGroupMemberErrorMessage.Title = "Person Already In Group";
                     nbGroupMemberErrorMessage.Text = string.Format(
@@ -434,6 +452,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             groupMember.GroupMemberStatus = selectedStatus.Value;
+            groupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
 
             groupMember.LoadAttributes();
 
@@ -470,6 +489,11 @@ namespace RockWeb.Blocks.Groups
             pnlGroupView.Visible = true;
             DisplayViewGroup();
             this.IsEditingGroupMember = false;
+
+            if ( groupMember.PersonId == CurrentPersonId )
+            {
+                tglCommunicationPreference.Checked = groupMember.CommunicationPreference == CommunicationType.SMS;
+            }
         }
 
         /// <summary>
@@ -532,9 +556,60 @@ namespace RockWeb.Blocks.Groups
             ShowSelectedPane();
         }
 
+        /// <summary>
+        /// Handles the CheckedChanged event of the tglCommunicationPreference control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void tglCommunicationPreference_CheckedChanged( object sender, EventArgs e )
+        {
+            if ( CurrentPersonId == null || !EnableCommunicationPreference || _groupId.Equals( 0 ) )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMember = groupMemberService.GetByGroupIdAndPersonId( _groupId, CurrentPersonId.Value ).FirstOrDefault();
+
+                if ( groupMember == null )
+                {
+                    return;
+                }
+
+                groupMember.CommunicationPreference = tglCommunicationPreference.Checked ? CommunicationType.SMS : CommunicationType.Email;
+
+                rockContext.SaveChanges();
+            }
+        }
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Binds the communication preference.
+        /// </summary>
+        private void BindCommunicationPreference()
+        {
+            if ( CurrentPersonId == null || !EnableCommunicationPreference || _groupId.Equals( 0 ) )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMember = groupMemberService.GetByGroupIdAndPersonId( _groupId, CurrentPersonId.Value ).FirstOrDefault();
+
+                if ( groupMember == null )
+                {
+                    return;
+                }
+
+                tglCommunicationPreference.Checked = groupMember.CommunicationPreference == CommunicationType.SMS;
+            }
+        }
 
         /// <summary>
         /// Route the request to the correct panel
@@ -584,7 +659,7 @@ namespace RockWeb.Blocks.Groups
                                 sm.AddHistoryPoint( "Action", "DeleteMember" );
                             }
                             break;
-                            
+
                         case "SendCommunication":
                             SendCommunication();
                             break;
@@ -689,9 +764,12 @@ namespace RockWeb.Blocks.Groups
                 string template = GetAttributeValue( "LavaTemplate" );
 
                 lContent.Text = template.ResolveMergeFields( mergeFields ).ResolveClientIds( upnlContent.ClientID );
+
+                dCommunicationsPreference.Visible = EnableCommunicationPreference && group.Members.Any( gm => gm.PersonId == CurrentPersonId );
             }
             else
             {
+                dCommunicationsPreference.Visible = false;
                 lContent.Text = "<div class='alert alert-warning'>No group was available from the querystring.</div>";
             }
         }
@@ -738,6 +816,13 @@ namespace RockWeb.Blocks.Groups
                     else
                     {
                         pnlSchedule.Visible = false;
+                    }
+
+                    nbGroupCapacity.Text = group.GroupCapacity.ToString();
+                    bool enableGroupCapacityEdit = this.GetAttributeValue( "EnableGroupCapacityEdit" ).AsBooleanOrNull() ?? false;
+                    if ( enableGroupCapacityEdit )
+                    {
+                        nbGroupCapacity.Visible = group.GroupType.GroupCapacityRule != GroupCapacityRule.None;
                     }
 
                     group.LoadAttributes();
@@ -993,11 +1078,13 @@ namespace RockWeb.Blocks.Groups
             // set values
             ppGroupMemberPerson.SetValue( groupMember.Person );
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
-            rblStatus.SetValue( (int)groupMember.GroupMemberStatus );
+            rblStatus.SetValue( ( int ) groupMember.GroupMemberStatus );
+            rblCommunicationPreference.SetValue( groupMember.CommunicationPreference == CommunicationType.SMS ? "2" : "1" );
+
             bool hideGroupMemberInactiveStatus = this.GetAttributeValue( "HideInactiveGroupMemberStatus" ).AsBooleanOrNull() ?? false;
             if ( hideGroupMemberInactiveStatus )
             {
-                var inactiveItem = rblStatus.Items.FindByValue( ( (int)GroupMemberStatus.Inactive ).ToString() );
+                var inactiveItem = rblStatus.Items.FindByValue( ( ( int ) GroupMemberStatus.Inactive ).ToString() );
                 if ( inactiveItem != null )
                 {
                     rblStatus.Items.Remove( inactiveItem );

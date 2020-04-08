@@ -23,7 +23,6 @@ using System.Web;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web;
 
 namespace Rock.Web.Cache
 {
@@ -481,6 +480,102 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public Uri DefaultDomainUri { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the site.
+        /// </summary>
+        /// <value>
+        /// The type of the site.
+        /// </value>
+        [DataMember]
+        public SiteType SiteType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile phone file identifier.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile phone file identifier.
+        /// </value>
+        [DataMember]
+        public int? ConfigurationMobilePhoneBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet binary file identifier.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet binary file identifier.
+        /// </value>
+        [DataMember]
+        public int? ConfigurationMobileTabletBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumbnail file identifier.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file identifier.
+        /// </value>
+        [DataMember]
+        public int? ThumbnailBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the latest version date time.
+        /// </summary>
+        /// <value>
+        /// The latest version date time.
+        /// </value>
+        public DateTime? LatestVersionDateTime { get; set; }
+
+        /// <summary>
+        /// Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable exclusive routes]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool EnableExclusiveRoutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mobile file path.
+        /// </summary>
+        /// <value>
+        /// The configuration mobile file path.
+        /// </value>
+        public string ConfigurationMobilePhoneFileUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration tablet file path.
+        /// </summary>
+        /// <value>
+        /// The configuration tablet file path.
+        /// </value>
+        public string ConfigurationMobileTabletFileUrl { get; set; }
+
+        /// <summary>
+        /// Gets or sets the thumbnail file URL.
+        /// </summary>
+        /// <value>
+        /// The thumbnail file URL.
+        /// </value>
+        public string ThumbnailFileUrl { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -529,6 +624,16 @@ namespace Rock.Web.Cache
             FavIconBinaryFileId = site.FavIconBinaryFileId;
             SiteLogoBinaryFileId = site.SiteLogoBinaryFileId;
             DefaultDomainUri = site.DefaultDomainUri;
+            SiteType = site.SiteType;
+            AdditionalSettings = site.AdditionalSettings;
+            ConfigurationMobilePhoneBinaryFileId = site.ConfigurationMobilePhoneBinaryFileId;
+            ConfigurationMobileTabletBinaryFileId = site.ConfigurationMobileTabletBinaryFileId;
+            ConfigurationMobilePhoneFileUrl = site.ConfigurationMobilePhoneFileUrl;
+            ConfigurationMobileTabletFileUrl = site.ConfigurationTabletFileUrl;
+            ThumbnailBinaryFileId = site.ThumbnailBinaryFileId;
+            ThumbnailFileUrl = site.ThumbnailFileUrl;
+            LatestVersionDateTime = site.LatestVersionDateTime;
+            EnableExclusiveRoutes = site.EnableExclusiveRoutes;
 
             foreach ( var domain in site.SiteDomains.Select( d => d.Domain ).ToList() )
             {
@@ -553,7 +658,7 @@ namespace Rock.Web.Cache
         public void RedirectToDefaultPage()
         {
             var context = HttpContext.Current;
-            context.Response.Redirect( DefaultPageReference.BuildUrl(), false );
+            context.Response.Redirect( "/", false );
             context.ApplicationInstance.CompleteRequest();
         }
 
@@ -649,6 +754,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes this instance.
         /// </summary>
+        [Obsolete("This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.")]
+        [RockObsolete("1.10")]
         public static void RemoveSiteDomains()
         {
             _siteDomains = new ConcurrentDictionary<string, int?>();

@@ -20,21 +20,19 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Web.UI.WebControls;
-
+using Newtonsoft.Json;
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
-using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Site = Rock.Model.Site;
 using Attribute = Rock.Model.Attribute;
-using Newtonsoft.Json;
-using Rock.Attribute;
+using Site = Rock.Model.Site;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -44,10 +42,24 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Site Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a specific site." )]
-    [BinaryFileTypeField( "Default File Type", "The default file type to use while uploading Favicon", true,
-        Rock.SystemGuid.BinaryFiletype.DEFAULT, "", 0 )]
+
+    [BinaryFileTypeField( "Default File Type",
+        Key = AttributeKey.DefaultFileType,
+        Description = "The default file type to use while uploading Favicon",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.BinaryFiletype.DEFAULT, // this was previously defaultBinaryFileTypeGuid which maps to base default value
+        Category = "",
+        Order = 0 )]
+
     public partial class SiteDetail : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string DefaultFileType = "DefaultFileType";
+        }
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -90,7 +102,7 @@ namespace RockWeb.Blocks.Cms
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "siteId" ).AsInteger() );
+                ShowDetail( PageParameter( "SiteId" ).AsInteger() );
             }
 
             if ( dlgPageAttribute.Visible )
@@ -158,7 +170,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageAttributes_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gPageAttributes_ShowEdit( attributeGuid );
         }
 
@@ -209,7 +221,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             PageAttributesState.RemoveEntity( attributeGuid );
 
             BindPageAttributesGrid();
@@ -232,26 +244,15 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgPageAttribute_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtPageAttributes.GetAttributeProperties( attribute );
+#pragma warning disable 0618 // Type or member is obsolete
+            var attribute = SaveChangesToStateCollection( edtPageAttributes, PageAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             // Controls will show warnings
             if ( !attribute.IsValid )
             {
                 return;
             }
-
-            if ( PageAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = PageAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                PageAttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = PageAttributesState.Any() ? PageAttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-
-            PageAttributesState.Add( attribute );
 
             BindPageAttributesGrid();
 
@@ -443,12 +444,21 @@ namespace RockWeb.Blocks.Cms
                 site.AllowedFrameDomains = tbAllowedFrameDomains.Text;
                 site.RedirectTablets = cbRedirectTablets.Checked;
                 site.EnablePageViews = cbEnablePageViews.Checked;
-
+                site.IsActive = cbIsActive.Checked;
                 site.AllowIndexing = cbAllowIndexing.Checked;
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;
+                site.EnableExclusiveRoutes = cbEnableExclusiveRoutes.Checked;
 
                 site.PageHeaderContent = cePageHeaderContent.Text;
+
+                avcAttributes.GetEditValues( site );
+                // only save if everything saves:
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    site.SaveAttributeValues();
+                } );
 
                 int? existingIconId = null;
                 if ( site.FavIconBinaryFileId != imgSiteIcon.BinaryFileId )
@@ -557,7 +567,7 @@ namespace RockWeb.Blocks.Cms
                 interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
 
                 rockContext.SaveChanges();
-                
+
 
                 // Create the default page is this is a new site
                 if ( !site.DefaultPageId.HasValue && newSite )
@@ -601,7 +611,7 @@ namespace RockWeb.Blocks.Cms
                 }
 
                 var qryParams = new Dictionary<string, string>();
-                qryParams["siteId"] = site.Id.ToString();
+                qryParams["SiteId"] = site.Id.ToString();
 
                 NavigateToPage( RockPage.Guid, qryParams );
             }
@@ -735,7 +745,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            Guid fileTypeGuid = GetAttributeValue( "DefaultFileType" ).AsGuid();
+            Guid fileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuid();
             imgSiteIcon.BinaryFileTypeGuid = fileTypeGuid;
 
             // set theme compile button
@@ -819,6 +829,8 @@ namespace RockWeb.Blocks.Cms
             imgSiteIcon.BinaryFileId = site.FavIconBinaryFileId;
             imgSiteLogo.BinaryFileId = site.SiteLogoBinaryFileId;
 
+            cbIsActive.Checked = site.IsActive;
+
             if ( site.DefaultPageRoute != null )
             {
                 ppDefaultPage.SetValue( site.DefaultPageRoute );
@@ -898,6 +910,7 @@ namespace RockWeb.Blocks.Cms
 
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;
+            cbEnableExclusiveRoutes.Checked = site.EnableExclusiveRoutes;
 
             // disable the indexing features if indexing on site is disabled
             var siteEntityType = EntityTypeCache.Get( "Rock.Model.Site" );
@@ -906,7 +919,7 @@ namespace RockWeb.Blocks.Cms
                 cbEnableIndexing.Visible = false;
                 tbIndexStartingLocation.Visible = false;
             }
-            
+
             var attributeService = new AttributeService( new RockContext() );
             var siteIdQualifierValue = site.Id.ToString();
             PageAttributesState = attributeService.GetByEntityTypeId( new Page().TypeId, true ).AsQueryable()
@@ -919,6 +932,9 @@ namespace RockWeb.Blocks.Cms
             BindPageAttributesGrid();
 
             SetControlsVisiblity();
+
+            site.LoadAttributes();
+            avcAttributes.AddEditControls( site, Rock.Security.Authorization.EDIT, CurrentPerson );
         }
 
         /// <summary>
@@ -966,6 +982,50 @@ namespace RockWeb.Blocks.Cms
             nbPageViewRetentionPeriodDays.Visible = cbEnablePageViews.Checked;
 
             tbIndexStartingLocation.Visible = cbEnableIndexing.Checked;
+        }
+
+        #endregion
+
+        #region Obsolete Code
+
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
+        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
         }
 
         #endregion

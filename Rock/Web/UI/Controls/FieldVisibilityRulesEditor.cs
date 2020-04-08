@@ -21,6 +21,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Field;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -31,6 +32,27 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class FieldVisibilityRulesEditor : CompositeControl, IHasValidationGroup, INamingContainer
     {
+        /// <summary>
+        /// Keys for the viewstate
+        /// </summary>
+        private static class ViewStateKey
+        {
+            /// <summary>
+            /// The comparable fields JSON key
+            /// </summary>
+            public static string ComparableFieldsJSON = "ComparableFieldsJSON";
+
+            /// <summary>
+            /// The rules state JSON key
+            /// </summary>
+            public static string FieldVisibilityRulesStateJSON = "_fieldVisibilityRulesStateJSON";
+
+            /// <summary>
+            /// The validation group key
+            /// </summary>
+            public static string ValidationGroup = "ValidationGroup";
+        }
+
         #region Controls
 
         private Panel _pnlFilterType;
@@ -66,18 +88,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ValidationGroup
         {
-            get => ViewState["ValidationGroup"] as string ?? this.RockBlock()?.BlockValidationGroup;
-            set => ViewState["ValidationGroup"] = value;
+            get => ViewState[ViewStateKey.ValidationGroup] as string ?? this.RockBlock()?.BlockValidationGroup;
+            set => ViewState[ViewStateKey.ValidationGroup] = value;
         }
 
         /// <summary>
         /// Gets or sets the fields that will be available to compare to
         /// NOTE: Use Rock.Model.Attribute instead of AttributeCache since we might be using Attributes that haven't been saved to the database yet
         /// </summary>
-        /// <value>
-        /// The comparable attributes ids.
-        /// </value>
-        public Dictionary<Guid, Rock.Model.Attribute> ComparableAttributes { get; set; }
+        public Dictionary<Guid, RegistrationTemplateFormField> ComparableFields { get; set; }
 
         /// <summary>
         /// The Name that should be displayed for the Field that the rules are for
@@ -129,6 +148,17 @@ namespace Rock.Web.UI.Controls
             Panel pnlRulesList = new Panel { CssClass = "filtervisibilityrules-ruleslist " };
             pnlContainer.Controls.Add( pnlRulesList );
 
+            // Filter Actions
+            _pnlFilterActions = new Panel { CssClass = "filter-actions" };
+            pnlContainer.Controls.Add( _pnlFilterActions );
+
+            _btnAddFilterFieldCriteria = new LinkButton();
+            _btnAddFilterFieldCriteria.ID = this.ID + "_btnAddFilterFieldCriteria";
+            _btnAddFilterFieldCriteria.CssClass = "btn btn-xs btn-action add-action";
+            _btnAddFilterFieldCriteria.Text = "<i class='fa fa-filter'></i> Add Criteria";
+            _btnAddFilterFieldCriteria.Click += _btnAddFilterFieldCriteria_Click;
+            _pnlFilterActions.Controls.Add( _btnAddFilterFieldCriteria );
+
             // Filter Type controls
             _pnlFilterType = new Panel { CssClass = "filtervisibilityrules-type form-inline form-inline-all pull-left" };
             pnlRulesHeaderRow.Controls.Add( _pnlFilterType );
@@ -157,17 +187,6 @@ namespace Rock.Web.UI.Controls
             _lblOfTheFollowingMatchSpan = new Label { Text = "of the following match:", CssClass = "form-control-static" };
             _pnlFilterType.Controls.Add( _lblOfTheFollowingMatchSpan );
 
-            // Filter Actions
-            _pnlFilterActions = new Panel { CssClass = "filter-actions pull-right" };
-            pnlRulesHeaderRow.Controls.Add( _pnlFilterActions );
-
-            _btnAddFilterFieldCriteria = new LinkButton();
-            _btnAddFilterFieldCriteria.ID = this.ID + "_btnAddFilterFieldCriteria";
-            _btnAddFilterFieldCriteria.CssClass = "btn btn-xs btn-action add-action pull-right margin-l-sm";
-            _btnAddFilterFieldCriteria.Text = "<i class='fa fa-filter'></i> Add Criteria";
-            _btnAddFilterFieldCriteria.Click += _btnAddFilterFieldCriteria_Click;
-            _pnlFilterActions.Controls.Add( _btnAddFilterFieldCriteria );
-
             _phFilterFieldRuleControls = new DynamicPlaceholder();
             _phFilterFieldRuleControls.ID = this.ID + "_phFilterFieldRuleControls";
             pnlRulesList.Controls.Add( _phFilterFieldRuleControls );
@@ -193,9 +212,9 @@ namespace Rock.Web.UI.Controls
             // NOTE: The Grid isn't supposed to show the filter button if there are less than 2 attributes,
             // but there is also the possibility that there is more than one attribute, but less than 2 "filterable" attributes.
             // In that case, we'll show the warning but hide the _btnAddFilterFieldCriteria.
-            bool hasSupportedComparableAttributes = GetSupportedComparableAttributes().Any();
-            _nbNoFieldsAvailable.Visible = !hasSupportedComparableAttributes;
-            _btnAddFilterFieldCriteria.Visible = hasSupportedComparableAttributes;
+            bool hasSupportedComparableFields = GetSupportedComparableFields().Any();
+            _nbNoFieldsAvailable.Visible = !hasSupportedComparableFields;
+            _btnAddFilterFieldCriteria.Visible = hasSupportedComparableFields;
 
             ScriptManager.RegisterClientScriptInclude( this, this.GetType(), "reporting-include", this.RockBlock().RockPage.ResolveRockUrl( "~/Scripts/Rock/reportingInclude.js", true ) );
             base.RenderControl( writer );
@@ -209,15 +228,15 @@ namespace Rock.Web.UI.Controls
         {
             base.LoadViewState( savedState );
 
-            this._fieldVisibilityRulesState = ( ViewState["_fieldVisibilityRulesStateJSON"] as string ).FromJsonOrNull<FieldVisibilityRules>();
-            this.ComparableAttributes = ( ViewState["ComparableAttributesJSON"] as string ).FromJsonOrNull<Dictionary<Guid, Rock.Model.Attribute>>();
+            this._fieldVisibilityRulesState = ( ViewState[ViewStateKey.FieldVisibilityRulesStateJSON] as string ).FromJsonOrNull<FieldVisibilityRules>();
+            this.ComparableFields = ( ViewState[ViewStateKey.ComparableFieldsJSON] as string ).FromJsonOrNull<Dictionary<Guid, RegistrationTemplateFormField>>();
 
             EnsureChildControls();
             _phFilterFieldRuleControls.Controls.Clear();
 
-            if ( _fieldVisibilityRulesState?.Any() == true )
+            if ( _fieldVisibilityRulesState?.RuleList.Any() == true )
             {
-                foreach ( var fieldVisibilityRule in _fieldVisibilityRulesState )
+                foreach ( var fieldVisibilityRule in _fieldVisibilityRulesState.RuleList )
                 {
                     this.AddFilterRuleControl( fieldVisibilityRule, false );
                 }
@@ -232,8 +251,8 @@ namespace Rock.Web.UI.Controls
         /// </returns>
         protected override object SaveViewState()
         {
-            ViewState["_fieldVisibilityRulesStateJSON"] = this._fieldVisibilityRulesState.ToJson();
-            ViewState["ComparableAttributesJSON"] = this.ComparableAttributes.ToJson();
+            ViewState[ViewStateKey.FieldVisibilityRulesStateJSON] = this._fieldVisibilityRulesState.ToJson();
+            ViewState[ViewStateKey.ComparableFieldsJSON] = this.ComparableFields.ToJson();
 
             return base.SaveViewState();
         }
@@ -287,7 +306,7 @@ namespace Rock.Web.UI.Controls
 
             this._fieldVisibilityRulesState = new FieldVisibilityRules();
             _phFilterFieldRuleControls.Controls.Clear();
-            foreach ( var fieldVisibilityRule in fieldVisibilityRules )
+            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList )
             {
                 AddFilterRule( fieldVisibilityRule );
             }
@@ -325,7 +344,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            foreach ( var fieldVisibilityRule in fieldVisibilityRules.ToList() )
+            foreach ( var fieldVisibilityRule in fieldVisibilityRules.RuleList )
             {
                 var rockControlWrapper = _phFilterFieldRuleControls.FindControl( $"_rockControlWrapper_{fieldVisibilityRule.Guid.ToString( "N" )}" ) as RockControlWrapper;
                 if ( rockControlWrapper == null )
@@ -334,30 +353,57 @@ namespace Rock.Web.UI.Controls
                 }
 
                 var ddlCompareField = rockControlWrapper.FindControl( $"_ddlCompareField_{fieldVisibilityRule.Guid.ToString( "N" )}" ) as RockDropDownList;
-                var selectedAttribute = this.ComparableAttributes.GetValueOrNull( ddlCompareField.SelectedValue.AsGuid() );
-                if ( selectedAttribute != null )
-                {
-                    fieldVisibilityRule.ComparedToAttributeGuid = selectedAttribute?.Guid;
-                    var fieldType = FieldTypeCache.Get( selectedAttribute.FieldTypeId );
-                    var filterControl = rockControlWrapper.FindControl( $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}" );
-                    var qualifiers = selectedAttribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
-                    var filterValues = fieldType.Field.GetFilterValues( filterControl, qualifiers, Reporting.FilterMode.AdvancedFilter );
+                var selectedField = this.ComparableFields.GetValueOrNull( ddlCompareField.SelectedValue.AsGuid() );
 
-                    // NOTE: If filterValues.Count >= 2, then filterValues[0] is ComparisonType, and filterValues[1] is a CompareToValue. Otherwise, filterValues[0] is a CompareToValue (for example, a SingleSelect attribute)
-                    if ( filterValues.Count >= 2 )
+                if ( selectedField != null )
+                {
+                    fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid = selectedField.Guid;
+                    var filterControl = rockControlWrapper.FindControl( $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}" );
+
+                    if ( selectedField.Attribute != null )
                     {
-                        fieldVisibilityRule.ComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>() ?? ComparisonType.EqualTo;
-                        fieldVisibilityRule.ComparedToValue = filterValues[1];
+                        var selectedAttribute = selectedField.Attribute;
+                        var fieldType = FieldTypeCache.Get( selectedAttribute.FieldTypeId );
+                        var qualifiers = selectedAttribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
+                        var filterValues = fieldType.Field.GetFilterValues( filterControl, qualifiers, Reporting.FilterMode.AdvancedFilter );
+
+                        // NOTE: If filterValues.Count >= 2, then filterValues[0] is ComparisonType, and filterValues[1] is a CompareToValue. Otherwise, filterValues[0] is a CompareToValue (for example, a SingleSelect attribute)
+                        if ( filterValues.Count >= 2 )
+                        {
+                            fieldVisibilityRule.ComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>() ?? ComparisonType.EqualTo;
+                            fieldVisibilityRule.ComparedToValue = filterValues[1];
+                        }
+                        else if ( filterValues.Count == 1 )
+                        {
+                            fieldVisibilityRule.ComparedToValue = filterValues[0];
+                        }
                     }
-                    else if ( filterValues.Count == 1 )
+                    else if ( FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
                     {
-                        fieldVisibilityRule.ComparedToValue = filterValues[0];
+                        var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( selectedField.PersonFieldType );
+                        var filterValues = fieldType.Field.GetFilterValues( filterControl, null, Reporting.FilterMode.AdvancedFilter );
+
+                        // NOTE: If filterValues.Count >= 2, then filterValues[0] is ComparisonType, and filterValues[1] is a CompareToValue. Otherwise, filterValues[0] is a CompareToValue (for example, a SingleSelect attribute)
+                        if ( filterValues.Count >= 2 )
+                        {
+                            fieldVisibilityRule.ComparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>() ?? ComparisonType.EqualTo;
+                            fieldVisibilityRule.ComparedToValue = filterValues[1];
+                        }
+                        else if ( filterValues.Count == 1 )
+                        {
+                            fieldVisibilityRule.ComparedToValue = filterValues[0];
+                        }
+                    }
+                    else
+                    {
+                        // unsupported attribute or field type, so delete the rule
+                        fieldVisibilityRules.RuleList.Remove( fieldVisibilityRule );
                     }
                 }
                 else
                 {
                     // no attribute selected, so delete the rule
-                    fieldVisibilityRules.Remove( fieldVisibilityRule );
+                    fieldVisibilityRules.RuleList.Remove( fieldVisibilityRule );
                 }
             }
 
@@ -372,7 +418,7 @@ namespace Rock.Web.UI.Controls
         {
             AddFilterRuleControl( fieldVisibilityRule, true );
 
-            this._fieldVisibilityRulesState.Add( fieldVisibilityRule );
+            this._fieldVisibilityRulesState.RuleList.Add( fieldVisibilityRule );
         }
 
         /// <summary>
@@ -436,15 +482,37 @@ namespace Rock.Web.UI.Controls
                 ValidationGroup = this.ValidationGroup
             };
 
-            ddlCompareField.Items.Add( new ListItem() );
-            foreach ( var attribute in GetSupportedComparableAttributes() )
+            var supportedComparableFields = GetSupportedComparableFields();
+
+            // if adding a new fieldVisibilityRule, default to the first supportedComparableAttribute
+            if ( fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid == null )
             {
-                var listItem = new ListItem( attribute.Name, attribute.Guid.ToString() );
-                ddlCompareField.Items.Add( listItem );
-                if ( setValues && attribute.Guid == fieldVisibilityRule.ComparedToAttributeGuid )
+                fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid = supportedComparableFields.Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
+            }
+
+            foreach ( var field in supportedComparableFields )
+            {
+                var listItem = new ListItem
                 {
-                    listItem.Selected = true;
+                    Value = field.Guid.ToString(),
+                    Selected = setValues && field.Guid == fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid
+                };
+
+                if ( field.Attribute != null )
+                {
+                    listItem.Text = field.Attribute.Name;
                 }
+                else if ( field.FieldSource == RegistrationFieldSource.PersonField )
+                {
+                    listItem.Text = field.PersonFieldType.ConvertToString();
+                }
+                else
+                {
+                    // This is not supported yet, but I'm not sure we should throw an UnimplementedException
+                    listItem.Text = "<Unknown>";
+                }
+
+                ddlCompareField.Items.Add( listItem );
             }
 
             ddlCompareField.AutoPostBack = true;
@@ -466,27 +534,35 @@ namespace Rock.Web.UI.Controls
         /// Gets the supported comparable attributes.
         /// </summary>
         /// <returns></returns>
-        private List<Model.Attribute> GetSupportedComparableAttributes()
+        private List<RegistrationTemplateFormField> GetSupportedComparableFields()
         {
-            var supportedComparableAttributes = new List<Rock.Model.Attribute>();
-            foreach ( var attribute in this.ComparableAttributes.Select( a => a.Value ) )
+            var supportedComparableFields = new List<RegistrationTemplateFormField>();
+            foreach ( var field in this.ComparableFields.Values )
             {
-                var fieldType = FieldTypeCache.Get( attribute.FieldTypeId );
-                if ( fieldType.Field.HasFilterControl() )
+                if ( field.Attribute != null )
                 {
-                    var qualifiers = attribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
-
-                    // get the editControl to see if the FieldType supports a ChangeHandler for it (but don't actually use the control)
-                    var editControl = fieldType.Field.EditControl( qualifiers, $"temp_editcontrol_attribute_{attribute.Id}" );
-
-                    if ( fieldType.Field.HasChangeHandler( editControl ) )
+                    var attribute = field.Attribute;
+                    var fieldType = FieldTypeCache.Get( attribute.FieldTypeId );
+                    if ( fieldType.Field.HasFilterControl() )
                     {
-                        supportedComparableAttributes.Add( attribute );
+                        var qualifiers = attribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
+
+                        // get the editControl to see if the FieldType supports a ChangeHandler for it (but don't actually use the control)
+                        var editControl = fieldType.Field.EditControl( qualifiers, $"temp_editcontrol_attribute_{attribute.Id}" );
+
+                        if ( fieldType.Field.HasChangeHandler( editControl ) )
+                        {
+                            supportedComparableFields.Add( field );
+                        }
                     }
+                }
+                else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                {
+                    supportedComparableFields.Add( field );
                 }
             }
 
-            return supportedComparableAttributes;
+            return supportedComparableFields;
         }
 
         /// <summary>
@@ -500,13 +576,13 @@ namespace Rock.Web.UI.Controls
             var rockControlWrapper = btnDeleteRule.FirstParentControlOfType<RockControlWrapper>();
             var hiddenFieldRuleGuid = rockControlWrapper.ControlsOfTypeRecursive<HiddenFieldWithClass>().FirstOrDefault( a => a.CssClass == "js-rule-guid" );
             Guid fieldVisibilityRuleGuid = hiddenFieldRuleGuid.Value.AsGuid();
-            var fieldVisibilityRule = this._fieldVisibilityRulesState.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
+            var fieldVisibilityRule = this._fieldVisibilityRulesState.RuleList.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
             var updatedRules = this._fieldVisibilityRulesState.Clone();
-            updatedRules.Remove( fieldVisibilityRule );
+            updatedRules.RuleList.Remove( fieldVisibilityRule );
 
             SetFieldVisibilityRules( updatedRules );
 
-            this._fieldVisibilityRulesState.Remove( fieldVisibilityRule );
+            this._fieldVisibilityRulesState.RuleList.Remove( fieldVisibilityRule );
         }
 
         /// <summary>
@@ -521,10 +597,10 @@ namespace Rock.Web.UI.Controls
             var hiddenFieldRuleGuid = rockControlWrapper.ControlsOfTypeRecursive<HiddenFieldWithClass>().FirstOrDefault( a => a.CssClass == "js-rule-guid" );
             Guid fieldVisibilityRuleGuid = hiddenFieldRuleGuid.Value.AsGuid();
 
-            var fieldVisibilityRule = this._fieldVisibilityRulesState.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
+            var fieldVisibilityRule = this._fieldVisibilityRulesState.RuleList.FirstOrDefault( a => a.Guid == fieldVisibilityRuleGuid );
 
-            var selectedAttributeGuid = ddlCompareField.SelectedValue.AsGuidOrNull();
-            fieldVisibilityRule.ComparedToAttributeGuid = selectedAttributeGuid;
+            var selectedFieldGuid = ddlCompareField.SelectedValue.AsGuidOrNull();
+            fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid = selectedFieldGuid;
 
             CreateFilterControl( fieldVisibilityRule, false );
         }
@@ -541,13 +617,13 @@ namespace Rock.Web.UI.Controls
             var filterControlPlaceholder = rockControlWrapper.FindControl( $"_filterControlPlaceholder_{fieldVisibilityRule.Guid.ToString( "N" )}" ) as DynamicPlaceholder;
             filterControlPlaceholder.Controls.Clear();
 
-            var selectedAttribute = fieldVisibilityRule.ComparedToAttributeGuid.HasValue ? this.ComparableAttributes.GetValueOrNull( fieldVisibilityRule.ComparedToAttributeGuid.Value ) : null;
+            var selectedField = fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid.HasValue ? this.ComparableFields.GetValueOrNull( fieldVisibilityRule.ComparedToRegistrationTemplateFormFieldGuid.Value ) : null;
+            var selectedAttribute = selectedField?.Attribute;
 
             if ( selectedAttribute != null )
             {
                 var fieldType = FieldTypeCache.Get( selectedAttribute.FieldTypeId );
                 var qualifiers = selectedAttribute.AttributeQualifiers.ToDictionary( k => k.Key, v => new ConfigurationValue( v.Value ) );
-                // rockControlWrapper.Label = selectedAttribute.Name;
                 var filterControl = fieldType.Field.FilterControl( qualifiers, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );
                 if ( filterControl != null )
                 {
@@ -556,16 +632,31 @@ namespace Rock.Web.UI.Controls
                     if ( setValues )
                     {
                         List<string> filterValues = new List<string>();
-                        filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToString( false ) );
+
+                        filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToInt().ToString() );
                         filterValues.Add( fieldVisibilityRule.ComparedToValue );
                         fieldType.Field.SetFilterValues( filterControl, qualifiers, filterValues );
                     }
                 }
             }
-            // else
-            // {
-            //     rockControlWrapper.Label = "New Rule";
-            // }
+            else if ( FieldVisibilityRules.IsFieldSupported( selectedField.PersonFieldType ) )
+            {
+                var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( selectedField.PersonFieldType );
+                var filterControl = fieldType.Field.FilterControl( null, $"_filterControl_{fieldVisibilityRule.Guid.ToString( "N" )}", true, Rock.Reporting.FilterMode.AdvancedFilter );
+                if ( filterControl != null )
+                {
+                    filterControlPlaceholder.Controls.Add( filterControl );
+                    this.RockBlock()?.SetValidationGroup( filterControl.Controls, this.ValidationGroup );
+                    if ( setValues )
+                    {
+                        List<string> filterValues = new List<string>();
+
+                        filterValues.Add( fieldVisibilityRule.ComparisonType.ConvertToInt().ToString() );
+                        filterValues.Add( fieldVisibilityRule.ComparedToValue );
+                        fieldType.Field.SetFilterValues( filterControl, null, filterValues );
+                    }
+                }
+            }
         }
 
         #endregion Methods

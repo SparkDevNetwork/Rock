@@ -24,9 +24,9 @@
           // note: this uses javascript's parseFloat which will convert the the numeric portion value to a float as long as it starts with a numeric value
             getValueAsPixels: function (a)
             {
-              var floatValue = parseFloat(a)
+              var floatValue = parseFloat(a);
               if (floatValue) {
-                return floatValue + 'px'
+                return floatValue + 'px';
               }
               else {
                 return '';

@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -73,6 +72,33 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["ButtonCssClass"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the tooltip.
+        /// </summary>
+        /// <value>
+        /// The tooltip.
+        /// </value>
+        public string ToolTip
+        {
+            get
+            {
+                // Uncomment this if we want to have a default value
+                //string tooltip = ViewState["Tooltip"] as string;
+                //if ( string.IsNullOrWhiteSpace( tooltip ) )
+                //{
+                //    tooltip = "Secure";
+                //    ViewState["Tooltip"] = tooltip;
+                //}
+                //return tooltip;
+
+                return ViewState["Tooltip"] as string;
+            }
+            set
+            {
+                ViewState["Tooltip"] = value;
             }
         }
 
@@ -189,6 +215,7 @@ namespace Rock.Web.UI.Controls
 
                 // height attribute is used by the modal that pops up when the button is clicked
                 aSecure.Attributes.Add( "height", "500px" );
+                aSecure.Attributes.Add( "title", securityField.ToolTip );
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
                 buttonIcon.Attributes.Add( "class", securityField.IconCssClass );

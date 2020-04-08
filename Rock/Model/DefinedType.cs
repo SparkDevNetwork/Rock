@@ -17,11 +17,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -186,14 +188,14 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             var cachedDefinedValues = DefinedTypeCache.Get( this.Id, (RockContext)dbContext )?.DefinedValues;
             if ( cachedDefinedValues?.Any() == true )
             {
                 foreach ( var cachedDefinedValue in cachedDefinedValues )
                 {
-                    DefinedValueCache.UpdateCachedEntity( cachedDefinedValue.Id, System.Data.Entity.EntityState.Detached );
+                    DefinedValueCache.UpdateCachedEntity( cachedDefinedValue.Id, EntityState.Detached );
                 }
             }
 

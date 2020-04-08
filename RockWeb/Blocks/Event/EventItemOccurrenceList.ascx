@@ -9,7 +9,7 @@
 
                 <div class="panel panel-block">
 
-                    <div class="panel-heading clearfix">
+                    <div class="panel-heading">
                         <h1 class="panel-title pull-left"><i class="fa fa-clock-o"></i> Event Occurrences</h1>
                     </div>
 
@@ -28,14 +28,12 @@
                                     <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                     <asp:HyperLinkField HeaderText="Registration" DataTextField="RegistrationInstance" DataNavigateUrlFields="RegistrationInstanceId" />
                                     <asp:HyperLinkField HeaderText="Group" DataTextField="Group" DataNavigateUrlFields="GroupID" />
-                                    <Rock:RockTemplateFieldUnselected HeaderText="Content Items">
+                                    <Rock:RockTemplateFieldUnselected HeaderText="Content Items" ColumnPriority="DesktopLarge">
                                         <ItemTemplate><%# Eval("ContentItems") %></ItemTemplate>
                                     </Rock:RockTemplateFieldUnselected>
                                     <Rock:RockBoundField DataField="Contact" HeaderText="Contact" />
-                                    <Rock:RockBoundField DataField="Phone" HeaderText="Phone" />
-                                    <Rock:RockBoundField DataField="Email" HeaderText="Email" />
-                                    <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm fa fa-clone" OnClick="gCalendarItemOccurrenceList_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
-                                    <Rock:DeleteField OnClick="gCalendarItemOccurrenceList_Delete" />
+                                    <Rock:RockBoundField DataField="Phone" HeaderText="Phone" ColumnPriority="Desktop" />
+                                    <Rock:RockBoundField DataField="Email" HeaderText="Email" ColumnPriority="Desktop" />
                                 </Columns>
                             </Rock:Grid>
                         </div>

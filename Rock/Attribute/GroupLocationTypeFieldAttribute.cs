@@ -15,20 +15,18 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
     /// <summary>
     /// Field Attribute to select a GroupLocationType DefinedValues for the given GroupType id.
+    /// Stored as GroupLocationTypeValue.Guid.
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class GroupLocationTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
+        /// Initializes a new instance of the <see cref="GroupLocationTypeFieldAttribute" /> class.
         /// </summary>
         /// <param name="groupTypeGuid">The group type GUID.</param>
         /// <param name="name">The name.</param>
@@ -54,5 +52,25 @@ namespace Rock.Attribute
                 Key = Name.Replace( " ", string.Empty );
             }
         }
+
+        /// <summary>
+        /// Gets or sets the group type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The group type unique identifier.
+        /// </value>
+        public string GroupTypeGuid
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( "groupTypeGuid" );
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( "groupTypeGuid", new Field.ConfigurationValue( value ) );
+            }
+        }
+
     }
 }

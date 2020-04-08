@@ -4,10 +4,10 @@
     <ContentTemplate>
 
         <div class="panel panel-block">
-                
-            <div class="panel-heading clearfix">
+
+            <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-download"></i> 
+                    <i class="fa fa-download"></i>
                     Scheduled Payment Download
                 </h1>
             </div>

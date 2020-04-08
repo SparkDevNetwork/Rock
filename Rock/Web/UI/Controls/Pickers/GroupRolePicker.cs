@@ -20,12 +20,13 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a group and group type role combination
     /// </summary>
     public class GroupRolePicker : CompositeControl, IRockControl
     {

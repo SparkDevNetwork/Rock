@@ -519,12 +519,7 @@ namespace RockWeb.Blocks.CheckIn
             var rockContext = new RockContext();
 
             // Set the Campus for new families to the Campus of this Kiosk
-            int? kioskCampusId = null;
-            var deviceLocation = new DeviceService( rockContext ).GetSelect( CurrentCheckInState.Kiosk.Device.Id, a => a.Locations.FirstOrDefault() );
-            if ( deviceLocation != null )
-            {
-                kioskCampusId = deviceLocation.CampusId;
-            }
+            int? kioskCampusId = CurrentCheckInState.Kiosk.CampusId;
 
             UpdateFamilyAttributesState();
 
@@ -860,11 +855,36 @@ namespace RockWeb.Blocks.CheckIn
             dvpRecordStatus.SetValue( familyPersonState.RecordStatusValueId );
             hfConnectionStatus.Value = familyPersonState.ConnectionStatusValueId.ToString();
 
+            bool showSmsButton = CurrentCheckInState.CheckInType.Registration.DisplaySmsButton;
+            if ( showSmsButton )
+            {
+                bgSMS.Visible = true;
+                bgSMS.SelectedValue = null;
+
+                if( CurrentCheckInState.CheckInType.Registration.DefaultSmsEnabled )
+                {
+                    bgSMS.SetValue( "True" );
+                }
+            }
+            else
+            {
+                bgSMS.Visible = false;
+            }
+
             var mobilePhoneNumber = familyPersonState.MobilePhoneNumber;
             if ( mobilePhoneNumber != null )
             {
                 pnMobilePhone.CountryCode = familyPersonState.MobilePhoneCountryCode;
                 pnMobilePhone.Number = mobilePhoneNumber;
+
+                if ( showSmsButton )
+                {
+                    // Set this value if it exists
+                    if ( familyPersonState.MobilePhoneSmsEnabled.HasValue )
+                    {
+                        bgSMS.SetValue( familyPersonState.MobilePhoneSmsEnabled.Value.ToTrueFalse() );
+                    }
+                }
             }
             else
             {
@@ -997,6 +1017,7 @@ namespace RockWeb.Blocks.CheckIn
 
             familyPersonState.MobilePhoneNumber = pnMobilePhone.Number;
             familyPersonState.MobilePhoneCountryCode = pnMobilePhone.CountryCode;
+            familyPersonState.MobilePhoneSmsEnabled = bgSMS.SelectedValue.AsBoolean();
             familyPersonState.BirthDate = dpBirthDate.SelectedDate;
             familyPersonState.Email = tbEmail.Text;
 

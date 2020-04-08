@@ -14,13 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Rock.Plugin.HotFixes
 {
 
@@ -29,7 +22,7 @@ namespace Rock.Plugin.HotFixes
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 63, "1.7.5" )]
-    class WhitelistBlacklist : Migration
+    public class WhitelistBlacklist : Migration
     {
         /// <summary>
         /// The commands to run to migrate plugin to the specific version

@@ -16,17 +16,17 @@
                     if ($(".js-pnlsearch").is(":visible")) {
 
                         // setup digits buttons
-                        $('.js-pnlsearch .tenkey a.digit').click(function () {
+                        $('.js-pnlsearch .tenkey a.digit').on('click', function () {
                             $phoneNumber = $("input[id$='tbPhone']");
                             $phoneNumber.val($phoneNumber.val() + $(this).html());
                             return false;
                         });
-                        $('.js-pnlsearch .tenkey a.back').click(function () {
+                        $('.js-pnlsearch .tenkey a.back').on('click', function () {
                             $phoneNumber = $("input[id$='tbPhone']");
                             $phoneNumber.val($phoneNumber.val().slice(0, -1));
                             return false;
                         });
-                        $('.js-pnlsearch .tenkey a.clear').click(function () {
+                        $('.js-pnlsearch .tenkey a.clear').on('click', function () {
                             $phoneNumber = $("input[id$='tbPhone']");
                             $phoneNumber.val('');
                             return false;

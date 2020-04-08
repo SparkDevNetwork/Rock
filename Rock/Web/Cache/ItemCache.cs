@@ -44,7 +44,23 @@ namespace Rock.Web.Cache
 
         private static readonly string KeyPrefix = $"{typeof( T ).Name}";
         private static string AllKey => $"{typeof( T ).Name}:{AllString}";
-        
+
+        #region Lifespan
+
+        /// <summary>
+        /// The default amount of time that this cache's items will live in the cache before expiring.
+        /// This can be overriden by each item using <see cref="Lifespan"/>
+        /// </summary>
+        internal static TimeSpan DefaultLifespan { get; set; } = TimeSpan.MaxValue;
+
+        /// <summary>
+        /// The amount of time that this item will live in the cache before expiring. If null, then the
+        /// <see cref="DefaultLifespan"/> is used.
+        /// </summary>
+        public virtual TimeSpan? Lifespan => null;
+
+        #endregion Lifespan
+
         #region Protected Methods
 
         /// <summary>
@@ -75,9 +91,25 @@ namespace Rock.Web.Cache
         /// <param name="itemFactory">The item factory.</param>
         /// <param name="expiration">The expiration.</param>
         /// <returns></returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
         internal protected static T GetOrAddExisting( int key, Func<T> itemFactory, TimeSpan expiration )
         {
-            return GetOrAddExisting( key.ToString(), itemFactory, expiration );
+            return GetOrAddExisting( key, itemFactory );
+        }
+
+        /// <summary>
+        /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache with an expiration timespan.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="itemFactory">The item factory.</param>
+        /// <param name="expiration">The expiration.</param>
+        /// <returns></returns>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
+        internal protected static T GetOrAddExisting( string key, Func<T> itemFactory, TimeSpan expiration )
+        {
+            return GetOrAddExisting( key, itemFactory );
         }
 
         /// <summary>
@@ -88,23 +120,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         internal protected static T GetOrAddExisting( string key, Func<T> itemFactory )
         {
-            return GetOrAddExisting( key, itemFactory, TimeSpan.MaxValue );
-        }
-
-        /// <summary>
-        /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache with an expiration timespan.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="itemFactory">The item factory.</param>
-        /// <param name="expiration">The expiration.</param>
-        /// <returns></returns>
-        internal protected static T GetOrAddExisting( string key, Func<T> itemFactory, TimeSpan expiration )
-        {
             string qualifiedKey = QualifiedKey( key );
 
             var value = RockCacheManager<T>.Instance.Cache.Get( qualifiedKey );
-
-            RockCache.UpdateCacheHitMiss( key, value != null );
 
             if ( value != null )
             {
@@ -116,7 +134,7 @@ namespace Rock.Web.Cache
             value = itemFactory();
             if ( value != null )
             {
-                UpdateCacheItem( key, value, expiration );
+                UpdateCacheItem( key, value );
             }
 
             return value;
@@ -127,13 +145,14 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="item">The item.</param>
-        /// <param name="expiration">The expiration.</param>
-        internal protected static void UpdateCacheItem( string key, T item, TimeSpan expiration )
+        internal protected static void UpdateCacheItem( string key, T item )
         {
             string qualifiedKey = QualifiedKey( key );
 
+            var lifespan = ( ( item as IHasLifespan )?.Lifespan ) ?? DefaultLifespan;
+
             // Add the item to cache
-            RockCacheManager<T>.Instance.AddOrUpdate( qualifiedKey, item, expiration );
+            RockCacheManager<T>.Instance.AddOrUpdate( qualifiedKey, item, lifespan );
 
             // Do any postcache processing that this item cache type may need to do
             item.PostCached();

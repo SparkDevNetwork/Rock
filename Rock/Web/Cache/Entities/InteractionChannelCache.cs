@@ -34,6 +34,12 @@ namespace Rock.Web.Cache
     public class InteractionChannelCache : ModelCache<InteractionChannelCache, InteractionChannel>
     {
 
+        #region Static Fields
+
+        private static ConcurrentDictionary<string, int> _interactionChannelLookup = new ConcurrentDictionary<string, int>();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -163,6 +169,9 @@ namespace Rock.Web.Cache
         /// <value>
         /// The interaction components.
         /// </value>
+        [Obsolete( "This is not performant. Instead get the ID for the InteractionComponent from the DB using " +
+            "the InteractionComponentService and then use the ID to get the InteractionComponentCache obj from the cache." )]
+        [RockObsolete( "1.9.15" )]
         public List<InteractionComponentCache> InteractionComponents
         {
             get
@@ -269,6 +278,10 @@ namespace Rock.Web.Cache
 
             // set componentIds to null so it load them all at once on demand
             InteractionComponentIds = null;
+
+            var lookupKey = $"{interactionChannel.ChannelTypeMediumValueId}|{interactionChannel.ChannelEntityId}";
+
+            _interactionChannelLookup.AddOrUpdate( lookupKey, interactionChannel.Id, ( k, v ) => interactionChannel.Id );
         }
 
         /// <summary>
@@ -280,6 +293,50 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return Name;
+        }
+
+        /// <summary>
+        /// Gets the channel identifier by entity identifier, and creates it if it doesn't exist
+        /// </summary>
+        /// <param name="channelTypeMediumValueId">The channel type medium value identifier.</param>
+        /// <param name="channelEntityId">The channel entity identifier.</param>
+        /// <param name="componentEntityTypeId">The component entity type identifier.</param>
+        /// <param name="channelName">Name of the channel.</param>
+        /// <returns></returns>
+        public static int GetChannelIdByEntityId( int channelTypeMediumValueId, int channelEntityId, int componentEntityTypeId, string channelName )
+        {
+            var lookupKey = $"{channelTypeMediumValueId}|{channelEntityId}";
+
+            if ( _interactionChannelLookup.TryGetValue( lookupKey, out int channelId ) )
+            {
+                return channelId;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var interactionChannelService = new InteractionChannelService( rockContext );
+                var interactionChannel = interactionChannelService.Queryable()
+                .Where( a =>
+                    a.ChannelTypeMediumValueId == channelTypeMediumValueId &&
+                    a.ChannelEntityId == channelEntityId )
+                .FirstOrDefault();
+
+                if ( interactionChannel == null )
+                {
+                    interactionChannel = new InteractionChannel();
+                    interactionChannel.Name = channelName;
+                    interactionChannel.ChannelTypeMediumValueId = channelTypeMediumValueId;
+                    interactionChannel.ChannelEntityId = channelEntityId;
+                    interactionChannel.ComponentEntityTypeId = componentEntityTypeId;
+                    interactionChannelService.Add( interactionChannel );
+                    rockContext.SaveChanges();
+                }
+
+                var interactionChannelId = Get( interactionChannel ).Id;
+                _interactionChannelLookup.AddOrUpdate( lookupKey, interactionChannelId, ( k, v ) => interactionChannelId );
+
+                return interactionChannelId;
+            }
         }
 
         #endregion

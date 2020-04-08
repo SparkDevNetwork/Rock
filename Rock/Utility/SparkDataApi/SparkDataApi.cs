@@ -18,7 +18,9 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+
 using RestSharp;
+
 using Rock.Utility.Settings.SparkData;
 
 namespace Rock.Utility.SparkDataApi

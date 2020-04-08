@@ -138,7 +138,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="entityState">State of the entity.</param>
-        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, System.Data.Entity.EntityState entityState )
+        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, EntityState entityState )
         {
             var entityAttributesList = EntityAttributesCache.Get().EntityAttributes.ToList();
             if ( entityAttributesList == null || attribute == null )
@@ -209,7 +209,7 @@ namespace Rock.Web.Cache
                 var cache = EntityAttributesCache.Get();
                 cache.EntityAttributes = entityAttributesList;
                 cache.EntityAttributesByEntityTypeId = entityAttributesList.Where( a => a.EntityTypeId.HasValue ).GroupBy( g => g.EntityTypeId.Value ).ToDictionary( k => k.Key, v => v.ToList() ?? new List<EntityAttributes>() );
-                EntityAttributesCache.UpdateCacheItem( KEY, cache, TimeSpan.MaxValue );
+                EntityAttributesCache.UpdateCacheItem( KEY, cache );
             }
 
         }

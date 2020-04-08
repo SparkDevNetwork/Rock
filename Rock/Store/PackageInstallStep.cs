@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using Rock.Utility;
 
 namespace Rock.Store

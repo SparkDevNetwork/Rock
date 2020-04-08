@@ -20,8 +20,8 @@ using System.Linq;
 
 using Quartz;
 
-using Rock.Model;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Jobs
 {

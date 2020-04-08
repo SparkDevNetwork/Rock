@@ -65,7 +65,7 @@
 
     ui.showDialog($dialog);
     $dialog.find('.js-paste-area').html('');
-    $dialog.find('.js-paste-area').focus();
+    $dialog.find('.js-paste-area').trigger("focus");
 
     var clipboardData = pasteEvent.originalEvent && ((typeof (pasteEvent.originalEvent.clipboardData) != 'undefined' && pasteEvent.originalEvent.clipboardData) || (typeof (window.clipboardData) != 'undefined' && window.clipboardData));
 
@@ -74,14 +74,14 @@
       if (((types instanceof DOMStringList) && types.contains("text/plain")) || (types.indexOf && types.indexOf('text/plain') !== -1)) {
         var textPasteContent = clipboardData.getData('text/plain')
         $dialog.find('.js-paste-area').html(textPasteContent);
-        $dialog.find('.js-paste-text-btn').click();
+        $dialog.find('.js-paste-text-btn').trigger('click');
         return;
       }
     }
 
     // if we are allowed to directly call a Paste, automatically paste and close the dialog
     if (document.execCommand('Paste')) {
-      $dialog.find('.js-paste-text-btn').click();
+      $dialog.find('.js-paste-text-btn').trigger('click');
       return;
     }
 
@@ -99,5 +99,5 @@
     }
   });
 
-  return button.render();   // return button as jquery object 
+  return button.render();   // return button as jquery object
 }

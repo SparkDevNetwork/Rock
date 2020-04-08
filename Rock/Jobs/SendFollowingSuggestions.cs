@@ -19,9 +19,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -34,7 +34,7 @@ namespace Rock.Jobs
     /// <summary>
     /// Calculates, saves, and notifies followers of all the active following suggestions
     /// </summary>
-    [SystemEmailField( "Following Suggestion Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
+    [SystemCommunicationField( "Following Suggestion Notification Email Template", required: true, order: 0, key: "EmailTemplate" )]
     [SecurityRoleField( "Eligible Followers", "The group that contains individuals who should receive following suggestions", true, order: 1 )]
     [DisallowConcurrentExecution]
     public class SendFollowingSuggestions : IJob
@@ -342,7 +342,7 @@ namespace Rock.Jobs
                                     mergeFields.Add( "Suggestions", personSuggestionNotices.OrderBy( s => s.SuggestionType.Order ).ToList() );
 
                                     var emailMessage = new RockEmailMessage( systemEmailGuid.Value );
-                                    emailMessage.AddRecipient( new RecipientData( person.Email, mergeFields ) );
+                                    emailMessage.AddRecipient( new RockEmailMessageRecipient( person, mergeFields ) );
                                     var errors = new List<string>();
                                     emailMessage.Send(out errors);
                                     exceptionMsgs.AddRange( errors );

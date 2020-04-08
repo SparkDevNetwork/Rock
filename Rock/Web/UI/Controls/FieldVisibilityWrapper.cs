@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Data;
 using Rock.Field;
+using Rock.Field.Types;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -31,24 +33,51 @@ namespace Rock.Web.UI.Controls
     public class FieldVisibilityWrapper : DynamicPlaceholder
     {
         /// <summary>
-        /// Gets or sets the attribute identifier of the Field
+        /// Gets or sets the field identifier
         /// </summary>
         /// <value>
-        /// The attribute identifier.
+        /// The field identifier.
         /// </value>
-        public int AttributeId
+        public int RegistrationTemplateFormFieldId
         {
-            get => ViewState["AttributeId"] as int? ?? 0;
-            set => ViewState["AttributeId"] = value;
+            get => ViewState["RegistrationTemplateFormFieldId"] as int? ?? 0;
+            set => ViewState["RegistrationTemplateFormFieldId"] = value;
+        }
+
+        /// <summary>
+        /// Get the form field
+        /// </summary>
+        /// <returns></returns>
+        public RegistrationTemplateFormFieldCache GetRegistrationTemplateFormField()
+        {
+            return RegistrationTemplateFormFieldCache.Get( RegistrationTemplateFormFieldId );
+        }
+
+        /// <summary>
+        /// Get the attribute id
+        /// </summary>
+        /// <returns></returns>
+        public AttributeCache GetAttributeCache()
+        {
+            var field = GetRegistrationTemplateFormField();
+            var id = field?.AttributeId;
+
+            if ( id.HasValue )
+            {
+                return AttributeCache.Get( id.Value );
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Sets the visibility based on the value of other attributes
         /// </summary>
         /// <param name="attributeValues">The attribute values.</param>
-        public void UpdateVisibility( Dictionary<int, AttributeValueCache> attributeValues )
+        /// <param name="personFieldValues">The person field values.</param>
+        public void UpdateVisibility( Dictionary<int, AttributeValueCache> attributeValues, Dictionary<RegistrationPersonFieldType, string> personFieldValues )
         {
-            var visible = FieldVisibilityRules.Evaluate( attributeValues );
+            var visible = FieldVisibilityRules.Evaluate( attributeValues, personFieldValues );
             if ( visible == false && this.Visible )
             {
                 // if hiding this field, set the value to null since we don't want to save values that aren't shown
@@ -67,7 +96,7 @@ namespace Rock.Web.UI.Controls
         public Control EditControl { get; set; }
 
         /// <summary>
-        /// Gets the edit value from the <see cref="EditControl"/> associated with <see cref="AttributeId"/>
+        /// Gets the edit value from the <see cref="EditControl"/> associated with <see cref="RegistrationTemplateFormFieldId"/>
         /// </summary>
         /// <value>
         /// The edit value.
@@ -76,14 +105,42 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                var attribute = AttributeCache.Get( this.AttributeId );
-                return attribute?.FieldType.Field.GetEditValue( this.EditControl, attribute.QualifierValues );
+                var field = GetRegistrationTemplateFormField();
+                var attribute = GetAttributeCache();
+
+                if ( attribute != null )
+                {
+                    return attribute.FieldType.Field.GetEditValue( this.EditControl, attribute.QualifierValues );
+                }
+                else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                {
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType );
+                    return fieldType.Field.GetEditValue( this.EditControl, null );
+                }
+                else
+                {
+                    throw new NotImplementedException( "The field type and source are not supported" );
+                }
             }
 
             private set
             {
-                var attribute = AttributeCache.Get( this.AttributeId );
-                attribute?.FieldType.Field.SetEditValue( this.EditControl, attribute.QualifierValues, value );
+                var field = GetRegistrationTemplateFormField();
+                var attribute = GetAttributeCache();
+
+                if ( attribute != null )
+                {
+                    attribute.FieldType.Field.SetEditValue( this.EditControl, attribute.QualifierValues, value );
+                }
+                else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                {
+                    var fieldType = FieldVisibilityRules.GetSupportedFieldTypeCache( field.PersonFieldType );
+                    fieldType.Field.SetEditValue( this.EditControl, null, value );
+                }
+                else
+                {
+                    throw new NotImplementedException( "The field type and source are not supported" );
+                }
             }
         }
 
@@ -149,17 +206,28 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public static void ApplyFieldVisibilityRules( Control parentControl )
         {
-            var fieldVisibilityWrappers = parentControl.ControlsOfTypeRecursive<FieldVisibilityWrapper>().ToDictionary( k => k.AttributeId, v => v );
-            Dictionary<int, AttributeValueCache> attributeValues = new Dictionary<int, AttributeValueCache>();
+            var fieldVisibilityWrappers = parentControl.ControlsOfTypeRecursive<FieldVisibilityWrapper>().ToDictionary( k => k.RegistrationTemplateFormFieldId, v => v );
+            var attributeValues = new Dictionary<int, AttributeValueCache>();
+            var personFieldValues = new Dictionary<RegistrationPersonFieldType, string>();
 
             foreach ( var fieldVisibilityWrapper in fieldVisibilityWrappers.Values )
             {
-                attributeValues.Add( fieldVisibilityWrapper.AttributeId, new AttributeValueCache { AttributeId = fieldVisibilityWrapper.AttributeId, Value = fieldVisibilityWrapper.EditValue } );
+                var field = fieldVisibilityWrapper.GetRegistrationTemplateFormField();
+
+                if ( field.AttributeId.HasValue )
+                {
+                    var attributeId = field.AttributeId.Value;
+                    attributeValues.Add( attributeId, new AttributeValueCache { AttributeId = attributeId, Value = fieldVisibilityWrapper.EditValue } );
+                }
+                else if ( FieldVisibilityRules.IsFieldSupported( field.PersonFieldType ) )
+                {
+                    personFieldValues[field.PersonFieldType] = fieldVisibilityWrapper.EditValue;
+                }
             }
 
             foreach ( var fieldVisibilityWrapper in fieldVisibilityWrappers.Values )
             {
-                fieldVisibilityWrapper.UpdateVisibility( attributeValues );
+                fieldVisibilityWrapper.UpdateVisibility( attributeValues, personFieldValues );
             }
         }
 

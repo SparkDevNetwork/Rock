@@ -107,13 +107,13 @@ namespace RockWeb.Blocks.Event
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlEventItemList );
 
-            // Get the calendar id of the calendar that user navigated from 
+            // Get the calendar id of the calendar that user navigated from
             _calendarId = PageParameter( "EventCalendarId" ).AsIntegerOrNull();
 
             _canEdit = UserCanEdit;
             _canApprove = UserCanAdministrate;
 
-            // Load the other calendars user is authorized to view 
+            // Load the other calendars user is authorized to view
             cblCalendars.Items.Clear();
             using ( var rockContext = new RockContext() )
             {
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Event
 
                     if ( calendar.Id == ( _calendarId ?? 0 ) )
                     {
-                        _canEdit = _canEdit || 
+                        _canEdit = _canEdit ||
                             calendar.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                         _canApprove = _canApprove ||
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.Event
             ScriptManager.RegisterStartupScript( lImage, lImage.GetType(), "image-fluidbox", "$('.photo a').fluidbox();", true );
 
             string deleteScript = @"
-    $('a.js-delete-event').click(function( e ){
+    $('a.js-delete-event').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this event? All of the event occurrences will also be deleted!', function (result) {
             if (result) {
@@ -776,7 +776,7 @@ namespace RockWeb.Blocks.Event
             LoadEventOccurrenceAttributes( eventItem.Id );
 
             ShowItemAttributes();
-            
+
             BindAudienceGrid();
         }
 
@@ -808,7 +808,7 @@ namespace RockWeb.Blocks.Event
 
             lSummary.Visible = !string.IsNullOrWhiteSpace( eventItem.Summary );
             lSummary.Text = eventItem.Summary;
-            
+
             var calendars = eventItem.EventCalendarItems
                 .Select( c => c.EventCalendar.Name ).ToList();
             if ( calendars.Any() )
@@ -1031,25 +1031,15 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void dlgEventOccurrenceAttribute_SaveClick( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
-            edtEventOccurrenceAttributes.GetAttributeProperties( attribute );
+#pragma warning disable 0618 // Type or member is obsolete
+            var attribute = SaveChangesToStateCollection( edtEventOccurrenceAttributes, EventOccurrenceAttributesState );
+#pragma warning restore 0618 // Type or member is obsolete
 
             if ( !attribute.IsValid )
             {
                 return;
             }
 
-            if ( EventOccurrenceAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
-            {
-                attribute.Order = EventOccurrenceAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
-                EventOccurrenceAttributesState.RemoveEntity( attribute.Guid );
-            }
-            else
-            {
-                attribute.Order = EventOccurrenceAttributesState.Any() ? EventOccurrenceAttributesState.Max( a => a.Order ) + 1 : 0;
-            }
-
-            EventOccurrenceAttributesState.Add( attribute );
             ReOrderEventOccurrenceAttributes( EventOccurrenceAttributesState );
             BindEventOccurrenceAttributesGrid();
             HideDialog();
@@ -1261,5 +1251,49 @@ namespace RockWeb.Blocks.Event
             EventItemAudience,
             EventOccurrenceAttributes
         }
+
+        #region Obsolete Code
+
+        /// <summary>
+        /// Add or update the saved state of an Attribute using values from the AttributeEditor.
+        /// Non-editable system properties of the existing Attribute state are preserved.
+        /// </summary>
+        /// <param name="editor">The AttributeEditor that holds the updated Attribute values.</param>
+        /// <param name="attributeStateCollection">The stored state collection.</param>
+        [RockObsolete( "1.11" )]
+        [Obsolete( "This method is required for backward-compatibility - new blocks should use the AttributeEditor.SaveChangesToStateCollection() extension method instead." )]
+        private Rock.Model.Attribute SaveChangesToStateCollection( AttributeEditor editor, List<Rock.Model.Attribute> attributeStateCollection )
+        {
+            // Load the editor values into a new Attribute instance.
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+
+            editor.GetAttributeProperties( attribute );
+
+            // Get the stored state of the Attribute, and copy the values of the non-editable properties.
+            var attributeState = attributeStateCollection.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+
+            if ( attributeState != null )
+            {
+                attribute.Order = attributeState.Order;
+                attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                attribute.ForeignGuid = attributeState.ForeignGuid;
+                attribute.ForeignId = attributeState.ForeignId;
+                attribute.ForeignKey = attributeState.ForeignKey;
+
+                attributeStateCollection.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                // Set the Order of the new entry as the last item in the collection.
+                attribute.Order = attributeStateCollection.Any() ? attributeStateCollection.Max( a => a.Order ) + 1 : 0;
+            }
+
+            attributeStateCollection.Add( attribute );
+
+            return attribute;
+        }
+
+        #endregion
     }
 }

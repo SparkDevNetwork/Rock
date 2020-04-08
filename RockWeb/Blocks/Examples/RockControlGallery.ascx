@@ -1,8 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RockControlGallery.ascx.cs" Inherits="RockWeb.Blocks.Examples.RockControlGallery" %>
 <!-- add after bootstrap.min.css -->
-<link rel="stylesheet" href="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.css">
-<!-- add after bootstrap.min.js -->
-<script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v0.4.1/dist/bootstrap-toc.min.js"></script>
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
@@ -17,19 +14,11 @@
                 $scope: $('h1,h2,h3,h4').not($exampleHeaders)
             });
             $('body').scrollspy({
-                target: '#toc'
+                target: navSelector,
+                offset: 80
             });
         });
-
-        $(window).on('activate.bs.scrollspy', function (e,f,g) {
-            var href = $("a[href^='#']", e.target).attr("href");
-            if (href && href != '#') {
-                history.replaceState({}, "", href);
-            }
-        });
-
-    })
-
+    });
 </script>
 <style>
     .rlink {
@@ -121,6 +110,7 @@
                         <li><strong>label-md: </strong> Label column of 4, field column of 8</li>
                         <li><strong>label-lg: </strong> Label column of 6, field column of 6</li>
                         <li><strong>label-xl: </strong> Label column of 8, field column of 4</li>
+                        <li><strong>label-auto: </strong> Label and field widths determined by contents</li>
                     </ul>
 
                     <div runat="server" class="r-example">
@@ -128,38 +118,46 @@
                             <div class="form-group">
                                 <label for="inputEmail3" class="control-label">Email</label>
                                 <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-md">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+                        <div class="form-horizontal label-md">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-lg">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+                        <div class="form-horizontal label-lg">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="form-horizontal label-xl">
-                        <div class="form-group">
-                            <label for="inputEmail3" class="control-label">Email</label>
-                            <div class="control-wrapper">
-                                <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                        <div class="form-horizontal label-xl">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                                </div>
                             </div>
                         </div>
-                    </div>
 
+                        <div class="form-horizontal label-auto">
+                            <div class="form-group">
+                                <label for="inputEmail3" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
+                                <div class="control-wrapper">
+                                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
 
@@ -312,6 +310,16 @@
                         <Rock:RockRadioButtonList ID="rblExampleHorizontal" runat="server" Label="Rock:RockRadioButtonList (horizontal)" RepeatDirection="Horizontal" />
                     </div>
 
+                    <a id="RockSwitch"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:Switch ID="swExample" runat="server" Label="Rock:Switch" Text="Rock:Switch" />
+                    </div>
+
+                    <a id="RockListItems"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:ListItems ID="liExample" runat="server" Label="Rock:ListItems"></Rock:ListItems>
+                    </div>
+
                     <a id="NumberRangeEditor"></a>
                     <h2>Number Range</h2>
                     <div runat="server" class="r-example">
@@ -327,7 +335,7 @@
                     <a id="RangeSlider"></a>
                     <h2>Range Slider</h2>
                     <div runat="server" class="r-example">
-                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" SelectedValue="200" />
+                        <Rock:RangeSlider ID="rsSlider" runat="server" Label="Rock:RangeSlider" MaxValue="250" MinValue="125" StepValue="5" SelectedValue="200" />
                         <br />
                     </div>
 
@@ -407,12 +415,12 @@
 
                     <a id="CampusPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:CampusPicker ID="campExample" runat="server" Label="Rock:CampusPicker" />
+                        <Rock:CampusPicker ID="campExample" runat="server" Label="Rock:CampusPicker" ForceVisible="true" />
                     </div>
 
                     <a id="CampusesPicker"></a>
                     <div runat="server" class="r-example">
-                        <Rock:CampusesPicker ID="campsExample" runat="server" Label="Rock:CampusesPicker" />
+                        <Rock:CampusesPicker ID="campsExample" runat="server" Label="Rock:CampusesPicker" ForceVisible="true" />
                     </div>
 
                     <a id="Connections"></a>

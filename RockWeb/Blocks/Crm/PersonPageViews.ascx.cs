@@ -35,9 +35,24 @@ namespace RockWeb.Blocks.Crm
     [DisplayName( "Person Page Views" )]
     [Category( "CRM" )]
     [Description( "Lists a persons web sessions with details." )]
-    [IntegerField( "Session Count", "The number of sessions to show per page.", true, 20, "", 1 )]
+
+    [IntegerField(
+        "Session Count",
+        Key = AttributeKey.SessionCount,
+        Description = "The number of sessions to show per page.",
+        IsRequired = true,
+        DefaultIntegerValue = 20,
+        Order = 0 )]
+
     public partial class PersonPageViews : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string SessionCount = "SessionCount";
+        }
+        #endregion Attribute Keys
+
         #region Fields
 
         private DateTime startDate = DateTime.MinValue;
@@ -153,7 +168,7 @@ namespace RockWeb.Blocks.Crm
                     var lUserAgent = e.Item.FindControl( "lUserAgent" ) as Literal;
 
                     lClientIcon.Text = string.Format(
-                        "<div class='pageviewsession-client pull-right'><div class='pull-left'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
+                        "<div class='pageviewsession-client pull-right'><div class='pull-left margin-r-sm'><small>{0}<br>{1}</small></div><i class='fa {2} fa-2x pull-right'></i></div>",
                         session.PageViewSession.DeviceType.Application,
                         session.PageViewSession.DeviceType.OperatingSystem,
                         icon );
@@ -210,7 +225,7 @@ namespace RockWeb.Blocks.Crm
         {
             var rockContext = new RockContext();
 
-            int sessionCount = GetAttributeValue( "SessionCount" ).AsInteger();
+            int sessionCount = GetAttributeValue( AttributeKey.SessionCount ).AsInteger();
 
             int skipCount = pageNumber * sessionCount;
 
@@ -266,22 +281,22 @@ namespace RockWeb.Blocks.Crm
                                                         .Select( a => a.Id)
                                                         .FirstOrDefault();
 
-                    sessionInfo = sessionInfo.Where( p => p.InteractionComponent.ChannelId == interactionChannelId );
+                    sessionInfo = sessionInfo.Where( p => p.InteractionComponent.InteractionChannelId == interactionChannelId );
                 }
 
                 var pageviewInfo = sessionInfo.GroupBy( s => new
-                                {
-                                    s.InteractionSession,
-                                    s.InteractionComponent.Channel,
-                                } )
+                {
+                    s.InteractionSession,
+                    s.InteractionComponent.InteractionChannel,
+                } )
                                 .Select( s => new WebSession
                                 {
                                     PageViewSession = s.Key.InteractionSession,
                                     StartDateTime = s.Min( x => x.InteractionDateTime ),
                                     EndDateTime = s.Max( x => x.InteractionDateTime ),
                                     SiteId = siteId,
-                                    Site = s.Key.Channel.Name,
-                                    PageViews = pageViews.Where( p => p.InteractionSessionId == s.Key.InteractionSession.Id && p.InteractionComponent.ChannelId == s.Key.Channel.Id ).OrderBy(p => p.InteractionDateTime).ToList()
+                                    Site = s.Key.InteractionChannel.Name,
+                                    PageViews = pageViews.Where( p => p.InteractionSessionId == s.Key.InteractionSession.Id && p.InteractionComponent.InteractionChannelId == s.Key.InteractionChannel.Id ).OrderBy( p => p.InteractionDateTime ).ToList()
                                 } );
 
                 pageviewInfo = pageviewInfo.OrderByDescending( p => p.StartDateTime )
@@ -360,7 +375,7 @@ namespace RockWeb.Blocks.Crm
         #endregion
 
         /// <summary>
-        /// Special class just for this block 
+        /// Special class just for this block
         /// </summary>
         public class WebSession
         {

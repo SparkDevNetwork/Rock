@@ -74,7 +74,7 @@ namespace Rock.Client
         public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public int MaxAttendees { get; set; }
+        public int? MaxAttendees { get; set; }
 
         /// <summary />
         public decimal? MinimumInitialPayment { get; set; }

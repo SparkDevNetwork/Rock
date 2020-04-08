@@ -19,7 +19,6 @@ using System.Linq;
 
 using Newtonsoft.Json;
 
-using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -85,6 +84,8 @@ function (val, axis) {
 
   return formattedValue;
 }".Trim();
+
+            this.series = this.series ?? new SeriesOptions( false, true, false );
 
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.lines );
             SetFlotLinesPointsBarsStyle( chartStyle, this.series.bars );

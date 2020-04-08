@@ -100,6 +100,7 @@ FROM
             nbSuccess.Visible = false;
             nbError.Visible = false;
             gReport.Visible = false;
+            pQueryTime.Visible = false;
 
             string query = tbQuery.Text;
             if ( !string.IsNullOrWhiteSpace( query ) )
@@ -110,7 +111,10 @@ FROM
                     {
                         gReport.Visible = true;
 
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
                         DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                        sw.Stop();
+
                         if ( dataSet.Tables.Count > 0 )
                         {
                             var dataTable = dataSet.Tables[0];
@@ -120,15 +124,22 @@ FROM
                             gReport.DataSource = GetSortedView( dataTable );
                             gReport.DataBind();
                         }
+
+                        pQueryTime.InnerText = string.Format( "Query completed in {0:N0}ms", sw.ElapsedMilliseconds );
+                        pQueryTime.Visible = true;
                     }
                     else
                     {
+                        var sw = System.Diagnostics.Stopwatch.StartNew();
                         int rows = DbService.ExecuteCommand( query, commandTimeout: GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                        sw.Stop();
+
                         if ( rows < 0 )
                         {
                             rows = 0;
                         }
 
+                        nbSuccess.Title = string.Format( "Command completed successfully in {0:N0}ms.", sw.ElapsedMilliseconds );
                         nbSuccess.Text = string.Format( "Row(s) affected: {0}", rows );
                         nbSuccess.Visible = true;
                     }

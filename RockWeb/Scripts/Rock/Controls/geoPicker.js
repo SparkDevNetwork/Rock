@@ -76,7 +76,7 @@
             //  }
             //];
 
-            /** 
+            /**
             * Initializes the map viewport boundary coordinates.
             */
             this.initMinMaxLatLng = function () {
@@ -110,11 +110,11 @@
 
                 // enable delete button
                 var $deleteButton = $('#gmnoprint-delete-button_' + obj.controlId);
-                $('#gmnoprint-delete-button_' + obj.controlId).removeAttr('disabled');
+                $('#gmnoprint-delete-button_' + obj.controlId).prop("disabled", false);
                 $('#gmnoprint-delete-button_' + obj.controlId + ' .fa-times').css("color", "");
 
                 obj.selectedShape = shape;
-                
+
                 if (type == "polygon") {
                     shape.setEditable(true);
                     var coordinates = new Array();
@@ -180,21 +180,15 @@
             */
             this.getMarkerImage = function getMarkerImage() {
 
-                return new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + obj.strokeColor,
-                    new google.maps.Size(21, 34),
-                    new google.maps.Point(0, 0),
-                    new google.maps.Point(10, 34));
-            }
-
-            /**
-            * Returns a marker image shadow.
-            */
-            this.getMarkerImageShadow = function getMarkerImageShadow() {
-
-                return new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_shadow',
-                    new google.maps.Size(40, 37),
-                    new google.maps.Point(0, 0),
-                    new google.maps.Point(12, 35));
+                return {
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: '#FE7569',
+                    fillOpacity: 1,
+                    strokeColor: '#000',
+                    strokeWeight: 1,
+                    scale: 1,
+                    labelOrigin: new google.maps.Point(0, -28)
+                }
             }
 
             /**
@@ -352,8 +346,7 @@
                                 position: pathArray[0],
                                 map: map,
                                 clickable: true,
-                                icon: obj.getMarkerImage(),
-                                shadow: obj.getMarkerImageShadow()
+                                icon: obj.getMarkerImage()
                             });
 
                             // Select the point
@@ -448,7 +441,7 @@
             /**
             * Toggle the picker on and off when the control's link is clicked.
             */
-            $('#' + controlId + ' a.picker-label').click(function (e) {
+            $('#' + controlId + ' a.picker-label').on('click', function (e) {
                 e.preventDefault();
                 var $control = $('#' + controlId);
                 $(this).toggleClass("active");
@@ -478,7 +471,7 @@
             /**
             * Handle the toggle expand fullscreen button click.
             */
-            $('#btnExpandToggle_' + controlId).click(function () {
+            $('#btnExpandToggle_' + controlId).on('click', function () {
 
                 var $myElement = $('#geoPicker_' + self.controlId);
 
@@ -490,7 +483,7 @@
                 // Shrink to regular size
                 if ( isExpaned ) {
                     $myElement.data("fullscreen", false);
-                    
+
                     $(this).closest('.picker-menu').css({
                         position: 'absolute',
                         top: 0,
@@ -547,7 +540,7 @@
             /**
             * Handle the Cancel button click by hiding the overlay.
             */
-            $('#btnCancel_' + controlId).click(function () {
+            $('#btnCancel_' + controlId).on('click', function () {
                 $(this).closest('.picker-menu').slideUp(function () {
                     Rock.dialogs.updateModalScrollBar(controlId);
                 });
@@ -575,9 +568,9 @@
             }
 
             /**
-            * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field. 
+            * Handle the Select button click by stuffing the RockGoogleGeoPicker's path value into the hidden field.
             */
-            $('#btnSelect_' + controlId).click(function () {
+            $('#btnSelect_' + controlId).on('click', function () {
                 var geoInput = $('#' + controlId).find('input:checked'),
                     selectedValue = self.path,
                     selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
@@ -604,7 +597,7 @@
             /**
             * Clear the selection when X is clicked
             */
-            $control.find('.picker-select-none').click(function (e) {
+            $control.find('.picker-select-none').on('click', function (e) {
                 e.stopImmediatePropagation();
                 var selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId);
                 $hiddenField.val("");
@@ -666,7 +659,7 @@
 
             // If we have coordinates we should plot them here...
             self.plotPath(self.map);
-            
+
             // Set up the Drawing Manager for creating polygons, circles, etc.
             self.drawingManager = new google.maps.drawing.DrawingManager({
                 drawingControl: true,
@@ -680,11 +673,10 @@
                     strokeWeight: 2
                 },
                 markerOptions: {
-                    icon: self.getMarkerImage(),
-                    shadow: self.getMarkerImageShadow()
+                    icon: self.getMarkerImage()
                 }
             });
-            
+
             self.drawingManager.setMap(self.map);
 
             // but disable the drawing manager if we already have a point/polygon selected:

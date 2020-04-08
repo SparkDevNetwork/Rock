@@ -52,12 +52,11 @@ namespace RockWeb
         /// <param name="context">An <see cref="T:System.Web.HttpContext" /> object that provides references to the intrinsic server objects (for example, Request, Response, Session, and Server) used to service HTTP requests.</param>
         public void ProcessRequest( HttpContext context )
         {
-
-            int? communicationId = context.Request.QueryString["c"].AsIntegerOrNull();
-            if ( communicationId.HasValue )
+            Guid? communicationGuid = context.Request.QueryString["c"].AsGuidOrNull();
+            if ( communicationGuid.HasValue )
             {
                 var rockContext = new RockContext();
-                var communication = new CommunicationService( rockContext ).Get( communicationId.Value );
+                var communication = new CommunicationService( rockContext ).Get( communicationGuid.Value );
 
                 if ( communication != null )
                 {
@@ -69,7 +68,15 @@ namespace RockWeb
                     string encodedKey = context.Request.QueryString["p"];
                     if ( !string.IsNullOrWhiteSpace( encodedKey ) )
                     {
-                        person = new PersonService( rockContext ).GetByImpersonationToken( encodedKey, true, null );
+                        // first try and see if we can use the new GetByPersonActionIdentifier() otherwise
+                        // fall-back to the old GetByImpersonationToken method.
+                        var personService = new PersonService( rockContext );
+                        person = personService.GetByPersonActionIdentifier( encodedKey, "Unsubscribe" );
+                        if ( person == null )
+                        {
+                            // TODO: Support for trying via impersonation token should be removed once we get to Rock v11
+                            person = personService.GetByImpersonationToken( encodedKey, true, null );
+                        }
                     }
 
                     if ( person == null )

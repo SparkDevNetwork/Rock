@@ -283,6 +283,11 @@ namespace Rock.SystemGuid
         public const string HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME = "4A4995CA-24F6-4D33-B861-A24274F53AA6";
 
         /// <summary>
+        /// Gets the htmleditor RockAssetManager Plugin Frame page guid
+        /// </summary>
+        public const string HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME = "DEB88EA2-D0CE-47B2-9EB3-FDDDAC2C3389";
+
+        /// <summary>
         /// Gets the HtmlEditor RockMergeField Plugin Frame page guid
         /// ParentPage: System Dialogs
         /// </summary>
@@ -551,6 +556,12 @@ namespace Rock.SystemGuid
         public const string EMPLOYEE_DETAILS = "DA8E33F3-2EEF-4C4B-87F3-715C3F107CAF";
 
         /// <summary>
+        /// Gets the Engagement page guid
+        /// ParentPage: People > Manage
+        /// </summary>
+        public const string ENGAGEMENT = "48242949-944A-4651-B6CC-60194EDE08A0";
+
+        /// <summary>
         /// Gets the Entity Administration page guid
         /// ParentPage: Security
         /// </summary>
@@ -591,6 +602,85 @@ namespace Rock.SystemGuid
         /// ParentPage: Website
         /// </summary>
         public const string EVENT_REGISTRATION = "614AF351-6C48-4B6B-B50E-9F7E03BC00A4";
+
+        /// <summary>
+        /// Gets the Registration Instance page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
+
+        /// <summary>
+        /// Gets the Registration Instance - Discounts page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_DISCOUNTS = "6EE74759-D11B-4911-9BC8-CF23DE5534B2";
+
+        /// <summary>
+        /// Gets the Registration Instance - Fees page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_FEES = "B0576A70-CCB3-4E98-B6C4-3D758DD5F609";
+
+        /// <summary>
+        /// Gets the Registration Instance - Linkages page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_LINKAGES = "8C2C0EDB-60AD-4FA3-AEDA-45B972CA8CC5";
+
+        /// <summary>
+        /// Gets the Registration Instance - Payments page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_PAYMENTS = "562D6252-D614-4ED4-B602-D8160066611D";
+
+        /// <summary>
+        /// Gets the Registration Instance - Placement Groups page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_PLACEMENT_GROUPS = "0CD950D7-033D-42B1-A53E-108F311DC5BF";
+
+        /// <summary>
+        /// Gets the Registration Instance - Registrants page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_REGISTRANTS = "6138DA76-BD9A-4373-A55C-F88F155E1B13";
+
+        /// <summary>
+        /// Gets the Registration Instance - Registrations page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_REGISTRATIONS = "844DC54B-DAEC-47B3-A63A-712DD6D57793";
+
+        /// <summary>
+        /// Gets the Registration Instance - Wait List page guid
+        /// ParentPage: Event Registration
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_WAIT_LIST = "E17883C2-6442-4AE5-B561-2C783F7F89C9";
+
+        /// <summary>
+        /// The registration detail
+        /// </summary>
+        public const string REGISTRATION_DETAIL = "FC81099A-2F98-4EBA-AC5A-8300B2FE46C4";
+
+        /// <summary>
+        /// The registration instance linkage
+        /// </summary>
+        public const string REGISTRATION_INSTANCE_LINKAGE = "DE4B12F0-C3E6-451C-9E35-7E9E66A01F4E";
+
+        /// <summary>
+        /// The registration send payment reminders
+        /// </summary>
+        public const string REGISTRATION_SEND_PAYMENT_REMINDERS = "2828BBCF-B3FC-4707-B063-086748853978";
+
+        /// <summary>
+        /// The Registration Template Placement page guid
+        /// </summary>
+        public const string REGISTRATION_TEMPLATE_PLACEMENT = "02E7D8EC-E0F1-4632-9641-77772144A4CA";
+
+        /// <summary>
+        /// The registration wait list confirmation
+        /// </summary>
+        public const string REGISTRATION_WAIT_LIST_CONFIRMATION = "4BF84D3F-DE7B-4F8B-814A-1E728E69C105";
 
         /// <summary>
         /// Gets the Exception Detail page guid
@@ -695,6 +785,12 @@ namespace Rock.SystemGuid
         public const string GENERAL_SETTINGS = "0B213645-FA4E-44A5-8E4C-B2D8EF054985";
 
         /// <summary>
+        /// Gets the Give page guid (give now parent)
+        /// ParentPage: Give
+        /// </summary>
+        public const string GIVE = "8BB303AF-743C-49DC-A7FF-CC1236B4B1D9";
+
+        /// <summary>
         /// Gets the Give Now page guid
         /// ParentPage: Give
         /// </summary>
@@ -748,6 +844,12 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Gets the Group Member Detail page guid
+        /// ParentPage: Campus Detail
+        /// </summary>
+        public const string GROUP_MEMBER_DETAIL_CAMPUS_DETAIL = "EB135AE0-5BAC-458B-AD5B-47460C2BFD31";
+
+        /// <summary>
+        /// Gets the Group Member Detail page guid
         /// ParentPage: Group Viewer
         /// </summary>
         public const string GROUP_MEMBER_DETAIL_GROUP_VIEWER = "3905C63F-4D57-40F0-9721-C60A2F681911";
@@ -769,6 +871,24 @@ namespace Rock.SystemGuid
         /// ParentPage: Small Groups
         /// </summary>
         public const string GROUP_REGISTRATION = "7D24FE9A-710C-4B25-B1C7-76161ED78DB8";
+
+        /// <summary>
+        /// Gets the Group RSVP List page guid
+        /// ParentPage:  Group Viewer
+        /// </summary>
+        public const string GROUP_RSVP_LIST = "69285A6B-4DBB-43BB-8B0D-08DEBB860AEA";
+
+        /// <summary>
+        /// Gets the Group RSVP Detail page guid
+        /// ParentPage:  Group RSVP List
+        /// </summary>
+        public const string GROUP_RSVP_DETAIL = "40E60703-CF52-4742-BDA6-65FB0CF198CB";
+
+        /// <summary>
+        /// Gets the Group RSVP Response page guid
+        /// ParentPage:  Support Pages (External Site)
+        /// </summary>
+        public const string GROUP_RSVP_RESPONSE = "7DF75851-A397-4C3B-A46F-DC3824A7ADC4";
 
         /// <summary>
         /// Gets the Group Search Results page guid
@@ -1059,6 +1179,12 @@ namespace Rock.SystemGuid
         public const string PAGE_ROUTE_DETAIL = "649A2B1E-7A15-4DA8-AF67-17874B6FE98F";
 
         /// <summary>
+        /// Gets the Page Map page guid
+        /// ParentPage: CMS Configuration
+        /// </summary>
+        public const string PAGE_VIEWS = "E556D6C5-E2DB-4041-81AB-4F582008155C";
+
+        /// <summary>
         /// Gets the People page guid
         /// ParentPage: Internal Homepage
         /// </summary>
@@ -1095,16 +1221,16 @@ namespace Rock.SystemGuid
         public const string PERSON_PROFILE_PERSON_PAGES = "08DBD8A5-2C35-4146-B4A8-0F7652348B25";
 
         /// <summary>
-        /// Gets the Person Profile Badge Detail page guid
+        /// Gets the Badge Detail page guid
         /// ParentPage: Person Profile Badges
         /// </summary>
-        public const string PERSON_PROFILE_BADGE_DETAIL = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D";
+        public const string BADGE_DETAIL = "D376EFD7-5B0D-44BF-A44D-03C466D2D30D";
 
         /// <summary>
-        /// Gets the Person Profile Badges page guid
+        /// Gets the Badges page guid
         /// ParentPage: General Settings
         /// </summary>
-        public const string PERSON_PROFILE_BADGES = "26547B83-A92D-4D7E-82ED-691F403F16B6";
+        public const string BADGES = "26547B83-A92D-4D7E-82ED-691F403F16B6";
 
         /// <summary>
         /// Gets the Person Search page guid
@@ -1298,6 +1424,11 @@ namespace Rock.SystemGuid
         public const string SCHEDULE_BUILDER = "A286D16B-FDDF-4D89-B98F-D51188B611E6";
 
         /// <summary>
+        /// The schedule confirmation page guid
+        /// </summary>
+        public const string SCHEDULE_CONFIRMATION = "EA14B522-E2A6-4CA7-8AF0-9CDF0B84C8CF";
+
+        /// <summary>
         /// Gets the Scheduled Job Detail page guid
         /// ParentPage: Jobs Administration
         /// </summary>
@@ -1388,6 +1519,12 @@ namespace Rock.SystemGuid
         public const string SEND_PHOTO_REQUESTS = "B64D0429-488C-430E-8C32-5C7F32589F73";
 
         /// <summary>
+        /// Gets the short link page GUID
+        /// ParentPage: System Dialogs
+        /// </summary>
+        public const string SHORT_LINK = "A9188D7A-80D9-4865-9C77-9F90E992B65C";
+
+        /// <summary>
         /// Gets the Sites page guid
         /// ParentPage: CMS Configuration
         /// </summary>
@@ -1398,7 +1535,7 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         [Obsolete("Use SMS_PHONE_NUMBERS instead")]
-        [RockObsolete("9.0")]
+        [RockObsolete("1.9")]
         public const string SMS_FROM_VALUES = "3F1EA6E5-6C61-444A-A80E-5B66F96F521B";
 
         /// <summary>
@@ -1414,16 +1551,53 @@ namespace Rock.SystemGuid
         public const string SQL_COMMAND = "03C49950-9C4C-4668-9C65-9A0DF43D1B33";
 
         /// <summary>
+        /// Gets the Step Programs page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STEP_PROGRAMS = "F5E8A369-4856-42E5-B187-276DFCEB1F3F";
+
+        /// <summary>
+        /// Gets the Streak page guid
+        /// ParentPage: Streak Type Detail
+        /// </summary>
+        public const string STREAK = "488BE67C-EDA0-489E-8D80-8CC67F5854D4";
+
+        /// <summary>
+        /// Gets the Streak Types page guid
+        /// ParentPage: Engagement
+        /// </summary>
+        public const string STREAK_TYPES = "F81097ED-3C96-45F2-A4F8-7D4D4F3D17F3";
+
+        /// <summary>
+        /// Gets the Streak Type Detail page guid
+        /// ParentPage: Streak Types
+        /// </summary>
+        public const string STREAK_TYPE_DETAIL = "CA566B33-0265-45C5-B1B2-6FFA6D4743F4";
+
+        /// <summary>
+        /// Gets the Streak Type Detail page guid
+        /// ParentPage: Streak Type Detail
+        /// </summary>
+        public const string STREAK_TYPE_EXCLUSION_DETAIL = "68EF459F-5D23-4930-8EA8-80CDF986BB94";
+
+        /// <summary>
         /// Gets the Success page guid
         /// ParentPage: Check-in
         /// </summary>
         public const string SUCCESS = "E08230B8-35A4-40D6-A0BB-521418314DA9";
 
         /// <summary>
-        /// Gets the Support Pages page guid
+        /// Gets the Support Pages page guid (internal site)
         /// ParentPage: Internal Homepage
         /// </summary>
         public const string SUPPORT_PAGES_INTERNAL_HOMEPAGE = "936C90C4-29CF-4665-A489-7C687217F7B8";
+
+
+        /// <summary>
+        /// Gets the Support Pages page guid (external site)
+        /// ParentPage: External Site
+        /// </summary>
+        public const string SUPPORT_PAGES_EXTERNAL_SITE = "EBAA5140-4B8F-44B8-B1E8-C73B654E4B22";
 
         /// <summary>
         /// Gets the System Configuration page guid
@@ -1453,13 +1627,29 @@ namespace Rock.SystemGuid
         /// Gets the System Email Details page guid
         /// ParentPage: System Emails
         /// </summary>
+        [Obsolete( "Use SYSTEM_COMMUNICATION_DETAIL instead." )]
+        [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAIL_DETAILS = "588C72A8-7DEC-405F-BA4A-FE64F87CB817";
 
         /// <summary>
         /// Gets the System Emails page guid
         /// ParentPage: Communications
         /// </summary>
+        [Obsolete( "Use SYSTEM_COMMUNICATION_LIST instead." )]
+        [RockObsolete( "1.10" )]
         public const string SYSTEM_EMAILS = "89B7A631-EA6F-4DA3-9380-04EE67B63E9E";
+
+        /// <summary>
+        /// Gets the System Communications page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST = "14D8F894-F70F-44F7-9F0C-2545F87256FF";
+
+        /// <summary>
+        /// Gets the System Communications page guid
+        /// ParentPage: Communications
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_DETAIL = "2FE2D59E-2737-49C8-AF1B-4366A8371A8E";
 
         /// <summary>
         /// Gets the System Information page guid
@@ -1496,6 +1686,11 @@ namespace Rock.SystemGuid
         /// ParentPage: Manage
         /// </summary>
         public const string TAGS_MANAGE = "2654EBE9-F585-4E64-93F3-102357F89660";
+
+        /// <summary>
+        /// Gets the Text To Give Setup page guid
+        /// </summary>
+        public const string TEXT_TO_GIVE_SETUP = "B7FE949A-B4B0-4AA7-B9E9-8818E7352CD1";
 
         /// <summary>
         /// Gets the Time Select page guid

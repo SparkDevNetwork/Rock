@@ -15,9 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.Attribute
 {
@@ -40,6 +37,18 @@ namespace Rock.Attribute
         public BinaryFileTypeFieldAttribute( string name = "Binary File Type", string description = "", bool required = true, string defaultBinaryFileTypeGuid = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultBinaryFileTypeGuid, category, order, key, typeof( Rock.Field.Types.BinaryFileTypeFieldType ).FullName )
         {
+        }
+
+        /// <summary>
+        /// Gets or sets the default binary file type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The default binary file type unique identifier.
+        /// </value>
+        public string DefaultBinaryFileTypeGuid
+        {
+            get => DefaultValue;
+            set => DefaultValue = value;
         }
     }
 }

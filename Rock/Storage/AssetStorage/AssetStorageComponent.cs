@@ -20,7 +20,6 @@ using System.Data;
 using System.IO;
 using System.Linq;
 
-using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,6 +32,17 @@ namespace Rock.Storage.AssetStorage
     /// <seealso cref="Rock.Extension.Component" />
     public abstract class AssetStorageComponent : Component
     {
+        /// <summary>
+        /// Common attribute keys
+        /// </summary>
+        protected static class CommonAttributeKey
+        {
+            /// <summary>
+            /// The root folder
+            /// </summary>
+            public const string RootFolder = "RootFolder";
+        }
+
         #region Constructors
 
         /// <summary>
@@ -327,6 +337,17 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
+        /// Gets the root folder attribute value and fixes it to ensure it is trimmed and ends with a '/'.
+        /// </summary>
+        /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <returns></returns>
+        public virtual string GetRootFolder( AssetStorageProvider assetStorageProvider )
+        {
+            var rawRootFolder = GetAttributeValue( assetStorageProvider, CommonAttributeKey.RootFolder ).Trim();
+            return FixRootFolder( rawRootFolder );
+        }
+
+        /// <summary>
         /// Gets the icon for the file type based on the extension of the provided file name.
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
@@ -406,7 +427,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Checks the file extension against the Content File Type White list.
         /// </summary>
-        /// <param name="asset">The asset.</param>
+        /// <param name="fileName">Name of the file.</param>
         /// <returns>
         ///   <c>true</c> if [is file type allowed by white list] [the specified asset]; otherwise, <c>false</c>.
         /// </returns>

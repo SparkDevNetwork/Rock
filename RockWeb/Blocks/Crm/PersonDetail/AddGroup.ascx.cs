@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -31,51 +32,336 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// Block for adding new families
+    /// Block for adding new families/groups
     /// </summary>
     [DisplayName( "Add Group" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows for adding a new group and the people in the group (e.g. New Families." )]
 
-    [GroupTypeField( "Group Type", "The group type to display groups for (default is Family)", false, Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY, "", 0 )]
-    [GroupField( "Parent Group", "The parent group to add the new group to (default is none)", false, "", "", 1 )]
-    [BooleanField( "Show Title", "Show person title.", true, order: 2 )]
-    [BooleanField( "Show Nick Name", "Show an edit box for Nick Name.", false, order: 3 )]
-    [BooleanField( "Show Middle Name", "Show an edit box for Middle Name.", false, order: 4 )]
-    [BooleanField( "Enable Common Last Name", "Autofills the last name field when adding a new group member with the last name of the first group member.", true, order: 5 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR, "", 6 )]
-    [BooleanField( "Show Suffix", "Show person suffix.", true, order: 7 )]
-    [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 8 )]
-    [BooleanField( "Birth Date", "Require a birthdate for each person", "Don't require", "Should a Birthdate be required for each person added?", false, "", 9 )]
-    [BooleanField( "Child Birthdate", "Require a birthdate for each child", "Don't require", "When Family group type, should Birthdate be required for each child added?", false, "", 10 )]
-    [CustomDropdownListField( "Grade", "When Family group type, should Grade be required for each child added?", "True^Require a grade for each child,False^Don't require,None^Grade is not displayed", false, "", "", 11 )]
-    [BooleanField( "Show Inactive Campuses", "Determines if inactive campuses should be shown.", true, order: 12 )]
-    [BooleanField( "Require Campus", "Determines if a campus is required.", true, "", 13 )]
-    [BooleanField( "Marital Status Confirmation", "When Family group type, should user be asked to confirm saving an adult without a marital status?", true, "", 14 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Adult Marital Status", "When Family group type, the default marital status for adults in the family.", false, false, "", "", 15 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS, "Child Marital Status", "When Family group type, the marital status to use for children in the family.", false, false, Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE, "", 16 )]
-    [CustomDropdownListField( "Address", "Should an address be required for the family?", "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require", false, "NOTREQUIRED", "", 17 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE, "Location Type", "The type of location that address should use", false, false, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, "", 18 )]
-    [BooleanField( "Show Cell Phone Number First", "Should the cell phone number be listed first before home phone number?", false, "", 19 )]
-    [BooleanField( "Phone Number", "Require a phone number", "Don't require", "Should a phone number be required for at least one person?", false, "", 20 )]
-    [BooleanField( "Adult Phone Number", "Require a phone number for each adult", "Don't require", "When Family group type, should a phone number be required for each adult added?", false, "", 21 )]
-    [CustomDropdownListField( "SMS", "Should SMS be enabled for cell phone numbers by default?", "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden", false, "", "", 22 )]
-    [AttributeCategoryField( "Attribute Categories", "The Person Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 23 )]
-    [WorkflowTypeField( "Person Workflow(s)", "The workflow(s) to launch for every person added.", true, false, "", "", 24, "PersonWorkflows" )]
-    [WorkflowTypeField( "Adult Workflow(s)", "When Family group type, the workflow(s) to launch for every adult added.", true, false, "", "", 25, "AdultWorkflows" )]
-    [WorkflowTypeField( "Child Workflow(s)", "When Family group type, the workflow(s) to launch for every child added.", true, false, "", "", 26, "ChildWorkflows" )]
-    [WorkflowTypeField( "Group Workflow(s)", "The workflow(s) to launch for the group (family) that is added.", true, false, "", "", 27, "GroupWorkflows" )]
-    [LinkedPage( "Person Detail Page", "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.", false, order: 28 )]
-    [BooleanField( "Enable Alternate Identifier", "If enabled, an additional step will be shown for supplying a custom alternate identifier for each person.", false, order: 29 )]
-    [BooleanField( "Generate Alternate Identifier", "If enabled, a custom alternate identifier will be generated for each person.", true, order: 30 )]
+    #region Block Attributes
+
+    [GroupTypeField(
+        "Group Type",
+        Key = AttributeKey.GroupType,
+        Description = "The group type to display groups for (default is Family).",
+        IsRequired = false,
+        DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
+        Order = 0 )]
+
+    [GroupField(
+        "Parent Group",
+        Key = AttributeKey.ParentGroup,
+        Description = "The parent group to add the new group to (default is none).",
+        IsRequired = false,
+        Order = 1 )]
+
+    [BooleanField(
+        "Show Title",
+        Key = AttributeKey.ShowTitle,
+        Description = "Show person title.",
+        DefaultBooleanValue = true,
+        Order = 2 )]
+
+    [BooleanField(
+        "Show Nick Name",
+        Key = AttributeKey.ShowNickName,
+        Description = "Show an edit box for Nick Name.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
+    [BooleanField(
+        "Show Middle Name",
+        Key = AttributeKey.ShowMiddleName,
+        Description = "Show an edit box for Middle Name.",
+        DefaultBooleanValue = false,
+        Order = 4 )]
+
+    [BooleanField(
+        "Enable Common Last Name",
+        Key = AttributeKey.EnableCommonLastName,
+        Description = "Autofills the last name field when adding a new group member with the last name of the first group member.",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+
+    [DefinedValueField(
+        "Default Connection Status",
+        Key = AttributeKey.DefaultConnectionStatus,
+        Description = "The connection status that should be set by default.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
+        Order = 6 )]
+
+    [BooleanField(
+        "Show Suffix",
+        Key = AttributeKey.ShowSuffix,
+        Description = "Show person suffix.",
+        DefaultBooleanValue = true,
+        Order = 7 )]
+
+    [BooleanField(
+        "Gender",
+        Key = AttributeKey.Gender,
+        Description = "Should Gender be required for each person added?",
+        DefaultBooleanValue = false,
+        TrueText = "Require a gender for each person.",
+        FalseText = "Don't require.",
+        Order = 8 )]
+
+    [BooleanField(
+        "Birth Date",
+        Key = AttributeKey.BirthDate,
+        Description = "Should a birth date be required for each person added?",
+        DefaultBooleanValue = false,
+        TrueText = "Require a birth date for each person.",
+        FalseText = "Don't require.",
+        Order = 9 )]
+
+    [BooleanField(
+        "Child Birthdate",
+        Key = AttributeKey.ChildBirthdate,
+        Description = "When Family group type, should birth date be required for each child added?",
+        DefaultBooleanValue = false,
+        TrueText = "Require a birth date for each child.",
+        FalseText = "Don't require.",
+        Order = 10 )]
+
+    [CustomDropdownListField(
+        "Grade",
+        Key = AttributeKey.Grade,
+        Description = "When Family group type, should Grade be required for each child added?",
+        ListSource = "True^Require a grade for each child,False^Don't require,None^Grade is not displayed",
+        IsRequired = false,
+        Order = 11 )]
+
+    [BooleanField(
+        "Show Inactive Campuses",
+        Key = AttributeKey.ShowInactiveCampuses,
+        Description = "Determines if inactive campuses should be shown.",
+        DefaultBooleanValue = true,
+        Order = 12 )]
+
+    [BooleanField(
+        "Require Campus",
+        Key = AttributeKey.RequireCampus,
+        Description = "Determines if a campus is required. The campus will not be displayed if there is only one available campus.",
+        DefaultBooleanValue = true,
+        Order = 13 )]
+
+    [BooleanField(
+        "Show County",
+        Key = AttributeKey.ShowCounty,
+        Description = "Should County be displayed when editing an address?",
+        DefaultBooleanValue = false,
+        Order = 14 )]
+
+    [BooleanField(
+        "Marital Status Confirmation",
+        Key = AttributeKey.MaritalStatusConfirmation,
+        Description = "When Family group type, should user be asked to confirm saving an adult without a marital status?",
+        DefaultBooleanValue = true,
+        Order = 15 )]
+
+    [DefinedValueField(
+        "Adult Marital Status",
+        Key = AttributeKey.AdultMaritalStatus,
+        Description = "When Family group type, the default marital status for adults in the family.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS,
+        IsRequired = false,
+        AllowMultiple = false,
+        Order = 16 )]
+
+    [DefinedValueField(
+        "Child Marital Status",
+        Key = AttributeKey.ChildMaritalStatus,
+        Description = "When Family group type, the marital status to use for children in the family.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS,
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_SINGLE,
+        Order = 17 )]
+
+    [CustomDropdownListField(
+        "Address",
+        Key = AttributeKey.Address,
+        Description = "Should an address be required for the family?",
+        ListSource = "REQUIRE^Require an address,HOMELESS^Require an address unless family is homeless,NOTREQUIRED^Don't require",
+        IsRequired = false,
+        DefaultValue = "NOTREQUIRED",
+        Order = 18 )]
+
+    [DefinedValueField(
+        "Location Type",
+        Key = AttributeKey.LocationType,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE,
+        Description = "The type of location that address should use",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
+        Order = 19 )]
+
+    [BooleanField(
+        "Show Cell Phone Number First",
+        Key = AttributeKey.ShowCellPhoneNumberFirst,
+        Description = "Should the cell phone number be listed first before home phone number?",
+        DefaultBooleanValue = false,
+        Order = 20 )]
+
+    [BooleanField(
+        "Phone Number",
+        Key = AttributeKey.PhoneNumber,
+        Description = "Should a phone number be required for at least one person?",
+        DefaultBooleanValue = false,
+        TrueText = "Require a phone number.",
+        FalseText = "Don't require.",
+        Order = 21 )]
+
+    [BooleanField(
+        "Adult Phone Number",
+        Key = AttributeKey.AdultPhoneNumber,
+        Description = "When Family group type, should a phone number be required for each adult added?",
+        DefaultBooleanValue = false,
+        TrueText = "Require a phone number.",
+        FalseText = "Don't require.",
+        Order = 22 )]
+
+    [CustomDropdownListField(
+        "SMS",
+        Key = AttributeKey.SMS,
+        Description = "Should SMS be enabled for cell phone numbers by default?",
+        ListSource = "True^SMS is enabled by default,False^SMS is not enabled by default,None^SMS option is hidden",
+        IsRequired = false,
+        Order = 23 )]
+
+    [AttributeCategoryField(
+        "Attribute Categories",
+        Key = AttributeKey.AttributeCategories,
+        Description = "The Person Attribute Categories to display attributes from.",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.Person",
+        IsRequired = false,
+        Order = 24 )]
+
+    [WorkflowTypeField(
+        "Person Workflow(s)",
+        Key = AttributeKey.PersonWorkflows,
+        Description = "The workflow(s) to launch for every person added.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 25 )]
+
+    [WorkflowTypeField(
+        "Adult Workflow(s)",
+        Key = AttributeKey.AdultWorkflows,
+        Description = "When Family group type, the workflow(s) to launch for every adult added.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 26 )]
+
+    [WorkflowTypeField(
+        "Child Workflow(s)",
+        Key = AttributeKey.ChildWorkflows,
+        Description = "The workflow(s) to launch for every child added.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 27 )]
+
+    [WorkflowTypeField(
+        "Group Workflow(s)",
+        Key = AttributeKey.GroupWorkflows,
+        Description = "The workflow(s) to launch for the group (family) that is added.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 28 )]
+
+    [LinkedPage(
+        "Person Detail Page",
+        Key = AttributeKey.PersonDetailPage,
+        Description = "The Page to navigate to after the family has been added. (Note that {GroupId} and {PersonId} can be included in the route). Leave blank to go to the default page of ~/Person/{PersonId}.",
+        IsRequired = false,
+        Order = 29 )]
+
+    [BooleanField(
+        "Enable Alternate Identifier",
+        Key = AttributeKey.EnableAlternateIdentifier,
+        Description = "If enabled, an additional step will be shown for supplying a custom alternate identifier for each person.",
+        DefaultBooleanValue = false,
+        Order = 30 )]
+
+    [BooleanField(
+        "Generate Alternate Identifier",
+        Key = AttributeKey.GenerateAlternateIdentifier,
+        Description = "If enabled, a custom alternate identifier will be generated for each person.",
+        DefaultBooleanValue = true,
+        Order = 31 )]
+
+    [BooleanField(
+        "Detect Groups already at the Address",
+        Description = "If enabled, a prompt to select an existing group will be displayed if there are existing groups that have the same address as the new group.",
+        Key = AttributeKey.DetectGroupsAlreadyAtTheAddress,
+        DefaultBooleanValue = true,
+        Order = 32 )]
+
+    [IntegerField(
+        "Max Groups at Address to Detect",
+        Key = AttributeKey.MaxGroupsAtAddressToDetect,
+        DefaultIntegerValue = 10,
+        Order = 33 )]
+
+    #endregion Block Attributes
+
     public partial class AddGroup : Rock.Web.UI.RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string GroupType = "GroupType";
+            public const string ParentGroup = "ParentGroup";
+            public const string ShowTitle = "ShowTitle";
+            public const string ShowNickName = "ShowNickName";
+            public const string ShowMiddleName = "ShowMiddleName";
+            public const string EnableCommonLastName = "EnableCommonLastName";
+            public const string DefaultConnectionStatus = "DefaultConnectionStatus";
+            public const string ShowSuffix = "ShowSuffix";
+            public const string Gender = "Gender";
+            public const string BirthDate = "BirthDate";
+            public const string ChildBirthdate = "ChildBirthdate";
+            public const string Grade = "Grade";
+            public const string ShowInactiveCampuses = "ShowInactiveCampuses";
+            public const string RequireCampus = "RequireCampus";
+            public const string ShowCounty = "ShowCounty";
+            public const string MaritalStatusConfirmation = "MaritalStatusConfirmation";
+            public const string AdultMaritalStatus = "AdultMaritalStatus";
+            public const string ChildMaritalStatus = "ChildMaritalStatus";
+            public const string Address = "Address";
+            public const string LocationType = "LocationType";
+            public const string ShowCellPhoneNumberFirst = "ShowCellPhoneNumberFirst";
+            public const string PhoneNumber = "PhoneNumber";
+            public const string AdultPhoneNumber = "AdultPhoneNumber";
+            public const string SMS = "SMS";
+            public const string AttributeCategories = "AttributeCategories";
+            public const string PersonWorkflows = "PersonWorkflows";
+            public const string AdultWorkflows = "AdultWorkflows";
+            public const string ChildWorkflows = "ChildWorkflows";
+            public const string GroupWorkflows = "GroupWorkflows";
+            public const string PersonDetailPage = "PersonDetailPage";
+            public const string EnableAlternateIdentifier = "EnableAlternateIdentifier";
+            public const string GenerateAlternateIdentifier = "GenerateAlternateIdentifier";
+            public const string DetectGroupsAlreadyAtTheAddress = "DetectGroupsAlreadyAtTheAddress";
+            public const string MaxGroupsAtAddressToDetect = "MaxGroupsAtAddressToDetect";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         private GroupTypeCache _groupType = null;
@@ -83,6 +369,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected string _groupTypeName = string.Empty;
 
         private DefinedValueCache _locationType = null;
+        private bool _isValidLocationType = false;
 
         private bool _confirmMaritalStatus = true;
         private int _childRoleId = 0;
@@ -95,6 +382,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         private string _smsOption = "False";
         private bool _enableAlternateIdentifier = false;
         private bool _generateAlternateIdentifier = true;
+        private bool _areDatePickersValid = true;
 
         #endregion
 
@@ -117,12 +405,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected List<GroupMember> GroupMembers { get; set; }
 
         /// <summary>
-        /// Gets or sets any possible duplicates for each group member
+        /// A dictionary of a list of duplicate person ids for each Person.Guid  Gets or sets any possible duplicates for each group member
         /// </summary>
         /// <value>
         /// The duplicates.
         /// </value>
-        protected Dictionary<Guid, List<Person>> Duplicates { get; set; }
+        protected Dictionary<Guid, int[]> Duplicates { get; set; }
 
         #endregion
 
@@ -151,11 +439,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             json = ViewState["Duplicates"] as string;
             if ( string.IsNullOrWhiteSpace( json ) )
             {
-                Duplicates = new Dictionary<Guid, List<Person>>();
+                Duplicates = new Dictionary<Guid, int[]>();
             }
             else
             {
-                Duplicates = JsonConvert.DeserializeObject<Dictionary<Guid, List<Person>>>( json );
+                Duplicates = JsonConvert.DeserializeObject<Dictionary<Guid, int[]>>( json );
             }
 
             _verifiedLocations = ViewState["VerifiedLocations"] as Dictionary<string, int?>;
@@ -177,7 +465,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             Page.Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
             Page.Response.Cache.SetNoStore();
 
-            _groupType = GroupTypeCache.Get( GetAttributeValue( "GroupType" ).AsGuid() );
+            _groupType = GroupTypeCache.Get( GetAttributeValue( AttributeKey.GroupType ).AsGuid() );
             if ( _groupType == null )
             {
                 _groupType = GroupTypeCache.GetFamilyGroupType();
@@ -186,27 +474,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             _groupTypeName = _groupType.Name;
             _isFamilyGroupType = _groupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             _locationType = _groupType.LocationTypeValues.FirstOrDefault( v => v.Guid.Equals( GetAttributeValue( "LocationType" ).AsGuid() ) );
-            if ( _locationType == null )
+            _isValidLocationType = _locationType != null;
+            if ( !_isValidLocationType )
             {
                 _locationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
             }
 
             if ( _isFamilyGroupType )
             {
-                bool campusRequired = GetAttributeValue( "RequireCampus" ).AsBoolean( true );
                 divGroupName.Visible = false;
-                var campusi = GetAttributeValue( "ShowInactiveCampuses" ).AsBoolean() ? CampusCache.All() : CampusCache.All().Where( c => c.IsActive == true ).ToList();
+
+                cpCampus.Required = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean( true );
+
+                var campusi = GetAttributeValue( AttributeKey.ShowInactiveCampuses ).AsBoolean() ? CampusCache.All() : CampusCache.All( false ).ToList();
                 cpCampus.Campuses = campusi;
-                cpCampus.Visible = campusi.Any();
-                if ( campusi.Count == 1 && campusRequired )
-                {
-                    cpCampus.SelectedCampusId = campusi.FirstOrDefault().Id;
-                }
-                cpCampus.Required = campusRequired;
 
                 dvpMaritalStatus.Visible = true;
                 dvpMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS.AsGuid() ).Id;
-                var adultMaritalStatus = DefinedValueCache.Get( GetAttributeValue( "AdultMaritalStatus" ).AsGuid() );
+                var adultMaritalStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.AdultMaritalStatus ).AsGuid() );
                 if ( adultMaritalStatus != null )
                 {
                     dvpMaritalStatus.SetValue( adultMaritalStatus.Id );
@@ -229,34 +514,37 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 dvpMaritalStatus.Visible = false;
             }
 
-            nfmMembers.ShowGrade = _isFamilyGroupType && GetAttributeValue( "Grade" ) != "None";
-            nfmMembers.RequireGender = GetAttributeValue( "Gender" ).AsBoolean();
-            nfmMembers.RequireBirthdate = GetAttributeValue( "BirthDate" ).AsBoolean();
-            nfmMembers.RequireGrade = GetAttributeValue( "Grade" ).AsBoolean();
-            nfmMembers.ShowTitle = GetAttributeValue( "ShowTitle" ).AsBoolean();
-            nfmMembers.ShowMiddleName = GetAttributeValue( "ShowMiddleName" ).AsBoolean();
-            nfmMembers.ShowSuffix = GetAttributeValue( "ShowSuffix" ).AsBoolean();
-            _smsOption = GetAttributeValue( "SMS" );
+            nfmMembers.ShowGrade = _isFamilyGroupType && GetAttributeValue( AttributeKey.Grade ) != "None";
+            nfmMembers.RequireGender = GetAttributeValue( AttributeKey.Gender ).AsBoolean();
+            nfmMembers.RequireBirthdate = GetAttributeValue( AttributeKey.BirthDate ).AsBoolean();
+            nfmMembers.RequireGrade = GetAttributeValue( AttributeKey.Grade ).AsBoolean();
+            nfmMembers.ShowTitle = GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
+            nfmMembers.ShowMiddleName = GetAttributeValue( AttributeKey.ShowMiddleName ).AsBoolean();
+            nfmMembers.ShowSuffix = GetAttributeValue( AttributeKey.ShowSuffix ).AsBoolean();
+            _smsOption = GetAttributeValue( AttributeKey.SMS );
 
             lTitle.Text = string.Format( "Add {0}", _groupType.Name ).FormatAsHtmlTitle();
 
-            nfciContactInfo.ShowCellPhoneFirst = GetAttributeValue( "ShowCellPhoneNumberFirst" ).AsBoolean();
+            nfciContactInfo.ShowCellPhoneFirst = GetAttributeValue( AttributeKey.ShowCellPhoneNumberFirst ).AsBoolean();
             nfciContactInfo.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
 
-            acAddress.Required = GetAttributeValue( "Address" ) == "REQUIRED";
-            cbHomeless.Visible = GetAttributeValue( "Address" ) == "HOMELESS";
+            acAddress.Visible = _isValidLocationType;
+            acAddress.Required = _isValidLocationType && GetAttributeValue( AttributeKey.Address ) == "REQUIRE";
+            acAddress.ShowCounty = GetAttributeValue( AttributeKey.ShowCounty ).AsBoolean();
+
+            cbHomeless.Visible = _isValidLocationType && GetAttributeValue( AttributeKey.Address ) == "HOMELESS";
 
             _homePhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
             _cellPhone = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE );
 
-            _enableAlternateIdentifier = GetAttributeValue( "EnableAlternateIdentifier" ).AsBooleanOrNull() ?? false;
-            _generateAlternateIdentifier = GetAttributeValue( "GenerateAlternateIdentifier" ).AsBooleanOrNull() ?? true;
+            _enableAlternateIdentifier = GetAttributeValue( AttributeKey.EnableAlternateIdentifier ).AsBooleanOrNull() ?? false;
+            _generateAlternateIdentifier = GetAttributeValue( AttributeKey.GenerateAlternateIdentifier ).AsBooleanOrNull() ?? true;
 
-            _confirmMaritalStatus = _isFamilyGroupType && GetAttributeValue( "MaritalStatusConfirmation" ).AsBoolean();
+            _confirmMaritalStatus = _isFamilyGroupType && GetAttributeValue( AttributeKey.MaritalStatusConfirmation ).AsBoolean();
             if ( _confirmMaritalStatus )
             {
                 string script = string.Format(
-      @"$('a.js-confirm-marital-status').click(function( e ){{
+      @"$('a.js-confirm-marital-status').on('click', function( e ){{
         var anyAdults = false;
         $(""input[id$='_rblRole_0']"").each(function() {{
             if ( $(this).prop('checked') ) {{
@@ -294,7 +582,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( !Page.IsPostBack )
             {
                 GroupMembers = new List<GroupMember>();
-                Duplicates = new Dictionary<Guid, List<Person>>();
+                Duplicates = new Dictionary<Guid, int[]>();
                 _verifiedLocations = new Dictionary<string, int?>();
                 _alternateIds = new Dictionary<Guid, string>();
                 AddGroupMember();
@@ -369,7 +657,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             NewGroupMembersRow row = sender as NewGroupMembersRow;
             row.ShowGradePicker = row.RoleId == _childRoleId;
-            row.ShowGradeColumn = _isFamilyGroupType && GetAttributeValue( "Grade" ) != "None";
+            row.ShowGradeColumn = _isFamilyGroupType && GetAttributeValue( AttributeKey.Grade ) != "None";
         }
 
         /// <summary>
@@ -420,66 +708,76 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var adults = GroupMembers.Where( m => m.GroupRoleId == _adultRoleId ).Select( m => m.Person ).ToList();
                 if ( CurrentPageIndex == 0 )
                 {
-                    if ( GetAttributeValue( "Gender" ).AsBoolean() && people.Any( p => p.Gender == Gender.Unknown ) )
+                    if ( GetAttributeValue( AttributeKey.Gender ).AsBoolean() && people.Any( p => p.Gender == Gender.Unknown ) )
                     {
                         errorMessages.Add( "Gender is required for all members." );
                     }
 
-                    if ( GetAttributeValue( "BirthDate" ).AsBoolean() && people.Any( p => !p.BirthDate.HasValue ) )
+                    if ( GetAttributeValue( AttributeKey.BirthDate ).AsBoolean() && people.Any( p => !p.BirthDate.HasValue ) )
                     {
-                        errorMessages.Add( "Birthdate is required for all members." );
+                        errorMessages.Add( "A valid Birthdate is required for all members." );
                     }
-                    else if ( GetAttributeValue( "ChildBirthdate" ).AsBoolean() && children.Any( p => !p.BirthDate.HasValue ) )
+                    else if ( GetAttributeValue( AttributeKey.ChildBirthdate ).AsBoolean() && children.Any( p => !p.BirthDate.HasValue ) )
                     {
-                        errorMessages.Add( "Birthdate is required for all children." );
+                        errorMessages.Add( "A valid Birth Date is required for all children." );
                     }
 
-                    if ( GetAttributeValue( "Grade" ).AsBoolean() && children.Any( p => !p.GraduationYear.HasValue ) )
+                    if ( GetAttributeValue( AttributeKey.Grade ).AsBoolean() && children.Any( p => !p.GraduationYear.HasValue ) )
                     {
                         errorMessages.Add( "Grade is required for all children." );
                     }
 
-                    int? locationId = null;
-                    string locationKey = GetLocationKey();
-                    if ( !string.IsNullOrEmpty( locationKey ) )
+                    // In GetControlData() all of the date pickers for each group member are checked (currently only birthday). If any are not a valid date (e.g. 19740110) then this value is false.
+                    // The each problem picker will have the "has-error" CSS class which will outline it in read so it can be easily identified and corrected.
+                    if ( !_areDatePickersValid )
                     {
-                        if ( _verifiedLocations.ContainsKey( locationKey ) )
-                        {
-                            locationId = _verifiedLocations[locationKey];
-                        }
-                        else
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
-                                locationId = location != null ? location.Id : ( int? ) null;
-                                _verifiedLocations.AddOrIgnore( locationKey, locationId );
-                            }
-                        }
+                        errorMessages.Add( "Date is not in the correct format." );
                     }
 
-                    if ( !locationId.HasValue )
+                    if ( _isValidLocationType )
                     {
-                        string addressRequired = GetAttributeValue( "Address" );
-                        if ( addressRequired == "REQUIRED" )
+                        int? locationId = null;
+                        string locationKey = GetLocationKey();
+                        if ( !string.IsNullOrEmpty( locationKey ) )
                         {
-                            errorMessages.Add( "Address is required." );
+                            if ( _verifiedLocations.ContainsKey( locationKey ) )
+                            {
+                                locationId = _verifiedLocations[locationKey];
+                            }
+                            else
+                            {
+                                using ( var rockContext = new RockContext() )
+                                {
+                                    var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+                                    locationId = location != null ? location.Id : ( int? ) null;
+                                    _verifiedLocations.AddOrIgnore( locationKey, locationId );
+                                }
+                            }
                         }
 
-                        if ( addressRequired == "HOMELESS" && !cbHomeless.Checked )
+                        if ( !locationId.HasValue )
                         {
-                            errorMessages.Add( "Address is required unless the family is homeless." );
+                            string addressRequired = GetAttributeValue( AttributeKey.Address );
+                            if ( addressRequired == "REQUIRE" )
+                            {
+                                errorMessages.Add( "Address is required." );
+                            }
+
+                            if ( addressRequired == "HOMELESS" && !cbHomeless.Checked )
+                            {
+                                errorMessages.Add( "Address is required unless the family is homeless." );
+                            }
                         }
                     }
                 }
 
                 if ( CurrentPageIndex == 1 )
                 {
-                    if ( GetAttributeValue( "PhoneNumber" ).AsBoolean() && !people.Any( p => p.PhoneNumbers.Any() ) )
+                    if ( GetAttributeValue( AttributeKey.PhoneNumber ).AsBoolean() && !people.Any( p => p.PhoneNumbers.Any() ) )
                     {
                         errorMessages.Add( "At least one phone number is required." );
                     }
-                    else if ( GetAttributeValue( "AdultPhoneNumber" ).AsBoolean() && adults.Any( p => !p.PhoneNumbers.Any() ) )
+                    else if ( GetAttributeValue( AttributeKey.AdultPhoneNumber ).AsBoolean() && adults.Any( p => !p.PhoneNumbers.Any() ) )
                     {
                         errorMessages.Add( "At least one phone number is required for all adults." );
                     }
@@ -517,7 +815,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                 .Distinct()
                                                 .ToList();
 
-                        if ( duplicateAlternateIds.Count == 1  )
+                        if ( duplicateAlternateIds.Count == 1 )
                         {
                             errorMessages.Add( string.Format( "Alternate Id '{0}' is already assigned to another person.", duplicateAlternateIds[0] ) );
                         }
@@ -554,53 +852,68 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 var rockContext = new RockContext();
 
-                                Guid? parentGroupGuid = GetAttributeValue( "ParentGroup" ).AsGuidOrNull();
+                                Guid? parentGroupGuid = GetAttributeValue( AttributeKey.ParentGroup ).AsGuidOrNull();
                                 int? groupId = null;
+                                bool isNewGroup = true;
+                                List<Guid> newGroupMemberPersonGuids = GroupMembers.Select( a => a.Person.Guid ).ToList();
 
                                 try
                                 {
                                     rockContext.WrapTransaction( () =>
                                     {
-                                        Group group = null;
-                                        if ( _isFamilyGroupType )
+                                        int? addToExistingGroupId = hfSelectedGroupAtAddressGroupId.Value.AsIntegerOrNull();
+
+                                        // put them in the selected group if an existing group was selected in the "Detect Groups at Address" prompt
+                                        if ( addToExistingGroupId.HasValue )
                                         {
-                                            group = GroupService.SaveNewFamily( rockContext, GroupMembers, cpCampus.SelectedValueAsInt(), true );
+                                            foreach ( var groupMember in GroupMembers )
+                                            {
+                                                PersonService.AddPersonToGroup( groupMember.Person, true, addToExistingGroupId.Value, groupMember.GroupRoleId, rockContext );
+                                            }
+
+                                            groupId = addToExistingGroupId;
                                         }
                                         else
                                         {
-                                            group = GroupService.SaveNewGroup( rockContext, _groupType.Id, parentGroupGuid, tbGroupName.Text, GroupMembers, null, true );
-                                        }
+                                            Group group;
+                                            if ( _isFamilyGroupType )
+                                            {
+                                                group = GroupService.SaveNewFamily( rockContext, GroupMembers, cpCampus.SelectedValueAsInt(), true );
+                                            }
+                                            else
+                                            {
+                                                group = GroupService.SaveNewGroup( rockContext, _groupType.Id, parentGroupGuid, tbGroupName.Text, GroupMembers, null, true );
+                                            }
 
-                                        if ( group != null )
-                                        {
                                             groupId = group.Id;
                                             string locationKey = GetLocationKey();
                                             if ( !string.IsNullOrEmpty( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
                                             {
                                                 GroupService.AddNewGroupAddress( rockContext, group, _locationType.Guid.ToString(), _verifiedLocations[locationKey] );
                                             }
-
-                                            if ( _enableAlternateIdentifier )
-                                            {
-                                                var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                                                int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
-                                                foreach ( var groupMember in GroupMembers )
-                                                {
-                                                    var personSearchKey = new PersonSearchKey();
-                                                    personSearchKey.SearchValue = _alternateIds[groupMember.Person.Guid];
-                                                    personSearchKey.PersonAliasId = groupMember.Person.PrimaryAliasId;
-                                                    personSearchKey.SearchTypeValueId = alternateValueId;
-                                                    personSearchKeyService.Add( personSearchKey );
-                                                }
-
-                                                rockContext.SaveChanges();
-                                            }
                                         }
+
+                                        if ( _enableAlternateIdentifier )
+                                        {
+                                            var personSearchKeyService = new PersonSearchKeyService( rockContext );
+                                            int alternateValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
+                                            foreach ( var groupMember in GroupMembers )
+                                            {
+                                                var personSearchKey = new PersonSearchKey();
+                                                personSearchKey.SearchValue = _alternateIds[groupMember.Person.Guid];
+                                                personSearchKey.PersonAliasId = groupMember.Person.PrimaryAliasId;
+                                                personSearchKey.SearchTypeValueId = alternateValueId;
+                                                personSearchKeyService.Add( personSearchKey );
+                                            }
+
+                                            rockContext.SaveChanges();
+                                        }
+
                                     } );
 
                                     if ( groupId.HasValue )
                                     {
-                                        LaunchWorkflows( groupId.Value, rockContext );
+                                        LaunchWorkflows( groupId.Value, isNewGroup, newGroupMemberPersonGuids );
                                     }
 
                                     // If a custom PersonDetailPage is specified, navigate to that. Otherwise, just go to ~/Person/{PersonId}
@@ -611,10 +924,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         queryParams.Add( "GroupId", groupId.ToString() );
                                     }
 
-                                    var personDetailUrl = LinkedPageUrl( "PersonDetailPage", queryParams );
-                                    if ( !string.IsNullOrWhiteSpace( personDetailUrl ) )
+                                    var personDetailUrl = LinkedPageUrl( AttributeKey.PersonDetailPage, queryParams );
+
+                                    if ( PageParameter( "ReturnUrl" ).IsNotNullOrWhiteSpace() )
                                     {
-                                        NavigateToLinkedPage( "PersonDetailPage", queryParams );
+                                        string redirectUrl = Server.UrlDecode( PageParameter( "ReturnUrl" ) );
+
+                                        string queryString = string.Empty;
+                                        if ( redirectUrl.Contains( "?" ) )
+                                        {
+                                            queryString = redirectUrl.Split( '?' ).Last();
+                                        }
+                                        // this gets all the query string key value pairs and replace the existing key if any with new value.
+                                        var newQueryString = HttpUtility.ParseQueryString( queryString );
+                                        newQueryString.Set( "PersonId", GroupMembers[0].Person.Id.ToString() );
+                                        newQueryString.Set( "GroupId", groupId.ToString() );
+
+                                        Response.Redirect( redirectUrl.Split( '?' ).First() + "?" + newQueryString );
+                                        Context.ApplicationInstance.CompleteRequest();
+                                    }
+                                    else if ( !string.IsNullOrWhiteSpace( personDetailUrl ) )
+                                    {
+                                        NavigateToLinkedPage( AttributeKey.PersonDetailPage, queryParams );
                                     }
                                     else
                                     {
@@ -629,6 +960,57 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>Handles the ItemDataBound event of the rptGroupsAtAddress control.</summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptGroupsAtAddress_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.DataItem != null )
+            {
+                GroupAtLocationInfo groupAtLocationInfo = e.Item.DataItem as GroupAtLocationInfo;
+                var groupMembers = groupAtLocationInfo.GroupMembers;
+
+                var lGroupTitle = e.Item.FindControl( "lGroupTitle" ) as Literal;
+                lGroupTitle.Text = groupAtLocationInfo.GroupTitle;
+
+                var lGroupLocationHtml = e.Item.FindControl( "lGroupLocationHtml" ) as Literal;
+                lGroupLocationHtml.Text = groupAtLocationInfo.GroupLocation.GroupLocationTypeValue.Value + ": " + groupAtLocationInfo.GroupLocation.Location.ToString();
+
+                var rbGroupToUse = e.Item.FindControl( "rbGroupToUse" ) as RockRadioButton;
+                if ( rbGroupToUse != null )
+                {
+                    rbGroupToUse.Attributes["data-groupid"] = groupAtLocationInfo.Id.ToString();
+                }
+
+                var sortedGroupMembers = groupMembers.OrderBy( a => a.GroupRole.Order ).ThenBy( a => a.Person.Gender ).ThenBy( a => a.Person.NickName ).ToList();
+                string groupMembersHtml = string.Empty;
+                foreach ( var groupMember in sortedGroupMembers )
+                {
+                    string maritalStatusValue = "Unknown Martial Status";
+                    if ( groupMember.Person.MaritalStatusValue != null )
+                    {
+                        maritalStatusValue = groupMember.Person.MaritalStatusValue.Value;
+                    }
+
+                    groupMembersHtml += string.Format( "<li>{0}: {1}, {2}, {3}", groupMember.Person.FullName, groupMember.GroupRole, maritalStatusValue, groupMember.Person.Gender.ConvertToString() );
+                    if ( groupMember.Person.Age.HasValue )
+                    {
+                        groupMembersHtml += ", Age " + groupMember.Person.Age.ToString();
+                    }
+
+                    groupMembersHtml += "</li>";
+                }
+
+                var lGroupMembersHtml = e.Item.FindControl( "lGroupMembersHtml" ) as Literal;
+                lGroupMembersHtml.Text = string.Format( "<ul>{0}</ul>", groupMembersHtml );
+                if ( ( e.Item.ItemIndex - 1 ) % 3 == 0 )
+                {
+                    var lNewRowHtml = e.Item.FindControl( "lNewRowHtml" ) as Literal;
+                    lNewRowHtml.Text = "</div><div class='row'>";
                 }
             }
         }
@@ -652,7 +1034,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var attributeService = new AttributeService( rockContext );
             var locationService = new LocationService( rockContext );
 
-            foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues( false ) )
+            foreach ( string categoryGuid in GetAttributeValue( AttributeKey.AttributeCategories ).SplitDelimitedValues( false ) )
             {
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( categoryGuid, out guid ) )
@@ -688,10 +1070,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var location = new Location();
             acAddress.GetValues( location );
 
-            var showTitle = this.GetAttributeValue( "ShowTitle" ).AsBoolean();
-            var showMiddleName = this.GetAttributeValue( "ShowMiddleName" ).AsBoolean();
-            var showSuffix = this.GetAttributeValue( "ShowSuffix" ).AsBoolean();
-            var showGrade = GetAttributeValue( "Grade" ) != "None";
+            var showTitle = this.GetAttributeValue( AttributeKey.ShowTitle ).AsBoolean();
+            var showMiddleName = this.GetAttributeValue( AttributeKey.ShowMiddleName ).AsBoolean();
+            var showSuffix = this.GetAttributeValue( AttributeKey.ShowSuffix ).AsBoolean();
+            var showGrade = GetAttributeValue( AttributeKey.Grade ) != "None";
 
             foreach ( var groupMember in GroupMembers )
             {
@@ -713,7 +1095,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMemberRow.ShowSuffix = showSuffix;
                 groupMemberRow.ShowGradeColumn = _isFamilyGroupType && showGrade;
                 groupMemberRow.ShowGradePicker = groupMember.GroupRoleId == _childRoleId;
-                groupMemberRow.ShowNickName = this.GetAttributeValue( "ShowNickName" ).AsBoolean();
+                groupMemberRow.ShowNickName = this.GetAttributeValue( AttributeKey.ShowNickName ).AsBoolean();
                 groupMemberRow.ValidationGroup = BlockValidationGroup;
 
                 var contactInfoRow = new NewGroupContactInfoRow();
@@ -723,7 +1105,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 contactInfoRow.IsMessagingVisible = string.IsNullOrWhiteSpace( _smsOption ) || _smsOption != "None";
                 contactInfoRow.IsMessagingEnabled = _smsOption.AsBoolean();
                 contactInfoRow.PersonName = groupMember.Person.FullName;
-                contactInfoRow.ShowCellPhoneFirst = this.GetAttributeValue( "ShowCellPhoneNumberFirst" ).AsBoolean();
+                contactInfoRow.ShowCellPhoneFirst = this.GetAttributeValue( AttributeKey.ShowCellPhoneNumberFirst ).AsBoolean();
 
                 if ( _homePhone != null )
                 {
@@ -810,6 +1192,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
 
+                // Prompt if there are already groups at the address
+                if ( this.GetAttributeValue( AttributeKey.DetectGroupsAlreadyAtTheAddress ).AsBoolean() )
+                {
+                    ShowGroupsAtAddress();
+                }
+
+                // show duplicate person warning
                 if ( Duplicates.ContainsKey( groupMember.Person.Guid ) )
                 {
                     var dupRow = new HtmlGenericControl( "div" );
@@ -845,29 +1234,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     duplicateHeader.InnerText = "Possible Duplicate Records";
                     dupPersonCol.Controls.Add( duplicateHeader );
 
-                    foreach ( var duplicate in Duplicates[groupMember.Person.Guid] )
+                    foreach ( var duplicatePersonId in Duplicates[groupMember.Person.Guid] )
                     {
                         GroupTypeRole groupTypeRole = null;
                         Location duplocation = null;
+                        Person duplicatePerson = null;
 
                         var dupGroupMember = groupMemberService.Queryable()
-                            .Where( a => a.PersonId == duplicate.Id )
+                            .Where( a => a.PersonId == duplicatePersonId )
                             .Where( a => a.Group.GroupTypeId == _groupType.Id )
                             .Select( s => new
                             {
                                 s.GroupRole,
+                                s.Person,
                                 GroupLocation = s.Group.GroupLocations.Where( a => a.GroupLocationTypeValue.Guid.Equals( _locationType.Guid ) ).Select( a => a.Location ).FirstOrDefault()
                             } )
-                            .FirstOrDefault();
+                            .AsNoTracking().FirstOrDefault();
+
                         if ( dupGroupMember != null )
                         {
                             groupTypeRole = dupGroupMember.GroupRole;
                             duplocation = dupGroupMember.GroupLocation;
+                            duplicatePerson = dupGroupMember.Person;
                         }
 
                         dupPersonCol.Controls.Add( PersonHtmlPanel(
                             groupMemberGuidString,
-                            duplicate,
+                            duplicatePerson,
                             groupTypeRole,
                             duplocation,
                             rockContext ) );
@@ -878,6 +1271,61 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             ShowPage();
         }
 
+        /// <summary>
+        /// Shows any groups have that have the same address.
+        /// </summary>
+        private void ShowGroupsAtAddress()
+        {
+            string locationKey = GetLocationKey();
+            pnlAddressInUseWarning.Visible = false;
+            lAlreadyInUseWarning.Text = string.Format(
+                "This address already has a {0} assigned to it. Select the {0} if you would prefer to add the individuals as new {1}. You may also continue adding the new {0} if you believe this is the correct information.",
+                _groupType.GroupTerm.ToLower(), _groupType.GroupMemberTerm.Pluralize().ToLower() );
+
+            if ( !string.IsNullOrWhiteSpace( locationKey ) && _verifiedLocations.ContainsKey( locationKey ) )
+            {
+                int? locationId = _verifiedLocations[locationKey];
+                if ( locationId.HasValue )
+                {
+                    RockContext rockContext = new RockContext();
+                    var groupLocationService = new GroupLocationService( rockContext );
+
+                    var groupsAtLocationList = groupLocationService.Queryable().Where( a =>
+                            a.GroupLocationTypeValueId == _locationType.Id
+                            && a.Group.GroupTypeId == _groupType.Id
+                            && a.Group.IsActive
+                            && a.LocationId == locationId )
+                            .Select( a => a.Group )
+                            .ToList();
+
+                    var maxGroupsAtAddressToDetect = this.GetAttributeValue( AttributeKey.MaxGroupsAtAddressToDetect ).AsInteger();
+
+                    groupsAtLocationList = groupsAtLocationList.Take( maxGroupsAtAddressToDetect ).ToList();
+
+                    if ( groupsAtLocationList.Any() )
+                    {
+                        pnlAddressInUseWarning.Visible = CurrentPageIndex == 1;
+                        var sortedGroupsList = groupsAtLocationList.Select( a => new GroupAtLocationInfo
+                        {
+                            Id = a.Id,
+                            GroupTitle = _isFamilyGroupType ? RockUdfHelper.ufnCrm_GetFamilyTitle( rockContext, null, a.Id, null, true ) : a.Name,
+                            GroupLocation = a.GroupLocations.Where( gl => gl.LocationId == locationId ).FirstOrDefault(),
+                            GroupMembers = a.Members
+                        } ).OrderBy( a => a.GroupMembers.AsQueryable().HeadOfHousehold().LastName ).ToList();
+
+                        rptGroupsAtAddress.DataSource = sortedGroupsList;
+
+                        rptGroupsAtAddress.DataBind();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRemoveMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbRemoveMember_Click( object sender, EventArgs e )
         {
             Guid personGuid = ( ( LinkButton ) sender ).ID.Substring( 15 ).Replace( "_", "-" ).AsGuid();
@@ -1009,7 +1457,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             GroupMembers = new List<GroupMember>();
 
             int? childMaritalStatusId = null;
-            var childMaritalStatus = DefinedValueCache.Get( GetAttributeValue( "ChildMaritalStatus" ).AsGuid() );
+            var childMaritalStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ChildMaritalStatus ).AsGuid() );
             if ( childMaritalStatus != null )
             {
                 childMaritalStatusId = childMaritalStatus.Id;
@@ -1052,7 +1500,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.FirstName = row.FirstName.FixCase();
-                if ( this.GetAttributeValue( "ShowNickName" ).AsBoolean() && !string.IsNullOrEmpty( row.NickName ) )
+                if ( this.GetAttributeValue( AttributeKey.ShowNickName ).AsBoolean() && !string.IsNullOrEmpty( row.NickName ) )
                 {
                     groupMember.Person.NickName = row.NickName.FixCase();
                 }
@@ -1064,6 +1512,23 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 groupMember.Person.LastName = row.LastName.FixCase();
                 groupMember.Person.SuffixValueId = row.SuffixValueId;
                 groupMember.Person.Gender = row.Gender;
+
+                _areDatePickersValid = true;
+                var datePickers = row.Controls.OfType<DatePicker>();
+                foreach ( DatePicker datePicker in datePickers )
+                {
+                    DateTime dateTime;
+                    if ( datePicker.Text.IsNotNullOrWhiteSpace() && !DateTime.TryParse( datePicker.Text, out dateTime ) )
+                    {
+                        datePicker.AddCssClass( "has-error" );
+                        datePicker.ShowErrorMessage( "Date is not in the correct format." );
+                        _areDatePickersValid = false;
+                    }
+                    else
+                    {
+                        datePicker.RemoveCssClass( "has-error" );
+                    }
+                }
 
                 var birthday = row.BirthDate;
                 if ( birthday.HasValue )
@@ -1174,7 +1639,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             int defaultRoleId = _groupType.DefaultGroupRoleId ?? _groupType.Roles.Select( r => r.Id ).FirstOrDefault();
             int recordTypePersonId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             int recordStatusActiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
-            var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( "DefaultConnectionStatus" ).AsGuid() );
+            var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.DefaultConnectionStatus ).AsGuid() );
 
             var person = new Person();
             person.Guid = Guid.NewGuid();
@@ -1188,7 +1653,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             groupMember.GroupRoleId = defaultRoleId;
             groupMember.Person = person;
 
-            if ( GetAttributeValue( "EnableCommonLastName" ).AsBoolean() )
+            if ( GetAttributeValue( AttributeKey.EnableCommonLastName ).AsBoolean() )
             {
                 if ( GroupMembers.Count > 0 )
                 {
@@ -1205,7 +1670,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns></returns>
         public bool FindDuplicates()
         {
-            Duplicates = new Dictionary<Guid, List<Person>>();
+            Duplicates = new Dictionary<Guid, int[]>();
 
             var rockContext = new RockContext();
             var locationService = new LocationService( rockContext );
@@ -1299,49 +1764,57 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         .Where( p => p.Email == person.Email );
                 }
 
-                var dups = new List<Person>();
+                var dups = new List<int>();
                 if ( otherCriteria )
                 {
                     // If a birthday, email, phone, or address was entered, find anyone with same info and same first name
-                    dups = personQry.ToList();
+                    dups = personQry.Select( a => a.Id ).ToList();
                 }
                 else
                 {
                     // otherwise find people with same first and last name
                     dups = personQry
                         .Where( p => p.LastName == person.LastName )
-                        .ToList();
+                        .Select( a => a.Id ).ToList();
                 }
 
                 if ( dups.Any() )
                 {
-                    Duplicates.Add( person.Guid, dups );
+                    Duplicates.Add( person.Guid, dups.ToArray() );
                 }
             }
 
             return Duplicates.Any();
         }
 
-        private void LaunchWorkflows( int groupId, RockContext rockContext )
+        /// <summary>
+        /// Launches the workflows.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="isNewGroup">if set to <c>true</c> [is new group].</param>
+        /// <param name="newGroupMemberIds">The new group member ids.</param>
+        private void LaunchWorkflows( int groupId, bool isNewGroup, List<Guid> newGroupMemberPersonGuids )
         {
+            RockContext rockContext = new RockContext();
+
             // Launch any workflows
             var workflowService = new WorkflowService( rockContext );
 
-            var personWorkflows = GetAttributeValue( "PersonWorkflows" ).SplitDelimitedValues().AsGuidList();
-            var adultWorkflows = GetAttributeValue( "AdultWorkflows" ).SplitDelimitedValues().AsGuidList();
-            var childWorkflows = GetAttributeValue( "ChildWorkflows" ).SplitDelimitedValues().AsGuidList();
-            var groupWorkflows = GetAttributeValue( "GroupWorkflows" ).SplitDelimitedValues().AsGuidList();
+            var personWorkflows = GetAttributeValue( AttributeKey.PersonWorkflows ).SplitDelimitedValues().AsGuidList();
+            var adultWorkflows = GetAttributeValue( AttributeKey.AdultWorkflows ).SplitDelimitedValues().AsGuidList();
+            var childWorkflows = GetAttributeValue( AttributeKey.ChildWorkflows ).SplitDelimitedValues().AsGuidList();
+            var groupWorkflows = GetAttributeValue( AttributeKey.GroupWorkflows ).SplitDelimitedValues().AsGuidList();
 
             if ( personWorkflows.Any() || adultWorkflows.Any() || childWorkflows.Any() || groupWorkflows.Any() )
             {
                 var group = new GroupService( rockContext ).Get( groupId );
                 if ( group != null )
                 {
-                    foreach ( var groupMember in group.Members )
+                    foreach ( var groupMember in group.Members.Where( a => newGroupMemberPersonGuids.Contains( a.Person.Guid ) ).ToList() )
                     {
                         foreach ( var workflowType in personWorkflows )
                         {
-                            LaunchWorkflows( workflowService, workflowType, groupMember.Person.FullName, groupMember.Person );
+                            LaunchWorkflow( workflowService, workflowType, groupMember.Person.FullName, groupMember.Person );
                         }
 
                         if ( _isFamilyGroupType )
@@ -1350,14 +1823,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             {
                                 foreach ( var workflowType in childWorkflows )
                                 {
-                                    LaunchWorkflows( workflowService, workflowType, groupMember.Person.FullName, groupMember.Person );
+                                    LaunchWorkflow( workflowService, workflowType, groupMember.Person.FullName, groupMember.Person );
                                 }
                             }
                             else
                             {
                                 foreach ( var workflowType in adultWorkflows )
                                 {
-                                    LaunchWorkflows( workflowService, workflowType, groupMember.Person.FullName, groupMember.Person );
+                                    LaunchWorkflow( workflowService, workflowType, groupMember.Person.FullName, groupMember.Person );
                                 }
                             }
                         }
@@ -1365,14 +1838,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     foreach ( var workflowType in groupWorkflows )
                     {
-                        LaunchWorkflows( workflowService, workflowType, group.Name, group );
+                        if ( isNewGroup )
+                        {
+                            LaunchWorkflow( workflowService, workflowType, group.Name, group );
+                        }
                     }
 
                 }
             }
         }
 
-        private void LaunchWorkflows( WorkflowService workflowService, Guid workflowTypeGuid, string name, object entity )
+        /// <summary>
+        /// Launches the workflow.
+        /// </summary>
+        /// <param name="workflowService">The workflow service.</param>
+        /// <param name="workflowTypeGuid">The workflow type unique identifier.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="entity">The entity.</param>
+        private void LaunchWorkflow( WorkflowService workflowService, Guid workflowTypeGuid, string name, object entity )
         {
             var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
             if ( workflowType != null )
@@ -1433,6 +1916,49 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         }
 
         #endregion
+
+        #region Helper Class
+
+        /// <summary>
+        /// Object used for grid data binding.
+        /// </summary>
+        /// <seealso cref="Rock.Utility.RockDynamic" />
+        public class GroupAtLocationInfo : RockDynamic
+        {
+            /// <summary>
+            /// Gets or sets the identifier.
+            /// </summary>
+            /// <value>
+            /// The identifier.
+            /// </value>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group location.
+            /// </summary>
+            /// <value>
+            /// The group location.
+            /// </value>
+            public GroupLocation GroupLocation { get; set; }
+
+            /// <summary>
+            /// Gets or sets the group members.
+            /// </summary>
+            /// <value>
+            /// The group members.
+            /// </value>
+            public ICollection<GroupMember> GroupMembers { get; set; }
+
+            /// <summary>
+            /// Gets the group title.
+            /// </summary>
+            /// <value>
+            /// The group title.
+            /// </value>
+            public string GroupTitle { get; internal set; }
+        }
+
+        #endregion Helper Class
 
     }
 }

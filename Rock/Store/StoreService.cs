@@ -15,15 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 
 using RestSharp;
-using System.Configuration;
-using System.IO;
-using System.Web;
 
 
 namespace Rock.Store
@@ -152,11 +147,17 @@ namespace Rock.Store
 
             string decryptedStoreKey = Rock.Security.Encryption.DecryptString( encryptedStoreKey );
 
-            if ( decryptedStoreKey == null )
+            if ( decryptedStoreKey == null && encryptedStoreKey.Length < 90 )
             {
                 // if the decryption fails, it could be that the StoreOrganizationKey isn't encrypted, so encrypt and store it again 
                 decryptedStoreKey = encryptedStoreKey;
                 SetOrganizationKey( decryptedStoreKey );
+            }
+
+            if ( decryptedStoreKey == null || decryptedStoreKey.Length > 90 )
+            {
+                Model.ExceptionLogService.LogException( "The Rock 'Store Key' for the organization is too long. This typically means it was copied from another system and is unable to be decrypted by this system." );
+                return string.Empty;
             }
 
             return decryptedStoreKey;

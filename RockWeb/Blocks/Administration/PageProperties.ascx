@@ -102,7 +102,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <Rock:DataTextBox ID="tbBodyCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass" Label="Body CSS Class"
-                                            Help="The CSS class to add to the body tag (if theme supports it)." />
+                                            Help="The CSS class to add to the body tag (if theme and layout supports it)." />
                                         <fieldset>
                                             <Rock:NotificationBox ID="nbPageRouteWarning" runat="server" />
                                             <Rock:RockTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" Help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
@@ -216,6 +216,15 @@
                             <asp:Literal ID="lblMainDetailsCol1" runat="server" />
                         </div>
                         <div class="col-md-6">
+                            <dl class="margin-b-md">
+                                <dt>Median Time To Serve</dt>
+                                <dd>
+                                    <asp:Literal runat="server" ID="lMedianTime" />
+                                    <asp:LinkButton runat="server" ID="lbMedianTimeDetails" CssClass="small" OnClick="lbMedianTimeDetails_Click">
+                                        Details
+                                    </asp:LinkButton>
+                                </dd>
+                            </dl>
                             <asp:Literal ID="lblMainDetailsCol2" runat="server" />
                         </div>
                     </div>
@@ -234,7 +243,15 @@
 
                 <Rock:ModalDialog ID="mdCopyPage" runat="server" ValidationGroup="vgCopyPage" Title="Copy Page" OnSaveClick="mdCopyPage_SaveClick" SaveButtonText="Copy" Visible="false">
                     <Content>
+                        <Rock:NotificationBox ID="mdCopyWarning" runat="server" NotificationBoxType="Warning" Text="Verify all the block setting's values because they are not duplicates but point to the exact same item. You may want to create copies of certain things like images, so block copies are not referencing the same items."  />
                         <Rock:RockCheckBox ID="cbCopyPageIncludeChildPages" runat="server" Text="Include Child Pages" Checked="true" />
+                    </Content>
+                </Rock:ModalDialog>
+
+                <Rock:ModalDialog ID="mdDeleteModal" runat="server" ValidationGroup="vgDeleteModal" Title="Are you sure?" OnSaveClick="mdDeleteModal_DeleteClick" SaveButtonText="Delete" Visible="false">
+                    <Content>
+                        <p>Are you sure you want to delete this page?</p>
+                        <Rock:RockCheckBox ID="cbDeleteInteractions" runat="server" Text="Delete any interactions for this page" Checked="true" />
                     </Content>
                 </Rock:ModalDialog>
                 

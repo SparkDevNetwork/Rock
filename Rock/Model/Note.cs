@@ -24,10 +24,12 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
+using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Security;
-using Newtonsoft.Json;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {

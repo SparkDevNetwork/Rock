@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Field.Types;
 using Rock.Web.Cache;
 
@@ -27,6 +28,7 @@ namespace Rock.Attribute
         private const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
         private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
         private const string QUALIFIER_VALUE_KEY = "qualifierValue";
+        private const string ALLOW_MULTIPLE_KEY = "allowMultiple";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CategoryFieldAttribute" /> class.
@@ -46,12 +48,71 @@ namespace Rock.Attribute
             base( name, description, required, defaultValue, category, order, key,
                 ( allowMultiple ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName ) )
         {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Attribute" ) );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "EntityTypeId" ) );
+            EntityTypeName = entityTypeName;
+        }
 
-            var entityType = EntityTypeCache.Get( entityTypeName, false );
-            if ( entityType != null )
-                FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityType.Id.ToString() ) );
+        /// <summary>
+        /// Gets or sets a value indicating whether allow multiple is true.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if allow multiple; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiple
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ALLOW_MULTIPLE_KEY ).AsBoolean();
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
+
+                FieldTypeClass = value ? typeof( CategoriesFieldType ).FullName : typeof( CategoryFieldType ).FullName;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the entity type <seealso cref="EntityType"/>
+        /// </summary>
+        public string EntityTypeName
+        {
+            get
+            {
+                return FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_NAME_KEY ) ?? string.Empty;
+            }
+
+            set
+            {
+                FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Attribute" ) );
+                FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "EntityTypeId" ) );
+
+                var entityType = EntityTypeCache.Get( value, false );
+                if ( entityType != null )
+                {
+                    FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityType.Id.ToString() ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the type of the entity for this Attribute Category
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
+        public Type EntityType
+        {
+            get
+            {
+                string entityTypeName = this.EntityTypeName;
+                return entityTypeName.IsNotNullOrWhiteSpace() ? Type.GetType( entityTypeName ) : null;
+            }
+
+            set
+            {
+                this.EntityTypeName = value.FullName;
+            }
         }
     }
 }

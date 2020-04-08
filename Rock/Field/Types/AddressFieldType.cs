@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -137,7 +138,7 @@ namespace Rock.Field.Types
                     }
                     else
                     {
-                        addressControl.Country = string.Empty;
+                        addressControl.Country = addressControl.GetDefaultCountry();
                         addressControl.Street1 = string.Empty;
                         addressControl.Street2 = string.Empty;
                         addressControl.City = string.Empty;

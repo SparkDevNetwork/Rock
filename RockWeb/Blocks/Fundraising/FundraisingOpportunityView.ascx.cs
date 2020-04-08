@@ -178,8 +178,17 @@ namespace RockWeb.Blocks.Fundraising
                 gm.LoadAttributes( rockContext );
             }
 
-            // only show the 'Donate to a Participant' button if there are participants that are taking contribution requests
-            btnDonateToParticipant.Visible = groupMembers.Where( a => !a.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() ).Any();
+            //
+            // Only show the 'Donate to a Participant' button if there are
+            // participants that are taking contribution requests and the
+            // cutoff date has not been reached.
+            //
+            var allowDonationsUntil = group.GetAttributeValue( "AllowDonationsUntil" )
+                .AsDateTime() ?? DateTime.MaxValue;
+            var donationsAllowed = RockDateTime.Now <= allowDonationsUntil;
+            var anyMemberAllowsDonations = groupMembers
+                .Any( a => !a.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() );
+            btnDonateToParticipant.Visible = donationsAllowed && anyMemberAllowsDonations;
             if ( !string.IsNullOrWhiteSpace( opportunityType.GetAttributeValue( "core_DonateButtonText" ) ) )
             {
                 btnDonateToParticipant.Text = opportunityType.GetAttributeValue( "core_DonateButtonText" );
@@ -200,13 +209,8 @@ namespace RockWeb.Blocks.Fundraising
                 mergeFields.Add( "RegistrationInstanceLinkages", registrationInstance.Linkages );
 
                 // populate merge fields for Registration Counts
-                var maxRegistrantCount = 0;
+                int? maxRegistrantCount = registrationInstance.MaxAttendees;
                 var currentRegistrationCount = 0;
-
-                if ( registrationInstance.MaxAttendees != 0 )
-                {
-                    maxRegistrantCount = registrationInstance.MaxAttendees;
-                }
                
                 currentRegistrationCount = new RegistrationRegistrantService( rockContext ).Queryable().AsNoTracking()
                                                 .Where( r =>
@@ -215,7 +219,7 @@ namespace RockWeb.Blocks.Fundraising
                                                 .Count();
 
                 mergeFields.Add( "CurrentRegistrationCount", currentRegistrationCount );
-                if ( maxRegistrantCount != 0 )
+                if ( maxRegistrantCount.HasValue )
                 {
                     mergeFields.Add( "MaxRegistrantCount", maxRegistrantCount );
                     mergeFields.Add( "RegistrationSpotsAvailable", maxRegistrantCount - currentRegistrationCount );

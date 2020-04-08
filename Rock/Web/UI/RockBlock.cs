@@ -16,7 +16,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
@@ -27,8 +26,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.UI
 {
@@ -81,7 +81,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return (RockPage)this.Page;
+                return ( RockPage ) this.Page;
             }
         }
 
@@ -210,10 +210,9 @@ namespace Rock.Web.UI
                     int properties = 0;
                     foreach ( var attribute in this.GetType().GetCustomAttributes( typeof( ContextAwareAttribute ), true ) )
                     {
-                        var contextAttribute = (ContextAwareAttribute)attribute;
-                        var entityType = contextAttribute.EntityType;
+                        var contextAttribute = ( ContextAwareAttribute ) attribute;
 
-                        if ( contextAttribute.EntityType == null )
+                        if ( !contextAttribute.Contexts.Any() )
                         {
                             // If the entity type was not specified in the attribute, look for a property that defines it
                             string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : string.Empty );
@@ -222,20 +221,19 @@ namespace Rock.Web.UI
                             Guid guid = Guid.Empty;
                             if ( Guid.TryParse( GetAttributeValue( propertyKeyName ), out guid ) )
                             {
-                                entityType = EntityTypeCache.Get( guid );
+                                _contextTypesRequired.Add( EntityTypeCache.Get( guid ) );
                             }
-                        }
-
-                        if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
-                        {
-                            _contextTypesRequired.Add( entityType );
                         }
                         else
                         {
-                            if ( !contextAttribute.IsConfigurable )
+                            foreach ( var context in contextAttribute.Contexts )
                             {
-                                // block support any ContextType of any entityType, and it isn't configurable in BlockPropties, so load all the ones that RockPage knows about
-                                _contextTypesRequired = RockPage.GetContextEntityTypes();
+                                var entityType = context.EntityType;
+
+                                if ( entityType != null && !_contextTypesRequired.Any( e => e.Guid.Equals( entityType.Guid ) ) )
+                                {
+                                    _contextTypesRequired.Add( entityType );
+                                }
                             }
                         }
                     }
@@ -265,7 +263,7 @@ namespace Rock.Web.UI
             IEntity entity = ContextEntity( typeof( T ).FullName );
             if ( entity != null )
             {
-                return (T)entity;
+                return ( T ) entity;
             }
             else
             {
@@ -397,7 +395,7 @@ namespace Rock.Web.UI
         /// <param name="value">The <see cref="System.Object"/> to cache.</param>
         /// <param name="cacheItemPolicy">Optional <see cref="System.Runtime.Caching.CacheItemPolicy"/>, defaults to null</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.")]
+        [Obsolete( "AddCacheItem no longer supports a CacheItemPolicy, specify a number of seconds or absolute datetime instead.", true )]
         protected virtual void AddCacheItem( string key, object value, CacheItemPolicy cacheItemPolicy )
         {
             AddCacheItem( key, value, TimeSpan.MaxValue );
@@ -429,7 +427,7 @@ namespace Rock.Web.UI
         /// <param name="key">A <see cref="System.String"/> representing the key name for the item that will be flushed. This value
         /// defaults to an empty string.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use RemoveCacheItem( string key ) instead.")]
+        [Obsolete( "Use RemoveCacheItem( string key ) instead.", true )]
         protected virtual void FlushCacheItem( string key = "" )
         {
             RemoveCacheItem( key );
@@ -442,7 +440,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="blockId">An <see cref="System.Int32"/> representing the block item that will be flushed.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Method is no longer supported.")]
+        [Obsolete( "Method is no longer supported.", true )]
         protected virtual void FlushSharedBlock( int blockId )
         {
         }
@@ -518,6 +516,18 @@ namespace Rock.Web.UI
                 foreach ( var grid in gridsOnBlock )
                 {
                     grid.EnableStickyHeaders = this.GetAttributeValue( CustomGridOptionsConfig.EnableStickyHeadersAttributeKey ).AsBoolean();
+                    grid.EnableDefaultLaunchWorkflow = this.GetAttributeValue( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey ).AsBoolean();
+
+                    var userDefinedCustomActions = this.GetAttributeValue( CustomGridOptionsConfig.CustomActionsConfigsAttributeKey ).FromJsonOrNull<List<CustomActionConfig>>();
+
+                    if ( userDefinedCustomActions != null && userDefinedCustomActions.Any() )
+                    {
+                        // This is coded this way because the getter might return a new list if the property was null. And if there are any existing
+                        // configs (from the developer perhaps), these user defined configs should supplement, not overwrite
+                        var customActionConfigs = grid.CustomActionConfigs;
+                        customActionConfigs.AddRange( userDefinedCustomActions );
+                        grid.CustomActionConfigs = customActionConfigs;
+                    }
                 }
             }
         }
@@ -536,16 +546,17 @@ namespace Rock.Web.UI
                     var lblShowDebugTimings = this.Page.Form.Controls.OfType<Label>().Where( a => a.ID == "lblShowDebugTimings" ).FirstOrDefault();
                     if ( lblShowDebugTimings != null )
                     {
-                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["PointInTimeMS"]?.AsDoubleOrNull();
+                        var previousPointInTimeMS = lblShowDebugTimings.Attributes["data-PointInTimeMS"]?.AsDoubleOrNull();
                         if ( previousPointInTimeMS.HasValue )
                         {
-                            var lastDurationMS = Math.Round(tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 3);
-                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "</pre>", $"  [{lastDurationMS}ms]</pre>" );
+                            var lastDurationMS = Math.Round( tsDuration.TotalMilliseconds - previousPointInTimeMS.Value, 2 );
+                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "<span data-duration-replace/>", $"{lastDurationMS} ms" );
+                            lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "data-duration=''", $"data-duration='{lastDurationMS}'" );
                         }
 
-                        lblShowDebugTimings.Text += string.Format( "<pre>Start OnLoad {0} @ {1}</pre>", this.BlockName, tsDuration.TotalMilliseconds );
+                        lblShowDebugTimings.Text += string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='padding-left: 24px;'>{0} <small><span style='color:#A4A4A4'>(Block Id: {2})</span></small></td><td class='debug-timestamp'><span data-duration-replace/></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration=''> </td></tr>", this.BlockName, Math.Round( tsDuration.TotalMilliseconds, 2 ), BlockCache.Id );
 
-                        lblShowDebugTimings.Attributes["PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
+                        lblShowDebugTimings.Attributes["data-PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
                     }
                 }
             }
@@ -749,6 +760,26 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Return the current page URL plus any additional parameters
+        /// </summary>
+        /// <param name="additionalQueryParameters">The additional query parameters.</param>
+        /// <returns></returns>
+        public virtual string GetCurrentPageUrl( Dictionary<string, string> additionalQueryParameters = null )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+            if ( additionalQueryParameters != null )
+            {
+                foreach ( var qryParam in additionalQueryParameters )
+                {
+                    pageReference.QueryString[qryParam.Key] = qryParam.Value;
+                }
+            }
+
+            return pageReference.BuildUrl();
+        }
+
+        /// <summary>
         /// If this Attribute is a reference to a PageRoute, this will return the Route, otherwise it will return the normal URL
         /// </summary>
         /// <param name="attributeKey">The attribute key.</param>
@@ -823,7 +854,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="additionalQueryParameters">The additional query parameters.</param>
         /// <returns></returns>
-        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null)
+        public bool NavigateToCurrentPageReference( Dictionary<string, string> additionalQueryParameters = null )
         {
             var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
             pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
@@ -834,6 +865,29 @@ namespace Rock.Web.UI
                     pageReference.QueryString[qryParam.Key] = qryParam.Value;
                 }
             }
+
+            return NavigateToPage( pageReference );
+        }
+
+        /// <summary>
+        /// Navigates to current page reference including current page and query parameters not included in the removeQueryParameterKeys parameter.
+        /// </summary>
+        /// <param name="removeQueryParameterKeys">The remove query parameter keys.</param>
+        /// <returns></returns>
+        public bool NavigateToCurrentPageReferenceWithRemove( List<string> removeQueryParameterKeys )
+        {
+            var pageReference = new Rock.Web.PageReference( this.CurrentPageReference );
+            var currentQueryStrings = new System.Collections.Specialized.NameValueCollection( pageReference.QueryString );
+
+            if ( removeQueryParameterKeys != null )
+            {
+                foreach ( var key in removeQueryParameterKeys )
+                {
+                    currentQueryStrings.Remove( key );
+                }
+            }
+
+            pageReference.QueryString = new System.Collections.Specialized.NameValueCollection( currentQueryStrings );
 
             return NavigateToPage( pageReference );
         }
@@ -1112,7 +1166,8 @@ namespace Rock.Web.UI
         #region User Preferences
 
         /// <summary>
-        /// Returns the user preference value for the current user for a given key
+        /// Returns the application user preference value for the current user for a given key
+        /// NOTE: To get a user preference for a specific block, use <see cref="GetBlockUserPreference(string)"/>
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> representing the key to the user preference.</param>
         /// <returns>A <see cref="System.String" /> representing the user preference value. If a match for the key is not found,
@@ -1137,7 +1192,8 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets a user preference for the current user with the specified key and value, and optionally save value to database
+        /// Sets an application user preference for the current user with the specified key and value, and optionally save value to database.
+        /// NOTE: To set a user preference for a specific block, use <see cref="SetBlockUserPreference(string, string, bool)"/>
         /// </summary>
         /// <param name="key">A <see cref="System.String" /> that represents the key value that identifies the
         /// user preference.</param>
@@ -1180,7 +1236,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return string.Format( "block-{0}-", this.BlockId );
+                return PersonService.GetBlockUserPreferenceKeyPrefix( this.BlockId );
             }
         }
 
@@ -1193,6 +1249,20 @@ namespace Rock.Web.UI
         public string GetBlockUserPreference( string key )
         {
             return RockPage.GetUserPreference( BlockUserPreferencePrefix + key );
+        }
+
+        /// <summary>
+        /// Returns the preference values for the current user and the current block
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, string> GetBlockUserPreferences()
+        {
+            var userPreferences = RockPage.GetUserPreferences( BlockUserPreferencePrefix );
+            int blockUserPreferencePrefixLength = BlockUserPreferencePrefix.Length;
+
+            // remove the block id prefix since we only want the key that the block knows about
+            var blockUserPreferences = userPreferences.ToDictionary( k => k.Key.Substring( blockUserPreferencePrefixLength ), v => v.Value );
+            return blockUserPreferences;
         }
 
         /// <summary>
@@ -1239,7 +1309,7 @@ namespace Rock.Web.UI
                 aAttributes.ID = "aBlockProperties";
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
-                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}", BlockCache.Id, BlockCache.BlockType.Name ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t={1}&CurrentPageId={2}", BlockCache.Id, BlockCache.BlockType.Name, this.PageCache?.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 configControls.Add( aAttributes );
                 HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
@@ -1334,29 +1404,6 @@ namespace Rock.Web.UI
         {
             int? blockEntityTypeId = EntityTypeCache.Get( typeof( Block ) ).Id;
             return Rock.Attribute.Helper.UpdateAttributes( blockCompiledType, blockEntityTypeId, "BlockTypeId", blockTypeId.ToString(), rockContext );
-        }
-
-        /// <summary>
-        /// Reads the security action attributes for this <see cref="Rock.Model.Block" />
-        /// </summary>
-        /// <returns>
-        /// A dictionary containing the actions for the <see cref="Rock.Model.Block">Block's</see> SecurityActionAttributes.
-        /// </returns>
-        internal Dictionary<string, string> GetSecurityActionAttributes()
-        {
-            var securityActions = new Dictionary<string, string>();
-
-            object[] customAttributes = this.GetType().GetCustomAttributes( typeof( SecurityActionAttribute ), true );
-            foreach ( var customAttribute in customAttributes )
-            {
-                var securityActionAttribute = customAttribute as SecurityActionAttribute;
-                if ( securityActionAttribute != null )
-                {
-                    securityActions.Add( securityActionAttribute.Action, securityActionAttribute.Description );
-                }
-            }
-
-            return securityActions;
         }
 
         /// <summary>

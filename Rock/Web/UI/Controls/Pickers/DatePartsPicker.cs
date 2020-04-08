@@ -24,7 +24,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select individual parts (month, day, year) of a date
     /// </summary>
     public class DatePartsPicker : CompositeControl, IRockControl, IRockChangeHandlerControl
     {

@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -127,6 +128,15 @@ namespace Rock.Model
         [DataMember]
         public bool IsRequired { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [hide when none remaining].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [hide when none remaining]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool HideWhenNoneRemaining { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties
@@ -174,27 +184,52 @@ namespace Rock.Model
         /// Builds the single option single quantity checkbox
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="controlLabel">The control label.</param>
         /// <param name="feeValues">The fee values.</param>
+        /// <param name="usageCountRemaining">The usage count remaining.</param>
         /// <returns></returns>
-        private Control GetFeeSingleOptionSingleQuantityControl( bool setValues, List<FeeInfo> feeValues )
+        private Control GetFeeSingleOptionSingleQuantityControl( bool setValues, string controlLabel, List<FeeInfo> feeValues, int? usageCountRemaining )
         {
             var fee = this;
             var cb = new RockCheckBox();
             cb.ID = "fee_" + fee.Id.ToString();
-
-
             cb.SelectedIconCssClass = "fa fa-check-square-o fa-lg";
             cb.UnSelectedIconCssClass = "fa fa-square-o fa-lg";
             cb.Required = fee.IsRequired;
+            cb.Label = controlLabel;
+
+            var currentValue = feeValues?.FirstOrDefault()?.Quantity ?? 0;
 
             if ( fee.IsRequired )
             {
                 cb.Checked = true;
                 cb.Enabled = false;
             }
-            else if ( setValues && feeValues != null && feeValues.Any() )
+            else
             {
-                cb.Checked = feeValues.First().Quantity > 0;
+                if ( usageCountRemaining <= 0 )
+                {
+                    cb.Label += " (none remaining)";
+
+                    // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
+                    if ( currentValue == 0 )
+                    {
+                        // Unless this should be hidden, then set to null so it isn't added.
+                        if ( HideWhenNoneRemaining == true )
+                        {
+                            cb = null;
+                        }
+                        else
+                        {
+                            cb.Enabled = false;
+                        }
+                    }
+                }
+
+                if ( cb != null && setValues )
+                {
+                    cb.Checked = currentValue > 0;
+                }
             }
 
             return cb;
@@ -204,31 +239,50 @@ namespace Rock.Model
         /// Gets the single option multiple quantity.
         /// </summary>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
+        /// <param name="controlLabel">The control label.</param>
         /// <param name="feeValues">The fee values.</param>
         /// <param name="usageCountRemaining">The usage count remaining.</param>
         /// <returns></returns>
-        private Control GetFeeSingleOptionMultipleQuantityControl( bool setValues, List<FeeInfo> feeValues, int? usageCountRemaining )
+        private Control GetFeeSingleOptionMultipleQuantityControl( bool setValues, string controlLabel, List<FeeInfo> feeValues, int? usageCountRemaining )
         {
             var fee = this;
             var numUpDown = new NumberUpDown();
             numUpDown.ID = "fee_" + fee.Id.ToString();
             numUpDown.Minimum = fee.IsRequired == true ? 1 : 0;
             numUpDown.Required = fee.IsRequired;
+            numUpDown.Label = controlLabel;
+
+            var currentValue = feeValues?.FirstOrDefault()?.Quantity ?? 0;
 
             if ( usageCountRemaining.HasValue )
             {
                 if ( usageCountRemaining <= 0 )
                 {
-                    numUpDown.Enabled = false;
-                    numUpDown.Maximum = 0;
+                    numUpDown.Label += " (none remaining)";
+                    numUpDown.Maximum = currentValue;
+
+                    // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
+                    if ( currentValue == 0 )
+                    {
+                        // Unless this should be hidden, then set to null so it isn't added.
+                        if ( HideWhenNoneRemaining == true )
+                        {
+                            numUpDown = null;
+                        }
+                        else
+                        {
+                            numUpDown.Enabled = false;
+                        }
+                    }
                 }
                 else
                 {
+                    numUpDown.Label += $" ({usageCountRemaining} remaining)";
                     numUpDown.Maximum = usageCountRemaining.Value;
                 }
             }
 
-            if ( setValues && feeValues != null && feeValues.Any() )
+            if ( numUpDown != null && setValues && feeValues != null && feeValues.Any() )
             {
                 numUpDown.Value = feeValues.First().Quantity;
             }
@@ -259,14 +313,33 @@ namespace Rock.Model
             ddl.Items.Add( new ListItem() );
             foreach ( var feeItem in fee.FeeItems )
             {
+                var feeInfo = feeValues?.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
+                int currentValue = feeInfo?.Quantity ?? 0;
+
+                string listItemText = feeItem.Cost == 0.0M ? feeItem.Name : $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
+                var listItem = new ListItem( listItemText, feeItem.Id.ToString() );
+
                 int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
-                var listItem = new ListItem( string.Format( "{0} ({1})", feeItem.Name, feeItem.Cost.FormatAsCurrency() ), feeItem.Id.ToString() );
                 if ( usageCountRemaining.HasValue )
                 {
                     if ( usageCountRemaining <= 0 )
                     {
-                        listItem.Enabled = false;
                         listItem.Text += " (none remaining)";
+
+                        // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
+                        if ( currentValue == 0 )
+                        {
+                            // Unless this should be hidden, then set to null so it isn't added.
+                            if ( HideWhenNoneRemaining == true )
+                            {
+                                listItem = null;
+                            }
+                            else
+                            {
+                                listItem.Enabled = false;
+
+                            }
+                        }
                     }
                     else
                     {
@@ -274,7 +347,16 @@ namespace Rock.Model
                     }
                 }
 
-                ddl.Items.Add( listItem );
+                if ( listItem != null )
+                {
+                    ddl.Items.Add( listItem );
+                }
+            }
+
+            // The first item is blank. If there are no other items then return null, this will prevent the control from showing and won't count as a control when deciding to show the fee div.
+            if ( ddl.Items.Count == 1 )
+            {
+                return null;
             }
 
             if ( setValues && feeValues != null && feeValues.Any() )
@@ -302,14 +384,20 @@ namespace Rock.Model
             numberUpDownGroup.ID = "fee_" + fee.Id.ToString();
             numberUpDownGroup.Label = fee.Name;
             numberUpDownGroup.Required = fee.IsRequired;
-            numberUpDownGroup.Controls.Clear();
+
+            numberUpDownGroup.NumberUpDownControls = new List<NumberUpDown>();
 
             foreach ( var feeItem in fee.FeeItems )
             {
+                var feeInfo = feeValues?.FirstOrDefault( a => a.RegistrationTemplateFeeItemId == feeItem.Id );
+                int currentValue = feeInfo?.Quantity ?? 0;
+
+                string controlLabel = feeItem.Cost == 0.0M ? feeItem.Name : $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
+
                 var numUpDown = new NumberUpDown
                 {
                     ID = $"feeItem_{feeItem.Guid.ToString( "N" )}",
-                    Label = string.Format( "{0} ({1})", feeItem.Name, feeItem.Cost.FormatAsCurrency() ),
+                    Label = controlLabel,
                     Minimum = 0
                 };
 
@@ -319,26 +407,48 @@ namespace Rock.Model
                 {
                     if ( usageCountRemaining <= 0 )
                     {
-                        numUpDown.Enabled = false;
-                        numUpDown.Label += " (none available)";
-                        numUpDown.Maximum = 0;
+                        numUpDown.Label += " (none remaining)";
+                        numUpDown.Maximum = currentValue;
+
+                        // if there aren't any remaining, and the currentValue isn't counted in the used counts, disable the option
+                        if ( currentValue == 0 )
+                        {
+                            // Unless this should be hidden, then set to null so it isn't added.
+                            if ( HideWhenNoneRemaining == true )
+                            {
+                                numUpDown = null;
+                            }
+                            else
+                            {
+                                numUpDown.Enabled = false;
+                            }
+                        }
                     }
                     else
                     {
-                        numUpDown.Label += $" ({usageCountRemaining} available)";
+                        numUpDown.Label += $" ({usageCountRemaining} remaining)";
                         numUpDown.Maximum = usageCountRemaining.Value;
                     }
                 }
 
-                numberUpDownGroup.Controls.Add( numUpDown );
-
-                if ( setValues && feeValues != null && feeValues.Any() )
+                if ( numUpDown != null )
                 {
-                    numUpDown.Value = feeValues
-                        .Where( f => f.RegistrationTemplateFeeItemId == feeItem.Id )
-                        .Select( f => f.Quantity )
-                        .FirstOrDefault();
+                    numberUpDownGroup.NumberUpDownControls.Add( numUpDown );
+
+                    if ( setValues && feeValues != null && feeValues.Any() )
+                    {
+                        numUpDown.Value = feeValues
+                            .Where( f => f.RegistrationTemplateFeeItemId == feeItem.Id )
+                            .Select( f => f.Quantity )
+                            .FirstOrDefault();
+                    }
                 }
+            }
+
+            // If there are no items then return null, this will prevent the control from showing and won't count as a control when deciding to show the fee div.
+            if ( !numberUpDownGroup.NumberUpDownControls.Any() )
+            {
+                return null;
             }
 
             return numberUpDownGroup;
@@ -351,8 +461,8 @@ namespace Rock.Model
         /// <param name="registrationInstance">The registration instance.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         /// <param name="feeValues">The fee values.</param>
-        [RockObsolete("1.8")]
-        [Obsolete("Use the override that has otherRegistrants instead.")]
+        [RockObsolete( "1.8" )]
+        [Obsolete( "Use the override that has otherRegistrants instead.", true )]
         public void AddFeeControl( PlaceHolder phFees, RegistrationInstance registrationInstance, bool setValues, List<FeeInfo> feeValues )
         {
             AddFeeControl( phFees, registrationInstance, setValues, feeValues, null );
@@ -370,6 +480,7 @@ namespace Rock.Model
         {
             RegistrationTemplateFee fee = this;
             Control feeControl = null;
+
             if ( fee.FeeType == RegistrationFeeType.Single )
             {
                 var feeItem = fee.FeeItems.FirstOrDefault();
@@ -377,42 +488,21 @@ namespace Rock.Model
                 {
                     int? usageCountRemaining = feeItem.GetUsageCountRemaining( registrationInstance, otherRegistrants );
 
+                    string controlLabel = feeItem.Cost == 0.0M ? feeItem.Name : $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
+
                     if ( fee.AllowMultiple )
                     {
-                        feeControl = GetFeeSingleOptionMultipleQuantityControl( setValues, feeValues, usageCountRemaining );
+                        feeControl = GetFeeSingleOptionMultipleQuantityControl( setValues, controlLabel, feeValues, usageCountRemaining );
                     }
                     else
                     {
-                        feeControl = GetFeeSingleOptionSingleQuantityControl( setValues, feeValues );
-                    }
-
-                    if ( feeControl is IRockControl rockControl )
-                    {
-                        if ( feeItem.Cost != 0.0M )
-                        {
-                            rockControl.Label = $"{feeItem.Name} ({feeItem.Cost.FormatAsCurrency()})";
-                        }
-                        else
-                        {
-                            rockControl.Label = feeItem.Name;
-                        }
-
-                        if ( usageCountRemaining.HasValue )
-                        {
-                            if ( usageCountRemaining <= 0 )
-                            {
-                                rockControl.Label += " (none available)";
-                                if ( rockControl is WebControl rockWebControl )
-                                {
-                                    rockWebControl.Enabled = false;
-                                }
-                            }
-                        }
+                        feeControl = GetFeeSingleOptionSingleQuantityControl( setValues, controlLabel, feeValues, usageCountRemaining );
                     }
                 }
             }
             else
             {
+                
                 if ( fee.AllowMultiple )
                 {
                     feeControl = GetFeeMultipleOptionMultipleQuantityControl( setValues, feeValues, registrationInstance, otherRegistrants );
@@ -482,7 +572,7 @@ namespace Rock.Model
 
                         foreach ( NumberUpDownGroup numberUpDownGroup in numUpDownGroups )
                         {
-                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.ControlGroup )
+                            foreach ( NumberUpDown numberUpDown in numberUpDownGroup.NumberUpDownControls )
                             {
                                 if ( numberUpDown.ID == optionFieldId && numberUpDown.Value > 0 )
                                 {

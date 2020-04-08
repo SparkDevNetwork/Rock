@@ -17,7 +17,6 @@
 namespace Rock.Migrations
 {
     using System;
-    using System.Data.Entity.Migrations;
     using System.IO;
 
     /// <summary>
@@ -50,6 +49,12 @@ namespace Rock.Migrations
             // Copy the existing (old) _css-overrides.less to RockOriginal to preserve any customizations that were made, then replace it with a blank one for the new v8 Rock Theme
             var rockCssOverridesPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Themes\\Rock\\Styles\\_css-overrides.less" );
             var rockOriginalCssOverridesPath = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "Themes\\RockOriginal\\Styles\\_css-overrides.less" );
+
+            if ( !Directory.Exists( Path.GetDirectoryName( rockOriginalCssOverridesPath ) ) )
+            {
+                // The RockOriginal theme doesn't exist, so nothing to do
+                return;
+            }
 
             if ( !File.Exists( rockOriginalCssOverridesPath ) )
             {

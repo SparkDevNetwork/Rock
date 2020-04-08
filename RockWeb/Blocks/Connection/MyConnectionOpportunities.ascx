@@ -18,8 +18,8 @@
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
         <div class="row">
-            <div class="pull-right">
-                <div class="form-horizontal label-md margin-r-lg">
+            <div class="col-xs-12">
+                <div class="form-horizontal label-auto">
                     <Rock:CampusPicker ID="cpCampusFilterForPage" runat="server" CssClass="input-width-lg" AutoPostBack="true" OnSelectedIndexChanged="cpCampusPickerForPage_SelectedIndexChanged" />
                 </div>
             </div>
@@ -46,7 +46,7 @@
                 <asp:Repeater ID="rptConnnectionTypes" runat="server" OnItemDataBound="rptConnnectionTypes_ItemDataBound">
                     <ItemTemplate>
                         <asp:Literal ID="lConnectionTypeName" runat="server" />
-                        <div class="list-as-blocks has-count clearfix">    
+                        <div class="list-as-blocks has-count clearfix">
                             <ul>
                                 <asp:Repeater ID="rptConnectionOpportunities" runat="server" OnItemCommand="rptConnectionOpportunities_ItemCommand">
                                     <ItemTemplate>
@@ -97,7 +97,7 @@
                                     <%# FormatGroupName( Eval("Group"), Eval("GroupRole"), Eval("GroupStatus") )  %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="Connector.PersonAlias.Person.LastName,Connector.PersonAlias.Person.NickName" />
+                            <Rock:RockBoundField DataField="Connector" HeaderText="Connector" SortExpression="ConnectorPersonAlias.Person.LastName,ConnectorPersonAlias.Person.NickName" />
                             <Rock:RockBoundField DataField="LastActivity" HeaderText="Last Activity" HtmlEncode="false" SortExpression="LastActivity" />
                             <Rock:RockBoundField DataField="LastActivityNote" HeaderText="Last Activity Note" HtmlEncode="false" />
                             <asp:TemplateField HeaderText="State" SortExpression="ConnectionState" >
@@ -110,6 +110,7 @@
                                     <span class='label label-<%# Eval("StatusLabel") %>'><%# Eval("Status") %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
+                            <Rock:SecurityField />
                             <Rock:DeleteField OnClick="gRequests_Delete" />
                         </Columns>
                     </Rock:Grid>

@@ -23,12 +23,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.Web.Utilities;
 
 namespace Rock.Reporting.DataFilter.GroupMember
 {
@@ -519,10 +519,8 @@ namespace Rock.Reporting.DataFilter.GroupMember
             }
 
             Rock.Attribute.Helper.LoadAttributes( fakeGroupMember );
-            foreach ( var attribute in fakeGroupMember.Attributes.Select( a => a.Value ) )
-            {
-                EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute );
-            }
+            var attributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            EntityHelper.AddEntityFieldsForAttributeList( entityAttributeFields, attributeList );
 
             int index = 0;
             var sortedFields = new List<EntityField>();

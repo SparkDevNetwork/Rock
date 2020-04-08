@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,24 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Spatial;
-using System.Dynamic;
 using System.Linq;
-using System.Net;
-using System.Web;
 using System.Web.Http;
-using System.Web.Http.OData;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
@@ -59,14 +47,11 @@ namespace Rock.Rest.Controllers
             if ( block != null && block.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
             {
                 var htmlContentService = (HtmlContentService)Service;
-                var htmlContent = htmlContentService.GetActiveContent( blockId, htmlContents.EntityValue );
+                var htmlContent = htmlContentService.GetActiveContentQueryable( blockId, htmlContents.EntityValue ).FirstOrDefault();
                 if ( htmlContent != null )
                 {
                     htmlContent.Content = htmlContents.Content;
-                    if ( !System.Web.HttpContext.Current.Items.Contains( "CurrentPerson" ) )
-                    {
-                        System.Web.HttpContext.Current.Items.Add( "CurrentPerson", person );
-                    }
+                    System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
 
                     Service.Context.SaveChanges();
 

@@ -16,14 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
-using System.Linq;
 using Rock.Web.Cache;
-using System.Data.Entity;
 
 namespace Rock.Field.Types
 {

@@ -18,15 +18,16 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a financial gateway
     /// </summary>
     public class FinancialGatewayPicker : RockDropDownList
     {

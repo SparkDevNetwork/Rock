@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Administration
     [Category( "Core" )]
     [Description( "Lists all the schedules." )]
 
-    [LinkedPage("Detail Page")] 
+    [LinkedPage("Detail Page")]
     public partial class ScheduleList : RockBlock, ICustomGridColumns
     {
         #region properties
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Administration
             gSchedules.ShowConfirmDeleteDialog = false;
 
             string deleteScript = @"
-    $('table.js-grid-schedule-list a.grid-delete-button').click(function( e ){
+    $('table.js-grid-schedule-list a.grid-delete-button').on('click', function( e ){
         var $btn = $(this);
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this schedule?', function (result) {
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Administration
                 if ( scheduleRow != null )
                 {
                     var scheduleId = (int)scheduleRow.GetPropertyValue( "Id" );
-                    
+
                     if ( _schedulesWithAttendance.Contains(scheduleId) )
                     {
                         e.Row.AddCssClass( "js-has-attendance" );
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "scheduleId", 0 );
+            NavigateToLinkedPage( "DetailPage", "ScheduleId", 0 );
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "scheduleId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "ScheduleId", e.RowKeyId );
         }
 
         /// <summary>

@@ -26,7 +26,8 @@
             <asp:HiddenField ID="hfRegistrationTemplateId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-clipboard"></i> <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="fa fa-clipboard"></i>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
@@ -34,7 +35,7 @@
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
-            <div class="panel-body container-fluid">
+            <div class="panel-body">
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" Heading="Please correct the following:" Visible="false" />
@@ -48,6 +49,11 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         </div>
                     </div>
 
@@ -68,8 +74,8 @@
                                             AutoPostBack="true" OnCheckedChanged="cbMultipleRegistrants_CheckedChanged" />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Maximum Registrants"
-                                            Help="The maximum number of registrants that user is allowed to register. Leave blank for unlimited." Visible="false" />
+                                        <Rock:NumberBox MinimumValue="1" ID="nbMaxRegistrants" runat="server" Label="Max Registrants Per Registration"
+                                            Help="The maximum number of registrants that a person is allowed to register at one time. Leave blank for unlimited." Visible="false" />
                                     </div>
                                 </div>
 
@@ -82,7 +88,7 @@
                                                 Help="If Registrants in Same Family option is set to 'Yes' or 'Ask', should the person registering be able to select people from their family when registering (vs. having to enter the family member's information manually)?" />
                                         </div>
 
-                                        <Rock:RockCheckBox id="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Should a wait list be enabled when the maximum number of registrants is reached." />
+                                        <Rock:RockCheckBox ID="cbWaitListEnabled" runat="server" Label="Enable Wait List" Text="Yes" Help="Check to enable a 'wait list' once the registration's maximum attendees has been reached. The 'Maximum Attendees' must be set on the registration instance for this feature to work." />
                                     </div>
                                     <div class="col-xs-6">
                                         <Rock:RockDropDownList ID="ddlRegistrarOption" runat="server" Label="Registrar Options">
@@ -121,9 +127,6 @@
                                             Help="Is user required to be logged in when registering?" />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowGroupPlacement" runat="server" Label="Allow Group Placement" Text="Yes"
-                                            Help="If enabled, the registration instance will include a Group Placement option for
-                                                adding registrants to specific child groups of a selected parent group." />
                                     </div>
                                 </div>
                             </div>
@@ -145,7 +148,7 @@
                                     <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                     <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
-                                        Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is defined." />
+                                        Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:FinancialGatewayPicker ID="fgpFinancialGateway" runat="server" Label="Financial Gateway"
@@ -162,7 +165,7 @@
                                 <Rock:WorkflowTypePicker ID="wtpRegistrationWorkflow" runat="server" Label="Registration Workflow"
                                     Help="An optional workflow type to launch when a new registration is completed." />
                                 <Rock:RockCheckBox ID="cbAllowExternalUpdates" runat="server" Label="Allow External Updates to Saved Registrations" Text="Yes"
-                                            Help="Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will
+                                    Help="Allow saved registrations to be updated online. If false, the individual will be able to make additional payments but will
                                             not be allowed to change any of the registrant information and attributes." />
                             </div>
                             <div class="col-md-6">
@@ -191,7 +194,7 @@
                     </Rock:PanelWidget>
 
                     <%-- Registration Attributes --%>
-                    <Rock:PanelWidget ID="wpRegistrationAttributes" runat="server" Title="Registration Attributes" >
+                    <Rock:PanelWidget ID="wpRegistrationAttributes" runat="server" Title="Registration Attributes">
                         <div class="grid">
                             <Rock:Grid ID="gRegistrationAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Registration Attribute">
                                 <Columns>
@@ -246,25 +249,40 @@
                         </Rock:Grid>
                     </Rock:PanelWidget>
 
+                    <%-- Placement Configuration Grid --%>
+                    <Rock:PanelWidget ID="pwPlacementConfiguration" runat="server" Title="Placement Configuration">
+                        <Rock:Grid ID="gPlacementConfigurations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Placement Configuration" OnRowDataBound="gPlacementConfigurations_RowDataBound">
+                            <Columns>
+                                <Rock:ReorderField />
+                                <Rock:RockLiteralField ID="lPlacementName" HeaderText="Placement Name" />
+                                <Rock:RockLiteralField ID="lGroupTypeName" HeaderText="Group Type" />
+                                <Rock:RockLiteralField ID="lSharedGroupNames" HeaderText="Shared Groups" />
+                                <Rock:RockBoundField DataField="AllowMultiplePlacements" HeaderText="Allow Multiple" />
+                                <Rock:EditField OnClick="gPlacementConfigurations_EditClick" />
+                                <Rock:DeleteField OnClick="gPlacementConfigurations_DeleteClick" />
+                            </Columns>
+                        </Rock:Grid>
+                    </Rock:PanelWidget>
+
                     <%-- Terms/Text --%>
                     <Rock:PanelWidget ID="wpTerms" runat="server" Title="Terms/Text">
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:RockTextBox ID="tbRegistrationTerm" runat="server" Label="Registration Term" Placeholder="Registration" MaxLength="100" />
-                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Person" MaxLength="100"/>
+                                <Rock:RockTextBox ID="tbRegistrantTerm" runat="server" Label="Registrant Term" Placeholder="Person" MaxLength="100" />
                                 <Rock:RockTextBox ID="tbRegistrationAttributeTitleStart" runat="server" Label="Registration Attribute Title - Start" Placeholder="Registration Information" Help="The section title for attributes that are collected at the start of the registration entry process." MaxLength="200" />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" MaxLength="100"/>
-                                <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount Code" MaxLength="100"/>
-                                <Rock:RockTextBox ID="tbRegistrationAttributeTitleEnd" runat="server" Label="Registration Attribute Title - End" Placeholder="Registration Information" Help="The section title for attributes that are collected at the end of the registration entry process." MaxLength="200"/>
+                                <Rock:RockTextBox ID="tbFeeTerm" runat="server" Label="Fee Term" Placeholder="Additional Options" MaxLength="100" />
+                                <Rock:RockTextBox ID="tbDiscountCodeTerm" runat="server" Label="Discount Code Term" Placeholder="Discount Code" MaxLength="100" />
+                                <Rock:RockTextBox ID="tbRegistrationAttributeTitleEnd" runat="server" Label="Registration Attribute Title - End" Placeholder="Registration Information" Help="The section title for attributes that are collected at the end of the registration entry process." MaxLength="200" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:RockTextBox ID="tbSuccessTitle" runat="server" Label="Success Title" Placeholder="Congratulations"
                                     Help="The heading to display to user after successfully completing a registration of this type." />
-                                <Rock:HtmlEditor ID="heInstructions" runat="server" Label="Registration Instructions" ResizeMaxWidth="720" Height="300" Help="These instructions will appear at the beginning of the registration process when selecting how many registrants for the registration." Toolbar="Light" />
+                                <Rock:HtmlEditor ID="heInstructions" runat="server" Label="Registration Instructions" ResizeMaxWidth="720" Height="300" Help="These instructions will appear at the beginning of the registration process." Toolbar="Light" />
                                 <Rock:CodeEditor ID="ceSuccessText" runat="server" Label="Registration Confirmation Text" EditorMode="Lava" EditorTheme="Rock" EditorHeight="300"
                                     Help="The text to display to user after successfully completing a registration of this type. If there are costs or fees for this registration, a summary of those will be displayed after this text." />
                             </div>
@@ -274,7 +292,8 @@
                     <%-- Show Communication Settings --%>
                     <div class="clearfix" id="registration-detailscheckbox">
                         <div class="pull-right">
-                            <input id="cb-showdetails" type="checkbox" /> Show Communication Settings
+                            <input id="cb-showdetails" type="checkbox" />
+                            Show Communication Settings
                         </div>
                     </div>
 
@@ -400,6 +419,11 @@
                             </Rock:RockControlWrapper>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:RockLiteral ID="lDescription" runat="server" Label="Description" />
+                        </div>
+                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
@@ -407,6 +431,9 @@
                         <Rock:HiddenFieldWithClass ID="hfHasRegistrations" runat="server" CssClass="js-has-registrations" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-template" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
+                            <asp:LinkButton ID="btnPlacements" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnPlacements_Click">
+                                <i class="fa fa-random"></i>
+                            </asp:LinkButton>
                             <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square fa fa-clone" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-security" />
                         </span>
@@ -454,7 +481,7 @@
                         <Rock:RockCheckBox ID="cbCommonValue" runat="server" Label="Common Value" Text="Yes" Visible="false" ValidationGroup="Field"
                             Help="When registering more than one person, should the value of this attribute default to the value entered for first person registered?" />
                         <Rock:RockCheckBox ID="cbShowOnGrid" runat="server" Label="Show on Grid" Text="Yes" Visible="false" ValidationGroup="Field"
-                            Help="Should this value be displayed on the list of registrants?" />
+                            Help="Should this value be displayed on the list of registrants? Note: Some person fields cannot be shown in grids, and group member attributes are only shown in group member lists." />
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbUsePersonCurrentValue" runat="server" Label="Use Current Value" Text="Yes" Visible="false" ValidationGroup="Field"
@@ -466,7 +493,7 @@
                 <Rock:AttributeEditor ID="edtRegistrantAttribute" runat="server" ShowActions="false" ValidationGroup="Field" Visible="false" />
                 <Rock:CodeEditor ID="ceFormFieldPreHtml" runat="server" Label="Pre-HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
                 <Rock:CodeEditor ID="ceFormFieldPostHtml" runat="server" Label="Post-HTML" EditorMode="Lava" EditorTheme="Rock" EditorHeight="100" ValidationGroup="Field" />
-           </Content>
+            </Content>
         </Rock:ModalDialog>
 
         <%-- Discounts Dialog --%>
@@ -474,6 +501,8 @@
             <Content>
                 <asp:HiddenField ID="hfDiscountGuid" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryDiscount" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Discount" />
+                <Rock:NotificationBox ID="nbDuplicateDiscountCode" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockTextBox ID="tbDiscountCode" runat="server" CssClass="input-width-xl" Label="Discount Code" ValidationGroup="Discount" Required="true" />
@@ -500,6 +529,55 @@
             </Content>
         </Rock:ModalDialog>
 
+        <%-- Placement Configuration Dialog --%>
+        <Rock:ModalDialog ID="dlgPlacementConfiguration" runat="server" Title="Placement Configuration" OnSaveClick="dlgPlacementConfiguration_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="PlacementConfiguration">
+            <Content>
+                <asp:HiddenField ID="hfRegistrationPlacementConfigurationGuid" runat="server" />
+                <asp:ValidationSummary ID="vsPlacementConfiguration" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="PlacementConfiguration" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbPlacementConfigurationName" runat="server" Label="Name" Required="true" MaxLength="100" ValidationGroup="PlacementConfiguration" />
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:GroupTypePicker ID="gtpPlacementConfigurationGroupTypeEdit" runat="server" Label="Group Type" Help="The group type to limit placement groups by." ValidationGroup="PlacementConfiguration" Required="true" />
+                        <Rock:RockLiteral ID="lPlacementConfigurationGroupTypeReadOnly" runat="server" Label="Group Type" />
+                        <Rock:RockCheckBox ID="cbPlacementConfigurationAllowMultiple" runat="server" Label="Allow Multiple" Help="Determines if a registrant can be in more than one group for this placement." />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockTextBox ID="tbPlacementConfigurationIconCssClass" runat="server" Label="Icon CSS Class" Help="CSS Icon to use for the placement. If not provided, the icon for the group type will be used." ValidationGroup="PlacementConfiguration" />
+                    </div>
+                </div>
+
+                <Rock:RockControlWrapper ID="rcwPlacementConfigurationSharedGroups" runat="server" Label="Shared Groups">
+                    <asp:HiddenField ID="hfPlacementConfigurationSharedGroupIdList" runat="server" />
+                    <p>The groups below will be linked as placement groups to each registration instance of this template.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:Grid ID="gPlacementConfigurationSharedGroups" runat="server" DisplayType="Light" DataKeyNames="Id" AllowPaging="false" AllowSorting="false">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Group" />
+                                    <Rock:DeleteField OnClick="gPlacementConfigurationSharedGroups_DeleteClick" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                        <div class="col-md-6">
+                            <asp:Panel ID="pnlPlacementConfigurationAddSharedGroup" runat="server" Visible="false">
+                                <Rock:NotificationBox ID="nbAddPlacementGroupWarning" runat="server" NotificationBoxType="Warning" />
+                                <Rock:GroupPicker ID="gpPlacementConfigurationAddSharedGroup" runat="server" Label="Add Group" />
+                                <asp:LinkButton ID="btnPlacementConfigurationAddSharedGroup" runat="server" CssClass="btn btn-xs btn-primary" Text="Add" OnClick="btnPlacementConfigurationAddSharedGroup_Click" />
+                                <asp:LinkButton ID="btnPlacementConfigurationAddSharedGroupCancel" runat="server" CssClass="btn btn-xs btn-link" Text="Cancel" OnClick="btnPlacementConfigurationAddSharedGroupCancel_Click" />
+                            </asp:Panel>
+                        </div>
+                    </div>
+                </Rock:RockControlWrapper>
+            </Content>
+        </Rock:ModalDialog>
+
         <%-- Fees Dialog --%>
         <Rock:ModalDialog ID="dlgFee" runat="server" Title="Fee" OnSaveClick="dlgFee_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Fee">
             <Content>
@@ -513,21 +591,25 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
+                        <Rock:NotificationBox ID="nbFeeItemsConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                         <Rock:RockControlWrapper ID="rcwFeeItemsSingle" runat="server" Label="">
                             <asp:HiddenField ID="hfFeeItemSingleGuid" runat="server" />
                             <Rock:CurrencyBox ID="cbFeeItemSingleCost" runat="server" Label="Cost" ValidationGroup="Fee" />
                             <Rock:NumberBox ID="nbFeeItemSingleMaximumUsageCount" runat="server" Label="Maximum Available" Help="The maximum number of times this fee can be used per registration instance." ValidationGroup="Fee" CssClass="input-width-md" />
                         </Rock:RockControlWrapper>
                         <Rock:RockControlWrapper ID="rcwFeeItemsMultiple" runat="server" Label="Costs" Help="Enter the name, cost, and the maximum number of times this fee can be used per registration instance.">
-                            <asp:Repeater id="rptFeeItemsMultiple" runat="server" OnItemDataBound="rptFeeItemsMultiple_ItemDataBound">
+                            <asp:Repeater ID="rptFeeItemsMultiple" runat="server" OnItemDataBound="rptFeeItemsMultiple_ItemDataBound">
                                 <ItemTemplate>
                                     <div class="controls controls-row form-control-group margin-b-sm">
+                                        <%-- Note: If the FeeItem isn't in the database yet, feeItemId will be 0, so use Guid to identify it --%>
+                                        <asp:HiddenField ID="hfFeeItemId" runat="server" />
+
                                         <asp:HiddenField ID="hfFeeItemGuid" runat="server" />
                                         <asp:Panel ID="pnlFeeItemNameContainer" runat="server">
                                             <Rock:NotificationBox ID="nbFeeItemWarning" runat="server" NotificationBoxType="Default" />
-                                            <Rock:RockTextBox ID="tbFeeItemName" runat="server" CssClass="input-width-md" Placeholder="Option" ValidationGroup="Fee" Required="true"/>
+                                            <Rock:RockTextBox ID="tbFeeItemName" runat="server" CssClass="input-width-md" Placeholder="Option" ValidationGroup="Fee" Required="true" />
                                         </asp:Panel>
-                                        <Rock:CurrencyBox ID="cbFeeItemCost" runat="server" CssClass="input-width-md"  Placeholder="Cost" ValidationGroup="Fee" NumberType="Currency" Required="false" />
+                                        <Rock:CurrencyBox ID="cbFeeItemCost" runat="server" CssClass="input-width-md" Placeholder="Cost" ValidationGroup="Fee" NumberType="Currency" Required="false" />
                                         <Rock:NumberBox ID="nbMaximumUsageCount" runat="server" CssClass="input-width-md" Placeholder="Max Available" ValidationGroup="Fee" Required="false" NumberType="Integer" />
                                         <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteFeeItem_Click"><i class="fa fa-times"></i></asp:LinkButton>
                                     </div>
@@ -545,6 +627,7 @@
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbFeeIsRequired" runat="server" Label="Is Required" ValidationGroup="Fee" Text="Yes" Help="Checking this will mark the fee for new registrations required." />
+                        <Rock:RockCheckBox ID="cbHideWhenNoneRemaining" runat="server" Label="Hide When None Remaining" ValidationGroup="Fee" Text="Yes" Help="If checked then items that have 0 remaining will not display. If not checked then the items will display but will not be selectable." />
                     </div>
                 </div>
             </Content>
@@ -561,36 +644,38 @@
                     return ui;
                 };
 
-                $('#cb-showdetails').change(function () {
+                $('#cb-showdetails').on('change', function () {
                     $('#registration-details').slideDown();
                     $('#registration-detailscheckbox').slideUp();
                 });
 
-                $('.js-expandable-summary-wrapper > label.control-label').click(function () {
+                $('.js-expandable-summary-wrapper > label.control-label').on('click', function () {
                     $(this).closest('.js-expandable-summary-wrapper').find('.js-expandable-summary').toggle(500);
                 })
 
                 // NOTE: js-optional-form-list is a div created in codebehind around the optional forms
                 var $formList = $('.js-optional-form-list');
 
-                $formList.sortable({
-                    helper: fixHelper,
-                    handle: '.form-reorder',
-                    containment: 'parent',
-                    tolerance: 'pointer',
-                    start: function (event, ui) {
-                        {
-                            var start_pos = ui.item.index();
-                            ui.item.data('start_pos', start_pos);
+                if ($formList.length > 0) {
+                    $formList.sortable({
+                        helper: fixHelper,
+                        handle: '.form-reorder',
+                        containment: 'parent',
+                        tolerance: 'pointer',
+                        start: function (event, ui) {
+                            {
+                                var start_pos = ui.item.index();
+                                ui.item.data('start_pos', start_pos);
+                            }
+                        },
+                        update: function (event, ui) {
+                            {
+                                var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
+                                window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
+                            }
                         }
-                    },
-                    update: function (event, ui) {
-                        {
-                            var postbackArg = 're-order-form:' + ui.item.attr('data-key') + ';' + ui.item.index();
-                            window.location = "javascript:__doPostBack('<%=upDetail.ClientID %>', '" +  postbackArg + "')";
-                        }
-                    }
-                });
+                    });
+                }
 
             });
         </script>

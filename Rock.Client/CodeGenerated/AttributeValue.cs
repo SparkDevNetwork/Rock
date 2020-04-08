@@ -57,6 +57,9 @@ namespace Rock.Client
         /// <summary />
         public string Value { get; set; } = @"";
 
+        /// <summary />
+        public decimal? ValueAsNumeric { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -97,6 +100,7 @@ namespace Rock.Client
             this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Value = source.Value;
+            this.ValueAsNumeric = source.ValueAsNumeric;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -123,9 +127,6 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? ValueAsDateTime { get; set; }
-
-        /// <summary />
-        public decimal? ValueAsNumeric { get; set; }
 
         /// <summary />
         public int? ValueAsPersonId { get; set; }

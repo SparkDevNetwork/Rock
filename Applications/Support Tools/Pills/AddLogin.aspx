@@ -78,7 +78,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Rock Pill - Add Login</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous" />
 </head>
 <body>
     <form id="form1" runat="server">
@@ -93,13 +93,13 @@
                 <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" />
 
                 <asp:LinkButton ID="btnCreateLogin" runat="server" OnClick="btnCreateLogin_Click" CssClass="btn btn-primary margin-b-md" Text="Create User" />
-                
+
                 <div style="margin-top: 24px;">
                     <Rock:NotificationBox ID="nbMessages" NotificationBoxType="Info" runat="server"  />
                 </div>
             </div>
         </div>
-        
+
     </div>
     </form>
 </body>

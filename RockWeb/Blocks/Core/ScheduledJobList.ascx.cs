@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gScheduledJobs_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "serviceJobId", 0 );
+            NavigateToLinkedPage( "DetailPage", "ServiceJobId", 0 );
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gScheduledJobs_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "serviceJobId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "ServiceJobId", e.RowKeyId );
         }
 
         /// <summary>

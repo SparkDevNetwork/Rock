@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -25,7 +24,6 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Security;
 
 namespace Rock.Model
 {

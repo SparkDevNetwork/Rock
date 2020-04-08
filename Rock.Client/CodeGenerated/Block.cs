@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettings { get; set; }
+
+        /// <summary />
         public int BlockTypeId { get; set; }
 
         /// <summary />
@@ -114,6 +117,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Block source )
         {
             this.Id = source.Id;
+            this.AdditionalSettings = source.AdditionalSettings;
             this.BlockTypeId = source.BlockTypeId;
             this.CssClass = source.CssClass;
             this.ForeignGuid = source.ForeignGuid;

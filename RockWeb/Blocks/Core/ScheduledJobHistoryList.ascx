@@ -8,14 +8,14 @@
         <asp:Panel ID="pnlScheduledJobs" CssClass="panel panel-block" runat="server">
             
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-history"></i> Scheduled Job History</h1>
+                <h1 class="panel-title"><i class="fa fa-history"></i> Scheduled Job History for <asp:Literal ID="lJobName" runat="server" /></h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gScheduledJobHistory" runat="server" TooltipField="Description" AllowSorting="true" OnRowDataBound="gScheduledJobHistory_RowDataBound">
                         <Columns>
-                            <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start DateTime" SortExpression="StartDateTime" ItemStyle-HorizontalAlign="left"/>
-                            <Rock:DateTimeField DataField="StopDateTime" HeaderText="Stop DateTime" SortExpression="StopDateTime" ItemStyle-HorizontalAlign="left"/>
+                            <Rock:DateTimeField DataField="StartDateTime" HeaderText="Start DateTime" SortExpression="StartDateTime"/>
+                            <Rock:DateTimeField DataField="StopDateTime" HeaderText="Stop DateTime" SortExpression="StopDateTime"/>
                             <Rock:RockLiteralField ID="lDurationSeconds" HeaderText="Run Duration" SortExpression="DurationSeconds" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" />
                             <Rock:RockLiteralField ID="lStatus" HeaderText="Status" SortExpression="Status" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center"/>
                             <Rock:RockBoundField DataField="StatusMessageAsHtml" HeaderText="Status Message" HtmlEncode="false" SortExpression="StatusMessage" TruncateLength="255" />

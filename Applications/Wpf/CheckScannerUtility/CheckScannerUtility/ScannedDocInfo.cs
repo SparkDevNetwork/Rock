@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using Rock.Apps.CheckScannerUtility.Models;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -191,7 +193,8 @@ namespace Rock.Apps.CheckScannerUtility
         public string CheckNumber { get; set; }
 
         /// <summary>
-        /// Any other MICR data that isn't the Routing, AccountNumber or CheckNumber
+        /// Any other MICR data that isn't the Routing, AccountNumber or CheckNumber.
+        /// Only applies to Ranger.
         /// </summary>
         /// <value>
         /// The other data.
@@ -223,12 +226,28 @@ namespace Rock.Apps.CheckScannerUtility
         public bool BadMicr { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether no image data was included in the scan
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [image failure]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ImageFailure { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> is duplicate.
         /// </summary>
         /// <value>
         ///   <c>true</c> if duplicate; otherwise, <c>false</c>.
         /// </value>
         public bool Duplicate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the account amount capture list (if configured to capture amounts)
+        /// </summary>
+        /// <value>
+        /// The account amount capture list.
+        /// </value>
+        public List<DisplayAccountValueModel> AccountAmountCaptureList { get; set; } = null;
 
         #endregion
     }

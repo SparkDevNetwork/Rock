@@ -95,7 +95,11 @@ namespace RockWeb.Blocks.Crm
             {
                 try
                 {
-                    targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
+                    targetPerson = new PersonService( rockContext ).GetByPersonActionIdentifier( personKey, "OptOut" );
+                    if ( targetPerson == null )
+                    {
+                        targetPerson = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
+                    }
                 }
                 catch ( System.FormatException )
                 {

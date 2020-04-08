@@ -18,13 +18,17 @@ using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI.WebControls;
-using Rock.Web.Cache;
+
 using Rock.Data;
-using Rock.Storage.AssetStorage;
 using Rock.Model;
+using Rock.Storage.AssetStorage;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Control than can be used to select an asset storage provider
+    /// </summary>
     class AssetStorageProviderPicker : RockDropDownList
     {
         public bool ShowAll

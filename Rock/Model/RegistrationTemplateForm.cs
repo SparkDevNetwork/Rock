@@ -24,7 +24,6 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
-using Rock.Security;
 
 namespace Rock.Model
 {

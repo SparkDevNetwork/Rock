@@ -18,12 +18,10 @@ using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using Rock;
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [ToolboxData( "<{0}:TimeField runat=server></{0}:DateField>" )]
     public class TimeField : RockBoundField
@@ -63,7 +61,7 @@ namespace Rock.Web.UI.Controls
         {
             string script = @"
     $('.grid-table tr td span.time-field').tooltip({html: true, container: 'body', delay: { show: 100, hide: 100 }});
-    $('.grid-table tr td span.time-field').click( function(){ $(this).tooltip('hide'); });;
+    $('.grid-table tr td span.time-field').on('click', function(){ $(this).tooltip('hide'); });;
 ";
             ScriptManager.RegisterStartupScript( control, control.GetType(), "time-field-popover", script, true );
 

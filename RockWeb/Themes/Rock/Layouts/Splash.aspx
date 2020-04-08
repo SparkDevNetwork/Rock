@@ -26,15 +26,11 @@
     <!-- Set the viewport width to device width for mobile disabling zooming -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>" ></script>
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
 
     <!-- Included CSS Files -->
     <link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/bootstrap.css", true) %>"/>
 	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/theme.css", true) %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>"/>
-
-    <script src="<%# ResolveRockUrl("~/Scripts/bootstrap.min.js", true) %>" ></script>
 
 </head>
 <body id="splash">

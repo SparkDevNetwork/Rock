@@ -16,39 +16,202 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Transaction Matching" )]
     [Category( "Finance" )]
     [Description( "Used to match transactions to an individual and allocate the transaction amount to financial account(s)." )]
 
-    [AccountsField( "Accounts", "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts", false, "", "", 0 )]
-    [LinkedPage( "Add Family Link", "Select the page where a new family can be added. If specified, a link will be shown which will open in a new window when clicked", false, "6a11a13d-05ab-4982-a4c2-67a8b1950c74,af36e4c2-78c6-4737-a983-e7a78137ddc7", "", 2 )]
-    [LinkedPage( "Add Business Link", "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked", false, "", "", 3 )]
-    [LinkedPage( "Batch Detail Page", "Select the page for displaying batch details", false, "", "", 3)]
-    [LinkedPage( "Transaction Detail Page", "Select the page to return to, if this block was being used to edit a single transaction.", false, "", "", 4 )]
+    [AccountsField(
+        "Accounts",
+        Key = AttributeKey.Accounts,
+        Description = "Select the accounts that transaction amounts can be allocated to.  Leave blank to show all accounts",
+        IsRequired = false,
+        Order = 0 )]
 
-    [BooleanField( "Expand Person Search Options", "When selecting a person, expand the additional search options by default.", defaultValue: true, order: 5 )]
+
+    [LinkedPage(
+        "Add Family Link",
+        Key = AttributeKey.AddFamilyLink,
+        Description = "Select the page to be opened in a separate browser window where a new family can be added. If not specified, you can create a new family within this block.",
+        IsRequired = false,
+        Order = 1 )]
+
+    [LinkedPage(
+        "Add Business Link",
+        Key = AttributeKey.AddBusinessLink,
+        Description = "Select the page to be opened in a separate browser window where a new business can be added. If not specified, you can create a new business within this block.",
+        IsRequired = false,
+        Order = 2 )]
+
+    [LinkedPage(
+        "Batch Detail Page",
+        Key = AttributeKey.BatchDetailPage,
+        Description = "Select the page for displaying batch details",
+        IsRequired = false,
+        Order = 3 )]
+
+    [LinkedPage(
+        "Transaction Detail Page",
+        Key = AttributeKey.TransactionDetailPage,
+        Description = "Select the page to return to, if this block was being used to edit a single transaction.",
+        IsRequired = false,
+        Order = 4 )]
+
+    [BooleanField(
+        "Expand Person Search Options",
+        Key = AttributeKey.ExpandPersonSearchOptions,
+        Description = "When selecting a person, expand the additional search options by default.",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+
+    [BooleanField(
+        "Prompt to Edit Payment Detail Attributes",
+        Key = AttributeKey.DisplayPaymentDetailAttributeControls,
+        Description = "If Transaction Payment Detail has attributes configured, this will prompt to edit the values for those.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    [DefinedValueField(
+        "Default Person Connection Status",
+        Key = AttributeKey.DefaultPersonConnectionStatus,
+        IsRequired = false,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to default the connection status dropdown to.",
+        Order = 7 )]
+
+    [DefinedValueField(
+        "Person Record Status",
+        Key = AttributeKey.PersonRecordStatus,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
+        IsRequired = false,
+        Description = "The default status to use when adding a person. This is not shown as a selection.",
+        Order = 8 )]
+
+    [BooleanField(
+        "Show Family Role",
+        Key = AttributeKey.ShowFamilyRole,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefaultBooleanValue = true,
+        Description = "Determines if the Adult/Child toggle should be shown. If hidden, the role will be set to adult. The default will always be adult.",
+        Order = 9 )]
+
+    [BooleanField(
+        "Show Email",
+        Key = AttributeKey.ShowEmail,
+        Category = AttributeCategory.AddPersonOrBusiness,
+        DefaultBooleanValue = false,
+        Description = "Determines if the email address field should be shown.",
+        Order = 9 )]
+
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Categories for attributes
+        /// </summary>
+        private static class AttributeCategory
+        {
+            /// <summary>
+            /// The add person or business section
+            /// </summary>
+            public const string AddPersonOrBusiness = "Creating a new Person or Business";
+        }
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            /// <summary>
+            /// The accounts
+            /// </summary>
+            public const string Accounts = "Accounts";
+
+            /// <summary>
+            /// The add family link
+            /// </summary>
+            public const string AddFamilyLink = "AddFamilyLink";
+
+            /// <summary>
+            /// The add business link
+            /// </summary>
+            public const string AddBusinessLink = "AddBusinessLink";
+
+            /// <summary>
+            /// The batch detail page
+            /// </summary>
+            public const string BatchDetailPage = "BatchDetailPage";
+
+            /// <summary>
+            /// The transaction detail page
+            /// </summary>
+            public const string TransactionDetailPage = "TransactionDetailPage";
+
+            /// <summary>
+            /// The expand person search options
+            /// </summary>
+            public const string ExpandPersonSearchOptions = "ExpandPersonSearchOptions";
+
+            /// <summary>
+            /// The display payment detail attribute controls
+            /// </summary>
+            public const string DisplayPaymentDetailAttributeControls = "DisplayPaymentDetailAttributeControls";
+
+            /// <summary>
+            /// The default person connection status
+            /// </summary>
+            public const string DefaultPersonConnectionStatus = "DefaultPersonConnectionStatus";
+
+            /// <summary>
+            /// The person record status
+            /// </summary>
+            public const string PersonRecordStatus = "PersonRecordStatus";
+
+            /// <summary>
+            /// The person record status
+            /// </summary>
+            public const string ShowFamilyRole = "ShowFamilyRole";
+
+            /// <summary>
+            /// The show email
+            /// </summary>
+            public const string ShowEmail = "ShowEmail";
+        }
+
+        #endregion Attribute Keys
+
+        #region PageParameterKeys
+
+        public static class PageParameterKey
+        {
+            public const string BatchId = "BatchId";
+            public const string TransactionId = "TransactionId";
+        }
+
+        #endregion PageParameterKeys
+
         #region Properties
 
         /// <summary>
@@ -111,7 +274,7 @@ namespace RockWeb.Blocks.Finance
             RockPage.AddScriptLink( "~/Scripts/jquery.fluidbox.min.js" );
 
             string script = string.Format( @"
-    $('.transaction-image-thumbnail').click( function() {{
+    $('.transaction-image-thumbnail').on('click', function() {{
         var $primaryHyperlink = $('.transaction-image a');
         var $primaryImg = $('.transaction-image a img');
         var primarySrc = $primaryHyperlink.attr('href');
@@ -150,7 +313,7 @@ namespace RockWeb.Blocks.Finance
             {
                 hfBackNextHistory.Value = string.Empty;
                 LoadDropDowns();
-                ShowDetail( PageParameter( "BatchId" ).AsInteger() );
+                RenderState();
             }
             else
             {
@@ -161,15 +324,18 @@ namespace RockWeb.Blocks.Finance
             }
 
             // Display Payment Detail Attributes
-            int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
-            if (transactionId.HasValue)
+            if ( this.GetAttributeValue( AttributeKey.DisplayPaymentDetailAttributeControls ).AsBoolean() )
             {
-                using (var rockContext = new RockContext())
+                int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
+                if ( transactionId.HasValue )
                 {
-                    var financialTransactionService = new FinancialTransactionService(rockContext);
-                    var txn = financialTransactionService.Queryable().Where(t => t.Id == transactionId).SingleOrDefault();
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var financialTransactionService = new FinancialTransactionService( rockContext );
+                        var txn = financialTransactionService.Queryable().Where( t => t.Id == transactionId ).SingleOrDefault();
 
-                    DisplayPaymentDetailAttributeControls(txn);
+                        DisplayPaymentDetailAttributeControls( txn );
+                    }
                 }
             }
         }
@@ -178,11 +344,12 @@ namespace RockWeb.Blocks.Finance
         /// If there are any Payment Detail attributes, display their edit controls and populate any existing values
         /// </summary>
         /// <param name="txn">The <see cref="FinancialTransaction"/> to load attributes from </param>
-        protected void DisplayPaymentDetailAttributeControls(FinancialTransaction txn)
+
+        protected void DisplayPaymentDetailAttributeControls( FinancialTransaction txn )
         {
             txn.FinancialPaymentDetail.LoadAttributes();
             phPaymentAttributeEdits.Controls.Clear();
-            Helper.AddEditControls(txn.FinancialPaymentDetail, phPaymentAttributeEdits, true, BlockValidationGroup);
+            Helper.AddEditControls( txn.FinancialPaymentDetail, phPaymentAttributeEdits, true, BlockValidationGroup );
         }
 
         /// <summary>
@@ -204,7 +371,7 @@ namespace RockWeb.Blocks.Finance
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             LoadDropDowns();
-            ShowDetail( PageParameter( "BatchId" ).AsInteger() );
+            RenderState();
         }
 
         #endregion
@@ -218,9 +385,9 @@ namespace RockWeb.Blocks.Finance
         {
             // get accounts that are both allowed by the BlockSettings and also in the personal AccountList setting
             var rockContext = new RockContext();
-            var blockAccountGuidList = GetAttributeValue( "Accounts" ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
+            var blockAccountGuidList = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
-            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            string keyPrefix = GetUserPreferenceKeyPrefix();
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var optionalAccountGuidList = ( this.GetUserPreference( keyPrefix + "optional-account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
 
@@ -233,10 +400,10 @@ namespace RockWeb.Blocks.Finance
             {
                 accountQry = accountQry.Where( a => blockAccountGuidList.Contains( a.Guid ) );
             }
-            
+
             if ( !personalAccountGuidList.Any() )
             {
-                if (!optionalAccountGuidList.Any())
+                if ( !optionalAccountGuidList.Any() )
                 {
                     // if no personal accounts are selected, and there are no optional accounts either, show all the accounts that are allowed in block settings
                 }
@@ -264,9 +431,9 @@ namespace RockWeb.Blocks.Finance
                     accountQry = selectedAccountQry;
                 }
             }
-            
+
             // Show only the accounts that match the batch campus if the corresponding setting is true
-            int? batchId = PageParameter( "BatchId" ).AsIntegerOrNull();
+            int? batchId = PageParameter( PageParameterKey.BatchId ).AsIntegerOrNull();
             if ( ( this.GetUserPreference( keyPrefix + "filter-accounts-batch-campus" ) ?? string.Empty ).AsBoolean() && batchId.HasValue )
             {
                 // Put a highlight label on this panel that shows the Campus of the Batch being worked on:
@@ -316,12 +483,12 @@ namespace RockWeb.Blocks.Finance
         /// <exception cref="NotImplementedException"></exception>
         private string GetCampusNameFromBatch( RockContext rockContext, int? batchId )
         {
-            if ( ! batchId.HasValue )
+            if ( !batchId.HasValue )
             {
                 return string.Empty;
             }
 
-            var name = new FinancialBatchService( rockContext ).Queryable().Where( b => b.Id == batchId.Value ).Select( a=>a.Campus.Name ).FirstOrDefault();
+            var name = new FinancialBatchService( rockContext ).Queryable().Where( b => b.Id == batchId.Value ).Select( a => a.Campus.Name ).FirstOrDefault();
             if ( name != null )
             {
                 return name;
@@ -333,34 +500,54 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the user preference key prefix.
+        /// </summary>
+        /// <returns></returns>
+        private string GetUserPreferenceKeyPrefix()
+        {
+            return string.Format( "transaction-matching-{0}-", BlockId );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="batchId">The financial batch identifier.</param>
         public void ShowDetail( int batchId )
         {
-            string temp = this.GetAttributeValue( "AddFamilyLink" );
-            string addFamilyUrl = this.LinkedPageUrl( "AddFamilyLink" );
-            string addBusinessUrl = this.LinkedPageUrl( "AddBusinessLink" );
+            btnAddFamily.Visible = true;
+            btnAddBusiness.Visible = true;
+            btnFilter.Visible = true;
+            divAddNewMatch.Visible = false;
+            pnlEdit.Visible = true;
 
-            ppSelectNew.ExpandSearchOptions = this.GetAttributeValue( "ExpandPersonSearchOptions" ).AsBoolean();
+            string addFamilyUrl = this.LinkedPageUrl( AttributeKey.AddFamilyLink );
+            string addBusinessUrl = this.LinkedPageUrl( AttributeKey.AddBusinessLink );
 
-            rcwAddNewFamily.Visible = !string.IsNullOrWhiteSpace( addFamilyUrl );
-            if ( rcwAddNewFamily.Visible )
+            ppSelectNew.ExpandSearchOptions = this.GetAttributeValue( AttributeKey.ExpandPersonSearchOptions ).AsBoolean();
+
+            if ( !string.IsNullOrWhiteSpace( addFamilyUrl ) )
             {
                 // force the link to open a new scrollable,resizable browser window (and make it work in FF, Chrome and IE) http://stackoverflow.com/a/2315916/1755417
-                hlAddNewFamily.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addFamilyUrl );
+                btnAddFamily.OnClientClick = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addFamilyUrl );
+            }
+            else
+            {
+                btnAddFamily.OnClientClick = null;
             }
 
-            rcwAddNewBusiness.Visible = !string.IsNullOrWhiteSpace( addBusinessUrl );
-            if ( rcwAddNewBusiness.Visible )
+            if ( !string.IsNullOrWhiteSpace( addBusinessUrl ) )
             {
-                hlAddNewBusiness.Attributes["onclick"] = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addBusinessUrl );
+                btnAddBusiness.OnClientClick = string.Format( "javascript: window.open('{0}', '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;", addBusinessUrl );
+            }
+            else
+            {
+                btnAddBusiness.OnClientClick = null;
             }
 
             hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
 
-            int? specificTransactionId = PageParameter( "TransactionId" ).AsIntegerOrNull();
+            int? specificTransactionId = PageParameter( PageParameterKey.TransactionId ).AsIntegerOrNull();
             if ( specificTransactionId.HasValue )
             {
                 hfBackNextHistory.Value = specificTransactionId.Value.ToString();
@@ -369,11 +556,11 @@ namespace RockWeb.Blocks.Finance
                 btnNext.Text = "Save";
             }
 
-            NavigateToTransaction( Direction.Next );
+            NavigateToTransaction( IsPostBack ? Direction.Current : Direction.Next );
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private enum Direction
         {
@@ -410,7 +597,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     position--;
                 }
-                else if ( direction == Direction.Next)
+                else if ( direction == Direction.Next )
                 {
                     position++;
                 }
@@ -452,7 +639,10 @@ namespace RockWeb.Blocks.Finance
                 if ( toTransactionId.HasValue )
                 {
                     qryTransactionsToMatch = financialTransactionService
-                        .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                        .Queryable()
+                        .Include( ft => ft.AuthorizedPersonAlias.Person )
+                        .Include( ft => ft.ProcessedByPersonAlias.Person )
+                        .Include( ft => ft.Images )
                         .Where( a => a.Id == toTransactionId );
                 }
 
@@ -468,9 +658,12 @@ namespace RockWeb.Blocks.Finance
                 FinancialTransaction transactionToMatch = qryTransactionsToMatch.FirstOrDefault();
                 if ( transactionToMatch == null )
                 {
-                    // we exhausted the transactions that aren't processed and aren't in our history list, so remove those those restrictions and show all transactions that haven't been matched yet
+                    // we exhausted the transactions that aren't processed and aren't in our history list, so remove those restrictions and show all transactions that haven't been matched yet
                     var qryRemainingTransactionsToMatch = financialTransactionService
-                        .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                        .Queryable()
+                        .Include( ft => ft.AuthorizedPersonAlias.Person )
+                        .Include( ft => ft.ProcessedByPersonAlias.Person )
+                        .Include( ft => ft.Images )
                         .Where( a => a.AuthorizedPersonAliasId == null );
 
                     if ( batchId != 0 )
@@ -503,12 +696,12 @@ namespace RockWeb.Blocks.Finance
                 if ( transactionToMatch == null )
                 {
                     nbNoUnmatchedTransactionsRemaining.Visible = true;
-                    lbFinish.Visible = true; 
+                    lbFinish.Visible = true;
                     pnlEdit.Visible = false;
 
                     btnFilter.Visible = false;
-                    rcwAddNewBusiness.Visible = false;
-                    rcwAddNewFamily.Visible = false;
+                    btnAddFamily.Visible = false;
+                    btnAddBusiness.Visible = false;
                 }
                 else
                 {
@@ -538,7 +731,7 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potentional transaction matching sessions will know that it is currently getting looked at
+                    // Unless somebody else is processing it, immediately mark the transaction as getting processed by the current person so that other potential transaction matching sessions will know that it is currently getting looked at
                     if ( !transactionToMatch.ProcessedByPersonAliasId.HasValue )
                     {
                         transactionToMatch.ProcessedByPersonAlias = null;
@@ -550,7 +743,7 @@ namespace RockWeb.Blocks.Finance
                     hfTransactionId.Value = transactionToMatch.Id.ToString();
 
                     // stored the value in cents to avoid javascript floating point math issues
-                    hfOriginalTotalAmount.Value = (transactionToMatch.TotalAmount*100).ToString();
+                    hfOriginalTotalAmount.Value = ( transactionToMatch.TotalAmount * 100 ).ToString();
                     hfCurrencySymbol.Value = GlobalAttributesCache.Value( "CurrencySymbol" );
 
                     // get the first 2 images (should be no more than 2, but just in case)
@@ -631,7 +824,11 @@ namespace RockWeb.Blocks.Finance
 
                     ddlIndividual_SelectedIndexChanged( null, null );
 
-                    ppSelectNew.SetValue( null );
+                    if ( direction != Direction.Current )
+                    {
+                        ppSelectNew.SetValue( null );
+                    }
+
                     if ( transactionToMatch.TransactionDetails.Any() )
                     {
                         cbTotalAmount.Text = transactionToMatch.TotalAmount.ToString();
@@ -662,7 +859,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( existingAmounts )
                     {
-                        string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+                        string keyPrefix = GetUserPreferenceKeyPrefix();
                         bool onlyShowSelectedAccounts = this.GetUserPreference( keyPrefix + "only-show-selected-accounts" ).AsBoolean();
                         UpdateVisibleAccountBoxes( onlyShowSelectedAccounts );
                     }
@@ -672,14 +869,11 @@ namespace RockWeb.Blocks.Finance
                     }
 
                     tbSummary.Text = transactionToMatch.Summary;
+                    var primaryImage = GetPrimaryImage( transactionToMatch );
 
-                    if ( transactionToMatch.Images.Any() )
+                    if ( primaryImage != null )
                     {
-                        var primaryImage = transactionToMatch.Images
-                            .OrderBy( i => i.Order )
-                            .FirstOrDefault();
-
-                        lImage.Text = string.Format( "<a href='{0}'><img src='{0}'/></a>", ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId )) );
+                        lImage.Text = GetCheckImageHtml( primaryImage );
                         lImage.Visible = true;
                         nbNoTransactionImageWarning.Visible = false;
 
@@ -697,7 +891,10 @@ namespace RockWeb.Blocks.Finance
                         nbNoTransactionImageWarning.Visible = true;
                     }
 
-                    DisplayPaymentDetailAttributeControls(transactionToMatch);
+                    if ( this.GetAttributeValue( AttributeKey.DisplayPaymentDetailAttributeControls ).AsBoolean() )
+                    {
+                        DisplayPaymentDetailAttributeControls( transactionToMatch );
+                    }
                 }
                 else
                 {
@@ -711,12 +908,20 @@ namespace RockWeb.Blocks.Finance
                     qryTransactionCount = qryTransactionCount.Where( a => a.BatchId == batchId );
                 }
 
-                // get count of transactions that haven't been matched (not including the one we are currently editing)
+                // get count of transactions that have been matched (not including the one we are currently editing)
                 int currentTranId = hfTransactionId.Value.AsInteger();
-                int matchedRemainingCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
-                int totalBatchItemCount = qryTransactionCount.Count();
+                int matchedCount = qryTransactionCount.Count( a => a.AuthorizedPersonAliasId != null && a.Id != currentTranId );
+                int percentComplete;
 
-                int percentComplete = (int)Math.Round( (double)( 100 * matchedRemainingCount ) / totalBatchItemCount );
+                int totalBatchItemCount = qryTransactionCount.Count();
+                if ( totalBatchItemCount != 0 )
+                {
+                    percentComplete = ( int ) Math.Round( ( double ) ( 100 * matchedCount ) / totalBatchItemCount );
+                }
+                else
+                {
+                    percentComplete = 100;
+                }
 
                 lProgressBar.Text = string.Format(
                         @"<div class='progress'>
@@ -733,6 +938,23 @@ namespace RockWeb.Blocks.Finance
                     _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().Where( a => a.Visible ).FirstOrDefault();
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the primary check image HTML.
+        /// </summary>
+        private string GetCheckImageHtml( FinancialTransactionImage financialTransactionImage )
+        {
+            if ( financialTransactionImage == null )
+            {
+                return string.Empty;
+            }
+
+            return string.Format(
+                "<a href='{0}' target='_blank'><img src='{0}'/></a>",
+                ResolveRockUrl( string.Format(
+                    "~/GetImage.ashx?id={0}",
+                    financialTransactionImage.BinaryFileId ) ) );
         }
 
         private void UpdateVisibleAccountBoxes( bool onlyShowSelectedAccounts = false )
@@ -780,13 +1002,94 @@ namespace RockWeb.Blocks.Finance
         #region Events
 
         /// <summary>
+        /// Handles the SelectedIndexChanged event of the dvpAddPersonMaritalStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dvpAddPersonMaritalStatus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncFamilyControlsOnRoleAndMaritalStatus();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the bgAddPersonRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void bgAddPersonRole_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SyncFamilyControlsOnRoleAndMaritalStatus();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveNewMatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveNewMatch_Click( object sender, EventArgs e )
+        {
+            var newPerson = IsAddNewFamilyMode() ?
+                SaveNewFamily() :
+                SaveNewBusiness();
+
+            if ( newPerson != null )
+            {
+                hfIsAddNewFamilyMode.Value = "false";
+                hfIsAddNewBusinessMode.Value = "false";
+                RenderState();
+
+                ppSelectNew.SetValue( newPerson );
+                ddlIndividual.SetValue( string.Empty );
+                LoadPersonPreview( ppSelectNew.PersonId.Value );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelNewMatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelNewMatch_Click( object sender, EventArgs e )
+        {
+            hfIsAddNewBusinessMode.Value = "false";
+            hfIsAddNewFamilyMode.Value = "false";
+            RenderState();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the BtnAddBusiness control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        protected void BtnAddBusiness_Click( object sender, EventArgs e )
+        {
+            hfIsAddNewFamilyMode.Value = "false";
+            hfIsAddNewBusinessMode.Value = "true";
+            RenderState();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the BtnAddFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="NotImplementedException"></exception>
+        protected void BtnAddFamily_Click( object sender, EventArgs e )
+        {
+            hfIsAddNewFamilyMode.Value = "true";
+            hfIsAddNewBusinessMode.Value = "false";
+            RenderState();
+        }
+
+        /// <summary>
         /// Handles the SaveClick event of the mdAccountsPersonalFilter control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdAccountsPersonalFilter_SaveClick( object sender, EventArgs e )
         {
-            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var selectedAccountIdList = apDisplayedPersonalAccounts.SelectedValuesAsInt().ToList();
             var selectedAccountGuidList = new FinancialAccountService( new RockContext() ).GetByIds( selectedAccountIdList ).Select( a => a.Guid ).ToList();
@@ -815,20 +1118,20 @@ namespace RockWeb.Blocks.Finance
 
             // load the current transaction again to make sure UI shows the accounts based on the updated filter settings
             NavigateToTransaction( Direction.Current );
-            
+
             // Reload the transaction amounts after changing the displayed accounts.
             int? transactionId = hfTransactionId.Value.AsIntegerOrNull();
-            if (transactionId.HasValue)
+            if ( transactionId.HasValue )
             {
-                using (var rockContext = new RockContext())
+                using ( var rockContext = new RockContext() )
                 {
-                    var financialTransactionService = new FinancialTransactionService(rockContext);
-                    var txn = financialTransactionService.Queryable().Where(t => t.Id == transactionId).SingleOrDefault();
+                    var financialTransactionService = new FinancialTransactionService( rockContext );
+                    var txn = financialTransactionService.Queryable().Where( t => t.Id == transactionId ).SingleOrDefault();
 
-                    foreach (var detail in txn.TransactionDetails)
+                    foreach ( var detail in txn.TransactionDetails )
                     {
-                        var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where(a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId).FirstOrDefault();
-                        if (accountBox != null)
+                        var accountBox = rptAccounts.ControlsOfTypeRecursive<CurrencyBox>().Where( a => a.Attributes["data-account-id"].AsInteger() == detail.AccountId ).FirstOrDefault();
+                        if ( accountBox != null )
                         {
                             accountBox.Text = detail.Amount.ToString();
                         }
@@ -846,7 +1149,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFilter_Click( object sender, EventArgs e )
         {
-            string keyPrefix = string.Format( "transaction-matching-{0}-", this.BlockId );
+            string keyPrefix = GetUserPreferenceKeyPrefix();
 
             var personalAccountGuidList = ( this.GetUserPreference( keyPrefix + "account-list" ) ?? string.Empty ).SplitDelimitedValues().Select( a => a.AsGuid() ).ToList();
             var personalAccountList = new FinancialAccountService( new RockContext() )
@@ -870,6 +1173,8 @@ namespace RockWeb.Blocks.Finance
             cpAccounts.SelectedCampusId = ( this.GetUserPreference( keyPrefix + "account-campus" ) ?? string.Empty ).AsIntegerOrNull();
 
             mdAccountsPersonalFilter.Show();
+
+            cbFilterAccountsByBatchsCampus.Visible = cpAccounts.Visible;
         }
 
         /// <summary>
@@ -921,20 +1226,15 @@ namespace RockWeb.Blocks.Finance
             var financialPersonBankAccountService = new FinancialPersonBankAccountService( rockContext );
             int txnId = hfTransactionId.Value.AsInteger();
             var financialTransaction = financialTransactionService
-                    .Queryable( "AuthorizedPersonAlias.Person,ProcessedByPersonAlias.Person" )
+                    .Queryable()
+                    .Include( a => a.AuthorizedPersonAlias.Person )
+                    .Include( a => a.ProcessedByPersonAlias.Person )
                     .FirstOrDefault( t => t.Id == txnId );
 
             // set the AuthorizedPersonId (the person who wrote the check, for example) to the if the SelectNew person (if selected) or person selected in the drop down (if there is somebody selected)
             int? authorizedPersonId = ppSelectNew.PersonId ?? ddlIndividual.SelectedValue.AsIntegerOrNull();
 
             var accountNumberSecured = hfCheckMicrHashed.Value;
-
-            if ( cbTotalAmount.Text.AsDecimalOrNull().HasValue && !authorizedPersonId.HasValue )
-            {
-                nbSaveError.Text = "Transaction must be matched to a person when the amount is specified.";
-                nbSaveError.Visible = true;
-                return;
-            }
 
             // if the transaction was previously matched, but user unmatched it, save it as an unmatched transaction and clear out the detail records (we don't want an unmatched transaction to have detail records)
             if ( financialTransaction != null &&
@@ -948,7 +1248,7 @@ namespace RockWeb.Blocks.Finance
                     financialTransactionDetailService.Delete( detail );
                 }
 
-                changes.AddChange( History.HistoryVerb.Unmatched, History.HistoryChangeType.Record,  "Transaction" );
+                changes.AddChange( History.HistoryVerb.Unmatched, History.HistoryChangeType.Record, "Transaction" );
 
                 HistoryService.SaveChanges(
                     rockContext,
@@ -978,7 +1278,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var personAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( authorizedPersonId.Value );
-                int? personAliasId = personAlias != null ? personAlias.Id : (int?)null;
+                int? personAliasId = personAlias != null ? personAlias.Id : ( int? ) null;
 
                 // if this transaction has an accountnumber associated with it (in other words, it's a valid scanned check), ensure there is a financialPersonBankAccount record
                 if ( financialTransaction.MICRStatus == MICRStatus.Success && !string.IsNullOrWhiteSpace( accountNumberSecured ) )
@@ -999,7 +1299,7 @@ namespace RockWeb.Blocks.Finance
                                 financialPersonBankAccount.AccountNumberMasked = parts[1].Masked();
                             }
 
-                            if ( string.IsNullOrWhiteSpace( financialPersonBankAccount.AccountNumberMasked ))
+                            if ( string.IsNullOrWhiteSpace( financialPersonBankAccount.AccountNumberMasked ) )
                             {
                                 financialPersonBankAccount.AccountNumberMasked = "************????";
                             }
@@ -1050,9 +1350,12 @@ namespace RockWeb.Blocks.Finance
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
                 financialTransaction.ProcessedDateTime = RockDateTime.Now;
 
-                // Payment Detail Attributes
-                financialTransaction.FinancialPaymentDetail.LoadAttributes(rockContext);
-                Helper.GetEditValues(phPaymentAttributeEdits, financialTransaction.FinancialPaymentDetail);
+                if ( this.GetAttributeValue( AttributeKey.DisplayPaymentDetailAttributeControls ).AsBoolean() )
+                {
+                    // Payment Detail Attributes
+                    financialTransaction.FinancialPaymentDetail.LoadAttributes( rockContext );
+                    Helper.GetEditValues( phPaymentAttributeEdits, financialTransaction.FinancialPaymentDetail );
+                }
 
                 changes.AddChange( History.HistoryVerb.Matched, History.HistoryChangeType.Record, "Transaction" );
 
@@ -1068,7 +1371,7 @@ namespace RockWeb.Blocks.Finance
                     false );
 
                 rockContext.SaveChanges();
-                financialTransaction.FinancialPaymentDetail.SaveAttributeValues(rockContext);
+                financialTransaction.FinancialPaymentDetail.SaveAttributeValues( rockContext );
             }
             else
             {
@@ -1076,18 +1379,18 @@ namespace RockWeb.Blocks.Finance
                 MarkTransactionAsNotProcessedByCurrentUser( hfTransactionId.Value.AsInteger() );
             }
 
-            int? specificTransactionId = PageParameter( "TransactionId" ).AsIntegerOrNull();
+            int? specificTransactionId = PageParameter( PageParameterKey.TransactionId ).AsIntegerOrNull();
             if ( specificTransactionId.HasValue )
             {
                 var qryParams = new Dictionary<string, string>();
                 int? batchId = hfBatchId.Value.AsIntegerOrNull();
                 if ( batchId.HasValue )
                 {
-                    qryParams.Add( "BatchId", batchId.Value.ToString() );
+                    qryParams.Add( PageParameterKey.BatchId, batchId.Value.ToString() );
                 }
-                qryParams.Add( "TransactionId", specificTransactionId.Value.ToString() );
+                qryParams.Add( PageParameterKey.TransactionId, specificTransactionId.Value.ToString() );
 
-                NavigateToLinkedPage( "TransactionDetailPage", qryParams );
+                NavigateToLinkedPage( AttributeKey.TransactionDetailPage, qryParams );
             }
             else
             {
@@ -1106,11 +1409,11 @@ namespace RockWeb.Blocks.Finance
             int? batchId = hfBatchId.Value.AsIntegerOrNull();
             if ( batchId.HasValue )
             {
-                qryParams.Add( "BatchId", batchId.Value.ToString() );
+                qryParams.Add( PageParameterKey.BatchId, batchId.Value.ToString() );
             }
-            qryParams.Add( "TransactionId", PageParameter( "TransactionId" ).AsInteger().ToString() );
+            qryParams.Add( PageParameterKey.TransactionId, PageParameter( PageParameterKey.TransactionId ).AsInteger().ToString() );
 
-            NavigateToLinkedPage( "TransactionDetailPage", qryParams );
+            NavigateToLinkedPage( AttributeKey.TransactionDetailPage, qryParams );
         }
 
         /// <summary>
@@ -1143,8 +1446,8 @@ namespace RockWeb.Blocks.Finance
                 // if a person was selected using the PersonPicker, set the PersonDropDown to unselected
                 ddlIndividual.SetValue( string.Empty );
                 LoadPersonPreview( ppSelectNew.PersonId.Value );
-                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().Where(a => a.Visible).FirstOrDefault();
-                
+                _focusControl = rptAccounts.ControlsOfTypeRecursive<Rock.Web.UI.Controls.CurrencyBox>().Where( a => a.Visible ).FirstOrDefault();
+
                 nbSaveError.Text = string.Empty;
                 nbSaveError.Visible = false;
             }
@@ -1177,7 +1480,7 @@ namespace RockWeb.Blocks.Finance
                 else if ( count == 1 )
                 {
                     var personId = personIdsWithEnvelopeNumber.First();
-                    ppSelectNew.SetValue( personService.Get( personId ));
+                    ppSelectNew.SetValue( personService.Get( personId ) );
                     LoadPersonPreview( personId );
                 }
                 else
@@ -1186,7 +1489,7 @@ namespace RockWeb.Blocks.Finance
                     cblEnvelopeSearchPersons.Visible = true;
                     cblEnvelopeSearchPersons.Items.Clear();
                     var personList = personService.Queryable().Where( a => personIdsWithEnvelopeNumber.Contains( a.Id ) ).AsNoTracking().ToList();
-                    foreach (var person in personList)
+                    foreach ( var person in personList )
                     {
                         cblEnvelopeSearchPersons.Items.Add( new ListItem( person.FullName, person.Id.ToString() ) );
                     }
@@ -1233,7 +1536,7 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                NavigateToLinkedPage( "BatchDetailPage", new Dictionary<string, string> { { "BatchId", batchId.Value.ToString() } } );
+                NavigateToLinkedPage( AttributeKey.BatchDetailPage, new Dictionary<string, string> { { PageParameterKey.BatchId, batchId.Value.ToString() } } );
             }
         }
 
@@ -1255,11 +1558,33 @@ namespace RockWeb.Blocks.Finance
                 var spouse = person.GetSpouse( rockContext );
                 lSpouseName.Text = spouse != null ? string.Format( "<p><strong>Spouse: </strong>{0}</p>", spouse.FullName ) : string.Empty;
 
-                var campus = person.GetCampus();
-                lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
-                
-                rptrAddresses.DataSource = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
-                rptrAddresses.DataBind();
+                if ( CampusCache.All( false ).Count > 1 )
+                {
+                    var campus = person.GetCampus();
+                    lCampus.Text = campus != null ? string.Format( "<p><strong>Campus: </strong>{0}</p>", campus.Name ) : string.Empty;
+                }
+
+                var previousDefinedValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS );
+                var addresses = person.GetFamilies().SelectMany( a => a.GroupLocations ).OrderBy( l => l.GroupLocationTypeValue.Order ).ToList();
+                if ( addresses.Where( a => a.GroupLocationTypeValueId == previousDefinedValue.Id ).Count() > 1 )
+                {
+                    var primaryAddresses = addresses.Where( a => a.GroupLocationTypeValueId != previousDefinedValue.Id ).ToList();
+                    var previousAddress = addresses.Where( a => a.GroupLocationTypeValueId == previousDefinedValue.Id ).ToList();
+                    primaryAddresses.Add( previousAddress.First() );
+
+                    rptrAddresses.DataSource = primaryAddresses;
+                    rptrAddresses.DataBind();
+                    rptPrevAddresses.DataSource = previousAddress.Skip( 1 );
+                    rptPrevAddresses.DataBind();
+                    btnMoreAddress.Visible = true;
+                }
+                else
+                {
+                    rptrAddresses.DataSource = addresses;
+                    rptrAddresses.DataBind();
+                    btnMoreAddress.Visible = false;
+                }
+
             }
         }
 
@@ -1314,5 +1639,602 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
+        #region State Determining
+
+        /// <summary>
+        /// Determines whether [is add new family mode].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is add new family mode]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsAddNewFamilyMode()
+        {
+            return hfIsAddNewFamilyMode.Value.Trim().ToLower() == "true";
+        }
+
+        /// <summary>
+        /// Determines whether [is add new business mode].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is add new business mode]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsAddNewBusinessMode()
+        {
+            return hfIsAddNewBusinessMode.Value.Trim().ToLower() == "true";
+        }
+
+        /// <summary>
+        /// Shows the controls needed
+        /// </summary>
+        private void RenderState()
+        {
+            if ( IsAddNewFamilyMode() || IsAddNewBusinessMode() )
+            {
+                RenderAddNewMatchMode();
+            }
+            else
+            {
+                ShowDetail( PageParameter( PageParameterKey.BatchId ).AsInteger() );
+            }
+        }
+
+        /// <summary>
+        /// Renders the add new match mode.
+        /// </summary>
+        private void RenderAddNewMatchMode()
+        {
+            btnAddFamily.Visible = false;
+            btnAddBusiness.Visible = false;
+            btnFilter.Visible = false;
+            divAddNewMatch.Visible = true;
+            pnlEdit.Visible = false;
+
+            var currentTransaction = GetCurrentTransactionUntracked();
+            var primaryImage = GetPrimaryImage( currentTransaction );
+            lAddNewMatchImage.Text = GetCheckImageHtml( primaryImage );
+
+            if ( IsAddNewFamilyMode() )
+            {
+                RenderAddNewFamilyMode();
+            }
+            else
+            {
+                RenderAddNewBusinessMode();
+            }
+        }
+
+        /// <summary>
+        /// Shows the add new family mode.
+        /// </summary>
+        private void RenderAddNewFamilyMode()
+        {
+            divAddNewFamily.Visible = true;
+            divAddNewBusiness.Visible = false;
+
+            BindFamilyGroupRoles( bgAddPersonRole );
+
+            var suffixDefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
+            dvpAddPersonSuffix.DefinedTypeId = suffixDefinedTypeId;
+            dvpAddSpouseSuffix.DefinedTypeId = suffixDefinedTypeId;
+
+            dvpAddPersonMaritalStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ).Id;
+            dvpAddPersonConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS ) ).Id;
+
+            EnforceCampusSettings( cpAddPersonCampus );
+            ResetAddPersonForm();
+        }
+
+        /// <summary>
+        /// Shows the add new business mode.
+        /// </summary>
+        private void RenderAddNewBusinessMode()
+        {
+            divAddNewFamily.Visible = false;
+            divAddNewBusiness.Visible = true;
+            ResetAddBusinessForm();
+        }
+
+        #endregion State Determining
+
+        #region Data Interface
+
+        /// <summary>
+        /// Saves the new family.
+        /// </summary>
+        /// <returns></returns>
+        private Person SaveNewFamily()
+        {
+            var isMarried = IsNewPersonMarried();
+            var isChild = IsNewPersonRoleChild();
+            var gender = GetGender( rblAddPersonGender.SelectedValue );
+
+            var person = new Person
+            {
+                RecordStatusValueId = GetRecordStatusId(),
+                FirstName = tbAddPersonFirstName.Text,
+                LastName = tbAddPersonLastName.Text,
+                SuffixValueId = dvpAddPersonSuffix.SelectedDefinedValueId,
+                Gender = gender,
+                MaritalStatusValueId = isChild ? null : dvpAddPersonMaritalStatus.SelectedDefinedValueId,
+                ConnectionStatusValueId = dvpAddPersonConnectionStatus.SelectedDefinedValueId,
+                Email = ebAddPersonEmail.Text.Trim()
+            };
+
+            var homePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ).Id;
+            var mobilePhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
+
+            var homePhone = GetPhoneModel( pnAddPersonHomePhone, homePhoneTypeId, cbAddPersonHomePhoneSms.Checked, cbAddPersonHomePhoneUnlisted.Checked );
+
+            if ( homePhone != null )
+            {
+                person.PhoneNumbers.Add( homePhone );
+            }
+
+            var mobilePhone = GetPhoneModel( pnAddPersonMobilePhone, mobilePhoneTypeId, cbAddPersonMobilePhoneSms.Checked, cbAddPersonMobilePhoneUnlisted.Checked );
+
+            if ( mobilePhone != null )
+            {
+                person.PhoneNumbers.Add( mobilePhone );
+            }
+
+            var groupMember = new GroupMember
+            {
+                Person = person,
+                GroupRoleId = ( isChild ? GetChildRole() : GetAdultRole() ).Id
+            };
+
+            var familyMembers = new List<GroupMember> { groupMember };
+
+            // Add spouse if needed
+            if ( isMarried && ( !tbAddSpouseFirstName.Text.IsNullOrWhiteSpace() || !tbAddSpouseLastName.Text.IsNullOrWhiteSpace() ) )
+            {
+                var spouseGender = GetGender( rblAddSpouseGender.SelectedValue );
+
+                var spouse = new Person
+                {
+                    RecordStatusValueId = GetRecordStatusId(),
+                    FirstName = tbAddSpouseFirstName.Text,
+                    LastName = tbAddSpouseLastName.Text,
+                    SuffixValueId = dvpAddSpouseSuffix.SelectedDefinedValueId,
+                    Gender = spouseGender,
+                    MaritalStatusValueId = dvpAddPersonMaritalStatus.SelectedDefinedValueId,
+                    ConnectionStatusValueId = dvpAddPersonConnectionStatus.SelectedDefinedValueId
+                };
+
+                if ( homePhone != null )
+                {
+                    var spouseHomePhone = GetPhoneModel( pnAddPersonHomePhone, homePhoneTypeId, cbAddPersonHomePhoneSms.Checked, cbAddPersonHomePhoneUnlisted.Checked );
+                    spouse.PhoneNumbers.Add( spouseHomePhone );
+                }
+
+                var spouseGroupMember = new GroupMember
+                {
+                    Person = spouse,
+                    GroupRoleId = GetAdultRole().Id
+                };
+
+                familyMembers.Add( spouseGroupMember );
+            }
+
+            var rockContext = new RockContext();
+            var campusId = cpAddPersonCampus.SelectedCampusId;
+            var addressLocation = GetAddressLocation( rockContext, acAddPersonAddress );
+            var family = GroupService.SaveNewFamily( rockContext, familyMembers, cpAddPersonCampus.SelectedCampusId, false );
+
+            if ( addressLocation != null )
+            {
+                GroupService.AddNewGroupAddress( rockContext, family, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME, addressLocation );
+            }
+
+            rockContext.SaveChanges();
+            ResetAddPersonForm();
+            return person;
+        }
+
+        /// <summary>
+        /// Saves the new business.
+        /// </summary>
+        /// <returns></returns>
+        private Person SaveNewBusiness()
+        {
+            var business = new Person
+            {
+                RecordStatusValueId = GetRecordStatusId(),
+                RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id,
+                LastName = tbAddBusinessName.Text,
+                Email = ebAddBusinessEmail.Text.Trim()
+            };
+
+            var workPhoneTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ).Id;
+            var workPhone = GetPhoneModel( pnbAddBusinessPhone, workPhoneTypeId, cbAddBusinessSms.Checked, cbAddBusinessUnlisted.Checked );
+
+            if ( workPhone != null )
+            {
+                business.PhoneNumbers.Add( workPhone );
+            }
+
+            var familyMembers = new List<GroupMember> {
+                new GroupMember
+                {
+                    Person = business,
+                    GroupRoleId = GetAdultRole().Id
+                }
+            };
+
+            var rockContext = new RockContext();
+            var addressLocation = GetAddressLocation( rockContext, acAddBusinessAddress );
+            var campusId = cpAddBusinessCampus.SelectedCampusId;
+
+            var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+            var familyName = business.LastName + " Business";
+            var family = GroupService.SaveNewGroup( rockContext, familyGroupType.Id, null, familyName, familyMembers, campusId, false );
+
+            if ( addressLocation != null )
+            {
+                GroupService.AddNewGroupAddress( rockContext, family, Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK, addressLocation );
+            }
+
+            rockContext.SaveChanges();
+            ResetAddBusinessForm();
+            return business;
+        }
+
+        /// <summary>
+        /// Gets the batch identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetBatchId()
+        {
+            if ( _batchId == default( int ) )
+            {
+                _batchId = PageParameter( PageParameterKey.BatchId ).AsInteger();
+            }
+
+            return _batchId;
+        }
+        private int _batchId;
+
+        /// <summary>
+        /// Gets the current transaction.
+        /// </summary>
+        /// <returns></returns>
+        private FinancialTransaction GetCurrentTransactionUntracked()
+        {
+            var transactionId = hfTransactionId.Value.AsInteger();
+            var cachedTransactionId = _currentTransactionUntracked == null ? 0 : _currentTransactionUntracked.Id;
+
+            if ( transactionId != cachedTransactionId && transactionId == 0 )
+            {
+                _currentTransactionUntracked = null;
+            }
+            else if ( transactionId != cachedTransactionId )
+            {
+                var rockContext = new RockContext();
+                var transactionService = new FinancialTransactionService( rockContext );
+
+                _currentTransactionUntracked = transactionService.Queryable()
+                    .AsNoTracking()
+                    .Include( ft => ft.AuthorizedPersonAlias.Person )
+                    .Include( ft => ft.ProcessedByPersonAlias.Person )
+                    .Include( ft => ft.Images )
+                    .FirstOrDefault( ft => ft.Id == transactionId );
+            }
+
+            return _currentTransactionUntracked;
+        }
+        private FinancialTransaction _currentTransactionUntracked;
+
+        /// <summary>
+        /// Gets the primary image.
+        /// </summary>
+        /// <param name="financialTransaction">The financial transaction.</param>
+        /// <returns></returns>
+        private FinancialTransactionImage GetPrimaryImage( FinancialTransaction financialTransaction )
+        {
+            if ( financialTransaction == null || !financialTransaction.Images.Any() )
+            {
+                return null;
+            }
+
+            return financialTransaction.Images
+                .OrderBy( i => i.Order )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the child role.
+        /// </summary>
+        /// <returns></returns>
+        private GroupTypeRoleCache GetChildRole()
+        {
+            var childRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            var groupTypeCache = GroupTypeCache.GetFamilyGroupType();
+            return groupTypeCache.Roles.FirstOrDefault( gtr => gtr.Guid == childRoleGuid );
+        }
+
+        /// <summary>
+        /// Gets the adult role.
+        /// </summary>
+        /// <returns></returns>
+        private GroupTypeRoleCache GetAdultRole()
+        {
+            var adultRoleGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+            var groupTypeCache = GroupTypeCache.GetFamilyGroupType();
+            return groupTypeCache.Roles.FirstOrDefault( gtr => gtr.Guid == adultRoleGuid );
+        }
+
+        #endregion Data Interface
+
+        #region Control Helpers
+
+        /// <summary>
+        /// Binds the family group roles.
+        /// </summary>
+        /// <param name="buttonGroup">The button group.</param>
+        private void BindFamilyGroupRoles( ButtonGroup buttonGroup )
+        {
+            buttonGroup.DataTextField = "Name";
+            buttonGroup.DataValueField = "Id";
+
+            var groupTypeCache = GroupTypeCache.GetFamilyGroupType();
+            buttonGroup.DataSource = groupTypeCache.Roles;
+
+            buttonGroup.DataBind();
+            buttonGroup.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Synchronizes the family controls based on family role and marital status.
+        /// </summary>
+        private void SyncFamilyControlsOnRoleAndMaritalStatus()
+        {
+            var isChild = IsNewPersonRoleChild();
+            var isMarried = IsNewPersonMarried();
+
+            divAddPersonSpouse.Visible = !isChild && ( isMarried || !dvpAddPersonMaritalStatus.SelectedDefinedValueId.HasValue );
+            dvpAddPersonMaritalStatus.Visible = !isChild;
+        }
+
+        /// <summary>
+        /// Determines whether [is new person role child].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is new person role child]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsNewPersonRoleChild()
+        {
+            var childRole = GetChildRole();
+            return childRole != null && childRole.Id == bgAddPersonRole.SelectedValue.AsInteger();
+        }
+
+        /// <summary>
+        /// Determines whether [is new person married].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is new person married]; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsNewPersonMarried()
+        {
+            if ( IsNewPersonRoleChild() )
+            {
+                return false;
+            }
+
+            var marriedStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
+            var maritalStatusDefinedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS );
+            var marriedStatus = maritalStatusDefinedType.DefinedValues.FirstOrDefault( dv => dv.Guid == marriedStatusGuid );
+            return marriedStatus != null && marriedStatus.Id == dvpAddPersonMaritalStatus.SelectedDefinedValueId;
+        }
+
+        /// <summary>
+        /// Gets the gender.
+        /// </summary>
+        /// <param name="mOrF">The m or f.</param>
+        /// <returns></returns>
+        private Gender GetGender( string mOrF )
+        {
+            if ( mOrF == "M" )
+            {
+                return Gender.Male;
+            }
+
+            if ( mOrF == "F" )
+            {
+                return Gender.Female;
+            }
+
+            return Gender.Unknown;
+        }
+
+        /// <summary>
+        /// Gets a phone model.
+        /// </summary>
+        /// <param name="phoneNumberBox">The phone number box.</param>
+        /// <param name="numberTypeValueId">The number type value identifier.</param>
+        /// <param name="isSms">if set to <c>true</c> [is SMS].</param>
+        /// <param name="isUnlisted">if set to <c>true</c> [is unlisted].</param>
+        /// <returns></returns>
+        private PhoneNumber GetPhoneModel( PhoneNumberBox phoneNumberBox, int numberTypeValueId, bool isSms, bool isUnlisted )
+        {
+            var cleanedNumber = PhoneNumber.CleanNumber( phoneNumberBox.Number );
+
+            if ( cleanedNumber.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            return new PhoneNumber
+            {
+                Number = cleanedNumber,
+                NumberTypeValueId = numberTypeValueId,
+                IsMessagingEnabled = isSms,
+                IsUnlisted = isUnlisted,
+                CountryCode = PhoneNumber.CleanNumber( phoneNumberBox.CountryCode )
+            };
+        }
+
+        /// <summary>
+        /// Gets the address location.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="addressControl">The address control.</param>
+        /// <returns></returns>
+        private Location GetAddressLocation( RockContext rockContext, AddressControl addressControl )
+        {
+            var locationService = new LocationService( rockContext );
+            return locationService.Get(
+                addressControl.Street1,
+                addressControl.Street2,
+                addressControl.City,
+                addressControl.State,
+                addressControl.PostalCode,
+                addressControl.Country );
+        }
+
+        /// <summary>
+        /// Enforces the campus settings.
+        /// </summary>
+        /// <param name="campusPicker">The campus picker.</param>
+        private void EnforceCampusSettings( CampusPicker campusPicker )
+        {
+            if ( campusPicker == null || campusPicker.Items == null || campusPicker.Items.Count < 1 )
+            {
+                return;
+            }
+
+            if ( campusPicker.Items.Count == 2 && campusPicker.Items[0].Value.IsNullOrWhiteSpace() )
+            {
+                campusPicker.SelectedIndex = 1;
+                campusPicker.Visible = false;
+                return;
+            }
+
+            var keyPrefix = GetUserPreferenceKeyPrefix();
+            var campusIdSetting = GetUserPreference( keyPrefix + "account-campus" ).AsIntegerOrNull();
+
+            if ( campusIdSetting.HasValue )
+            {
+                campusPicker.SelectedValue = campusIdSetting.ToString();
+                campusPicker.Visible = false;
+            }
+            else
+            {
+                campusPicker.SelectedValue = null;
+                campusPicker.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Resets the add person.
+        /// </summary>
+        private void ResetAddPersonForm()
+        {
+            tbAddPersonFirstName.Text = null;
+            tbAddPersonLastName.Text = null;
+            dvpAddPersonSuffix.SelectedDefinedValueId = null;
+            rblAddPersonGender.SelectedValue = null;
+            bgAddPersonRole.SelectedIndex = 0;
+
+            SetDefaultValue( dvpAddPersonConnectionStatus, AttributeKey.DefaultPersonConnectionStatus );
+            dvpAddPersonMaritalStatus.SelectedDefinedValueId = null;
+
+            tbAddSpouseFirstName.Text = null;
+            tbAddSpouseLastName.Text = null;
+            dvpAddSpouseSuffix.SelectedDefinedValueId = null;
+            rblAddSpouseGender.SelectedValue = null;
+
+            EnforceCampusSettings( cpAddPersonCampus );
+            acAddPersonAddress.SetValues( null );
+
+            pnAddPersonHomePhone.Text = null;
+            cbAddPersonHomePhoneSms.Checked = false;
+            cbAddPersonHomePhoneUnlisted.Checked = false;
+
+            pnAddPersonMobilePhone.Text = null;
+            cbAddPersonMobilePhoneSms.Checked = false;
+            cbAddPersonMobilePhoneUnlisted.Checked = false;
+
+            ebAddPersonEmail.Text = null;
+
+            divAddPersonSpouse.Visible = true;
+            dvpAddPersonMaritalStatus.Visible = true;
+            bgAddPersonRole.Visible = ShouldShowFamilyRoleControl();
+            ebAddPersonEmail.Visible = ShouldShowEmailControl();
+        }
+
+        /// <summary>
+        /// Resets the add person.
+        /// </summary>
+        private void ResetAddBusinessForm()
+        {
+            tbAddBusinessName.Text = null;
+
+            pnbAddBusinessPhone.Text = null;
+            cbAddBusinessSms.Checked = false;
+            cbAddBusinessUnlisted.Checked = false;
+
+            ebAddBusinessEmail.Text = null;
+
+            EnforceCampusSettings( cpAddBusinessCampus );
+
+            acAddBusinessAddress.SetValues( null );
+
+            ebAddBusinessEmail.Visible = ShouldShowEmailControl();
+        }
+
+        /// <summary>
+        /// Sets the default value.
+        /// </summary>
+        /// <param name="definedValuePicker">The defined value picker.</param>
+        /// <param name="attributeKey">The attribute key.</param>
+        private void SetDefaultValue( DefinedValuePicker definedValuePicker, string attributeKey )
+        {
+            var defaultValueGuid = GetAttributeValue( attributeKey ).AsGuidOrNull();
+
+            if ( defaultValueGuid.HasValue )
+            {
+                var defaultValueId = DefinedValueCache.GetId( defaultValueGuid.Value );
+
+                if ( defaultValueId.HasValue )
+                {
+                    definedValuePicker.SelectedDefinedValueId = defaultValueId.Value;
+                    return;
+                }
+            }
+
+            definedValuePicker.SelectedDefinedValueId = null;
+        }
+
+        /// <summary>
+        /// Gets the record status identifier.
+        /// </summary>
+        /// <returns></returns>
+        private int GetRecordStatusId()
+        {
+            var valueGuid = GetAttributeValue( AttributeKey.PersonRecordStatus ).AsGuidOrNull() ??
+                Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
+
+            return DefinedValueCache.Get( valueGuid ).Id;
+        }
+
+        /// <summary>
+        /// Should show the family role control.
+        /// </summary>
+        /// <returns></returns>
+        private bool ShouldShowFamilyRoleControl()
+        {
+            return GetAttributeValue( AttributeKey.ShowFamilyRole ).AsBooleanOrNull() ?? true;
+        }
+
+        /// <summary>
+        /// Should show the family role control.
+        /// </summary>
+        /// <returns></returns>
+        private bool ShouldShowEmailControl()
+        {
+            return GetAttributeValue( AttributeKey.ShowEmail ).AsBooleanOrNull() ?? false;
+        }
+
+        #endregion Control Helpers
     }
 }

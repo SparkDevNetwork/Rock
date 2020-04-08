@@ -35,6 +35,15 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string ChannelCustom1Label { get; set; }
+
+        /// <summary />
+        public string ChannelCustom2Label { get; set; }
+
+        /// <summary />
+        public string ChannelCustomIndexed1Label { get; set; }
+
+        /// <summary />
         public string ChannelData { get; set; }
 
         /// <summary />
@@ -135,6 +144,9 @@ namespace Rock.Client
         public void CopyPropertiesFrom( InteractionChannel source )
         {
             this.Id = source.Id;
+            this.ChannelCustom1Label = source.ChannelCustom1Label;
+            this.ChannelCustom2Label = source.ChannelCustom2Label;
+            this.ChannelCustomIndexed1Label = source.ChannelCustomIndexed1Label;
             this.ChannelData = source.ChannelData;
             this.ChannelDetailTemplate = source.ChannelDetailTemplate;
             this.ChannelEntityId = source.ChannelEntityId;
