@@ -98,6 +98,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.MailChimp"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "org.hfbc.Autobuild", "org.hfbc.Autobuild\org.hfbc.Autobuild.csproj", "{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "church.compass.Autobuild", "church.compass.Autobuild\church.compass.Autobuild.csproj", "{7D31A1B6-880A-4677-A0A8-357E110BF1E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -244,6 +246,10 @@ Global
 		{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E6F3D21F-4D09-4FB1-8D7A-39C67BA0A328}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D31A1B6-880A-4677-A0A8-357E110BF1E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D31A1B6-880A-4677-A0A8-357E110BF1E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D31A1B6-880A-4677-A0A8-357E110BF1E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D31A1B6-880A-4677-A0A8-357E110BF1E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
