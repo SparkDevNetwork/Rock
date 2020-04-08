@@ -42,6 +42,8 @@ namespace Rock.Workflow.Action
         new string[] { "Rock.Field.Types.TextFieldType" } )]
     [WorkflowAttribute( "Person Attribute", "An optional Person attribute that contains the person who is adding the activity.", false, "", "", 3, null,
         new string[] { "Rock.Field.Types.PersonFieldType" } )]
+    [WorkflowAttribute( "Connection Request Activity Attribute", "An optional connection request activity attribute to store the request activity that is created.", false, "", "", 4, null,
+        new string[] { "Rock.Field.Types.ConnectionRequestActivityFieldType" } )]
 
     public class AddConnectionRequestActivity : ActionComponent
     {
@@ -118,8 +120,20 @@ namespace Rock.Workflow.Action
             activity.ConnectionOpportunityId = request.ConnectionOpportunityId;
             activity.ConnectorPersonAliasId = personAliasId;
             activity.Note = note.ResolveMergeFields( mergeFields );
-            new ConnectionRequestActivityService( rockContext ).Add( activity );
+            var connectionRequestActivityService  =  new ConnectionRequestActivityService( rockContext );
+            connectionRequestActivityService.Add( activity );
             rockContext.SaveChanges();
+
+            // If request activity attribute was specified, requery the request and set the attribute's value
+            Guid? connectionRequestActivityAttributeGuid = GetAttributeValue( action, "ConnectionRequestActivityAttribute" ).AsGuidOrNull();
+            if ( connectionRequestActivityAttributeGuid.HasValue )
+            {
+                activity = connectionRequestActivityService.Get( activity.Id );
+                if ( activity != null )
+                {
+                    SetWorkflowAttributeValue( action, connectionRequestActivityAttributeGuid.Value, activity.Guid.ToString() );
+                }
+            }
 
             return true;
         }
