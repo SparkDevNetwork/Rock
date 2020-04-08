@@ -165,7 +165,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                    Command=""{{Binding Callback}}"">
         <Rock:CheckBox.CommandParameter>
             <Rock:CallbackParameters Name="":UpdateSubscription""
-                                     Silent=""True"">
+                                     Passive=""True"">
                 <Rock:Parameter Name=""CommunicationListGuid""
                                 Value=""{subscription.CommunicationList.Guid}"" />
                 <Rock:Parameter Name=""Subscribed""
