@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,11 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
-// Built from v1.6.11
+
+/*
+ * BEMA Modified Core Block ( v6.11.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ */
 namespace RockWeb.Plugins.org_hfbc.Groups
 {
     /// <summary>
