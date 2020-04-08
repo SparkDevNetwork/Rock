@@ -145,18 +145,40 @@ namespace RockWeb.Blocks.CheckIn
         private void ShowDetail()
         {
             bool enableLocationSharing = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean();
+            bool allowManualSetup = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean( true );
 
-            // Inject script used for geo location determination
+            // 1. Match by IP/DNS first.
+            AttemptKioskMatchByIpOrName();
+
+            // 2. Then attempt to match by Geo location if enabled.
             if ( enableLocationSharing )
             {
                 lbRetry.Visible = true;
+
+                // We'll re-enable things if the geo lookup fails.
+                pnlManualConfig.AddCssClass( "hidden" );
+                lbOk.AddCssClass( "hidden" );
+
+                // Inject script used for geo location determination
                 AddGeoLocationScript();
             }
-            else
+
+            // 3. Allow manual setup if enabled.
+            if ( allowManualSetup )
             {
                 pnlManualConfig.Visible = true;
                 lbOk.Visible = true;
-                AttemptKioskMatchByIpOrName();
+            }
+
+            //
+            // If neither location sharing nor manual setup are enabled
+            // then display a friendly message.
+            //
+            if ( !enableLocationSharing && !allowManualSetup )
+            {
+                lbRetry.Visible = true;
+                nbGeoMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbGeoMessage.Text = "Manual configuration is not currently enabled.";
             }
 
             ddlTheme.Items.Clear();
@@ -304,8 +326,8 @@ namespace RockWeb.Blocks.CheckIn
             }}
 
             function error_callback( p ) {{
-                // TODO: decide what to do in this situation...
-                alert( 'error=' + p.message );
+                $(""input[id$='hfGeoError']"").val(p.message);
+                window.location = ""javascript:{0}"";
             }}
         }});
     </script>
@@ -327,7 +349,23 @@ namespace RockWeb.Blocks.CheckIn
         {
             var latitude = hfLatitude.Value.AsDoubleOrNull();
             var longitude = hfLongitude.Value.AsDoubleOrNull();
+            var error = hfGeoError.Value;
             Device kiosk = null;
+
+            //
+            // If we have an error, display all the manual config stuff (if enabled),
+            // otherwise we will redirect so it won't matter.
+            //
+            pnlManualConfig.RemoveCssClass( "hidden" );
+            lbOk.RemoveCssClass( "hidden" );
+
+            if ( !error.IsNullOrWhiteSpace() )
+            {
+                nbGeoMessage.NotificationBoxType = NotificationBoxType.Danger;
+                nbGeoMessage.Text = error;
+
+                return;
+            }
 
             if ( latitude.HasValue && longitude.HasValue )
             {
@@ -421,15 +459,18 @@ namespace RockWeb.Blocks.CheckIn
         {
             bool allowManualSetup = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean( true );
 
+            nbGeoMessage.NotificationBoxType = NotificationBoxType.Warning;
+
             if ( allowManualSetup )
             {
-                pnlManualConfig.Visible = true;
-                lbOk.Visible = true;
-                maWarning.Show( "We could not automatically determine your configuration.", ModalAlertType.Information );
+                nbGeoMessage.Text = "We could not automatically determine your configuration.";
             }
             else
             {
-                maWarning.Show( "You are too far. Try again later.", ModalAlertType.Alert );
+                pnlManualConfig.Visible = false;
+                lbOk.Visible = false;
+
+                nbGeoMessage.Text = "You are too far. Try again later.";
             }
         }
 
