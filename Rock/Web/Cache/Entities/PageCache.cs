@@ -480,6 +480,15 @@ namespace Rock.Web.Cache
             /// </summary>
             [DataMember]
             public string Route { get; internal set; }
+
+            /// <summary>
+            /// If true then the route should work on all sites regardless of the site exclusive setting.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is global; otherwise, <c>false</c>.
+            /// </value>
+            [DataMember]
+            public bool IsGlobal { get; internal set; }
         }
 
         /// <summary>
@@ -617,7 +626,7 @@ namespace Rock.Web.Cache
             page.PageContexts?.ToList().ForEach( c => PageContexts.Add( c.Entity, c.IdParameter ) );
 
             PageRoutes = new List<PageRouteInfo>();
-            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route } ) );
+            page.PageRoutes?.ToList().ForEach( r => PageRoutes.Add( new PageRouteInfo { Id = r.Id, Guid = r.Guid, Route = r.Route, IsGlobal = r.IsGlobal } ) );
         }
 
         /// <summary>
@@ -949,6 +958,17 @@ namespace Rock.Web.Cache
                     PageCache.FlushItem( page.Id );
                 }
             }
+        }
+
+        /// <summary>
+        /// Flushes the page from the cache without removing it from AllIds.
+        /// Call this to force the cache to reload the page from the database the next time it is requested.
+        /// This is needed when a change is made to a PageRoute (which is not an ICacheable)
+        /// </summary>
+        /// <param name="pageId">The page identifier.</param>
+        public static void FlushPage( int pageId )
+        {
+            PageCache.FlushItem( pageId );
         }
 
         #endregion

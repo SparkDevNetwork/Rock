@@ -1519,6 +1519,12 @@ namespace Rock.SystemGuid
         public const string SEND_PHOTO_REQUESTS = "B64D0429-488C-430E-8C32-5C7F32589F73";
 
         /// <summary>
+        /// Gets the short link page GUID
+        /// ParentPage: System Dialogs
+        /// </summary>
+        public const string SHORT_LINK = "A9188D7A-80D9-4865-9C77-9F90E992B65C";
+
+        /// <summary>
         /// Gets the Sites page guid
         /// ParentPage: CMS Configuration
         /// </summary>
