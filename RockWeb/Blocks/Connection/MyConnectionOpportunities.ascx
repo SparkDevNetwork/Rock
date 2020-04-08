@@ -110,6 +110,7 @@
                                     <span class='label label-<%# Eval("StatusLabel") %>'><%# Eval("Status") %></span>
                                 </ItemTemplate>
                             </asp:TemplateField>
+                            <Rock:SecurityField />
                             <Rock:DeleteField OnClick="gRequests_Delete" />
                         </Columns>
                     </Rock:Grid>

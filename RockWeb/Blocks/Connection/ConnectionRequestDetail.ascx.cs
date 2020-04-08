@@ -91,6 +91,14 @@ namespace RockWeb.Blocks.Connection
         EditorMode = CodeEditorMode.Lava,
         Description = "The HTML Content intended to be used as a kind of custom badge bar for the connection request. Includes merge fields ConnectionRequest and Person. <span class='tip tip-lava'></span>",
         Order = 7 )]
+    [BooleanField(
+        "Enable Request Security",
+        DefaultBooleanValue = false,
+        Description = "When enabled, the assigned connector will be given edit and view rights to the connection request.",
+        Key = AttributeKeys.EnableRequestSecurity,
+        IsRequired = true,
+        Order = 8
+        )]
     #endregion Block Attributes
     public partial class ConnectionRequestDetail : PersonBlock, IDetailBlock
     {
@@ -107,6 +115,7 @@ namespace RockWeb.Blocks.Connection
             public const string Badges = "Badges";
             public const string LavaBadgeBar = "LavaBadgeBar";
             public const string LavaHeadingTemplate = "LavaHeadingTemplate";
+            public const string EnableRequestSecurity = "EnableRequestSecurity";
         }
 
         #endregion Attribute Keys
@@ -1184,7 +1193,10 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestActivity.ConnectorPersonAliasId = personAliasId.Value;
                         connectionRequestActivity.Note = tbNote.Text;
 
+                        connectionRequestActivity.LoadAttributes();
+                        avcActivityAttributes.GetEditValues( connectionRequestActivity );
                         rockContext.SaveChanges();
+                        connectionRequestActivity.SaveAttributeValues( rockContext );
 
                         BindConnectionRequestActivitiesGrid( connectionRequest, rockContext );
                         HideDialog();
@@ -1440,11 +1452,12 @@ namespace RockWeb.Blocks.Connection
             if ( connectionOpportunity != null && connectionRequest != null )
             {
 
-                if ( !connectionRequest.IsAuthorized( Authorization.VIEW, CurrentPerson) )
+                if ( !IsAuthorized( Authorization.VIEW, CurrentPerson, connectionRequest ) )
                 {
                     this.BreadCrumbs.Clear();
-                    upDetail.Visible = false;
+                    pnlDetail.Visible = false;
                     nbSecurityWarning.Visible = true;
+                    return;
                 }
 
                 hfConnectionOpportunityId.Value = connectionRequest.ConnectionOpportunityId.ToString();
@@ -1520,6 +1533,24 @@ namespace RockWeb.Blocks.Connection
                         ShowEditDetails( connectionRequest, rockContext );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on connection request.
+        /// </summary>
+        private bool IsAuthorized( string action, Person person, ConnectionRequest request )
+        {
+            if ( GetAttributeValue( AttributeKeys.EnableRequestSecurity ).AsBoolean()
+                && person != null
+                && request.ConnectorPersonAlias != null
+                && request.ConnectorPersonAlias.PersonId == person.Id )
+            {
+                return true;
+            }
+            else
+            {
+                return request.IsAuthorized( action, person );
             }
         }
 
@@ -2478,6 +2509,8 @@ namespace RockWeb.Blocks.Connection
                 dlgConnectionRequestActivities.SaveButtonText = "Save";
             }
 
+            int connectionOpportunityId = int.Parse( hfConnectionOpportunityId.Value );
+            avcActivityAttributes.AddEditControls( activity ?? new ConnectionRequestActivity() { ConnectionOpportunityId = connectionOpportunityId } );
             ShowDialog( "ConnectionRequestActivities", true );
         }
 
