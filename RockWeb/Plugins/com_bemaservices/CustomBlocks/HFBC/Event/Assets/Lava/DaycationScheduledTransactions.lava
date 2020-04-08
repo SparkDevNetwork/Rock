@@ -1,0 +1,14 @@
+﻿<div class="scheduledtransaction-summary">
+  {% assign registrationInstance = ScheduledTransaction.Registration.RegistrationInstance %}
+  <strong>{{registrationInstance.RegistrationTemplate.Category.Name}} - {{registrationInstance.RegistrationTemplate.Name}} - {{ registrationInstance.Name }}</strong><br/>
+  {{ ScheduledTransaction.ScheduledAmount | FormatAsCurrency }} on
+  {% if ScheduledTransaction.CurrencyType != "Credit Card" %}
+  {{ ScheduledTransaction.CurrencyType }}
+  {% else %}
+  {{ ScheduledTransaction.CreditCardType }} {{ ScheduledTransaction.AccountNumberMasked }}
+  {% endif %}<br>
+
+  {% if ScheduledTransaction.StartDate != null %}
+  {{ ScheduledTransaction.FrequencyDescription | downcase }} on {{ ScheduledTransaction.StartDate | Date:"MMMM d, yyyy" }}.
+  {% endif %}
+</div>
