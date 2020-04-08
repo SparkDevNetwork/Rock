@@ -1,5 +1,5 @@
-// <copyright>
-// Copyright by the Spark Development Network
+﻿// <copyright>
+// Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ namespace RockWeb.Plugins.com_bemaservices.Groups
     /// Block for people to find a group that matches their search parameters.
     /// </summary>
     [DisplayName( "Group Finder" )]
-    [Category( "com_bemaservices > Website" )]
+    [Category( "BEMA Services > Groups" )]
     [Description( "Block for people to find a group that matches their search parameters." )]
 
     // Linked Pages
