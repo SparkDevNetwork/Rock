@@ -89,6 +89,23 @@ namespace Rock.SystemGuid
         public const string PERSON_GIVING_ENVELOPE_NUMBER = "76C33FBC-8799-4DF1-B2FE-A6C41AC3DD49";
 
         /// <summary>
+        /// The same site cookie setting
+        /// </summary>
+        public const string SAME_SITE_COOKIE_SETTING = "03F55022-C1E0-45F3-84E1-C2BE8C38E22B";
+
+        #region Assessment Test Related
+
+        /// <summary>
+        /// The attribute that stores the date the person took the DISC test
+        /// </summary>
+        public const string PERSON_DISC_LAST_SAVE_DATE = "990275DB-611B-4D2E-94EA-3FFA1186A5E1";
+
+        /// <summary>
+        /// The person attribute for the DISC profile
+        /// </summary>
+        public const string PERSON_DISC_PROFILE = "6EAC3DF8-CA81-41A5-B1CF-A8DD7BD42F8D";
+
+        /// <summary>
         /// The person attribute for the dominant gifts
         /// </summary>
         public const string PERSON_DOMINANT_GIFTS = "F76FC75E-B33F-42B8-B360-15BA9A1F0F9A";
@@ -109,11 +126,223 @@ namespace Rock.SystemGuid
         public const string PERSON_SPIRITUAL_GIFTS_LAST_SAVE_DATE = "3668547C-3DC4-450B-B92D-4B98A693A371";
 
         /// <summary>
+        /// The person attribute for the conflict mode: winning
+        /// </summary>
+        public const string PERSON_CONFLICT_MODE_WINNING = "7147F706-388E-45E6-BE21-893FC7D652AA";
+
+        /// <summary>
+        /// The person attribute for the conflict mode: resolving 
+        /// </summary>
+        public const string PERSON_CONFLICT_MODE_RESOLVING = "5B811EAC-51B2-41F2-A55A-C966D9DB05EE";
+
+        /// <summary>
+        /// The person attribute for the conflict mode: compromising  
+        /// </summary>
+        public const string PERSON_CONFLICT_MODE_COMPROMISING = "817D6B13-E4AA-4E93-8547-FE711A0065F2";
+
+        /// <summary>
+        /// The person attribute for the conflict mode: avoiding  
+        /// </summary>
+        public const string PERSON_CONFLICT_MODE_AVOIDING = "071A8EFA-AD1C-436A-8E1E-23D215617004";
+
+        /// <summary>
+        /// The person attribute for the conflict mode: yielding  
+        /// </summary>
+        public const string PERSON_CONFLICT_MODE_YIELDING = "D30A33AD-7A60-43E0-84DA-E23600156BF7";
+
+        /// <summary>
+        /// The person attribute for the conflict engagement profile: accommodating  
+        /// </summary>
+        public const string PERSON_CONFLICT_THEME_ACCOMMODATING = "404A64FB-7396-4896-9C94-84DE21E995CA";
+
+        /// <summary>
+        /// The person attribute for the conflict engagement profile: winning  
+        /// </summary>
+        public const string PERSON_CONFLICT_THEME_WINNING = "6DE5878D-7CDB-404D-93A7-27CFF5E98C3B";
+
+        /// <summary>
+        /// The person attribute for the conflict engagement profile: solving  
+        /// </summary>
+        public const string PERSON_CONFLICT_THEME_SOLVING = "33235605-D8BB-4C1E-B231-6F085970A14F";
+
+        /// <summary>
+        /// The person attribute for the EQ self aware
+        /// </summary>
+        public const string PERSON_EQ_CONSTRUCTS_SELF_AWARENESS = "A5EFCE3E-EA41-4FEC-99F6-DD748A7D5BB5";
+
+        /// <summary>
+        /// The person attribute for the EQ self regulate
+        /// </summary>
+        public const string PERSON_EQ_CONSTRUCTS_SELF_REGULATING = "149CD0CD-3CD6-44B6-8D84-A17A477A8978";
+
+        /// <summary>
+        /// The person attribute for the EQ others aware
+        /// </summary>
+        public const string PERSON_EQ_CONSTRUCTS_OTHERS_AWARENESS = "A6AF0BE5-E93A-49EB-AFEA-3520B7C41C78";
+
+        /// <summary>
+        /// The person attribute for the EQ others regulate
+        /// </summary>
+        public const string PERSON_EQ_CONSTRUCTS_OTHERS_REGULATING = "129C108E-CE61-4DFB-A9A8-1EBC3462022E";
+
+        /// <summary>
+        /// The person attribute for the EQ in problem solving
+        /// </summary>
+        public const string PERSON_EQ_SCALES_PROBLEM_SOLVING = "B598BF9C-7A0C-467E-B467-13B40DAC9F8D";
+
+        /// <summary>
+        /// The person attribute for the EQ under stress
+        /// </summary>
+        public const string PERSON_EQ_SCALES_UNDER_STRESS = "C3CB8FB5-34A2-48C8-B1FC-7CEBA670C1ED";
+
+        /// <summary>
+        /// The person attribute for the Motivator Beliving
+        /// </summary>
+        public const string PERSON_MOTIVATOR_BELIVING = "2045D752-2B7F-4314-A58D-AE77AE095CA8";
+
+        /// <summary>
+        /// The person attribute for the Motivator Caring
+        /// </summary>
+        public const string PERSON_MOTIVATOR_CARING = "95C6E9B1-4E26-4D7A-8944-3FED076C12B6";
+
+        /// <summary>
+        /// The person attribute for the Motivator Expressing
+        /// </summary>
+        public const string PERSON_MOTIVATOR_EXPRESSING = "79CC222F-ABB0-489B-8DC3-20FA10A29ADE";
+
+        /// <summary>
+        /// The person attribute for the Motivator Empowering
+        /// </summary>
+        public const string PERSON_MOTIVATOR_EMPOWERING = "510523B0-E428-407A-8C6F-216ADD27CCE0";
+
+        /// <summary>
+        /// The person attribute for the Motivator Engaging
+        /// </summary>
+        public const string PERSON_MOTIVATOR_ENGAGING = "A3B93C89-8C89-431D-A408-7E8C209DF62A";
+
+        /// <summary>
+        /// The person attribute for the Motivator Adapting
+        /// </summary>
+        public const string PERSON_MOTIVATOR_ADAPTING = "7E32DC1C-D912-45AA-9C16-F098ED33A0D2";
+
+        /// <summary>
+        /// The person attribute for the Motivator Gathering
+        /// </summary>
+        public const string PERSON_MOTIVATOR_GATHERING = "2E6960AE-9381-457C-9191-C09CDCAC6FBB";
+
+        /// <summary>
+        /// The person attribute for the Motivator Innovating
+        /// </summary>
+        public const string PERSON_MOTIVATOR_INNOVATING = "B907EC74-CC86-4AEC-9A85-F46FA4152993";
+
+        /// <summary>
+        /// The person attribute for the Motivator Leading
+        /// </summary>
+        public const string PERSON_MOTIVATOR_LEADING = "52652A3A-BE69-4956-B86A-40341481A57C";
+
+        /// <summary>
+        /// The person attribute for the Motivator Learning
+        /// </summary>
+        public const string PERSON_MOTIVATOR_LEARNING = "2579C27B-CE3F-4F2F-B413-1131781106BC";
+
+        /// <summary>
+        /// The person attribute for the Motivator Maximizing
+        /// </summary>
+        public const string PERSON_MOTIVATOR_MAXIMIZING = "F0611197-79C6-4AA3-9BB8-3296604CDA2E";
+
+        /// <summary>
+        /// The person attribute for the Motivator Organizing
+        /// </summary>
+        public const string PERSON_MOTIVATOR_ORGANIZING = "8BA793F1-81B3-43D3-A096-79C3CF50D4C6";
+
+        /// <summary>
+        /// The person attribute for the Motivator Pacing
+        /// </summary>
+        public const string PERSON_MOTIVATOR_PACING = "DD20707F-155B-4784-9BEC-76894A2216A3";
+
+        /// <summary>
+        /// The person attribute for the Motivator Perceiving
+        /// </summary>
+        public const string PERSON_MOTIVATOR_PERCEIVING = "33DBCA52-367D-40CB-BB79-DB38D41E7CF4";
+
+        /// <summary>
+        /// The person attribute for the Motivator Relating
+        /// </summary>
+        public const string PERSON_MOTIVATOR_RELATING = "60653130-E82A-472B-984E-11594547B26C";
+
+        /// <summary>
+        /// The person attribute for the Motivator Serving
+        /// </summary>
+        public const string PERSON_MOTIVATOR_SERVING = "C63CEF01-A942-445B-A27D-824FC6197F4E";
+
+        /// <summary>
+        /// The person attribute for the Motivator Thinking
+        /// </summary>
+        public const string PERSON_MOTIVATOR_THINKING = "4AA4D77D-138D-45A8-827E-1644062BA5C2";
+
+        /// <summary>
+        /// The person attribute for the Motivator Transforming
+        /// </summary>
+        public const string PERSON_MOTIVATOR_TRANSFORMING = "EB185628-9F15-4BFB-BE75-9B08DA73CF7B";
+
+        /// <summary>
+        /// The person attribute for the Motivator Uniting
+        /// </summary>
+        public const string PERSON_MOTIVATOR_UNITING = "D7A987CA-7DF6-4539-96F6-A3641C3F1DED";
+
+        /// <summary>
+        /// The person attribute for the Motivator Persevering
+        /// </summary>
+        public const string PERSON_MOTIVATOR_PERSEVERING = "C4361DE6-6F62-446C-B4B3-39CB670AC0E1";
+
+        /// <summary>
+        /// The person attribute for the Motivator Venturing
+        /// </summary>
+        public const string PERSON_MOTIVATOR_RISKING = "04ED7F11-4C01-43B6-9EF7-C5C4820055B0";
+
+        /// <summary>
+        /// The person attribute for the Motivator Visioning
+        /// </summary>
+        public const string PERSON_MOTIVATOR_VISIONING = "C9BC83A0-27D4-4194-A199-56F2EA83363C";
+
+        /// <summary>
+        /// The person attribute to hold the top 5 motivators.
+        /// </summary>
+        public const string PERSON_MOTIVATOR_TOP_5_MOTIVATORS = "402308F6-44BB-46CF-ADF9-6F62406C9923";
+
+        /// <summary>
+        /// The person attribute for the Motivator Growth Propensity
+        /// </summary>
+        public const string PERSON_MOTIVATOR_GROWTHPROPENSITY = "3BDBF9D3-F4DF-4E4C-A81D-64730217B6EA";
+
+        /// <summary>
+        /// The person attribute for the Motivator Relational Theme
+        /// </summary>
+        public const string PERSON_MOTIVATORS_RELATIONAL_THEME = "CDCBA1D3-4129-43DB-9607-74F57BEBF807";
+
+        /// <summary>
+        /// The person attribute for the Motivator Directional Theme
+        /// </summary>
+        public const string PERSON_MOTIVATOR_DIRECTIONAL_THEME = "0815E9BE-BC24-4568-AC1A-3ECCDFF44D9F";
+
+        /// <summary>
+        /// The person attribute for the Motivator Intellectual Theme
+        /// </summary>
+        public const string PERSON_MOTIVATORS_INTELLECTUAL_THEME = "592A5F89-5E8A-43D8-8843-760207D71699";
+
+        /// <summary>
+        /// The person attribute for the Motivator Positional Theme
+        /// </summary>
+        public const string PERSON_MOTIVATOR_POSITIONAL_THEME = "075FDF4D-DDEC-4106-B996-F48CD1EFC978";
+
+        #endregion
+
+        /// <summary>
         /// The family attribute for storing a family's checkin identifiers
         /// </summary>
         ///
         [RockObsolete( "1.8" )]
-        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.")]
+        [Obsolete( "Check-in identifiers are no longer stored as a family attribute. They are stored as a PersonSearchValue.", true )]
         public const string FAMILY_CHECKIN_IDENTIFIERS = "8F528431-A438-4488-8DC3-CA42E66C1B37";
 
         #region eRA Attributes
@@ -183,6 +412,25 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Communication Module
+
+        /// <summary>
+        /// Communication Entry Wizard Block configuration setting.
+        /// </summary>
+        public const string COMMUNICATION_ENTRY_WIZARD_DEFAULT_AS_BULK = "23C883A6-AD9B-4C91-BAE6-16E0076C5D67";
+
+        /// <summary>
+        /// Communication Entry Block configuration setting.
+        /// </summary>
+        public const string COMMUNICATION_ENTRY_DEFAULT_AS_BULK = "679E5FBB-AB03-4DE4-BB24-1C7CEFEACD3E";
+
+        /// <summary>
+        /// System Communication List/Detail Page configuration setting.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST_DETAIL_PAGE = "9880C186-F079-4113-99B6-EF53AB4FE92D";
+
+        #endregion
+
         #region Communication List (group) attributes
 
         /// <summary>
@@ -202,7 +450,32 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The groupmember (of a communication list) preferred communication medium
         /// </summary>
+        [RockObsolete( "1.10" )]
+        [Obsolete("This value is no longer used. The Communication Preference on the Group Member should be used.")]
         public const string GROUPMEMBER_COMMUNICATION_LIST_PREFERRED_COMMUNICATION_MEDIUM = "D7941908-1F65-CC9B-416C-CCFABE4221B9";
+
+        #endregion
+
+        #region DefinedType Attributes
+
+        /// <summary>
+        /// The Template DefinedType > TemplateBlock DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TEMPLATE_TEMPLATE_BLOCK = "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D";
+
+        /// <summary>
+        /// The Template DefinedType > Icon DefinedValue Attribute Guid
+        /// </summary>
+        public const string DEFINED_TYPE_TEMPLATE_ICON = "831403EB-262E-4BC5-8B5E-F16153493BF5";
+
+        #endregion
+
+        #region Device Type Attributes
+
+        /// <summary>
+        /// The defined value attribute for storing if a device type supports cameras.
+        /// </summary>
+        public const string DEFINED_VALUE_DEVICE_TYPE_SUPPORTS_CAMERAS = "79D1D843-4641-458D-A20B-37E0D7B4AEBE";
 
         #endregion
 
@@ -242,5 +515,103 @@ namespace Rock.SystemGuid
         public const string CONTENT_FILETYPE_WHITELIST = "B895B6D7-BA21-45C0-8913-EF47FAAD69B1";
 
         #endregion File Type Lists
+
+        #region JWT Config Attributes
+
+        /// <summary>
+        /// The defined value attribute for JWT issuer
+        /// </summary>
+        public const string DEFINED_VALUE_JWT_ISSUER = "4B89D006-0523-4C77-A46B-7ECD042FDE99";
+
+        /// <summary>
+        /// The defined value attribute for JWT audience
+        /// </summary>
+        public const string DEFINED_VALUE_JWT_AUDIENCE = "6F9D9BFB-433F-4D77-8758-FBDB2011FB27";
+
+        /// <summary>
+        /// The defined value attribute for JWT person search key
+        /// </summary>
+        public const string DEFINED_VALUE_JWT_SEARCH_KEY = "DEECB6D1-E596-4A15-B0DB-B2947B5DB784";
+
+        #endregion JWT Config Attributes
+
+        #region Workflow Action Attributes
+
+        /// <summary>
+        /// The Campus workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS = "B07F920E-8450-4D1F-985D-6241E4F5E5CB";
+
+        /// <summary>
+        /// The Campus Role workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_ROLE = "5F8F5E6B-5888-4834-B47B-36664FB3A96C";
+
+        /// <summary>
+        /// The Campus Team Member workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_CAMPUS_TEAM_MEMBER = "7CFEDCB2-EA8F-421F-BA5E-B0D8BD10EA92";
+
+        /// <summary>
+        /// The Person workflow action attribute guid for PersonGetCampusTeamMember
+        /// </summary>
+        public const string WORKFLOW_ACTION_PERSON_GET_CAMPUS_TEAM_MEMBER_PERSON = "C10C4C89-2B91-4D9A-8D5F-A3E65758A878";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for FromEmailAddress
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_FROM_EMAIL_ADDRESS = "9F5F7CEC-F369-4FDF-802A-99074CE7A7FC";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for SendToEmailAddresses
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SEND_TO_EMAIL_ADDRESSES = "0C4C13B8-7076-4872-925A-F950886B5E16";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for SendToGroupRole
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SEND_TO_GROUP_ROLE = "D43C2686-7E02-4A70-8D99-3BCD8ECAFB2F";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for Subject
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SUBJECT = "5D9B13B6-CD96-4C7C-86FA-4512B9D28386";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for Body
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_BODY = "4D245B9E-6B03-46E7-8482-A51FBA190E4D";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for CcEmailAddresses
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_CC_EMAIL_ADDRESSES = "99FFD423-2AB6-481B-8749-B4793A16B620";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for BccEmailAddresses
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_BCC_EMAIL_ADDRESSES = "3A131021-CB73-44A8-A142-B42832B77F60";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for AttachmentOne
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_ATTACHMENT_ONE = "C2C7DA55-3018-4645-B9EE-4BCD11855F2C";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for AttachmentTwo
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_ATTACHMENT_TWO = "FFD9193A-451F-40E6-9776-74D5DCAC1450";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for AttachmentThree
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_ATTACHMENT_THREE = "A059767A-5592-4926-948A-1065AF4E9748";
+
+        /// <summary>
+        /// The Send Email workflow action attribute guid for SaveCommunicationHistory
+        /// </summary>
+        public const string WORKFLOW_ACTION_SEND_EMAIL_SAVE_COMMUNICATION_HISTORY = "65E69B78-37D8-4A88-B8AC-71893D2F75EF";
+
+        #endregion Workflow Action Attributes
     }
 }

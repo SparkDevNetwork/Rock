@@ -60,6 +60,7 @@
                             var reportIframe = reportWrapper.find('#report-iframe');
 
                             if (reportWrapper.hasClass("open")) {
+                                $('#body').css("overflow","visible");
                                 reportWrapper.prependTo(".js-report-container");
                                 reportWrapper.css("position", "static");
                                 reportWrapper.css("width", "100%");
@@ -70,13 +71,14 @@
                                 reportWrapper.removeClass("open");
 
 
-                                var height = $(window).height() - 200; //$('#report-iframe').offsetParent().height();;
+                                var height = $(window).height() - 200; //$('#report-iframe').offsetParent().height();
                                 var width = $('#report-iframe').offsetParent().width();
                                 reportIframe.css("width", width);
                                 reportIframe.css("height", height);
                             } else {
+                                $('#body').css("overflow","hidden");
                                 reportWrapper.prependTo("#page-wrapper");
-                                reportWrapper.css("position", "absolute");
+                                reportWrapper.css("position", "fixed");
                                 reportWrapper.css("width", "100%");
                                 reportWrapper.css("height", "100%");
                                 reportWrapper.css("z-index", "9999");
@@ -90,7 +92,7 @@
                         });
                     });
 
-                // post the auth token to the iFrame. 
+                // post the auth token to the iFrame.
                 function postActionLoadReport() {
 
                     // get the access token.
@@ -111,7 +113,7 @@
                     iframe.contentWindow.postMessage(message, "*");;
                 }
 
-                //And if the outer div has no set specific height set.. 
+                //And if the outer div has no set specific height set..
                 $(window).resize(function () {
                     if (!$('.js-report-wrapper').hasClass("open")) {
                         var height = $(window).height() - 200; //$('#report-iframe').offsetParent().height();;

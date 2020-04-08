@@ -18,12 +18,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
-using Rock.Web.Cache;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -238,7 +238,7 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public enum ToolbarConfig
         {
@@ -296,28 +296,6 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["ResizeMaxWidth"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the custom javascript that will get executed when the editor 'onKeyUp' event occurs.
-        /// Obsolete because it is misleading that this actually is triggered off of the onKeyUp event
-        /// </summary>
-        /// <value>
-        /// The custom on change press script.
-        /// </value>
-        [RockObsolete( "1.7" )]
-        [Obsolete( "Use CallbackOnKeyupScript or CallbackOnChangeScript instead", true )]
-        public string OnChangeScript
-        {
-            get
-            {
-                return CallbackOnKeyupScript;
-            }
-
-            set
-            {
-               CallbackOnKeyupScript= value;
             }
         }
 
@@ -439,19 +417,19 @@ namespace Rock.Web.UI.Controls
         /// Format should be one of the following formats
         ///     "FieldName"                     - Label will be a case delimited version of FieldName (i.e. "Field Name")
         ///     "FieldName|LabelName"
-        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects 
-        ///                                       properties and attributes. Label will be a case delimited version of 
+        ///     "FieldName^EntityType           - Will evaluate the entity type and add a navigable tree for the objects
+        ///                                       properties and attributes. Label will be a case delimited version of
         ///                                       FieldName (i.e. "Field Name")
-        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects 
-        ///                                       properties and attributes.    
-        ///                                  
+        ///     "FieldName^EntityType|LabelName - Will evaluate the entity type and add a navigable tree for the objects
+        ///                                       properties and attributes.
+        ///
         /// Supports the following "special" field names
         ///     "GlobalAttribute"               - Provides navigable list of global attributes
         ///     "Campuses"                      - Will return an array of all campuses
         ///     "Date"                          - Will return lava syntax for displaying current date
         ///     "Time"                          - Will return lava syntax for displaying current time
         ///     "DayOfWeek"                     - Will return lava syntax for displaying the current day of the week
-        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter 
+        ///     "PageParameter"                 - Will return lava synax and support for rendering any page parameter
         ///                                       (query string and/or route parameter value)
         /// </remarks>
         /// <value>
@@ -653,20 +631,25 @@ namespace Rock.Web.UI.Controls
         {
             bool rockMergeFieldEnabled = MergeFields.Any();
             bool rockFileBrowserEnabled = false;
+            bool rockAssetManagerEnabled = false;
+            var currentPerson = this.RockBlock().CurrentPerson;
 
             // only show the File/Image plugin if they have Auth to the file browser page
             var fileBrowserPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKFILEBROWSER_PLUGIN_FRAME.AsGuid() );
-            if ( fileBrowserPage != null )
+            if ( fileBrowserPage != null && currentPerson != null )
             {
-                var currentPerson = this.RockBlock().CurrentPerson;
-                if ( currentPerson != null )
-                {
-                    if ( fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                    {
-                        rockFileBrowserEnabled = true;
-                    }
-                }
+                rockFileBrowserEnabled = fileBrowserPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }
+
+            var assetManagerPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME.AsGuid() );
+            if ( assetManagerPage != null && currentPerson != null )
+            {
+                rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );
+            }
+
+            //TODO: Look for a valid asset manager and disable the control if one is not found
+
+
 
             var globalAttributesCache = GlobalAttributesCache.Get();
 
@@ -690,12 +673,12 @@ namespace Rock.Web.UI.Controls
             if ( !string.IsNullOrEmpty( this.CallbackOnKeyupScript ) || !string.IsNullOrEmpty( this.CallbackOnChangeScript ) )
             {
                 callbacksOption =
-$@" 
-onKeyup: function(e) {{  
-    {this.CallbackOnKeyupScript}  
+$@"
+onKeyup: function(e) {{
+    {this.CallbackOnKeyupScript}
 }},
-onChange: function(contents, $editable) {{  
-    {this.CallbackOnChangeScript}  
+onChange: function(contents, $editable) {{
+    {this.CallbackOnChangeScript}
 }}
 ";
              }
@@ -703,7 +686,7 @@ onChange: function(contents, $editable) {{
 
             string summernoteInitScript = $@"
 function pageLoad() {{
-  // remove any leftover popovers that summernote might have created and orphaned  
+  // remove any leftover popovers that summernote might have created and orphaned
   $('.note-popover.popover').hide();
 }}
 
@@ -722,7 +705,7 @@ $(document).ready( function() {{
           image: [
             ['custom1', ['rockimagelink']],
             ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
-            ['custom2', ['rockimagebrowser']],
+            ['custom2', ['rockimagebrowser', 'rockassetmanager']],
             ['float', ['floatLeft', 'floatRight', 'floatNone']],
             ['remove', ['removeMedia']]
           ],
@@ -739,31 +722,36 @@ $(document).ready( function() {{
         }},
 
         callbacks: {{
-           {callbacksOption} 
+           {callbacksOption}
         }},
 
         buttons: {{
             rockfilebrowser: RockFileBrowser,
-            rockimagebrowser: RockImageBrowser, 
-            rockimagelink: RockImageLink, 
+            rockimagebrowser: RockImageBrowser,
+            rockimagelink: RockImageLink,
+            rockassetmanager: RockAssetManager,
             rockmergefield: RockMergeField,
             rockcodeeditor: RockCodeEditor,
             rockpastetext: RockPasteText,
             rockpastefromword: RockPasteFromWord
         }},
 
-        rockFileBrowserOptions: {{ 
+        rockFileBrowserOptions: {{
             enabled: {rockFileBrowserEnabled.ToTrueFalse().ToLower()},
-            documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}', 
+            documentFolderRoot: '{Rock.Security.Encryption.EncryptString( documentFolderRoot )}',
             imageFolderRoot: '{Rock.Security.Encryption.EncryptString( imageFolderRoot )}',
             imageFileTypeWhiteList: '{imageFileTypeWhiteList}',
             fileTypeBlackList: '{fileTypeBlackList}',
             fileTypeWhiteList: '{fileTypeWhiteList}'
         }},
 
-        rockMergeFieldOptions: {{ 
+        rockAssetManagerOptions: {{
+            enabled: { rockAssetManagerEnabled.ToTrueFalse().ToLower() }
+        }},
+
+        rockMergeFieldOptions: {{
             enabled: {rockMergeFieldEnabled.ToTrueFalse().ToLower()},
-            mergeFields: '{this.MergeFields.AsDelimited( "," )}' 
+            mergeFields: '{this.MergeFields.AsDelimited( "," )}'
         }},
         rockTheme: '{( ( RockPage ) this.Page ).Site.Theme}',
 
@@ -771,10 +759,12 @@ $(document).ready( function() {{
             controlId: '{_ceEditor.ClientID}',
             inCodeEditorModeHiddenFieldId: '{_hfInCodeEditorMode.ClientID}'
         }},
+
+        disableDragAndDrop: true,
     }});
 
     if ({StartInCodeEditorMode.ToTrueFalse().ToLower()} && RockCodeEditor) {{
-        RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).click();
+        RockCodeEditor(summerNoteEditor_{this.ClientID}.data('summernote'), true).trigger('click');
     }}
 
 }});

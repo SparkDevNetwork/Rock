@@ -16,11 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Model;
-using System.Linq;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn
 {
@@ -28,14 +29,38 @@ namespace Rock.CheckIn
     /// Cached Check-in Label
     /// </summary>
     [DataContract]
+    [Serializable]
     public class KioskLabel : ItemCache<KioskLabel>
     {
+        #region Constructors
+
         /// <summary>
         /// Prevents a default instance of the <see cref="KioskLabel"/> class from being created.
         /// </summary>
         private KioskLabel()
         {
         }
+
+        #endregion Constructors
+
+        #region Lifespan
+
+        /// <summary>
+        /// The amount of time that this item will live in the cache before expiring. This is set to the time from now
+        /// until midnight for each cache item instance.
+        /// </summary>
+        public override TimeSpan? Lifespan
+        {
+            get
+            {
+                // Expire cache items at midnight
+                var now = RockDateTime.Now;
+                var timespan = now.Date.AddDays( 1 ).Subtract( now );
+                return timespan;
+            }
+        }
+
+        #endregion Lifespan
 
         /// <summary>
         /// Gets or sets the GUID.
@@ -88,7 +113,6 @@ namespace Rock.CheckIn
         /// <value>
         /// The merge fields.
         /// </value>
-        [DataMember]
         public Dictionary<string, string> MergeFields
         {
             get
@@ -122,8 +146,8 @@ namespace Rock.CheckIn
             }
         }
 
-
-        private Dictionary<string, int> _mergeCodeDefinedValueIds = null;
+        [DataMember]
+        private Dictionary<string, int> _mergeCodeDefinedValueIds { get; set; } = null;
 
         #region Static Methods
 
@@ -133,7 +157,7 @@ namespace Rock.CheckIn
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Get( Guid guid ) instead.")]
+        [Obsolete( "Use Get( Guid guid ) instead.", true )]
         public static KioskLabel Read( Guid guid )
         {
             return Get( guid );
@@ -146,9 +170,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public static KioskLabel Get( Guid guid )
         {
-            var now = RockDateTime.Now;
-            var timespan = now.Date.AddDays( 1 ).Subtract( now );
-            return GetOrAddExisting( guid.ToString(), () => Create( guid ), timespan );
+            return GetOrAddExisting( guid.ToString(), () => Create( guid ) );
         }
 
         /// <summary>
@@ -205,7 +227,7 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use Remove( Guid guid ) instead.")]
+        [Obsolete( "Use Remove( Guid guid ) instead.", true )]
         public static void Flush( Guid guid )
         {
             Remove( guid );

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,19 +21,19 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.Reporting.Dashboard;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.Dashboard
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Line Chart" )]
     [Category( "Reporting > Dashboard" )]
@@ -158,7 +157,7 @@ namespace Rock.Reporting.Dashboard
                 return this.ControlsOfTypeRecursive<SlidingDateRangePicker>().First( a => a.ID == "drpSlidingDateRange" );
             }
         }
-        
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -232,7 +231,7 @@ namespace Rock.Reporting.Dashboard
                 HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
                 lbEdit.Controls.Add( iEdit );
                 lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "fa fa-pencil-square-o" );
+                iEdit.Attributes.Add( "class", "fa fa-edit" );
 
                 // will toggle the block config so they are no longer showing
                 lbEdit.Attributes["onclick"] = "Rock.admin.pageAdmin.showBlockConfig()";
@@ -571,7 +570,7 @@ namespace Rock.Reporting.Dashboard
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class MetricPartitionEntityId
         {
@@ -692,7 +691,7 @@ namespace Rock.Reporting.Dashboard
             flotChartControl.Options.legend.position = this.GetAttributeValue( "LegendPosition" );
 
             flotChartControl.MetricId = this.MetricId;
-            
+
             if ( this.GetEntityFromContextEnabled )
             {
                 var metricPartitionEntityIds = GetPrimaryMetricPartitionEntityIdFromContext();

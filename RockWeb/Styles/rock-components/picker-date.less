@@ -58,8 +58,9 @@
     tr {
       td,
       th {
-        width: 30px;
-        height: 30px;
+        width: 34px;
+        height: 34px;
+        padding: 0;
         text-align: center;
         border: 0;
         border-radius: 4px;
@@ -144,6 +145,16 @@
         color: @btn-link-disabled-color;
         background: @range-bg;
       }
+    }
+
+    &.range-start {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    &.range-end {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
     }
 
     &.range.highlighted {
@@ -267,30 +278,4 @@
 
 .input-group.date .input-group-addon {
   cursor: pointer;
-}
-
-.input-daterange {
-  width: 100%;
-  input {
-    text-align: center;
-
-    &:first-child {
-      border-radius: 3px 0 0 3px;
-    }
-
-    &:last-child {
-      border-radius: 0 3px 3px 0;
-    }
-  }
-
-  .input-group-addon {
-    width: auto;
-    min-width: 16px;
-    padding: 4px 5px;
-    margin-right: -5px;
-    margin-left: -5px;
-    line-height: @line-height-base;
-    text-shadow: 0 1px 0 #fff;
-    border-width: 1px 0;
-  }
 }

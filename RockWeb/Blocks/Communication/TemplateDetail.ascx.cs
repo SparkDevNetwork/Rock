@@ -37,15 +37,42 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Template Detail" )]
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
 
-    [BooleanField( "Personal Templates View", "Is this block being used to display personal templates (only templates that current user is allowed to edit)?", false, "", 0 )]
+    #region Block Attributes
+    [BooleanField(
+        "Personal Templates View",
+        Description = "Is this block being used to display personal templates (only templates that current user is allowed to edit)?",
+        DefaultBooleanValue = false,
+        Order = 0,
+        Key = AttributeKey.PersonalTemplatesView )]
+    [BinaryFileTypeField(
+        "Attachment Binary File Type",
+        Description = "The FileType to use for files that are attached to an sms or email communication",
+        IsRequired = true,
+        DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
+        Order = 1,
+        Key = AttributeKey.AttachmentBinaryFileType )]
+    #endregion Block Attributes
     public partial class TemplateDetail : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string PersonalTemplatesView = "PersonalTemplatesView";
+            public const string AttachmentBinaryFileType = "AttachmentBinaryFileType";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -204,7 +231,7 @@ namespace RockWeb.Blocks.Communication
 
             rockContext.SaveChanges();
 
-            var personalView = GetAttributeValue( "PersonalTemplatesView" ).AsBoolean();
+            var personalView = GetAttributeValue( AttributeKey.PersonalTemplatesView ).AsBoolean();
             if ( newTemplate )
             {
                 communicationTemplate = communicationTemplateService.Get( communicationTemplate.Id );
@@ -398,7 +425,7 @@ namespace RockWeb.Blocks.Communication
             nbTemplateHelp.InnerHtml = @"
 <p>An email template needs to be an html doc with some special divs to support the communication wizard.</p>
 <br/>
-<p>The template needs to have at least one div with a 'dropzone' class in the BODY</p> 
+<p>The template needs to have at least one div with a 'dropzone' class in the BODY</p>
 <br/>
 <pre>
 &lt;div class=""dropzone""&gt;
@@ -406,7 +433,7 @@ namespace RockWeb.Blocks.Communication
 </pre>
 <br/>
 
-<p>A template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p> 
+<p>A template also needs to have at least one div with a 'structure-dropzone' class in the BODY to support adding zones</p>
 <br/>
 <pre>
 &lt;div class=""structure-dropzone""&gt;
@@ -416,7 +443,7 @@ namespace RockWeb.Blocks.Communication
 </pre>
 <br/>
 
-<p>To have some starter text, include a 'component component-text' div within the 'dropzone' div</p> 
+<p>To have some starter text, include a 'component component-text' div within the 'dropzone' div</p>
 <br/>
 <pre>
 &lt;div class=""structure-dropzone""&gt;
@@ -487,7 +514,7 @@ namespace RockWeb.Blocks.Communication
             tbBCCList.ReadOnly = restrictedEdit;
             tbEmailSubject.ReadOnly = restrictedEdit;
             fupAttachments.Visible = !restrictedEdit;
-
+            fupAttachments.BinaryFileTypeGuid = this.GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             // Allow these to be Editable if they are IsSystem, but not if they don't have EDIT Auth
             tbDescription.ReadOnly = readOnly;
             imgTemplatePreview.Enabled = !readOnly;
@@ -826,7 +853,7 @@ namespace RockWeb.Blocks.Communication
                 var btnRevertLavaValue = new Literal { ID = "btnRevertLavaValue_" + keyValue.Key };
                 var defaultValue = lavaFieldsDefaultDictionary.GetValueOrNull( keyValue.Key );
                 var visibility = keyValue.Value != defaultValue ? "visible" : "hidden";
-                btnRevertLavaValue.Text = string.Format( "<i class='btn fa fa-times js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'></i>", lavaValueControl.ClientID, defaultValue, visibility );
+                btnRevertLavaValue.Text = string.Format( "<div class='btn js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'><i class='fa fa-times'></i></div>", lavaValueControl.ClientID, defaultValue, visibility );
                 rcwLavaValue.Controls.Add( btnRevertLavaValue );
             }
         }

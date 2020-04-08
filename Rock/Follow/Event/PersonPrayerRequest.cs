@@ -17,14 +17,12 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-
-using Rock;
-using Rock.Data;
-using Rock.Attribute;
-using Rock.Model;
-using Rock.Web.Cache;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Follow.Event
 {
@@ -64,6 +62,8 @@ namespace Rock.Follow.Event
             {
                 int daysBack = GetAttributeValue( followingEvent, "MaxDaysBack" ).AsInteger();
                 var processDate = RockDateTime.Today;
+
+                // This is DayOfWeek.Monday vs RockDateTime.FirstDayOfWeek because it including stuff that happened on the weekend (Saturday and Sunday) when it the first Non-Weekend Day (Monday)
                 if ( !followingEvent.SendOnWeekends && processDate.DayOfWeek == DayOfWeek.Monday ) 
                 {
                     daysBack += 2;

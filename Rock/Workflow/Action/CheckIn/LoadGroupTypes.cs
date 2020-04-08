@@ -22,7 +22,6 @@ using System.Linq;
 
 using Rock.CheckIn;
 using Rock.Data;
-using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
 {

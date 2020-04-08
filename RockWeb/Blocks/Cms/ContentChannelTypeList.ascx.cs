@@ -37,9 +37,24 @@ namespace RockWeb.Blocks.Cms
     [Category("CMS")]
     [Description("Lists content channel types in the system.")]
 
-    [LinkedPage("Detail Page")]
+    #region Block Attributes
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
+    #endregion Block Attributes
     public partial class ContentChannelTypeList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion Attribute Keys
+
         #region Control Methods
 
         /// <summary>
@@ -98,7 +113,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentChannelType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "typeId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "TypeId", 0 );
         }
 
         /// <summary>
@@ -108,7 +123,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gContentChannelType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "typeId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "TypeId", e.RowKeyId );
         }
 
         /// <summary>

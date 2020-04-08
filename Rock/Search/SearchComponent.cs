@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Attribute;
@@ -24,10 +23,10 @@ using Rock.Extension;
 namespace Rock.Search
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [TextField( "Search Label", "The text to display in the search type dropdown", false, "Search" )]
-    [TextField( "Result URL", "The url to redirect user to after they have entered search text.  (use '{0}' for the search text)" )]
+    [TextField( "Result URL", "The URL to redirect user to after they have entered search text.  (use '{0}' for the search text)" )]
     public abstract class SearchComponent : Component
     {
         /// <summary>
@@ -50,7 +49,7 @@ namespace Rock.Search
         }
 
         /// <summary>
-        /// The url to redirect user to after they've entered search criteria
+        /// The URL to redirect user to after they've entered search criteria
         /// </summary>
         public virtual string ResultUrl
         {

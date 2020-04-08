@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.WorkFlow
             ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( btnExport );
             if ( !Page.IsPostBack )
             {
-                wtpExport.SetValue( PageParameter( "workflowTypeId" ).AsInteger() );
+                wtpExport.SetValue( PageParameter( "WorkflowTypeId" ).AsInteger() );
             }
         }
 

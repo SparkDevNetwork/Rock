@@ -17,10 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
 using Rock.Model;
 

@@ -24,7 +24,7 @@
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
-            <div class="panel-body container-fluid">
+            <div class="panel-body">
 
                 <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
                 <Rock:NotificationBox ID="nbValidationError" runat="server" NotificationBoxType="Danger" EnableViewState="false" />

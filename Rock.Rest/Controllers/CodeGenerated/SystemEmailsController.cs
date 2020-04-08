@@ -28,6 +28,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// SystemEmails REST API
     /// </summary>
+    [RockObsolete( "1.10" )]
+    [System.Obsolete( "Use SystemCommunication instead." )]
     public partial class SystemEmailsController : Rock.Rest.ApiController<Rock.Model.SystemEmail>
     {
         /// <summary>

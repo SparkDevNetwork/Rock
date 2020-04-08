@@ -1060,7 +1060,7 @@
   </registrationTemplates>
 
   <registrationInstances>
-    <registrationInstance guid="abd46c03-7f71-4c43-a6bd-38b19047b6a6" name="Summer Camp 2016"
+    <registrationInstance guid="abd46c03-7f71-4c43-a6bd-38b19047b6a6" name="Summer Camp 2019"
       templateGuid="FF8AE77B-D5AF-490A-9ECE-B47039681C2E" 
       registrationStarts="{{ 'Now' | DateAdd:7,'d' | Date:'yyyy-M-dd'}} 12:00AM" registrationEnds="{{ 'Now' | DateAdd:70,'d' | Date:'yyyy-M-dd' }} 12:00AM"
       maxAttendees="200" sendReminderDate="{{ 'Now' | DateAdd:88,'d' | Date:'yyyy-M-dd' }} 9:00AM"

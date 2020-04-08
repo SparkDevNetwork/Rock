@@ -26,7 +26,6 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person

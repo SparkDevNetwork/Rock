@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.Utility
         /// <summary>
         /// The Default Value for the LavaTemplate block attribute
         /// </summary>
-        public const string LavaTemplateDefaultValue = @"
+        private const string LavaTemplateDefaultValue = @"
 <strong>Additional Attributes can be defined for this block type. These can be configured in <code>Home / CMS Configuration / Block Types</code> and will show up in block settings</strong>
 
 <ul>
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Utility
         /// <summary>
         /// Keys to use for Block Attributes
         /// </summary>
-        protected static class AttributeKey
+        private static class AttributeKey
         {
             /// <summary>
             /// AttributeKey for Lava Template

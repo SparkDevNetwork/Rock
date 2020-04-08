@@ -279,7 +279,7 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the scanner should have "DoubleDocDetection" enabled
+        /// Gets or sets a value indicating whether the scanner should have "DoubleDocDetection" enabled (If deviced supports it)
         /// </summary>
         /// <value>
         /// <c>true</c> if [enable double document detection]; otherwise, <c>false</c>.
@@ -430,7 +430,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             get
             {
-                return this["SelectedAccountForAmountsIds"] as int[];
+                return this["SelectedAccountForAmountsIds"] as int[] ?? new int[0];
             }
 
             set
@@ -468,19 +468,17 @@ namespace Rock.Apps.CheckScannerUtility
             }
         }
 
+        /// <summary>
+        /// If CampusId Filter it set, it will limit the selectable accounts, batch list, and batch campus selection
+        /// </summary>
+        /// <value>
+        /// The campus identifier filter.
+        /// </value>
         [UserScopedSetting]
-        public int DefaultCampusId
+        public int? CampusIdFilter
         {
-            get
-            {
-                return  this["DefaultCampusId"] == null ? 0: (int) this["DefaultCampusId"] ;
-            }
-
-            set
-            {
-                this["DefaultCampusId"] = value;
-            }
-
+            get => this["CampusIdFilter"] as int?;
+            set => this["CampusIdFilter"] = value;
         }
 
         /// <summary>

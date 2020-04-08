@@ -37,10 +37,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view connection requests of a particular person." )]
 
-    [BooleanField("Hide Inactive Connection Requests", "Show only connection requests that are active?", false, key: "HideInactive")]
-    [LinkedPage( "Connection Request Detail" )]
+    [BooleanField(
+        "Hide Inactive Connection Requests",
+        Key = AttributeKey.HideInactiveConnectionRequests,
+        Description = "Show only connection requests that are active?",
+        DefaultBooleanValue = false,
+        Order = 0 )]
+
+    [LinkedPage(
+        "Connection Request Detail",
+        Key = AttributeKey.ConnectionRequestDetail,
+        Description = "The Connection Request Detail page.",
+        Order = 1 )]
+
     public partial class ConnectionRequests : Rock.Web.UI.PersonBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string HideInactiveConnectionRequests = "HideInactive";
+            public const string ConnectionRequestDetail = "ConnectionRequestDetail";
+        }
+        #endregion Attribute Keys
+
         DateTime _midnightTomorrow = RockDateTime.Today.AddDays( 1 );
 
         /// <summary>
@@ -72,13 +91,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
-                bool hideInActive = GetAttributeValue( "HideInactive" ).AsBoolean();
+                bool hideInactive = GetAttributeValue( AttributeKey.HideInactiveConnectionRequests ).AsBoolean();
                 var rockContext = new RockContext();
                 var connectionTypeService = new ConnectionTypeService( rockContext );
                 var connectionTypesQry = connectionTypeService
                     .Queryable();
 
-                if ( hideInActive )
+                if ( hideInactive )
                 {
                     connectionTypesQry = connectionTypesQry
                         .Where( t => t.ConnectionOpportunities.Any( o => o.IsActive == true ) )
@@ -110,7 +129,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( lConnectionOpportunityList != null )
             {
                 var connectionType = e.Item.DataItem as ConnectionType;
-                var pageGuid = this.GetAttributeValue( "ConnectionRequestDetail" ).AsGuidOrNull();
+                var pageGuid = this.GetAttributeValue( AttributeKey.ConnectionRequestDetail ).AsGuidOrNull();
                 PageReference connectionRequestDetailPage = null;
                 if ( pageGuid.HasValue )
                 {
@@ -129,7 +148,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             .Queryable()
                             .Where( a => a.PersonAlias.PersonId == personId && a.ConnectionOpportunity.ConnectionTypeId == connectionType.Id );
 
-                        var hideInactive = GetAttributeValue( "HideInactive" ).AsBoolean();
+                        var hideInactive = GetAttributeValue( AttributeKey.HideInactiveConnectionRequests ).AsBoolean();
 
                         if ( hideInactive )
                         {

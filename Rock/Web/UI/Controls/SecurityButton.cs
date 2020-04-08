@@ -14,14 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.ComponentModel;
-using System.Globalization;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -81,7 +77,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", EntityTypeId, EntityId, HttpUtility.JavaScriptStringEncode(Title) ) );
+            string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", EntityTypeId, EntityId, HttpUtility.UrlEncode( Title.EscapeQuotes() ) ) );
             this.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
 
             base.RenderControl( writer );

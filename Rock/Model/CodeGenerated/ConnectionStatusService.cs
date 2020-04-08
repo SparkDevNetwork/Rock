@@ -94,6 +94,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this ConnectionStatus target, ConnectionStatus source )
         {
             target.Id = source.Id;
+            target.AutoInactivateState = source.AutoInactivateState;
             target.ConnectionTypeId = source.ConnectionTypeId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

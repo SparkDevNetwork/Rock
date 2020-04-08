@@ -18,13 +18,13 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Web.UI.WebControls;
 
-using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select multiple defined values from a particular pre-configured defined type
+    /// <para>Values are displayed as a drop down list with selected values appearing side-by-side</para>
     /// </summary>
     public class DefinedValuesPickerEnhanced : RockListBox, IDefinedValuePicker
     {

@@ -16,15 +16,14 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// The ASP:CheckBoxField doesn't work very well for retrieving changed values, especially when the value is changed from True to False (weird)
-    /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistently persist on postbacks
+    /// This field is used in various blocks and controls (such as the Grid) to 'select'
+    /// the item/row and hold and manage the 'selected' state of the item/row.
     /// </summary>
     public class SelectField : TemplateField, INotRowSelectedField
     {
@@ -48,10 +47,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The parent grid.
         /// </value>
-        public List<object> SelectedKeys 
+        public List<object> SelectedKeys
         {
             get { return _selectedKeys; }
-            internal set { _selectedKeys = value; } 
+            internal set { _selectedKeys = value; }
         }
         private List<object> _selectedKeys = new List<object>();
 
@@ -70,7 +69,7 @@ namespace Rock.Web.UI.Controls
                 {
                     return (SelectionMode)obj;
                 }
-                
+
                 SelectionMode = SelectionMode.Multiple;
                 return SelectionMode.Multiple;
             }
@@ -116,7 +115,7 @@ namespace Rock.Web.UI.Controls
                 ViewState["DataVisibleField"] = value;
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the data selected field.
         /// </summary>
@@ -244,7 +243,7 @@ namespace Rock.Web.UI.Controls
             }
 
             string script = string.Format( @"
-    $('input[id$=""_cbSelectHead_{0}""]').click( function() {{
+    $('input[id$=""_cbSelectHead_{0}""]').on('click', function() {{
     $(this).closest('table').find('input[id$=""_cbSelect_{0}""]').prop('checked', $(this).prop('checked'));
     }});
 ", ColumnIndex );
@@ -258,7 +257,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SelectFieldTemplate : ITemplate
     {
@@ -403,7 +402,7 @@ namespace Rock.Web.UI.Controls
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public class SelectFieldHeaderTemplate : ITemplate
     {
@@ -443,7 +442,7 @@ namespace Rock.Web.UI.Controls
     #region Enumerations
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public enum SelectionMode
     {

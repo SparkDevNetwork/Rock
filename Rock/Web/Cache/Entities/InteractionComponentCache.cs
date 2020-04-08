@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -30,6 +31,29 @@ namespace Rock.Web.Cache
     [DataContract]
     public class InteractionComponentCache : ModelCache<InteractionComponentCache, InteractionComponent>
     {
+        #region Base Property Overrides
+
+        /// <summary>
+        /// The amount of time that this cache's items will live in the cache before expiring
+        /// </summary>
+        public override TimeSpan? Lifespan
+        {
+            get
+            {
+                var minutes = InteractionChannel?.ComponentCacheDuration;
+                return ( minutes.HasValue && minutes.Value > 0 ) ?
+                    TimeSpan.FromMinutes( minutes.Value ) :
+                    base.Lifespan;
+            }
+        }
+
+        #endregion Base Property Overrides
+
+        #region Static Fields
+
+        private static ConcurrentDictionary<string, int> _interactionComponentLookup = new ConcurrentDictionary<string, int>();
+
+        #endregion
 
         #region Properties
 
@@ -58,7 +82,21 @@ namespace Rock.Web.Cache
         /// The channel identifier.
         /// </value>
         [DataMember]
-        public int ChannelId { get; private set; }
+        [Obsolete( "Use InteractionChannelId instead." )]
+        [RockObsolete( "1.11" )]
+        public int ChannelId
+        {
+            get { return InteractionChannelId; }
+        }
+
+        /// <summary>
+        /// Gets or sets the interaction channel identifier.
+        /// </summary>
+        /// <value>
+        /// The channel identifier.
+        /// </value>
+        [DataMember]
+        public int InteractionChannelId { get; private set; }
 
         /// <summary>
         /// Gets the interaction channel.
@@ -66,7 +104,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The interaction channel.
         /// </value>
-        public InteractionChannelCache InteractionChannel => InteractionChannelCache.Get( ChannelId );
+        public InteractionChannelCache InteractionChannel => InteractionChannelCache.Get( InteractionChannelId );
 
         #endregion
 
@@ -81,11 +119,15 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var interactionComponent = entity as InteractionComponent;
-            if ( interactionComponent == null ) return;
+            if ( interactionComponent == null )
+                return;
 
             Name = interactionComponent.Name;
             EntityId = interactionComponent.EntityId;
-            ChannelId = interactionComponent.ChannelId;
+            InteractionChannelId = interactionComponent.InteractionChannelId;
+            var lookupKey = $"{InteractionChannelId}|{EntityId}";
+
+            _interactionComponentLookup.AddOrUpdate( lookupKey, interactionComponent.Id, ( k, v ) => interactionComponent.Id );
         }
 
         /// <summary>
@@ -105,7 +147,7 @@ namespace Rock.Web.Cache
         /// <param name="guid">The unique identifier.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get Instead")]
+        [Obsolete( "Use Get Instead", true )]
         public static InteractionComponentCache Read( string guid )
         {
             Guid realGuid = guid.AsGuid();
@@ -117,7 +159,40 @@ namespace Rock.Web.Cache
             return Get( realGuid );
         }
 
-        #endregion
+        /// <summary>
+        /// Gets the component by entity identifier, and creates it if it doesn't exist
+        /// </summary>
+        /// <param name="interactionChannelId">The interaction channel identifier (so we know what EntityType the entityId is for).</param>
+        /// <param name="componentEntityId">The component entity identifier.</param>
+        /// <param name="componentName">Name of the component.</param>
+        /// <returns></returns>
+        public static int GetComponentIdByEntityId( int interactionChannelId, int componentEntityId, string componentName )
+        {
+            var lookupKey = $"{interactionChannelId}|{componentEntityId}";
 
+            if ( _interactionComponentLookup.TryGetValue( lookupKey, out int componentId ) )
+            {
+                return componentId;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                int? interactionComponentId = null;
+                var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId, componentEntityId, componentName );
+
+                // If a new component was added above we need to save the change
+                rockContext.SaveChanges();
+
+                if ( interactionComponent != null )
+                {
+                    interactionComponentId = Get( interactionComponent ).Id;
+                    _interactionComponentLookup.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
+                }
+
+                return interactionComponentId.Value;
+            }
+        }
+
+        #endregion
     }
 }

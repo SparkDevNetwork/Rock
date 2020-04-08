@@ -48,15 +48,67 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Used for updating information about several individuals at once." )]
 
-    [SecurityAction( "EditConnectionStatus", "The roles and/or users that can edit the connection status for the selected persons." )]
-    [SecurityAction( "EditRecordStatus", "The roles and/or users that can edit the record status for the selected persons." )]
+    [SecurityAction( SecurityActionKey.EditConnectionStatus, "The roles and/or users that can edit the connection status for the selected persons." )]
+    [SecurityAction( SecurityActionKey.EditRecordStatus, "The roles and/or users that can edit the record status for the selected persons." )]
 
-    [AttributeCategoryField( "Attribute Categories", "The person attribute categories to display and allow bulk updating", true, "Rock.Model.Person", false, "", "", 0 )]
-    [IntegerField( "Display Count", "The initial number of individuals to display prior to expanding list", false, 0, "", 1 )]
-    [WorkflowTypeField( "Workflow Types", "The workflows to make available for bulk updating.", true, false, "", "", 2 )]
-    [IntegerField( "Task Count", "The number of concurrent tasks to use when performing updates. If left blank then it will be determined automatically.", false, 0, "", 3 )]
+    [AttributeCategoryField(
+        "Attribute Categories",
+        Key = AttributeKey.AttributeCategories,
+        Description = "The person attribute categories to display and allow bulk updating",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.Person",
+        IsRequired = false,
+        Order = 0 )]
+
+    [IntegerField(
+        "Display Count",
+        Key = AttributeKey.DisplayCount,
+        Description = "The initial number of individuals to display prior to expanding list",
+        IsRequired = false,
+        DefaultIntegerValue = 0,
+        Order = 1 )]
+
+    [WorkflowTypeField(
+        "Workflow Types",
+        Key = AttributeKey.WorkflowTypes,
+        Description = "The workflows to make available for bulk updating.",
+        AllowMultiple = true,
+        IsRequired = false,
+        Order = 2 )]
+
+    [IntegerField(
+        "Task Count",
+        Key = AttributeKey.TaskCount,
+        Description = "The number of concurrent tasks to use when performing updates. If left blank then it will be determined automatically.",
+        DefaultIntegerValue = 0,
+        IsRequired = false,
+        Order = 3 )]
+
     public partial class BulkUpdate : RockBlock
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string AttributeCategories = "AttributeCategories";
+            public const string DisplayCount = "DisplayCount";
+            public const string WorkflowTypes = "WorkflowTypes";
+            public const string TaskCount = "TaskCount";
+        }
+        #endregion Attribute Keys
+
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditConnectionStatus = "EditConnectionStatus";
+            public const string EditRecordStatus = "EditRecordStatus";
+        }
+
+        #endregion
+
         #region Fields
 
         DateTime _gradeTransitionDate = new DateTime( RockDateTime.Today.Year, 6, 1 );
@@ -98,14 +150,14 @@ namespace RockWeb.Blocks.Crm
             dvpInactiveReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ).Id;
             dvpReviewReason.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_REVIEW_REASON ) ).Id;
 
-            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( "EditConnectionStatus" );
+            _canEditConnectionStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditConnectionStatus );
             dvpConnectionStatus.Visible = _canEditConnectionStatus;
 
-            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( "EditRecordStatus" );
+            _canEditRecordStatus = UserCanAdministrate || IsUserAuthorized( SecurityActionKey.EditRecordStatus );
             dvpRecordStatus.Visible = _canEditRecordStatus;
 
             rlbWorkFlowType.Items.Clear();
-            var guidList = GetAttributeValue( "WorkflowTypes" ).SplitDelimitedValues().AsGuidList();
+            var guidList = GetAttributeValue( AttributeKey.WorkflowTypes ).SplitDelimitedValues().AsGuidList();
             using ( var rockContext = new RockContext() )
             {
                 var workflowTypeService = new WorkflowTypeService( rockContext );
@@ -132,27 +184,23 @@ namespace RockWeb.Blocks.Crm
             ddlTagList.DataValueField = "Id";
             var currentPersonAliasIds = CurrentPerson.Aliases.Select( a => a.Id ).ToList();
 
-            var tagList = new TagService( new RockContext() ).Queryable()
+            new TagService( new RockContext() ).Queryable()
                                             .Where( t =>
                                                         t.EntityTypeId == personEntityTypeId
                                                         && ( t.OwnerPersonAliasId == null || currentPersonAliasIds.Contains( t.OwnerPersonAliasId.Value ) ) )
-                                            .Select( t => new
-                                            {
-                                                Id = t.Id,
-                                                Type = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags",
-                                                Name = t.Name
-                                            } )
-                                            .OrderByDescending( t => t.Type )
+                                            .OrderByDescending( t => t.OwnerPersonAliasId.HasValue )
                                             .ThenBy( t => t.Name )
-                                            .ToList();
-            foreach ( var tag in tagList )
-            {
-                ListItem item = new ListItem( tag.Name, tag.Id.ToString() );
-                item.Attributes["OptionGroup"] = tag.Type;
-                ddlTagList.Items.Add( item );
-            }
+                                            .ToList()
+                                            .ForEach( t =>
+                                            {
+                                                if ( t.IsAuthorized( Authorization.TAG, CurrentPerson ) )
+                                                {
+                                                    ListItem item = new ListItem( t.Name, t.Id.ToString() );
+                                                    item.Attributes["OptionGroup"] = t.OwnerPersonAliasId == null ? "Organization Tags" : "Personal Tags";
+                                                    ddlTagList.Items.Add( item );
+                                                }
+                                            } );
             ddlTagList.Items.Insert( 0, "" );
-
             ScriptManager.RegisterStartupScript( ddlGradePicker, ddlGradePicker.GetType(), "grade-selection-" + BlockId.ToString(), ddlGradePicker.GetJavascriptForYearPicker( ypGraduation ), true );
 
             ddlNoteType.Items.Clear();
@@ -167,7 +215,7 @@ namespace RockWeb.Blocks.Crm
             pwNote.Visible = ddlNoteType.Items.Count > 0;
 
             string script = @"
-    $('a.remove-all-individuals').click(function( e ){
+    $('a.remove-all-individuals').on('click', function( e ){
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to remove all of the individuals from this update?', function (result) {
             if (result) {
@@ -189,15 +237,15 @@ namespace RockWeb.Blocks.Crm
     }});
 
     // Handle the click event for any label that contains a 'js-select-span' span
-    $( 'label.control-label' ).has( 'span.js-select-item').click( function() {{
+    $( 'label.control-label' ).has( 'span.js-select-item').on('click', function() {{
 
         var formGroup = $(this).closest('.form-group');
         var selectIcon = formGroup.find('span.js-select-item').children('i');
 
-        // Toggle the selection of the form group        
+        // Toggle the selection of the form group
         formGroup.toggleClass('bulk-item-selected');
         var enabled = formGroup.hasClass('bulk-item-selected');
-            
+
         // Set the selection icon to show selected
         selectIcon.toggleClass('fa-check-circle-o', enabled);
         selectIcon.toggleClass('fa-circle-o', !enabled);
@@ -229,7 +277,7 @@ namespace RockWeb.Blocks.Crm
             }}
 
         }});
-        
+
         // Update the hidden field with the client id of each selected control, (if client id ends with '_hf' as in the case of multi-select attributes, strip the ending '_hf').
         var newValue = '';
         $('div.bulk-item-selected').each(function( index ) {{
@@ -239,7 +287,7 @@ namespace RockWeb.Blocks.Crm
                 newValue += ctrlId + '|';
             }});
         }});
-        $('#{0}').val(newValue);            
+        $('#{0}').val(newValue);
 
     }});
 ", hfSelectedItems.ClientID, ddlGradePicker.ClientID, ypGraduation.ClientID );
@@ -298,7 +346,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                AttributeCategories = GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues().AsGuidList();
+                AttributeCategories = GetAttributeValue( AttributeKey.AttributeCategories ).SplitDelimitedValues().AsGuidList();
                 cpCampus.Campuses = CampusCache.All();
                 Individuals = new List<Individual>();
                 SelectedFields = new List<string>();
@@ -813,12 +861,12 @@ namespace RockWeb.Blocks.Crm
 
                 var task = new Task( () =>
                 {
-                    int taskCount = GetAttributeValue( "TaskCount" ).AsInteger();
+                    int taskCount = GetAttributeValue( AttributeKey.TaskCount ).AsInteger();
                     int totalCount = individuals.Count;
                     int processedCount = 0;
                     var workers = new List<Task>();
                     DateTime lastNotified = RockDateTime.Now;
-
+                    decimal lastCompletionPercentage = 0;
                     //
                     // Validate task count.
                     //
@@ -836,7 +884,7 @@ namespace RockWeb.Blocks.Crm
                     // Wait for the browser to finish loading.
                     //
                     Task.Delay( 1000 ).Wait();
-                    HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( "0", "0" );
+                    HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( "0", totalCount.ToString( "n0" ) );
 
                     if ( individuals.Any() )
                     {
@@ -855,18 +903,23 @@ namespace RockWeb.Blocks.Crm
                         while ( workers.Any( t => !t.IsCompleted ) )
                         {
                             var timeDiff = RockDateTime.Now - lastNotified;
-                            if ( timeDiff.TotalSeconds >= 2.5 )
-                            {
-                                lock ( individuals )
-                                {
-                                    processedCount = totalCount - individuals.Count;
-                                }
 
+                            lock ( individuals )
+                            {
+                                processedCount = totalCount - individuals.Count;
+                            }
+
+                            var currentCompletionPercentage = decimal.Divide( processedCount, totalCount ) * 100;
+
+                            // Send a progress notification if significant elapsed time or work completed.
+                            if ( timeDiff.TotalSeconds >= 2.5 || currentCompletionPercentage - lastCompletionPercentage > 10 )
+                            {
                                 HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress(
                                     processedCount.ToString( "n0" ),
                                     totalCount.ToString( "n0" ) );
 
                                 lastNotified = RockDateTime.Now;
+                                lastCompletionPercentage = currentCompletionPercentage;
                             }
 
                             Task.Delay( 250 ).Wait();
@@ -876,29 +929,34 @@ namespace RockWeb.Blocks.Crm
                     //
                     // Give any jQuery transitions a moment to settle.
                     //
+                    HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateProgress( totalCount.ToString( "n0" ), totalCount.ToString( "n0" ) );
+
                     Task.Delay( 600 ).Wait();
 
                     if ( workers.Any( w => w.IsFaulted ) )
                     {
                         string status = string.Join( "<br>", workers.Where( w => w.IsFaulted ).Select( w => w.Exception.InnerException.Message.EncodeHtml() ) );
 
-                        HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status, false );
+                        HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status, "alert-danger" );
                     }
                     else
                     {
                         string status;
+                        string alertStatus;
                         if ( _errorCount == 0 )
                         {
                             status = string.Format( "{0} {1} successfully updated.",
                                 Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ) );
+                            alertStatus = "alert-success";
                         }
                         else
                         {
                             status = string.Format( "{0} {1} updated with {2} error(s). Please look in the exception log for more details.",
                                 Individuals.Count().ToString( "N0" ), ( Individuals.Count() > 1 ? "people were" : "person was" ), _errorCount );
+                            alertStatus = "alert-warning";
                         }
 
-                        HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status.EncodeHtml(), true );
+                        HubContext.Clients.Client( hfConnectionId.Value ).bulkUpdateStatus( status.EncodeHtml(), alertStatus );
                     }
                 } );
 
@@ -971,7 +1029,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            AttributeCategories = GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues().AsGuidList();
+            AttributeCategories = GetAttributeValue( AttributeKey.AttributeCategories ).SplitDelimitedValues().AsGuidList();
             phAttributesCol1.Controls.Clear();
             phAttributesCol2.Controls.Clear();
             BuildAttributes( new RockContext(), true );
@@ -1456,9 +1514,23 @@ namespace RockWeb.Blocks.Crm
                                         groupMember.GroupRoleId = roleId.Value;
                                         groupMember.GroupMemberStatus = status;
                                         groupMember.PersonId = id;
-                                        groupMemberService.Add( groupMember );
 
-                                        newGroupMembers.Add( groupMember );
+                                        if ( groupMember.IsValidGroupMember( context ) )
+                                        {
+
+                                            groupMemberService.Add( groupMember );
+
+                                            newGroupMembers.Add( groupMember );
+                                        }
+                                        else
+                                        {
+                                            // Validation errors will get added to the ValidationResults collection. Add those results to the log and then move on to the next person.
+                                            var validationMessage = string.Join( ",", groupMember.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
+                                            var person = new PersonService( rockContext ).GetNoTracking( groupMember.PersonId );
+                                            var ex = new GroupMemberValidationException( string.Format("Unable to add {0} to group: {1}", person, validationMessage ));
+                                            Interlocked.Increment( ref _errorCount );
+                                            ExceptionLogService.LogException( ex );
+                                        }
                                     }
 
                                     context.SaveChanges();
@@ -1536,7 +1608,7 @@ namespace RockWeb.Blocks.Crm
                 int tagId = ddlTagList.SelectedValue.AsInteger();
 
                 var tag = new TagService( rockContext ).Get( tagId );
-                if ( tag != null && tag.IsAuthorized( "Tag", CurrentPerson ) )
+                if ( tag != null && tag.IsAuthorized( Rock.Security.Authorization.TAG, CurrentPerson ) )
                 {
                     var taggedItemService = new TaggedItemService( rockContext );
 
@@ -1592,6 +1664,7 @@ namespace RockWeb.Blocks.Crm
 
                     var workflowDetails = people.Select( p => new LaunchWorkflowDetails( p ) ).ToList();
                     var launchWorkflowsTxn = new Rock.Transactions.LaunchWorkflowsTransaction( intValue.Value, workflowDetails );
+                    launchWorkflowsTxn.InitiatorPersonAliasId = CurrentPersonAliasId;
                     Rock.Transactions.RockQueue.TransactionQueue.Enqueue( launchWorkflowsTxn );
                 }
             }
@@ -1676,7 +1749,7 @@ namespace RockWeb.Blocks.Crm
 
             if ( !ShowAllIndividuals )
             {
-                int.TryParse( GetAttributeValue( "DisplayCount" ), out displayCount );
+                int.TryParse( GetAttributeValue( AttributeKey.DisplayCount ), out displayCount );
             }
 
             if ( displayCount > 0 && displayCount < Individuals.Count )

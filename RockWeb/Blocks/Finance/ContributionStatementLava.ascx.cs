@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Contribution Statement Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a Lava based contribution statement." )]
-    [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be uses.", false, order: 0 )]
+    [AccountsField( "Accounts", "A selection of accounts to include on the statement. If none are selected all accounts that are tax-deductible will be used.", false, order: 0 )]
     [BooleanField( "Display Pledges", "Determines if pledges should be shown.", true, order: 1 )]
     [CodeEditorField( "Lava Template", "The Lava template to use for the contribution statement.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 500, true, @"{% capture pageTitle %}{{ 'Global' | Attribute:'OrganizationName' }} | Contribution Statement{%endcapture%}
 {{ pageTitle | SetPageTitle }}
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Finance
         <div class=""pull-left"">
             <img src=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}{{ 'Global' | Attribute:'EmailHeaderLogo' }}"" width=""100px"" />
         </div>
-        
+
         <div class=""pull-left margin-l-md margin-t-sm"">
             <strong>{{ 'Global' | Attribute:'OrganizationName' }}</strong><br />
             {{ 'Global' | Attribute:'OrganizationAddress' }}<br />
@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Finance
 
 <div class=""clearfix"">
     <div class=""pull-right"">
-        <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""fa fa-print""></i> Print Statement</a> 
+        <a href=""#"" class=""btn btn-primary hidden-print"" onClick=""window.print();""><i class=""fa fa-print""></i> Print Statement</a>
     </div>
 </div>
 
@@ -91,17 +91,17 @@ namespace RockWeb.Blocks.Finance
                 <th>Check/Trans #</th>
                 <th align=""right"">Amount</th>
             </tr>
-        </thead>    
+        </thead>
 
         {% for transaction in TransactionDetails %}
             <tr>
                 <td>{{ transaction.Transaction.TransactionDateTime | Date:'M/d/yyyy' }}</td>
                 <td>{{ transaction.Account.Name }}</td>
                 <td>{{ transaction.Transaction.TransactionCode }}</td>
-                <td align=""right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ transaction.Amount }}</td>
+                <td align=""right"">{{ transaction.Amount | FormatAsCurrency }}</td>
             </tr>
         {% endfor %}
-    
+
     </table>
 
 
@@ -118,11 +118,11 @@ namespace RockWeb.Blocks.Finance
                 <strong>Total Amount</strong>
             </div>
         </div>
-        
+
         {% for accountsummary in AccountSummary %}
             <div class=""row"">
                 <div class=""col-xs-6"">{{ accountsummary.AccountName }}</div>
-                <div class=""col-xs-6 text-right"">{{ 'Global' | Attribute:'CurrencySymbol' }}{{ accountsummary.Total }}</div>
+                <div class=""col-xs-6 text-right"">{{ accountsummary.Total | FormatAsCurrency }}</div>
             </div>
          {% endfor %}
     </div>
@@ -133,23 +133,23 @@ namespace RockWeb.Blocks.Finance
 {% if pledgeCount > 0 %}
     <hr style=""opacity: .5;"" />
     <h4 class=""margin-t-md margin-b-md"">Pledges <small>(as of {{ StatementEndDate | Date:'M/dd/yyyy' }})</small></h4>
- 
+
     {% for pledge in Pledges %}
         <div class=""row"">
             <div class=""col-xs-6"">
                 <strong>{{ pledge.AccountName }}</strong>
-                
+
                 <p>
-                    Amt Pledged: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountPledged }} <br />
-                    Amt Given: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountGiven }} <br />
-                    Amt Remaining: {{ 'Global' | Attribute:'CurrencySymbol' }}{{ pledge.AmountRemaining }}
+                    Amt Pledged: {{ pledge.AmountPledged | FormatAsCurrency }} <br />
+                    Amt Given: {{ pledge.AmountGiven | FormatAsCurrency }} <br />
+                    Amt Remaining: {{ pledge.AmountRemaining | FormatAsCurrency }}
                 </p>
             </div>
             <div class=""col-xs-6 padding-t-md"">
                 <div class=""hidden-print"">
                     Pledge Progress
                     <div class=""progress"">
-                      <div class=""progress-bar"" role=""progressbar"" aria-valuenow=""{{ pledge.PercentComplete }}"" aria-valuemin=""0"" aria-valuemax=""100"" style=""width: {{ pledge.PercentComplete }}%;"">
+                      <div class=""progress-bar"" role=""progressbar"" aria-valuenow=""{{ pledge.PercentComplete }}"" aria-valuemin=""0"" aria-valuemax=""100"" style=""width: {{ pledge.PercentComplete }}%;"" style=""max-width:100%;min-width:2em;"">
                         {{ pledge.PercentComplete }}%
                       </div>
                     </div>
@@ -371,28 +371,50 @@ namespace RockWeb.Blocks.Finance
                                                     Order = s.Max( a => a.Account.Order )
                                                 } )
                                                 .OrderBy( s => s.Order ) );
+
             // pledge information
+            if ( GetAttributeValue( "DisplayPledges" ).AsBoolean() )
+            {
+                List<PledgeSummary> pledges = GetPledgeDataForPersonYear( rockContext, statementYear, personAliasIds );
+                mergeFields.Add( "Pledges", pledges );
+            }
+
+            var template = GetAttributeValue( "LavaTemplate" );
+
+            lResults.Text = template.ResolveMergeFields( mergeFields );
+
+        }
+
+        /// <summary>
+        /// Gets the pledge data for the given person and year.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="statementYear">The statement year.</param>
+        /// <param name="personAliasIds">The person alias ids.</param>
+        /// <returns></returns>
+        private static List<PledgeSummary> GetPledgeDataForPersonYear( RockContext rockContext, int statementYear, List<int> personAliasIds )
+        {
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
-                                    && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
-                                .GroupBy( p => p.Account )
-                                .Select( g => new PledgeSummary
-                                {
-                                    AccountId = g.Key.Id,
-                                    AccountName = g.Key.Name,
-                                    PublicName = g.Key.PublicName,
-                                    AmountPledged = g.Sum( p => p.TotalAmount ),
-                                    PledgeStartDate = g.Min( p => p.StartDate ),
-                                    PledgeEndDate = g.Max( p => p.EndDate )
-                                } )
-                                .ToList();
+                                            .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value )
+                                                && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
+                                            .GroupBy( p => p.Account )
+                                            .Select( g => new PledgeSummary
+                                            {
+                                                AccountId = g.Key.Id,
+                                                AccountName = g.Key.Name,
+                                                PublicName = g.Key.PublicName,
+                                                AmountPledged = g.Sum( p => p.TotalAmount ),
+                                                PledgeStartDate = g.Min( p => p.StartDate ),
+                                                PledgeEndDate = g.Max( p => p.EndDate )
+                                            } )
+                                            .ToList();
 
             // add detailed pledge information
             foreach ( var pledge in pledges )
             {
                 var adjustedPledgeEndDate = pledge.PledgeEndDate.Value.Date;
                 var statementYearEnd = new DateTime( statementYear + 1, 1, 1 );
-                
+
                 if ( adjustedPledgeEndDate != DateTime.MaxValue.Date )
                 {
                     adjustedPledgeEndDate = adjustedPledgeEndDate.AddDays( 1 );
@@ -425,12 +447,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            mergeFields.Add( "Pledges", pledges );
-
-            var template = GetAttributeValue( "LavaTemplate" );
-
-            lResults.Text = template.ResolveMergeFields( mergeFields );
-
+            return pledges;
         }
 
         #endregion
@@ -560,6 +577,6 @@ namespace RockWeb.Blocks.Finance
             /// </value>
             public int Order { get; set; }
         }
-        #endregion  
+        #endregion
     }
 }

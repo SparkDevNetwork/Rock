@@ -13,7 +13,7 @@
 
                     <div class="grid grid-panel">
                         <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                            <Rock:DateRangePicker ID="drpDate" runat="server" Label="Select from Date Range" />
+                            <Rock:DateRangePicker ID="drpDate" runat="server" Label="Date Range" />
                             <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
                             <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
                             <Rock:RockTextBox ID="tbGovernmentId" runat="server" Label="Government ID" />
@@ -63,7 +63,7 @@
                 </div>
             </div>
         </asp:Panel>
-        
+
         <div class="row">
             <div class="col-md-4 col-md-offset-8 margin-t-md">
                 <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">

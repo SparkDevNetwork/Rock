@@ -14,15 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Linq;
-using System.Web.UI.WebControls;
-
-using Rock.Data;
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select multiple group members from a particular pre-configured group
     /// </summary>
     public class GroupMembersPicker : RockCheckBoxList, IGroupMemberPicker
     {

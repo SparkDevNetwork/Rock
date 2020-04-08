@@ -17,6 +17,7 @@
 using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -211,17 +212,25 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
             var type = GetControlType();
-            if ( type == BackgroundCheckTypes.ProtectMyMinistry )
+            switch ( type )
             {
-                _textBox.Visible = false;
-                _fileUploader.Visible = true;
-                _textBox.Text = string.Empty;
-            }
-            else if ( type == BackgroundCheckTypes.Checkr )
-            {
-                _textBox.Visible = true;
-                _fileUploader.Visible = false;
-                _fileUploader.BinaryFileId = null;
+                case BackgroundCheckTypes.ProtectMyMinistry:
+                    _textBox.Visible = false;
+                    _textBox.Text = string.Empty;
+                    _fileUploader.Visible = true;
+                    break;
+
+                case BackgroundCheckTypes.Checkr:
+                    _fileUploader.Visible = false;
+                    _fileUploader.BinaryFileId = null;
+                    _textBox.Visible = true;
+                    break;
+
+                default:
+                    _textBox.Visible = false;
+                    _textBox.Text = string.Empty;
+                    _fileUploader.Visible = true;
+                    break;
             }
         }
 

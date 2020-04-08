@@ -15,13 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Web.Http;
-using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http;
+
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock.VersionInfo;
-using Rock.Rest.Filters;
 
 namespace Rock.Rest.Controllers
 {

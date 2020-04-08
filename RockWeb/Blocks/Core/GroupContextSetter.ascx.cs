@@ -88,7 +88,7 @@ namespace RockWeb.Blocks.Core
             var groupEntityType = EntityTypeCache.Get( typeof( Group ) );
             var currentGroup = RockPage.GetCurrentContext( groupEntityType ) as Group;
 
-            var groupIdString = Request.QueryString["groupId"];
+            var groupIdString = Request.QueryString["GroupId"];
             if ( groupIdString != null )
             {
                 var groupId = groupIdString.AsInteger();
@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Core
                 var rootGroup = groupService.Get( rootGroupGuid.Value );
                 if ( rootGroup != null )
                 {
-                    qryGroups = groupService.GetAllDescendents( rootGroup.Id ).AsQueryable();
+                    qryGroups = groupService.GetAllDescendentGroups( rootGroup.Id, false ).AsQueryable();
                 }
             }
             else if ( groupTypeGuid.HasValue )
@@ -213,10 +213,10 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "groupId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "GroupId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "groupId", groupId.ToString() );
+                    queryString.Set( "GroupId", groupId.ToString() );
                     Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
                 }
                 else

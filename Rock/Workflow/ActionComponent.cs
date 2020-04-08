@@ -16,7 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Web;
+
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
@@ -62,17 +62,6 @@ namespace Rock.Workflow
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public abstract Boolean Execute( RockContext rockContext, WorkflowAction action, Object entity, out List<string> errorMessages );
-
-        /// <summary>
-        /// Loads the attributes.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        [RockObsolete( "1.7" )]
-        [Obsolete("Don't Use this. The ActionTypeCache will already have the attributes loaded automatically", true )]
-        public void LoadAttributes( WorkflowAction action )
-        {
-            action.ActionType.LoadAttributes();
-        }
 
         /// <summary>
         /// Use GetAttributeValue( WorkflowAction action, string key) instead.  Workflow action attribute values are 

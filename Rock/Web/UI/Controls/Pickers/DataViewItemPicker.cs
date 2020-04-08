@@ -19,14 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
 
-using Rock.Web.Cache;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select data view items for a particular pre-configured data view
     /// </summary>
     public class DataViewItemPicker : ItemPicker
     {

@@ -99,6 +99,7 @@ namespace Rock.Model
             target.DeviceVersion = source.DeviceVersion;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsActive = source.IsActive;
             target.MACAddress = source.MACAddress;
             target.NotificationsEnabled = source.NotificationsEnabled;
             target.PersonalDeviceTypeValueId = source.PersonalDeviceTypeValueId;

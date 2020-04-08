@@ -16,10 +16,10 @@
 //
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 using Rock.Model;
-using System.Linq.Expressions;
 
 namespace Rock.Data
 {

@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -404,10 +405,8 @@ namespace Rock.Reporting.DataFilter.Workflow
             {
                 var fakeWorkflow = new Rock.Model.Workflow { WorkflowTypeId = workflowTypeId.Value };
                 Rock.Attribute.Helper.LoadAttributes( fakeWorkflow );
-                foreach ( var attribute in fakeWorkflow.Attributes.Select( a => a.Value ) )
-                {
-                    EntityHelper.AddEntityFieldForAttribute( entityAttributeFields, attribute );
-                }
+                var attributeList = fakeWorkflow.Attributes.Select( a => a.Value ).ToList();
+                EntityHelper.AddEntityFieldsForAttributeList( entityAttributeFields, attributeList );
             }
 
             int index = 0;

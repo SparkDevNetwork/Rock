@@ -21,6 +21,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Quartz;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -302,7 +303,7 @@ END
                     SET [Interaction].[InteractionSummary] = [InteractionComponent].[Name]
                     FROM [Interaction]
                     INNER JOIN [InteractionComponent] ON [Interaction].[InteractionComponentId] = [InteractionComponent].[Id]
-                    WHERE [InteractionComponent].[ChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)
+                    WHERE [InteractionComponent].[InteractionChannelId] IN (SELECT [Id] FROM [InteractionChannel] WHERE [ChannelTypeMediumValueId] = @ChannelMediumValueId)
                     AND [Interaction].[InteractionSummary] != [InteractionComponent].[Name]";
 
                 rockContext.Database.ExecuteSqlCommand( sqlQuery );

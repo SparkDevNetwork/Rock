@@ -21,6 +21,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -95,7 +96,7 @@ function ()
 {    
     var result = 'Members of Groups in Data View';
     
-    var dataViewName = $('.rock-drop-down-list,select:first', $content).find(':selected').text();    
+    var dataViewName = $('.js-data-view-picker', $content).find('.js-item-name-value').val().trim();
     result += ' ""' + dataViewName + '""';
 
     var groupMemberStatus = $('.js-group-member-status option:selected', $content).text();    
@@ -210,6 +211,7 @@ function ()
             // Define Control: Group Data View Picker
             var dvpDataView = new DataViewItemPicker();
             dvpDataView.ID = filterControl.GetChildControlInstanceName( _CtlDataView );
+            dvpDataView.CssClass = "js-data-view-picker";
             dvpDataView.Label = "Is Member of Group from Data View";
             dvpDataView.Help = "A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included.";
             filterControl.Controls.Add( dvpDataView );

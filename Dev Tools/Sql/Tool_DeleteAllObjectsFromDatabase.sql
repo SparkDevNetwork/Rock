@@ -49,21 +49,6 @@ BEGIN
 END
 GO
 
-/* Drop all functions */
-DECLARE @name VARCHAR(128)
-DECLARE @SQL VARCHAR(254)
-
-SELECT @name = (SELECT TOP 1 [name] FROM sysobjects WHERE [type] IN (N'FN', N'IF', N'TF', N'FS', N'FT') AND category = 0 ORDER BY [name])
-
-WHILE @name IS NOT NULL
-BEGIN
-    SELECT @SQL = 'DROP FUNCTION [dbo].[' + RTRIM(@name) +']'
-    EXEC (@SQL)
-    PRINT 'Dropped Function: ' + @name
-    SELECT @name = (SELECT TOP 1 [name] FROM sysobjects WHERE [type] IN (N'FN', N'IF', N'TF', N'FS', N'FT') AND category = 0 AND [name] > @name ORDER BY [name])
-END
-GO
-
 /* Drop all Foreign Key constraints */
 DECLARE @name VARCHAR(128)
 DECLARE @constraint VARCHAR(254)
@@ -82,6 +67,27 @@ BEGIN
         SELECT @constraint = (SELECT TOP 1 CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE constraint_catalog=DB_NAME() AND CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_NAME <> @constraint AND TABLE_NAME = @name ORDER BY CONSTRAINT_NAME)
     END
 SELECT @name = (SELECT TOP 1 TABLE_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE constraint_catalog=DB_NAME() AND CONSTRAINT_TYPE = 'FOREIGN KEY' ORDER BY TABLE_NAME)
+END
+GO
+
+/* Spatial indicies need to be dropped before PK indicies can be dropped */
+DECLARE @name VARCHAR(128)
+DECLARE @constraint VARCHAR(254)
+DECLARE @SQL VARCHAR(254)
+
+SELECT @name = (SELECT TOP 1 OBJECT_NAME(so.[object_id]) FROM sys.[indexes] ix JOIN sys.[objects] so ON ix.[object_id] = so.[object_id] WHERE ix.[name] IS NOT NULL AND ix.[type_desc] = 'SPATIAL' ORDER BY OBJECT_NAME(so.[object_id]))
+
+WHILE @name IS NOT NULL
+BEGIN
+	SELECT @constraint = (SELECT TOP 1 ix.[name] FROM sys.[indexes] ix WHERE OBJECT_NAME(ix.[object_id]) = @name AND ix.[name] IS NOT NULL AND ix.[type_desc] = 'SPATIAL' ORDER BY ix.[name])
+	WHILE @constraint IS NOT NULL
+	BEGIN
+		SELECT @SQL = 'DROP INDEX ' + @constraint + ' ON ' + @name
+		EXEC (@SQL)
+		PRINT 'Dropped Spatial Index: ' + @constraint + ' on ' + @name
+		SELECT @constraint = (SELECT TOP 1 ix.[name] FROM sys.[indexes] ix WHERE OBJECT_NAME(ix.[object_id]) = @name AND ix.[name] IS NOT NULL AND ix.[type_desc] = 'SPATIAL' ORDER BY ix.[name])
+	END
+SELECT @name = (SELECT TOP 1 OBJECT_NAME(so.[object_id]) FROM sys.[indexes] ix JOIN sys.[objects] so ON ix.[object_id] = so.[object_id] WHERE ix.[name] IS NOT NULL AND ix.[type_desc] = 'SPATIAL' ORDER BY OBJECT_NAME(so.[object_id]))
 END
 GO
 
@@ -118,5 +124,20 @@ BEGIN
     EXEC (@SQL)
     PRINT 'Dropped Table: ' + @name
     SELECT @name = (SELECT TOP 1 [name] FROM sysobjects WHERE [type] = 'U' AND category = 0 AND [name] > @name ORDER BY [name])
+END
+GO
+
+/* Drop all functions */
+DECLARE @name VARCHAR(128)
+DECLARE @SQL VARCHAR(254)
+
+SELECT @name = (SELECT TOP 1 [name] FROM sysobjects WHERE [type] IN (N'FN', N'IF', N'TF', N'FS', N'FT') AND category = 0 ORDER BY [name])
+
+WHILE @name IS NOT NULL
+BEGIN
+    SELECT @SQL = 'DROP FUNCTION [dbo].[' + RTRIM(@name) +']'
+    EXEC (@SQL)
+    PRINT 'Dropped Function: ' + @name
+    SELECT @name = (SELECT TOP 1 [name] FROM sysobjects WHERE [type] IN (N'FN', N'IF', N'TF', N'FS', N'FT') AND category = 0 AND [name] > @name ORDER BY [name])
 END
 GO

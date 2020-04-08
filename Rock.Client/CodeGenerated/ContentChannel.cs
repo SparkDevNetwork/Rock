@@ -65,6 +65,9 @@ namespace Rock.Client
         public bool IsIndexEnabled { get; set; }
 
         /// <summary />
+        public bool IsStructuredContent { get; set; }
+
+        /// <summary />
         public bool IsTaggingEnabled { get; set; }
 
         /// <summary />
@@ -89,6 +92,9 @@ namespace Rock.Client
 
         /// <summary />
         public string RootImageDirectory { get; set; }
+
+        /// <summary />
+        public int? StructuredContentToolValueId { get; set; }
 
         /// <summary />
         public int? TimeToLive { get; set; }
@@ -136,6 +142,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IconCssClass = source.IconCssClass;
             this.IsIndexEnabled = source.IsIndexEnabled;
+            this.IsStructuredContent = source.IsStructuredContent;
             this.IsTaggingEnabled = source.IsTaggingEnabled;
             this.ItemsManuallyOrdered = source.ItemsManuallyOrdered;
             this.ItemTagCategoryId = source.ItemTagCategoryId;
@@ -144,6 +151,7 @@ namespace Rock.Client
             this.Name = source.Name;
             this.RequiresApproval = source.RequiresApproval;
             this.RootImageDirectory = source.RootImageDirectory;
+            this.StructuredContentToolValueId = source.StructuredContentToolValueId;
             this.TimeToLive = source.TimeToLive;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -168,6 +176,9 @@ namespace Rock.Client
 
         /// <summary />
         public Category ItemTagCategory { get; set; }
+
+        /// <summary />
+        public DefinedValue StructuredContentToolValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

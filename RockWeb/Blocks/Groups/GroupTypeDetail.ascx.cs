@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Groups
     [DisplayName( "Group Type Detail" )]
     [Category( "Groups" )]
     [Description( "Displays the details of the given group type for editing." )]
-    public partial class GroupTypes : RockBlock, IDetailBlock
+    public partial class GroupTypeDetail : RockBlock, IDetailBlock
     {
         #region Properties
 
@@ -271,7 +271,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "groupTypeId" ).AsInteger() );
+                ShowDetail( PageParameter( "GroupTypeId" ).AsInteger() );
             }
             else
             {
@@ -332,7 +332,7 @@ namespace RockWeb.Blocks.Groups
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? groupTypeId = PageParameter( pageReference, "groupTypeId" ).AsIntegerOrNull();
+            int? groupTypeId = PageParameter( pageReference, "GroupTypeId" ).AsIntegerOrNull();
             if ( groupTypeId != null )
             {
                 GroupType groupType = new GroupTypeService( new RockContext() ).Get( groupTypeId.Value );
@@ -503,6 +503,8 @@ namespace RockWeb.Blocks.Groups
             groupType.GroupTypeColor = cpGroupTypeColor.Text;
             groupType.TakesAttendance = cbTakesAttendance.Checked;
             groupType.GroupsRequireCampus = cbGroupsRequireCampus.Checked;
+            groupType.EnableGroupTag = cbEnableGroupTag.Checked;
+            groupType.AllowAnyChildGroupType = cbAllowAnyChildGroupType.Checked;
             groupType.ShowAdministrator = cbShowAdministrator.Checked;
             groupType.GroupAttendanceRequiresLocation = cbGroupAttendanceRequiresLocation.Checked;
             groupType.GroupAttendanceRequiresSchedule = cbGroupAttendanceRequiresSchedule.Checked;
@@ -524,6 +526,29 @@ namespace RockWeb.Blocks.Groups
             groupType.EnableSpecificGroupRequirements = cbEnableSpecificGroupReq.Checked;
             groupType.AllowSpecificGroupMemberWorkflows = cbAllowSpecificGrpMemWorkFlows.Checked;
             groupType.GroupStatusDefinedTypeId = ddlGroupStatusDefinedType.SelectedValueAsInt();
+            groupType.EnableInactiveReason = cbEnableInactiveReason.Checked;
+            groupType.RequiresInactiveReason = cbRequireInactiveReason.Checked;
+
+            // RSVP
+            groupType.EnableRSVP = cbGroupRSVPEnabled.Checked;
+            groupType.RSVPReminderSystemCommunicationId = ddlRsvpReminderSystemCommunication.SelectedValueAsInt();
+            if ( rsRsvpReminderOffsetDays.SelectedValue == null || rsRsvpReminderOffsetDays.SelectedValue == 0 )
+            {
+                groupType.RSVPReminderOffsetDays = null;
+            }
+            else
+            {
+                groupType.RSVPReminderOffsetDays = rsRsvpReminderOffsetDays.SelectedValue;
+            }
+
+            // Scheduling
+            groupType.IsSchedulingEnabled = cbSchedulingEnabled.Checked;
+            groupType.ScheduleConfirmationSystemCommunicationId = ddlScheduleConfirmationSystemCommunication.SelectedValue.AsIntegerOrNull();
+            groupType.RequiresReasonIfDeclineSchedule = cbRequiresReasonIfDeclineSchedule.Checked;
+            groupType.ScheduleConfirmationEmailOffsetDays = nbScheduleConfirmationOffsetDays.Text.AsIntegerOrNull();
+            groupType.ScheduleCancellationWorkflowTypeId = wtpScheduleCancellationWorkflowType.SelectedValueAsId();
+            groupType.ScheduleReminderSystemCommunicationId = ddlScheduleReminderSystemCommunication.SelectedValue.AsIntegerOrNull();
+            groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderOffsetDays.Text.AsIntegerOrNull();
 
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
@@ -579,6 +604,8 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
+            avcEditAttributes.GetEditValues( groupType );
+
             if ( !groupType.IsValid )
             {
                 cvGroupType.IsValid = groupType.IsValid;
@@ -596,6 +623,8 @@ namespace RockWeb.Blocks.Groups
                     groupRequirementsToInsert.ForEach( a => a.GroupTypeId = groupType.Id );
                     groupRequirementService.AddRange( groupRequirementsToInsert );
                 }
+
+                groupType.SaveAttributeValues( rockContext );
 
                 /* Save Attributes */
                 string qualifierValue = groupType.Id.ToString();
@@ -638,7 +667,6 @@ namespace RockWeb.Blocks.Groups
             if ( deleteGroupHistory )
             {
                 groupTypeService.BulkDeleteGroupHistory( groupType.Id );
-                
             }
 
             NavigateToParentPage();
@@ -708,6 +736,11 @@ namespace RockWeb.Blocks.Groups
 
                 groupType.AllowedScheduleTypes = ScheduleType.None;
                 groupType.LocationSelectionMode = GroupLocationPickerMode.None;
+
+                var systemCommunicationIdLookup = new SystemCommunicationService( new RockContext() ).Queryable().ToDictionary( k => k.Guid, v => v.Id );
+
+                groupType.ScheduleConfirmationSystemCommunicationId = systemCommunicationIdLookup.GetValueOrNull( Rock.SystemGuid.SystemCommunication.SCHEDULING_CONFIRMATION.AsGuid() );
+                groupType.ScheduleReminderSystemCommunicationId = systemCommunicationIdLookup.GetValueOrNull( Rock.SystemGuid.SystemCommunication.SCHEDULING_REMINDER.AsGuid() );
 
                 // hide the panel drawer that show created and last modified dates
                 pdAuditDetails.Visible = false;
@@ -780,6 +813,11 @@ namespace RockWeb.Blocks.Groups
             tbDescription.ReadOnly = groupType.IsSystem;
             tbDescription.Text = groupType.Description;
 
+            groupType.LoadAttributes();
+            avcEditAttributes.ShowCategoryLabel = false;
+            avcEditAttributes.ExcludedAttributes = groupType.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+            avcEditAttributes.AddEditControls( groupType );
+
             tbGroupTerm.ReadOnly = groupType.IsSystem;
             tbGroupTerm.Text = groupType.GroupTerm;
 
@@ -797,12 +835,17 @@ namespace RockWeb.Blocks.Groups
 
             ddlGroupCapacityRule.SetValue( (int)groupType.GroupCapacityRule );
 
+            cbAllowAnyChildGroupType.Checked = groupType.AllowAnyChildGroupType;
+            rcwAllowedChildGroupTypes.Visible = !cbAllowAnyChildGroupType.Checked;
+
             ChildGroupTypesList = new List<int>();
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesList.Add( a.Id ) );
             BindChildGroupTypesGrid();
 
+            cbEnableGroupTag.Checked = groupType.EnableGroupTag;
             cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
             cbShowAdministrator.Checked = groupType.ShowAdministrator;
+
             // Display
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
@@ -859,6 +902,22 @@ namespace RockWeb.Blocks.Groups
             cbGroupAttendanceRequiresSchedule.Checked = groupType.GroupAttendanceRequiresSchedule;
             cbGroupAttendanceRequiresLocation.Checked = groupType.GroupAttendanceRequiresLocation;
 
+            // RSVP
+            ddlRsvpReminderSystemCommunication.SetValue( groupType.RSVPReminderSystemCommunicationId );
+            rsRsvpReminderOffsetDays.SelectedValue = groupType.RSVPReminderOffsetDays;
+
+            SetRsvpEnabledState( groupType.EnableRSVP );
+
+            // Scheduling
+            cbSchedulingEnabled.Checked = groupType.IsSchedulingEnabled;
+
+            ddlScheduleConfirmationSystemCommunication.SetValue( groupType.ScheduleConfirmationSystemCommunicationId );
+            cbRequiresReasonIfDeclineSchedule.Checked = groupType.RequiresReasonIfDeclineSchedule;
+            nbScheduleConfirmationOffsetDays.Text = groupType.ScheduleConfirmationEmailOffsetDays.ToString();
+            wtpScheduleCancellationWorkflowType.SetValue( groupType.ScheduleCancellationWorkflowTypeId );
+            ddlScheduleReminderSystemCommunication.SetValue( groupType.ScheduleReminderSystemCommunicationId );
+            nbScheduleReminderOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
+
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
             gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
@@ -871,6 +930,10 @@ namespace RockWeb.Blocks.Groups
             cbEnableSpecificGroupReq.Checked = groupType.EnableSpecificGroupRequirements;
             cbAllowSpecificGrpMemWorkFlows.Checked = groupType.AllowSpecificGroupMemberWorkflows;
             cbEnableGroupHistory.Checked = groupType.EnableGroupHistory;
+
+            cbEnableInactiveReason.Checked = groupType.EnableInactiveReason;
+            cbRequireInactiveReason.Enabled = groupType.EnableInactiveReason;
+            cbRequireInactiveReason.Checked = groupType.RequiresInactiveReason;
 
             GroupTypeRolesState = new List<GroupTypeRole>();
             foreach ( var role in groupType.Roles )
@@ -949,6 +1012,13 @@ namespace RockWeb.Blocks.Groups
             DescriptionList descriptionList = new DescriptionList();
             descriptionList.Add( string.Empty, string.Empty );
             lblMainDetails.Text = descriptionList.Html;
+
+            groupType.LoadAttributes();
+            avcDisplayAttributes.ExcludedAttributes = groupType.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.VIEW, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+
+            // Don't show the Categories, since they will probably be 'Start of Registration' or 'End of Registration';
+            avcDisplayAttributes.ShowCategoryLabel = false;
+            avcDisplayAttributes.AddDisplayControls( groupType );
         }
 
         /// <summary>
@@ -998,6 +1068,48 @@ namespace RockWeb.Blocks.Groups
             {
                 ddlGroupStatusDefinedType.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
+
+            // Initialize list and add empty value selection items.
+            ddlScheduleConfirmationSystemCommunication.Items.Clear();
+            ddlScheduleConfirmationSystemCommunication.Items.Add( new ListItem() );
+            ddlScheduleReminderSystemCommunication.Items.Clear();
+            ddlScheduleReminderSystemCommunication.Items.Add( new ListItem() );
+            ddlRsvpReminderSystemCommunication.Items.Clear();
+            ddlRsvpReminderSystemCommunication.Items.Add( new ListItem() );
+
+            // Get a list of System Communications - these are used for Group Scheduling and RSVP Reminders.
+            var systemCommunications = new SystemCommunicationService( new RockContext() )
+                .Queryable()
+                .OrderBy( t => t.Title )
+                .ToList();
+
+            // Group Scheduling System Communications.
+            var scheduleReminderCommunications = systemCommunications
+                .Select( a => new
+                {
+                    a.Id,
+                    a.Title
+                } );
+
+            if ( scheduleReminderCommunications.Any() )
+            {
+                foreach ( var scheduleReminder in scheduleReminderCommunications )
+                {
+                    ddlScheduleConfirmationSystemCommunication.Items.Add( new ListItem(scheduleReminder.Title, scheduleReminder.Id.ToString() ) );
+                    ddlScheduleReminderSystemCommunication.Items.Add( new ListItem(scheduleReminder.Title, scheduleReminder.Id.ToString() ) );
+                }
+            }
+
+            // RSVP Reminder System Communications.
+            var rsvpReminderCategoryId = CategoryCache.GetId( Rock.SystemGuid.Category.SYSTEM_COMMUNICATION_RSVP_CONFIRMATION.AsGuid() );
+            var rsvpReminderCommunications = systemCommunications
+                .Where( c => c.CategoryId == rsvpReminderCategoryId );
+
+            foreach ( var rsvpReminder in rsvpReminderCommunications )
+            {
+                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
+            }
+
         }
 
         /// <summary>
@@ -1552,6 +1664,16 @@ namespace RockWeb.Blocks.Groups
         #region Child GroupType Grid and Picker
 
         /// <summary>
+        /// Handles the CheckedChanged event of the cbAllowAnyChildGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbAllowAnyChildGroupType_CheckedChanged( object sender, EventArgs e )
+        {
+            rcwAllowedChildGroupTypes.Visible = !cbAllowAnyChildGroupType.Checked;
+        }
+
+        /// <summary>
         /// Handles the Add event of the gChildGroupTypes control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1909,7 +2031,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupTypeAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                attribute.Order = GroupTypeAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                // get the non-editable stuff from the state and put it back into the object...
+                var attributeState = GroupTypeAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
                 GroupTypeAttributesState.RemoveEntity( attribute.Guid );
             }
             else
@@ -2068,7 +2201,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                attribute.Order = GroupAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                // get the non-editable stuff from the state and put it back into the object...
+                var attributeState = GroupAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
                 GroupAttributesState.RemoveEntity( attribute.Guid );
             }
             else
@@ -2221,7 +2365,18 @@ namespace RockWeb.Blocks.Groups
 
             if ( GroupMemberAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
             {
-                attribute.Order = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault().Order;
+                // get the non-editable stuff from the state and put it back into the object...
+                var attributeState = GroupMemberAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
                 GroupMemberAttributesState.RemoveEntity( attribute.Guid );
             }
             else
@@ -2823,6 +2978,37 @@ namespace RockWeb.Blocks.Groups
 
         #endregion
 
-        
+        protected void cbEnableInactiveReason_CheckedChanged( object sender, EventArgs e )
+        {
+            cbRequireInactiveReason.Enabled = cbEnableInactiveReason.Checked;
+        }
+
+        #region RSVP Controls
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbRsvp control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void cbRsvp_CheckedChanged( object sender, EventArgs e )
+        {
+            SetRsvpEnabledState( cbGroupRSVPEnabled.Checked );
+        }
+
+        /// <summary>
+        /// Set the enabled state of the RSVP controls.
+        /// </summary>
+        /// <param name="isEnabled"></param>
+        private void SetRsvpEnabledState( bool isEnabled )
+        {
+            if ( cbGroupRSVPEnabled.Checked != isEnabled )
+            {
+                cbGroupRSVPEnabled.Checked = isEnabled;
+            }
+
+            pnlRsvpSettings.Visible = isEnabled;
+        }
+
+        #endregion
     }
 }

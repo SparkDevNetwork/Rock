@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
@@ -200,66 +201,69 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext"></param>
         /// <param name="entry"></param>
-        public override void PreSaveChanges( DbContext dbContext, DbEntityEntry entry )
+        public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
             {
                 if ( string.IsNullOrEmpty( CountryCode ) )
                 {
                     CountryCode = PhoneNumber.DefaultCountryCode();
                 }
-                
+
+                // Clean up the number so that the Formatted number looks like (555) 123-4567 (without country code prefix)
                 NumberFormatted = PhoneNumber.FormattedNumber( CountryCode, Number );
+
+                // then use the NumberFormatted to set the cleaned up 'Number' value, so it would be 5551234567
                 Number = PhoneNumber.CleanNumber( NumberFormatted );
             }
 
-			// Check for duplicate
-			if ( entry.State == System.Data.Entity.EntityState.Added || entry.State == System.Data.Entity.EntityState.Modified )
-			{
-				var rockContext = ( RockContext ) dbContext;
-				var phoneNumberService = new PhoneNumberService( rockContext );
-				var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
+            // Check for duplicate
+            if ( entry.State == EntityState.Added || entry.State == EntityState.Modified )
+            {
+                var rockContext = ( RockContext ) dbContext;
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                var duplicates = phoneNumberService.Queryable().Where( pn => pn.PersonId == PersonId && pn.Number == Number && pn.CountryCode == CountryCode );
 
                 // Make sure this number isn't considered a duplicate
-                if ( entry.State == System.Data.Entity.EntityState.Modified )
+                if ( entry.State == EntityState.Modified )
                 {
                     duplicates = duplicates.Where( d => d.Id != Id );
                 }
 
                 if ( duplicates.Any() )
-				{
-					var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy(p => p.NumberTypeValue.Order).FirstOrDefault();
-					if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
-					{
+                {
+                    var highestOrderedDuplicate = duplicates.Where( p => p.NumberTypeValue != null ).OrderBy( p => p.NumberTypeValue.Order ).FirstOrDefault();
+                    if ( NumberTypeValueId.HasValue && highestOrderedDuplicate != null && highestOrderedDuplicate.NumberTypeValue != null )
+                    {
                         // Ensure that we preserve the PhoneNumber with the highest preference phone type
-						var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
-						if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
-						{
-							entry.State = entry.State == System.Data.Entity.EntityState.Added ? System.Data.Entity.EntityState.Detached : System.Data.Entity.EntityState.Deleted;
-						}
-						else
-						{
-							phoneNumberService.DeleteRange( duplicates);
-						}
-					}
-				}
-			}
+                        var numberType = DefinedValueCache.Get( NumberTypeValueId.Value, rockContext );
+                        if ( highestOrderedDuplicate.NumberTypeValue.Order < numberType.Order )
+                        {
+                            entry.State = entry.State == EntityState.Added ? EntityState.Detached : EntityState.Deleted;
+                        }
+                        else
+                        {
+                            phoneNumberService.DeleteRange( duplicates );
+                        }
+                    }
+                }
+            }
 
-			int personId = PersonId;
+            int personId = PersonId;
             PersonHistoryChanges = new Dictionary<int, History.HistoryChangeList> { { personId, new History.HistoryChangeList() } };
 
             switch ( entry.State )
             {
-                case System.Data.Entity.EntityState.Added:
+                case EntityState.Added:
                     {
 
                         History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone", DefinedValueCache.GetName( NumberTypeValueId ) ), string.Empty, NumberFormatted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsUnlisted );
-                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), (bool?)null, IsMessagingEnabled );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Unlisted", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsUnlisted );
+                        History.EvaluateChange( PersonHistoryChanges[personId], string.Format( "{0} Phone Messaging Enabled", DefinedValueCache.GetName( NumberTypeValueId ) ), ( bool? ) null, IsMessagingEnabled );
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Modified:
+                case EntityState.Modified:
                     {
                         string numberTypeName = DefinedValueCache.GetName( NumberTypeValueId );
                         int? oldPhoneNumberTypeId = entry.OriginalValues["NumberTypeValueId"].ToStringSafe().AsIntegerOrNull();
@@ -279,7 +283,7 @@ namespace Rock.Model
                         break;
                     }
 
-                case System.Data.Entity.EntityState.Deleted:
+                case EntityState.Deleted:
                     {
                         personId = entry.OriginalValues["PersonId"].ToStringSafe().AsInteger();
                         PersonHistoryChanges.AddOrIgnore( personId, new History.HistoryChangeList() );
@@ -311,7 +315,7 @@ namespace Rock.Model
 
             // update the ModifiedDateTime on the Person that this phone number is associated with
             var currentDateTime = RockDateTime.Now;
-            var qryPersonsToUpdate = new PersonService( rockContext ).Queryable(true, true).Where( a => a.Id == this.PersonId );
+            var qryPersonsToUpdate = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == this.PersonId );
             rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = this.ModifiedByPersonAliasId } );
 
             base.PostSaveChanges( dbContext );
@@ -336,6 +340,20 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Converts the phone number to a string that is correctly formatted to be used as an SMS phone number.
+        /// </summary>
+        /// <returns></returns>
+        public string ToSmsNumber()
+        {
+            string smsNumber = this.Number;
+            if ( !string.IsNullOrWhiteSpace( this.CountryCode ) )
+            {
+                smsNumber = "+" + this.CountryCode + this.Number;
+            }
+            return smsNumber;
+        }
+
+        /// <summary>
         /// Gets the defaults country code.
         /// </summary>
         /// <returns></returns>
@@ -355,7 +373,8 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Formats a provided string of numbers .
+        /// Formats the PhoneNumber in the format defined for the COMMUNICATION_PHONE_COUNTRY_CODE defined value(s).
+        /// For example, for formatted number would look something like '(555) 555-1212'.
         /// </summary>
         /// <param name="countryCode">The country code.</param>
         /// <param name="number">A <see cref="System.String" /> containing the number to format.</param>

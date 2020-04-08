@@ -26,6 +26,7 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Model.PageRoute, Rock" PropertyName="Route" />
+                            <Rock:RockCheckBox ID="cbIsGlobal" runat="server" Label="Is Global" Help="Check this if the page should be used by every site even if 'Enable Exclusive Routes' is turned on." />
                         </div>
                     </div>
                     <div class="row">

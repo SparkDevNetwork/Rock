@@ -198,6 +198,12 @@
                                     <Rock:PhoneNumberBox ID="pnMobilePhone" runat="server" Label="Mobile Phone" ValidationGroup="vgEditPerson" />
                                 </div>
                                 <div class="col-md-6">
+                                    <Rock:ButtonGroup ID="bgSMS" runat="server" FormGroupCssClass="toggle-container" SelectedItemClass="btn btn-primary active" UnselectedItemClass="btn btn-default" Label="&nbsp;" ValidationGroup="vgEditPerson" RequiredErrorMessage="SMS Enabled is required.">
+                                        <asp:ListItem Text="SMS Enabled" Value="True" />
+                                        <asp:ListItem Text="No SMS" Value="False" />
+                                    </Rock:ButtonGroup>
+                                </div>
+                                <div class="col-md-6">
                                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" ValidationGroup="vgEditPerson" />
                                 </div>
                                 <div class="col-md-6">

@@ -17,7 +17,9 @@
 using System;
 using System.Linq;
 using System.Text;
+
 using DotLiquid;
+
 using Quartz;
 
 using Rock.Communication;
@@ -183,9 +185,6 @@ namespace Rock.Jobs
                     exceptionToLog = exceptionToLog.InnerException;
                 }
 
-                // log the exception to the database
-                ExceptionLogService.LogException( exceptionToLog, null );
-
                 var summaryException = exceptionToLog;
 
                 // put the exception into the status
@@ -195,19 +194,21 @@ namespace Rock.Jobs
                 if ( aggregateException != null && aggregateException.InnerExceptions != null && aggregateException.InnerExceptions.Count == 1 )
                 {
                     // if it's an aggregate, but there is only one, convert it to a single exception
-                    summaryException = aggregateException.InnerExceptions[0];
+                    exceptionToLog = aggregateException.InnerExceptions[0];
                     aggregateException = null;
                 }
+
+                // log the exception to the database (
+                ExceptionLogService.LogException( exceptionToLog, null );
 
                 if ( aggregateException != null )
                 {
                     var firstException = aggregateException.InnerExceptions.First();
                     job.LastStatusMessage = "One or more exceptions occurred. First Exception: " + firstException.Message;
-                    summaryException = firstException;
                 }
                 else
                 {
-                    job.LastStatusMessage = summaryException.Message;
+                    job.LastStatusMessage = exceptionToLog.Message;
                 }
 
                 if ( job.NotificationStatus == JobNotificationStatus.Error )
@@ -240,13 +241,13 @@ namespace Rock.Jobs
                 }
 
                 var notificationEmailAddresses = job.NotificationEmails.ResolveMergeFields( mergeFields ).SplitDelimitedValues().ToList();
-                var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemEmail.CONFIG_JOB_NOTIFICATION.AsGuid() );
+                var emailMessage = new RockEmailMessage( Rock.SystemGuid.SystemCommunication.CONFIG_JOB_NOTIFICATION.AsGuid() );
                 emailMessage.AdditionalMergeFields = mergeFields;
 
                 // NOTE: the EmailTemplate may also have TO: defined, so even if there are no notificationEmailAddress defined for this specific job, we still should send the mail
                 foreach ( var notificationEmailAddress in notificationEmailAddresses )
                 {
-                    emailMessage.AddRecipient( new RecipientData( notificationEmailAddress ) );
+                    emailMessage.AddRecipient( RockEmailMessageRecipient.CreateAnonymous( notificationEmailAddress, null ) );
                 }
 
                 emailMessage.Send();

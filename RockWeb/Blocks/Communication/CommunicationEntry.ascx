@@ -3,21 +3,21 @@
 <script>
     //Sys.WebForms.PageRequestManager.getInstance().add_endRequest(scrollToGrid);
     function scrollToResults() {
-        
+
             $('html, body').animate({
                 scrollTop: $('.js-pnl-result')
             }, 'fast');
-        
+
     }
 </script>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
- 
+
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-comment-o"></i> <asp:Literal ID="lTitle" runat="server" /></h1>
-                
+
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlStatus" runat="server" />
                 </div>
@@ -62,16 +62,16 @@
                         <div class="panel-heading clearfix">
                             <div class="control-label pull-left">
                                 To: <asp:Literal ID="lNumRecipients" runat="server" />
-                            </div> 
-                    
+                            </div>
+
                             <div class="pull-right">
                                 <Rock:PersonPicker ID="ppAddPerson" runat="server" CssClass="picker-menu-right" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
                             </div>
 
                             <asp:CustomValidator ID="valRecipients" runat="server" OnServerValidate="valRecipients_ServerValidate" Display="None" ErrorMessage="At least one recipient is required." />
-                
-                         </div>   
-                
+
+                         </div>
+
                          <div class="panel-body">
 
                                 <ul class="recipients list-unstyled">
@@ -108,7 +108,6 @@
                 </asp:Panel>
 
                 <asp:Panel ID="pnlResult" runat="server" Visible="false" CssClass="js-pnl-result">
-                    <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
                     <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
                     <br />
                     <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
@@ -117,7 +116,7 @@
             </div>
         </div>
 
-        
+
 
         <script type="text/javascript">
             Sys.Application.add_load(function () {
@@ -126,7 +125,7 @@
                 $('.recipient span').tooltip();
 
                 // Set the display of any recipients that have preference of NoBulkEmail based on if this is a bulk communication
-                $('.js-bulk-option').click(function () {
+                $('.js-bulk-option').on('click', function () {
                     if ($(this).is(':checked')) {
                         $('.js-no-bulk-email').addClass('text-danger');
                     } else {

@@ -208,6 +208,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Reloads the defined values.
         /// </summary>
+        [Obsolete("This will not work with a distributed cache system such as Redis")]
+        [RockObsolete("1.10")]
         public void ReloadDefinedValues()
         {
             // set definedValueIds to null so it load them all at once on demand

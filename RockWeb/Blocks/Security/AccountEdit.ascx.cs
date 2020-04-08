@@ -32,7 +32,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Security
 {
     /// <summary>
-    /// Allows a person to edit their account information. 
+    /// Allows a person to edit their account information.
     /// </summary>
     [DisplayName( "Account Edit" )]
     [Category( "Security" )]
@@ -55,7 +55,7 @@ namespace RockWeb.Blocks.Security
             dvpTitle.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ).Id;
             dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;
             string smsScript = @"
-    $('.js-sms-number').click(function () {
+    $('.js-sms-number').on('click', function () {
         if ($(this).is(':checked')) {
             $('.js-sms-number').not($(this)).prop('checked', false);
         }
@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Security
                                                     familyAddress.IsMappedLocation = true;
                                                 }
                                                 else if ( hfStreet1.Value != string.Empty ) {
-                                                    
+
                                                     // user clicked move so create a previous address
                                                     var previousAddress = new GroupLocation();
                                                     groupLocationService.Add( previousAddress );
@@ -384,7 +384,7 @@ namespace RockWeb.Blocks.Security
                 dvpSuffix.SelectedValue = person.SuffixValueId.HasValue ? person.SuffixValueId.Value.ToString() : string.Empty;
                 bpBirthDay.SelectedDate = person.BirthDate;
                 rblGender.SelectedValue = person.Gender.ConvertToString();
-                tbEmail.Text = person.Email;             
+                tbEmail.Text = person.Email;
                 rblEmailPreference.SelectedValue = person.EmailPreference.ConvertToString( false );
 
                 Guid? locationTypeGuid = GetAttributeValue( "LocationType" ).AsGuidOrNull();
@@ -415,7 +415,7 @@ namespace RockWeb.Blocks.Security
 
                         var familyAddress = new GroupLocationService( rockContext ).Queryable()
                                             .Where( l => l.Group.GroupTypeId == familyGroupType.Id
-                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id 
+                                                 && l.GroupLocationTypeValueId == addressTypeDv.Id
                                                  && l.Group.Members.Any( m => m.PersonId == person.Id))
                                             .FirstOrDefault();
                         if ( familyAddress != null )

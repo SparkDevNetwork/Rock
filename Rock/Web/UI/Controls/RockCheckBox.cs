@@ -421,7 +421,15 @@ namespace Rock.Web.UI.Controls
             {
                 string selectedCss = string.IsNullOrWhiteSpace( SelectedIconCssClass ) ? "fa fa-check-square-o" : SelectedIconCssClass;
                 string unselectedCss = string.IsNullOrWhiteSpace( UnSelectedIconCssClass ) ? "fa fa-square-o" : UnSelectedIconCssClass;
-                writer.WriteLine( string.Format( "<div class='rock-checkbox-icon text-muted'><i class=\"{0}\"></i> {1}</div>", this.Checked ? selectedCss : unselectedCss, this.Text ) );
+
+                var divCss = "rock-checkbox-icon text-muted";
+
+                if ( this.DisplayInline )
+                {
+                    divCss += " checkbox-inline";
+                }
+
+                writer.WriteLine( string.Format( "<div class='{0}'><i class=\"{1}\"></i> {2}</div>", divCss, this.Checked ? selectedCss : unselectedCss, this.Text ) );
             }
         }
     }

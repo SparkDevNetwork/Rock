@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -30,3 +31,4 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid( "a2b98b90-6dcb-4049-ad04-353c9b46a113" )]
 
+[assembly: InternalsVisibleTo( "Rock.Rest" )]

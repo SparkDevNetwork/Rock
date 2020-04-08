@@ -16,24 +16,15 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Caching;
-using System.Text;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock.Data;
-using Rock.Model;
-using Rock.Web.Cache;
-using Rock.Security;
 
 namespace Rock.Web.UI
 {
     /// <summary>
     /// RockBlockCustomSettings is the base abstract class that a Blocks should use if it will implement a
-    /// UI for custom settings (outside of the normal block properties).  Any block property that has a 
+    /// UI for custom settings (outside of the normal block properties).  Any block property that has a
     /// category of "CustomSetting" will not appear in the normal block settings.
     /// </summary>
     public abstract class RockBlockCustomSettings : RockBlock
@@ -75,7 +66,7 @@ namespace Rock.Web.UI
                 HtmlGenericControl iEdit = new HtmlGenericControl( "i" );
                 lbEdit.Controls.Add( iEdit );
                 lbEdit.CausesValidation = false;
-                iEdit.Attributes.Add( "class", "fa fa-pencil-square-o" );
+                iEdit.Attributes.Add( "class", "fa fa-edit" );
 
                 // will toggle the block config so they are no longer showing
                 lbEdit.Attributes["onclick"] = "Rock.admin.pageAdmin.showBlockConfig()";

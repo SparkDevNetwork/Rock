@@ -31,7 +31,7 @@
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
                             <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="True"/>
-                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" MinimumValue="0" Required="True" Help="The total amount that is being pledged. If they intend to give $100 monthly for one year, enter $1,200." />
+                            <Rock:CurrencyBox ID="tbAmount" runat="server" Label="Total Amount" MinimumValue="0" Required="true" Help="The total amount that is being pledged. If they intend to give $100 monthly for one year, enter $1200." />
                         </div>
                         <div class="col-md-6">
                             <Rock:DefinedValuePicker ID="dvpFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Help="How often the person is expected to give some portion of the total amount." />

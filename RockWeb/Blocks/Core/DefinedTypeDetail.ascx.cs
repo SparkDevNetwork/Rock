@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Core
                 gDefinedTypeAttributes.Columns[3].Visible = true;
                 gDefinedTypeAttributes.Actions.ShowAdd = true;
 
-                itemId = PageParameter( "definedTypeId" ).AsIntegerOrNull();
+                itemId = PageParameter( "DefinedTypeId" ).AsIntegerOrNull();
             }
 
             return itemId;
@@ -207,7 +207,7 @@ namespace RockWeb.Blocks.Core
             rockContext.SaveChanges();
 
             var qryParams = new Dictionary<string, string>();
-            qryParams["definedTypeId"] = definedType.Id.ToString();
+            qryParams["DefinedTypeId"] = definedType.Id.ToString();
             NavigateToPage( RockPage.Guid, qryParams );
         }
 
@@ -279,7 +279,7 @@ namespace RockWeb.Blocks.Core
             tbTypeName.Text = definedType.Name;
 
             lTitle.Text = definedType.Name.FormatAsHtmlTitle();
-            lDescription.Text = definedType.Description;
+            lDescription.Text = definedType.Description.ConvertMarkdownToHtml();
 
             if ( !string.IsNullOrWhiteSpace( definedType.HelpText ) )
             {

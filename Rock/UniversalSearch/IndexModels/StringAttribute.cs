@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.UniversalSearch.IndexModels
 {
     internal class StringAttribute : System.Attribute

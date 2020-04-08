@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -78,10 +77,10 @@ namespace Rock.Model
         public int? PhotoId { get; set; }
 
         /// <summary>
-        /// Gets or sets the url for an external event.
+        /// Gets or sets the URL for an external event.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the url for an external event.
+        /// A <see cref="System.String"/> representing the URL for an external event.
         /// </value>
         [DataMember]
         [MaxLength(200)]
@@ -102,7 +101,7 @@ namespace Rock.Model
         private bool _isActive = true;
 
         /// <summary>
-        /// Gets or sets a flag indicating if the prayer request has been approved. 
+        /// Gets or sets a flag indicating if the prayer request has been approved.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this prayer request has been approved; otherwise <c>false</c>.
@@ -321,5 +320,5 @@ namespace Rock.Model
         }
     }
 
-    #endregion 
+    #endregion
 }

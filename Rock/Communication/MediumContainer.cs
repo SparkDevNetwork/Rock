@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-
+using System.Linq;
 using Rock.Extension;
 
 namespace Rock.Communication
@@ -85,7 +85,7 @@ namespace Rock.Communication
 
             return null;
         }
-        
+
         /// <summary>
         /// Gets or sets the MEF components.
         /// </summary>
@@ -94,5 +94,47 @@ namespace Rock.Communication
         /// </value>
         [ImportMany( typeof( MediumComponent ) )]
         protected override IEnumerable<Lazy<MediumComponent, IComponentData>> MEFComponents { get; set; }
+
+        /// <summary>
+        /// Gets the medium components with active transports.
+        /// </summary>
+        /// <returns>A list of active MediumComponents</returns>
+        public static IEnumerable<MediumComponent> GetActiveMediumComponentsWithActiveTransports()
+        {
+            return Instance.Components.Select( a => a.Value.Value ).Where( x => x.IsActive && x.Transport != null && x.Transport.IsActive );
+        }
+
+        /// <summary>
+        /// Determines whether a transport is active for the specified unique identifier.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active transport exists for the specified unique identifier; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActiveTransport( Guid guid )
+        {
+            return MediumContainer.GetActiveMediumComponentsWithActiveTransports().Any( a => a.EntityType.Guid == guid );
+        }
+
+        /// <summary>
+        /// Determines whether an active SMS transport exists.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active SMS transport exists; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActiveSmsTransport()
+        {
+            return MediumContainer.HasActiveTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+        }
+
+        /// <summary>
+        /// Determines whether an active email transport exists.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if an active email transport exists; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool HasActiveEmailTransport()
+        {
+            return MediumContainer.HasActiveTransport( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+        }
     }
 }

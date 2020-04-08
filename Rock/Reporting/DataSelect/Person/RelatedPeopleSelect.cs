@@ -284,15 +284,29 @@ namespace Rock.Reporting.DataSelect.Person
                 var marriedStatusGuid = SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
                 int marriedStatusId = DefinedValueCache.Get( marriedStatusGuid ).Id;
 
-                var familyGroupMembers = new GroupMemberService( context ).Queryable()
+                /*
+                 * 2020-03-19 - JPH
+                 *
+                 * If a given Report includes deceased individuals, the 'Related People' Field Type should list non-deceased
+                 * people who have known relationships with the deceased individual. Note that this is a one-way street: a
+                 * deceased Person should never be displayed within the 'Related People' Field Type itself, but rather: a
+                 * deceased Person should only be displayed as a row within a given Report when they are the subject of that
+                 * Report (the 'Include Deceased' checkbox has been checked for the underlying Data View).
+                 *
+                 * Reason: Issue #4120 (Reporting on Known Relationships for Deceased Individuals)
+                 * https://github.com/SparkDevNetwork/Rock/issues/4120
+                 */
+
+                var familyGroupMembers = new GroupMemberService( context ).Queryable( true )
                                                                           .Where( m => m.Group.GroupTypeId == familyGroupTypeId );
 
-                var personSpouseQuery = new PersonService( context ).Queryable()
+                var personSpouseQuery = new PersonService( context ).Queryable( new PersonService.PersonQueryOptions { IncludeDeceased = true } )
                                                                     .SelectMany(
                                                                                 p =>
                                                                                 familyGroupMembers.Where( gm => gm.PersonId == p.Id && gm.Person.MaritalStatusValueId == marriedStatusId && gm.GroupRole.Guid == adultGuid )
                                                                                                   .SelectMany( gm => gm.Group.Members )
                                                                                                   .Where( gm => gm.PersonId != p.Id && gm.GroupRole.Guid == adultGuid && gm.Person.MaritalStatusValueId == marriedStatusId )
+                                                                                                  .Where( gm => gm.Person.IsDeceased == false )
                                                                                                   .Select(
                                                                                                           gm =>
                                                                                                           new RelatedPersonInfo
@@ -339,14 +353,28 @@ namespace Rock.Reporting.DataSelect.Person
         private IQueryable<RelatedPersonInfo> GetRelatedPeopleQuery( RockContext context, IEnumerable<int> groupTypeIds, IEnumerable<Guid> principalRoleGuids, IEnumerable<Guid> targetRoleGuids,
                                                                      string relationshipName = "*" )
         {
-            var relationshipGroupMembersQuery = new GroupMemberService( context ).Queryable();
+            /*
+             * 2020-03-19 - JPH
+             *
+             * If a given Report includes deceased individuals, the 'Related People' Field Type should list non-deceased
+             * people who have known relationships with the deceased individual. Note that this is a one-way street: a
+             * deceased Person should never be displayed within the 'Related People' Field Type itself, but rather: a
+             * deceased Person should only be displayed as a row within a given Report when they are the subject of that
+             * Report (the 'Include Deceased' checkbox has been checked for the underlying Data View).
+             *
+             * Reason: Issue #4120 (Reporting on Known Relationships for Deceased Individuals)
+             * https://github.com/SparkDevNetwork/Rock/issues/4120
+             */
+
+            var relationshipGroupMembersQuery = new GroupMemberService( context ).Queryable( true );
 
             relationshipGroupMembersQuery = relationshipGroupMembersQuery.Where( x => groupTypeIds.Contains( x.Group.GroupTypeId ) );
 
-            var relatedPeopleQuery = new PersonService( context ).Queryable()
+            var relatedPeopleQuery = new PersonService( context ).Queryable( new PersonService.PersonQueryOptions { IncludeDeceased = true } )
                                                                  .SelectMany( p => relationshipGroupMembersQuery.Where( gm => gm.PersonId == p.Id && principalRoleGuids.Contains( gm.GroupRole.Guid ) )
                                                                                                                 .SelectMany( gm => gm.Group.Members )
                                                                                                                 .Where( gm => targetRoleGuids.Contains( gm.GroupRole.Guid ) && gm.PersonId != p.Id )
+                                                                                                                .Where( gm => gm.Person.IsDeceased == false )
                                                                                                                 .OrderBy( gm => gm.GroupRole.Order )
                                                                                                                 .ThenBy( gm => gm.Person.BirthDate )
                                                                                                                 .ThenBy( gm => gm.Person.Gender )

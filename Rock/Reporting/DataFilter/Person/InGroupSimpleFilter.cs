@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -234,7 +235,7 @@ namespace Rock.Reporting.DataFilter.Person
             var groupService = new GroupService( rockContext );
             var groupIds = groupService.GetByGuids( groupGuids ).Select( a => a.Id ).Distinct().ToList();
 
-            var groupMemberServiceQry = groupMemberService.Queryable().Where( xx => groupIds.Contains( xx.GroupId ) );
+            var groupMemberServiceQry = groupMemberService.Queryable( true ).Where( xx => groupIds.Contains( xx.GroupId ) );
 
             var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
                 .Where( p => groupMemberServiceQry.Any( xx => xx.PersonId == p.Id ) );

@@ -51,6 +51,12 @@ namespace Rock.Model
         public bool CanDelete( MergeTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<StepType>( Context ).Queryable().Any( a => a.MergeTemplateId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", MergeTemplate.FriendlyTypeName, StepType.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

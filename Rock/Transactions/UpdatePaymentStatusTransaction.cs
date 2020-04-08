@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -32,7 +34,7 @@ namespace Rock.Transactions
         /// <value>
         /// The gateway identifier.
         /// </value>
-        public int GatewayId {get; set;}
+        public int GatewayId { get; set; }
 
         /// <summary>
         /// Gets or sets the scheduled transaction ids.
@@ -58,30 +60,24 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
+            if ( !ScheduledTransactionIds.Any() )
+            {
+                return;
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                var gateway = new FinancialGatewayService( rockContext ).Get( GatewayId );
-                if ( gateway != null )
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+
+                foreach ( var scheduledTransactionId in ScheduledTransactionIds )
                 {
-                    var gatewayComponent = gateway.GetGatewayComponent();
-                    if ( gatewayComponent != null )
+                    var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionId );
+
+                    if ( financialScheduledTransaction != null )
                     {
-                        var scheduledTxnService = new FinancialScheduledTransactionService( rockContext );
-                        
-                        foreach( var txnId in ScheduledTransactionIds )
-                        {
-                            var scheduledTxn = scheduledTxnService.Get( txnId );
-                            if ( scheduledTxn != null )
-                            {
-                                string statusMsgs = string.Empty;
-                                gatewayComponent.GetScheduledPaymentStatus( scheduledTxn, out statusMsgs );
+                        financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out _ );
 
-                                var lastTransactionDate = scheduledTxn.Transactions.Max( t => t.TransactionDateTime );
-                                scheduledTxn.NextPaymentDate = gatewayComponent.GetNextPaymentDate( scheduledTxn, lastTransactionDate );
-
-                                rockContext.SaveChanges();
-                            }
-                        }
+                        rockContext.SaveChanges();
                     }
                 }
             }

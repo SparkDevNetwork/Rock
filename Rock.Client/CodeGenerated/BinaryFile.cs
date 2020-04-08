@@ -148,6 +148,9 @@ namespace Rock.Client
         public BinaryFileType BinaryFileType { get; set; }
 
         /// <summary />
+        public Document Document { get; set; }
+
+        /// <summary />
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary>

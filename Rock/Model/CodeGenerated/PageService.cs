@@ -136,6 +136,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Page target, Page source )
         {
             target.Id = source.Id;
+            target.AdditionalSettings = source.AdditionalSettings;
             target.AllowIndexing = source.AllowIndexing;
             target.BodyCssClass = source.BodyCssClass;
             target.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
@@ -147,12 +148,14 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.HeaderContent = source.HeaderContent;
+            target.IconBinaryFileId = source.IconBinaryFileId;
             target.IconCssClass = source.IconCssClass;
             target.IncludeAdminFooter = source.IncludeAdminFooter;
             target.InternalName = source.InternalName;
             target.IsSystem = source.IsSystem;
             target.KeyWords = source.KeyWords;
             target.LayoutId = source.LayoutId;
+            target.MedianPageLoadTime = source.MedianPageLoadTime;
             target.MenuDisplayChildPages = source.MenuDisplayChildPages;
             target.MenuDisplayDescription = source.MenuDisplayDescription;
             target.MenuDisplayIcon = source.MenuDisplayIcon;

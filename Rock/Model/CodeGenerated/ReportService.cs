@@ -96,8 +96,11 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsSystem = source.IsSystem;
+            target.LastRunDateTime = source.LastRunDateTime;
             target.Name = source.Name;
             target.QueryHint = source.QueryHint;
+            target.RunCount = source.RunCount;
+            target.TimeToRunMS = source.TimeToRunMS;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

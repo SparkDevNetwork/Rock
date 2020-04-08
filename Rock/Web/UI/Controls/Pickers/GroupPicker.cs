@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a group
     /// </summary>
     public class GroupPicker : ItemPicker
     {
@@ -67,6 +68,38 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["RootGroupId"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [limit to scheduling enabled groups].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [limit to scheduling enabled groups]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LimitToSchedulingEnabledGroups
+        {
+            get => ViewState["LimitToSchedulingEnabledGroups"] as bool? ?? false;
+            set
+            {
+                ViewState["LimitToSchedulingEnabledGroups"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [limit to scheduling enabled groups].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [limit to scheduling enabled groups]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LimitToRSVPEnabledGroups
+        {
+            get => ViewState["LimitToRSVPEnabledGroups"] as bool? ?? false;
+            set
+            {
+                ViewState["LimitToRSVPEnabledGroups"] = value;
                 SetExtraRestParams();
             }
         }
@@ -321,9 +354,20 @@ namespace Rock.Web.UI.Controls
             {
                 extraParams.Append( $"&rootGroupId={RootGroupId.Value}" );
             }
+
             if ( IncludedGroupTypeIds != null && IncludedGroupTypeIds.Any() )
             {
                 extraParams.Append( $"&includedGroupTypeIds={IncludedGroupTypeIds.AsDelimited(",")}" );
+            }
+
+            if (LimitToSchedulingEnabledGroups)
+            {
+                extraParams.Append( $"&limitToSchedulingEnabled={LimitToSchedulingEnabledGroups.ToTrueFalse()}" );
+            }
+
+            if (LimitToRSVPEnabledGroups)
+            {
+                extraParams.Append( $"&limitToRSVPEnabled={LimitToRSVPEnabledGroups.ToTrueFalse()}" );
             }
 
             ItemRestUrlExtraParams = extraParams.ToString();

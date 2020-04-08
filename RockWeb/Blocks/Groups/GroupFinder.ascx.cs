@@ -99,13 +99,11 @@ namespace RockWeb.Blocks.Groups
     {% endif %}
 {% endif %}
 ", "CustomSetting" )]
-    [BooleanField( "Map Info Debug", "", false, "CustomSetting" )]
 
     // Lava Output Settings
     [BooleanField( "Show Lava Output", "", false, "CustomSetting" )]
     [CodeEditorField( "Lava Output", "", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, false, @"
 ", "CustomSetting" )]
-    [BooleanField( "Lava Output Debug", "", false, "CustomSetting" )]
 
     // Grid Settings
     [BooleanField( "Show Grid", "", false, "CustomSetting" )]
@@ -452,6 +450,10 @@ namespace RockWeb.Blocks.Groups
             {
                 rblFilterDOW.SetValue( "Days" );
             }
+            else
+            {
+                rblFilterDOW.SelectedIndex = 0;
+            }
 
             cbFilterTimeOfDay.Checked = scheduleFilters.Contains( "Time" );
 
@@ -703,7 +705,7 @@ namespace RockWeb.Blocks.Groups
 
                 cblCampus.Label = GetAttributeValue( "CampusLabel" );
                 cblCampus.Visible = true;
-                cblCampus.DataSource = CampusCache.All().Where( c => c.IsActive == true );
+                cblCampus.DataSource = CampusCache.All( includeInactive: false ) ;
                 cblCampus.DataBind();
             }
             else
@@ -1068,9 +1070,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     Template template = Template.Parse( GetAttributeValue( "MapInfo" ) );
 
-                    bool showDebug = UserCanEdit && GetAttributeValue( "MapInfoDebug" ).AsBoolean();
-                    lMapInfoDebug.Visible = showDebug;
-
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
                     foreach ( var gl in groupLocations )
@@ -1107,12 +1106,6 @@ namespace RockWeb.Blocks.Groups
                             mergeFields.Add( "AllowedActions", securityActions );
 
                             string infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
-
-                            if ( showDebug )
-                            {
-                                lMapInfoDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the map window.</span>", string.Empty );
-                                showDebug = false;
-                            }
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
@@ -1171,13 +1164,6 @@ namespace RockWeb.Blocks.Groups
                 mergeFields.Add( "CampusContext", RockPage.GetCurrentContext( EntityTypeCache.Get( "Rock.Model.Campus" ) ) as Campus );
 
                 lLavaOverview.Text = template.ResolveMergeFields( mergeFields );
-
-                bool showDebug = UserCanEdit && GetAttributeValue( "LavaOutputDebug" ).AsBoolean();
-                lLavaOutputDebug.Visible = showDebug;
-                if ( showDebug )
-                {
-                    lLavaOutputDebug.Text = mergeFields.lavaDebugInfo( null, "<span class='label label-info'>Lava used for the summary info.</span>" );
-                }
 
                 pnlLavaOutput.Visible = true;
             }
@@ -1360,11 +1346,6 @@ namespace RockWeb.Blocks.Groups
 
         var mapStyle = {3};
 
-        var pinShadow = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_shadow',
-            new google.maps.Size(40, 37),
-            new google.maps.Point(0, 0),
-            new google.maps.Point(12, 35));
-
         var polygonColorIndex = 0;
         var polygonColors = [{5}];
 
@@ -1445,10 +1426,15 @@ namespace RockWeb.Blocks.Groups
                     color = 'FE7569'
                 }}
 
-                var pinImage = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + color,
-                    new google.maps.Size(21, 34),
-                    new google.maps.Point(0,0),
-                    new google.maps.Point(10, 34));
+                var pinImage = {{
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: '#' + color,
+                    fillOpacity: 1,
+                    strokeColor: '#000',
+                    strokeWeight: 1,
+                    scale: 1,
+                    labelOrigin: new google.maps.Point(0,-28)
+                }};
 
                 marker = new google.maps.Marker({{
                     id: mapItem.EntityId,
@@ -1456,8 +1442,8 @@ namespace RockWeb.Blocks.Groups
                     map: map,
                     title: htmlDecode(mapItem.Name),
                     icon: pinImage,
-                    shadow: pinShadow,
-                    info_window: mapItem.InfoWindow
+                    info_window: mapItem.InfoWindow,
+                    label: String.fromCharCode(9679)
                 }});
     
                 items.push(marker);

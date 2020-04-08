@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Security
         private void gRestKeyList_AddClick( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "restUserId", "0" );
+            parms.Add( "RestUserId", "0" );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -122,6 +122,19 @@ namespace RockWeb.Blocks.Security
                 {
                     lblKey.Text = userLogin.ApiKey;
                 }
+
+                var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
+                Label lblStatus = e.Row.FindControl( "lblStatus" ) as Label;
+                lblStatus.Text = restUser.RecordStatusValue.Value;
+                lblStatus.AddCssClass( "label" );
+                if ( restUser.RecordStatusValueId == activeRecordStatusValueId )
+                {
+                    lblStatus.AddCssClass( "label-success" );
+                }
+                else
+                {
+                    lblStatus.AddCssClass( "label-danger" );
+                }
             }
         }
 
@@ -134,7 +147,7 @@ namespace RockWeb.Blocks.Security
         {
             var parms = new Dictionary<string, string>();
             var restUserId = e.RowKeyId;
-            parms.Add( "restUserId", restUserId.ToString() );
+            parms.Add( "RestUserId", restUserId.ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -175,9 +188,8 @@ namespace RockWeb.Blocks.Security
         {
             var rockContext = new RockContext();
             var restUserRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
-            var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
             var queryable = new PersonService( rockContext ).Queryable()
-                .Where( q => q.RecordTypeValueId == restUserRecordTypeId && q.RecordStatusValueId == activeRecordStatusValueId );
+                .Where( q => q.RecordTypeValueId == restUserRecordTypeId && q.Users.Any() );
 
             SortProperty sortProperty = gRestKeyList.SortProperty;
             if ( sortProperty != null )

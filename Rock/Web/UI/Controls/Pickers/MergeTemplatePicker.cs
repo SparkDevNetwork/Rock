@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -24,7 +25,7 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a merge template
     /// </summary>
     public class MergeTemplatePicker : ItemPicker
     {

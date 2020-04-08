@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -32,60 +34,40 @@ namespace Rock.CodeGeneration
             InitializeComponent();
         }
 
-        /// <summary>
-        /// Handles the Click event of the btnLoad control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        private void btnLoad_Click( object sender, EventArgs e )
+        private void Form1_Load( object sender, EventArgs e )
         {
-            if ( !Directory.Exists( lblAssemblyPath.Text ) || lblAssemblyPath.Text == string.Empty )
+            rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
+            FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
+            lblAssemblyPath.Text = fi.FullName;
+            lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
+            Cursor = Cursors.WaitCursor;
+
+            cblModels.Items.Clear();
+
+            string assemblyFileName = fi.FullName;
+
+            lblAssemblyPath.Text = assemblyFileName;
+
+            toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
+
+            var assembly = Assembly.LoadFrom( assemblyFileName );
+
+            foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
             {
-                rockAssembly = typeof( Rock.Data.IEntity ).Assembly;
-                FileInfo fi = new FileInfo( ( new System.Uri( rockAssembly.CodeBase ) ).AbsolutePath );
-                lblAssemblyPath.Text = fi.FullName;
-            }
-
-            ofdAssembly.InitialDirectory = Path.GetDirectoryName( lblAssemblyPath.Text );
-            ofdAssembly.Filter = "dll files (*.dll)|*.dll";
-            ofdAssembly.FileName = "Rock.dll";
-            ofdAssembly.RestoreDirectory = true;
-
-            if ( ofdAssembly.ShowDialog() == DialogResult.OK )
-            {
-                Cursor = Cursors.WaitCursor;
-
-                cblModels.Items.Clear();
-
-                foreach ( var file in ofdAssembly.FileNames )
+                if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract && type.GetCustomAttribute<NotMappedAttribute>() == null )
                 {
-                    FileInfo fi = new FileInfo( file );
-                    if ( fi.Exists )
+                    if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
                     {
-                        lblAssemblyPath.Text = file;
-                        lblAssemblyDateTime.Text = fi.LastWriteTime.ToElapsedString();
-                        toolTip1.SetToolTip( lblAssemblyDateTime, fi.LastWriteTime.ToString() );
-
-                        var assembly = Assembly.LoadFrom( file );
-
-                        foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
-                        {
-                            if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract && type.GetCustomAttribute<NotMappedAttribute>() == null )
-                            {
-                                if ( typeof( Rock.Data.IEntity ).IsAssignableFrom( type ) || type.GetCustomAttribute( typeof( TableAttribute ) ) != null )
-                                {
-                                    cblModels.Items.Add( type );
-                                }
-                            }
-                        }
+                        cblModels.Items.Add( type );
                     }
                 }
-
-                CheckAllItems( true );
-                cbSelectAll.Checked = true;
-
-                Cursor = Cursors.Default;
             }
+
+            CheckAllItems( true );
+            cbSelectAll.Checked = true;
+
+            Cursor = Cursors.Default;
+
 
             var projectName = Path.GetFileNameWithoutExtension( lblAssemblyPath.Text );
 
@@ -142,7 +124,21 @@ namespace Rock.CodeGeneration
                     var dbSetEntityType = typeof( Rock.Data.RockContext ).GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.Name == "DbSet`1" ).Select( a => a.PropertyType.GenericTypeArguments[0] ).ToList();
                     var entityTypes = cblModels.Items.Cast<Type>().ToList();
                     var missingDbSets = entityTypes.Where( a => !dbSetEntityType.Any( x => x.FullName == a.FullName ) ).ToList();
-                    tbResults.Text += missingDbSets.Select( a => a.Name + " is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
+                    if ( missingDbSets.Any() )
+                    {
+                        tbResults.Text += missingDbSets.Select( a => a.Name + " is missing DbSet<> in RockContext" ).ToList().AsDelimited( "\r\n" ) + "\r\n\r\n";
+                    }
+
+                    if ( cbClient.Checked )
+                    {
+                        var codeGenFolder = Path.Combine( rockClientFolder, "CodeGenerated" );
+                        if ( Directory.Exists( codeGenFolder ) )
+                        {
+                            Directory.Delete( codeGenFolder, true );
+                        }
+
+                        Directory.CreateDirectory( Path.Combine( rockClientFolder, "CodeGenerated" ) );
+                    }
 
                     foreach ( object item in cblModels.CheckedItems )
                     {
@@ -182,6 +178,11 @@ namespace Rock.CodeGeneration
                     if ( cbDatabaseProcs.Checked )
                     {
                         WriteDatabaseProcsScripts( tbDatabaseFolder.Text, projectName );
+                    }
+
+                    if ( cbEnsureCopyrightHeaders.Checked )
+                    {
+                        EnsureCopyrightHeaders( rootFolder.FullName );
                     }
                 }
             }
@@ -236,7 +237,15 @@ namespace Rock.CodeGeneration
                             }
                             else
                             {
-                                obsoleteList.Add( $"{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
+                                string messagePrefix = null;
+                                if ( rockObsolete.Version == "1.8" || rockObsolete.Version.StartsWith( "1.8.") || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                {
+                                    if ( !memberObsoleteAttribute.IsError || rockObsolete.Version == "1.7" || rockObsolete.Version.StartsWith( "1.7." ) )
+                                    {
+                                        messagePrefix = "###WARNING###:";
+                                    }
+                                }
+                                obsoleteList.Add( $"{messagePrefix}{rockObsolete.Version},{type.Name} {member.Name},{member.MemberType},{memberObsoleteAttribute.IsError}" );
                             }
                         }
                     }
@@ -670,7 +679,7 @@ order by [parentTable], [columnName]
                 if ( item.IsPartOfPrimaryKey || item.Ignore )
                 {
                     canDeleteMiddle += string.Format(
-@"            
+        @"            
             // ignoring {0},{1} 
 ", item.Table, item.Column );
                     continue;
@@ -700,20 +709,32 @@ order by [parentTable], [columnName]
                 }
 
 
-                canDeleteMiddle += string.Format(
-@" 
-            if ( new Service<{0}>( Context ).Queryable().Any( a => a.{1} == item.Id ) )
+                // #pragma warning disable 612, 618
+                var entityTypes = cblModels.Items.Cast<Type>().ToList();
+
+                var parentTableType = entityTypes.Where( a => a.GetCustomAttribute<TableAttribute>()?.Name == parentTable || a.Name == parentTable ).FirstOrDefault();
+                var obsolete = parentTableType?.GetCustomAttribute<ObsoleteAttribute>();
+
+                if ( obsolete != null && obsolete.IsError == false )
+                {
+                    canDeleteMiddle += $@"
+            #pragma warning disable 612, 618 // {parentTableType.Name} is obsolete, but we still need this code generated";
+                }
+
+                canDeleteMiddle +=
+        $@" 
+            if ( new Service<{parentTable}>( Context ).Queryable().Any( a => a.{columnName} == item.Id ) )
             {{
-                errorMessage = string.Format( ""This {{0}} {3} {{1}}."", {2}.FriendlyTypeName, {0}.FriendlyTypeName{4} );
+                errorMessage = string.Format( ""This {{0}} {relationShipText} {{1}}."", {type.Name}.FriendlyTypeName, {parentTable}.FriendlyTypeName{pluralizeCode} );
                 return false;
             }}  
-",
-                    parentTable,
-                    columnName,
-                    type.Name,
-                    relationShipText,
-                    pluralizeCode
-                    );
+";
+
+                if ( obsolete != null && obsolete.IsError == false )
+                {
+                    canDeleteMiddle += @"            #pragma warning restore 612, 618
+";
+                }
             }
 
 
@@ -753,6 +774,9 @@ order by [parentTable], [columnName]
             string restNamespace = type.Assembly.GetName().Name + ".Rest.Controllers";
             string dbContextFullName = Rock.Reflection.GetDbContextForEntityType( type ).GetType().FullName;
 
+            var obsolete = type.GetCustomAttribute<ObsoleteAttribute>();
+            var rockObsolete = type.GetCustomAttribute<RockObsolete>();
+
             var sb = new StringBuilder();
 
             sb.AppendLine( "//------------------------------------------------------------------------------" );
@@ -787,6 +811,17 @@ order by [parentTable], [columnName]
             sb.AppendLine( "    /// <summary>" );
             sb.AppendLine( $"    /// {pluralizedName} REST API" );
             sb.AppendLine( "    /// </summary>" );
+
+            if ( obsolete != null && obsolete.IsError == false )
+            {
+                if ( rockObsolete != null )
+                {
+                    sb.AppendLine( $"    [RockObsolete( \"{rockObsolete.Version}\" )]" );
+                }
+
+                sb.AppendLine( $"    [System.Obsolete( \"{obsolete.Message}\" )]" );
+            }
+
             sb.AppendLine( $"    public partial class {pluralizedName}Controller : Rock.Rest.ApiController<{type.Namespace}.{type.Name}>" );
             sb.AppendLine( "    {" );
             sb.AppendLine( "        /// <summary>" );
@@ -1103,8 +1138,7 @@ order by [parentTable], [columnName]
         }
 
         /// <summary>
-        /// Writes the rock client system unique identifier files.
-        /// </summary>
+        /// Writes the rock client system unique identifier files.      /// </summary>
         /// <param name="rootFolder">The root folder.</param>
         private void WriteRockClientSystemGuidFiles( string rootFolder )
         {
@@ -1188,13 +1222,6 @@ order by [parentTable], [columnName]
         {
             // make a copy of the EntityProperties since we are deleting some for this method
             var entityProperties = GetEntityProperties( type, true, true ).ToDictionary( k => k.Key, v => v.Value );
-
-            // create an instance of the type to detect any autoproperties that have a default value set
-            object typeInstance = null;
-            if ( type.GetConstructor( new Type[0] ) != null )
-            {
-                typeInstance = Activator.CreateInstance( type );
-            }
 
             var dataMembers = type.GetProperties().SortByStandardOrder()
                 .Where( a => a.GetCustomAttribute<DataMemberAttribute>() != null )
@@ -1305,10 +1332,27 @@ order by [parentTable], [columnName]
                     sb.AppendLine( $"        [Obsolete( \"{obsolete.Message}\", {obsolete.IsError.ToTrueFalse().ToLower()} )]" );
                 }
 
+                // if the property has auto-property ( ex: IsActive {get; set) = true;) lets put the same thing on the code generated rock.client class
+                Type[] autoPropertyTypesToCheck = new Type[] { typeof( string ), typeof( bool ), typeof( int ), typeof( bool? ), typeof( int? ) };
                 object autoPropertyValue = null;
-                if ( typeInstance != null )
+                if ( autoPropertyTypesToCheck.Contains( propertyInfo.PropertyType ) || propertyInfo.PropertyType.IsEnum )
                 {
-                    autoPropertyValue = propertyInfo.GetValue( typeInstance );
+                    // create an instance of the type to detect any auto-properties that have a default value set
+                    object typeInstance = null;
+                    if ( type.GetConstructor( new Type[0] ) != null )
+                    {
+                        typeInstance = Activator.CreateInstance( type );
+                    }
+
+                    if ( typeInstance != null )
+                    {
+
+                        // we can rule out the existence of the autoProperty if the getter doesn't have CompilerGeneratedAttribute
+                        //if ( propertyInfo.GetGetMethod().GetCustomAttribute<CompilerGeneratedAttribute>() != null )
+                        {
+                            autoPropertyValue = propertyInfo.GetValue( typeInstance );
+                        }
+                    }
                 }
 
                 sb.Append( $"        public {this.PropertyTypeName( propertyInfo.PropertyType )} {propertyName} {{ get; set; }}" );
@@ -1355,7 +1399,7 @@ order by [parentTable], [columnName]
             }
 
             sb.AppendFormat(
-@"        /// <summary>
+        @"        /// <summary>
         /// Copies the base properties from a source {0} object
         /// </summary>
         /// <param name=""source"">The source.</param>
@@ -1481,6 +1525,191 @@ order by [parentTable], [columnName]
                 tbClientFolder.Text = fdbRockClient.SelectedPath;
             }
         }
+
+        /// <summary>
+        /// The ignore files
+        /// </summary>
+        static string[] IgnoreFiles = new string[] { "\\DoubleMetaphone.cs", "\\Rock.Version\\AssemblySharedInfo.cs" };
+
+        /// <summary>
+        /// The ignore folders
+        /// </summary>
+        static string[] IgnoreFolders = new string[] { "\\CodeGenerated", "\\obj" };
+
+        /// <summary>
+        /// Mains the specified args.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        static void EnsureCopyrightHeaders( string rootFolder )
+        {
+            string rockDirectory = rootFolder.EnsureTrailingBackslash();
+
+            int updatedFileCount = 0;
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "RockWeb\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Checkr\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.DownhillCss\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mailgun\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Mandrill\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Migrations\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.NMI\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.PayFlowPro\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Rest\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Security.Authentication.Auth0\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.SignNow\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Slingshot.Model\\" );
+            //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Specs\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.StatementGenerator\\" );
+            //updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Tests\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.TransNational.Pi\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.Version\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Rock.WebStartup\\" );
+            updatedFileCount += FixupCopyrightHeaders( rockDirectory + "Applications\\" );
+
+            Console.WriteLine( "\n\nDone!  Files Updated: {0}\n\nPress any key to continue.", updatedFileCount );
+            Console.ReadLine();
+        }
+
+        /// <summary>
+        /// Fixups the copyright headers.
+        /// </summary>
+        /// <param name="searchDirectory">The search directory.</param>
+        private static int FixupCopyrightHeaders( string searchDirectory )
+        {
+            int result = 0;
+
+            List<string> sourceFilenames = Directory.GetFiles( searchDirectory, "*.cs", SearchOption.AllDirectories ).ToList();
+
+            // exclude files that come from the localhistory VS extension
+            sourceFilenames = sourceFilenames.Where( a => !a.Contains( ".localhistory" ) ).ToList();
+
+            // this was was our standard copyright badge up until 1/17/2014. Look for it in case it sneaks back in
+            const string oldCopyrightBadge1 = @"// <copyright>
+// Copyright 2013 by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the ""License"");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an ""AS IS"" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//";
+
+            // standard copyright badge 4/1/2016 to 5/22/2016
+            const string oldCopyrightBadge2 = @"// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Apache License, Version 2.0 (the ""License"");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an ""AS IS"" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+";
+
+            // standard copyright badge starting 5/23/2016
+            const string newCopyrightBadgeStart = @"// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the ""License"");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an ""AS IS"" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>";
+
+            const string newCopyrightBadge = newCopyrightBadgeStart + @"
+//
+";
+            foreach ( string fileName in sourceFilenames )
+            {
+                bool skipFile = false;
+                foreach ( var f in IgnoreFolders )
+                {
+                    if ( fileName.Contains( f ) )
+                    {
+                        skipFile = true;
+                    }
+
+                }
+
+                foreach ( var f in IgnoreFiles )
+                {
+                    if ( Path.GetFullPath( fileName ).EndsWith( f, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        skipFile = true;
+                    }
+                }
+
+                if ( skipFile )
+                {
+                    continue;
+                }
+
+                string origFileContents = File.ReadAllText( fileName );
+
+                if ( origFileContents.Contains( "<auto-generated" ) )
+                {
+                    continue;
+                }
+
+                if ( origFileContents.StartsWith( newCopyrightBadgeStart ) )
+                {
+                    continue;
+                }
+
+                // get rid of any incorrect header by finding keyword using or namespace
+                int positionNamespace = origFileContents.IndexOf( "namespace ", 0 );
+                int positionUsing = origFileContents.IndexOf( "using ", 0 );
+                int codeStart = positionNamespace > positionUsing ? positionUsing : positionNamespace;
+                codeStart = codeStart < 0 ? 0 : codeStart;
+
+                string newFileContents = origFileContents.Substring( codeStart );
+
+                // try to clean up cases where the badge is after some of the using statements
+                newFileContents = newFileContents.Replace( oldCopyrightBadge1, string.Empty ).Replace( newCopyrightBadge, string.Empty );
+                newFileContents = newFileContents.Replace( oldCopyrightBadge2, string.Empty ).Replace( newCopyrightBadge, string.Empty );
+
+                newFileContents = newCopyrightBadge + newFileContents.TrimStart();
+
+                if ( !origFileContents.Equals( newFileContents ) )
+                {
+                    Console.WriteLine( "Updating header in {0}", fileName );
+                    result++;
+
+                    System.Text.Encoding encoding;
+                    using ( var r = new StreamReader( fileName, detectEncodingFromByteOrderMarks: true ) )
+                    {
+                        encoding = r.CurrentEncoding;
+                    }
+
+                    File.WriteAllText( fileName, newFileContents, encoding );
+                }
+            }
+            return result;
+        }
+
+
     }
 
     public static class HelperExtensions
@@ -1524,4 +1753,7 @@ order by [parentTable], [columnName]
             return result.ToArray();
         }
     }
+
+
+
 }

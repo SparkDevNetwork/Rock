@@ -23,6 +23,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web.Routing;
+
 using Newtonsoft.Json;
 
 using Rock.Data;
@@ -77,6 +78,15 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public string Route { get; set; }
 
+        /// <summary>
+        /// If true then the route will be accessable from all sites regardless if EnableExclusiveRoutes is set on the site
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is global; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsGlobal { get; set; } = false;
+
         #endregion
 
         #region Virtual Properties
@@ -101,7 +111,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            if ( entry.State == System.Data.Entity.EntityState.Deleted )
+            if ( entry.State == EntityState.Deleted )
             {
                 var routes = RouteTable.Routes;
                 if ( routes != null )

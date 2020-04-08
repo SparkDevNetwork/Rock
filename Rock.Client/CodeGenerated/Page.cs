@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettings { get; set; }
+
+        /// <summary />
         public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
@@ -68,6 +71,9 @@ namespace Rock.Client
         public string HeaderContent { get; set; }
 
         /// <summary />
+        public int? IconBinaryFileId { get; set; }
+
+        /// <summary />
         public string IconCssClass { get; set; }
 
         /// <summary />
@@ -84,6 +90,9 @@ namespace Rock.Client
 
         /// <summary />
         public int LayoutId { get; set; }
+
+        /// <summary />
+        public double? MedianPageLoadTime { get; set; }
 
         /// <summary />
         public bool MenuDisplayChildPages { get; set; } = true;
@@ -159,6 +168,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( Page source )
         {
             this.Id = source.Id;
+            this.AdditionalSettings = source.AdditionalSettings;
             this.AllowIndexing = source.AllowIndexing;
             this.BodyCssClass = source.BodyCssClass;
             this.BreadCrumbDisplayIcon = source.BreadCrumbDisplayIcon;
@@ -170,12 +180,14 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.HeaderContent = source.HeaderContent;
+            this.IconBinaryFileId = source.IconBinaryFileId;
             this.IconCssClass = source.IconCssClass;
             this.IncludeAdminFooter = source.IncludeAdminFooter;
             this.InternalName = source.InternalName;
             this.IsSystem = source.IsSystem;
             this.KeyWords = source.KeyWords;
             this.LayoutId = source.LayoutId;
+            this.MedianPageLoadTime = source.MedianPageLoadTime;
             this.MenuDisplayChildPages = source.MenuDisplayChildPages;
             this.MenuDisplayDescription = source.MenuDisplayDescription;
             this.MenuDisplayIcon = source.MenuDisplayIcon;

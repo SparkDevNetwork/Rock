@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a financial account
     /// </summary>
     public class AccountPicker : ItemPicker
     {

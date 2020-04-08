@@ -22,6 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -328,10 +329,10 @@ namespace Rock.Reporting.DataFilter.Person
 
                 if ( includeChildGroups )
                 {
-                    var childGroups = groupService.GetAllDescendents( group.Id );
-                    if ( childGroups.Any() )
+                    var childGroupIds = groupService.GetAllDescendentGroupIds( group.Id, false );
+                    if ( childGroupIds.Any() )
                     {
-                        groupIds.AddRange( childGroups.Select( a => a.Id ) );
+                        groupIds.AddRange( childGroupIds );
 
                         // get rid of any duplicates
                         groupIds = groupIds.Distinct().ToList();

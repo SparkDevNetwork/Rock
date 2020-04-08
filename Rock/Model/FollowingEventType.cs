@@ -15,14 +15,11 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
-using Rock.Attribute;
 using Rock.Data;
 using Rock.Follow;
 using Rock.Web.Cache;

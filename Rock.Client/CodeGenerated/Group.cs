@@ -44,10 +44,19 @@ namespace Rock.Client
         public DateTime? ArchivedDateTime { get; set; }
 
         /// <summary />
+        public Rock.Client.Enums.AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; set; }
+
+        /// <summary />
         public int? CampusId { get; set; }
 
         /// <summary />
         public string Description { get; set; }
+
+        /// <summary />
+        public bool DisableScheduleToolboxAccess { get; set; }
+
+        /// <summary />
+        public bool DisableScheduling { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -63,6 +72,12 @@ namespace Rock.Client
 
         /// <summary />
         public DateTime? InactiveDateTime { get; set; }
+
+        /// <summary />
+        public string InactiveReasonNote { get; set; }
+
+        /// <summary />
+        public int? InactiveReasonValueId { get; set; }
 
         /// <summary />
         public bool IsActive { get; set; } = true;
@@ -85,11 +100,6 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
-        // Made Obsolete in Rock "1.7"
-        [Obsolete( "This no longer is functional. Please use GroupRequirement.MustMeetRequirementToAddMember instead.", true )]
-        public bool? MustMeetRequirementsToAddMember { get; set; }
-
-        /// <summary />
         public string Name { get; set; }
 
         /// <summary />
@@ -102,7 +112,19 @@ namespace Rock.Client
         public int? RequiredSignatureDocumentTemplateId { get; set; }
 
         /// <summary />
+        public int? RSVPReminderOffsetDays { get; set; }
+
+        /// <summary />
+        public int? RSVPReminderSystemCommunicationId { get; set; }
+
+        /// <summary />
+        public int? ScheduleCancellationPersonAliasId { get; set; }
+
+        /// <summary />
         public int? ScheduleId { get; set; }
+
+        /// <summary />
+        public bool SchedulingMustMeetRequirements { get; set; }
 
         /// <summary />
         public int? StatusValueId { get; set; }
@@ -143,13 +165,18 @@ namespace Rock.Client
             this.AllowGuests = source.AllowGuests;
             this.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
             this.ArchivedDateTime = source.ArchivedDateTime;
+            this.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
             this.CampusId = source.CampusId;
             this.Description = source.Description;
+            this.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
+            this.DisableScheduling = source.DisableScheduling;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.GroupCapacity = source.GroupCapacity;
             this.GroupTypeId = source.GroupTypeId;
             this.InactiveDateTime = source.InactiveDateTime;
+            this.InactiveReasonNote = source.InactiveReasonNote;
+            this.InactiveReasonValueId = source.InactiveReasonValueId;
             this.IsActive = source.IsActive;
             this.IsArchived = source.IsArchived;
             this.IsPublic = source.IsPublic;
@@ -160,7 +187,11 @@ namespace Rock.Client
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
             this.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
+            this.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
+            this.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
+            this.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
             this.ScheduleId = source.ScheduleId;
+            this.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
             this.StatusValueId = source.StatusValueId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -206,6 +237,9 @@ namespace Rock.Client
 
         /// <summary />
         public SignatureDocumentTemplate RequiredSignatureDocumentTemplate { get; set; }
+
+        /// <summary />
+        public SystemCommunication RSVPReminderSystemCommunication { get; set; }
 
         /// <summary />
         public Schedule Schedule { get; set; }

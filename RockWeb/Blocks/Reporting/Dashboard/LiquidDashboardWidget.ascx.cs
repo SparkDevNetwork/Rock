@@ -34,13 +34,13 @@ namespace RockWeb.Blocks.Reporting.Dashboard
     [EntityField( "Series Partition", "Select the series partition entity (Campus, Group, etc) to be used to limit the metric values for the selected metrics.", "Either select a specific {0} or leave {0} blank to get it from the page context.", false, Key = "Entity", Order = 3 )]
     [MetricCategoriesField( "Metric", "Select the metric(s) to be made available to liquid", Key = "MetricCategories", Order = 4 )]
     [BooleanField( "Round Values", "Round Y values to the nearest whole number. For example, display 25.00 as 25.", true, Order = 5 )]
-    [CodeEditorField( "Liquid Template", "The text (or html) to display as a dashboard widget", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, Order = 6, DefaultValue =
+    [CodeEditorField( "Liquid Template", "The text (or HTML) to display as a dashboard widget", CodeEditorMode.Lava, CodeEditorTheme.Rock, 200, Order = 6, DefaultValue =
 @"
 {% for metric in Metrics %}
     <h1>{{ metric.Title }}</h1>
     <h4>{{ metric.Subtitle }}</h4>
     <p>{{ metric.Description }}</p>
-    <div class='row'>    
+    <div class='row'>
         <div class='col-md-6'>
             {{ metric.LastValueDate | Date: 'MMM' }}
               <span style='font-size:40px'>{{ metric.LastValue }}</span>

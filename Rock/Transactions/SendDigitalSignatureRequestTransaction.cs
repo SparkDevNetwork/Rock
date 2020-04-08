@@ -19,7 +19,6 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 
 namespace Rock.Transactions
 {
@@ -81,6 +80,7 @@ namespace Rock.Transactions
                 var assignedPerson = personAliasService.GetPerson( AssignedToPersonAliasId );
 
                 if ( !documentService.Queryable().Any( d =>
+                        d.SignatureDocumentTemplateId == SignatureDocumentTemplateId &&
                         d.AppliesToPersonAliasId.HasValue && 
                         d.AppliesToPersonAliasId.Value == AppliesToPersonAliasId &&
                         d.Status == SignatureDocumentStatus.Signed ) )

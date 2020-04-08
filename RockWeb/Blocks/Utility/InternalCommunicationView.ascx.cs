@@ -213,7 +213,13 @@ namespace RockWeb.Blocks.Utility
 
             if ( cacheDuration > 0 && _currentPage == 0 )
             {
-                cachedItem = RockCache.Get( cacheKey ) as CachedBlockData;
+                var serializedCachedItem = RockCache.Get( cacheKey );
+                if ( serializedCachedItem != null
+                    && serializedCachedItem is string
+                    && !string.IsNullOrWhiteSpace( ( string ) serializedCachedItem ) )
+                {
+                        cachedItem = ( ( string ) serializedCachedItem ).FromJsonOrNull<CachedBlockData>();
+                }
             }
 
             if ( cachedItem != null )
@@ -288,7 +294,7 @@ namespace RockWeb.Blocks.Utility
                     cachedData.Metrics = metrics;
 
                     var expiration = RockDateTime.Now.AddSeconds( cacheDuration );
-                    RockCache.AddOrUpdate( cacheKey, string.Empty, cachedData, expiration, cacheTags );
+                    RockCache.AddOrUpdate( cacheKey, string.Empty, cachedData.ToJson(), expiration, cacheTags );
                 }
             }
 

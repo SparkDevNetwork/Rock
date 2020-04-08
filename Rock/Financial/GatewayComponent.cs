@@ -16,8 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data;
-using Rock.Attribute;
+
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -27,7 +26,7 @@ namespace Rock.Financial
     /// <summary>
     /// Base class for financial provider components
     /// </summary>
-    public abstract class GatewayComponent : Component
+    public abstract class GatewayComponent : Component, IGatewayComponent
     {
 
         /// <summary>
@@ -100,7 +99,8 @@ namespace Rock.Financial
         {
             get
             {
-                return true; ;
+                return true;
+                ;
             }
         }
 
@@ -110,6 +110,7 @@ namespace Rock.Financial
         /// <param name="financialGateway">The financial gateway.</param>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [System.Diagnostics.DebuggerStepThrough]
         public string GetAttributeValue( FinancialGateway financialGateway, string key )
         {
             if ( financialGateway.AttributeValues == null )
@@ -117,17 +118,7 @@ namespace Rock.Financial
                 financialGateway.LoadAttributes();
             }
 
-            var values = financialGateway.AttributeValues;
-            if ( values != null && values.ContainsKey( key ) )
-            {
-                var keyValues = values[key];
-                if ( keyValues != null )
-                {
-                    return keyValues.Value;
-                }
-            }
-
-            return string.Empty;
+            return financialGateway.GetAttributeValue( key );
         }
 
         /// <summary>
@@ -136,7 +127,7 @@ namespace Rock.Financial
         /// <value>
         ///   <c>true</c> if [split name on card]; otherwise, <c>false</c>.
         /// </value>
-        public virtual bool SplitNameOnCard 
+        public virtual bool SplitNameOnCard
         {
             get { return false; }
         }
@@ -280,6 +271,15 @@ namespace Rock.Financial
         public abstract bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
+        /// Flag indicating if the gateway supports modifying an existing schedule's payment method.
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsUpdatingSchedulePaymentMethodSupported
+        {
+            get { return true; }
+        }
+
+        /// <summary>
         /// Cancels the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
@@ -360,11 +360,12 @@ namespace Rock.Financial
 
         /// <summary>
         /// Calculates the next payment date based off of frequency and last transaction date.
+        /// Use this if the gateway doesn't support getting the next payment date from the gateway provider.
         /// </summary>
         /// <param name="scheduledTransaction">The scheduled transaction.</param>
         /// <param name="lastTransactionDate">The last transaction date.</param>
         /// <returns></returns>
-        protected DateTime? CalculateNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
+        public DateTime? CalculateNextPaymentDate( FinancialScheduledTransaction scheduledTransaction, DateTime? lastTransactionDate )
         {
             // If scheduled transaction is null, just return null
             if ( scheduledTransaction == null )
@@ -378,8 +379,10 @@ namespace Rock.Financial
                 return scheduledTransaction.StartDate;
             }
 
+            var transactionFrequencyValue = DefinedValueCache.Get( scheduledTransaction.TransactionFrequencyValueId );
+
             // If scheduled transaction does not have a frequency, just return null
-            if ( scheduledTransaction.TransactionFrequencyValue == null )
+            if ( transactionFrequencyValue == null )
             {
                 return null;
             }
@@ -393,15 +396,40 @@ namespace Rock.Financial
 
             // Calculate the next payment date based on the frequency
             DateTime? nextPayment = null;
-            switch ( scheduledTransaction.TransactionFrequencyValue.Guid.ToString().ToUpper() )
+            switch ( transactionFrequencyValue.Guid.ToString().ToUpper() )
             {
-                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY: nextPayment = startDate.AddDays( 7 ); break;
-                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY: nextPayment = startDate.AddDays( 14 ); break;
-                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY: nextPayment = startDate.AddDays( 15 ); break;
-                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY: nextPayment = startDate.AddMonths( 1 ); break;
-                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY: nextPayment = startDate.AddMonths( 3 ); break;
-                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY: nextPayment = startDate.AddMonths( 6 ); break;
-                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY: nextPayment = startDate.AddYears( 1 ); break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
+                    nextPayment = startDate.AddDays( 7 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY:
+                    nextPayment = startDate.AddDays( 14 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
+                    nextPayment = startDate.AddDays( 15 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH:
+                    if ( startDate.Day > 15 )
+                    {
+                        var nextMonth = startDate.AddMonths( 1 );
+                        nextPayment = new DateTime( nextMonth.Year, nextMonth.Month, 1 );
+                    }
+                    else
+                    {
+                        nextPayment = new DateTime( startDate.Year, startDate.Month, 15 );
+                    }
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
+                    nextPayment = startDate.AddMonths( 1 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY:
+                    nextPayment = startDate.AddMonths( 3 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY:
+                    nextPayment = startDate.AddMonths( 6 );
+                    break;
+                case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY:
+                    nextPayment = startDate.AddYears( 1 );
+                    break;
             }
 
             // If a date was calculated and it is not in the past, return that value

@@ -35,7 +35,7 @@ namespace Rock.Field.Types
         #region Configuration
 
         /// <summary>
-        /// The attribute matrix template Id
+        /// The attribute matrix template (stored as AttributeMatrixTemplate.Id)
         /// </summary>
         public const string ATTRIBUTE_MATRIX_TEMPLATE = "attributematrixtemplate";
 
@@ -302,6 +302,18 @@ namespace Rock.Field.Types
                     attributeMatrixEditor.AttributeMatrixGuid = attributeMatrix.Guid;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the copy value.
+        /// </summary>
+        /// <param name="originalValue">The original value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>string.Empty, which means we don't actually want to copy the linked matrix.</returns>
+        public override string GetCopyValue( string originalValue, RockContext rockContext )
+        {
+            // Don't copy
+            return string.Empty;
         }
 
         #region Filter Control

@@ -16,6 +16,7 @@
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
 using Rock.Model;
 
 namespace Rock.Security.Authentication

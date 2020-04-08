@@ -17,7 +17,7 @@
 using System;
 using System.ComponentModel;
 using System.Web;
-
+using Rock;
 using Rock.Attribute;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -29,11 +29,57 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block that can be used to browse and manage files on the web server" )]
 
-    [TextField( "Root Folder", "The Root folder to browse", true, "~/Content" )]
-    [CustomDropdownListField( "Browse Mode", "Select 'image' to show only image files. Select 'doc' to show all files. Also, in 'image' mode, the ImageUploader handler will process uploaded files instead of FileUploader.", "doc,image", true, "doc", order: 1 )]
-    [LinkedPage( "File Editor Page", "Page used to edit  the contents of a file.", false, "", "", 2 )]
+    #region Block Attributes
+
+    [TextField(
+        "Root Folder",
+        Description = "The Root folder to browse",
+        IsRequired = true,
+        DefaultValue = "~/Content",
+        Order = 0,
+        Key = AttributeKey.RootFolder )]
+
+    [CustomDropdownListField(
+        "Browse Mode",
+        Description = "Select 'image' to show only image files. Select 'doc' to show all files. Also, in 'image' mode, the ImageUploader handler will process uploaded files instead of FileUploader.",
+        ListSource = "doc,image",
+        IsRequired = true,
+        DefaultValue = "doc",
+        Order = 1,
+        Key = AttributeKey.BrowseMode )]
+
+    [LinkedPage(
+        "File Editor Page",
+        Description = "Page used to edit  the contents of a file.",
+        IsRequired = false,
+        Order = 2,
+        Key = AttributeKey.FileEditorPage )]
+
+    #endregion Block Attributes
     public partial class FileManager : RockBlock
     {
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string RootFolder = "RootFolder";
+            public const string BrowseMode = "BrowseMode";
+            public const string FileEditorPage = "FileEditorPage";
+        }
+
+        #endregion Attribute Keys
+
+        #region Page Parameter Keys
+
+        private static class PageParameterKey
+        {
+            public const string RelativeFilePath = "RelativeFilePath";
+        }
+
+        #endregion Page Parameter Keys
+
+        #region Base Control Methods
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -49,6 +95,10 @@ namespace RockWeb.Blocks.Cms
             SetupIFrame();
         }
 
+        #endregion Base Control Methods
+
+        #region Events
+
         /// <summary>
         /// Handles the BlockUpdated event of the Block control.
         /// </summary>
@@ -58,6 +108,10 @@ namespace RockWeb.Blocks.Cms
         {
             SetupIFrame();
         }
+
+        #endregion Events
+
+        #region Methods
 
         /// <summary>
         /// Sets up the iframe.
@@ -71,26 +125,34 @@ namespace RockWeb.Blocks.Cms
             string fileTypeWhiteList = globalAttributesCache.GetValue( "ContentFiletypeWhitelist" );
 
             var iframeUrl = ResolveRockUrl( "~/htmleditorplugins/rockfilebrowser" );
-            string rootFolder = GetAttributeValue( "RootFolder" );
-            string browseMode = GetAttributeValue( "BrowseMode" );
-            string url = LinkedPageUrl( "FileEditorPage" );
+            string rootFolder = GetAttributeValue( AttributeKey.RootFolder );
+            string browseMode = GetAttributeValue( AttributeKey.BrowseMode );
+            string url = LinkedPageUrl( AttributeKey.FileEditorPage );
             if ( string.IsNullOrWhiteSpace( browseMode ) )
             {
                 browseMode = "doc";
             }
 
-            iframeUrl += "?rootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptString( rootFolder ) );
-            iframeUrl += "&browseMode=" + browseMode;
-            iframeUrl += "&fileTypeBlackList=" + HttpUtility.UrlEncode( fileTypeBlackList );
-            iframeUrl += "&fileTypeWhiteList=" + HttpUtility.UrlEncode( fileTypeWhiteList );
-            iframeUrl += "&editFilePage=" + HttpUtility.UrlEncode( url );
+            iframeUrl += "?RootFolder=" + HttpUtility.UrlEncode( Encryption.EncryptString( rootFolder ) );
+            iframeUrl += "&BrowseMode=" + browseMode;
+            iframeUrl += "&FileTypeBlackList=" + HttpUtility.UrlEncode( fileTypeBlackList );
+            iframeUrl += "&FileTypeWhiteList=" + HttpUtility.UrlEncode( fileTypeWhiteList );
+            iframeUrl += "&EditFilePage=" + HttpUtility.UrlEncode( url );
+
+            if ( PageParameter( PageParameterKey.RelativeFilePath ).IsNotNullOrWhiteSpace() )
+            {
+                iframeUrl += "&RelativeFilePath=" + HttpUtility.UrlEncode( PageParameter( PageParameterKey.RelativeFilePath ) );
+            }
+
             if ( browseMode == "image" )
             {
-                iframeUrl += "&imageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );
+                iframeUrl += "&ImageFileTypeWhiteList=" + HttpUtility.UrlEncode( imageFileTypeWhiteList );
             }
-            iframeUrl += "&theme=" + this.RockPage.Site.Theme;
+            iframeUrl += "&Theme=" + this.RockPage.Site.Theme;
 
             iframeFileBrowser.Src = iframeUrl;
         }
+
+        #endregion Methods
     }
 }

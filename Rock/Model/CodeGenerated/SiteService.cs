@@ -94,16 +94,20 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Site target, Site source )
         {
             target.Id = source.Id;
+            target.AdditionalSettings = source.AdditionalSettings;
             target.AllowedFrameDomains = source.AllowedFrameDomains;
             target.AllowIndexing = source.AllowIndexing;
             target.ChangePasswordPageId = source.ChangePasswordPageId;
             target.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             target.CommunicationPageId = source.CommunicationPageId;
             target.CommunicationPageRouteId = source.CommunicationPageRouteId;
+            target.ConfigurationMobilePhoneBinaryFileId = source.ConfigurationMobilePhoneBinaryFileId;
+            target.ConfigurationMobileTabletBinaryFileId = source.ConfigurationMobileTabletBinaryFileId;
             target.DefaultPageId = source.DefaultPageId;
             target.DefaultPageRouteId = source.DefaultPageRouteId;
             target.Description = source.Description;
             target.EnabledForShortening = source.EnabledForShortening;
+            target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
             target.EnablePageViews = source.EnablePageViews;
             target.ErrorPage = source.ErrorPage;
@@ -112,12 +116,11 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GoogleAnalyticsCode = source.GoogleAnalyticsCode;
-            #pragma warning disable 612, 618
-            target.IconCssWeight = source.IconCssWeight;
-            #pragma warning restore 612, 618
             target.IndexStartingLocation = source.IndexStartingLocation;
+            target.IsActive = source.IsActive;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsSystem = source.IsSystem;
+            target.LatestVersionDateTime = source.LatestVersionDateTime;
             target.LoginPageId = source.LoginPageId;
             target.LoginPageRouteId = source.LoginPageRouteId;
             target.MobilePageId = source.MobilePageId;
@@ -130,7 +133,9 @@ namespace Rock.Model
             target.RegistrationPageRouteId = source.RegistrationPageRouteId;
             target.RequiresEncryption = source.RequiresEncryption;
             target.SiteLogoBinaryFileId = source.SiteLogoBinaryFileId;
+            target.SiteType = source.SiteType;
             target.Theme = source.Theme;
+            target.ThumbnailBinaryFileId = source.ThumbnailBinaryFileId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -204,7 +205,7 @@ namespace Rock.Web.Cache
         public bool IsAnalyticHistory { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether this attribute is active.
+        /// Gets or sets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical.
         /// </summary>
         /// <value>
         ///   <c>true</c> if [enable history]; otherwise, <c>false</c>.
@@ -229,6 +230,31 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string PostHtml { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the shortened name of the attribute.
+        /// If null or whitespace then the full name is returned.
+        /// </summary>
+        /// <value>
+        /// The abbreviated name of the Attribute.
+        /// </value>
+        [DataMember]
+        public string  AbbreviatedName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if this attribute shows when doing a bulk entry form.
+        /// </summary>
+        [DataMember]
+        public bool ShowOnBulk { get; private set; }
+
+        /// <summary>
+        /// Indicates whether or not this attribute should be displayed in public contexts (e.g., responding to an RSVP without logging in).
+        /// </summary>
+        /// <value>
+        /// A boolean value.
+        /// </value>
+        [DataMember]
+        public bool IsPublic { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
@@ -321,7 +347,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="model">The model.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use SetFromEntity instead")]
+        [Obsolete("Use SetFromEntity instead", true )]
         public override void CopyFromModel( Data.IEntity model )
         {
             this.SetFromEntity( model );
@@ -356,7 +382,7 @@ namespace Rock.Web.Cache
         /// <param name="attribute">The attribute.</param>
         /// <param name="qualifiers">The qualifiers.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use SetFromEntity instead" )]
+        [Obsolete( "Use SetFromEntity instead", true )]
         public void CopyFromModel( Rock.Model.Attribute attribute, Dictionary<string, string> qualifiers )
         {
             this.SetFromEntity( attribute, qualifiers );
@@ -393,6 +419,9 @@ namespace Rock.Web.Cache
             EnableHistory = attribute.EnableHistory;
             PreHtml = attribute.PreHtml;
             PostHtml = attribute.PostHtml;
+            AbbreviatedName = attribute.AbbreviatedName;
+            ShowOnBulk = attribute.ShowOnBulk;
+            IsPublic = attribute.IsPublic;
 
             QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
@@ -646,7 +675,7 @@ namespace Rock.Web.Cache
         /// <param name="qualifiers">The qualifiers.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete("Use Get instead")]
+        [Obsolete("Use Get instead", true )]
         public static AttributeCache Read( Rock.Model.Attribute attributeModel, Dictionary<string, string> qualifiers )
         {
             return Get( attributeModel, qualifiers );
@@ -752,7 +781,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete("No longer needed")]
+        [Obsolete("No longer needed", true )]
         public static void LoadEntityAttributes( RockContext rockContext )
         {
             //
@@ -762,7 +791,7 @@ namespace Rock.Web.Cache
         /// Flushes the entity attributes.
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use RemoveEntityAttributes instead" )]
+        [Obsolete( "Use RemoveEntityAttributes instead", true )]
         public static void FlushEntityAttributes()
         {
             EntityAttributesCache.Remove();
@@ -773,7 +802,7 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         /// <param name="entityState">State of the entity.</param>
-        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, System.Data.Entity.EntityState entityState )
+        internal static void UpdateCacheEntityAttributes( Rock.Model.Attribute attribute, EntityState entityState )
         {
             EntityAttributesCache.UpdateCacheEntityAttributes( attribute, entityState );
         }

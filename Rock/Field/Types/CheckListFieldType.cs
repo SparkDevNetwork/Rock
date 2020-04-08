@@ -19,13 +19,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
+
 using static Rock.Web.UI.Controls.ListItems;
 
 namespace Rock.Field.Types
@@ -66,6 +67,7 @@ namespace Rock.Field.Types
             li.Label = "Values";
             li.Help = "The list of the values to display.";
             li.ValueChanged += OnQualifierUpdated;
+            controls.Add( li );
 
             var tbRepeatColumns = new NumberBox();
             tbRepeatColumns.Label = "Columns";
@@ -88,6 +90,9 @@ namespace Rock.Field.Types
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( VALUES_KEY, new ConfigurationValue( "Values",
                 "The source of the values to display.", string.Empty ) );
+
+            var description = "Select how many columns the list should use before going to the next row. If blank 4 is used.";
+            configurationValues.Add( REPEAT_COLUMNS, new ConfigurationValue( "Repeat Columns", description, string.Empty ) );
 
             if ( controls != null )
             {

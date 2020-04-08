@@ -21,9 +21,8 @@ using System.Text;
 
 using Quartz;
 
-using Rock.Model;
 using Rock.Data;
-using Rock.Web.Cache;
+using Rock.Model;
 
 namespace Rock.Jobs
 {

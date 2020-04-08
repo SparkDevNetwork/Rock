@@ -44,6 +44,16 @@ namespace Rock.SystemGuid
         public const string CACHE_TAGS = "BDF73089-9154-40C1-90E4-74518E9937DC";
 
         /// <summary>
+        /// GUID for the Campus Status
+        /// </summary>
+        public const string CAMPUS_STATUS = "840CDA6D-6E81-4EB7-B325-BE708990CCE9";
+
+        /// <summary>
+        /// GUID for the Campus Type
+        /// </summary>
+        public const string CAMPUS_TYPE = "8C2260A8-6130-414A-BD32-22743FEAB256";
+
+        /// <summary>
         /// The types of static color swatches supported
         /// </summary>
         public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";
@@ -90,6 +100,11 @@ namespace Rock.SystemGuid
         public const string DISC_RESULTS_TYPE = "F06DDAD8-6058-4182-AD0A-B523BB7A2D78";
 
         /// <summary>
+        /// Guid for the Conflict Profile assessment.
+        /// </summary>
+        public const string ASSESSMENT_CONFLICT_PROFILE = "EE7E089E-DF81-4407-8BFA-AD865FA5427A";
+
+        /// <summary>
         /// Guid for the Domains Sharing Logins
         /// </summary>
         public const string DOMAINS_SHARING_LOGINS = "6CE00E1B-FE09-45FE-BD9D-56C57A11BE1A";
@@ -125,6 +140,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
 
         /// <summary>
+        /// Defined Type of Non-Cash Assets (used with FinancialTransaction.NonCashAssetTypeValueId.
+        /// </summary>
+        public const string FINANCIAL_NONCASH_ASSET_TYPE = "6B19C65E-FF8F-4ADD-9DA0-48E53FC074A6";
+
+        /// <summary>
         /// Guid for Financial Source Type
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE =  "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
@@ -155,9 +175,19 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
 
         /// <summary>
+        /// The grouptype inactive reason
+        /// </summary>
+        public const string GROUPTYPE_INACTIVE_REASONS = "EB5D9839-F770-4E22-8B56-0B09397307D9";
+
+        /// <summary>
         /// Guid for the types of interaction service.
         /// </summary>
         public const string INTERACTION_CHANNEL_MEDIUM = "9bf5777a-961f-49a8-a834-45e5c2077967";
+
+        /// <summary>
+        /// Guid for the JSON Web Token Configuration
+        /// </summary>
+        public const string JWT_CONFIGURATION = "7D848CE3-F039-4CE1-A59B-F0D923F0C1A7";
 
         /// <summary>
         /// Guid for Default link list
@@ -193,7 +223,17 @@ namespace Rock.SystemGuid
         /// Metric Source Type
         /// </summary>
         public const string METRIC_SOURCE_TYPE = "D6F323FF-6EF2-4DA7-A82C-61399AC1D798";
-        
+
+        /// <summary>
+        /// Motivator Type
+        /// </summary>
+        public const string MOTIVATOR_TYPE = "1DFF1804-0055-491E-9559-54EA3F8F89D1";
+
+        /// <summary>
+        /// Motivator Theme Type
+        /// </summary>
+        public const string MOTIVATOR_THEME_TYPE = "354715FA-564A-420A-8324-0411988AE7AB";
+
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
         /// </summary>
@@ -273,8 +313,18 @@ namespace Rock.SystemGuid
         /// Protect My Ministry background package types
         /// </summary>
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead")]
+        [Obsolete( "Use BACKGROUND_CHECK_TYPES instead", true )]
         public const string PROTECT_MY_MINISTRY_PACKAGES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";
+
+        /// <summary>
+        /// Template Block
+        /// </summary>
+        public const string TEMPLATE_BLOCK = "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183";
+
+        /// <summary>
+        /// Template
+        /// </summary>
+        public const string TEMPLATE = "A6E267E2-66A4-44D7-A5C9-9399666CBF95";
 
         /// <summary>
         /// Guid for the types of map styles
@@ -317,6 +367,11 @@ namespace Rock.SystemGuid
 		public const string SPIRITUAL_GIFTS = "9D9628F0-7FC5-411E-B9DF-740AA17689A0";
 
         /// <summary>
+        /// Guid for Structured Content Editor Tools
+        /// </summary>
+        public const string STRUCTURED_CONTENT_EDITOR_TOOLS = "E43AD92C-4DD4-4D78-9852-FCFAEFDF52CA";
+
+        /// <summary>
         /// Used to manage the workflows that can be launched via webhook.
         /// </summary>
         public const string WEBHOOK_TO_WORKFLOW = "7B39BA6A-E7EF-48A6-9EC7-4A0F498D8FDB";
@@ -332,9 +387,18 @@ namespace Rock.SystemGuid
         public const string WEBHOOK_TO_LAVA = "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D";
 
         /// <summary>
+        /// The group schedule decline reason
+        /// </summary>
+        public const string GROUP_SCHEDULE_DECLINE_REASON = "70C9F9C4-20CC-43DD-888D-9243853A0E52";
+
+        /// <summary>
         /// Used to store various liquid templates for features in Rock.
         /// </summary>
         public const string LAVA_TEMPLATES = "C3D44004-6951-44D9-8560-8567D705A48B";
 
+        /// <summary>
+        /// The group RSVP decline reason.
+        /// </summary>
+        public const string GROUP_RSVP_DECLINE_REASON = "1E339D24-3DF3-4628-91C3-DA9300D21ACE";
     }
 }

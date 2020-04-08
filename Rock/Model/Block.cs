@@ -24,9 +24,10 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
-using Rock.Web.Cache;
+
 using Rock.Data;
 using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -184,6 +185,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int OutputCacheDuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional settings.
+        /// </summary>
+        /// <value>
+        /// The additional settings.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettings { get; set; }
 
         #endregion
 
@@ -347,7 +357,7 @@ namespace Rock.Model
         /// <param name="state">The state.</param>
         public override void PreSaveChanges( Data.DbContext dbContext, DbEntityEntry entry, EntityState state )
         {
-            if ( state == System.Data.Entity.EntityState.Modified || state == System.Data.Entity.EntityState.Deleted )
+            if ( state == EntityState.Modified || state == EntityState.Deleted )
             {
                 originalSiteId = entry.OriginalValues["SiteId"]?.ToString().AsIntegerOrNull();
                 originalLayoutId = entry.OriginalValues["LayoutId"]?.ToString().AsIntegerOrNull();
@@ -371,7 +381,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             BlockCache.UpdateCachedEntity( this.Id, entityState );
 
@@ -379,25 +389,24 @@ namespace Rock.Model
 
             if ( model.SiteId.HasValue && model.SiteId != originalSiteId )
             {
-                PageCache.RemoveSiteBlocks( model.SiteId.Value );
+                PageCache.FlushPagesForSite( model.SiteId.Value );
             }
             else if ( model.LayoutId.HasValue && model.LayoutId != originalLayoutId )
             {
-                PageCache.RemoveLayoutBlocks( model.LayoutId.Value );
+                PageCache.FlushPagesForLayout( model.LayoutId.Value );
             }
 
             if ( originalSiteId.HasValue )
             {
-                PageCache.RemoveSiteBlocks( originalSiteId.Value );
+                PageCache.FlushPagesForSite( originalSiteId.Value );
             }
             else if ( originalLayoutId.HasValue )
             {
-                PageCache.RemoveLayoutBlocks( originalLayoutId.Value );
+                PageCache.FlushPagesForLayout( originalLayoutId.Value );
             }
             else if ( originalPageId.HasValue )
             {
-                var page = PageCache.Get( originalPageId.Value );
-                page.RemoveBlocks();
+                PageCache.FlushItem( originalPageId.Value );
             }
         }
 

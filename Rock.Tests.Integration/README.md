@@ -4,6 +4,8 @@ The goal of this project is to be a permanent place to store tests that require 
 
 > *NOTE: Use a fresh database with the PowerTools &gt; SampleData loaded so we all are testing against the same expected sample data.  If your test needs different data, you are responsible for adding it and cleaning it up as to not interfere with other tests.*
 
+> *A Rock.SampleData project is currently under construction, which will replace the PowerTools &gt; SampleData block. It will contain all of the actions needed to populate a new Rock database with a rich set of sample data, suitable for developer and QA testing. The database created by Rock.SampleData will contain all of the well-known data required to complete the integration tests contained in this project.*
+
 ## Setup Instructions
 
 1. Create an `app.ConnectionStrings.config` file in this project.
@@ -13,7 +15,9 @@ The goal of this project is to be a permanent place to store tests that require 
 ![test settings file selection](https://rockrms.blob.core.windows.net/public-images/githubdocs/vs-test-testsettings-fileselection.png "found in the Rock.Tests.Integration project")
 
 
-## MS Unit Test vs XUnit
+## MS Unit Test (vs XUnit)
+
+> If you're interested in a comparison of the three most popular test frameworks, see this chart: https://xunit.net/docs/comparisons.html
 
 This project uses the [Microsoft unit test framework (aka MS Test)](https://docs.microsoft.com/en-us/visualstudio/test/walkthrough-creating-and-running-unit-tests-for-managed-code).  You can read more about it in their [Walkthrough](https://docs.microsoft.com/en-us/visualstudio/test/walkthrough-creating-and-running-unit-tests-for-managed-code) but it's pretty simple.  You create test classes decorated with `[TestClass]` and individual unit test methods decorated with `[TestMethod]`.
 
@@ -39,40 +43,6 @@ namespace Rock.Tests.Integration.Model
 }
 ```
 
-> NOTE: The existing `Rock.Tests` project is an XUnit type project, but it may be converted over to MS Test. 
-
-## Running a Test
-To run or debug a test, simply right-click the class name and choose `Run Tests` or `Debug Tests` -- but you should probably set a breakpoint in your test if you're going to select Debug Tests.  Alternatively you can choose the Test > Windows > Test Explorer from the menu to run tests a bit easier.
-
-## Conversion Game Plan
-Any tests that require a database will need to be moved from the existing `Rock.Tests` project into the proper class in this project.   So, tests like this...
-
-```csharp
-        [Fact]
-        public void GraduatesThisYear()
-        {
-            InitGlobalAttributesCache();
-            var Person = new Person();
-            Person.GradeOffset = 1;
-
-            Assert.True( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
-        }
-```
-
-...needs to become something like this:
-
-```csharp
-        [TestMethod]
-        public void GraduatesThisYear()
-        {
-            InitGlobalAttributesCache();
-            var Person = new Person();
-            Person.GradeOffset = 1;
-
-            Assert.IsTrue( Person.GraduationYear == RockDateTime.Now.AddYears( 1 ).Year );
-        }
-   ```
-
 ## MSTest LifeCycle
 
 The following decorators can give you more control over setup and cleanup for your test suite:
@@ -84,3 +54,6 @@ The following decorators can give you more control over setup and cleanup for yo
 * [TestInitialize] - called before running each test of the class. 
 * [TestCleanup] - called after running each test of the class.
  
+
+## Running a Test
+To run or debug a test, simply right-click the class name and choose `Run Tests` or `Debug Tests` -- but you should probably set a breakpoint in your test if you're going to select Debug Tests.  Alternatively you can choose the Test > Windows > Test Explorer from the menu to run tests a bit easier.

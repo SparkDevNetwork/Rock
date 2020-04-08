@@ -52,6 +52,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Behaviors\ControlDoubleClickBehavior.cs" />
+    <Compile Include="Behaviors\FocusExtension.cs" />
+    <Compile Include="Behaviors\NumberOnlyBehaviour.cs" />
     <Compile Include="Behaviors\ShowSystemMenuBehavior.cs" />
     <Compile Include="Behaviors\SystemMenuManager.cs" />
     <Compile Include="Behaviors\WindowDragBehavior.cs" />
@@ -60,6 +62,8 @@
     <Compile Include="Commands\WindowMaximizeCommand.cs" />
     <Compile Include="Commands\WindowMinimizeCommand.cs" />
     <Compile Include="Commands\WindowRestoreCommand.cs" />
+    <Compile Include="Controls\AlertLabel.cs" />
+    <Compile Include="Controls\CurrencyBox.cs" />
     <Compile Include="ErrorMessageWindow.xaml.cs">
       <DependentUpon>ErrorMessageWindow.xaml</DependentUpon>
     </Compile>

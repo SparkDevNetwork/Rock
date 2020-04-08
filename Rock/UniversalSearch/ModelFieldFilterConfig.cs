@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using Rock.UniversalSearch.IndexModels;
 
 namespace Rock.UniversalSearch
 {

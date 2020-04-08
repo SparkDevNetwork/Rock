@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Finance
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10, "", 7 )]
     [TextField( "Search Regex", "Regular Expression to run the search input through before searching. Useful for stripping off characters.", false, "", "", 8 )]
     [CodeEditorField( "Receipt Lava", "Lava to display for the receipt panel.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, true, "{% include '~~/Assets/Lava/KioskGivingReceipt.lava' %}", "", 9 )]
-    [SystemEmailField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
+    [SystemCommunicationField( "Receipt Email", "The system email to use to send the receipt.", false, "", "", 11 )]
     [TextField( "Payment Comment", "The comment to include with the payment transaction when sending to Gateway", false, "Kiosk", "", 12 )]
     #endregion
 
@@ -355,6 +355,8 @@ namespace RockWeb.Blocks.Finance
                     // create swipe object
                     SwipePaymentInfo swipeInfo = new SwipePaymentInfo( swipeData );
                     swipeInfo.Amount = this.Amounts.Sum( a => a.Value );
+                    var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+                    swipeInfo.TransactionTypeValueId = txnType.Id;
 
                     // if not anonymous then add contact info to the gateway transaction
                     if ( this.AnonymousGiverPersonAliasId != this.SelectedGivingUnit.PersonAliasId )
@@ -428,7 +430,6 @@ namespace RockWeb.Blocks.Finance
                             transaction.TransactionDateTime = RockDateTime.Now;
                             transaction.FinancialGatewayId = financialGateway.Id;
 
-                            var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
                             transaction.TransactionTypeValueId = txnType.Id;
 
                             transaction.Summary = swipeInfo.Comment1;
@@ -533,14 +534,14 @@ namespace RockWeb.Blocks.Finance
         private void SendReceipt()
         {
             RockContext rockContext = new RockContext();
-            var receiptEmail = new SystemEmailService( rockContext ).Get( new Guid( GetAttributeValue( "ReceiptEmail" ) ) );
+            var receiptCommunication = new SystemCommunicationService( rockContext ).Get( new Guid( GetAttributeValue( "ReceiptEmail" ) ) );
 
-            if ( receiptEmail != null )
+            if ( receiptCommunication != null )
             {
                 var givingUnit = new PersonAliasService( rockContext ).Get( this.SelectedGivingUnit.PersonAliasId ).Person;
 
-                var emailMessage = new RockEmailMessage( receiptEmail.Guid );
-                emailMessage.AddRecipient( new RecipientData( givingUnit.Email, GetMergeFields( givingUnit ) ) );
+                var emailMessage = new RockEmailMessage( receiptCommunication.Guid );
+                emailMessage.AddRecipient( new RockEmailMessageRecipient( givingUnit, GetMergeFields( givingUnit ) ) );
                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                 emailMessage.Send();
@@ -842,6 +843,8 @@ namespace RockWeb.Blocks.Finance
                     tb.ID = "tbAccount_" + account.Key;
                     tb.Attributes.Add( "name", tb.ID );
                     tb.Attributes.Add( "type", "number" );
+                    tb.Attributes.Add( "min", "0" );
+                    tb.Attributes.Add( "oninput", "validity.valid||(value='')" );
                     tb.CssClass = "input-account";
 
                     if ( firstAccount )
@@ -959,7 +962,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( Guid.TryParse( GetAttributeValue( "AnonymousPerson" ), out anonymousPersonAliasGuid ) )
             {
-                anonymousPerson = new PersonAliasService( rockContext ).Get(anonymousPersonAliasGuid ).Person;
+                anonymousPerson = new PersonAliasService( rockContext ).Get( anonymousPersonAliasGuid ).Person;
             } 
             
             if ( anonymousPerson != null )

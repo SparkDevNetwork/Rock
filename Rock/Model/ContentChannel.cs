@@ -14,19 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
-using Rock.Web.Cache;
+
 using Rock.Data;
-using Rock.UniversalSearch;
-using Rock.UniversalSearch.IndexModels;
 using Rock.Transactions;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -36,7 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
-    public partial class ContentChannel : Model<ContentChannel>, ICacheable
+    public partial class ContentChannel : Model<ContentChannel>, ICacheable, ICampusFilterable
     {
         #region Entity Properties
 
@@ -190,6 +189,25 @@ namespace Rock.Model
         [DataMember]
         public int? ItemTagCategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this content is structured.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this content is structured; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsStructuredContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Structure Content Tool Id.
+        /// </summary>
+        /// <value>
+        /// The structure content tool value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? StructuredContentToolValueId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -211,6 +229,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Category ItemTagCategory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the content channel's structure content tool.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the content channel's structure content tool.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue StructuredContentToolValue { get; set; }
 
         /// <summary>
         /// Gets or sets the items.
@@ -247,6 +274,21 @@ namespace Rock.Model
             set { _parentContentChannels = value; }
         }
         private ICollection<ContentChannel> _parentContentChannels;
+
+        /// <summary>
+        /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Category> Categories
+        {
+            get { return _categories ?? ( _categories = new Collection<Category>() ); }
+            set { _categories = value; }
+        }
+        private ICollection<Category> _categories;
 
         /// <summary>
         /// Gets the supported actions.
@@ -346,19 +388,19 @@ namespace Rock.Model
         /// </summary>
         /// <param name="dbContext">The database context.</param>
         /// <param name="state">The state.</param>
-        public override void PreSaveChanges( DbContext dbContext, System.Data.Entity.EntityState state )
+        public override void PreSaveChanges( Data.DbContext dbContext, EntityState state )
         {
-            if ( state == System.Data.Entity.EntityState.Deleted )
+            if ( state == EntityState.Deleted )
             {
                 ChildContentChannels.Clear();
             }
 
             // clean up the index
-            if ( state == System.Data.Entity.EntityState.Deleted && IsIndexEnabled )
+            if ( state == EntityState.Deleted && IsIndexEnabled )
             {
                 this.DeleteIndexedDocumentsByContentChannel( Id );
             }
-            else if ( state == System.Data.Entity.EntityState.Modified )
+            else if ( state == EntityState.Modified )
             {
                 // check if indexing is enabled
                 var changeEntry = dbContext.ChangeTracker.Entries<ContentChannel>().Where( a => a.Entity == this ).FirstOrDefault();
@@ -410,7 +452,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="entityState">State of the entity.</param>
         /// <param name="dbContext">The database context.</param>
-        public void UpdateCache( System.Data.Entity.EntityState entityState, Rock.Data.DbContext dbContext )
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             ContentChannelCache.UpdateCachedEntity( this.Id, entityState );
         }
@@ -433,6 +475,8 @@ namespace Rock.Model
             this.HasMany( p => p.ChildContentChannels ).WithMany( c => c.ParentContentChannels ).Map( m => { m.MapLeftKey( "ContentChannelId" ); m.MapRightKey( "ChildContentChannelId" ); m.ToTable( "ContentChannelAssociation" ); } );
             this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ItemTagCategory ).WithMany().HasForeignKey( c => c.ItemTagCategoryId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.StructuredContentToolValue ).WithMany().HasForeignKey( p => p.StructuredContentToolValueId ).WillCascadeOnDelete( false );
+            this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "ContentChannelId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "ContentChannelCategory" ); } );
         }
     }
 

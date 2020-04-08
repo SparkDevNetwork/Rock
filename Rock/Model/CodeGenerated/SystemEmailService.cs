@@ -64,6 +64,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleConfirmationSystemEmailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<GroupType>( Context ).Queryable().Any( a => a.ScheduleReminderSystemEmailId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<SignatureDocumentTemplate>( Context ).Queryable().Any( a => a.InviteSystemEmailId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemEmail.FriendlyTypeName, SignatureDocumentTemplate.FriendlyTypeName );

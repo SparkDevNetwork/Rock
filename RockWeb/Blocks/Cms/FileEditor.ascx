@@ -21,8 +21,8 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" ValidationGroup="ShortLinkDetail"></asp:LinkButton>
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                        <Rock:BootstrapButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" DataLoadingText="Saving..." ValidationGroup="ShortLinkDetail"  CompletedDuration="2" CompletedText="Done"></Rock:BootstrapButton>
+                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Back" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                     </div>
                 </div>
             </div>

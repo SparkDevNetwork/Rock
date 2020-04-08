@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -132,7 +133,7 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 // activity animation
-$('.template-form > header').click(function () {
+$('.template-form > header').on('click', function () {
     $(this).siblings('.panel-body').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -143,12 +144,12 @@ $('.template-form > header').click(function () {
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
-$('.template-form a.js-activity-delete').click(function (event) {
+$('.template-form a.js-activity-delete').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
 // fix so that the Reorder button will fire its event, but not the parent event
-$('.template-form a.template-form-reorder').click(function (event) {
+$('.template-form a.template-form-reorder').on('click', function (event) {
     event.stopImmediatePropagation();
 });
 
@@ -402,7 +403,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
                 }
                 else
                 {
-                    if ( field.FieldVisibilityRules.Any() )
+                    if ( field.FieldVisibilityRules.RuleList.Any() )
                     {
                         linkButton.AddCssClass( "criteria-exists" );
                     }

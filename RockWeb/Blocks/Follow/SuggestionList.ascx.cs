@@ -87,7 +87,7 @@ namespace RockWeb.Blocks.Follow
         protected void rGridSuggestion_Add( object sender, EventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "eventId", "0" );
+            parms.Add( "EventId", "0" );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 
@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Follow
         protected void rGridSuggestion_Edit( object sender, RowEventArgs e )
         {
             var parms = new Dictionary<string, string>();
-            parms.Add( "eventId", e.RowKeyValue.ToString() );
+            parms.Add( "EventId", e.RowKeyValue.ToString() );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

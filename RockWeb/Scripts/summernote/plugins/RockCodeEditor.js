@@ -33,7 +33,7 @@
 
                 // check if there are lava commands
                 var hasLavaCommandsRegEx = /{%.*%\}/;
-            
+
                 var hasLavaCommands = hasLavaCommandsRegEx.test(content);
 
                 if (!hasLavaCommands) {
@@ -68,7 +68,9 @@
                 // this will prevent bad html or scripts from trying to render when startInCodeEditor mode is enabled
                 if (!keepEditorContent) {
                     var content = context.code();
-                    ace.edit($codeEditor.attr('id')).setValue(content);
+                    var editor = ace.edit($codeEditor.attr('id'));
+                    editor.setValue(content);
+                    editor.resize();
                 }
                 $codeEditorContainer.show();
 
@@ -79,5 +81,5 @@
         }
     });
 
-    return button.render();   // return button as jquery object 
+    return button.render();   // return button as jquery object
 }

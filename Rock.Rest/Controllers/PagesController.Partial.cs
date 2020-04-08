@@ -15,9 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Web.Http;
 
 using Rock.Model;
 using Rock.Rest.Filters;

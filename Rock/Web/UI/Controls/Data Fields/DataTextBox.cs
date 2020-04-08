@@ -83,7 +83,7 @@ namespace Rock.Web.UI.Controls
         Bindable( true ),
         Category( "Behavior" ),
         DefaultValue( "" ),
-        Description( "The model property that is annotated." )
+        Description( "The model property that is annotated. This will set the label to the Property Name value if the Label's value is an empty string." )
         ]
         public string PropertyName
         {

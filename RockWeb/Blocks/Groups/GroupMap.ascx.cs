@@ -64,10 +64,10 @@ namespace RockWeb.Blocks.Groups
 <div style='width:250px'>
 
     <div class='clearfix'>
-        <h4 class='pull-left' style='margin-top: 0;'>{{ GroupName }}</h4> 
+        <h4 class='pull-left' style='margin-top: 0;'>{{ GroupName }}</h4>
         <span class='label label-campus pull-right'>{{ Campus.Name }}</span>
     </div>
-    
+
     <div class='clearfix'>
 		{% if Location.Address && Location.Address != '' %}
 			<strong>{{ Location.Type }}</strong>
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.Groups
 			{% endfor -%}
 		{% endif %}
     </div>
-    
+
     {% if GroupType.Guid != '790E3215-3B10-442B-AF69-616C0DCB998E' %}
 		<br>
 		<a class='btn btn-xs btn-action' href='{{ DetailPageUrl }}'>View {{ GroupType.GroupTerm }}</a>
@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Groups
                         </style>";
 
         private const string MAP_SCRIPT_FORMAT_NAME = @"
-<script> 
+<script>
 
     Sys.Application.add_load(function () {{
 
@@ -139,11 +139,6 @@ namespace RockWeb.Blocks.Groups
 
         var mapStyle = {1};
 
-        var pinShadow = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_shadow',
-            new google.maps.Size(40, 37),
-            new google.maps.Point(0, 0),
-            new google.maps.Point(12, 35));
-
         var polygonColorIndex = 0;
         var polygonColors = [{2}];
 
@@ -154,7 +149,7 @@ namespace RockWeb.Blocks.Groups
 
         initializeMap();
 
-        // the campuses picker only applies to the connection status checkboxes        
+        // the campuses picker only applies to the connection status checkboxes
         $('.js-campuses-picker').hide();
 
         function initializeMap() {{
@@ -176,7 +171,7 @@ namespace RockWeb.Blocks.Groups
                 getChildMapInfoUrl += '?includeDescendants={10}';
                 if ('{11}' != '') {{
                     getChildMapInfoUrl += '&groupTypeIds={11}';
-                }}  
+                }}
             }}
 
             // Query for group, child group, and group member locations asyncronously
@@ -252,8 +247,8 @@ namespace RockWeb.Blocks.Groups
                 }} else if ( childGroupItems.length > 0) {{
                     $('#cbShowChildGroups').prop('checked', true);
                     setAllMap(childGroupItems, map);
-                }} 
-                    
+                }}
+
             }});
 
         }}
@@ -262,7 +257,7 @@ namespace RockWeb.Blocks.Groups
 
             var items = [];
 
-            if (mapItem.Point) {{ 
+            if (mapItem.Point) {{
 
                 var position = new google.maps.LatLng(mapItem.Point.Latitude, mapItem.Point.Longitude);
                 bounds.extend(position);
@@ -271,19 +266,24 @@ namespace RockWeb.Blocks.Groups
                     color = 'FE7569'
                 }}
 
-                var pinImage = new google.maps.MarkerImage('//chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|' + color,
-                    new google.maps.Size(21, 34),
-                    new google.maps.Point(0,0),
-                    new google.maps.Point(10, 34));
+                var pinImage = {{
+                    path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
+                    fillColor: '#' + color,
+                    fillOpacity: 1,
+                    strokeColor: '#000',
+                    strokeWeight: 1,
+                    scale: 1,
+                    labelOrigin: new google.maps.Point(0,-28)
+                }};
 
                 marker = new google.maps.Marker({{
                     position: position,
                     map: map,
                     title: htmlDecode(mapItem.Name),
                     icon: pinImage,
-                    shadow: pinShadow
+                    label: String.fromCharCode(9679)
                 }});
-    
+
                 items.push(marker);
                 allMarkers.push(marker);
 
@@ -338,28 +338,28 @@ namespace RockWeb.Blocks.Groups
 
                 if ( mapItem.EntityId == {0} ) {{
                     $('.js-connection-status').show();
-                    
+
                     // the campuses picker only applies to the connection status checkboxes
                     $('.js-campuses-picker').show();
                 }}
-        
+
             }}
 
             return items;
 
         }}
-        
+
         // Show/Hide group
-        $('#cbShowGroup').click( function() {{
+        $('#cbShowGroup').on('click', function() {{
             if ($(this).prop('checked')) {{
                 setAllMap(groupItems, map);
             }} else {{
                 setAllMap(groupItems, null);
-            }} 
+            }}
         }});
 
         // Show/Hide child groups
-        $('#cbShowChildGroups').click( function() {{
+        $('#cbShowChildGroups').on('click', function() {{
             if ($(this).prop('checked')) {{
                 setAllMap(childGroupItems, map);
             }} else {{
@@ -368,7 +368,7 @@ namespace RockWeb.Blocks.Groups
         }});
 
         // Show/Hide group members
-        $('#cbShowGroupMembers').click( function() {{
+        $('#cbShowGroupMembers').on('click', function() {{
             if ($(this).prop('checked')) {{
                 setAllMap(groupMemberItems, map);
             }} else {{
@@ -376,28 +376,28 @@ namespace RockWeb.Blocks.Groups
             }}
         }});
 
-        $('.js-campuses-picker input').click( function() {{
+        $('.js-campuses-picker input').on('click', function() {{
             // clear out all the family markers since we have a new set of Campuses
             $('.js-connection-status-cb').each( function(i) {{
-                var statusId = $(this).attr('data-item');   
+                var statusId = $(this).attr('data-item');
                 if (familyItems[statusId] !== undefined) {{
-                    setAllMap(familyItems[statusId], null);      
-                }}          
+                    setAllMap(familyItems[statusId], null);
+                }}
             }});
             familyItems = {{}};
-    
+
             // re-select and fetch the familyitems for each selected connection status using the new set of campusids
             $('.js-connection-status-cb:checked').each( function(i) {{
                 $(this).attr('checked', false);
-                $(this).click();                    
-            }});    
+                $(this).trigger('click');
+            }});
         }});
 
         // Show/Hide families
-        $('.js-connection-status-cb').click( function() {{
+        $('.js-connection-status-cb').on('click', function() {{
             var statusId = $(this).attr('data-item');
 
-            var campusIds = '';            
+            var campusIds = '';
             $('.js-campuses-picker input:checked').each(function(i) {{
                 campusIds += $(this).val() + ',';
             }});
@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Groups
                     var color = $(this).attr('data-color');
                     var getMapInfoUrl = Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Families/' + statusId;
                     if (campusIds != '') {{
-                        getMapInfoUrl += '?campusIds=' + campusIds;
+                        getMapInfoUrl += '?CampusIds=' + campusIds;
                     }}
 
                     // if we are already in the process of fetching families for this status, abort and start over again
@@ -430,7 +430,7 @@ namespace RockWeb.Blocks.Groups
             }} else {{
                 if (typeof familyItems[statusId] !== 'undefined') {{
                     setAllMap(familyItems[statusId], null);
-                }} 
+                }}
             }}
         }});
 
@@ -459,7 +459,7 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function adjustOverlappedMarkers() {{
-            
+
             if (allMarkers.length > 1) {{
                 for(i=0; i < allMarkers.length-1; i++) {{
                     var marker1 = allMarkers[i];
@@ -526,9 +526,9 @@ namespace RockWeb.Blocks.Groups
             if ( !Page.IsPostBack )
             {
                 // only list GroupTypes that could have a location (and have ShowInNavigation and ShowInGrouplist)
-                gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().Where( 
-                    a => a.ShowInNavigation 
-                        && a.ShowInGroupList 
+                gtpGroupType.GroupTypes = new GroupTypeService( new RockContext() ).Queryable().Where(
+                    a => a.ShowInNavigation
+                        && a.ShowInGroupList
                         && a.LocationSelectionMode != GroupLocationPickerMode.None).OrderBy( a => a.Name ).ToList();
 
                 var selectedGroupTypeIds = this.GetBlockUserPreference( "GroupTypeIds" );
@@ -540,7 +540,7 @@ namespace RockWeb.Blocks.Groups
 
                 var showChildGroups = this.GetBlockUserPreference( "ShowChildGroups" ).AsBooleanOrNull() ?? GetAttributeValue( SHOW_CHILD_GROUPS_AS_DEFAULT_KEY ).AsBoolean();
                 cbShowAllGroups.Checked = showChildGroups;
-                
+
                 var statuses = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).DefinedValues
                     .OrderBy( v => v.Order )
                     .ThenBy( v => v.Value )
@@ -554,7 +554,7 @@ namespace RockWeb.Blocks.Groups
 
                 rptStatus.DataSource = statuses.Where( s => s.Color != "" ).ToList();
                 rptStatus.DataBind();
-                
+
                 cpCampuses.Campuses = CampusCache.All();
                 cpCampuses.Visible = this.GetAttributeValue( "ShowCampusesFilter" ).AsBoolean();
 
@@ -592,7 +592,7 @@ namespace RockWeb.Blocks.Groups
                 lMessages.Text = "<div class='alert alert-warning'><strong>Group Map</strong> A Group ID is required to display the map.</div>";
                 return;
             }
-            
+
             pnlMap.Visible = true;
 
             string mapStylingFormat = MAP_STYLING_FORMAT;
@@ -627,7 +627,7 @@ namespace RockWeb.Blocks.Groups
             string groupPage = GetAttributeValue( "GroupPage" );
             string personProfilePage = GetAttributeValue( "PersonProfilePage" );
             string mapPage = GetAttributeValue( "MapPage" );
-            string infoWindowJson = string.Format( @"{{ ""GroupPage"":""{0}"", ""PersonProfilePage"":""{1}"", ""MapPage"":""{2}"", ""Template"":""{3}"" }}", 
+            string infoWindowJson = string.Format( @"{{ ""GroupPage"":""{0}"", ""PersonProfilePage"":""{1}"", ""MapPage"":""{2}"", ""Template"":""{3}"" }}",
                 groupPage, personProfilePage, mapPage, template );
 
             string latitude = "39.8282";

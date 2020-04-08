@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.Core
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
         private int _numberOfAvailablePackages = 0;
         private bool _isOkToProceed = false;
+        private bool _hasSqlServer14OrHigher = false;
         #endregion
 
         #region Properties
@@ -106,7 +107,7 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
 
             string script = @"
-    $('#btn-restart').click(function () {
+    $('#btn-restart').on('click', function () {
         var btn = $(this);
         btn.button('loading');
         location = location.href;
@@ -172,6 +173,12 @@ namespace RockWeb.Blocks.Core
                             nbBackupMessage.Visible = false;
                         }
 
+                        _hasSqlServer14OrHigher = CheckSqlServerVersionGreaterThenSqlServer2012();
+                        if ( !_hasSqlServer14OrHigher )
+                        {
+                            nbSqlServerVersionIssue.Visible = true;
+                        }
+
                         _releases = GetReleasesList();
                         _availablePackages = NuGetService.SourceRepository.FindPackagesById( _rockPackageId ).OrderByDescending( p => p.Version );
                         if ( IsUpdateAvailable() )
@@ -213,6 +220,15 @@ namespace RockWeb.Blocks.Core
         /// <param name="version">the semantic version number</param>
         private void Update( string version )
         {
+            var targetVersion = new SemanticVersion( version );
+            if ( !CanInstallVersion( targetVersion ) )
+            {
+                nbErrors.Text = "<ul class='list-padded'><li>This version cannot be installed because not all requirements have been met.</li></ul>";
+                pnlError.Visible = true;
+                pnlUpdateSuccess.Visible = false;
+                return;
+            }
+
             WriteAppOffline();
             try
             {
@@ -239,6 +255,17 @@ namespace RockWeb.Blocks.Core
                 LogException( ex );
             }
             RemoveAppOffline();
+        }
+
+        private bool CanInstallVersion( SemanticVersion targetVersion )
+        {
+            var requiresSqlServer14OrHigher = targetVersion.Version.Major > 1 || targetVersion.Version.Minor > 10;
+            if( !requiresSqlServer14OrHigher )
+            {
+                return true;
+            }
+
+            return CheckSqlServerVersionGreaterThenSqlServer2012();
         }
 
         /// <summary>
@@ -282,7 +309,7 @@ namespace RockWeb.Blocks.Core
                         divPanel.AddCssClass( "panel-block" );
                     }
 
-                    if ( !_isOkToProceed )
+                    if ( !_isOkToProceed || !CanInstallVersion(package.Version) )
                     {
                         lbInstall.Enabled = false;
                         lbInstall.AddCssClass( "btn-danger" );
@@ -367,7 +394,7 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Checks the .NET Framework version and returns Pass, Fail, or Unknown which can be 
+        /// Checks the .NET Framework version and returns Pass, Fail, or Unknown which can be
         /// used to determine if it's safe to proceed.
         /// </summary>
         /// <returns>One of the values of the VersionCheckResult enum.</returns>
@@ -427,7 +454,7 @@ namespace RockWeb.Blocks.Core
         /// level to proceed.
         /// </summary>
         /// <returns></returns>
-        private bool CheckSqlServerVersion()
+        private bool CheckSqlServerVersionGreaterThenSqlServer2012()
         {
             bool isOk = false;
             string sqlVersion = "";
@@ -439,7 +466,7 @@ namespace RockWeb.Blocks.Core
                 int majorVersion = -1;
                 Int32.TryParse( versionParts[0], out majorVersion );
 
-                if ( majorVersion >= 11 )
+                if ( majorVersion > 11 )
                 {
                     isOk = true;
                 }
@@ -460,7 +487,6 @@ namespace RockWeb.Blocks.Core
         protected bool UpdateRockPackage( string version )
         {
             IEnumerable<string> errors = Enumerable.Empty<string>();
-
             try
             {
                 var update = NuGetService.SourceRepository.FindPackage( _rockPackageId, ( version != null ) ? SemanticVersion.Parse( version ) : null, false, false );
@@ -481,7 +507,7 @@ namespace RockWeb.Blocks.Core
                 lSuccessVersion.Text = GetRockVersion( update.Version );
 
                 // Record the current version to the database
-                Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ROCK_INSTANCE_ID, version );
+                Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ROCK_INSTANCE_ID, version );
 
                 // register any new REST controllers
                 try
@@ -809,18 +835,18 @@ namespace RockWeb.Blocks.Core
 
         /// <summary>
         /// Sends statistics to the SDN server but only if there are more than 100 person records
-        /// or the sample data has not been loaded. 
-        /// 
+        /// or the sample data has not been loaded.
+        ///
         /// The statistics are:
         ///     * Rock Instance Id
         ///     * Update Version
         ///     * IP Address - The IP address of your Rock server.
-        ///     
+        ///
         /// ...and we only send these if they checked the "Include Impact Statistics":
         ///     * Organization Name and Address
         ///     * Public Web Address
         ///     * Number of Active Records
-        ///     
+        ///
         /// As per http://www.rockrms.com/Rock/Impact
         /// </summary>
         /// <param name="version">the semantic version number</param>
@@ -831,7 +857,7 @@ namespace RockWeb.Blocks.Core
                 var rockContext = new RockContext();
                 int numberOfActiveRecords = new PersonService( rockContext ).Queryable( includeDeceased: false, includeBusinesses: false ).Count();
 
-                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( SystemSettingKeys.SAMPLEDATA_DATE ).AsDateTime().HasValue )
+                if ( numberOfActiveRecords > 100 || !Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SAMPLEDATA_DATE ).AsDateTime().HasValue )
                 {
                     string organizationName = string.Empty;
                     ImpactLocation organizationLocation = null;

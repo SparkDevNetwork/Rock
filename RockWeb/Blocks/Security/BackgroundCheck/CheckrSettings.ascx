@@ -20,7 +20,7 @@
                                 <div class="col-md-6">
                                     <Rock:Lava ID="lavaCheckrDescription" runat="server">
                                     <img src="{{ '~/Assets/Images/Checkr.svg' | ResolveRockUrl }}" style="max-width: 35%;margin:0 auto 16px;display:block;">
-                                    <p><a href="https://checkr.com" target="_blank">Checkr</a> provides modern and compliant background checks for use with Rock. With your <a href="https://rockrms.com/checkrauth?organization={{ 'Global' | Attribute:'OrganizationName' | EscapeDataString }}" target="_blank">Checkr token from RockRMS.com</a> you’ll be able to initiate background checks using Checkr’s scalable, cost-effective, and rapid screening solutions.</p>
+                                    <p><a href="https://checkr.com" target="_blank" rel="noopener noreferrer">Checkr</a> provides modern and compliant background checks for use with Rock. With your <a href="https://rockrms.com/checkrauth?organization={{ 'Global' | Attribute:'OrganizationName' | EscapeDataString }}" target="_blank">Checkr token from RockRMS.com</a> you’ll be able to initiate background checks using Checkr’s scalable, cost-effective, and rapid screening solutions.</p>
                                     <a href="https://rockrms.com/checkrauth?organization={{ 'Global' | Attribute:'OrganizationName' | EscapeDataString }}" class="btn btn-primary btn-block" target="_blank">Connect to Checkr</a>
                                     </Rock:Lava>
                                 </div>

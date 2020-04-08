@@ -14,13 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System;
-using System.Collections.Specialized;
 
 namespace Rock.Web.UI.Controls
 {

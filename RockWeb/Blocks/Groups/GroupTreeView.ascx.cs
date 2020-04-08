@@ -160,10 +160,10 @@ namespace RockWeb.Blocks.Groups
                 ddlCampuses.SetValue( "" );
             }
 
-            var includeNoCampus = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             if ( pnlConfigPanel.Visible )
             {
-                tglIncludeNoCampus.Checked = includeNoCampus;
+                tglIncludeNoCampus.Visible = ddlCampuses.Visible;
+                tglIncludeNoCampus.Checked = this.GetUserPreference( "IncludeNoCampus" ).AsBoolean();
             }
 
         }
@@ -291,15 +291,15 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
-
+                
                 if ( selectedGroup != null )
                 {
+                    var selectedGroupGroupType = GroupTypeCache.Get( selectedGroup.GroupTypeId );
                     hfInitialGroupId.Value = selectedGroup.Id.ToString();
                     hfSelectedGroupId.Value = selectedGroup.Id.ToString();
 
                     // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
-                    if ( selectedGroup.GroupType.ChildGroupTypes.Count > 0 &&
-                        selectedGroup.GroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) )
+                    if ( selectedGroupGroupType.AllowAnyChildGroupType || selectedGroupGroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) )
                     {
                         canAddChildGroup = canEditBlock;
 
@@ -308,10 +308,13 @@ namespace RockWeb.Blocks.Groups
                             canAddChildGroup = selectedGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
                             if ( !canAddChildGroup )
                             {
-                                var groupType = GroupTypeCache.Get( selectedGroup.GroupTypeId );
-                                if ( groupType != null )
+                                if ( selectedGroupGroupType.AllowAnyChildGroupType )
                                 {
-                                    foreach ( var childGroupType in groupType.ChildGroupTypes )
+                                    canAddChildGroup = true;
+                                }
+                                else
+                                {
+                                    foreach ( var childGroupType in selectedGroupGroupType.ChildGroupTypes )
                                     {
                                         if ( childGroupType != null && childGroupType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                                         {

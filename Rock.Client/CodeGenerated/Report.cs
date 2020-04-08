@@ -58,6 +58,9 @@ namespace Rock.Client
         /// <summary />
         public bool IsSystem { get; set; }
 
+        /// <summary />
+        public DateTime? LastRunDateTime { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -68,6 +71,12 @@ namespace Rock.Client
 
         /// <summary />
         public string QueryHint { get; set; }
+
+        /// <summary />
+        public int? RunCount { get; set; }
+
+        /// <summary />
+        public int? TimeToRunMS { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -110,9 +119,12 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
+            this.LastRunDateTime = source.LastRunDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.QueryHint = source.QueryHint;
+            this.RunCount = source.RunCount;
+            this.TimeToRunMS = source.TimeToRunMS;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -1042,7 +1042,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( !report.DataView.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                 {
                     isAuthorized = false;
-                    authorizationMessage = "INFO: This Reports uses a data view that you do not have access to view.";
+                    authorizationMessage = "INFO: This report uses a data view that you do not have access to view.";
                 }
             }
 
@@ -1107,6 +1107,8 @@ namespace RockWeb.Blocks.Reporting
                     if ( dataView != null )
                     {
                         entityTypeId = dataView.EntityTypeId;
+                        tbName.Text = dataView.Name;
+                        tbDescription.Text = dataView.Description;
                     }
                 }
             }
@@ -1163,7 +1165,7 @@ namespace RockWeb.Blocks.Reporting
             SetEditMode( false );
             hfReportId.SetValue( report.Id );
             lReadOnlyTitle.Text = report.Name.FormatAsHtmlTitle();
-            lReportDescription.Text = report.Description;
+            lReportDescription.Text = report.Description.ConvertMarkdownToHtml();
 
             if ( report.DataView != null )
             {

@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
+
 using Rock.Model;
 
 namespace Rock.Financial
@@ -24,6 +26,11 @@ namespace Rock.Financial
     /// </summary>
     public interface IAutomatedGatewayComponent
     {
+        /// <summary>
+        /// The most recent exception thrown by the gateway's remote API
+        /// </summary>
+        Exception MostRecentException { get; }
+
         /// <summary>
         /// Handle a payment from a REST endpoint or other automated means. This payment can only be made with a saved account.
         /// </summary>

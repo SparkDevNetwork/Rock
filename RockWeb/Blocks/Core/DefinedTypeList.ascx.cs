@@ -77,6 +77,9 @@ namespace RockWeb.Blocks.Core
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gDefinedType.Actions.ShowAdd = canAddEditDelete;
             gDefinedType.IsDeleteEnabled = canAddEditDelete;
+
+            var securityField = gDefinedType.ColumnsOfType<SecurityField>().FirstOrDefault();
+            securityField.EntityTypeId = EntityTypeCache.Get( typeof( DefinedType ) ).Id;
         }
 
         /// <summary>
@@ -150,7 +153,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "definedTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "DefinedTypeId", 0 );
         }
 
         /// <summary>
@@ -160,7 +163,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "definedTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "DefinedTypeId", e.RowKeyId );
         }
 
         /// <summary>

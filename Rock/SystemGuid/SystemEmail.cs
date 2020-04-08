@@ -15,15 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Rock.SystemGuid
 {
     /// <summary>
     /// System Email Templates
     /// </summary>
+    [Obsolete( "Use SystemCommunication instead." )]
+    [RockObsolete( "1.10" )]
     public static class SystemEmail
     {
         /// <summary>
@@ -52,6 +51,11 @@ namespace Rock.SystemGuid
         public const string GROUP_ATTENDANCE_REMINDER = "ED567FDE-A3B4-4827-899D-C2740DF3E5DA";
 
         /// <summary>
+        /// Gets the template guid for the Prayer Comments Notification
+        /// </summary>
+        public const string PRAYER_REQUEST_COMMENTS_NOTIFICATION = "FAEA9DE5-62CE-4EEE-960B-C06103E97AA9";
+
+        /// <summary>
         /// Gets the template guid for event registration confirmation
         /// </summary>
         public const string REGISTRATION_CONFIRMATION = "7B0F4F06-69BD-4CB4-BD04-8DA3779D5259";
@@ -77,6 +81,21 @@ namespace Rock.SystemGuid
         public const string SECURITY_FORGOT_USERNAME = "113593ff-620e-4870-86b1-7a0ec0409208";
 
         /// <summary>
+        /// The scheduling response email
+        /// </summary>
+        public const string SCHEDULING_RESPONSE = "D095F78D-A5CF-4EF6-A038-C7B07E250611";
+
+        /// <summary>
+        /// The scheduling remainder email
+        /// </summary>
+        public const string SCHEDULING_REMAINDER = "8A20FE79-B73C-447A-82B1-416F9B50C038";
+
+        /// <summary>
+        /// The scheduling confirmation email
+        /// </summary>
+        public const string SCHEDULING_CONFIRMATION = "F8E4CE07-68F5-4169-A865-ECE915CF421C";
+
+        /// <summary>
         /// Gets the template guid for workflow form notifications
         /// </summary>
         public const string WORKFLOW_FORM_NOTIFICATION = "88C7D1CC-3478-4562-A301-AE7D4D7FFF6D";
@@ -84,7 +103,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the template guid for digital signature invite
         /// </summary>
-        public const string DIGITAL_SIGNATURE_INVITE  = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
+        public const string DIGITAL_SIGNATURE_INVITE = "791F2DE4-5A59-60AE-4F2F-FDC3EBC4FFA9";
 
         /// <summary>
         /// Gets the template guid for a notewatch notification
@@ -100,5 +119,10 @@ namespace Rock.SystemGuid
         /// Gets the template guid for a Spark Data notification
         /// </summary>
         public const string SPARK_DATA_NOTIFICATION = "CBCBE0F0-67FB-6393-4D9C-592C839A2E54";
+
+        /// <summary>
+        /// Gets the template guid for a Assessment Request system email
+        /// </summary>
+        public const string ASSESSMENT_REQUEST = "41FF4269-7B48-40CD-81D4-C11370A13DED";
     }
 }

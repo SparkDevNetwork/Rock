@@ -15,10 +15,8 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Web;
+
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -164,5 +162,91 @@ namespace Rock.Attribute
                 FieldConfigurationValues.AddOrReplace( ALLOW_MULTIPLE_KEY, new Field.ConfigurationValue( value.ToString() ) );
             }
         }
+
+
+        /// <summary>
+        /// Gets or sets the EntityType.Guid that the Attribute List should be limited to.
+        /// </summary>
+        /// <value>
+        /// The entity type unique identifier.
+        /// </value>
+        public string EntityTypeGuid
+        {
+            get => FieldConfigurationValues.GetValueOrNull( ENTITY_TYPE_KEY );
+            set => FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, new Field.ConfigurationValue( value ) );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn
+        {
+            get => FieldConfigurationValues.GetValueOrNull( QUALIFIER_COLUMN_KEY );
+            set => EnsureEntityQualifierSettings( value, this.EntityTypeQualifierValue );
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.  Please note that if you are using a Rock entity (from Rock.Models), you may set this
+        /// value to the Guid of the entity type you are utilizing and (if the EntityTypeQualifierColumn is an Id field) it will translate the
+        /// Guid to the Id.  WARNING:  This ONLY works for entities in Rock.Models.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue
+        {
+            get => FieldConfigurationValues.GetValueOrNull( QUALIFIER_VALUE_KEY );
+            set => EnsureEntityQualifierSettings( this.EntityTypeQualifierColumn, value );
+        }
+
+        /// <summary>
+        /// This method is utilized by the setters for EntityTypeQualifierColumn and EntityTypeQualifierValue to translate between Guids and Ids.
+        /// It must be called by both setters to ensure that it is executed after both values have been set.
+        /// </summary>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column (either "value" or this.EntityTypeQualifierColumn).</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value (either "value" or this.EntityTypeQualifierValue).</param>
+        private void EnsureEntityQualifierSettings( string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            // Set EntityTypeQualifierColumn value.
+            FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
+
+            if ( !string.IsNullOrEmpty( entityTypeQualifierColumn ) && entityTypeQualifierColumn.EndsWith( "Id" ) && entityTypeQualifierValue.AsGuid() != Guid.Empty )
+            {
+                // If this is a Guid, but the Column value is an Id, fetch the Id from the Guid and then set the Id as the EntityTypeQualifierValue value.
+                EntityTypeCache itemEntityType = EntityTypeCache.Get( "Rock.Model." + entityTypeQualifierColumn.Left( entityTypeQualifierColumn.Length - 2 ) );
+                if ( itemEntityType.AssemblyName != null )
+                {
+                    // get the actual type of what is being followed
+                    Type entityType = itemEntityType.GetEntityType();
+                    if ( entityType != null )
+                    {
+                        var dbContext = Reflection.GetDbContextForEntityType( entityType );
+                        if ( dbContext != null )
+                        {
+                            var serviceInstance = Reflection.GetServiceForEntityType( entityType, dbContext );
+                            if ( serviceInstance != null )
+                            {
+                                MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
+                                var entity = getMethod.Invoke( serviceInstance, new object[] { entityTypeQualifierValue.AsGuid() } ) as Rock.Data.IEntity;
+                                if ( entity != null )
+                                {
+                                    FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entity.Id.ToString() ) );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Set EntityTypeQualifierValue value.
+                var entityTypeQualifierValueConfigValue = new Field.ConfigurationValue( entityTypeQualifierValue );
+                FieldConfigurationValues.AddOrReplace( QUALIFIER_VALUE_KEY, entityTypeQualifierValueConfigValue );
+            } 
+        }
+
     }
 }

@@ -15,8 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -75,6 +73,14 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public virtual long BatchTimeOffsetTicks { get; set; }
+
+        /// <summary>
+        /// Null for daily batches (default). For weekly batches, this (as well as the
+        /// BatchTimeOffsetTicks) indicates the day of the week that a new batch should
+        /// begin.
+        /// </summary>
+        [DataMember]
+        public virtual DayOfWeek? BatchDayOfWeek { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

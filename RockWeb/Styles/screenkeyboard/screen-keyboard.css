@@ -1,0 +1,143 @@
+.screen-keyboard {
+  display: inline-block;
+  font-size: 0;
+  text-align: center;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.qwerty .key {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: center;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin-right: 6px;
+  margin-bottom: 6px;
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 4px;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+}
+
+.qwerty .key:last-child {
+  margin-right: 0;
+}
+
+.qwerty .key.key-1halfx {
+  width: 57px;
+}
+
+.qwerty .key.key-2x {
+  width: 78px;
+}
+
+.qwerty .key.key-2halfx {
+  width: 99px;
+}
+
+.qwerty .key.key-3x {
+  width: 120px;
+}
+
+.qwerty .key.key-3halfx {
+  width: 141px;
+}
+
+.qwerty .key.key-4x {
+  width: 162px;
+}
+
+.qwerty .key.key-4halfx {
+  width: 183px;
+}
+
+.qwerty .key.key-5x {
+  width: 204px;
+}
+
+.qwerty .key.key-5halfx {
+  width: 225px;
+}
+
+.qwerty .key.key-6x {
+  width: 246px;
+}
+
+.qwerty .key.key-6halfx {
+  width: 267px;
+}
+
+.qwerty .key.key-7x {
+  width: 288px;
+}
+
+
+@media (min-width: 992px) {
+  .qwerty .key {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .qwerty .key.key-1halfx {
+    width: 75px;
+  }
+
+  .qwerty .key.key-2x {
+    width: 102px;
+  }
+
+  .qwerty .key.key-2halfx {
+    width: 129px;
+  }
+
+  .qwerty .key.key-3x {
+    width: 156px;
+  }
+
+  .qwerty .key.key-3halfx {
+    width: 183px;
+  }
+
+  .qwerty .key.key-4x {
+    width: 210px;
+  }
+
+  .qwerty .key.key-4halfx {
+    width: 237px;
+  }
+
+  .qwerty .key.key-5x {
+    width: 264px;
+  }
+
+  .qwerty .key.key-5halfx {
+    width: 291px;
+  }
+
+  .qwerty .key.key-6x {
+    width: 318px;
+  }
+
+  .qwerty .key.key-6halfx {
+    width: 345px;
+  }
+
+  .qwerty .key.key-7x {
+    width: 372px;
+  }
+}

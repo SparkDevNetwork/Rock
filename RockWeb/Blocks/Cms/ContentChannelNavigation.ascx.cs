@@ -42,15 +42,72 @@ namespace RockWeb.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a menu of content channels/items that user is authorized to view." )]
 
-    [LinkedPage( "Detail Page", "Page used to view a content item.", order: 1 )]
+    #region Block Attributes
 
-    [ContentChannelTypesField( "Content Channel Types Include", "Select any specific content channel types to show in this block. Leave all unchecked to show all content channel types ( except for excluded content channel types )", false, key: "ContentChannelTypesInclude", order: 2 )]
-    [ContentChannelTypesField( "Content Channel Types Exclude", "Select content channel types to exclude from this block. Note that this setting is only effective if 'Content Channel Types Include' has no specific content channel types selected.", false, key: "ContentChannelTypesExclude", order: 3 )]
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Description = "Page used to view a content item.",
+        Order = 1 )]
+
+    [ContentChannelTypesField(
+        "Content Channel Types Include",
+        Key = AttributeKey.ContentChannelTypesInclude,
+        Description = "Select any specific content channel types to show in this block. Leave all unchecked to show all content channel types ( except for excluded content channel types )",
+        IsRequired = false,
+        Order = 2 )]
+
+    [ContentChannelTypesField(
+        "Content Channel Types Exclude",
+        Key = AttributeKey.ContentChannelTypesExclude,
+        Description = "Select content channel types to exclude from this block. Note that this setting is only effective if 'Content Channel Types Include' has no specific content channel types selected.",
+        IsRequired = false,
+        Order = 3 )]
+
+    [ContentChannelsField(
+        "Content Channels Filter",
+        Key = AttributeKey.ContentChannelsFilter,
+        Description = "Select the content channels you would like displayed. This setting will override the Content Channel Types Include/Exclude settings.",
+        IsRequired = false,
+        Order = 4 )]
+
+    [BooleanField(
+        "Show Category Filter",
+        Description = "Should block add an option to allow filtering by category?",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.ShowCategoryFilter,
+        Order = 5 )]
+
+    [CategoryField( "Parent Category",
+        Description = "The parent category to use as the root category available for the user to pick from.",
+        IsRequired = true,
+        EntityType = typeof( Rock.Model.ContentChannel ),
+        Key = AttributeKey.ParentCategory,
+        Order = 6 )]
+
+    #endregion Block Attributes
+
     public partial class ContentChannelNavigation : Rock.Web.UI.RockBlock
     {
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+            public const string ContentChannelTypesInclude = "ContentChannelTypesInclude";
+            public const string ContentChannelTypesExclude = "ContentChannelTypesExclude";
+            public const string ContentChannelsFilter = "ContentChannelsFilter";
+            public const string ShowCategoryFilter = "ShowCategoryFilter";
+            public const string ParentCategory = "ParentCategory";
+        }
+
+        #endregion Attribute Keys
+
         #region Fields
 
         private const string STATUS_FILTER_SETTING = "ContentChannelNavigation_StatusFilter";
+        private const string CATEGORY_FILTER_SETTING = "ContentChannelNavigation_CategoryFilter";
         private const string SELECTED_CHANNEL_SETTING = "ContentChannelNavigation_SelectedChannelId";
 
         #endregion
@@ -99,6 +156,12 @@ namespace RockWeb.Blocks.Cms
             gContentChannelItems.GridRebind += gContentChannelItems_GridRebind;
             gContentChannelItems.GridReorder += GContentChannelItems_GridReorder;
 
+            ddlCategory.Visible = GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean();
+            if ( GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean() )
+            {
+                BindCategories();
+            }
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -121,11 +184,11 @@ namespace RockWeb.Blocks.Cms
 
                 tglStatus.Checked = GetUserPreference( STATUS_FILTER_SETTING ).AsBoolean();
 
-                SelectedChannelId = PageParameter( "contentChannelId" ).AsIntegerOrNull();
+                SelectedChannelId = PageParameter( "ContentChannelId" ).AsIntegerOrNull();
 
                 if ( !SelectedChannelId.HasValue )
                 {
-                    var selectedChannelGuid = PageParameter( "contentChannelGuid" ).AsGuidOrNull();
+                    var selectedChannelGuid = PageParameter( "ContentChannelGuid" ).AsGuidOrNull();
 
                     if ( selectedChannelGuid.HasValue )
                     {
@@ -136,6 +199,11 @@ namespace RockWeb.Blocks.Cms
                 if ( !SelectedChannelId.HasValue )
                 {
                     SelectedChannelId = GetUserPreference( SELECTED_CHANNEL_SETTING ).AsIntegerOrNull();
+                }
+
+                if ( ddlCategory.Visible )
+                {
+                    ddlCategory.SetValue( GetUserPreference( CATEGORY_FILTER_SETTING ).AsIntegerOrNull() );
                 }
 
                 GetData();
@@ -170,6 +238,23 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            ddlCategory.Visible = GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean();
+            if ( GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean() )
+            {
+                BindCategories();
+            }
+
+            GetData();
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the ddlCategory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCategory_OnSelectedIndexChanged( object sender, EventArgs e )
+        {
+            SetUserPreference( CATEGORY_FILTER_SETTING, ddlCategory.SelectedValue );
             GetData();
         }
 
@@ -318,7 +403,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( SelectedChannelId.HasValue )
             {
-                NavigateToLinkedPage( "DetailPage", "contentItemId", 0, "contentChannelId", SelectedChannelId.Value );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ContentItemId", 0, "ContentChannelId", SelectedChannelId.Value );
             }
         }
 
@@ -332,7 +417,7 @@ namespace RockWeb.Blocks.Cms
             var contentItem = new ContentChannelItemService( new RockContext() ).Get( e.RowKeyId );
             if ( contentItem != null )
             {
-                NavigateToLinkedPage( "DetailPage", "contentItemId", contentItem.Id );
+                NavigateToLinkedPage( AttributeKey.DetailPage, "ContentItemId", contentItem.Id );
             }
         }
 
@@ -363,7 +448,6 @@ namespace RockWeb.Blocks.Cms
                 {
                     contentItemAssociationService.DeleteRange( contentItem.ChildItems );
                     contentItemAssociationService.DeleteRange( contentItem.ParentItems );
-                    contentItemSlugService.DeleteRange( contentItem.ContentChannelItemSlugs );
                     contentItemService.Delete( contentItem );
                     rockContext.SaveChanges();
                 } );
@@ -438,21 +522,31 @@ namespace RockWeb.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Gets the data to display.
+        /// </summary>
         private void GetData()
         {
             var rockContext = new RockContext();
             var itemService = new ContentChannelItemService( rockContext );
 
             // Get all of the content channels
-            var contentChannelsQry = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" );
+            var contentChannelsQry = new ContentChannelService( rockContext ).Queryable( "ContentChannelType" ).AsNoTracking();
 
-            List<Guid> contentChannelTypeGuidsInclude = GetAttributeValue( "ContentChannelTypesInclude" ).SplitDelimitedValues().AsGuidList();
-            List<Guid> contentChannelTypeGuidsExclude = GetAttributeValue( "ContentChannelTypesExclude" ).SplitDelimitedValues().AsGuidList();
+            List<Guid> contentChannelGuidsFilter = GetAttributeValue( AttributeKey.ContentChannelsFilter ).SplitDelimitedValues().AsGuidList();
+            List<Guid> contentChannelTypeGuidsInclude = GetAttributeValue( AttributeKey.ContentChannelTypesInclude ).SplitDelimitedValues().AsGuidList();
+            List<Guid> contentChannelTypeGuidsExclude = GetAttributeValue( AttributeKey.ContentChannelTypesExclude ).SplitDelimitedValues().AsGuidList();
 
-            if ( contentChannelTypeGuidsInclude.Any() )
+            if ( contentChannelGuidsFilter.Any() )
+            {
+                // if contentChannelGuidsFilter is specified, only get those content channels.
+                // NOTE: This take precedence over all the other Include/Exclude settings.
+                contentChannelsQry = contentChannelsQry.Where( a => contentChannelGuidsFilter.Contains( a.Guid ) );
+            }
+            else if ( contentChannelTypeGuidsInclude.Any() )
             {
                 // if contentChannelTypeGuidsInclude is specified, only get contentChannelTypes that are in the contentChannelTypeGuidsInclude
-                // NOTE: no need to factor in contentChannelTypeGuidsExclude since included would take precendance and the excluded ones would already not be included
+                // NOTE: no need to factor in contentChannelTypeGuidsExclude since included would take precedence and the excluded ones would already not be included
                 contentChannelsQry = contentChannelsQry.Where( a => contentChannelTypeGuidsInclude.Contains( a.ContentChannelType.Guid ) || a.ContentChannelType.ShowInChannelList );
             }
             else if ( contentChannelTypeGuidsExclude.Any() )
@@ -462,6 +556,22 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 contentChannelsQry = contentChannelsQry.Where( a => a.ContentChannelType.ShowInChannelList );
+            }
+
+
+            if ( GetAttributeValue( AttributeKey.ShowCategoryFilter ).AsBoolean() )
+            {
+                var categoryId = ddlCategory.SelectedValueAsId();
+                var parentCategoryGuid = GetAttributeValue( AttributeKey.ParentCategory ).AsGuidOrNull();
+                if ( ddlCategory.Visible && categoryId.HasValue )
+                {
+                    contentChannelsQry = contentChannelsQry.Where( a => a.Categories.Any( c => c.Id == categoryId ) );
+                }
+                else if ( parentCategoryGuid.HasValue )
+                {
+                    var parentCategoryId = CategoryCache.GetId( parentCategoryGuid.Value );
+                    contentChannelsQry = contentChannelsQry.Where( a => a.Categories.Any( c => c.ParentCategoryId == parentCategoryId ) );
+                }
             }
 
             var contentChannelsList = contentChannelsQry.OrderBy( w => w.Name ).ToList();
@@ -883,6 +993,10 @@ namespace RockWeb.Blocks.Cms
                 gContentChannelItems.IsDeleteEnabled = canEditChannel;
                 if ( canEditChannel )
                 {
+                    var securityField = new SecurityField();
+                    gContentChannelItems.Columns.Add( securityField );
+                    securityField.TitleField = "Title";
+                    securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannelItem ) ).Id;
 
                     var deleteField = new DeleteField();
                     gContentChannelItems.Columns.Add( deleteField );
@@ -910,6 +1024,27 @@ namespace RockWeb.Blocks.Cms
             }
 
             return string.Format( "<span class='label label-{0}'>{1}</span>", labelType, contentItemStatus.ConvertToString() );
+        }
+
+        /// <summary>
+        /// Bind the category selector to the correct set of categories.
+        /// </summary>
+        private void BindCategories()
+        {
+            var parentCategoryGuid = GetAttributeValue( AttributeKey.ParentCategory ).AsGuidOrNull();
+
+            var categories = new CategoryService( new RockContext() )
+                .GetByEntityTypeId( EntityTypeCache.GetId( typeof( Rock.Model.ContentChannel ).FullName ) )
+                .Where( c => ( !parentCategoryGuid.HasValue && !c.ParentCategoryId.HasValue ) ||
+                             ( parentCategoryGuid.HasValue && c.ParentCategory != null && c.ParentCategory.Guid == parentCategoryGuid ) )
+                .AsQueryable()
+                .ToList();
+            ddlCategory.Visible = categories.Any();
+            ddlCategory.DataSource = categories;
+            ddlCategory.DataTextField = "Name";
+            ddlCategory.DataValueField = "Id";
+            ddlCategory.DataBind();
+            ddlCategory.Items.Insert( 0, new ListItem() );
         }
 
         #endregion

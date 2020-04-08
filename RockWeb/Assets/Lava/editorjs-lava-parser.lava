@@ -1,0 +1,39 @@
+﻿{%- comment -%}Parses output from Editor.JS. Data is JSON{%- endcomment -%}
+{%- assign data = data | FromJSON %}
+
+{%- for item in data.blocks -%}
+  {%- case item.type -%}
+    {%- when "header" -%}
+      <h{{ item.data.level }}>{{ item.data.text }}</h{{ item.data.level }}>
+    {%- when "paragraph" -%}
+      {{ item.data.text }}
+    {%- when "list" -%}
+      {%- if item.style == "unordered" -%}
+        {%- assign listTag = 'ul' -%}
+      {%- else -%}
+        {%- assign listTag = 'ol' -%}
+      {%- endif -%}
+
+      <{{ listTag }}>
+        {%- for item in item.data.items -%}
+          <li>{{ item }}</li>
+        {%- endfor -%}
+      </{{ listTag }}>
+    {%- when "image" -%}
+      <img src="{{ item.data.url }}" class="img-responsive">
+    {%- when "delimiter" -%}
+      <hr/>
+    {%- when "table" -%}
+      <table>
+        {%- for row in item.data.rows -%}
+          <tr>
+            {%- for column in row -%}
+              <td>{{ column }}</td>
+            {%- endfor -%}
+          </tr>
+        {%- endfor -%}
+      </table>
+    {%- else -%}
+      {%- comment -%}Unknown Block Type{%- endcomment -%}
+  {%- endcase -%}
+{%- endfor -%}

@@ -20,6 +20,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
@@ -181,6 +182,24 @@ namespace Rock.Web.UI.Controls
                     CustomValidator.ErrorMessage = value;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The message to display if there are no options in the list." )
+        ]
+        public string EmptyListMessage
+        {
+            get { return ViewState["EmptyListMessage"] as string ?? string.Empty; }
+            set { ViewState["EmptyListMessage"] = value; }
         }
 
         /// <summary>
@@ -347,7 +366,7 @@ namespace Rock.Web.UI.Controls
             {
                 bool hasChanged = false;
 
-                // Hack to get the selected items on postback.  
+                // Hack to get the selected items on postback.
                 for ( int i = 0; i < this.Items.Count; i++ )
                 {
                     bool newCheckState = ( postCollection[string.Format( "{0}${1}", this.UniqueID, i )] != null );
@@ -409,11 +428,23 @@ namespace Rock.Web.UI.Controls
 
             if ( Items.Count == 0 )
             {
-                writer.Write( None.TextHtml );
+                writer.Write( this.EmptyListMessage );
             }
 
             base.RenderControl( writer );
 
+            if ( this.Required )
+            {
+                this.CustomValidator.Enabled = true;
+                if ( string.IsNullOrWhiteSpace( this.CustomValidator.ErrorMessage ) )
+                {
+                    this.CustomValidator.ErrorMessage = this.Label + " is required.";
+                }
+            }
+            else
+            {
+                this.CustomValidator.Enabled = false;
+            }
             CustomValidator.RenderControl( writer );
 
             writer.RenderEndTag();
@@ -424,16 +455,16 @@ namespace Rock.Web.UI.Controls
    function StrikeOffCheckbox( checkboxControl ){{
                 if ( checkboxControl.prop( 'checked' ) )
                 {{
-                    checkboxControl.parent('label').addClass( 'strikethrough' );
+                    checkboxControl.parent('label').addClass( 'line-through' );
                 }}
                 else
                 {{
-                    checkboxControl.parent('label').removeClass( 'strikethrough' );
+                    checkboxControl.parent('label').removeClass( 'line-through' );
                 }}
 
             }}
 
-        $( "".checklist .checkbox input[type=checkbox]"").click( function() {{
+        $( "".checklist .checkbox input[type=checkbox]"").on('click', function() {{
                 StrikeOffCheckbox($( this ) );
             }})
 
@@ -486,6 +517,29 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets the names of the selected items.
+        /// </summary>
+        /// <value>
+        /// The names of the selected items.
+        /// </value>
+        public List<string> SelectedNames
+        {
+            get
+            {
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Text ).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Shows the error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        public virtual void ShowErrorMessage( string errorMessage )
+        {
+            this.CustomValidator.ErrorMessage = errorMessage;
+            this.CustomValidator.IsValid = false;
+        }
     }
 }
 

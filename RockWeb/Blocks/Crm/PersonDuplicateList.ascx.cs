@@ -36,13 +36,58 @@ namespace RockWeb.Blocks.Crm
     [Category( "CRM" )]
     [Description( "List of person records that have possible duplicates" )]
 
-    [DecimalField( "Confidence Score High", "The minimum confidence score required to be considered a likely match", true, 80.00, order: 0 )]
-    [DecimalField( "Confidence Score Low", "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.", true, 60.00, order: 1 )]
-    [BooleanField( "Include Inactive", "Set to true to also include potential matches when both records are inactive.", false, order: 2 )]
-    [BooleanField( "Include Businesses", "Set to true to also include potential matches when either record is a Business.", false, order: 3 )]
-    [LinkedPage( "Detail Page", order: 4 )]
+    #region Block Attributes
+
+    [DecimalField(
+        "Confidence Score High",
+        Key = AttributeKey.ConfidenceScoreHigh,
+        Description = "The minimum confidence score required to be considered a likely match.",
+        IsRequired = true,
+        DefaultDecimalValue = 80.00,
+        Order = 0 )]
+
+    [DecimalField(
+        "Confidence Score Low",
+        Key = AttributeKey.ConfidenceScoreLow,
+        Description = "The maximum confidence score required to be considered an unlikely match. Values lower than this will not be shown in the grid.",
+        IsRequired = true,
+        DefaultDecimalValue = 60.00,
+        Order = 1 )]
+
+    [BooleanField(
+        "Include Inactive",
+        Key = AttributeKey.IncludeInactive,
+        Description = "Set to true to also include potential matches when both records are inactive.",
+        DefaultBooleanValue = false,
+        Order = 2 )]
+
+    [BooleanField(
+        "Include Businesses",
+        Key = AttributeKey.IncludeBusinesses,
+        Description = "Set to true to also include potential matches when either record is a Business.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
+    [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Order = 4 )]
+
+    #endregion Block Attributes
+
     public partial class PersonDuplicateList : RockBlock, ICustomGridColumns
     {
+        #region Attribute Keys
+        private static class AttributeKey
+        {
+            public const string ConfidenceScoreHigh = "ConfidenceScoreHigh";
+            public const string ConfidenceScoreLow = "ConfidenceScoreLow";
+            public const string IncludeInactive = "IncludeInactive";
+            public const string IncludeBusinesses = "IncludeBusinesses";
+            public const string DetailPage = "DetailPage";
+        }
+        #endregion Attribute Keys
+
         /// <summary>
         /// Gets the Confidence Score HTML include bootstrap label
         /// </summary>
@@ -52,11 +97,11 @@ namespace RockWeb.Blocks.Crm
         {
             string css;
 
-            if ( confidenceScore >= this.GetAttributeValue( "ConfidenceScoreHigh" ).AsDoubleOrNull() )
+            if ( confidenceScore >= this.GetAttributeValue( AttributeKey.ConfidenceScoreHigh ).AsDoubleOrNull() )
             {
                 css = "label label-success";
             }
-            else if ( confidenceScore <= this.GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull() )
+            else if ( confidenceScore <= this.GetAttributeValue( AttributeKey.ConfidenceScoreLow ).AsDoubleOrNull() )
             {
                 css = "label label-default";
             }
@@ -125,7 +170,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "PersonId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "PersonId", e.RowKeyId );
         }
 
         #endregion
@@ -151,17 +196,17 @@ namespace RockWeb.Blocks.Crm
                 .Where( a => !a.IgnoreUntilScoreChanges )
                 .Where( a => a.PersonAlias.PersonId != a.DuplicatePersonAlias.PersonId );
 
-            if ( this.GetAttributeValue( "IncludeInactive" ).AsBoolean() == false )
+            if ( this.GetAttributeValue( AttributeKey.IncludeInactive ).AsBoolean() == false )
             {
                 personDuplicateQry = personDuplicateQry.Where( a => !( a.PersonAlias.Person.RecordStatusValueId == recordStatusInactiveId && a.DuplicatePersonAlias.Person.RecordStatusValueId == recordStatusInactiveId ) );
             }
 
-            if ( this.GetAttributeValue( "IncludeBusinesses" ).AsBoolean() == false )
+            if ( this.GetAttributeValue( AttributeKey.IncludeBusinesses ).AsBoolean() == false )
             {
                 personDuplicateQry = personDuplicateQry.Where( a => !( a.PersonAlias.Person.RecordTypeValueId == recordTypeBusinessId || a.DuplicatePersonAlias.Person.RecordTypeValueId == recordTypeBusinessId ) );
             }
 
-            double? confidenceScoreLow = GetAttributeValue( "ConfidenceScoreLow" ).AsDoubleOrNull();
+            double? confidenceScoreLow = GetAttributeValue( AttributeKey.ConfidenceScoreLow ).AsDoubleOrNull();
             if ( confidenceScoreLow.HasValue )
             {
                 personDuplicateQry = personDuplicateQry.Where( a => a.ConfidenceScore > confidenceScoreLow );

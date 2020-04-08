@@ -16,8 +16,8 @@
 //
 using System;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {

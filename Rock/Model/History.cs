@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using System.Text;
+
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -106,7 +107,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [RockObsolete( "1.8" )]
-        [Obsolete( "Use SummaryHtml instead to get the Summary, or use HistoryChangeList related functions to log history " )]
+        [Obsolete( "Use SummaryHtml instead to get the Summary, or use HistoryChangeList related functions to log history ", true )]
         public string Summary { get; set; }
 
         /// <summary>
@@ -115,7 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The related entity type identifier.
         /// </value>
-        /// 
+        ///
         [DataMember]
         public int? RelatedEntityTypeId { get; set; }
 
@@ -297,7 +298,7 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Added <span class='field-name'>{this.ValueName}</span> value (Sensitive attribute values are not logged in history).";
+                                        return $"Added <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {
@@ -316,7 +317,7 @@ namespace Rock.Model
                                 {
                                     if ( this.IsSensitive == true )
                                     {
-                                        return $"Modified <span class='field-name'>{this.ValueName}</span> value (Sensitive attribute values are not logged in history).";
+                                        return $"Modified <span class='field-name'>{this.ValueName}</span> value (Sensitive values are not logged in history).";
                                     }
                                     else
                                     {
@@ -389,7 +390,7 @@ namespace Rock.Model
                                     StringBuilder loginSummaryBuilder = new StringBuilder();
                                     loginSummaryBuilder.Append( $"User logged in with <span class='field-name'>{this.ValueName}</span> username" );
 
-                                    // if Related Data has data, it could be additional info about the HostAddress the person logged in from and the url of the page when they logged in
+                                    // if Related Data has data, it could be additional info about the HostAddress the person logged in from and the URL of the page when they logged in
                                     if ( !string.IsNullOrEmpty( this.RelatedData ) )
                                     {
                                         loginSummaryBuilder.Append( $", {this.RelatedData}" );
@@ -430,7 +431,7 @@ namespace Rock.Model
                         }
                     }
 
-                    // some unexpected verb was used to make a custom summary 
+                    // some unexpected verb was used to make a custom summary
                     var stringBuilder = new StringBuilder();
 
                     // Start with whatever custom verb was used. For example 'WATCHED' => 'Watched'
@@ -462,10 +463,7 @@ namespace Rock.Model
                     }
                 }
 
-                // fallback to Summary if summary couldn't be built from Verb, ChangeType, etc
-#pragma warning disable 612, 618
-                return this.Summary;
-#pragma warning restore 612, 618
+                return null;
             }
         }
 
@@ -642,7 +640,7 @@ namespace Rock.Model
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, string oldValue, string newValue, bool isSensitive = false )
         {
             if ( !string.IsNullOrWhiteSpace( oldValue ) )
@@ -695,7 +693,7 @@ namespace Rock.Model
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldValue, int? newValue, bool isSensitive = false )
         {
             EvaluateChange(
@@ -733,7 +731,7 @@ namespace Rock.Model
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, decimal? oldValue, decimal? newValue, bool isSensitive = false )
         {
             EvaluateChange(
@@ -772,7 +770,7 @@ namespace Rock.Model
         /// <param name="includeTime">if set to <c>true</c> [include time].</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, DateTime? oldValue, DateTime? newValue, bool includeTime = false, bool isSensitive = false )
         {
             string oldStringValue = string.Empty;
@@ -825,7 +823,7 @@ namespace Rock.Model
         /// <param name="newValue">if set to <c>true</c> [new value].</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, bool? oldValue, bool? newValue, bool isSensitive = false )
         {
             EvaluateChange(
@@ -863,7 +861,7 @@ namespace Rock.Model
         /// <param name="newValue">The new value.</param>
         /// <param name="isSensitive">Indicator of whether the values are sensitive in nature and should not be logged.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, Enum oldValue, Enum newValue, bool isSensitive = false )
         {
             string oldStringValue = oldValue != null ? oldValue.ConvertToString() : string.Empty;
@@ -895,7 +893,7 @@ namespace Rock.Model
         /// <param name="newDefinedValue">The new defined value.</param>
         /// <param name="newDefinedValueId">The new defined value identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldDefinedValueId, DefinedValue newDefinedValue, int? newDefinedValueId )
         {
             EvaluateChange( historyMessages, propertyName, oldDefinedValueId, newDefinedValue, newDefinedValueId, string.Empty, false );
@@ -925,7 +923,7 @@ namespace Rock.Model
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldDefinedValueId, DefinedValue newDefinedValue, int? newDefinedValueId, string blankValue, bool isSensitive )
         {
             if ( !oldDefinedValueId.Equals( newDefinedValueId ) )
@@ -966,7 +964,7 @@ namespace Rock.Model
         /// <param name="newGroupType">The new defined value.</param>
         /// <param name="newGroupTypeId">The new defined value identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeId, GroupType newGroupType, int? newGroupTypeId )
         {
             EvaluateChange( historyMessages, propertyName, oldGroupTypeId, newGroupType, newGroupTypeId, string.Empty, false );
@@ -996,7 +994,7 @@ namespace Rock.Model
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeId, GroupType newGroupType, int? newGroupTypeId, string blankValue, bool isSensitive )
         {
             if ( !oldGroupTypeId.Equals( newGroupTypeId ) )
@@ -1036,7 +1034,7 @@ namespace Rock.Model
         /// <param name="newCampus">The new defined value.</param>
         /// <param name="newCampusId">The new defined value identifier.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldCampusId, Campus newCampus, int? newCampusId )
         {
             EvaluateChange( historyMessages, propertyName, oldCampusId, newCampus, newCampusId, string.Empty, false );
@@ -1066,7 +1064,7 @@ namespace Rock.Model
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldCampusId, Campus newCampus, int? newCampusId, string blankValue, bool isSensitive )
         {
             if ( !oldCampusId.Equals( newCampusId ) )
@@ -1107,7 +1105,7 @@ namespace Rock.Model
         /// <param name="newPersonAliasId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldPersonAliasId, PersonAlias newPersonAlias, int? newPersonAliasId, RockContext rockContext )
         {
             EvaluateChange( historyMessages, propertyName, oldPersonAliasId, newPersonAlias, newPersonAliasId, rockContext, string.Empty, false );
@@ -1139,7 +1137,7 @@ namespace Rock.Model
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldPersonAliasId, PersonAlias newPersonAlias, int? newPersonAliasId, RockContext rockContext, string blankValue, bool isSensitive )
         {
             if ( !oldPersonAliasId.Equals( newPersonAliasId ) )
@@ -1181,7 +1179,7 @@ namespace Rock.Model
         /// <param name="newGroupId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupId, Group newGroup, int? newGroupId, RockContext rockContext )
         {
             EvaluateChange( historyMessages, propertyName, oldGroupId, newGroup, newGroupId, rockContext, string.Empty, false );
@@ -1199,7 +1197,7 @@ namespace Rock.Model
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupId, Group newGroup, int? newGroupId, RockContext rockContext, string blankValue, bool isSensitive )
         {
             if ( !oldGroupId.Equals( newGroupId ) )
@@ -1220,7 +1218,7 @@ namespace Rock.Model
         /// <param name="newGroupTypeRoleId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeRoleId, GroupTypeRole newGroupTypeRole, int? newGroupTypeRoleId, RockContext rockContext )
         {
             EvaluateChange( historyMessages, propertyName, oldGroupTypeRoleId, newGroupTypeRole, newGroupTypeRoleId, rockContext, string.Empty, false );
@@ -1252,7 +1250,7 @@ namespace Rock.Model
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldGroupTypeRoleId, GroupTypeRole newGroupTypeRole, int? newGroupTypeRoleId, RockContext rockContext, string blankValue, bool isSensitive )
         {
             if ( !oldGroupTypeRoleId.Equals( newGroupTypeRoleId ) )
@@ -1294,7 +1292,7 @@ namespace Rock.Model
         /// <param name="newLocationId">The new person alias identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldLocationId, Location newLocation, int? newLocationId, RockContext rockContext )
         {
             EvaluateChange( historyMessages, propertyName, oldLocationId, newLocation, newLocationId, rockContext, string.Empty, false );
@@ -1326,7 +1324,7 @@ namespace Rock.Model
         /// <param name="blankValue">The blank value.</param>
         /// <param name="isSensitive">if set to <c>true</c> [is sensitive].</param>
         [RockObsolete( "1.8" )]
-        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE )]
+        [Obsolete( HISTORY_METHOD_OBSOLETE_MESSAGE, true )]
         public static void EvaluateChange( List<string> historyMessages, string propertyName, int? oldLocationId, Location newLocation, int? newLocationId, RockContext rockContext, string blankValue, bool isSensitive )
         {
             if ( !oldLocationId.Equals( newLocationId ) )
@@ -1422,7 +1420,7 @@ namespace Rock.Model
                 var service = new Service<T>( rockContext );
                 if ( service != null )
                 {
-                    entity = service.Get( id.Value );
+                    entity = service.GetNoTracking( id.Value );
                 }
             }
 
@@ -1495,7 +1493,7 @@ namespace Rock.Model
             }
             else if ( personAliasId.HasValue )
             {
-                person = new PersonAliasService( rockContext ).GetPerson( personAliasId.Value );
+                person = new PersonAliasService( rockContext ).GetPersonNoTracking( personAliasId.Value );
             }
 
             return person != null ? string.Format( "{0} [{1}]", person.FullName, person.Id ) : blankValue;
@@ -1682,10 +1680,10 @@ namespace Rock.Model
 
             if ( groupTypeRoleId.HasValue )
             {
-                var role = new GroupTypeRoleService( rockContext ).Get( groupTypeRoleId.Value );
-                if ( role != null )
+                var roleName = new GroupTypeRoleService( rockContext ).GetSelect( groupTypeRoleId.Value, a=> a.Name );
+                if ( roleName != null )
                 {
-                    return role.Name;
+                    return roleName;
                 }
             }
 
@@ -1707,7 +1705,7 @@ namespace Rock.Model
         public class HistoryChangeList : List<HistoryChange>
         {
             /// <summary>
-            /// Adds a HistoryChange record to the list 
+            /// Adds a HistoryChange record to the list
             /// Returns the HistoryChange object so caller can set additional property values if needed
             /// </summary>
             /// <param name="historyVerb">The history verb.</param>
@@ -1751,7 +1749,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public class HistoryChange
         {
@@ -1760,7 +1758,7 @@ namespace Rock.Model
             /// </summary>
             /// <param name="summary">The summary.</param>
             [RockObsolete( "1.8" )]
-            [Obsolete]
+            [Obsolete("", true)]
             public HistoryChange( string summary )
             {
                 this.Summary = summary;
@@ -1907,13 +1905,21 @@ namespace Rock.Model
             public string Caption { get; set; }
 
             /// <summary>
+            /// Gets or sets the date on which the change occurred.
+            /// </summary>
+            /// <value>
+            /// The effective date of the change.
+            /// </value>
+            public DateTime? ChangedDateTime { get; set; }
+
+            /// <summary>
             /// Gets or sets the summary.
             /// </summary>
             /// <value>
             /// The summary.
             /// </value>
             [RockObsolete( "1.8" )]
-            [Obsolete]
+            [Obsolete("", true)]
             public string Summary { get; set; }
 
             /// <summary>
@@ -2001,6 +2007,17 @@ namespace Rock.Model
             }
 
             /// <summary>
+            /// Sets the date on which the change occurred.
+            /// </summary>
+            /// <param name="changeDate">The date on which the change occurred.</param>
+            /// <returns></returns>
+            public HistoryChange SetDateOfChange( DateTime changeDate )
+            {
+                this.ChangedDateTime = changeDate;
+                return this;
+            }
+
+            /// <summary>
             /// Returns a <see cref="System.String" /> that represents this instance.
             /// </summary>
             /// <returns>
@@ -2026,10 +2043,8 @@ namespace Rock.Model
                     history.Caption = this.Caption.Truncate( 200 );
                 }
 
-                // for backwards compatibility, still store summary (and we can ignore the Obsolete warning here)
-#pragma warning disable 612, 618
-                history.Summary = this.Summary;
-#pragma warning restore 612, 618
+                // TODO: The effective date of the change should be stored in a separate field to preserve the audit trail.
+                history.CreatedDateTime = this.ChangedDateTime;
 
                 history.Verb = this.Verb;
                 history.ChangeType = this.ChangeType;

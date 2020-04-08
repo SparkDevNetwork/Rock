@@ -100,6 +100,7 @@ namespace Rock.Model
             target.CommunicationTemplateId = source.CommunicationTemplateId;
             target.CommunicationType = source.CommunicationType;
             target.EnabledLavaCommands = source.EnabledLavaCommands;
+            target.ExcludeDuplicateRecipientAddress = source.ExcludeDuplicateRecipientAddress;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.FromEmail = source.FromEmail;
@@ -121,6 +122,7 @@ namespace Rock.Model
             target.Segments = source.Segments;
             target.SendDateTime = source.SendDateTime;
             target.SenderPersonAliasId = source.SenderPersonAliasId;
+            target.SendSourceDate = source.SendSourceDate;
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
             target.SMSMessage = source.SMSMessage;
             target.Status = source.Status;

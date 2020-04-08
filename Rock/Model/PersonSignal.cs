@@ -18,7 +18,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -110,6 +112,21 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual PersonAlias OwnerPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets the parent security authority of this PersonSignal. Where security is inherited from.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                var signalType = SignalTypeCache.Get( this.SignalTypeId );
+                return signalType ?? base.ParentAuthority;
+            }
+        }
 
         #endregion
 

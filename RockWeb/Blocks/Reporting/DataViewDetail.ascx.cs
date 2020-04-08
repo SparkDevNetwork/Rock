@@ -5,6 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
+//
 // http://www.rockrms.com/license
 //
 // Unless required by applicable law or agreed to in writing, software
@@ -161,9 +162,14 @@ $(document).ready(function() {
         {
             base.OnLoad( e );
 
+            if ( Page.IsPostBack )
+            {
+                SetModelPropertiesFromView();
+            }
+
             if ( !Page.IsPostBack )
             {
-                this.ShowResults = GetUserPreference( _settingKeyShowResults ).AsBoolean(true);
+                this.ShowResults = GetUserPreference( _settingKeyShowResults ).AsBoolean( true );
 
                 string itemId = PageParameter( "DataViewId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
@@ -291,7 +297,8 @@ $(document).ready(function() {
             dataView.TransformEntityTypeId = ddlTransform.SelectedValueAsInt();
             dataView.EntityTypeId = etpEntityType.SelectedEntityTypeId;
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
-            dataView.PersistedScheduleIntervalMinutes = nbPersistedScheduleIntervalMinutes.Text.AsIntegerOrNull();
+            dataView.IncludeDeceased = cbIncludeDeceased.Checked;
+            dataView.PersistedScheduleIntervalMinutes = GetPersistedScheduleIntervalMinutes();
 
             var newDataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
@@ -332,9 +339,41 @@ $(document).ready(function() {
 
             if ( dataView.PersistedScheduleIntervalMinutes.HasValue )
             {
-                dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
-                dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
-                rockContext.SaveChanges();
+                try
+                {
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    dataView.PersistResult( GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                    stopwatch.Stop();
+                    dataView.PersistedLastRefreshDateTime = RockDateTime.Now;
+                    dataView.PersistedLastRunDuration = Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds );
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception ex )
+                {
+                    this.LogException( ex );
+                    Exception exception = ex;
+                    while ( exception != null )
+                    {
+                        if ( exception is System.Data.SqlClient.SqlException )
+                        {
+                            // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                            if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
+                            {
+                                nbPersistError.NotificationBoxType = NotificationBoxType.Warning;
+                                nbPersistError.Text = "This dataview did not persist in a timely manner. You can try again or adjust the timeout setting of this block.";
+                                return;
+                            }
+                            else
+                            {
+                                exception = exception.InnerException;
+                            }
+                        }
+                        else
+                        {
+                            exception = exception.InnerException;
+                        }
+                    }
+                }
             }
 
             if ( adding )
@@ -593,7 +632,7 @@ $(document).ready(function() {
                 btnEdit.Visible = true;
                 string errorMessage = string.Empty;
                 btnDelete.Enabled = dataViewService.CanDelete( dataView, out errorMessage );
-                if (!btnDelete.Enabled)
+                if ( !btnDelete.Enabled )
                 {
                     btnDelete.ToolTip = errorMessage;
                     btnDelete.Attributes["onclick"] = null;
@@ -654,12 +693,14 @@ $(document).ready(function() {
             }
 
             cpCategory.SetValue( dataView.CategoryId );
-            nbPersistedScheduleIntervalMinutes.Text = dataView.PersistedScheduleIntervalMinutes.ToString();
+
+            SetPersistenceScheduleFromInterval( dataView.PersistedScheduleIntervalMinutes > 0, dataView.PersistedScheduleIntervalMinutes, null );
 
             var rockContext = new RockContext();
             BindDataTransformations( rockContext );
             ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
+            BindIncludeDeceasedControl( dataView.EntityTypeId, dataView.IncludeDeceased );
             CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true, rockContext );
         }
 
@@ -695,6 +736,11 @@ $(document).ready(function() {
             if ( dataView.TransformEntityType != null )
             {
                 descriptionListMain.Add( "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
+            }
+
+            if ( dataView.IncludeDeceased )
+            {
+                descriptionListMain.Add( "Include Deceased", dataView.IncludeDeceased.ToYesNo() );
             }
 
             lblMainDetails.Text = descriptionListMain.Html;
@@ -793,7 +839,7 @@ $(document).ready(function() {
             {
                 foreach ( var groupSync in groupSyncs )
                 {
-                    string groupAndRole = string.Format( "{0} - {1}", (groupSync.Group != null ? groupSync.Group.Name : "(Id: " + groupSync.GroupId.ToStringSafe() + ")" ), groupSync.GroupTypeRole.Name );
+                    string groupAndRole = string.Format( "{0} - {1}", ( groupSync.Group != null ? groupSync.Group.Name : "(Id: " + groupSync.GroupId.ToStringSafe() + ")" ), groupSync.GroupTypeRole.Name );
 
                     if ( !string.IsNullOrWhiteSpace( groupDetailPage ) )
                     {
@@ -838,7 +884,7 @@ $(document).ready(function() {
                 if ( dataView.EntityTypeId.HasValue )
                 {
                     var entityTypeCache = EntityTypeCache.Get( dataView.EntityTypeId.Value, rockContext );
-                    if (entityTypeCache != null)
+                    if ( entityTypeCache != null )
                     {
                         gReport.RowItemText = entityTypeCache.FriendlyName;
                     }
@@ -907,7 +953,7 @@ $(document).ready(function() {
                         {
                             grid.CreatePreviewColumns( entityType );
                             var dbContext = dataView.GetDbContext();
-
+                            Stopwatch stopwatch = Stopwatch.StartNew();
                             var qry = dataView.GetQuery( grid.SortProperty, dbContext, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180, out errorMessages );
 
                             if ( fetchRowCount.HasValue )
@@ -917,6 +963,9 @@ $(document).ready(function() {
 
                             grid.SetLinqDataSource( qry.AsNoTracking() );
                             grid.DataBind();
+                            stopwatch.Stop();
+                            DataViewService.AddRunDataViewTransaction( dataView.Id,
+                                                            Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
                         }
                         catch ( Exception ex )
                         {
@@ -950,7 +999,7 @@ $(document).ready(function() {
                 }
             }
 
-            var errorBox = ( grid == gPreview) ? nbPreviewError : nbGridError;
+            var errorBox = ( grid == gPreview ) ? nbPreviewError : nbGridError;
 
             if ( errorMessages.Any() )
             {
@@ -1141,7 +1190,7 @@ $(document).ready(function() {
                         }
                         catch ( Exception ex )
                         {
-                            this.LogException( new Exception("Exception setting selection for DataViewFilter: " + filter.Guid, ex));
+                            this.LogException( new Exception( "Exception setting selection for DataViewFilter: " + filter.Guid, ex ) );
                         }
                     }
 
@@ -1194,7 +1243,266 @@ $(document).ready(function() {
             emptyFilter.Guid = Guid.NewGuid();
             dataViewFilter.ChildFilters.Add( emptyFilter );
 
+            BindIncludeDeceasedControl( etpEntityType.SelectedEntityTypeId );
+
             CreateFilterControl( etpEntityType.SelectedEntityTypeId, dataViewFilter, true, rockContext );
+        }
+
+        /// <summary>
+        /// Creates the filter control.
+        /// </summary>
+        /// /// <param name="sender">The source of the event.</param>
+        /// <param name="filteredEntityTypeId">The filtered entity type identifier.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [editable].</param>
+        private void BindIncludeDeceasedControl( int? filteredEntityTypeId, bool includeDeceased = false )
+        {
+            if ( filteredEntityTypeId.HasValue )
+            {
+                var filteredEntityType = EntityTypeCache.Get( filteredEntityTypeId.Value );
+                if ( filteredEntityType != null )
+                {
+                    var isPersonDataView = filteredEntityType.Id == EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
+                    cbIncludeDeceased.Visible = isPersonDataView;
+                    if ( isPersonDataView )
+                    {
+                        cbIncludeDeceased.Checked = includeDeceased;
+                    }
+                    else
+                    {
+                        cbIncludeDeceased.Checked = false;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Persisted Schedule Settings
+
+        /// <summary>
+        /// Specifies the intervals at which the data view can be persisted.
+        /// </summary>
+        public enum DataViewPersistenceIntervalSpecifier
+        {
+            None = 0,
+            Minutes = 1,
+            Hours = 2,
+            Days = 3
+        }
+
+        // Binding fields for controls.
+        private bool _PersistenceIsEnabled = false;
+        private int _PersistedScheduleIntervalMaxValue = 0;
+        private int _PersistedScheduleIntervalCurrentValue = 0;
+        private DataViewPersistenceIntervalSpecifier _PersistedScheduleUnit = DataViewPersistenceIntervalSpecifier.None;
+
+        private const int MinutesPerDay = 1440;
+        private const int MinutesPerHour = 60;
+
+        /// <summary>
+        /// Set and validate the persistence schedule settings.
+        /// </summary>
+        /// <param name="isEnabled"></param>
+        /// <param name="persistedScheduleIntervalMinutes"></param>
+        /// <param name="scheduleUnit">The schedule unit, or null if the unit should be determined by the interval.</param>
+        private void SetPersistenceScheduleFromInterval( bool isEnabled, int? persistedScheduleIntervalMinutes, DataViewPersistenceIntervalSpecifier? scheduleUnit )
+        {
+            _PersistenceIsEnabled = isEnabled;
+
+            _PersistedScheduleIntervalCurrentValue = 0;
+            
+            if ( _PersistenceIsEnabled )
+            {
+                // If persistence is enabled with no period or interval, set defaults.
+                if ( persistedScheduleIntervalMinutes.GetValueOrDefault( 0 ) == 0 )
+                {
+                    scheduleUnit = DataViewPersistenceIntervalSpecifier.Hours;
+                    persistedScheduleIntervalMinutes = 12 * MinutesPerHour;
+                }
+
+                // If no schedule unit is selected, set the default.
+                if ( scheduleUnit == DataViewPersistenceIntervalSpecifier.None )
+                {
+                    scheduleUnit = DataViewPersistenceIntervalSpecifier.Hours;
+                }
+
+                // If no schedule unit is specified, determine the most appropriate unit based on the interval length.
+                if ( scheduleUnit == null )
+                {
+                    var minutes = persistedScheduleIntervalMinutes.GetValueOrDefault( 0 );
+
+                    _PersistedScheduleIntervalCurrentValue = minutes;
+
+                    if ( minutes % MinutesPerDay == 0 )
+                    {
+                        // Total minutes is a whole number of days.
+                        scheduleUnit = DataViewPersistenceIntervalSpecifier.Days;
+
+                        _PersistedScheduleIntervalCurrentValue = minutes / MinutesPerDay;
+                    }
+                    else if ( minutes % MinutesPerHour == 0 )
+                    {
+                        // Total minutes is a whole number of hours.
+                        scheduleUnit = DataViewPersistenceIntervalSpecifier.Hours;
+
+                        _PersistedScheduleIntervalCurrentValue = minutes / MinutesPerHour;
+                    }
+                    else if ( minutes > MinutesPerDay )
+                    {
+                        // Round to the nearest day.
+                        scheduleUnit = DataViewPersistenceIntervalSpecifier.Days;
+
+                        _PersistedScheduleIntervalCurrentValue = minutes / MinutesPerDay;
+                    }
+                    else if ( minutes > MinutesPerHour )
+                    {
+                        // Round to the nearest hour.
+                        scheduleUnit = DataViewPersistenceIntervalSpecifier.Hours;
+
+                        _PersistedScheduleIntervalCurrentValue = minutes / MinutesPerHour;
+                    }
+                    else
+                    {
+                        // Default to a measure of minutes.
+                        scheduleUnit = DataViewPersistenceIntervalSpecifier.Minutes;
+                    }
+                }
+
+                _PersistedScheduleUnit = scheduleUnit.GetValueOrDefault( DataViewPersistenceIntervalSpecifier.Hours );
+
+                if ( _PersistedScheduleIntervalCurrentValue == 0 )
+                {
+                    _PersistedScheduleIntervalCurrentValue = persistedScheduleIntervalMinutes ?? rsPersistedScheduleInterval.SelectedValue.GetValueOrDefault( 0 );
+                }
+
+                if ( _PersistedScheduleUnit == DataViewPersistenceIntervalSpecifier.Days )
+                {
+                    _PersistedScheduleIntervalMaxValue = 31;
+                }
+                else if ( _PersistedScheduleUnit == DataViewPersistenceIntervalSpecifier.Minutes )
+                {
+                    _PersistedScheduleIntervalMaxValue = 59;
+                }
+                else
+                {
+                    _PersistedScheduleIntervalMaxValue = 23;
+                }
+
+                if ( _PersistedScheduleIntervalCurrentValue > _PersistedScheduleIntervalMaxValue )
+                {
+                    _PersistedScheduleIntervalCurrentValue = _PersistedScheduleIntervalMaxValue;
+                }
+            }
+
+            BindViewToModelProperties();
+        }
+
+        /// <summary>
+        /// Update the view controls to synchronise with the model.
+        /// </summary>
+        private void BindViewToModelProperties()
+        {
+            // Bind the persistence view controls to the model.
+            if ( _PersistedScheduleUnit == DataViewPersistenceIntervalSpecifier.None )
+            {
+                bgPersistedScheduleUnit.SelectedValue = null;
+            }
+            else
+            {
+                bgPersistedScheduleUnit.SelectedValue = _PersistedScheduleUnit.ConvertToInt().ToString();
+            }
+
+            swPersistDataView.Checked = _PersistenceIsEnabled;
+            pnlSpeedSettings.Visible = _PersistenceIsEnabled;
+
+            if ( _PersistenceIsEnabled )
+            {
+                rsPersistedScheduleInterval.MinValue = 1;
+                rsPersistedScheduleInterval.MaxValue = _PersistedScheduleIntervalMaxValue;
+                rsPersistedScheduleInterval.SelectedValue = _PersistedScheduleIntervalCurrentValue;
+            }
+        }
+
+        /// <summary>
+        /// Calculates the persistence schedule interval for the current settings.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetPersistedScheduleIntervalMinutes()
+        {
+            bool isEnabled = swPersistDataView.Checked;
+
+            if ( !isEnabled )
+            {
+                return null;
+            }
+
+            if ( _PersistedScheduleUnit == DataViewPersistenceIntervalSpecifier.None )
+            {
+                return null;
+            }
+
+            var interval = _PersistedScheduleIntervalCurrentValue;
+
+            if ( _PersistedScheduleUnit == DataViewPersistenceIntervalSpecifier.Days )
+            {
+                interval = interval * MinutesPerDay;
+            }
+            else if ( _PersistedScheduleUnit == DataViewPersistenceIntervalSpecifier.Hours )
+            {
+                interval = interval * MinutesPerHour;
+            }
+
+            return interval;
+        }
+
+        /// <summary>
+        /// Set the fields and properties of the view model from the controls in the view.
+        /// </summary>
+        private void SetModelPropertiesFromView()
+        {
+            _PersistedScheduleUnit = bgPersistedScheduleUnit.SelectedValueAsEnum<DataViewPersistenceIntervalSpecifier>( DataViewPersistenceIntervalSpecifier.None );
+            _PersistedScheduleIntervalCurrentValue = rsPersistedScheduleInterval.SelectedValue.GetValueOrDefault( 12 );
+            _PersistenceIsEnabled = swPersistDataView.Checked;
+        }
+
+        /// <summary>
+        /// Set the enabled state of the persisted schedule.
+        /// </summary>
+        /// <param name="isEnabled"></param>
+        private void SetPersistedScheduleEnabledState( bool isEnabled )
+        {
+            SetPersistenceScheduleFromInterval( isEnabled, _PersistedScheduleIntervalCurrentValue, _PersistedScheduleUnit );
+        }
+
+        /// <summary>
+        /// Set the unit in which the persisted schedule is measured.
+        /// </summary>
+        /// <param name="unit"></param>
+        private void SetPersistedScheduleUnit( DataViewPersistenceIntervalSpecifier unit )
+        {
+            SetPersistenceScheduleFromInterval( true, _PersistedScheduleIntervalCurrentValue, unit );
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the swPersistDataView control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void swPersistDataView_CheckedChanged( object sender, EventArgs e )
+        {
+            SetPersistedScheduleEnabledState( _PersistenceIsEnabled );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the bgPersistedScheduleUnit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void bgPersistedScheduleUnit_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var unit = bgPersistedScheduleUnit.SelectedValueAsEnum<DataViewPersistenceIntervalSpecifier>( DataViewPersistenceIntervalSpecifier.None );
+
+            SetPersistedScheduleUnit( unit );
         }
 
         #endregion

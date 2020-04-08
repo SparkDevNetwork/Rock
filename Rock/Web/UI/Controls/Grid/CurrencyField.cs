@@ -14,9 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls

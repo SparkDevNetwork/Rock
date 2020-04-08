@@ -16,10 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -172,7 +171,7 @@ namespace Rock.Web.Cache
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "No Longer Supported" )]
+        [Obsolete( "No Longer Supported", true )]
         public static LavaShortcodeCache Read( string tagName, RockContext rockContext = null )
         {
             return LavaShortcodeCache.All().Where( c => c.TagName == tagName ).FirstOrDefault();

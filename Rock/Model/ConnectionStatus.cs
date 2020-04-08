@@ -14,9 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -83,6 +80,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsDefault { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether choosing this Status will set the Request's State to Inactive.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this will set the State to Inactive; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AutoInactivateState { get; set; } = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

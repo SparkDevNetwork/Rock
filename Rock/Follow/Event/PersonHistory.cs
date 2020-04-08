@@ -15,18 +15,16 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 using Rock;
-using Rock.Data;
-using Rock.Follow;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using System.Collections.Generic;
 
 namespace Rock.Follow.Event
 {

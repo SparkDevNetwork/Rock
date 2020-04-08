@@ -49,6 +49,12 @@ namespace Rock.Client
         /// <summary />
         public bool IsSystem { get; set; }
 
+        /// <summary />
+        public string LayoutMobilePhone { get; set; }
+
+        /// <summary />
+        public string LayoutMobileTablet { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -98,6 +104,8 @@ namespace Rock.Client
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsSystem = source.IsSystem;
+            this.LayoutMobilePhone = source.LayoutMobilePhone;
+            this.LayoutMobileTablet = source.LayoutMobileTablet;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.SiteId = source.SiteId;
