@@ -2,20 +2,22 @@
 # Integration Tests
 The goal of this project is to be a permanent place to store tests that require things such as a database context to fetch data, configuration settings, save data, etc.  At the moment, you (the developer) will run these tests when needed, but ultimately our automated build system (AppVeyor) will automatically run all these tests after every commit (or push to a particular branch). 
 
-> *NOTE: Use a fresh database with the PowerTools &gt; SampleData loaded so we all are testing against the same expected sample data.  If your test needs different data, you are responsible for adding it and cleaning it up as to not interfere with other tests.*
-
-> *A Rock.SampleData project is currently under construction, which will replace the PowerTools &gt; SampleData block. It will contain all of the actions needed to populate a new Rock database with a rich set of sample data, suitable for developer and QA testing. The database created by Rock.SampleData will contain all of the well-known data required to complete the integration tests contained in this project.*
-
-## Setup Instructions
-
-1. Create an `app.ConnectionStrings.config` file in this project.
-2. Set the "Copy to Output Directory" property to "Copy always".
-3. Under menu Test > Test Settings, choose "Select Test Settings File" and select the `run.testsettings` file in the project.
-![test settings](https://rockrms.blob.core.windows.net/public-images/githubdocs/vs-test-testsettings.png "In Visual Studio under Test Settings")
-![test settings file selection](https://rockrms.blob.core.windows.net/public-images/githubdocs/vs-test-testsettings-fileselection.png "found in the Rock.Tests.Integration project")
+> *We've merged in Daniel's changes [described here](https://github.com/SparkDevNetwork/Rock/issues/3227#issuecomment-583567407).*
 
 
-## MS Unit Test (vs XUnit)
+
+### Timings
+The very first initial run, meaning where it has to generate the archive, may take around 4 minutes.
+
+Once that archive is created, the very first call to ResetDatabase() takes about 30 seconds (this seems to be due to the fact it has to load a bunch of additional DLLs into memory).
+
+Subsequent calls to ResetDatabase() take about 6 seconds.
+
+### LocalDb
+Note that this change "requires" LocalDB so the concept of an app.ConnectionStrings.config goes out the window.
+
+
+## MS Test
 
 > If you're interested in a comparison of the three most popular test frameworks, see this chart: https://xunit.net/docs/comparisons.html
 
@@ -37,13 +39,20 @@ namespace Rock.Tests.Integration.Model
                 code = AttendanceCodeService.GetNew( 0, 0, 3, false );
             }
 
-            Assert.AreEqual( "100", code.Code );
+            Assert.That.AreEqual( "100", code.Code );
         }
     }
 }
 ```
 
-## MSTest LifeCycle
+### Test Methods
+
+Tests in this project use the "Assert.That.[Assertion]" pattern in preference to the standard "Assert.[Assertion]" pattern.
+eg. "Assert.That.AreEqual(a, b);" is preferred to "Assert.AreEqual(a, b);
+
+This is because "Assert.That" allows a consistent syntax for accessing both the standard MSBuild Assert methods and any custom extension methods we have added to extend the Assert functionality as needed.
+
+### MSTest LifeCycle
 
 The following decorators can give you more control over setup and cleanup for your test suite:
 
@@ -57,3 +66,19 @@ The following decorators can give you more control over setup and cleanup for yo
 
 ## Running a Test
 To run or debug a test, simply right-click the class name and choose `Run Tests` or `Debug Tests` -- but you should probably set a breakpoint in your test if you're going to select Debug Tests.  Alternatively you can choose the Test > Windows > Test Explorer from the menu to run tests a bit easier.
+
+# Test Rules
+
+Tests...
+
+1. should have method names that say what the test is testing .(ex: NumericCodesShouldNotContain911And666). If it fails, you should immediately know what is not working.
+2. must have at least one Assert.  ("No Assert, then it's not a test.")
+3. must test only one thing. However, you can Assert multiple things about that test to proof it's true.
+4. must not depend on the order that tests are run.
+5. must not depend on data that may have been destroyed by another test.
+6. must not destroy data that other tests are expecting.
+7. should not be overly complex with many layers. (KISS principle)
+8. shall not write to hard-coded folders. (C://foo/...)
+9. should always be able to run in a CI/CD (AppVeyor) environment and without specific/manual setup**.  (Otherwise mark manual tests as [Ignore])
+
+>     **Human only run-able tests (tests that require some specific environment or environment access) should be in a separate test project and class.
