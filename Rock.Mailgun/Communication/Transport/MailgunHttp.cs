@@ -48,8 +48,8 @@ namespace Rock.Communication.Transport
     [TextField( "Base URL", "The API URL provided by Mailgun, keep the default in most cases.", true, @"https://api.mailgun.net/v3", "", 0, "BaseURL" )]
     [TextField( "Resource", "The URL part provided by Mailgun, keep the default in most cases.", true, @"{domian}/messages", "", 1, "Resource" )]
     [TextField( "Domain", "The email domain (e.g. rocksolidchurchdemo.com).", true, "", "", 2, "Domain" )]
-    [TextField( "API Key", "The API Key provided by Mailgun (starts with \"key-\").", true, "", "", 3, "APIKey" )]
-    [BooleanField( "Track Opens", "", true, "", 4, "TrackOpens" )]
+    [TextField( "API Key", "The Private API Key provided by Mailgun.", true, "", "", 3, "APIKey" )]
+    [BooleanField( "Track Opens", "Allow Mailgun to track opens, clicks, and unsubscribes.", true, "", 4, "TrackOpens" )]
     [BooleanField( "Replace Unsafe Sender", "Defaults to \"Yes\".  If set to \"No\" Mailgun will allow relaying email \"on behalf of\" regardless of the sender's domain.  The safe sender list will still be used for adding a \"Sender\" header.", true, "", 5 )]
     public class MailgunHttp : TransportComponent
     {
