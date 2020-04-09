@@ -40,11 +40,13 @@ namespace com.bemaservices.DoorControl.DSX.Utility
             {
                 reservation.LoadAttributes();
                 List<DoorLockOverride> scheduledLocks = GetScheduleLocks( reservation, config );
+                List<DoorLockOverride> overrideLocks = GetOverrideLocksForAReservation( reservation, config, rockContext );
                 allLocks.AddRange( scheduledLocks );
+                allLocks.AddRange( overrideLocks );
             }
 
-            List<DoorLockOverride> overrideLocks = GetOverrideLocks( config, rockContext, reservationService );
-            allLocks.AddRange( overrideLocks );
+            //List<DoorLockOverride> overrideLocks = GetOverrideLocks( config, rockContext, reservationService );
+            //allLocks.AddRange( overrideLocks );
 
             // Process Campus Level Unlocks
             var campusUnlocks = GetCampusUnlocks( config );
@@ -184,6 +186,117 @@ namespace com.bemaservices.DoorControl.DSX.Utility
 
                     }
                     // Looping through configured overrides
+                }
+            }
+
+            return overrideLocks;
+        }
+        private static List<DoorLockOverride> GetOverrideLocksForAReservation( Reservation reservation, UpdateDoorLocks_Config config, RockContext rockContext )
+        {
+            AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
+            ScheduleService scheduleService = new ScheduleService( rockContext );
+
+            List<DoorLockOverride> overrideLocks = new List<DoorLockOverride>();
+            var reservationDoorOverridesTemplateGuid = Guid.Parse( com.bemaservices.DoorControl.DSX.SystemGuid.Attribute.RESERVATION_DOOR_OVERRIDES_ATTRIBUTEMATRIX );
+
+            reservation.LoadAttributes();
+            var attributeMatrixGuid = reservation.GetAttributeValue( "DoorOverrides" ).AsGuidOrNull();
+            if ( attributeMatrixGuid.HasValue )
+            {
+                var attributeMatrix = attributeMatrixService.Get( attributeMatrixGuid.Value );
+
+                foreach ( var attributeMatrixItem in attributeMatrix.AttributeMatrixItems )
+                {
+                    List<ReservationDateTime> dateTimes = new List<ReservationDateTime>();
+                    attributeMatrixItem.LoadAttributes();
+                    var scheduleGuid = attributeMatrixItem.AttributeValues.Where( x => x.Key == "Schedule" ).FirstOrDefault().Value.Value;
+                    var startDate = attributeMatrixItem.AttributeValues.Where( x => x.Key == "StartDateTime" ).FirstOrDefault().Value.Value;
+                    var endDate = attributeMatrixItem.AttributeValues.Where( x => x.Key == "EndDateTime" ).FirstOrDefault().Value.Value;
+
+                    var startDateTime = startDate.AsDateTime();
+                    var endDateTime = endDate.AsDateTime();
+                    if ( startDateTime != null && endDateTime != null )
+                    {
+                        var dateTime = new ReservationDateTime();
+                        dateTime.StartDateTime = startDateTime.Value;
+                        dateTime.EndDateTime = endDateTime.Value;
+                        dateTimes.Add( dateTime );
+                    }
+
+                    var schedule = scheduleService.Get( scheduleGuid.AsGuid() );
+                    if ( schedule != null )
+                    {
+                        DDay.iCal.Event calEvent = schedule.GetCalendarEvent();
+                        if ( calEvent != null && calEvent.DTStart != null )
+                        {
+                            var occurrences = ScheduleICalHelper.GetOccurrences( calEvent, config.DateToSync, config.DateToSync.AddDays( 1 ).AddMinutes( -1 ) );
+                            var result = occurrences
+                                .Where( a =>
+                                    a.Period != null &&
+                                    a.Period.StartTime != null &&
+                                    a.Period.EndTime != null )
+                                .Select( a => new ReservationDateTime
+                                {
+                                    StartDateTime = DateTime.SpecifyKind( a.Period.StartTime.Value, DateTimeKind.Local ),
+                                    EndDateTime = DateTime.SpecifyKind( a.Period.EndTime.Value, DateTimeKind.Local )
+                                } )
+                                .ToList();
+
+                            dateTimes.AddRange( result );
+                        }
+                    }
+
+                    if ( dateTimes.Any() )
+                    {
+                        var startAction = attributeMatrixItem.AttributeValues.Where( x => x.Key == "StartAction" ).FirstOrDefault().Value.Value;
+                        var endAction = attributeMatrixItem.AttributeValues.Where( x => x.Key == "EndAction" ).FirstOrDefault().Value.Value;
+
+                        // Fetching Actions from DefinedValue Cache
+                        startAction = DefinedValueCache.Get( startAction ).Value;
+                        endAction = DefinedValueCache.Get( endAction ).Value;
+
+                        // Looping through locations
+
+                        foreach ( var reservationLocation in reservation.ReservationLocations )
+                        {
+                            var location = reservationLocation.Location;
+                            location.LoadAttributes();
+                            var overrideGroup = location.GetAttributeValue( AttributeCache.Get( config.OverrideLocationAttribute ).Key ).AsIntegerOrNull();
+                            var roomName = location.GetAttributeValue( AttributeCache.Get( config.RoomNameLocationAttribute ).Key );
+
+                            if ( overrideGroup == null )
+                            {
+                                // Can't do anything if no Override Group is specified
+                                var newException = new Exception(
+                                    string.Format( @"The Location '{0} ({1})' does not have an Override Group specified.
+                                            Please configure this to allow Rock to manipulate your door locks.",
+                                                    location.Name,
+                                                    location.Id
+                                    )
+                                );
+                                ExceptionLogService.LogException( newException );
+                            }
+                            else
+                            {
+                                foreach ( var dateTime in dateTimes )
+                                {
+                                    var newDoorOverride = new DoorLockOverride
+                                    {
+                                        StartTime = dateTime.StartDateTime.RoundToNearest( TimeSpan.FromMinutes( 15 ) ),
+                                        StartTimeAction = ( DoorLockActions ) Enum.Parse( typeof( DoorLockActions ), startAction ),
+                                        EndTime = dateTime.EndDateTime.RoundToNearest( TimeSpan.FromMinutes( 15 ) ),
+                                        EndTimeAction = ( DoorLockActions ) Enum.Parse( typeof( DoorLockActions ), endAction ),
+                                        ReservationId = reservation.Id,
+                                        LocationId = location.Id,
+                                        OverrideGroup = overrideGroup.Value,
+                                        RoomName = roomName
+                                    };
+
+                                    overrideLocks.Add( newDoorOverride );
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -659,7 +772,7 @@ namespace com.bemaservices.DoorControl.DSX.Utility
     {
         public DateTime DateToSync { get; set; }
         public Guid OverrideLocationAttribute { get; set; }
-        public Guid ProcessDoorLockAttribute {get;set;}
+        public Guid ProcessDoorLockAttribute { get; set; }
         public Guid OverrideGroupAttribute { get; set; }
         public Guid SharedLocationAttribute { get; set; }
         public string DSXConnectionString { get; set; }
