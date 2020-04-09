@@ -1,0 +1,485 @@
+﻿<html>
+<head>
+
+<style>
+table, tr, td, th, tbody, thead, tfoot {
+    page-break-inside: avoid !important;
+        font-size: 12px;
+}
+
+.table>thead>tr>th {
+    background:none;
+}
+
+.tr-header {
+    border:none;
+    background:#ee7624; /* orange */
+}
+
+.tr-header th {
+    border:none !important;
+    color:#fff !important;
+}
+
+.top-table-header h3 {
+    margin:0px;
+    font-size:34px;
+    text-transform: uppercase;
+}
+
+.top-table-header {
+    background:none;
+    border:none;
+}
+
+.top-table-header th {
+    background:none !Important;
+    border:none !important;
+    text-align:center;
+}
+
+.td-total {
+     background:#999;
+     text-align:right;
+     color:#fff !important;
+     font-weight:bold;
+}
+
+.td-total-number {
+     background:#777;
+     text-align:left;
+     color:#fff !important;
+     font-weight:bold;
+}
+
+@media print {
+    table tbody tr td:before,
+    table tbody tr td:after {
+        content : "" ;
+        height : 4px ;
+        display : block ;
+    }
+}
+</style>
+
+
+<script src="/Plugins/com_bemaservices/BarcodeAttendance/Scripts/JsBarcode-master/dist/JsBarcode.all.min.js"></script>
+
+</head>
+
+<body>
+
+<!-- Run SQL to get groups (or any other set of information), must have "Id" column-->
+
+<!-- If Combined Classes is no, run as each seperate group sheet. If yes, run second report -->
+
+{% assign combineClasses = 'Global' | PageParameter:'CombineClasses' %}
+{% if combineClasses != 'Yes' %}
+
+    {% sql return:'data' %}
+
+        select g.Id
+        from [Group] g
+        where g.IsActive = 1
+        and g.id in ({{ PageParameter.GroupIds }})
+        Order By g.Name asc
+    
+    {% endsql %}
+
+
+    {% for item in data %}
+
+    <!-- Set groupid to lava entity --> 
+    {% assign group = item.Id | GroupById %}
+
+    <div class="content">
+        <div class="table-responsive">
+        <table class="table">
+    
+            <thead>
+        
+                <tr class="top-table-header" >
+                    <!-- Repeatable header content (repeats per page)-->
+                    <th colspan="5">   <!-- Set to the number of columns --> 
+                        <h3>{{ group.Name }}</h3>
+                        <small>Printed by <i>{{ CurrentPerson.FullName }}</i> on {{ 'Now' | Date:'M/d/yyyy' }} <small>
+  
+                        <hr/>
+                    </th>
+                </tr>
+            
+                <tr class="tr-header " >
+                     <th>Name</th>
+                     <th>Person</th>
+                     <th>Other</th>
+                     <th>Contact</th>
+                     <th>Recent Attendance (Last 5)</th>
+                </tr>
+            
+            </thead>
+    
+            <tbody>
+                {% sql return:'groupMembers' %}
+                    SELECT
+                	     G.Id AS [GroupId]
+                	    , P.Id
+                	    , p.LastName
+                	    , p.NickName
+                	    , G.Name AS [GroupName]
+                	    , gm.GroupMemberStatus
+                	    , gtr.Name as [Role]
+                	    , dbo.ufnUtility_GetPrimaryPersonAliasId(p.id) AS [ForBarCode]
+                    FROM [Group] G
+                	    LEFT JOIN [GroupLocation] GL ON GL.GroupId = G.Id
+                	    JOIN [GroupMember] GM ON GM.GroupId = G.Id
+                	    JOIN [GroupTypeRole] GTR ON GTR.Id = GM.GroupRoleId 
+                	    JOIN [Person] P ON P.Id = GM.PersonId
+                    WHERE G.Id = {{ group.Id }}
+                    and gm.GroupMemberStatus = 1
+                    And GM.IsArchived = 0
+                    ORDER BY P.LastName, P.NickName
+                {% endsql %}
+            
+                {% for item in groupMembers %}
+               
+                            {% assign person = item.Id | PersonById %}
+            
+                            <!--Calculate Totals-->
+                                {% if forloop.first %}
+                                    {% assign totalMoney = 1 %}
+                                {% else %}
+                                    {% assign totalMoney = totalMoney | Plus:1 %}
+                                {% endif %}
+                                        
+                            <!--Test for row color-->
+                            {% assign rowTest = forloop.index | Modulo:2 %}
+                
+                            {% if rowTest == 1 %}
+                                <tr style="background:#f9f9f9">
+                            {% else %}
+                                <tr>
+                            {% endif %}
+                        
+                                    <!-- Column content -->
+                                    <td><b>{{ person.LastName }}, {{ person.NickName }}</b> ({{ item.Role }}) <br/>
+                                        <small>{{ person | Address:'Home','[[Street1]] [[Street2]] [[City]],<br/> [[State]] [[PostalCode]]' }}</small></td> 
+                                    <td width="20%" align="center">
+                    					    <svg class="barcode"
+                    						    jsbarcode-format="code39"
+                    						    jsbarcode-value="{{ item.ForBarCode }}"
+                    						    jsbarcode-textmargin="0"
+                    						    jsbarcode-width="1"
+                    						    jsbarcode-height="40"
+                    						    jsbarcode-displayValue="false"
+                    						    jsbarcode-fontsize="13">
+                    					    </svg>
+                    					    {{ item.ForBarCode }}
+                    			        </td>
+                                    <td> {{ person.Gender }}<br/>
+                                    B/day: {{ person.BirthDate | Date:'M/d' }}
+                                    </td> 
+                                
+                                    <td>{{ person | PhoneNumber:'Home Phone' }} (H) <br/>
+                                    {{ person.Email }}</td> 
+                                
+                                         {% sql return:'lastAttendance' %}
+                                            select top(5) convert(varchar(10), a.StartDateTime, 101) as [StartTime]
+                                            from Attendance a 
+				                            inner join AttendanceOccurrence ao on ao.Id = a.OccurrenceId
+                                            inner join PersonAlias pa on pa.Id = a.PersonAliasId
+                                            where pa.PersonId = {{person.Id}}
+                                            and a.DidAttend = 1
+                                            and ao.GroupId = {{ group.Id }}
+                                            order by a.StartDateTime desc
+                                        {% endsql %}
+                                
+                                    <td>
+                                    {% for item in lastAttendance %}
+                                        {{ item.StartTime }}
+                                    {% endfor %}
+                                    </td> 
+                          
+    
+                                </tr>
+                        
+                            {% endfor %}
+     
+            </tbody>
+        
+        </table>
+        </div>
+    </div>
+
+    <!--Page break after each group-->
+    <div style="page-break-after:always;"></div>
+
+      <table class="table">
+    
+            <thead>
+        
+                <tr class="top-table-header" >
+                    <!-- Repeatable header content (repeats per page)-->
+                    <th colspan="4">   <!-- Set to the number of columns --> 
+                        <h3>{{ group.Name }} - Attendance Summary</h3>
+                        <small>Printed by <i>{{ CurrentPerson.FullName }}</i> on {{ 'Now' | Date:'M/d/yyyy' }}  </strong><small>
+  
+                        <hr/>
+                    </th>
+                </tr>
+        </table>
+
+            <table cellpadding="20">
+                <col width="40">
+                <col width="140">
+                <col width="680">
+                <tr>
+                    <td></td>
+                    <td><strong>Total Enrolled: {{ totalMoney }}</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>Members Present</b></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>New Members Present</b> </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>First Time Visitors Present</b> </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>Repeat Visitors Present</b></td>
+                </tr>
+            
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>Total Present</b></td>
+                </tr>
+            </table>
+        
+        
+            <div style="page-break-after:always;"></div>
+
+    {% endfor %}
+
+<!-- Else combine groups into one sheet -->
+
+{% else %}
+
+
+    {% sql return:'data' %}
+
+        select gt.Id
+        from [Group] g
+        inner join [GroupType] gt ON g.GroupTypeId = gt.Id
+        where g.IsActive = 1
+        and g.Id in ({{ PageParameter.GroupIds }})
+        group by gt.Id
+    
+    {% endsql %}
+
+
+    {% for item in data %}
+
+    {% grouptype id:'{{item.Id}}' %}
+        {% assign groupType = grouptype %}
+    {% endgrouptype %}
+
+    <div class="content">
+        <div class="table-responsive">
+        <table class="table">
+    
+            <thead>
+        
+                <tr class="top-table-header" >
+                    <!-- Repeatable header content (repeats per page)-->
+                    <th colspan="5">   <!-- Set to the number of columns --> 
+                        <h3>{{ groupType.Name }}</h3>
+                        <small>Printed by <i>{{ CurrentPerson.FullName }}</i> on {{ 'Now' | Date:'M/d/yyyy' }} <small>
+  
+                        <hr/>
+                    </th>
+                </tr>
+            
+                <tr class="tr-header " >
+                     <th>Name</th>
+                     <th>Person</th>
+                     <th>Other</th>
+                     <th>Contact</th>
+                     <th>Recent Attendance (Last 5)</th>
+                </tr>
+            
+            </thead>
+    
+            <tbody>
+                {% sql return:'groupMembers' %}
+                    SELECT
+                	     G.Id AS [GroupId]
+                	    , P.Id
+                	    , p.LastName
+                	    , p.NickName
+                	    , G.Name AS [GroupName]
+                	    , gm.GroupMemberStatus
+                	    , gtr.Name as [Role]
+                	    , dbo.ufnUtility_GetPrimaryPersonAliasId(p.id) AS [ForBarCode]
+                    FROM [Group] G
+                	    LEFT JOIN [GroupLocation] GL ON GL.GroupId = G.Id
+                	    JOIN [GroupMember] GM ON GM.GroupId = G.Id
+                	    JOIN [GroupTypeRole] GTR ON GTR.Id = GM.GroupRoleId 
+                	    JOIN [Person] P ON P.Id = GM.PersonId
+                    WHERE G.Id IN ({{ PageParameter.GroupIds }})
+                    AND gm.GroupMemberStatus = 1
+                    And GM.IsArchived = 0
+                    ORDER BY P.LastName, P.NickName
+                {% endsql %}
+            
+                {% for item in groupMembers %}
+               
+                            {% assign person = item.Id | PersonById %}
+                            {% assign group = item.GroupId | GroupById %}
+            
+                            <!--Calculate Totals-->
+                                {% if forloop.first %}
+                                    {% assign totalMoney = 1 %}
+                                {% else %}
+                                    {% assign totalMoney = totalMoney | Plus:1 %}
+                                {% endif %}
+                                        
+                            <!--Test for row color-->
+                            {% assign rowTest = forloop.index | Modulo:2 %}
+                
+                            {% if rowTest == 1 %}
+                                <tr style="background:#f9f9f9">
+                            {% else %}
+                                <tr>
+                            {% endif %}
+                        
+                                    <!-- Column content -->
+                                    <td><b>{{ person.LastName }}, {{ person.NickName }}</b> ({{ item.Role }}) <br/>
+                                        <small>{{ person | Address:'Home','[[Street1]] [[Street2]] [[City]],<br/> [[State]] [[PostalCode]]' }}</small></td> 
+                                    <td width="20%" align="center">
+                    					    <svg class="barcode"
+                    						    jsbarcode-format="code39"
+                    						    jsbarcode-value="{{ item.ForBarCode }}"
+                    						    jsbarcode-textmargin="0"
+                    						    jsbarcode-width="1"
+                    						    jsbarcode-height="40"
+                    						    jsbarcode-displayValue="false"
+                    						    jsbarcode-fontsize="13">
+                    					    </svg>
+                    					    {{ item.ForBarCode }}
+                    			        </td>
+                                    <td> {{ person.Gender }}<br/>
+                                    B/day: {{ person.BirthDate | Date:'M/d' }}
+                                    </td> 
+                                
+                                    <td>{{ person | PhoneNumber:'Home Phone' }} (H) <br/>
+                                    {{ person.Email }}</td> 
+                                
+                                         {% sql return:'lastAttendance' %}
+                                            select top(5) convert(varchar(10), a.StartDateTime, 101) as [StartTime]
+                                            from Attendance a 
+				                            inner join AttendanceOccurrence ao on ao.Id = a.OccurrenceId
+                                            inner join PersonAlias pa on pa.Id = a.PersonAliasId
+                                            where pa.PersonId = {{person.Id}}
+                                            and a.DidAttend = 1
+                                            and ao.GroupId = {{ group.Id }}
+                                            order by a.StartDateTime desc
+                                        {% endsql %}
+                                
+                                    <td>
+                                    <b>{{ group.Name }}</b> 
+                                    {% for item in lastAttendance %}
+                                        <br/>{{ item.StartTime }}
+                                    {% endfor %}
+                                    </td> 
+                          
+    
+                                </tr>
+                        
+                            {% endfor %}
+     
+            </tbody>
+        
+        </table>
+        </div>
+    </div>
+
+    <!--Page break after each group-->
+    <div style="page-break-after:always;"></div>
+
+      <table class="table">
+    
+            <thead>
+        
+                <tr class="top-table-header" >
+                    <!-- Repeatable header content (repeats per page)-->
+                    <th colspan="4">   <!-- Set to the number of columns --> 
+                        <h3>{{ groupType.Name }} - Attendance Summary</h3>
+                        <small>Printed by <i>{{ CurrentPerson.FullName }}</i> on {{ 'Now' | Date:'M/d/yyyy' }}  </strong><small>
+  
+                        <hr/>
+                    </th>
+                </tr>
+        </table>
+
+            <table cellpadding="20">
+                <col width="40">
+                <col width="140">
+                <col width="680">
+                <tr>
+                    <td></td>
+                    <td><strong>Total Enrolled: {{ totalMoney }}</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>Members Present</b></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>New Members Present</b> </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>First Time Visitors Present</b> </td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>Repeat Visitors Present</b></td>
+                </tr>
+            
+                <tr>
+                    <td></td>
+                    <td>________________</td>
+                    <td><b>Total Present</b></td>
+                </tr>
+            </table>
+        
+        
+            <div style="page-break-after:always;"></div>
+
+    {% endfor %}
+
+
+<!-- End combineclasses if else -->
+{% endif %}
+
+	<script>
+		JsBarcode(".barcode").init();
+	</script>
+
+</body>
+</html>
