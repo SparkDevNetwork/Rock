@@ -82,6 +82,9 @@
     <Compile Include="Constants\Constants.cs" />
     <Compile Include="Constants\TestGuids.cs" />
     <Compile Include="TestFramework\AssertExtensions.cs" />
+    <Compile Include="TestFramework\CollectionAssertExtensions.cs" />
+    <Compile Include="TestFramework\FileAssertExtensions.cs" />
+    <Compile Include="TestFramework\xUnitAssertExtensions.cs" />
     <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />

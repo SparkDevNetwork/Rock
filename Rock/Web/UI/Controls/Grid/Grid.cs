@@ -215,6 +215,33 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        private bool _showPaginationText = true;
+        /// <summary>
+        /// Gets or sets a value indicating whether the grid should show pagination text.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> show pagination text; otherwise don't default is true, <c>false</c>.
+        /// </value>
+        public bool ShowPaginationText
+        {
+            get
+            {
+                return _showPaginationText;
+            }
+            set
+            {
+                _showPaginationText = value;
+                if ( PagerTemplate != null )
+                {
+                    var pageTemplate = PagerTemplate as PagerTemplate;
+                    if(pageTemplate != null )
+                    {
+                        pageTemplate.ShowPaginationText = value;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Gets or sets the export source.
         /// </summary>
@@ -834,6 +861,8 @@ namespace Rock.Web.UI.Controls
 
             _pagerTemplate.NavigateClick += pagerTemplate_NavigateClick;
             _pagerTemplate.ItemsPerPageClick += pagerTemplate_ItemsPerPageClick;
+
+            _pagerTemplate.ShowPaginationText = ShowPaginationText;
 
             this.PagerTemplate = _pagerTemplate;
 
@@ -4296,6 +4325,8 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
         /// </value>
         internal HtmlGenericControl NavigationPanel { get; set; }
 
+        internal bool ShowPaginationText { get; set; }
+
         /// <summary>
         /// Gets or sets the page link list item.
         /// </summary>
@@ -4519,7 +4550,7 @@ $('#{this.ClientID} .grid-select-cell').on( 'click', function (event) {{
             }
 
             // Set Item Count
-            if ( itemCountDisplay != null )
+            if ( itemCountDisplay != null && ShowPaginationText )
             {
                 itemCountDisplay.Text = string.Format( "{0:N0} {1}", itemCount, itemCount == 1 ? rowItemText : rowItemText.Pluralize() );
             }

@@ -16,18 +16,19 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using Rock;
-using Rock.Model;
-using Rock.Web.UI.Controls;
-using System.Configuration;
 using Microsoft.Web.XmlTransform;
+using Rock;
+using Rock.Logging;
+using Rock.Model;
 using Rock.SystemKey;
-using System.Threading.Tasks;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -94,9 +95,6 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 ShowDetails();
-
-
-
             }
 
             lTitle.Text = ( "Edit System Configuration" ).FormatAsHtmlTitle();
@@ -108,6 +106,9 @@ namespace RockWeb.Blocks.Administration
         private void ShowDetails()
         {
             BindGeneralConfiguration();
+
+            BindLoggingSettings();
+
             BindTimeZones();
 
             BindOtherAppSettings();
@@ -190,6 +191,41 @@ namespace RockWeb.Blocks.Administration
                 nbMessage.Text = "You will need to reload this page to continue.";
             }
         }
+
+        protected void btnLoggingSave_Click( object sender, EventArgs e )
+        {
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            nbLoggingMessage.Visible = true;
+
+            var logConfig = new RockLogSystemSettings
+            {
+                LogLevel = rblVerbosityLevel.SelectedValue.ConvertToEnum<RockLogLevel>( RockLogLevel.Off ),
+                DomainsToLog = cblDomainsToLog.SelectedValues,
+                MaxFileSize = txtMaxFileSize.Text.AsInteger(),
+                NumberOfLogFiles = txtFilesToRetain.Text.AsInteger()
+            };
+
+            Rock.Web.SystemSettings.SetValue( SystemSetting.ROCK_LOGGING_SETTINGS, logConfig.ToJson() );
+
+            nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbLoggingMessage.Title = string.Empty;
+            nbLoggingMessage.Text = "Setting saved successfully.";
+        }
+
+        protected void btnLoggingFlush_Click( object sender, EventArgs e )
+        {
+            nbLoggingMessage.Visible = true;
+
+            RockLogger.Log.Close();
+
+            nbLoggingMessage.NotificationBoxType = NotificationBoxType.Success;
+            nbLoggingMessage.Title = string.Empty;
+            nbLoggingMessage.Text = "The buffered logs were successfully flushed out to the log file.";
+        }
         #endregion
 
         #region Methods
@@ -202,6 +238,32 @@ namespace RockWeb.Blocks.Administration
             cbEnableMultipleTimeZone.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean();
         }
 
+        private void BindLoggingSettings()
+        {
+            var logLevel = Enum.GetNames( typeof( RockLogLevel ) );
+            rblVerbosityLevel.DataSource = logLevel;
+            rblVerbosityLevel.DataBind();
+
+            var rockConfig = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
+
+            if ( rockConfig == null )
+            {
+                return;
+            }
+
+            rblVerbosityLevel.SelectedValue = rockConfig.LogLevel.ToString();
+            txtFilesToRetain.Text = rockConfig.NumberOfLogFiles.ToString();
+            txtMaxFileSize.Text = rockConfig.MaxFileSize.ToString();
+
+            var definedValues = new DefinedValueService( new Rock.Data.RockContext() ).GetByDefinedTypeGuid( Rock.SystemGuid.DefinedType.LOGGING_DOMAINS.AsGuid() );
+
+            cblDomainsToLog.DataSource = definedValues.ToList();
+            cblDomainsToLog.DataTextField = "Value";
+            cblDomainsToLog.DataValueField = "Value";
+            cblDomainsToLog.DataBind();
+
+            cblDomainsToLog.SetValues( rockConfig.DomainsToLog );
+        }
         /// <summary>
         /// Bind the available time zones and select the one that's configured in the
         /// web.config's OrgTimeZone setting.
@@ -239,9 +301,6 @@ namespace RockWeb.Blocks.Administration
             {
                 // MaxRequestLength is in KB, so let's convert to MB for the users sake.
                 numbMaxSize.Text = ( section.MaxRequestLength / 1024 ).ToString();
-                // requestLengthDiskThreshold is in bytes and the MaxRequestLength must not be less than this value.
-                //numbMaxSize.MinimumValue = Math.Round(section.RequestLengthDiskThreshold * 10.48576, 0 ).ToString();
-                //numbMaxSize.ToolTip = string.Format( "between {0} and {1} MB", section.RequestLengthDiskThreshold, numbMaxSize.MaximumValue );
             }
         }
 
@@ -337,7 +396,7 @@ namespace RockWeb.Blocks.Administration
 
                 nbStartDayOfWeekSaveMessage.NotificationBoxType = NotificationBoxType.Success;
                 nbStartDayOfWeekSaveMessage.Title = string.Empty;
-                nbStartDayOfWeekSaveMessage.Text = string.Format("Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString());
+                nbStartDayOfWeekSaveMessage.Text = string.Format( "Start Day of Week is now set to <strong>{0}</strong>. ", dowpStartingDayOfWeek.SelectedDayOfWeek.ConvertToString() );
             }
         }
     }

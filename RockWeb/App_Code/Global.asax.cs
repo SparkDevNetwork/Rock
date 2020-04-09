@@ -44,6 +44,7 @@ using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Jobs;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Plugin;
 using Rock.Transactions;
@@ -623,6 +624,8 @@ namespace RockWeb
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
                 client.DownloadString( GetKeepAliveUrl() );
+
+                RockLogger.Log.Close();
             }
             catch
             {

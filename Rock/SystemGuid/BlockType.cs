@@ -195,5 +195,9 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        /// <summary>
+        /// The log viewer
+        /// </summary>
+        public const string LOG_VIEWER = "6059FC03-E398-4359-8632-909B63FFA550";
     }
 }

@@ -1023,6 +1023,12 @@ namespace Rock.SystemGuid
         public const string LOCATION_SERVICES = "1FD5698F-7279-463F-9637-9A80DB86BB86";
 
         /// <summary>
+        /// The login viewer
+        /// ParentPage: System Settings
+        /// </summary>
+        public const string LOG_VIEWER = "82EC7718-6549-4531-A0AB-7957919AE71C";
+
+        /// <summary>
         /// Gets the Login page guid
         /// ParentPage: Security
         /// </summary>

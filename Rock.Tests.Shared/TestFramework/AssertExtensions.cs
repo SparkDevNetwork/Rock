@@ -9,7 +9,7 @@ namespace Rock.Tests.Shared
     /// Extension methods for the MSTest Assert class.
     /// This class also re-implements the standard Assert methods so that they can be used with the "Assert.This" syntax.
     /// </summary>
-    public static class AssertExtensions
+    public static partial class AssertExtensions
     {
         public static void AreEqual<T>( this Assert assert, T expected, T actual )
         {
@@ -19,6 +19,12 @@ namespace Rock.Tests.Shared
         {
             Assert.AreEqual( expected, actual, ignoreCase );
         }
+
+        public static void Contains( this Assert assert, System.String value, System.String substring)
+        {
+            StringAssert.Contains( value, substring);
+        }
+
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )
         {
             Assert.AreEqual( expected, actual, delta );
@@ -227,65 +233,6 @@ namespace Rock.Tests.Shared
             Assert.ThrowsException<T>( action, message, parameters );
         }
 
-        #region Collection Assertions
-
-        public static void AreEqual<T>( this Assert assert, IEnumerable<T> expected, IEnumerable<T> actual )
-        {
-            CollectionAssert.AreEquivalent( expected.ToList(), actual.ToList() );
-        }
-        public static void AreEqual<T>( this Assert assert, List<T> expected, List<T> actual )
-        {
-            CollectionAssert.AreEquivalent( expected, actual );
-        }
-
-        public static void AreEqual( this Assert assert, IEnumerable<dynamic> expected, IEnumerable<dynamic> actual )
-        {
-            CollectionAssert.AreEquivalent( expected.ToList(), actual.ToList() );
-        }
-
-        public static void Contains( this Assert assert, System.Collections.ICollection collection, object element )
-        {
-            CollectionAssert.Contains( collection, element );
-        }
-        public static void DoesNotContain( this Assert assert, System.Collections.ICollection collection, object element )
-        {
-            CollectionAssert.DoesNotContain( collection, element );
-        }
-
-        public static void IsEmpty( this Assert assert, System.Collections.IEnumerable collection )
-        {
-            var enumerator = collection.GetEnumerator();
-
-            if ( enumerator.MoveNext() )
-            {
-                // Contains at least one element.
-                throw new AssertFailedException( "Empty collection expected, but one or more elements exist." );
-            }
-        }
-
-        public static void Single( this Assert assert, System.Collections.IEnumerable collection )
-        {
-            var enumerator = collection.GetEnumerator();
-
-            if ( enumerator.MoveNext() )
-            {
-                if ( enumerator.MoveNext() )
-                {
-                    // More than one element.
-                    throw new AssertFailedException( "More than one element exists in the collection." );
-                }
-            }
-            else
-            {
-                // No elements
-                throw new AssertFailedException( "No element exists in the collection." );
-            }
-
-            return;
-        }
-
-        #endregion
-
         #region Empty Assertions
 
         public static void IsEmpty( this Assert assert, string input )
@@ -316,143 +263,6 @@ namespace Rock.Tests.Shared
             }
 
             throw new AssertFailedException( "Collection is empty, but a value was expected." );
-        }
-
-        #endregion
-
-        #region xUnit Aliases
-        public static void Equal<T>( this Assert assert, T expected, T actual )
-        {
-            Assert.AreEqual( expected, actual );
-        }
-        public static void Equal( this Assert assert, System.String expected, System.String actual, System.Boolean ignoreCase )
-        {
-            Assert.AreEqual( expected, actual, ignoreCase );
-        }
-        public static void Equal( this Assert assert, System.Single expected, System.Single actual, System.Single delta )
-        {
-            Assert.AreEqual( expected, actual, delta );
-        }
-        public static void Equal( this Assert assert, System.Double expected, System.Double actual, System.Double delta, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreEqual( expected, actual, delta, message, parameters );
-        }
-        public static void Equal( this Assert assert, System.Object expected, System.Object actual, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreEqual( expected, actual, message, parameters );
-        }
-        public static void Equal( this Assert assert, System.Single expected, System.Single actual, System.Single delta, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreEqual( expected, actual, delta, message, parameters );
-        }
-        public static void Equal<T>( this Assert assert, T expected, T actual, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreEqual( expected, actual, message, parameters );
-        }
-        public static void Equal( this Assert assert, System.Double expected, System.Double actual, System.Double delta )
-        {
-            Assert.AreEqual( expected, actual, delta );
-        }
-        public static void Equal( this Assert assert, System.Object expected, System.Object actual )
-        {
-            Assert.AreEqual( expected, actual );
-        }
-        public static void Equal( this Assert assert, System.String expected, System.String actual, System.Boolean ignoreCase, System.Globalization.CultureInfo culture )
-        {
-            Assert.AreEqual( expected, actual, ignoreCase, culture );
-        }
-        public static void Equal( this Assert assert, System.String expected, System.String actual, System.Boolean ignoreCase, System.Globalization.CultureInfo culture, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreEqual( expected, actual, ignoreCase, culture, message, parameters );
-        }
-        public static void Equal( this Assert assert, System.String expected, System.String actual, System.Boolean ignoreCase, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreEqual( expected, actual, ignoreCase, message, parameters );
-        }
-        public static void NotEqual( this Assert assert, System.String notExpected, System.String actual, System.Boolean ignoreCase, System.Globalization.CultureInfo culture )
-        {
-            Assert.AreNotEqual( notExpected, actual, ignoreCase, culture );
-        }
-        public static void NotEqual( this Assert assert, System.String notExpected, System.String actual, System.Boolean ignoreCase, System.Globalization.CultureInfo culture, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreNotEqual( notExpected, actual, ignoreCase, culture, message, parameters );
-        }
-        public static void NotEqual( this Assert assert, System.Single notExpected, System.Single actual, System.Single delta )
-        {
-            Assert.AreNotEqual( notExpected, actual, delta );
-        }
-        public static void NotEqual( this Assert assert, System.String notExpected, System.String actual, System.Boolean ignoreCase )
-        {
-            Assert.AreNotEqual( notExpected, actual, ignoreCase );
-        }
-        public static void NotEqual( this Assert assert, System.Double notExpected, System.Double actual, System.Double delta )
-        {
-            Assert.AreNotEqual( notExpected, actual, delta );
-        }
-        public static void NotEqual( this Assert assert, System.Double notExpected, System.Double actual, System.Double delta, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreNotEqual( notExpected, actual, delta, message, parameters );
-        }
-        public static void NotEqual( this Assert assert, System.Single notExpected, System.Single actual, System.Single delta, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreNotEqual( notExpected, actual, delta, message, parameters );
-        }
-        public static void NotEqual( this Assert assert, System.String notExpected, System.String actual, System.Boolean ignoreCase, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreNotEqual( notExpected, actual, ignoreCase, message, parameters );
-        }
-        public static void NotEqual<T>( this Assert assert, T notExpected, T actual )
-        {
-            Assert.AreNotEqual( notExpected, actual );
-        }
-        public static void NotEqual<T>( this Assert assert, T notExpected, T actual, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreNotEqual( notExpected, actual, message, parameters );
-        }
-        public static void NotEqual( this Assert assert, System.Object notExpected, System.Object actual, System.String message, params System.Object[] parameters )
-        {
-            Assert.AreNotEqual( notExpected, actual, message, parameters );
-        }
-        public static void NotEqual( this Assert assert, System.Object notExpected, System.Object actual )
-        {
-            Assert.AreNotEqual( notExpected, actual );
-        }
-        public static void False( this Assert assert, System.Boolean condition )
-        {
-            Assert.IsFalse( condition );
-        }
-        public static void False( this Assert assert, System.Boolean condition, System.String message, params System.Object[] parameters )
-        {
-            Assert.IsFalse( condition, message, parameters );
-        }
-        public static void NotNull( this Assert assert, System.Object value, System.String message, params System.Object[] parameters )
-        {
-            Assert.IsNotNull( value, message, parameters );
-        }
-        public static void NotNull( this Assert assert, System.Object value )
-        {
-            Assert.IsNotNull( value );
-        }
-        public static void Null( this Assert assert, System.Object value, System.String message, params System.Object[] parameters )
-        {
-            Assert.IsNull( value, message, parameters );
-        }
-        public static void Null( this Assert assert, System.Object value )
-        {
-            Assert.IsNull( value );
-        }
-        public static void True( this Assert assert, System.Boolean condition, System.String message, params System.Object[] parameters )
-        {
-            Assert.IsTrue( condition, message, parameters );
-        }
-        public static void True( this Assert assert, System.Boolean condition )
-        {
-            Assert.IsTrue( condition );
-        }
-
-        public static void Empty( this Assert assert, System.Collections.IEnumerable collection )
-        {
-            Assert.That.IsEmpty( collection );
         }
 
         #endregion
