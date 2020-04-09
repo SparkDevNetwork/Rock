@@ -696,6 +696,21 @@ END:VCALENDAR
         {
             EnsureChildControls();
 
+            var specificDateTimes = _hfSpecificDateListValues.Value.SplitDelimitedValues()
+                .Select( s => s.AsDateTime() )
+                .Where( d => d.HasValue )
+                .Select( d => d.Value.Add( _dpStartDateTime.SelectedTime.HasValue ?
+                    _dpStartDateTime.SelectedTime.Value :
+                    new TimeSpan() ) )
+                .OrderBy( d => d );
+
+            // if they set some specific dates but no start date, assume the min specific date is the start date
+            // https://app.asana.com/0/767023941425027/932463467734953/f
+            if ( !_dpStartDateTime.SelectedDateTime.HasValue && specificDateTimes.Any() )
+            {
+                _dpStartDateTime.SelectedDateTime = specificDateTimes.First();
+            }
+
             if ( !this.ShowStartDateTime && _dpStartDateTime.SelectedDateTimeIsBlank )
             {
                 _dpStartDateTime.SelectedDateTime = RockDateTime.Now;
@@ -746,19 +761,11 @@ END:VCALENDAR
                 if ( _radSpecificDates.Checked )
                 {
                     #region specific dates
-                    PeriodList recurrenceDates = new PeriodList();
-                    List<string> dateStringList = _hfSpecificDateListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
-                    foreach ( var dateString in dateStringList )
+                    var recurrenceDates = new PeriodList();
+
+                    foreach ( var datetime in specificDateTimes )
                     {
-                        DateTime newDate;
-                        if ( DateTime.TryParse( dateString, out newDate ) )
-                        {
-                            if ( _dpStartDateTime.SelectedTime != null )
-                            {
-                                newDate = newDate.Add( _dpStartDateTime.SelectedTime.Value );
-                            }
-                            recurrenceDates.Add( new iCalDateTime( newDate ) );
-                        }
+                        recurrenceDates.Add( new iCalDateTime( datetime ) );
                     }
 
                     calendarEvent.RecurrenceDates.Add( recurrenceDates );
@@ -939,9 +946,9 @@ END:VCALENDAR
             DDay.iCal.iCalendar calendar = new iCalendar();
             calendar.Events.Add( calendarEvent );
 
-            iCalendarSerializer s = new iCalendarSerializer( calendar );
+            iCalendarSerializer iCalendarSerializer = new iCalendarSerializer( calendar );
 
-            return s.SerializeToString( calendar );
+            return iCalendarSerializer.SerializeToString( calendar );
         }
 
         /// <summary>
