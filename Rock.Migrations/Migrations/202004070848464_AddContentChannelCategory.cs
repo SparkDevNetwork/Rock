@@ -97,14 +97,17 @@ namespace Rock.Migrations
                 DECLARE @CategoryId int
                 SET @CategoryId = (SELECT [Id] FROM [Category] WHERE [Guid] = '{1}')
 
-                IF NOT EXISTS (
-                    SELECT *
-                    FROM [ContentChannelCategory]
-                    WHERE [ContentChannelId] = @ContentChannelId
-                    AND [CategoryId] = CategoryId )
-                BEGIN
-                    INSERT INTO [ContentChannelCategory] ( [ContentChannelId], [CategoryId] )
-                    VALUES( @ContentChannelId, @CategoryId )
+                IF (@CategoryId is not null and @ContentChannelId is not null)
+				BEGIN
+                    IF NOT EXISTS (
+                        SELECT *
+                        FROM [ContentChannelCategory]
+                        WHERE [ContentChannelId] = @ContentChannelId
+                        AND [CategoryId] = CategoryId )
+                    BEGIN
+                        INSERT INTO [ContentChannelCategory] ( [ContentChannelId], [CategoryId] )
+                        VALUES( @ContentChannelId, @CategoryId )
+                    END
                 END
 ",
                   contentChannelGuid,
