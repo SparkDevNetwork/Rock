@@ -26,7 +26,9 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -137,7 +139,9 @@ namespace Rock.Jobs
             var results = new StringBuilder();
             if ( jobPreferredCommunicationType != CommunicationType.Email && string.IsNullOrWhiteSpace( systemCommunication.SMSMessage ) )
             {
-                results.AppendLine( $"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email." );
+                var warning = $"No SMS message found in system communication {systemCommunication.Title}. All attendance reminders were sent via email.";
+                results.AppendLine( warning );
+                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
                 jobPreferredCommunicationType = CommunicationType.Email;
             }
 
@@ -493,6 +497,8 @@ namespace Rock.Jobs
                 smsWarningMessage = $"SMS is not enabled. {person.FullName} did not receive a notification.";
             }
 
+            RockLogger.Log.Warning( RockLogDomains.Jobs, smsWarningMessage );
+
             return smsWarningMessage;
         }
 
@@ -510,13 +516,17 @@ namespace Rock.Jobs
 
             if ( string.IsNullOrWhiteSpace( leader.Person.Email ) )
             {
-                warningMessages.Add( $"{leader.Person.FullName} does not have an email address entered." );
+                var warning = $"{leader.Person.FullName} does not have an email address entered.";
+                warningMessages.Add( warning );
+                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
                 return null;
             }
 
             if ( !leader.Person.IsEmailActive )
             {
-                warningMessages.Add( $"{leader.Person.FullName.ToPossessive()} email address is inactive." );
+                var warning = $"{leader.Person.FullName.ToPossessive()} email address is inactive.";
+                warningMessages.Add( warning );
+                RockLogger.Log.Warning( RockLogDomains.Jobs, warning );
                 return null;
             }
 

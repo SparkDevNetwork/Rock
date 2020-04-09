@@ -120,7 +120,31 @@ namespace Rock.Tests.Shared
 			return constructor.Invoke(constructorParameterValues);
 		}
 
-		/// <summary>
+        public static T InstantiateInternalObject<T>( string typeName, params object[] constructorParameterValues ) where T : class
+        {
+            var assembly = typeof( T ).Assembly;
+            var constructorParameterTypes = new Type[constructorParameterValues.Length];
+            for ( var i = 0; i < constructorParameterValues.Length; i++ )
+            {
+                constructorParameterTypes[i] = constructorParameterValues[i].GetType();
+            }
+
+            var assemblyType = assembly.GetType( typeName );
+            if ( assembly == null )
+            {
+                return default( T );
+            }
+
+            var typeConstructor = assemblyType.GetConstructor( constructorParameterTypes );
+            if ( typeConstructor == null )
+            {
+                return default( T );
+            }
+
+            return typeConstructor.Invoke( constructorParameterValues ) as T;
+        }
+
+        /// <summary>
         /// Invokes a non-public static method.
         /// </summary>
         /// <typeparam name="TReturn"></typeparam>

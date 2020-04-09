@@ -86,6 +86,7 @@
     <Compile Include="Communications\Transport\TwilioTests.cs" />
     <Compile Include="Core\FieldTypesListing.cs" />
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
+    <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
     <Compile Include="TestFramework\DatabaseIntegrationTestClassBase.cs" />
     <Compile Include="DotLiquid\TemplateTests.cs" />
     <Compile Include="Interactions\PageViewTests.cs" />
@@ -102,6 +103,10 @@
     <Compile Include="Lava\LegacyLavaUpdaterTest.cs" />
     <Compile Include="Model\DeviceTests.cs" />
     <Compile Include="ThirdPartyIntegrations\NcoaApi\TrueNcoaApiTests.cs" />
+    <Compile Include="Rock.Logging\RockLogConfigurationTest.cs" />
+    <Compile Include="Rock.Logging\RockLoggerTests.cs" />
+    <Compile Include="Rock.Logging\RockSerilogReaderTests.cs" />
+    <Compile Include="Rock.Logging\RockLoggerSerilogTests.cs" />
     <Compile Include="Rest\ControllersTests\AttendanceControllerTests.cs" />
     <Compile Include="Attendances\AttendanceBulkImportTest.cs" />
     <Compile Include="Communications\SmsTests.cs" />
