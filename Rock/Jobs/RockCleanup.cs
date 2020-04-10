@@ -190,7 +190,7 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        private string GetFormattedResult(RockCleanupJobResult result)
+        private string GetFormattedResult( RockCleanupJobResult result )
         {
             var rowsAffectedString = string.Format( "{0:n0}", result.RowsAffected );
             var elapsedMillisecondsString = string.Format( "{0:n0}", result.ElapsedMilliseconds );
@@ -378,6 +378,13 @@ namespace Rock.Jobs
                 personRockContext.Database.CommandTimeout = commandTimeout;
                 int ageClassificationUpdates = PersonService.UpdatePersonAgeClassificationAll( personRockContext );
                 resultCount += ageClassificationUpdates;
+            }
+
+            // update any PhoneNumber.FullNumber's that aren't correct. 
+            using ( var phoneNumberRockContext = new RockContext() )
+            {
+                int phoneNumberUpdates = phoneNumberRockContext.Database.ExecuteSqlCommand( @"UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
+                resultCount += phoneNumberUpdates;
             }
 
             // update the BirthDate with a computed value
@@ -1500,14 +1507,13 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 // then sort by the oldest person record in case there are multiple people with the same number
                 var matchedPhoneNumbersJoinQry = namelessPersonPhoneNumberQry.Join(
                     personPhoneNumberQry,
-                    np => np.Number,
-                    pp => pp.Number,
+                    np => np.FullNumber,
+                    pp => pp.FullNumber,
                     ( np, pp ) => new
                     {
                         NamelessPersonPhoneNumber = np,
                         PersonPhoneNumber = pp
                     } )
-                    .Where( j => j.PersonPhoneNumber.CountryCode == j.NamelessPersonPhoneNumber.CountryCode || string.IsNullOrEmpty( j.PersonPhoneNumber.CountryCode ) )
                     .OrderByDescending( j => j.PersonPhoneNumber.IsMessagingEnabled )
                     .ThenByDescending( j => j.PersonPhoneNumber.NumberTypeValueId == numberTypeMobileValueId )
                     .ThenByDescending( j => j.PersonPhoneNumber.Person.RecordTypeValueId != namelessPersonRecordTypeId )
