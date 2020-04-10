@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -70,7 +71,7 @@ namespace Rock.Model
         public string CountryCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the phone number. The number is stored without any string formatting. (i.e. (502) 555-1212 will be stored as 5025551212). This property is required.
+        /// Gets or sets the phone number without country code. The number is stored without any string formatting. (i.e. (502) 555-1212 will be stored as 5025551212). This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the phone number without string formatting.
@@ -79,6 +80,33 @@ namespace Rock.Model
         [MaxLength( 20 )]
         [DataMember( IsRequired = true )]
         public string Number { get; set; }
+
+        /// <summary>
+        /// Gets the full phone number (country code and number). This should really only be used for queries and comparisons. 
+        /// NOTE: If <seealso cref="Number"/> is a partial number (for example, no area code), then FullNumber isn't really the full number, and neither is NumberFormatted.
+        /// </summary>
+        /// <value>
+        /// The full number.
+        /// </value>
+        [Required]
+        [MaxLength( 23 )]
+        [DataMember( IsRequired = true )]
+        [Index( "IX_FullNumber" )]
+        public string FullNumber
+        {
+            get
+            {
+                _fullNumber = this.CountryCode + this.Number;
+                return _fullNumber;
+            }
+
+            private set
+            {
+                _fullNumber = value;
+            }
+        }
+
+        private string _fullNumber;
 
         /// <summary>
         /// Gets or sets the formatted number. Note: value is recalculated on every add/modify of entity during context's default SaveChanges() method.
