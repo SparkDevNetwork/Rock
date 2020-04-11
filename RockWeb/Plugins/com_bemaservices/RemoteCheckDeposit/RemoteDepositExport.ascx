@@ -4,21 +4,28 @@
     <ContentTemplate>
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" Dismissable="true" NotificationBoxType="Danger" Visible="true" />
 
-        <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
-            <div class="panel-heading">
-                    <h1 class="panel-title">
-                            <i class="fa fa-download"></i> Export Batches
-                    </h1>
-            </div>
+        
+            
+        <asp:Panel ID="pnlBatches" runat="server" >
+            <div class="panel panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-download"></i>&nbsp;Export Batches</h1>
+                    <div class="pull-right">
+                        <Rock:BootstrapButton ID="lbExportSelected" runat="server" CssClass="btn btn-sm btn-primary pull-right"  OnClick="lbSelectBatches_Click">
+                            <i class="fa fa-download"></i> Export Selected
+                        </Rock:BootstrapButton>
+                    </div>
+                </div>
 
-            <div class="panel-body">
-                <asp:Panel ID="pnlBatches" runat="server" >
+                <div class="panel-body">
                     <div class="grid grid-panel">
+                        <Rock:ModalAlert ID="maWarningDialog" runat="server" />
                         <Rock:GridFilter ID="gfBatches" runat="server" OnApplyFilterClick="gfBatches_ApplyFilterClick" OnClearFilterClick="gfBatches_ClearFilterClick" OnDisplayFilterValue="gfBatches_DisplayFilterValue">
                             <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
                             <Rock:DateRangePicker ID="drpBatchDate" runat="server" Label="Date Range" />
                             <Rock:CampusPicker ID="campCampus" runat="server" />
                             <Rock:RockTextBox ID="tbTitle" runat="server" Label="Title"></Rock:RockTextBox>
+                            <Rock:RockDropDownList ID="ddlDeposited" runat="server" Label="Deposited" />
                         </Rock:GridFilter>
 
                         <Rock:Grid ID="gBatches" runat="server" OnGridRebind="gBatches_GridRebind" OnRowCreated="gBatches_RowCreated">
@@ -45,18 +52,29 @@
                             </Columns>
                         </Rock:Grid>
                     </div>
-                </asp:Panel>
+                </div>
+                <div class="panel-heading">
+                    <h1 class="panel-title"><i class="fa fa-download"></i>&nbsp;Export Batches</h1>
+                    <div class="pull-right">
+                        <Rock:BootstrapButton ID="lbExportBottom" runat="server" CssClass="btn btn-sm btn-primary pull-right"  OnClick="lbSelectBatches_Click">
+                            <i class="fa fa-download"></i> Export Selected
+                        </Rock:BootstrapButton>
+                    </div>
+                </div>
+            </asp:Panel>
 
-                <asp:Panel ID="pnlFixMicr" runat="server" Visible="false">
-                    
+            <asp:Panel ID="pnlFixMicr" runat="server" Visible="false">
+                <div class="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title"><i class="fa fa-download"></i>&nbsp;Check Details</h1>
+                        
+                    </div>
+
+                    <div class="panel-body">
                     <asp:Repeater ID="rptMicrDetail" runat="server">
                         <ItemTemplate>
                             <div class="row">
-                                <asp:Literal ID="lMicrWarning" runat="server" Visible='<%# !(bool)Eval("IsValid") %>'>
-                                    <div class="alert alert-warning">
-                                        <p>This check did not properly scan the MICR line and must be fixed before it can be exported.</p>
-                                    </div>
-                                </asp:Literal>
+                                <Rock:NotificationBox ID="nbMicrWarning" runat="server" Dismissable="true" NotificationBoxType="Warning" Text='<%# Eval("IsValidMessage") %>' Visible='<%# !(bool)Eval("IsValid") %>' />
                                     
                                 <div class="col-md-4">
                                     <label>Image</label>
@@ -79,9 +97,18 @@
                                 <asp:LinkButton ID="lbFixMicr" runat="server" Text="Save and Continue" CssClass="btn btn-primary" ValidationGroup="FixMicr" OnClick="lbFixMicr_Click" />
                                 <asp:LinkButton ID="lbCancelMicr" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                             </div>
-                </asp:Panel>
+                </div>
+            </asp:Panel>
 
-                <asp:Panel ID="pnlOptions" runat="server" Visible="false">
+            <asp:Panel ID="pnlOptions" runat="server" Visible="false">
+                <div class="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title"><i class="fa fa-download"></i>&nbsp;Create Export</h1>
+                        
+                    </div>
+
+                    <div class="panel-body">
+
                     <asp:HiddenField ID="hfBatchIds" runat="server" />
                     <Rock:RockDropDownList ID="ddlFileFormat" runat="server" Label="File Format" Required="true" ValidationGroup="Options" />
 
@@ -98,9 +125,15 @@
                         <asp:LinkButton ID="lbExport" runat="server" Text="Export" CssClass="btn btn-primary" OnClick="lbExport_Click" ValidationGroup="Options" />
                         <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
                     </div>
-                </asp:Panel>
+            </asp:Panel>
 
-                <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
+            <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
+                <div class="panel panel-block">
+                    <div class="panel-heading">
+                        <h1 class="panel-title"><i class="fa fa-download"></i>&nbsp;Download</h1>
+                        
+                    </div>
+
                     <div class="alert alert-success">
                     <p>Data has been successfully exported.</p>
                         <p>
@@ -111,8 +144,7 @@
                     <div class="actions margin-t-md">
                         <asp:LinkButton ID="lbFinished" runat="server" Text="Finished" CssClass="btn btn-default" OnClick="lbFinished_Click" CausesValidation="false" />
                     </div>
-                </asp:Panel>
-            </div>
-        </asp:Panel>
+            </asp:Panel>
+        </div>
     </ContentTemplate>
 </asp:UpdatePanel>
