@@ -204,6 +204,8 @@ namespace Rock.Jobs
             // Add any missing person aliases
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
+                personRockContext.Database.CommandTimeout = commandTimeout;
+
                 PersonService personService = new PersonService( personRockContext );
                 PersonAliasService personAliasService = new PersonAliasService( personRockContext );
                 var personAliasServiceQry = personAliasService.Queryable();
@@ -222,6 +224,8 @@ namespace Rock.Jobs
 
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
+                personRockContext.Database.CommandTimeout = commandTimeout;
+
                 PersonService personService = new PersonService( personRockContext );
                 // Add any missing metaphones
                 int namesToProcess = dataMap.GetString( "MaxMetaphoneNames" ).AsIntegerOrNull() ?? 500;
@@ -295,6 +299,7 @@ namespace Rock.Jobs
             // update the BirthDate with a computed value
             using ( var personRockContext = new Rock.Data.RockContext() )
             {
+                personRockContext.Database.CommandTimeout = commandTimeout;
                 PersonService.UpdateBirthDateAll( personRockContext );
             }
 
@@ -308,6 +313,8 @@ namespace Rock.Jobs
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = new Rock.Data.RockContext() )
             {
+                familyRockContext.Database.CommandTimeout = commandTimeout;
+
                 int familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
                 int recordStatusInactiveValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
 
@@ -461,6 +468,8 @@ namespace Rock.Jobs
         private int CleanupTemporaryBinaryFiles()
         {
             var binaryFileRockContext = new Rock.Data.RockContext();
+            binaryFileRockContext.Database.CommandTimeout = commandTimeout;
+
             // clean out any temporary binary files
             BinaryFileService binaryFileService = new BinaryFileService( binaryFileRockContext );
             int resultCount = 0;
@@ -487,6 +496,8 @@ namespace Rock.Jobs
         private int CleanUpTemporaryRegistrations()
         {
             var registrationRockContext = new Rock.Data.RockContext();
+            registrationRockContext.Database.CommandTimeout = commandTimeout;
+
             int totalRowsDeleted = 0;
             // clean out any temporary registrations
             RegistrationService registrationService = new RegistrationService( registrationRockContext );
@@ -514,6 +525,8 @@ namespace Rock.Jobs
         {
             int totalRowsDeleted = 0;
             var workflowContext = new RockContext();
+            workflowContext.Database.CommandTimeout = commandTimeout;
+
             var workflowService = new WorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
@@ -553,6 +566,8 @@ namespace Rock.Jobs
             // Limit the number of workflow logs to delete for this run (20M records could take around 20 minutes).
             int maxRowDeleteLimit = 20000000;
             var workflowContext = new RockContext();
+            workflowContext.Database.CommandTimeout = commandTimeout;
+
             var workflowService = new WorkflowService( workflowContext );
 
             var workflowIdsOlderThanLogRetentionPeriodQuery = workflowService.Queryable()
@@ -613,8 +628,9 @@ namespace Rock.Jobs
             if ( auditExpireDays.HasValue )
             {
                 var auditLogRockContext = new Rock.Data.RockContext();
-                DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
+                auditLogRockContext.Database.CommandTimeout = commandTimeout;
 
+                DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
                 totalRowsDeleted += BulkDeleteInChunks( new AuditService( auditLogRockContext ).Queryable().Where( a => a.DateTime < auditExpireDate ), batchAmount, commandTimeout );
 
             }
@@ -633,7 +649,9 @@ namespace Rock.Jobs
             if ( exceptionExpireDays.HasValue )
             {
                 var exceptionLogRockContext = new Rock.Data.RockContext();
-                exceptionLogRockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
+
+                // Assuming a 10 minute minimum CommandTimeout for this process.
+                exceptionLogRockContext.Database.CommandTimeout = commandTimeout >=600 ? commandTimeout : 600;
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
                 var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
@@ -650,6 +668,8 @@ namespace Rock.Jobs
         private int CleanupExpiredEntitySets( JobDataMap dataMap )
         {
             var entitySetRockContext = new RockContext();
+            entitySetRockContext.Database.CommandTimeout = commandTimeout;
+
             var currentDateTime = RockDateTime.Now;
             var entitySetService = new EntitySetService( entitySetRockContext );
 
@@ -702,6 +722,8 @@ namespace Rock.Jobs
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = new Rock.Data.RockContext() )
             {
+                interactionSessionRockContext.Database.CommandTimeout = commandTimeout;
+
                 var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable();
                 var interactionSessionQueryable = new InteractionSessionService( interactionSessionRockContext ).Queryable();
 
@@ -780,6 +802,8 @@ namespace Rock.Jobs
             // Cleanup AttributeMatrix records that are no longer associated with an attribute value
             using ( RockContext rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
                 AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
                 AttributeMatrixItemService attributeMatrixItemService = new AttributeMatrixItemService( rockContext );
 
@@ -845,6 +869,7 @@ namespace Rock.Jobs
 
             using ( RockContext rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
                 var attributeValueService = new AttributeValueService( rockContext );
                 int? entityTypeId = EntityTypeCache.GetId<T>();
                 var entityIdsQuery = new Service<T>( rockContext ).AsNoFilter().Select( a => a.Id );
@@ -864,7 +889,10 @@ namespace Rock.Jobs
             int totalRowsDeleted = 0;
 
             var rockContext = new Rock.Data.RockContext();
-            rockContext.Database.CommandTimeout = ( int ) TimeSpan.FromMinutes( 10 ).TotalSeconds;
+
+            // Set a 10 minute minimum timeout here.
+            rockContext.Database.CommandTimeout = commandTimeout >= 600 ? commandTimeout : 600;
+
             DateTime transientCommunicationExpireDate = RockDateTime.Now.Add( new TimeSpan( 7 * -1, 0, 0, 0 ) );
             var communicationsToDelete = new CommunicationService( rockContext ).Queryable().Where( a => a.CreatedDateTime < transientCommunicationExpireDate && a.Status == CommunicationStatus.Transient );
 
@@ -882,6 +910,7 @@ namespace Rock.Jobs
         {
             int totalRowsUpdated = 0;
             var rockContext = new Rock.Data.RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
 
             int? currencyTypeUnknownId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_UNKNOWN.AsGuid() )?.Id;
 
@@ -908,6 +937,8 @@ namespace Rock.Jobs
             // Cleanup PersonTokens records that are expired
             using ( RockContext rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
                 PersonTokenService personTokenService = new PersonTokenService( rockContext );
 
                 var personTokensToDeleteQuery = personTokenService.Queryable().Where( a => a.ExpireDateTime.HasValue && a.ExpireDateTime < currentDateTime );
@@ -1034,6 +1065,7 @@ namespace Rock.Jobs
         {
             using ( RockContext rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
                 ServiceJobHistoryService serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
                 serviceJobHistoryService.DeleteMoreThanMax();
             }
@@ -1053,6 +1085,8 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
                 var attendanceService = new AttendanceService( rockContext );
 
                 // 1 day (24 hrs) ago
@@ -1123,6 +1157,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             int resultCount = 0;
             using ( var rockContext = new Rock.Data.RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
                 var definedType = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
 
                 // Update states from state name to abbreviation.
@@ -1202,6 +1238,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             }
 
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
             var groupMemberService = new GroupMemberService( rockContext );
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
 
@@ -1236,6 +1274,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             var recordsDeleted = 0;
 
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
             var streakService = new StreakService( rockContext );
             var attemptService = new StreakAchievementAttemptService( rockContext );
             var duplicateGroups = streakService.Queryable()
@@ -1294,6 +1334,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             int rowsUpdated = 0;
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
                 var scheduleService = new ScheduleService( rockContext );
                 var scheduleList = scheduleService.Queryable().ToList();
                 foreach ( var schedule in scheduleList )
@@ -1322,6 +1364,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             int rowsUpdated = 0;
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
                 var communicationResponseService = new CommunicationResponseService( rockContext );
                 var personService = new PersonService( rockContext );
 
@@ -1349,6 +1393,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             int rowsUpdated = 0;
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
+
                 var personService = new PersonService( rockContext );
                 var phoneNumberService = new PhoneNumberService( rockContext );
 
@@ -1397,6 +1443,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
                         var existingPersonId = matchedPhoneNumber.PersonPhoneNumber.PersonId;
                         using ( var mergeContext = new RockContext() )
                         {
+                            mergeContext.Database.CommandTimeout = commandTimeout;
                             var mergePersonService = new PersonService( mergeContext );
                             var namelessPerson = mergePersonService.Get( namelessPersonId );
                             var existingPerson = mergePersonService.Get( existingPersonId );
@@ -1408,7 +1455,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
                     }
                 }
             }
-
 
             return rowsUpdated;
         }
