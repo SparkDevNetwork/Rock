@@ -226,7 +226,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
-            bool canAddChildGroup = false;
+            bool showAddChildGroupButton = false;
 
             if ( !string.IsNullOrWhiteSpace( _groupId ) )
             {
@@ -291,36 +291,46 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
                 }
-                
+
                 if ( selectedGroup != null )
                 {
                     var selectedGroupGroupType = GroupTypeCache.Get( selectedGroup.GroupTypeId );
                     hfInitialGroupId.Value = selectedGroup.Id.ToString();
                     hfSelectedGroupId.Value = selectedGroup.Id.ToString();
 
-                    // show the Add button if the selected Group's GroupType can have children and one or more of those child group types is allowed
+                    // show the Add Child Group button if the selected Group's GroupType can have children and one or more of those child group types is allowed
                     if ( selectedGroupGroupType.AllowAnyChildGroupType || selectedGroupGroupType.ChildGroupTypes.Any( c => IsGroupTypeIncluded( c.Id ) ) )
                     {
-                        canAddChildGroup = canEditBlock;
+                        // if current person has Edit Auth on the block, then show the add child group button regardless of Group/GroupType security.
+                        // 
+                        showAddChildGroupButton = canEditBlock;
 
-                        if ( !canAddChildGroup )
+                        if ( !showAddChildGroupButton )
                         {
-                            canAddChildGroup = selectedGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                            if ( !canAddChildGroup )
+                            // if block doesn't grant Edit auth, see if the person is authorized for the selected group
+                            showAddChildGroupButton = selectedGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                            if ( !showAddChildGroupButton )
                             {
+                                // if block doesn't grant Edit auth, and user isn't authorized for the selected group,
+                                // see if they have Edit auth on any of the child groups
+                                List<GroupTypeCache> allowedChildGroupTypes;
                                 if ( selectedGroupGroupType.AllowAnyChildGroupType )
                                 {
-                                    canAddChildGroup = true;
+                                    // If AllowAnyChildGroupType is enabled, check for Edit Auth on all GroupTypes
+                                    allowedChildGroupTypes = GroupTypeCache.All().ToList();
                                 }
                                 else
                                 {
-                                    foreach ( var childGroupType in selectedGroupGroupType.ChildGroupTypes )
+                                    // If AllowAnyChildGroupType is not enabled, check for Edit Auth on the just the selected group's ChildGroupTypes
+                                    allowedChildGroupTypes = selectedGroupGroupType.ChildGroupTypes;
+                                }
+
+                                foreach ( var childGroupType in allowedChildGroupTypes )
+                                {
+                                    if ( childGroupType != null && childGroupType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                                     {
-                                        if ( childGroupType != null && childGroupType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
-                                        {
-                                            canAddChildGroup = true;
-                                            break;
-                                        }
+                                        showAddChildGroupButton = true;
+                                        break;
                                     }
                                 }
                             }
@@ -336,9 +346,11 @@ namespace RockWeb.Blocks.Groups
                 lbAddGroupChild.Enabled = canEditBlock;
             }
 
-            divTreeviewActions.Visible = canEditBlock || canAddChildGroup;
+            // NOTE that showAddChildGroupButton just controls if the button is shown.
+            // The group detail block will take care of enforcing auth when they attempt to save a group.
+            divAddGroup.Visible = canEditBlock || showAddChildGroupButton;
             lbAddGroupRoot.Enabled = canEditBlock;
-            lbAddGroupChild.Enabled = canAddChildGroup;
+            lbAddGroupChild.Enabled = showAddChildGroupButton;
 
             // disable add child group if no group is selected
             if ( hfSelectedGroupId.ValueAsInt() == 0 )
