@@ -534,24 +534,31 @@ namespace Rock.Jobs
                 && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.CompletedWorkflowRetentionPeriod ) )
                 .ToList();
 
-            List<int> workflowIdsToSkipDelete = new List<int>();
+            List<int> workflowIdsSafeToDelete = new List<int>();
 
+            // Now, verify and build a list of workflow Ids that are OK to be deleted.
+            // And start deleting them in batches
             foreach ( var workflow in completedWorkflows )
             {
-                if ( !workflowService.CanDelete( workflow, out _ ) )
+                // Verify that the workflow is not being used by something important by letting CanDelete tell
+                // us if it's OK to delete.
+                if ( workflowService.CanDelete( workflow, out _ ) )
                 {
-                    workflowIdsToSkipDelete.Add( workflow.Id );
+                    workflowIdsSafeToDelete.Add( workflow.Id );
                 }
 
-                // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsToSkipDelete gets too big
-                if ( workflowIdsToSkipDelete.Count > batchAmount )
+                // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
+                if ( workflowIdsSafeToDelete.Count >= batchAmount )
                 {
-                    totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => !workflowIdsToSkipDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
-                    workflowIdsToSkipDelete = new List<int>();
+                    totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
+                    workflowIdsSafeToDelete = new List<int>();
                 }
             }
 
-            totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => !workflowIdsToSkipDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
+            if ( workflowIdsSafeToDelete.Any() )
+            {
+                totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
+            }
 
             return totalRowsDeleted;
         }
@@ -1130,16 +1137,16 @@ namespace Rock.Jobs
                 rockContext.Database.ExecuteSqlCommand( @"
 UPDATE AttributeValue
 SET ValueAsNumeric = CASE 
-		WHEN len([value]) < (100)
+		WHEN LEN([value]) < (100)
 			THEN CASE 
-					WHEN isnumeric([value]) = (1)
+					WHEN ISNUMERIC([value]) = (1)
 						AND NOT [value] LIKE '%[^-0-9.]%'
 						THEN TRY_CAST([value] AS [decimal](18, 2))
 					END
 		END
-where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
+where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
 			THEN CASE 
-					WHEN isnumeric([value]) = (1)
+					WHEN ISNUMERIC([value]) = (1)
 						AND NOT [value] LIKE '%[^-0-9.]%'
 						THEN TRY_CAST([value] AS [decimal](18, 2))
 					END
@@ -1244,7 +1251,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN len([value]) < (100)
             var groupMemberHistoricalService = new GroupMemberHistoricalService( rockContext );
 
             var duplicateQuery = groupMemberService.Queryable()
-                // Duplicates are the same person, group, and role occuring more than once
+
+                // Duplicates are the same person, group, and role occurring more than once
                 .GroupBy( m => new { m.PersonId, m.GroupId, m.GroupRoleId } )
                 // Filter out sets with only one occurrence because those are not duplicates
                 .Where( g => g.Count() > 1 )
