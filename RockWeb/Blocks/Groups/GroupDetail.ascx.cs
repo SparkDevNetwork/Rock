@@ -1279,7 +1279,7 @@ namespace RockWeb.Blocks.Groups
             int? parentGroupGroupTypeId = null;
             if ( parentGroupId.HasValue )
             {
-                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => s.ParentGroupId );
+                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => ( int? ) s.ParentGroup.GroupTypeId );
             }
 
             var groupTypeQry = GetAllowedGroupTypes( GroupTypeCache.Get( parentGroupGroupTypeId ?? 0 ), rockContext );
@@ -2282,7 +2282,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( var rsvpReminder in rsvpReminderCommunications )
             {
-                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem(rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
+                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
             }
 
             ddlAttendanceRecordRequiredForCheckIn.BindToEnum<AttendanceRecordRequiredForCheckIn>();
