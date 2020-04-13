@@ -14,6 +14,10 @@
 @pending-icon-color: @brand-warning;
 @declined-icon-color: @brand-danger;
 
+@meetsdesired-icon-color: fade(@brand-success, 75%);
+@belowdesired-icon-color: fade(@brand-warning, 75%);
+@belowminimum-icon-color: fade(@brand-danger, 75%);
+
 .group-scheduler {
   .panel.panel-block > .panel-heading {
     display: inherit;
@@ -398,15 +402,15 @@
     border-radius: 50%;
 
     &[data-status="below-minimum"] {
-      background-color: @state-danger-bg;
+      background-color: @belowminimum-icon-color;
     }
 
     &[data-status="below-desired"] {
-      background-color: @state-warning-bg;
+      background-color: @belowdesired-icon-color;
     }
 
     &[data-status="meets-desired"] {
-      background-color: @state-success-bg;
+      background-color: @meetsdesired-icon-color;
     }
 
     &[data-status="none"] {
