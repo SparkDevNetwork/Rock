@@ -731,17 +731,20 @@ namespace Rock.Jobs
             {
                 interactionSessionRockContext.Database.CommandTimeout = commandTimeout;
 
-                var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable();
+                var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable().Where( a => a.InteractionSessionId.HasValue );
                 var interactionSessionQueryable = new InteractionSessionService( interactionSessionRockContext ).Queryable();
 
                 // take a snapshot of the most recent session id so we don't have to worry about deleting a session id that might be right in the middle of getting used
                 int maxInteractionSessionId = interactionSessionQueryable.Max( a => ( int? ) a.Id ) ?? 0;
 
-                var unusedInteractionSessionsQuery = interactionSessionQueryable
+                // put the batchCount in the where clause to make sure that the BulkDeleteInChunks puts its Take *after* we've batched it
+                var batchUnusedInteractionSessionsQuery = interactionSessionQueryable
                         .Where( s => !interactionQueryable.Any( i => i.InteractionSessionId == s.Id ) )
-                        .Where( a => a.Id < maxInteractionSessionId ).OrderBy( a => a.Id );
+                        .Where( a => a.Id < maxInteractionSessionId ).OrderBy( a => a.Id ).Take( batchAmount );
 
-                totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQuery, batchAmount, commandTimeout );
+                var unusedInteractionSessionsQueryToRemove = new InteractionSessionService( interactionSessionRockContext ).Queryable().Where( a => batchUnusedInteractionSessionsQuery.Any( u => u.Id == a.Id ) );
+
+                totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
             }
 
             return totalRowsDeleted;
@@ -848,8 +851,8 @@ namespace Rock.Jobs
 
                         if ( !ignore )
                         {
-                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic )
-                            .First( m => m.Name == "CleanupOrphanedAttributeValuesForEntityType" );
+                            var classMethod = this.GetType().GetMethods( BindingFlags.Instance | BindingFlags.NonPublic ).First( m => m.Name == nameof( CleanupOrphanedAttributeValuesForEntityType ) );
+
                             var genericMethod = classMethod.MakeGenericMethod( entityType );
                             var result = genericMethod.Invoke( this, null ) as int?;
                             if ( result.HasValue )
