@@ -61,6 +61,7 @@
                         </Rock:BootstrapButton>
                     </div>
                 </div>
+                </div>
             </asp:Panel>
 
             <asp:Panel ID="pnlFixMicr" runat="server" Visible="false">
@@ -98,6 +99,7 @@
                                 <asp:LinkButton ID="lbCancelMicr" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                             </div>
                 </div>
+                    </div>
             </asp:Panel>
 
             <asp:Panel ID="pnlOptions" runat="server" Visible="false">
@@ -109,22 +111,24 @@
 
                     <div class="panel-body">
 
-                    <asp:HiddenField ID="hfBatchIds" runat="server" />
-                    <Rock:RockDropDownList ID="ddlFileFormat" runat="server" Label="File Format" Required="true" ValidationGroup="Options" />
+                        <asp:HiddenField ID="hfBatchIds" runat="server" />
+                        <Rock:RockDropDownList ID="ddlFileFormat" runat="server" Label="File Format" Required="true" ValidationGroup="Options" />
 
-                    <Rock:DateTimePicker ID="dpBusinessDate" runat="server" Label="Business Date" Required="true" ValidationGroup="Options" />
+                        <Rock:DateTimePicker ID="dpBusinessDate" runat="server" Label="Business Date" Required="true" ValidationGroup="Options" />
 
-                    <dl>
-                        <dt>
-                            Total Amount
-                        </dt>
-                        <dd><asp:Literal ID="lTotalDeposit" runat="server" /></dd>
-                    </dl>
+                        <dl>
+                            <dt>
+                                Total Amount
+                            </dt>
+                            <dd><asp:Literal ID="lTotalDeposit" runat="server" /></dd>
+                        </dl>
 
-                    <div class="actions margin-t-md">
-                        <asp:LinkButton ID="lbExport" runat="server" Text="Export" CssClass="btn btn-primary" OnClick="lbExport_Click" ValidationGroup="Options" />
-                        <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
+                        <div class="actions margin-t-md">
+                            <asp:LinkButton ID="lbExport" runat="server" Text="Export" CssClass="btn btn-primary" OnClick="lbExport_Click" ValidationGroup="Options" />
+                            <asp:LinkButton ID="lbCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
+                        </div>
                     </div>
+                </div>
             </asp:Panel>
 
             <asp:Panel ID="pnlSuccess" runat="server" Visible="false">
@@ -134,17 +138,21 @@
                         
                     </div>
 
-                    <div class="alert alert-success">
-                    <p>Data has been successfully exported.</p>
-                        <p>
-                            <asp:HyperLink ID="hlDownload" runat="server" Text="Download" CssClass="btn btn-success" />
-                        </p>
+                    <div class="panel-body">
+                        <div class="alert alert-success">
+                        <p>Data has been successfully exported.</p>
+                            <p>
+                                <asp:HyperLink ID="hlDownload" runat="server" Text="Download" CssClass="btn btn-success" />
+                            </p>
+                        </div>
+
+                        <div class="actions margin-t-md">
+                            <asp:LinkButton ID="lbFinished" runat="server" Text="Finished" CssClass="btn btn-default" OnClick="lbFinished_Click" CausesValidation="false" />
+                        </div>
                     </div>
 
-                    <div class="actions margin-t-md">
-                        <asp:LinkButton ID="lbFinished" runat="server" Text="Finished" CssClass="btn btn-default" OnClick="lbFinished_Click" CausesValidation="false" />
-                    </div>
+                  </div>  
             </asp:Panel>
-        </div>
+
     </ContentTemplate>
 </asp:UpdatePanel>
