@@ -222,6 +222,7 @@ namespace Rock.Model
                         else
                         {
                             cb.Enabled = false;
+                            cb.FormGroupCssClass = "none-remaining text-muted disabled";
                         }
                     }
                 }
