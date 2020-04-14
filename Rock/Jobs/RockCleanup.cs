@@ -702,30 +702,30 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         private int CleanupInteractions( JobDataMap dataMap )
         {
-
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
 
             using ( var interactionRockContext = new Rock.Data.RockContext() )
             {
                 interactionRockContext.Database.CommandTimeout = commandTimeout;
-                var interactionChannelService = new InteractionChannelService( interactionRockContext );
-                var interactionChannelQry = interactionChannelService.Queryable().Where( a => a.RetentionDuration.HasValue );
+                var interactionChannels = InteractionChannelCache.All().Where( ic => ic.RetentionDuration.HasValue );
 
-                foreach ( var interactionChannel in interactionChannelQry.ToList() )
+                foreach ( var interactionChannel in interactionChannels )
                 {
                     var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
+
                     if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
                     {
-                        retentionCutoffDateTime = System.Data.SqlTypes.SqlDateTime.MinValue.Value;
+                        continue;
                     }
 
-                    var interactionsToDeleteQuery = new InteractionService( interactionRockContext ).Queryable().Where( a => a.InteractionComponent.ChannelId == interactionChannel.Id );
+                    var interactionsToDeleteQuery = new InteractionService( interactionRockContext ).Queryable().Where( i =>
+                        i.InteractionComponent.ChannelId == interactionChannel.Id &&
+                        i.InteractionDateTime < retentionCutoffDateTime );
 
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
                 }
             }
-
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = new Rock.Data.RockContext() )
             {
