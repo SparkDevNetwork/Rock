@@ -425,7 +425,7 @@ onChange: function() {{
             var structureContent = JsonConvert.DeserializeObject<Root>( structureContentJson );
             StringBuilder html = new StringBuilder();
 
-            if ( structureContent == null )
+            if ( structureContent == null || structureContent.blocks == null )
             {
                 return html.ToString();
             }
