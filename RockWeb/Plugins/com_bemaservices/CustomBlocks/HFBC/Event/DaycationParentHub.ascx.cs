@@ -480,10 +480,11 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                         if ( registration != null )
                         {
                             detailSummary.Add( "Registration", registration );
-                            summaryDetails.Add( detailSummary );
 
-                            totalAmount += detail.Amount;
                         }
+                        summaryDetails.Add( detailSummary );
+
+                        totalAmount += detail.Amount;
                     }
                 }
 
