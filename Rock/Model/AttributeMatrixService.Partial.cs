@@ -47,7 +47,6 @@ namespace Rock.Model
 		                FROM  [dbo].[AttributeValue] AS av
 		                INNER JOIN [dbo].[Attribute] AS a ON av.[AttributeId] = a.[Id]
 		                WHERE a.[FieldTypeId] = @MatrixFieldTypeId
-		                AND av.[Value] IS NOT NULL
 						AND LEN(av.[Value]) = 36
 	                )))";
 
