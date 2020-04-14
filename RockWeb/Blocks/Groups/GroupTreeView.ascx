@@ -18,9 +18,9 @@
         <asp:HiddenField ID="hfDetailPageUrl" runat="server" />
 
         <div class="treeview js-grouptreeview">
-            <div class="treeview-actions rollover-container" id="divTreeviewActions" runat="server">
+            <asp:Panel ID="pnlTreeviewActions" CssClass="treeview-actions rollover-container" runat="server">
 
-                <div class="btn-group pull-left margin-r-sm">
+                <div id="divAddGroup" runat="server" class="btn-group pull-left margin-r-sm">
                     <button type="button" class="btn btn-action btn-xs dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-plus-circle"></i>&nbsp;Add Group <span class="fa fa-caret-down"></span>
                     </button>
@@ -35,7 +35,7 @@
                 <div class="rollover-item" id="pnlRolloverConfig" runat="server">
                     <i class="fa fa-gear clickable js-show-config" onclick="$(this).closest('.js-grouptreeview').find('.js-config-panel').slideToggle()"></i>
                 </div>
-            </div>
+            </asp:Panel>
 
             <div class="js-config-panel" style="display: none" id="pnlConfigPanel" runat="server">
                 <div class="row">
