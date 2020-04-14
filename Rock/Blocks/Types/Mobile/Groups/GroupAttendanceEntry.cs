@@ -504,7 +504,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 SaveAttendanceData( rockContext, group, date, new List<Attendee>(), didNotMeet );
 
-                return ActionOk( GetGroupData( groupId, date ) );
+                return GetGroupData( groupId, date );
             }
         }
 
