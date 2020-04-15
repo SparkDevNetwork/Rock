@@ -554,7 +554,7 @@ namespace Rock.Web.UI
                             lblShowDebugTimings.Text = lblShowDebugTimings.Text.ReplaceLastOccurrence( "data-duration=''", $"data-duration='{lastDurationMS}'" );
                         }
 
-                        lblShowDebugTimings.Text += string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='padding-left: 24px;'>{0} <small><span style='color:#A4A4A4'>(Block Id: {2})</span></small></td><td class='debug-timestamp'><span data-duration-replace/></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration=''> </td></tr>", this.BlockName, Math.Round( tsDuration.TotalMilliseconds, 2 ), BlockCache.Id );
+                        lblShowDebugTimings.Text += string.Format( "<tr><td class='debug-timestamp'>{1:#,0.00} ms</td><td style='padding-left: 24px;'>{0} <small><span style='color:#A4A4A4'>({2})</span></small></td><td class='debug-timestamp'><span data-duration-replace/></td><td class='debug-waterfall'><span class='debug-chart-bar' data-start-location='{1}' data-duration=''> </td></tr>", this.BlockName, Math.Round( tsDuration.TotalMilliseconds, 2 ), BlockCache.BlockType );
 
                         lblShowDebugTimings.Attributes["data-PointInTimeMS"] = tsDuration.TotalMilliseconds.ToString();
                     }
