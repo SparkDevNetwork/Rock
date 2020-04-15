@@ -663,7 +663,7 @@ namespace Rock.Jobs
         /// <returns>
         /// A collection of <see cref="Rock.Model.Category" /> entities that are descendants of the provided parent <see cref="Rock.Model.Category" />.
         /// </returns>
-        private List<int> GetCategoryIdList( IEnumerable<Guid> parentCategoryGuidList, CategoryService categoryService )
+        public List<int> GetCategoryIdList( IEnumerable<Guid> parentCategoryGuidList, CategoryService categoryService )
         {
             var categoryIdList = new List<int>();
 
