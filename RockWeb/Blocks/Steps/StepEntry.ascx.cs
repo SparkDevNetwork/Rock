@@ -365,6 +365,7 @@ namespace RockWeb.Blocks.Steps
             }
 
             // Update the step properties. Person cannot be changed (only set when the step is added)
+            step.CampusId = cpCampus.SelectedCampusId;
             step.StartDateTime = rdpStartDate.SelectedDate;
             step.EndDateTime = stepType.HasEndDate ? rdpEndDate.SelectedDate : null;
             step.StepStatusId = rsspStatus.SelectedValueAsId();
@@ -574,6 +575,7 @@ namespace RockWeb.Blocks.Steps
             var step = GetStep();
             if ( step != null )
             {
+                cpCampus.SelectedCampusId = step.CampusId;
                 rdpStartDate.SelectedDate = step.StartDateTime;
                 rdpEndDate.SelectedDate = step.EndDateTime;
                 rsspStatus.SelectedValue = step.StepStatusId.ToStringSafe();
