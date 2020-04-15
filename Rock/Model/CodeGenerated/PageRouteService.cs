@@ -126,6 +126,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsGlobal = source.IsGlobal;
             target.IsSystem = source.IsSystem;
             target.PageId = source.PageId;
             target.Route = source.Route;
