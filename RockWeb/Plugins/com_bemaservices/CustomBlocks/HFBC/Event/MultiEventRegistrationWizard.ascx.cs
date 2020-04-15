@@ -3707,7 +3707,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
             transactionDetail.AccountId = FinancialAccount.Id;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = registration.Id;
-            transactionDetail.Summary = String.Format( "{0} - {1} - {2}", registrationInformation.RegistrationInstanceState.RegistrationTemplate.Category.Name, registrationInformation.RegistrationInstanceState.RegistrationTemplate.Name, registrationInformation.RegistrationInstanceState.Name );
+            transactionDetail.Summary = String.Format( "DAYCATION - {0} - {1}", registrationInformation.RegistrationInstanceState.RegistrationTemplate.Name, registrationInformation.RegistrationInstanceState.Name );
             scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
 
             var registrationChanges = new History.HistoryChangeList();
