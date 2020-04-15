@@ -1363,6 +1363,7 @@ The logged-in person's information will be used to complete the registrar inform
                     fee.Order = feeUI.Order;
                     fee.IsActive = feeUI.IsActive;
                     fee.IsRequired = feeUI.IsRequired;
+                    fee.HideWhenNoneRemaining = feeUI.HideWhenNoneRemaining;
                 }
 
                 // Add/Update Registration Placements
@@ -2130,6 +2131,7 @@ The logged-in person's information will be used to complete the registrar inform
             fee.DiscountApplies = cbDiscountApplies.Checked;
             fee.IsActive = cbFeeIsActive.Checked;
             fee.IsRequired = cbFeeIsRequired.Checked;
+            fee.HideWhenNoneRemaining = cbHideWhenNoneRemaining.Checked;
 
             // set the FeeItems to what they are in the UI
             fee.FeeItems = new List<RegistrationTemplateFeeItem>();
@@ -3467,6 +3469,7 @@ The logged-in person's information will be used to complete the registrar inform
             cbDiscountApplies.Checked = fee.DiscountApplies;
             cbFeeIsActive.Checked = fee.IsActive;
             cbFeeIsRequired.Checked = fee.IsRequired;
+            cbHideWhenNoneRemaining.Checked = fee.HideWhenNoneRemaining;
 
             ShowDialog( dlgFee );
         }

@@ -1283,7 +1283,7 @@ namespace RockWeb.Blocks.Groups
             int? parentGroupGroupTypeId = null;
             if ( parentGroupId.HasValue )
             {
-                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => s.ParentGroupId );
+                parentGroupGroupTypeId = new GroupService( rockContext ).GetSelect( parentGroupId.Value, s => ( int? ) s.ParentGroup.GroupTypeId );
             }
 
             var groupTypeQry = GetAllowedGroupTypes( GroupTypeCache.Get( parentGroupGroupTypeId ?? 0 ), rockContext );
@@ -2016,7 +2016,7 @@ namespace RockWeb.Blocks.Groups
                 if ( groupType.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
                     var groupTypeDetailPage = new PageReference( Rock.SystemGuid.Page.GROUP_TYPE_DETAIL ).BuildUrl();
-                    hlType.Text = string.Format( "<a href='{0}?groupTypeId={1}'>{2}</a>", groupTypeDetailPage, groupType.Id, groupType.Name );
+                    hlType.Text = string.Format( "<a href='{0}?GroupTypeId={1}'>{2}</a>", groupTypeDetailPage, groupType.Id, groupType.Name );
                 }
                 else
                 {
@@ -2296,7 +2296,7 @@ namespace RockWeb.Blocks.Groups
 
             foreach ( var rsvpReminder in rsvpReminderCommunications )
             {
-                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem(rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
+                ddlRsvpReminderSystemCommunication.Items.Add( new ListItem( rsvpReminder.Title, rsvpReminder.Id.ToString() ) );
             }
 
             ddlAttendanceRecordRequiredForCheckIn.BindToEnum<AttendanceRecordRequiredForCheckIn>();

@@ -731,17 +731,20 @@ namespace Rock.Model
                 return;
             }
 
-
             var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
             var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
 
             var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
 
-            // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime
+            // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime.
+            // However, don't exclude if the date added can't be determined or they will never be sent a scheduled communication.
             if ( this.FutureSendDateTime.HasValue )
             {
                 var memberAddedCutoffDate = this.FutureSendDateTime;
-                qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate ) || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate ) );
+
+                qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate )
+                                                                                        || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate )
+                                                                                        || ( !a.DateTimeAdded.HasValue && !a.CreatedDateTime.HasValue ) );
             }
 
             var communicationRecipientService = new CommunicationRecipientService( rockContext );

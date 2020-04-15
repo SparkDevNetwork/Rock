@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock;
 using Rock.Attribute;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -159,7 +160,13 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            Dictionary<string, string> queryString = new Dictionary<string, string>();
+            var relativePath = PageParameter( PageParameterKey.RelativeFilePath );
+            if ( relativePath.IsNotNullOrWhiteSpace() )
+            {
+                queryString.Add( PageParameterKey.RelativeFilePath, relativePath );
+            }
+            NavigateToParentPage( queryString );
         }
 
         #endregion

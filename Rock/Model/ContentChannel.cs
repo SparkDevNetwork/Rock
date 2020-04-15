@@ -276,6 +276,21 @@ namespace Rock.Model
         private ICollection<ContentChannel> _parentContentChannels;
 
         /// <summary>
+        /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
+        /// </summary>
+        /// <value>
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Category> Categories
+        {
+            get { return _categories ?? ( _categories = new Collection<Category>() ); }
+            set { _categories = value; }
+        }
+        private ICollection<Category> _categories;
+
+        /// <summary>
         /// Gets the supported actions.
         /// </summary>
         /// <value>
@@ -461,6 +476,7 @@ namespace Rock.Model
             this.HasRequired( c => c.ContentChannelType ).WithMany( t => t.Channels ).HasForeignKey( c => c.ContentChannelTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.ItemTagCategory ).WithMany().HasForeignKey( c => c.ItemTagCategoryId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.StructuredContentToolValue ).WithMany().HasForeignKey( p => p.StructuredContentToolValueId ).WillCascadeOnDelete( false );
+            this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "ContentChannelId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "ContentChannelCategory" ); } );
         }
     }
 

@@ -596,27 +596,24 @@ namespace RockWeb.Blocks.Steps
                 var programId = PageParameter( PageParameterKey.StepProgramId ).AsIntegerOrNull();
                 var rockContext = GetRockContext();
                 var service = new StepProgramService( rockContext );
+                var query = service.Queryable()
+                    .Include( sp => sp.StepTypes )
+                    .AsNoTracking();
 
                 if ( programGuid.HasValue )
                 {
                     // 1.) Use the block setting
-                    _stepProgram = service.Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( sp => sp.Guid == programGuid.Value && sp.IsActive );
+                    _stepProgram = query.FirstOrDefault( sp => sp.Guid == programGuid.Value && sp.IsActive );
                 }
                 else if ( programId.HasValue )
                 {
                     // 2.) Use the page parameter
-                    _stepProgram = service.Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( sp => sp.Id == programId.Value && sp.IsActive );
+                    _stepProgram = query.FirstOrDefault( sp => sp.Id == programId.Value && sp.IsActive );
                 }
                 else
                 {
                     // 3.) Just use the first active program
-                    _stepProgram = service.Queryable()
-                        .AsNoTracking()
-                        .FirstOrDefault( sp => sp.IsActive );
+                    _stepProgram = query.FirstOrDefault( sp => sp.IsActive );
                 }
             }
 
@@ -749,10 +746,21 @@ namespace RockWeb.Blocks.Steps
 
                 if ( person != null && program != null )
                 {
-                    _personStepsMap = program.StepTypes.Where( st => st.IsActive ).ToDictionary(
-                        st => st.Id,
-                        st => st.Steps
-                            .Where( s => s.PersonAlias.PersonId == person.Id )
+                    var rockContext = GetRockContext();
+                    var stepService = new StepService( rockContext );
+
+                    var activeStepTypeIds = program.StepTypes.Where( st => st.IsActive ).Select( st => st.Id );
+
+                    var personSteps = stepService.Queryable()
+                        .Where( s =>
+                            activeStepTypeIds.Contains( s.StepTypeId ) &&
+                            s.PersonAlias.PersonId == person.Id )
+                        .ToList();
+
+                    _personStepsMap = activeStepTypeIds.ToDictionary(
+                        stId => stId,
+                        stId => personSteps
+                            .Where( s => s.StepTypeId == stId )
                             .OrderBy( s => s.CompletedDateTime ?? s.EndDateTime ?? s.StartDateTime ?? s.CreatedDateTime ?? DateTime.MinValue )
                             .ToList() );
                 }
@@ -1227,9 +1235,9 @@ namespace RockWeb.Blocks.Steps
             if ( person != null )
             {
                 NavigateToLinkedPage( AttributeKey.StepPage, new Dictionary<string, string> {
-                    { "personId", person.Id.ToString() },
-                    { "stepTypeId", stepTypeId.ToString() },
-                    { "stepId", (stepId ?? 0).ToString() }
+                    { "PersonId", person.Id.ToString() },
+                    { "StepTypeId", stepTypeId.ToString() },
+                    { "StepId", (stepId ?? 0).ToString() }
                 } );
             }
         }

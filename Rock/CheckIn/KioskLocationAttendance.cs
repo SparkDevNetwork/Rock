@@ -35,6 +35,7 @@ namespace Rock.CheckIn
         /// </summary>
         private KioskLocationAttendance()
         {
+            DefaultLifespan = TimeSpan.FromMinutes( 2 );
         }
 
         /// <summary>
@@ -121,7 +122,7 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public static KioskLocationAttendance Get( int id )
         {
-            return GetOrAddExisting( id, () => Create( id ), new TimeSpan( 0, 2, 0 ) );
+            return GetOrAddExisting( id, () => Create( id ) );
         }
 
         private static KioskLocationAttendance Create( int id )

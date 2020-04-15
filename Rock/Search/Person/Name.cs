@@ -62,7 +62,7 @@ namespace Rock.Search.Person
                 if ( allowFirstNameSearch )
                 {
                     string url = base.ResultUrl;
-                    return url + ( url.Contains( "?" ) ? "&" : "?" ) + "allowFirstNameOnly=true";
+                    return url + ( url.Contains( "?" ) ? "&" : "?" ) + "AllowFirstNameOnly=true";
                 }
 
                 return base.ResultUrl;

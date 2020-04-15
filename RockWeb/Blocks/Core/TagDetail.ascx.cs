@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Core
             
             string pageTitle = "New Tag";
             
-            int? tagId = PageParameter( "tagId" ).AsIntegerOrNull();
+            int? tagId = PageParameter( "TagId" ).AsIntegerOrNull();
             if (tagId.HasValue)
             {
                 Tag tag = new TagService( new RockContext() ).Get( tagId.Value );
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Core
                 } );
 
                 var qryParams = new Dictionary<string, string>();
-                qryParams["tagId"] = tag.Id.ToString();
+                qryParams["TagId"] = tag.Id.ToString();
 
                 NavigateToPage( RockPage.Guid, qryParams );
             }

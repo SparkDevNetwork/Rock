@@ -949,6 +949,37 @@ namespace Rock.DownhillCss
     border-radius: 1000;
 }
 
+/* Toggle Button CSS */
+.toggle-button {
+    border-radius: 0;
+    border-color: ?color-primary;
+    background-color: initial;
+    padding: 9 12 12 12;
+}
+
+.toggle-button .title {
+    color: ?color-primary;
+    font-size: large;
+}
+
+.toggle-button .icon {
+    margin: 3 0 0 0;
+    color: ?color-primary;
+    font-size: large;
+}
+
+.toggle-button.checked {
+    background-color: ?color-primary;
+}
+
+.toggle-button.checked .title {
+    color: white;
+}
+
+.toggle-button.checked .icon {
+    color: white;
+}
+
 ";
     }
 }

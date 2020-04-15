@@ -77,7 +77,7 @@ namespace Rock.Field.Types
             }
 
             var httpContext = System.Web.HttpContext.Current;
-            if ( string.IsNullOrEmpty(originalValue) && httpContext != null && httpContext.Request != null && httpContext.Request.Params["workflowTypeId"] != null && httpContext.Request.Params["workflowTypeId"].AsIntegerOrNull() == 0 )
+            if ( string.IsNullOrEmpty(originalValue) && httpContext != null && httpContext.Request != null && httpContext.Request.Params["WorkflowTypeId"] != null && httpContext.Request.Params["WorkflowTypeId"].AsIntegerOrNull() == 0 )
             {
 
                 var workflowType = GetContextWorkflowType();
