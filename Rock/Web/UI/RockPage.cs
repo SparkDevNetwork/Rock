@@ -1286,7 +1286,7 @@ namespace Rock.Web.UI
                             {
 
                                 stopwatchBlockInit.Stop();
-                                slDebugTimings.Append( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"(Block Id: {block.Id})" ) );
+                                slDebugTimings.Append( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"({block.BlockType})" ) );
                             }
                         }
                     }
