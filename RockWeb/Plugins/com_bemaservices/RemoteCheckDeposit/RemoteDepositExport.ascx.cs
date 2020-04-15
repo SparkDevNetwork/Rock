@@ -319,19 +319,10 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                     }
                     catch { /* Intentionally left blank */ }
 
-                    bool isNotEmpty = !string.IsNullOrEmpty(transaction.CheckMicrHash);
-                    bool isValid = Micr.IsValid(Rock.Security.Encryption.DecryptString(transaction.CheckMicrEncrypted));
-                    bool hasImages = transaction.Images.Count == 2;
                     List<string> errors = new List<string>();
+                    bool isValid = Micr.IsValid(Rock.Security.Encryption.DecryptString(transaction.CheckMicrEncrypted), out errors );
+                    bool hasImages = transaction.Images.Count == 2;
 
-                    if ( !isNotEmpty )
-                    {
-                        errors.Add("No MICR Information Found");
-                    }
-                    else if ( !isValid )
-                    {
-                        errors.Add("MICR Information Invalid. Check to make sure there is a valid Routing, Account, and Check Number");
-                    }
                     if ( !hasImages )
                     {
                         errors.Add("Transaction does not contain two images (front and back of check) ");
@@ -345,7 +336,7 @@ namespace RockWeb.Plugins.com_bemaservices.RemoteCheckDeposit
                         CheckNumber = checkNumber,
                         Amount = transaction.TotalAmount,
                         ImageUrl = transaction.Images.FirstOrDefault().IsNotNull() ? transaction.Images.First().BinaryFile.Url : "",
-                        IsValid = (isNotEmpty && isValid && hasImages),
+                        IsValid = ( isValid && hasImages ),
                         IsValidMessage = errors.AsDelimited("<br/>")
                     };
 

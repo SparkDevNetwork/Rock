@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace com.bemaservices.RemoteCheckDeposit
@@ -181,6 +182,11 @@ namespace com.bemaservices.RemoteCheckDeposit
 
         #region Static Methods
 
+        public static bool IsValid( string content )
+        {
+            return IsValid( content, out _);
+        }
+
         /// <summary>
         /// Returns true if the MICR content is valid. This is not a perfect check, but
         /// it should give a strong indication on the MICR string being valid or not.
@@ -189,42 +195,56 @@ namespace com.bemaservices.RemoteCheckDeposit
         /// <returns>
         ///   <c>true</c> if the specified content is valid; otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsValid( string content )
+        public static bool IsValid( string content, out List<string> error )
         {
+            error = new List<string>();
+
             if ( content == null || content.Length == 0 )
             {
-                return false;
+                error.Add( "No MICR Information Provided. Manually Add Account and Item Numbers.");
             }
-            else if ( content.Contains( "!" ) )
+            else 
+            {
+                if (content.Contains("!"))
+                {
+                    error.Add("MICR Read Error. Check Account and Item Numbers For Accuracy.");
+                }
+
+                try
+                {
+                    var micr = new Micr(content);
+
+                    if (micr.GetRoutingNumber().Length != 9 || !int.TryParse( micr.GetRoutingNumber(), out _ ) )
+                    {
+                        error.Add("MICR Routing Number Error. Must Be 9 Digits.");
+                    }
+
+                    if (micr.GetAccountNumber().Length < 4 || !int.TryParse( micr.GetAccountNumber(), out _) )
+                    {
+                        error.Add("MICR Account Number Error. Must Be At Least 4 Digits.");
+                    }
+
+                    if (micr.GetCheckNumber().Length < 1 || !int.TryParse( micr.GetCheckNumber(), out _) )
+                    {
+                        error.Add("MICR Check Number Error. Must Be At Least 2 Digits.");
+                    }
+
+                }
+                catch
+                {
+                    error.Add("MICR Failed To Parse. Manually Add Account and Item Numbers.");
+                }
+            }
+            
+
+
+            if ( error.Any() )
             {
                 return false;
             }
-
-            try
+            else
             {
-                var micr = new Micr( content );
-
-                if ( micr.GetRoutingNumber().Length != 9 )
-                {
-                    return false;
-                }
-
-                if ( micr.GetAccountNumber().Length < 4 )
-                {
-                    return false;
-                }
-
-                if ( micr.GetCheckNumber().Length < 1 )
-                {
-                    return false;
-                }
-
-
                 return true;
-            }
-            catch
-            {
-                return false;
             }
         }
 
