@@ -291,6 +291,13 @@ namespace Rock.Mobile
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
+            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.Primary );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.Secondary );
+            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.Success );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.Danger );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.Warning );
+            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
+            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
 
             if ( site.FavIconBinaryFileId.HasValue )
             {

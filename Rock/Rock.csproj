@@ -222,8 +222,8 @@
     <Reference Include="RestSharp, Version=105.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Rock.Common.Mobile, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rock.Common.Mobile.0.3.6\lib\net452\Rock.Common.Mobile.dll</HintPath>
+    <Reference Include="Rock.Common.Mobile, Version=0.3.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rock.Common.Mobile.0.3.7\lib\net452\Rock.Common.Mobile.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.2.8.0\lib\net45\Serilog.dll</HintPath>
@@ -493,6 +493,8 @@
     <Compile Include="Plugin\HotFixes\111_HideGiftsCategoriesWithNoGifts.cs" />
     <Compile Include="Transactions\PageRenameTransaction.cs" />
     <Compile Include="Logging\RockLogLevel.cs" />
+    <Compile Include="Reporting\DataFilter\Person\StepParticipantsByAttributeValueFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Step\StepsAttributeValuesFilter.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
     <Compile Include="Web\Cache\IIHasLifespan.cs" />
