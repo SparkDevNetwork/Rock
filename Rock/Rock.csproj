@@ -463,6 +463,7 @@
     <Compile Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2.cs" />
     <Compile Include="Plugin\HotFixes\112_XamlTemplateMigration.cs" />
     <Compile Include="Plugin\HotFixes\111_HideGiftsCategoriesWithNoGifts.cs" />
+    <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepParticipantsByAttributeValueFilter.cs" />
     <Compile Include="Reporting\DataFilter\Step\StepsAttributeValuesFilter.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
