@@ -29,9 +29,9 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Up()
         {
-            UpdateGroupMemberForSystemCommunication();
-            UpdateAssessmentResultsLavaBarCharts();
-            RemovePagenamefromSystemCommunicationDetailBreadcrumbs();
+            //UpdateGroupMemberForSystemCommunication();
+            //UpdateAssessmentResultsLavaBarCharts();
+            //RemovePagenamefromSystemCommunicationDetailBreadcrumbs();
         }
 
         /// <summary>
