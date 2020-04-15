@@ -298,6 +298,8 @@ TransactionAccountDetails: [
         {
             base.OnInit( e );
 
+            this.BlockUpdated += TransactionEntry_BlockUpdated;
+
             _allowAccountsInUrl = GetAttributeValue( "AllowAccountsInURL" ).AsBoolean( false );
             _onlyPublicAccountsInUrl = GetAttributeValue( "OnlyPublicAccountsInURL" ).AsBoolean( true );
 
@@ -338,6 +340,17 @@ TransactionAccountDetails: [
             }
 
             RegisterScript();
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the TransactionEntry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void TransactionEntry_BlockUpdated( object sender, EventArgs e )
+        {
+            // if block settings have changed, reload the page
+            this.NavigateToCurrentPageReference();
         }
 
         /// <summary>
@@ -708,7 +721,7 @@ TransactionAccountDetails: [
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Danger, "Before we finish...", errorMessage );
+                        ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
                     }
                 }
                 else
@@ -720,7 +733,7 @@ TransactionAccountDetails: [
             }
             else
             {
-                ShowMessage( NotificationBoxType.Danger, "Before we finish...", errorMessage );
+                ShowMessage( NotificationBoxType.Validation, "Before we finish...", errorMessage );
             }
         }
 
@@ -3182,18 +3195,18 @@ TransactionAccountDetails: [
         // Detect credit card type
         $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card-logos' }});
 
-        if ( typeof {21} != 'undefined' ) {{
+        if ( typeof {4} != 'undefined' ) {{
             //// Toggle credit card display if saved card option is available
-            $('input[name=""{22}""]').on('change', function () {{
+            $('input[name=""{5}""]').on('change', function () {{
 
-                var radioDisplay = $('#{23}').css('display');
-                var selectedVal = $('input[name=""{22}""]:checked').val();
+                var radioDisplay = $('#{6}').css('display');
+                var selectedVal = $('input[name=""{5}""]:checked').val();
 
                 if ( selectedVal == 0 && radioDisplay == 'none') {{
-                    $('#{23}').slideDown();
+                    $('#{6}').slideDown();
                 }}
                 else if (selectedVal != 0 && radioDisplay != 'none') {{
-                    $('#{23}').slideUp();
+                    $('#{6}').slideUp();
                 }}
             }});
         }}
@@ -3219,74 +3232,6 @@ TransactionAccountDetails: [
             }}
         }});
     }});
-
-    // Posts the iframe (step 2)
-    $('#aStep2Submit').on('click', function(e) {{
-        e.preventDefault();
-        if (typeof (Page_ClientValidate) == 'function') {{
-            if (Page_IsValid && Page_ClientValidate('{7}') ) {{
-                $(this).prop('disabled', true);
-                $('#updateProgress').show();
-                var src = $('#{4}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-
-                if ( $('#{16}').is(':visible') && $('#{16}').prop('checked') ) {{
-                    $form.find('.js-billing-address1').val( $('#{17}_tbStreet1').val() );
-                    $form.find('.js-billing-city').val( $('#{17}_tbCity').val() );
-                    if ( $('#{17}_ddlState').length ) {{
-                        $form.find('.js-billing-state').val( $('#{17}_ddlState').val() );
-                    }} else {{
-                        $form.find('.js-billing-state').val( $('#{17}_tbState').val() );
-                    }}
-                    $form.find('.js-billing-postal').val( $('#{17}_tbPostalCode').val() );
-                    $form.find('.js-billing-country').val( $('#{17}_ddlCountry').val() );
-                }}
-
-                if ( $('#{1}').val() == 'CreditCard' ) {{
-                    $form.find('.js-cc-first-name').val( $('#{18}').val() );
-                    $form.find('.js-cc-last-name').val( $('#{19}').val() );
-                    $form.find('.js-cc-full-name').val( $('#{20}').val() );
-                    $form.find('.js-cc-number').val( $('#{8}').val() );
-                    var mm = $('#{9}_monthDropDownList').val();
-                    var yy = $('#{9}_yearDropDownList_').val();
-                    mm = mm.length == 1 ? '0' + mm : mm;
-                    yy = yy.length == 4 ? yy.substring(2,4) : yy;
-                    $form.find('.js-cc-expiration').val( mm + yy );
-                    $form.find('.js-cc-cvv').val( $('#{10}').val() );
-                }} else {{
-                    $form.find('.js-account-name').val( $('#{11}').val() );
-                    $form.find('.js-account-number').val( $('#{12}').val() );
-                    $form.find('.js-routing-number').val( $('#{13}').val() );
-                    $form.find('.js-account-type').val( $('#{14}').find('input:checked').val() );
-                    $form.find('.js-entity-type').val( 'personal' );
-                }}
-
-                $form.attr('action', src );
-                $form.submit();
-            }}
-        }}
-    }});
-
-    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
-    // The qry parameter value is saved to a hidden field and a post back is performed
-    $('#iframeStep2').on('load', function(e) {{
-        var location = this.contentWindow.location;
-        var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{
-            $('#{5}').val(qryString);
-            window.location = ""javascript:{6}"";
-        }} else {{
-            if ( $('#{15}').val() == 'true' ) {{
-                $('#updateProgress').show();
-                var src = $('#{4}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-                $form.attr('action', src );
-                $form.submit();
-                $('#updateProgress').hide();
-            }}
-        }}
-    }});
-
 ";
             string script = string.Format(
                 scriptFormat,
@@ -3294,29 +3239,19 @@ TransactionAccountDetails: [
                 hfPaymentTab.ClientID,          // {1}
                 oneTimeFrequencyId,             // {2}
                 GlobalAttributesCache.Value( "CurrencySymbol" ), // {3)
-                hfStep2Url.ClientID,            // {4}
-                hfStep2ReturnQueryString.ClientID,   // {5}
-                this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ), // {6}
-                this.BlockValidationGroup,      // {7}
-                txtCreditCard.ClientID,         // {8}
-                mypExpiration.ClientID,         // {9}
-                txtCVV.ClientID,                // {10}
-                txtAccountName.ClientID,        // {11}
-                txtAccountNumber.ClientID,      // {12}
-                txtRoutingNumber.ClientID,      // {13}
-                rblAccountType.ClientID,        // {14}
-                hfStep2AutoSubmit.ClientID,     // {15}
-                cbBillingAddress.ClientID,      // {16}
-                acBillingAddress.ClientID,      // {17}
-                txtCardFirstName.ClientID,      // {18}
-                txtCardLastName.ClientID,       // {19}
-                txtCardName.ClientID,           // {20}
-                rblSavedAccount.ClientID,       // {21}
-                rblSavedAccount.UniqueID,       // {22}
-                divNewPayment.ClientID          // {23}
+                rblSavedAccount.ClientID,       // {4}
+                rblSavedAccount.UniqueID,       // {5}
+                divNewPayment.ClientID          // {6}
             );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
+
+            bool usingNMIThreeStep = this._ccGatewayComponent is Rock.NMI.Gateway || this._achGatewayComponent is Rock.NMI.Gateway;
+            if ( usingNMIThreeStep )
+            {
+                var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "three-step-script", threeStepScript, true );
+            }
 
             if ( _using3StepGateway )
             {

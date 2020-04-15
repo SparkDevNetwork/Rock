@@ -120,27 +120,28 @@
                                 <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">
                                     <div class="row">
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="The primary color to use for the mobile app." />
                                         </div>
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="The secondary color to use for the mobile app." />
                                         </div>
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Override the default color provided by the mobile OS." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="The success color to use for the mobile app." />
                                         </div>
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpInfo" runat="server" Label="Info" Help="The info color to use for the mobile app." />
                                         </div>
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="The danger color to use for the mobile app." />
                                         </div>
-
                                         <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="Override the default color provided by the mobile OS." />
+                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="The warning color to use for the mobile app." />
+                                        </div>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="The dark color to use for the mobile app." />
+                                        </div>
+                                        <div class="col-md-4 col-sm-6">
+                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="The light color to use for the mobile app." />
                                         </div>
                                     </div>
                                 </Rock:RockControlWrapper>

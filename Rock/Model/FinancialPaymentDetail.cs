@@ -85,7 +85,7 @@ namespace Rock.Model
         public string NameOnCardEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration month encrypted.
+        /// Gets or sets the expiration month encrypted. Use <seealso cref="ExpirationMonth"/> to get the unencrypted version of Month.
         /// </summary>
         /// <value>
         /// The expiration month encrypted.
@@ -95,7 +95,7 @@ namespace Rock.Model
         public string ExpirationMonthEncrypted { get; set; }
 
         /// <summary>
-        /// Gets or sets the expiration year encrypted.
+        /// Important Note: that this could be a 2 digit or 4 digit year, so use <seealso cref="ExpirationYear"/> to get the unencrypted version of this which will always return a 4 digit year.
         /// </summary>
         /// <value>
         /// The expiration year encrypted.
@@ -131,6 +131,7 @@ namespace Rock.Model
         /// The financial person saved account.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int? FinancialPersonSavedAccountId { get; set; }
 
         #endregion
@@ -147,6 +148,10 @@ namespace Rock.Model
         [HideFromReporting]
         public string NameOnCard
         {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
             get
             {
                 return Encryption.DecryptString( NameOnCardEncrypted );
@@ -167,6 +172,10 @@ namespace Rock.Model
         [HideFromReporting]
         public int? ExpirationMonth
         {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
             get
             {
                 return Encryption.DecryptString( ExpirationMonthEncrypted ).AsIntegerOrNull();
@@ -178,7 +187,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the expiration year by decrypting ExpirationYearEncrypted
+        /// Gets the 4 digit year by decrypting ExpirationYearEncrypted and correcting to a 4 digit year if ExpirationYearEncrypted is just a 2 digit year
         /// </summary>
         /// <value>
         /// The expiration year.
@@ -187,10 +196,24 @@ namespace Rock.Model
         [HideFromReporting]
         public int? ExpirationYear
         {
+            /* MDP 2020-03-13
+               NOTE: This is not really a [DataMember] (see <seealso cref="FinancialPaymentDetailConfiguration"/>)
+            */
+
             get
             {
-                return Encryption.DecryptString( ExpirationYearEncrypted ).AsIntegerOrNull();
+                var year = Encryption.DecryptString( ExpirationYearEncrypted ).AsIntegerOrNull();
+
+                if ( year != null && year.Value < 100 == true )
+                {
+                    // convert 2 digit year from 4 digit year
+                    // from https://stackoverflow.com/a/10414707/1755417
+                    year = System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+                }
+
+                return year;
             }
+
             set
             {
                 ExpirationYearEncrypted = Encryption.EncryptString( value.ToStringSafe() );
@@ -198,7 +221,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the expiration date formatted as mm/yy
+        /// Gets the expiration date formatted as mm/yy, as per ISO7813 https://en.wikipedia.org/wiki/ISO/IEC_7813
         /// </summary>
         /// <value>
         /// The expiration date.
@@ -212,8 +235,16 @@ namespace Rock.Model
                 int? expYear = ExpirationYear;
                 if ( expMonth.HasValue && expYear.HasValue )
                 {
-                    return $"{expMonth.Value:00}/{expYear.Value:00}";
+                    // expYear is 4 digits, but just in case, check if it is 4 digits before just getting the last 2
+                    string expireYY = expYear.Value.ToString();
+                    if ( expireYY.Length == 4 )
+                    {
+                        expireYY = expireYY.Substring( 2 );
+                    }
+
+                    return $"{expMonth.Value:00}/{expireYY:00}";
                 }
+
                 return null;
             }
         }
@@ -325,7 +356,7 @@ namespace Rock.Model
         /// <param name="paymentInfo">The payment information.</param>
         /// <param name="paymentGateway">The payment gateway.</param>
         /// <param name="rockContext">The rock context.</param>
-        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext ) 
+        public void SetFromPaymentInfo( PaymentInfo paymentInfo, GatewayComponent paymentGateway, RockContext rockContext )
         {
             if ( AccountNumberMasked.IsNullOrWhiteSpace() && paymentInfo.MaskedNumber.IsNotNullOrWhiteSpace() )
             {
@@ -340,14 +371,14 @@ namespace Rock.Model
                 CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
             }
 
-            if ( !CreditCardTypeValueId.HasValue &&  paymentInfo.CreditCardTypeValue != null )
+            if ( !CreditCardTypeValueId.HasValue && paymentInfo.CreditCardTypeValue != null )
             {
                 CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
             }
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
-                var ccPaymentInfo = (CreditCardPaymentInfo)paymentInfo;
+                var ccPaymentInfo = ( CreditCardPaymentInfo ) paymentInfo;
 
                 string nameOnCard = paymentGateway.SplitNameOnCard ? ccPaymentInfo.NameOnCard + " " + ccPaymentInfo.LastNameOnCard : ccPaymentInfo.NameOnCard;
                 var newLocation = new LocationService( rockContext ).Get(
@@ -375,7 +406,7 @@ namespace Rock.Model
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
-                var swipePaymentInfo = (SwipePaymentInfo)paymentInfo;
+                var swipePaymentInfo = ( SwipePaymentInfo ) paymentInfo;
 
                 if ( NameOnCard.IsNullOrWhiteSpace() && NameOnCard.IsNotNullOrWhiteSpace() )
                 {
@@ -412,7 +443,7 @@ namespace Rock.Model
         /// <param name="entry"></param>
         public override void PreSaveChanges( Rock.Data.DbContext dbContext, DbEntityEntry entry )
         {
-            var rockContext = (RockContext)dbContext;
+            var rockContext = ( RockContext ) dbContext;
             HistoryChangeList = new History.HistoryChangeList();
 
             switch ( entry.State )
@@ -420,8 +451,8 @@ namespace Rock.Model
                 case EntityState.Added:
                     {
                         History.EvaluateChange( HistoryChangeList, "Account Number", string.Empty, AccountNumberMasked );
-                        History.EvaluateChange( HistoryChangeList, "Currency Type", (int?)null, CurrencyTypeValue, CurrencyTypeValueId );
-                        History.EvaluateChange( HistoryChangeList, "Credit Card Type", (int?)null, CreditCardTypeValue, CreditCardTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Currency Type", ( int? ) null, CurrencyTypeValue, CurrencyTypeValueId );
+                        History.EvaluateChange( HistoryChangeList, "Credit Card Type", ( int? ) null, CreditCardTypeValue, CreditCardTypeValueId );
                         History.EvaluateChange( HistoryChangeList, "Name On Card", string.Empty, AccountNumberMasked, true );
                         History.EvaluateChange( HistoryChangeList, "Expiration Month", string.Empty, ExpirationMonthEncrypted, true );
                         History.EvaluateChange( HistoryChangeList, "Expiration Year", string.Empty, ExpirationYearEncrypted, true );
@@ -462,16 +493,16 @@ namespace Rock.Model
         {
             if ( HistoryChangeList.Any() )
             {
-                foreach ( var txn in new FinancialTransactionService( (RockContext)dbContext )
+                foreach ( var txn in new FinancialTransactionService( ( RockContext ) dbContext )
                     .Queryable().AsNoTracking()
                     .Where( t => t.FinancialPaymentDetailId == this.Id )
                     .Select( t => new { t.Id, t.BatchId } )
                     .ToList() )
                 {
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialTransaction ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.Id, HistoryChangeList, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                     var batchHistory = new History.HistoryChangeList();
                     batchHistory.AddChange( History.HistoryVerb.Modify, History.HistoryChangeType.Property, "Transaction" );
-                    HistoryService.SaveChanges( (RockContext)dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), txn.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
+                    HistoryService.SaveChanges( ( RockContext ) dbContext, typeof( FinancialBatch ), Rock.SystemGuid.Category.HISTORY_FINANCIAL_TRANSACTION.AsGuid(), txn.BatchId.Value, batchHistory, string.Empty, typeof( FinancialTransaction ), txn.Id, true, this.ModifiedByPersonAliasId, dbContext.SourceOfChange );
                 }
             }
 
@@ -500,8 +531,10 @@ namespace Rock.Model
             // NOTE: Migration for this makes this a 'ON DELETE SET NULL' cascade
             this.HasOptional( t => t.FinancialPersonSavedAccount ).WithMany().HasForeignKey( t => t.FinancialPersonSavedAccountId ).WillCascadeOnDelete( true );
 
-            // This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
-            // even though they are ignored at the database level
+            /* BW and MDP 2019-04-18
+              This has similar functionality like [NotMapped], but allows the properties to still work with odata $expand
+              even though they are ignored at the database level
+            */
             Ignore( fpd => fpd.NameOnCard );
             Ignore( fpd => fpd.ExpirationMonth );
             Ignore( fpd => fpd.ExpirationYear );

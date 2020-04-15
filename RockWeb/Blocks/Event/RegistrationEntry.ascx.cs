@@ -124,6 +124,7 @@ namespace RockWeb.Blocks.Event
         private const string CURRENT_FORM_INDEX_KEY = "CurrentFormIndex";
         private const string MINIMUM_PAYMENT_KEY = "MinimumPayment";
         private const string DEFAULT_PAYMENT_KEY = "DefaultPayment";
+        private const string AUTO_APPLIED_DISCOUNT = "AutoAppliedDiscount";
 
         private enum PanelIndex
         {
@@ -277,6 +278,14 @@ namespace RockWeb.Blocks.Event
         /// The default payment.
         /// </value>
         private decimal? defaultPayment { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the discount was applied automatically
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [automatic applied discount]; otherwise, <c>false</c>.
+        /// </value>
+        private bool autoAppliedDiscount { get; set; }
 
         /// <summary>
         /// Gets the registration template.
@@ -472,6 +481,28 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        protected FinancialGateway FinancialGateway
+        {
+            get
+            {
+                FinancialGateway financialGateway = null;
+                if ( RegistrationTemplate != null )
+                {
+                    financialGateway = RegistrationTemplate.FinancialGateway;
+                }
+                else
+                {
+                    int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
+                    if ( registrationInstanceId.HasValue )
+                    {
+                        financialGateway = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, s => s.RegistrationTemplate.FinancialGateway );
+                    }
+                }
+
+                return financialGateway;
+            }
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [using three-step gateway].
         /// </summary>
@@ -480,8 +511,17 @@ namespace RockWeb.Blocks.Event
         /// </value>
         protected bool Using3StepGateway
         {
-            get { return ViewState["Using3StepGateway"] as bool? ?? false; }
-            set { ViewState["Using3StepGateway"] = value; }
+            get
+            {
+                FinancialGateway financialGateway = this.FinancialGateway;
+
+                if ( financialGateway != null )
+                {
+                    return financialGateway.GetGatewayComponent() is IThreeStepGatewayComponent;
+                }
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -589,6 +629,7 @@ namespace RockWeb.Blocks.Event
             CurrentFormIndex = ViewState[CURRENT_FORM_INDEX_KEY] as int? ?? 0;
             minimumPayment = ViewState[MINIMUM_PAYMENT_KEY] as decimal?;
             defaultPayment = ViewState[DEFAULT_PAYMENT_KEY] as decimal?;
+            autoAppliedDiscount = ViewState[DEFAULT_PAYMENT_KEY] as bool? ?? false;
 
             CreateDynamicControls( false );
         }
@@ -719,20 +760,38 @@ namespace RockWeb.Blocks.Event
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
-            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
+            int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
 
+            string pageTitle;
             if ( registrationInstanceId.HasValue )
             {
-                string registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
-
-                RockPage.Title = registrationInstanceName;
-                breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
+                pageTitle = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, s => s.Name );
             }
-            else if ( registrationSlug.IsNotNullOrWhiteSpace() )
+            else
+            {
+                pageTitle = this.PageCache.PageTitle;
+            }
+
+            RockPage.Title = pageTitle;
+            breadCrumbs.Add( new BreadCrumb( pageTitle, pageReference ) );
+
+            return breadCrumbs;
+        }
+
+        /// <summary>
+        /// Gets the registration instance identifier from URL.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetRegistrationInstanceIdFromURL()
+        {
+            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
+            int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+            int? registrationId = PageParameter( REGISTRATION_ID_PARAM_NAME ).AsIntegerOrNull();
+
+            if ( registrationInstanceId == null && registrationSlug.IsNotNullOrWhiteSpace() )
             {
                 var dateTime = RockDateTime.Now;
-                var linkage = new EventItemOccurrenceGroupMapService( new RockContext() )
+                registrationInstanceId = new EventItemOccurrenceGroupMapService( new RockContext() )
                     .Queryable()
                     .AsNoTracking()
                     .Where( l => l.UrlSlug == registrationSlug )
@@ -742,20 +801,14 @@ namespace RockWeb.Blocks.Event
                     .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
                     .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
                     .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .FirstOrDefault();
-
-                if ( linkage != null )
-                {
-                    RockPage.Title = linkage.RegistrationInstance.Name;
-                    breadCrumbs.Add( new BreadCrumb( linkage.RegistrationInstance.Name, pageReference ) );
-                }
+                    .Select( a => a.RegistrationInstanceId ).FirstOrDefault();
             }
-            else
+            else if ( registrationId.HasValue )
             {
-                breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
+                registrationInstanceId = new RegistrationService( new RockContext() ).GetSelect( registrationId.Value, s => s.RegistrationInstanceId );
             }
 
-            return breadCrumbs;
+            return registrationInstanceId;
         }
 
         /// <summary>
@@ -783,6 +836,7 @@ namespace RockWeb.Blocks.Event
             ViewState[CURRENT_FORM_INDEX_KEY] = CurrentFormIndex;
             ViewState[MINIMUM_PAYMENT_KEY] = minimumPayment;
             ViewState[DEFAULT_PAYMENT_KEY] = defaultPayment;
+            ViewState[AUTO_APPLIED_DISCOUNT] = autoAppliedDiscount;
 
             return base.SaveViewState();
         }
@@ -1878,11 +1932,9 @@ namespace RockWeb.Blocks.Event
                 }
             }
 
-            if ( RegistrationTemplate != null &&
-                RegistrationTemplate.FinancialGateway != null )
+            if ( this.FinancialGateway != null )
             {
-                var threeStepGateway = RegistrationTemplate.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
-                Using3StepGateway = threeStepGateway != null;
+                var threeStepGateway = this.FinancialGateway.GetGatewayComponent() as IThreeStepGatewayComponent;
                 if ( Using3StepGateway )
                 {
                     Step2IFrameUrl = ResolveRockUrl( threeStepGateway.Step2FormUrl );
@@ -2987,7 +3039,7 @@ namespace RockWeb.Blocks.Event
 
                 rockContext.SaveChanges();
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 using ( var newRockContext = new RockContext() )
                 {
@@ -3005,7 +3057,7 @@ namespace RockWeb.Blocks.Event
                     }
                 }
 
-                throw ex;
+                throw;
             }
 
             return registration;
@@ -4169,7 +4221,7 @@ namespace RockWeb.Blocks.Event
 
             if ( CurrentPanel == PanelIndex.PanelSummary && !( RegistrationState.RegistrationId.HasValue && RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() ) )
             {
-                AutoApplyDiscounts();
+                autoAppliedDiscount = AutoApplyDiscounts();
             }
 
             pnlRegistrarInfoPrompt.Visible = CurrentPanel == PanelIndex.PanelSummary;
@@ -4269,10 +4321,10 @@ namespace RockWeb.Blocks.Event
     $('input.js-first-name').change( function() {{
         var name = $(this).val();
         if ( name == null || name == '') {{
-            name = '{23}';
+            name = '{11}';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' is in the same {22} as');
+        $lbl.text( name + ' is in the same {10} as');
     }} );
     $('input.js-your-first-name').change( function() {{
         var name = $(this).val();
@@ -4282,17 +4334,17 @@ namespace RockWeb.Blocks.Event
             name += ' is';
         }}
         var $lbl = $('div.js-registration-same-family').find('label.control-label')
-        $lbl.text( name + ' in the same {22} as');
+        $lbl.text( name + ' in the same {10} as');
     }} );
 
     // Adjust the Family Member dropdown when choosing same immediate family
-    $('#{24}').on('change', function() {{
-        var displaySetting = $('#{25}').css('display');
-        if ( $(""input[id*='{24}']:checked"").val() == '{26}' && displaySetting == 'none' ) {{
-            $( '#{25}').slideToggle();
+    $('#{12}').on('change', function() {{
+        var displaySetting = $('#{13}').css('display');
+        if ( $(""input[id*='{12}']:checked"").val() == '{14}' && displaySetting == 'none' ) {{
+            $( '#{13}').slideToggle();
         }}
         else if ( displaySetting == 'block' ) {{
-            $('#{25}').slideToggle();
+            $('#{13}').slideToggle();
         }}
     }});
 
@@ -4347,63 +4399,6 @@ namespace RockWeb.Blocks.Event
         $('#{5}').val('')
     }}
 
-    $('#aStep2Submit').on('click', function(e) {{
-        e.preventDefault();
-        if (typeof (Page_ClientValidate) == 'function') {{
-            if (Page_IsValid && Page_ClientValidate('{10}') ) {{
-                $(this).prop('disabled', true);
-                $('#updateProgress').show();
-                var src = $('#{7}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-
-                $form.find('.js-cc-first-name').val( $('#{16}').val() );
-                $form.find('.js-cc-last-name').val( $('#{17}').val() );
-                $form.find('.js-cc-full-name').val( $('#{18}').val() );
-
-                $form.find('.js-cc-number').val( $('#{11}').val() );
-                var mm = $('#{12}_monthDropDownList').val();
-                var yy = $('#{12}_yearDropDownList_').val();
-                mm = mm.length == 1 ? '0' + mm : mm;
-                yy = yy.length == 4 ? yy.substring(2,4) : yy;
-                $form.find('.js-cc-expiration').val( mm + yy );
-                $form.find('.js-cc-cvv').val( $('#{13}').val() );
-
-                $form.find('.js-billing-address1').val( $('#{15}_tbStreet1').val() );
-                $form.find('.js-billing-city').val( $('#{15}_tbCity').val() );
-
-                if ( $('#{15}_ddlState').length ) {{
-                    $form.find('.js-billing-state').val( $('#{15}_ddlState').val() );
-                }} else {{
-                    $form.find('.js-billing-state').val( $('#{15}_tbState').val() );
-                }}
-                $form.find('.js-billing-postal').val( $('#{15}_tbPostalCode').val() );
-                $form.find('.js-billing-country').val( $('#{15}_ddlCountry').val() );
-
-                $form.attr('action', src );
-                $form.submit();
-            }}
-        }}
-    }});
-
-    // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
-    // The qry parameter value is saved to a hidden field and a post back is performed
-    $('#iframeStep2').on('load', function(e) {{
-        var location = this.contentWindow.location;
-        var qryString = this.contentWindow.location.search;
-        if ( qryString && qryString != '' && qryString.startsWith('?token-id') ) {{
-            $('#{8}').val(qryString);
-            window.location = ""javascript:{9}"";
-        }} else {{
-            if ( $('#{14}').val() == 'true' ) {{
-                $('#updateProgress').show();
-                var src = $('#{7}').val();
-                var $form = $('#iframeStep2').contents().find('#Step2Form');
-                $form.attr('action', src );
-                $form.submit();
-            }}
-        }}
-    }});
-
     // Evaluates the current url whenever the iframe is loaded and if it includes a qrystring parameter
     // The qry parameter value is saved to a hidden field and a post back is performed
     $('#iframeRequiredDocument').on('load', function(e) {{
@@ -4411,8 +4406,8 @@ namespace RockWeb.Blocks.Event
         try {{
             var qryString = this.contentWindow.location.search;
             if ( qryString && qryString != '' && qryString.startsWith('?document_id') ) {{
-                $('#{19}').val(qryString);
-                window.location = ""javascript:{20}"";
+                $('#{7}').val(qryString);
+                window.location = ""javascript:{8}"";
             }}
         }}
         catch (e) {{
@@ -4420,8 +4415,8 @@ namespace RockWeb.Blocks.Event
         }}
     }});
 
-    if ($('#{21}').val() != '' ) {{
-        $('#iframeRequiredDocument').attr('src', $('#{21}').val() );
+    if ($('#{9}').val() != '' ) {{
+        $('#iframeRequiredDocument').attr('src', $('#{9}').val() );
     }}
 
 ", nbAmountPaid.ClientID                 // {0}
@@ -4431,26 +4426,14 @@ namespace RockWeb.Blocks.Event
             , lRemainingDue.ClientID                 // {4}
             , hfTriggerScroll.ClientID               // {5}
             , GlobalAttributesCache.Value( "CurrencySymbol" ) // {6}
-            , hfStep2Url.ClientID                    // {7}
-            , hfStep2ReturnQueryString.ClientID      // {8}
-            , this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) // {9}
-            , this.BlockValidationGroup              // {10}
-            , txtCreditCard.ClientID                 // {11}
-            , mypExpiration.ClientID                 // {12}
-            , txtCVV.ClientID                        // {13}
-            , hfStep2AutoSubmit.ClientID             // {14}
-            , acBillingAddress.ClientID              // {15}
-            , txtCardFirstName.ClientID              // {16}
-            , txtCardLastName.ClientID               // {17}
-            , txtCardName.ClientID                  // {18}
-            , hfRequiredDocumentQueryString.ClientID // {19}
-            , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {20}
-            , hfRequiredDocumentLinkUrl.ClientID     // {21}
-            , GetAttributeValue( "FamilyTerm" )      // {22}
-            , RegistrantTerm                         // {23}
-            , rblFamilyOptions.ClientID              // {24}
-            , pnlFamilyMembers.ClientID              // {25}
-            , controlFamilyGuid                      // {26}
+            , hfRequiredDocumentQueryString.ClientID // {7}
+            , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {8}
+            , hfRequiredDocumentLinkUrl.ClientID     // {9}
+            , GetAttributeValue( "FamilyTerm" )      // {10}
+            , RegistrantTerm                         // {11}
+            , rblFamilyOptions.ClientID              // {12}
+            , pnlFamilyMembers.ClientID              // {13}
+            , controlFamilyGuid                      // {14}
 );
 
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "registrationEntry", script, true );
@@ -4469,6 +4452,9 @@ namespace RockWeb.Blocks.Event
                 txtCVV.ClientID );             // {2}
 
                 ScriptManager.RegisterOnSubmitStatement( Page, Page.GetType(), "clearCCFields", submitScript );
+
+                var threeStepScript = Rock.NMI.Gateway.GetThreeStepJavascript( this.BlockValidationGroup, this.Page.ClientScript.GetPostBackEventReference( lbStep2Return, "" ) );
+                ScriptManager.RegisterStartupScript( pnlPaymentInfo, this.GetType(), "three-step-script", threeStepScript, true );
             }
         }
 
@@ -5156,10 +5142,11 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
+                    tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
+
                     if ( !AllowDiscountCodeEntry() )
                     {
                         tbDiscountCode.Enabled = false;
-                        tbDiscountCode.Text = tbDiscountCode.Text.IsNotNullOrWhiteSpace() ? tbDiscountCode.Text : RegistrationState.DiscountCode;
 
                         // If we cannot edit and there is no existing value then just hide the discount div.
                         divDiscountCode.Visible = tbDiscountCode.Text.IsNotNullOrWhiteSpace();
@@ -5505,12 +5492,12 @@ namespace RockWeb.Blocks.Event
         private bool AllowDiscountCodeEntry()
         {
             // Check if a discount code has already been applied and return false if true
-            if ( RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() )
+            if ( RegistrationState.DiscountCode.IsNotNullOrWhiteSpace() && autoAppliedDiscount == false )
             {
                 return false;
             }
 
-            // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registratin and the cost has not been calculated yet.
+            // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registration and the cost has not been calculated yet.
             decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
             if ( ( balanceDue <= ( decimal ) 0.00 ) && ( RegistrationState.RegistrationId != null ) )
             {
@@ -5526,12 +5513,7 @@ namespace RockWeb.Blocks.Event
         /// <returns></returns>
         private bool ShowDiscountCode()
         {
-            if ( RegistrationTemplate == null )
-            {
-                return false;
-            }
-
-            if ( !RegistrationTemplate.Discounts.Any() )
+            if ( RegistrationTemplate == null || !RegistrationTemplate.Discounts.Any() )
             {
                 return false;
             }
@@ -5632,78 +5614,83 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Applies the first automatic discount that matches the set limits.
         /// </summary>
-        private void AutoApplyDiscounts()
+        /// <returns>returns true if a discount was applied, false if not.</returns>
+        private bool AutoApplyDiscounts()
         {
-            if ( RegistrationState != null )
+            if ( RegistrationState == null )
             {
-                var discounts = RegistrationTemplate.Discounts
-                        .Where( d => d.AutoApplyDiscount )
-                        .OrderBy( d => d.Order )
-                        .ToList();
+                return false;
+            }
 
-                foreach ( var discount in discounts )
+            var discounts = RegistrationTemplate.Discounts
+                    .Where( d => d.AutoApplyDiscount )
+                    .OrderBy( d => d.Order )
+                    .ToList();
+
+            foreach ( var discount in discounts )
+            {
+                RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
+                bool validDiscount = true;
+
+                if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
                 {
-                    RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
-                    bool validDiscount = true;
+                    nbDiscountCode.Visible = true;
+                    validDiscount = false;
+                }
 
-                    if ( validDiscount && discount.MinRegistrants.HasValue && RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
-                    {
-                        nbDiscountCode.Visible = true;
-                        validDiscount = false;
-                    }
+                if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
+                {
+                    nbDiscountCode.Visible = true;
+                    validDiscount = false;
+                }
 
-                    if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
-                    {
-                        nbDiscountCode.Visible = true;
-                        validDiscount = false;
-                    }
+                if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
+                {
+                    nbDiscountCode.Visible = true;
+                    validDiscount = false;
+                }
 
-                    if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
+                if ( validDiscount && discount.MaxUsage.HasValue && RegistrationInstanceState != null )
+                {
+                    using ( var rockContext = new RockContext() )
                     {
-                        nbDiscountCode.Visible = true;
-                        validDiscount = false;
-                    }
-
-                    if ( validDiscount && discount.MaxUsage.HasValue && RegistrationInstanceState != null )
-                    {
-                        using ( var rockContext = new RockContext() )
+                        var instances = new RegistrationService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r =>
+                                r.RegistrationInstanceId == RegistrationInstanceState.Id &&
+                                ( !RegistrationState.RegistrationId.HasValue || r.Id != RegistrationState.RegistrationId.Value ) &&
+                                r.DiscountCode == discount.Code )
+                            .Count();
+                        if ( instances >= discount.MaxUsage.Value )
                         {
-                            var instances = new RegistrationService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( r =>
-                                    r.RegistrationInstanceId == RegistrationInstanceState.Id &&
-                                    ( !RegistrationState.RegistrationId.HasValue || r.Id != RegistrationState.RegistrationId.Value ) &&
-                                    r.DiscountCode == discount.Code )
-                                .Count();
-                            if ( instances >= discount.MaxUsage.Value )
-                            {
-                                nbDiscountCode.Visible = true;
-                                validDiscount = false;
-                            }
+                            nbDiscountCode.Visible = true;
+                            validDiscount = false;
                         }
-                    }
-
-                    if ( validDiscount && discount.MaxRegistrants.HasValue )
-                    {
-                        for ( int i = 0; i < RegistrationState.Registrants.Count; i++ )
-                        {
-                            RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;
-                        }
-                    }
-
-                    RegistrationState.DiscountCode = validDiscount ? discount.Code : string.Empty;
-                    RegistrationState.DiscountPercentage = validDiscount ? discount.DiscountPercentage : 0.0m;
-                    RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
-
-                    if ( validDiscount )
-                    {
-                        nbDiscountCode.Visible = true;
-                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
-                        nbDiscountCode.Text = string.Format( "The {0} '{1}' was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code );
-                        break;
                     }
                 }
+
+                if ( validDiscount && discount.MaxRegistrants.HasValue )
+                {
+                    for ( int i = 0; i < RegistrationState.Registrants.Count; i++ )
+                    {
+                        RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;
+                    }
+                }
+
+                RegistrationState.DiscountCode = validDiscount ? discount.Code : string.Empty;
+                RegistrationState.DiscountPercentage = validDiscount ? discount.DiscountPercentage : 0.0m;
+                RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
+
+                if ( validDiscount )
+                {
+                    nbDiscountCode.Visible = true;
+                    nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
+                    nbDiscountCode.Text = string.Format( "The {0} '{1}' was automatically applied.", DiscountCodeTerm.ToLower(), discount.Code );
+                    return true;
+                }
             }
+
+            return false;
         }
 
         #endregion

@@ -2855,7 +2855,7 @@ namespace Rock.Model
         /// <param name="reasonNote">The reason note.</param>
         /// <returns></returns>
         [RockObsolete( "1.8" )]
-        [Obsolete( "", true ) ]
+        [Obsolete( "", true )]
         public List<string> InactivatePerson( Person person, Web.Cache.DefinedValueCache reason, string reasonNote )
         {
             History.HistoryChangeList historyChangeList;
@@ -3982,13 +3982,18 @@ namespace Rock.Model
             using ( var rockContext = new Rock.Data.RockContext() )
             {
                 foreach ( var attributeValue in new Model.AttributeValueService( rockContext ).Queryable()
-                    .Where( v =>
+                    .Where( v => v.Attribute.EntityTypeId.HasValue && v.EntityId.HasValue &&
                         v.Attribute.EntityTypeId == personEntityTypeId &&
                         ( v.Attribute.EntityTypeQualifierColumn == null || v.Attribute.EntityTypeQualifierColumn == string.Empty ) &&
                         ( v.Attribute.EntityTypeQualifierValue == null || v.Attribute.EntityTypeQualifierValue == string.Empty ) &&
-                        v.EntityId == person.Id ) )
+                        v.EntityId.Value == person.Id )
+                    .Select( a => new { a.AttributeId, a.Value } ) )
                 {
-                    values.AddOrReplace( attributeValue.Attribute.Key, attributeValue.Value );
+                    var attributeKey = AttributeCache.Get( attributeValue.AttributeId )?.Key;
+                    if ( attributeKey.IsNotNullOrWhiteSpace() )
+                    {
+                        values.AddOrReplace( attributeKey, attributeValue.Value );
+                    }
                 }
             }
 
@@ -4329,12 +4334,16 @@ FROM (
         {
             using ( var anonymousGiverPersonRockContext = new RockContext() )
             {
+
+                var connectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT.AsGuid() );
+                var recordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() );
+                var recordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() );
                 var anonymousGiver = new Person()
                 {
-                    IsSystem = false,
-                    RecordTypeValueId = 1,
-                    RecordStatusValueId = 3,
-                    ConnectionStatusValueId = 203,
+                    IsSystem = true,
+                    RecordTypeValueId = recordTypeValueId,
+                    RecordStatusValueId = recordStatusValueId,
+                    ConnectionStatusValueId = connectionStatusValueId,
                     IsDeceased = false,
                     FirstName = "Giver",
                     NickName = "Giver",

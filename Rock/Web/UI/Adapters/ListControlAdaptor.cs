@@ -171,13 +171,15 @@ namespace Rock.Web.UI.Adapters
                     }
 
                     // render checkbox/radio label tag which will contain the input and label text
+                    string itemId = $"{listControl.ClientID}_{itemIndex}";
+
                     writer.WriteLine();
                     writer.Indent++;
                     string labelClass = GetLabelClass( listControl, li );
                     writer.AddAttribute( "class", labelClass );
+                    writer.AddAttribute( "for", itemId );
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
-                    string itemId = $"{listControl.ClientID}_{itemIndex}";
                     writer.AddAttribute( "id", itemId );
                     writer.AddAttribute( "type", inputTagType );
                     var inputName = GetInputName( listControl, itemIndex );

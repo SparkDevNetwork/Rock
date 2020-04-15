@@ -35,11 +35,45 @@ namespace RockWeb.Blocks.Connection
     [DisplayName( "Connection Opportunity Detail Lava" )]
     [Category( "Connection" )]
     [Description( "Displays the details of the given opportunity for the external website." )]
-    [LinkedPage( "Signup Page", "The page used to sign up for an opportunity" )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/OpportunityDetail.lava' %}", "", 2 )]
-    [BooleanField( "Set Page Title", "Determines if the block should set the page title with the package name.", false )]
+
+    #region Block Attributes
+
+    [LinkedPage(
+        "Signup Page",
+        Description = "The page used to sign up for an opportunity",
+        Key = AttributeKey.SignupPage )]
+    [CodeEditorField(
+        "Lava Template",
+        Description = "Lava template to use to display the package details.",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% include '~~/Assets/Lava/OpportunityDetail.lava' %}",
+        Order = 2,
+        Key = AttributeKey.LavaTemplate )]
+    [BooleanField(
+        "Set Page Title",
+        Description = "Determines if the block should set the page title with the package name.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.SetPageTitle )]
+
+    #endregion Block Attributes
     public partial class ConnectionOpportunityDetailLava : RockBlock
     {
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string SignupPage = "SignupPage";
+            public const string LavaTemplate = "LavaTemplate";
+            public const string SetPageTitle = "SetPageTitle";
+        }
+
+        #endregion
 
         #region Fields
 
@@ -132,7 +166,7 @@ namespace RockWeb.Blocks.Connection
 
                 // Add a merge field for the Signup Page Route
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
-                linkedPages.Add( "SignupPage", LinkedPageRoute( "SignupPage" ) );
+                linkedPages.Add( "SignupPage", LinkedPageRoute( AttributeKey.SignupPage ) );
                 mergeFields.Add( "LinkedPages", linkedPages );
 
                 // Add Campus Context
@@ -144,10 +178,10 @@ namespace RockWeb.Blocks.Connection
                 mergeFields.Add( "Opportunity", _connectionOpportunity );
 
                 // Format the opportunity using lava template
-                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                lOutput.Text = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields );
 
                 // Set the page title from opportunity (if configured)
-                if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
+                if ( GetAttributeValue( AttributeKey.SetPageTitle ).AsBoolean() )
                 {
                     string pageTitle = _connectionOpportunity.PublicName;
                     RockPage.PageTitle = pageTitle;

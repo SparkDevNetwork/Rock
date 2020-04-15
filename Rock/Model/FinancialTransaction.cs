@@ -312,6 +312,35 @@ namespace Rock.Model
         [DataMember]
         public int? NonCashAssetTypeValueId { get; set; }
 
+        /// <summary>
+        /// Gets the transaction date key.
+        /// </summary>
+        /// <value>
+        /// The transaction date key.
+        /// </value>
+        [DataMember]
+        public int? TransactionDateKey
+        {
+            get => ( TransactionDateTime == null || TransactionDateTime.Value == default ) ?
+                        ( int? ) null :
+                        TransactionDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
+
+        /// <summary>
+        /// Gets the settled date key.
+        /// </summary>
+        /// <value>
+        /// The settled date key.
+        /// </value>
+        [DataMember]
+        public int? SettledDateKey
+        {
+            get => ( SettledDate == null || SettledDate.Value == default ) ?
+                        ( int? ) null :
+                        SettledDate.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
         #endregion Entity Properties
 
         #region Virtual Properties
@@ -542,6 +571,23 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue NonCashAssetTypeValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the transaction source date.
+        /// </summary>
+        /// <value>
+        /// The transaction source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate TransactionSourceDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settled source date.
+        /// </summary>
+        /// <value>
+        /// The settled source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate SettledSourceDate { get; set; }
         #endregion Virtual Properties
 
         #region Public Methods
@@ -746,6 +792,11 @@ namespace Rock.Model
             this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.ProcessedByPersonAlias ).WithMany().HasForeignKey( t => t.ProcessedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.NonCashAssetTypeValue ).WithMany().HasForeignKey( t => t.NonCashAssetTypeValueId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasOptional( r => r.TransactionSourceDate ).WithMany().HasForeignKey( r => r.TransactionDateKey ).WillCascadeOnDelete( false );
+            this.HasOptional( r => r.SettledSourceDate ).WithMany().HasForeignKey( r => r.SettledDateKey ).WillCascadeOnDelete( false );
         }
     }
 

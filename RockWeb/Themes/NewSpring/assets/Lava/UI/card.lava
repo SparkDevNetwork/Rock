@@ -65,14 +65,16 @@
             <p class="sans-serif stronger letter-spacing-condensed text-uppercase text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
         {% endif %}
 
-        {[ tags guid:'{{ guid }}' ]}
+        {% if showtags != 'false' %}
+            {[ tags guid:'{{ guid }}' ]}
+        {% endif %}
 
         {% if content != null and content != '' %}
             {% if trimcopy != null and trimcopy != '' %}
                 {% assign length = content | Size %}
-                {{ content | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">read more</a>{% endif %}
+                {{ content | HtmlDecode | Truncate:140,'...' }}{% if length > 140 %} <a href="#" data-toggle="modal" data-target="#{{ modalid }}">read more</a>{% endif %}
             {% else %}
-                {{ content }}
+                {{ content | HtmlDecode }}
             {% endif %}
         {% endif %}
 

@@ -52,7 +52,7 @@ namespace Rock.Blocks.Types.Mobile.Events
 
     [LinkedPage( "Detail Page",
         Description = "The page to push onto the navigation stack when viewing details of an event.",
-        IsRequired = true,
+        IsRequired = false,
         Key = AttributeKeys.DetailPage,
         Order = 1 )]
 
@@ -210,8 +210,6 @@ namespace Rock.Blocks.Types.Mobile.Events
         /// </returns>
         public override object GetMobileConfigurationValues()
         {
-            var rng = new Random();
-
             //
             // Indicate that we are a dynamic content providing block.
             //

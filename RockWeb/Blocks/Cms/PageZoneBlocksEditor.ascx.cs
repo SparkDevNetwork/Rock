@@ -36,12 +36,12 @@ using Rock.Data;
 using Rock.Web;
 
 /// <summary>
-/// 
+///
 /// </summary>
 namespace RockWeb.Blocks.Cms
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [DisplayName( "Page/Zone Blocks Editor" )]
     [Category( "CMS" )]
@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Cms
                 }
             }
 
-            
+
             // if the layout block doesn't have a master page, or if there are other ContentPlaceHolders that we didn't know about, add any other zones that we haven't added already
             var layoutZones = layoutControlNodes.Where( a => a.Attributes["Name"] != null ).Select( a => a.Attributes["Name"].Value ).ToList();
             foreach ( var layoutZone in layoutZones )
@@ -343,7 +343,7 @@ namespace RockWeb.Blocks.Cms
                     zoneNames.Add( layoutZone );
                 }
             }
-            
+
 
             // remove any spaces
             zoneNames = zoneNames.Select( a => a.Replace( " ", string.Empty ) ).ToList();
@@ -420,7 +420,8 @@ namespace RockWeb.Blocks.Cms
             btnMoveBlock.ID = string.Format( "btnMoveBlock_{0}", block.Id );
             btnMoveBlock.CommandName = "BlockId";
             btnMoveBlock.CommandArgument = block.Id.ToString();
-            btnMoveBlock.CssClass = "btn btn-sm btn-default btn-square fa fa-external-link";
+            btnMoveBlock.CssClass = "btn btn-sm btn-default btn-square";
+            btnMoveBlock.Text = "<i class='fa fa-external-link'></i>";
             btnMoveBlock.ToolTip = "Move Block";
             btnMoveBlock.Click += btnMoveBlock_Click;
             pnlAdminButtons.Controls.Add( btnMoveBlock );
@@ -574,7 +575,7 @@ namespace RockWeb.Blocks.Cms
                     @"<div class='panel-heading'>
                         <a class='btn btn-link btn-xs panel-widget-reorder js-stop-immediate-propagation'><i class='fa fa-bars'></i></a>
                         <span>{0} ({1})</span>
-                      
+
                         <div class='block-config-buttons pull-right'>
                         ",
                     block.Name,
@@ -826,6 +827,6 @@ namespace RockWeb.Blocks.Cms
             pnlDetails.Visible = visible;
         }
 
-        
+
     }
 }

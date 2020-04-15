@@ -1418,6 +1418,11 @@ namespace Rock.SystemGuid
         public const string SCHEDULE_BUILDER = "A286D16B-FDDF-4D89-B98F-D51188B611E6";
 
         /// <summary>
+        /// The schedule confirmation page guid
+        /// </summary>
+        public const string SCHEDULE_CONFIRMATION = "EA14B522-E2A6-4CA7-8AF0-9CDF0B84C8CF";
+
+        /// <summary>
         /// Gets the Scheduled Job Detail page guid
         /// ParentPage: Jobs Administration
         /// </summary>

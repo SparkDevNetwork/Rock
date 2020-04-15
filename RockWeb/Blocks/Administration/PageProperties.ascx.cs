@@ -400,11 +400,6 @@ namespace RockWeb.Blocks.Administration
                     ShowEditDetails( page );
                 }
             }
-
-            if ( btnDelete.Visible && btnDelete.Enabled )
-            {
-                btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Rock.Model.Page.FriendlyTypeName.ToLower() );
-            }
         }
 
         /// <summary>
@@ -986,6 +981,16 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
+            mdDeleteModal.Show();
+        }
+
+        /// <summary>
+        /// Handles the DeleteClick event of the mdDeleteModal control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdDeleteModal_DeleteClick( object sender, EventArgs e )
+        {
             var rockContext = new RockContext();
             var pageService = new PageService( rockContext );
             var siteService = new SiteService( rockContext );
@@ -1025,6 +1030,19 @@ namespace RockWeb.Blocks.Administration
                 int? parentPageId = page.ParentPageId;
 
                 pageService.Delete( page );
+
+                if ( cbDeleteInteractions.Checked )
+                {
+                    var interactionComponentService = new InteractionComponentService( rockContext );
+                    var interactionService = new InteractionService( rockContext );
+
+                    var componentQuery = interactionComponentService.QueryByPage( page );
+                    var interactionQuery = interactionService.Queryable()
+                        .Where( i => componentQuery.Any( ic => ic.Id == i.InteractionComponentId ) );
+
+                    interactionService.DeleteRange( interactionQuery );
+                    interactionComponentService.DeleteRange( componentQuery );
+                }
 
                 rockContext.SaveChanges();
 

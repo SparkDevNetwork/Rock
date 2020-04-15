@@ -21,7 +21,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute to set an integer.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class IntegerFieldAttribute : FieldAttribute
     {
         /// <summary>
@@ -40,7 +40,8 @@ namespace Rock.Attribute
         }
 
         /// <summary>
-        /// Gets or sets the default integer value of the attribute.  This is the value that will be used if a specific value has not yet been created
+        /// Gets or sets the default integer value of the attribute.  This is the value that will be used if a specific value has not yet been created.
+        /// To have a default integer value of null, use <see cref="FieldAttribute.DefaultValue" >DefaultValue</see>  instead and set that to null
         /// </summary>
         /// <value>
         /// The default value.
@@ -49,12 +50,21 @@ namespace Rock.Attribute
         {
             get
             {
+                // Named Arguments have to have a public get/set and can't be nullable types. So, we have to implement this, even though Rock won't use this get
                 return base.DefaultValue.AsIntegerOrNull() ?? int.MinValue;
             }
 
             set
             {
-                base.DefaultValue = value == int.MinValue ? string.Empty : value.ToString();
+                // Named arguments can't be nullable types, so use int.MinValue as a magic number to indicate null
+                if ( value == int.MinValue )
+                {
+                    base.DefaultValue = null;
+                }
+                else
+                {
+                    base.DefaultValue = value.ToString();
+                }
             }
         }
 

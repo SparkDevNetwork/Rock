@@ -86,14 +86,14 @@ namespace Rock.Rest.Controllers
                                         var component = interactionComponentService
                                             .Queryable().AsNoTracking()
                                             .Where( c =>
-                                                c.ChannelId == interactionChannel.Id &&
+                                                c.InteractionChannelId == interactionChannel.Id &&
                                                 c.Name == presence.Space )
                                             .FirstOrDefault();
                                         if ( component == null )
                                         {
                                             component = new InteractionComponent();
                                             interactionComponentService.Add( component );
-                                            component.ChannelId = interactionChannel.Id;
+                                            component.InteractionChannelId = interactionChannel.Id;
                                             component.Name = presence.Space;
                                             rockContext.SaveChanges();
                                         }

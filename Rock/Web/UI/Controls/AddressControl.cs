@@ -596,7 +596,7 @@ namespace Rock.Web.UI.Controls
 
             _tbStreet2 = new TextBox();
             Controls.Add( _tbStreet2 );
-            _tbStreet2.ID = "tbStreet2";
+            _tbStreet2.ID = "tbStreet2 js-street2";
             _tbStreet2.CssClass = "form-control";
 
             _tbCity = new TextBox();
@@ -607,7 +607,7 @@ namespace Rock.Web.UI.Controls
             _tbCounty = new TextBox();
             Controls.Add( _tbCounty );
             _tbCounty.ID = "tbCounty";
-            _tbCounty.CssClass = "form-control";
+            _tbCounty.CssClass = "form-control js-county";
 
             _tbState = new TextBox();
             Controls.Add( _tbState );
@@ -623,7 +623,7 @@ namespace Rock.Web.UI.Controls
             _tbPostalCode = new TextBox();
             Controls.Add( _tbPostalCode );
             _tbPostalCode.ID = "tbPostalCode";
-            _tbPostalCode.CssClass = "form-control";
+            _tbPostalCode.CssClass = "form-control js-postal-code";
 
             _ddlCountry = new RockDropDownList();
             _ddlCountry.EnhanceForLongLists = true;
@@ -632,7 +632,7 @@ namespace Rock.Web.UI.Controls
             _ddlCountry.DataValueField = "Id";
             _ddlCountry.AutoPostBack = true;
             _ddlCountry.SelectedIndexChanged += _ddlCountry_SelectedIndexChanged;
-            _ddlCountry.CssClass = "form-control";
+            _ddlCountry.CssClass = "form-control js-country";
 
             // add custom validator
             CustomValidator = new CustomValidator();
@@ -719,7 +719,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();  // div.row
                 }
 
-                writer.AddAttribute( "class", "js-addressControl" );
+                writer.AddAttribute( "class", "js-addressControl " + this.CssClass );
                 writer.AddAttribute( "data-required", this.Required.ToTrueFalse().ToLower() );
                 writer.AddAttribute( "data-itemlabel", this.Label != string.Empty ? this.Label : "Address" );
                 writer.AddAttribute( "id", this.ClientID );

@@ -108,6 +108,8 @@ namespace RockWeb.Blocks.Cms
 
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ContentChannel ) ).Id;
 
+            dvEditorTool.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.STRUCTURED_CONTENT_EDITOR_TOOLS.AsGuid() ).Id;
+
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upnlContent );
@@ -273,7 +275,9 @@ namespace RockWeb.Blocks.Cms
             var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( contentChannelTypeId );
             if ( contentChannelType != null )
             {
-                ddlContentControlType.Visible = !contentChannelType.DisableContentField;
+                cbIsStructuredContent.Visible = !contentChannelType.DisableContentField;
+                ddlContentControlType.Visible = !contentChannelType.DisableContentField && !channel.IsStructuredContent;
+                dvEditorTool.Visible = !contentChannelType.DisableContentField && channel.IsStructuredContent;
                 cbRequireApproval.Visible = !contentChannelType.DisableStatus;
             }
         }
@@ -317,6 +321,8 @@ namespace RockWeb.Blocks.Cms
                 contentChannel.Name = tbName.Text;
                 contentChannel.Description = tbDescription.Text;
                 contentChannel.ContentChannelTypeId = ddlChannelType.SelectedValueAsInt() ?? 0;
+                contentChannel.IsStructuredContent = cbIsStructuredContent.Checked;
+                contentChannel.StructuredContentToolValueId = dvEditorTool.SelectedDefinedValueId;
                 contentChannel.ContentControlType = ddlContentControlType.SelectedValueAsEnum<ContentControlType>();
                 contentChannel.RootImageDirectory = tbRootImageDirectory.Visible ? tbRootImageDirectory.Text : string.Empty;
                 contentChannel.IconCssClass = tbIconCssClass.Text;
@@ -412,6 +418,21 @@ namespace RockWeb.Blocks.Cms
             if ( contentChannelId != 0 )
             {
                 ShowReadonlyDetails( GetContentChannel( contentChannelId ) );
+            }
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbIsStructuredContent control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbIsStructuredContent_CheckedChanged( object sender, EventArgs e )
+        {
+            ddlContentControlType.Visible = !cbIsStructuredContent.Checked;
+            dvEditorTool.Visible = cbIsStructuredContent.Checked;
+            if ( !cbIsStructuredContent.Checked )
+            {
+                dvEditorTool.SelectedDefinedValueId = null;
             }
         }
 
@@ -731,6 +752,11 @@ namespace RockWeb.Blocks.Cms
                 tbName.Text = contentChannel.Name;
                 tbDescription.Text = contentChannel.Description;
                 ddlChannelType.SetValue( contentChannel.ContentChannelTypeId );
+                cbIsStructuredContent.Checked = contentChannel.IsStructuredContent;
+                if ( contentChannel.IsStructuredContent )
+                {
+                    dvEditorTool.SelectedDefinedValueId = contentChannel.StructuredContentToolValueId;
+                }
                 ddlContentControlType.SetValue( contentChannel.ContentControlType.ConvertToInt().ToString() );
                 tbRootImageDirectory.Text = contentChannel.RootImageDirectory;
                 tbRootImageDirectory.Visible = contentChannel.ContentControlType == ContentControlType.HtmlEditor;

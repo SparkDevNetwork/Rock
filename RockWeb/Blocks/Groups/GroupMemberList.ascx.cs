@@ -46,7 +46,7 @@ namespace RockWeb.Blocks.Groups
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter", false, order: 2 )]
     [LinkedPage( "Person Profile Page", "Page used for viewing a person's profile. If set a view profile button will show for each group member.", false, "", "", 3, "PersonProfilePage" )]
     [LinkedPage( "Registration Page", "Page used for viewing the registration(s) associated with a particular group member", false, "", "", 4 )]
-    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order:5 )]
+    [LinkedPage( "Data View Detail Page", "Page used to view data views that are used with the group member sync.", false, order: 5 )]
     [BooleanField( "Show Campus Filter", "Setting to show/hide campus filter.", true, order: 6 )]
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
@@ -430,7 +430,7 @@ namespace RockWeb.Blocks.Groups
                 sbNameHtml.Append( groupMember.Person.FullName );
                 if ( groupMember.Person.TopSignalColor.IsNotNullOrWhiteSpace() )
                 {
-                    sbNameHtml.Append( groupMember.Person.GetSignalMarkup() );
+                    sbNameHtml.Append( " " + groupMember.Person.GetSignalMarkup() );
                 }
 
                 if ( _hasGroupRequirements )
@@ -441,7 +441,7 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
 
-                if ( ! _showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
+                if ( !_showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
                 {
                     sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
                 }
@@ -449,7 +449,7 @@ namespace RockWeb.Blocks.Groups
                 // If there is a required signed document that member has not signed, show an icon in the grid
                 if ( _showPersonsThatHaventSigned && !_personIdsThatHaveSigned.Contains( groupMember.PersonId ) )
                 {
-                    sbNameHtml.Append( " <i class='fa fa-pencil-square-o text-danger'></i>" );
+                    sbNameHtml.Append( " <i class='fa fa-edit text-danger'></i>" );
                 }
 
                 lNameWithHtml.Text = sbNameHtml.ToString();
@@ -879,7 +879,7 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindAttributes()
         {
-            // Parse the attribute filters 
+            // Parse the attribute filters
             AvailableAttributes = new List<AttributeCache>();
             if ( _group != null )
             {
@@ -1035,6 +1035,7 @@ namespace RockWeb.Blocks.Groups
             hlPersonProfileLink.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             hlPersonProfileLink.HeaderStyle.CssClass = "grid-columncommand";
             hlPersonProfileLink.ItemStyle.CssClass = "grid-columncommand";
+            hlPersonProfileLink.ControlStyle.CssClass = "btn btn-default btn-sm";
             hlPersonProfileLink.DataNavigateUrlFields = new string[1] { "PersonId" };
 
             /*
@@ -1049,8 +1050,11 @@ namespace RockWeb.Blocks.Groups
              *
              * Reason: XSS Prevention
              */
+
             hlPersonProfileLink.DataNavigateUrlFormatString = LinkedPageUrl( "PersonProfilePage", new Dictionary<string, string> { { "PersonId", "###" } } ).Replace( HttpUtility.UrlEncode( "###" ), "{0}" );
-            hlPersonProfileLink.DataTextFormatString = "<div class='btn btn-default btn-sm'><i class='fa fa-user'></i></div>";
+
+            hlPersonProfileLink.DataTextFormatString = "<i class='fa fa-user'></i>";
+
             hlPersonProfileLink.DataTextField = "PersonId";
             gGroupMembers.Columns.Add( hlPersonProfileLink );
         }

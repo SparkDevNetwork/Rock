@@ -11,13 +11,32 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfCommunicationListGroupId" runat="server" />
+
+        <asp:HiddenField ID="hfLineChartDataLabelsJSON" runat="server" />
+        <asp:HiddenField ID="hfLineChartDataOpensJSON" runat="server" />
+        <asp:HiddenField ID="hfLineChartDataClicksJSON" runat="server" />
+        <asp:HiddenField ID="hfLineChartDataUnOpenedJSON" runat="server" />
+        <asp:HiddenField ID="hfPieChartDataOpenClicksJSON" runat="server" />
+        <asp:HiddenField ID="hfPieChartDataClientLabelsJSON" runat="server" />
+        <asp:HiddenField ID="hfPieChartDataClientCountsJSON" runat="server" />
+
         <div class="panel panel-block panel-analytics">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-line-chart"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" Text="Email Analytics" /></h1>
 
-                <div class="panel-labels">
+                <div class="pull-right">
+
+                    <asp:HiddenField ID="hfSelectedMonthsDateRange" runat="server"  />
+                    <%-- If not specific communication(s) were selected, limit the date range --%>
+                    <asp:Panel runat="server" ID="pnlSelectedMonthsDateRange" class="btn-group panel-toggle pull-right" Visible="false">
+                        <asp:LinkButton ID="btnDateRangeThreeMonths" CssClass="btn btn-xs btn-primary" runat="server" Text="Three Months" OnClick="btnDateRange_Click" />
+                        <asp:LinkButton ID="btnDateRangeSixMonths" CssClass="btn btn-xs btn-primary" runat="server" Text="Six Months" OnClick="btnDateRange_Click" />
+                        <asp:LinkButton ID="btnDateRangeYear" CssClass="btn btn-xs btn-outline-primary" runat="server" Text="One Year" OnClick="btnDateRange_Click" />
+                    </asp:Panel>
                 </div>
             </div>
+
+            <Rock:NotificationBox ID="nbConfigurationError" runat="server" NotificationBoxType="Danger" Text="" Visible="false" />
 
             <div class="panel-body">
                 <div class="row">
@@ -142,10 +161,10 @@
                 };
 
                 // Main Linechart
-                var lineChartDataLabels = <%=this.LineChartDataLabelsJSON%>;
-                var lineChartDataOpens = <%=this.LineChartDataOpensJSON%>;
-                var lineChartDataClicks = <%=this.LineChartDataClicksJSON%>;
-                var lineChartDataUnopened = <%=this.LineChartDataUnOpenedJSON%>;
+                var lineChartDataLabels = eval($('#<%=hfLineChartDataLabelsJSON.ClientID%>').val());
+                var lineChartDataOpens = JSON.parse($('#<%=hfLineChartDataOpensJSON.ClientID%>').val());
+                var lineChartDataClicks = JSON.parse($('#<%=hfLineChartDataClicksJSON.ClientID%>').val());
+                var lineChartDataUnopened = JSON.parse($('#<%=hfLineChartDataUnOpenedJSON.ClientID%>').val());
 
                 var linechartCtx = $('#<%=openClicksLineChartCanvas.ClientID%>')[0].getContext('2d');
 
@@ -212,7 +231,7 @@
                 });
 
                 // ClicksOpens Pie Chart
-                var pieChartDataOpenClicks = <%=this.PieChartDataOpenClicksJSON%>;
+                var pieChartDataOpenClicks = JSON.parse($('#<%=hfPieChartDataOpenClicksJSON.ClientID%>').val());
 
                 var opensClicksPieChartCanvasCtx = $('#<%=opensClicksPieChartCanvas.ClientID%>')[0].getContext('2d');
                 var opensClicksPieChart = new Chart(opensClicksPieChartCanvasCtx, {
@@ -249,8 +268,8 @@
                 });
 
                 // Clients Doughnut Chart
-                var pieChartDataClientCounts = <%=this.PieChartDataClientCountsJSON%>;
-                var pieChartDataClientLabels = <%=this.PieChartDataClientLabelsJSON%>;
+                var pieChartDataClientCounts = JSON.parse($('#<%=hfPieChartDataClientCountsJSON.ClientID%>').val());
+                var pieChartDataClientLabels = JSON.parse($('#<%=hfPieChartDataClientLabelsJSON.ClientID%>').val());
 
                 var clientsDoughnutChartCanvasCtx = $('#<%=clientsDoughnutChartCanvas.ClientID%>')[0].getContext('2d');
                 var clientsDoughnutChart = new Chart(clientsDoughnutChartCanvasCtx, {

@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.GroupScheduling
 
             List<int> selectedGroupIds = GetSelectedGroupIds();
             var rockContext = new RockContext();
-            var groupsQuery = new GroupService( rockContext ).GetByIds( selectedGroupIds ).Where( a => a.GroupType.IsSchedulingEnabled == true );
+            var groupsQuery = new GroupService( rockContext ).GetByIds( selectedGroupIds ).Where( a => a.GroupType.IsSchedulingEnabled == true && a.DisableScheduling == false );
 
             nbGroupsWarning.Visible = false;
             if ( !groupsQuery.Any() )

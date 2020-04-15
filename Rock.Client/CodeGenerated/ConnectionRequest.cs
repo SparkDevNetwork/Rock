@@ -65,6 +65,9 @@ namespace Rock.Client
         public int? ConnectorPersonAliasId { get; set; }
 
         /// <summary />
+        public AnalyticsSourceDate CreatedSourceDate { get; set; }
+
+        /// <summary />
         public DateTime? FollowupDate { get; set; }
 
         /// <summary />
@@ -124,6 +127,7 @@ namespace Rock.Client
             this.ConnectionState = source.ConnectionState;
             this.ConnectionStatusId = source.ConnectionStatusId;
             this.ConnectorPersonAliasId = source.ConnectorPersonAliasId;
+            this.CreatedSourceDate = source.CreatedSourceDate;
             this.FollowupDate = source.FollowupDate;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
@@ -149,6 +153,9 @@ namespace Rock.Client
 
         /// <summary />
         public ConnectionStatus ConnectionStatus { get; set; }
+
+        /// <summary />
+        public int? CreatedDateKey { get; set; }
 
         /// <summary />
         public PersonAlias PersonAlias { get; set; }

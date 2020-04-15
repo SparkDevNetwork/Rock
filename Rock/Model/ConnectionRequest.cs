@@ -152,6 +152,20 @@ namespace Rock.Model
         [DataMember]
         public int? ConnectorPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets the created date key.
+        /// </summary>
+        /// <value>
+        /// The created date key.
+        /// </value>
+        [DataMember]
+        public int? CreatedDateKey
+        {
+            get => ( CreatedDateTime == null || CreatedDateTime.Value == default ) ?
+                        ( int? ) null :
+                        CreatedDateTime.Value.ToString( "yyyyMMdd" ).AsInteger();
+            private set { }
+        }
         #endregion
 
         #region Virtual Properties
@@ -239,6 +253,14 @@ namespace Rock.Model
 
         private ICollection<ConnectionRequestActivity> _connectionRequestActivities;
 
+        /// <summary>
+        /// Gets or sets the created source date.
+        /// </summary>
+        /// <value>
+        /// The created source date.
+        /// </value>
+        [DataMember]
+        public AnalyticsSourceDate CreatedSourceDate { get; set; }
         #endregion
 
         #region Methods
@@ -257,6 +279,28 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the specified action is authorized.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>True if the person is authorized; false otherwise.</returns>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            if ( this.ConnectionOpportunity != null
+                && this.ConnectionOpportunity.ConnectionType != null
+                && this.ConnectionOpportunity.ConnectionType.EnableRequestSecurity
+                && this.ConnectorPersonAlias != null
+                && this.ConnectorPersonAlias.PersonId == person.Id )
+            {
+                return true;
+            }
+            else
+            {
+                return base.IsAuthorized( action, person );
+            }
+        }
+
+        /// <summary>
         /// Pres the save changes.
         /// </summary>
         /// <param name="dbContext">The database context.</param>
@@ -267,6 +311,27 @@ namespace Rock.Model
             Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
 
             base.PreSaveChanges( dbContext, entry );
+        }
+
+        /// <summary>
+        /// Method that will be called on an entity immediately after the item is saved by context
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        public override void PostSaveChanges( Rock.Data.DbContext dbContext )
+        {
+            if ( ConnectionStatus == null )
+            {
+                ConnectionStatus = new ConnectionStatusService( ( RockContext ) dbContext ).Get( ConnectionStatusId );
+            }
+
+            if ( ConnectionStatus != null && ConnectionStatus.AutoInactivateState && ConnectionState != ConnectionState.Inactive )
+            {
+                ConnectionState = ConnectionState.Inactive;
+                var rockContext = ( RockContext ) dbContext;
+                rockContext.SaveChanges();
+            }
+
+            base.PostSaveChanges( dbContext );
         }
 
         /// <summary>
@@ -317,6 +382,10 @@ namespace Rock.Model
             this.HasOptional( p => p.Campus ).WithMany().HasForeignKey( p => p.CampusId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AssignedGroup ).WithMany().HasForeignKey( p => p.AssignedGroupId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.ConnectionStatus ).WithMany().HasForeignKey( p => p.ConnectionStatusId ).WillCascadeOnDelete( false );
+
+            // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier OccurrenceDates that aren't in the AnalyticsSourceDate table
+            // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
+            this.HasOptional( r => r.CreatedSourceDate ).WithMany().HasForeignKey( r => r.CreatedDateKey ).WillCascadeOnDelete( false );
         }
     }
 

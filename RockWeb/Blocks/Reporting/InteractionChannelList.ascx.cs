@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.Reporting
                 if ( personId.HasValue )
                 {
                     var interactionQry = new InteractionService( rockContext ).Queryable();
-                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponent.ChannelId == a.Id ) );
+                    channelQry = channelQry.Where( a => interactionQry.Any( b => b.PersonAlias.PersonId == personId.Value && b.InteractionComponent.InteractionChannelId == a.Id ) );
                 }
 
                 // Parse the default template so that it does not need to be parsed multiple times
