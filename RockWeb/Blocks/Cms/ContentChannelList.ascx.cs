@@ -58,6 +58,31 @@ namespace RockWeb.Blocks.Cms
 
         #endregion Attribute Keys
 
+        #region UserPreferenceKeys
+
+        private static class UserPreferenceKey
+        {
+            public const string Type = "Type";
+            public const string Categories = "Categories";
+        }
+
+        #endregion UserPreferanceKeys
+
+        #region Page Parameter Keys
+
+        /// <summary>
+        /// The keys used in page parameters.
+        /// </summary>
+        private class PageParameterKey
+        {
+            /// <summary>
+            /// The member identifier key.
+            /// </summary>
+            public const string ContentChannelId = "ContentChannelId";
+        }
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -119,7 +144,30 @@ namespace RockWeb.Blocks.Cms
         {
             switch ( e.Key )
             {
-                case "Type":
+                case UserPreferenceKey.Categories:
+                    {
+                        var categories = new List<string>();
+
+                        foreach ( var idVal in e.Value.SplitDelimitedValues() )
+                        {
+                            int id = int.MinValue;
+                            if ( int.TryParse( idVal, out id ) )
+                            {
+                                if ( id != 0 )
+                                {
+                                    var category = CategoryCache.Get( id );
+                                    if ( category != null )
+                                    {
+                                        categories.Add( CategoryCache.Get( id ).Name );
+                                    }
+                                }
+                            }
+                        }
+
+                        e.Value = categories.AsDelimited( ", " );
+                        break;
+                    }
+                case UserPreferenceKey.Type:
                     {
                         int? typeId = e.Value.AsIntegerOrNull();
                         if ( typeId.HasValue )
@@ -147,7 +195,14 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         void gfFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            gfFilter.SaveUserPreference( "Type", ddlType.SelectedValue );
+            gfFilter.SaveUserPreference( UserPreferenceKey.Type, ddlType.SelectedValue );
+            string categoryFilterValue = cpCategories.SelectedValuesAsInt()
+                .Where( v => v != 0 )
+                .Select( c => c.ToString() )
+                .ToList()
+                .AsDelimited( "," );
+
+            gfFilter.SaveUserPreference( UserPreferenceKey.Categories, categoryFilterValue );
             BindGrid();
         }
 
@@ -158,7 +213,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gContentChannels_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "contentChannelId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ContentChannelId, 0 );
         }
 
         /// <summary>
@@ -168,7 +223,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gContentChannels_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "contentChannelId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.ContentChannelId, e.RowKeyId );
         }
 
         /// <summary>
@@ -260,10 +315,17 @@ namespace RockWeb.Blocks.Cms
                 .Include( a => a.Items )
                 .Where( a => a.ContentChannelType.ShowInChannelList == true );
 
-            int? typeId = gfFilter.GetUserPreference( "Type" ).AsIntegerOrNull();
+            int? typeId = gfFilter.GetUserPreference( UserPreferenceKey.Type ).AsIntegerOrNull();
             if ( typeId.HasValue )
             {
                 qry = qry.Where( c => c.ContentChannelTypeId == typeId.Value );
+            }
+
+            var selectedCategoryIds = new List<int>();
+            gfFilter.GetUserPreference( UserPreferenceKey.Categories ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
+            if ( selectedCategoryIds.Any() )
+            {
+                qry = qry.Where( a => a.Categories.Any( c => selectedCategoryIds.Contains( c.Id ) ) );
             }
 
             gContentChannels.ObjectList = new Dictionary<string, object>();

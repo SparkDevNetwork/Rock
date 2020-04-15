@@ -202,7 +202,7 @@ namespace Rock.Badge.Component
             }
             else
             {
-                var link = $"/page/{linkedPageId.Value}?streakTypeId={streakTypeCache.Id}&personId={Person.Id}";                
+                var link = $"/page/{linkedPageId.Value}?StreakTypeId={streakTypeCache.Id}&PersonId={Person.Id}";
                 writer.Write( $@"<a href=""{link}"">{chartHtml}</a>{script}" );
             }
         }

@@ -25,9 +25,7 @@
                     <em ID="lblCount" runat="server" class="pull-right badge"></em>
                     <Rock:DataTextBox ID="dtbRequest" runat="server" Label="Request" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" placeholder="Please pray that..."></Rock:DataTextBox>
 
-                    <div class="attributes">
-                        <asp:PlaceHolder ID="phAttributes" runat="server" />
-                    </div>
+                    <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server"/>
 
                     <% if ( EnableUrgentFlag ) { %>
                         <Rock:RockCheckBox ID="cbIsUrgent" runat="server" Checked="false" Label="Urgent?" Text="Yes" Help="If 'yes' is checked the request will be flagged as urgent in need of attention quickly." />

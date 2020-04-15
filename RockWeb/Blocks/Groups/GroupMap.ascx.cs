@@ -410,7 +410,7 @@ namespace RockWeb.Blocks.Groups
                     var color = $(this).attr('data-color');
                     var getMapInfoUrl = Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfo/{0}/Families/' + statusId;
                     if (campusIds != '') {{
-                        getMapInfoUrl += '?campusIds=' + campusIds;
+                        getMapInfoUrl += '?CampusIds=' + campusIds;
                     }}
 
                     // if we are already in the process of fetching families for this status, abort and start over again

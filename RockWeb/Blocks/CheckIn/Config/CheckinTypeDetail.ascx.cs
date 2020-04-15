@@ -366,7 +366,7 @@ namespace RockWeb.Blocks.CheckIn.Config
         protected void btnSchedules_Click( object sender, EventArgs e )
         {
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "groupTypeId", hfGroupTypeId.Value );
+            qryParams.Add( "GroupTypeId", hfGroupTypeId.Value );
             NavigateToLinkedPage( "SchedulePage", qryParams );
         }
 

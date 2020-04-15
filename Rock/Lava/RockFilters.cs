@@ -4522,7 +4522,7 @@ namespace Rock.Lava
                 case "BROWSER":
                     {
                         Parser uaParser = Parser.GetDefault();
-                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent );
+                        ClientInfo client = uaParser.Parse( HttpContext.Current.Request.UserAgent.ToStringSafe() );
 
                         return client;
                     }

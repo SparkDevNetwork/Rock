@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Core
             var personEntityType = EntityTypeCache.Get<Person>();
             var currentPerson = RockPage.GetCurrentContext( personEntityType ) as Person;
 
-            int? personIdParam = Request.QueryString["personId"].AsIntegerOrNull();
+            int? personIdParam = Request.QueryString["PersonId"].AsIntegerOrNull();
 
             // if a personId is in the page parameters, use that instead of the person context
             if ( personIdParam.HasValue )
@@ -164,10 +164,10 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "personId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "PersonId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
-                    queryString.Set( "personId", personId.ToString() );
+                    queryString.Set( "PersonId", personId.ToString() );
                     Response.Redirect( string.Format( "{0}?{1}", Request.Url.AbsolutePath, queryString ), false );
                 }
                 else

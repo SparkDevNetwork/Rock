@@ -465,6 +465,7 @@ namespace Rock.Transactions
                 interaction.PersonAliasId = interactionInfo.PersonAliasId;
                 interaction.InteractionDateTime = interactionInfo.InteractionDateTime;
                 interaction.InteractionTimeToServe = interactionInfo.InteractionTimeToServe;
+                interaction.InteractionData = interactionInfo.Url;
                 interactionsToInsert.Add( interaction );
             }
 

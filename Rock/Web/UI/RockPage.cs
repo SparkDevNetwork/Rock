@@ -731,7 +731,7 @@ namespace Rock.Web.UI
             // If the logout parameter was entered, delete the user's forms authentication cookie and redirect them
             // back to the same page.
             Page.Trace.Warn( "Checking for logout request" );
-            if ( PageParameter( "logout" ) != string.Empty )
+            if ( PageParameter( "Logout" ) != string.Empty )
             {
                 if ( CurrentUser != null )
                 {
@@ -754,7 +754,7 @@ namespace Rock.Web.UI
                         var pageReference = new PageReference( PageReference.PageId, PageReference.RouteId, PageReference.Parameters );
                         foreach ( string key in PageReference.QueryString )
                         {
-                            if ( key != null && !key.Equals( "logout", StringComparison.OrdinalIgnoreCase ) )
+                            if ( key != null && !key.Equals( "Logout", StringComparison.OrdinalIgnoreCase ) )
                             {
                                 pageReference.Parameters.Add( key, PageReference.QueryString[key] );
                             }
@@ -1284,9 +1284,9 @@ namespace Rock.Web.UI
 
                             if ( _showDebugTimings )
                             {
-                                
+
                                 stopwatchBlockInit.Stop();
-                                slDebugTimings.Append( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"(Block Id: {block.Id})" ) );
+                                slDebugTimings.Append( GetDebugTimingOutput( block.Name, stopwatchBlockInit.Elapsed.TotalMilliseconds, 2, false, $"({block.BlockType})" ) );
                             }
                         }
                     }
@@ -1420,7 +1420,7 @@ namespace Rock.Web.UI
                             aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                             aShortLink.Attributes.Add( "class", "btn properties" );
                             aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" +
-                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.Url.AbsoluteUri.ToString() ) ) )
+                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.Url.AbsoluteUri.ToString() ) ) )
                                 + "')" );
                             aShortLink.Attributes.Add( "Title", "Add Short Link" );
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
@@ -1501,12 +1501,12 @@ namespace Rock.Web.UI
 
                 if ( _showDebugTimings && canAdministratePage )
                 {
-                    slDebugTimings.Append( "<script>$(document).ready(function(){if($('#lblShowDebugTimings').length){var t=$('#lblShowDebugTimings').data('pointintimems');$('#lblShowDebugTimings .debug-chart-bar').each(function(a){var i=$(this).data('start-location'),s=$(this).data('duration');s>2&&s<10?$(this).css('background','#F6E05E'):s>10&&$(this).css('background','#FC8181');var n=Math.max(100-100*(i/t+s/t),0);$(this).css('right',n+'%').css('width',s/t*100+'%').attr('title','Started at '+i+' ms / Duration '+s+' ms')})}});</script>" );
+                    slDebugTimings.Append( "<script>$(document).ready(function(){if($('#lblShowDebugTimings').length){var t=$('#lblShowDebugTimings').data('pointintimems'),a=0;$('#lblShowDebugTimings .debug-chart-bar').each(function(i){var n=$(this).data('start-location'),s=$(this).data('duration');n=Math.max(a,n),a=n+s;var h=Math.max(100-100*(n/t+s/t),0);$(this).css('right',h+'%').css('width',s/t*100+'%').attr('title','Started at '+n+' ms / Duration '+s+' ms')})}});</script>" );
 
                     Page.Form.Controls.Add( new Label
                     {
                         ID = "lblShowDebugTimings",
-                        Text = string.Format( "<style>.debug-timestamp{{text-align:right;}}.debug-waterfall{{width: 40%;position:relative;}}.debug-chart-bar{{ position:absolute;display:block;min-width:1px;height:1.125em;background:green; }}</style><table class='table table-bordered table-striped' style='width:100%; margin-bottom: 48px;'><thead><tr><th class='debug-timestamp'>Timestamp</th><th>Event</th><th class='debug-timestamp'>Duration</th><th class='debug-waterfall'>Waterfall</th></tr></thead><tbody>{0}", slDebugTimings.ToString() )
+                        Text = string.Format( "<style>.debug-timestamp{{text-align:right;}}.debug-waterfall{{width: 40%;position:relative;vertical-align:middle !important;padding:0 !important;}}.debug-chart-bar{{ position:absolute;display:block;min-width:1px;height:1.125em;background:#009ce3;margin-top: -0.5625em; }}</style><table class='table table-bordered table-striped' style='width:100%; margin-bottom: 48px;'><thead><tr><th class='debug-timestamp'>Timestamp</th><th>Event</th><th class='debug-timestamp'>Duration</th><th class='debug-waterfall'>Waterfall</th></tr></thead><tbody>{0}", slDebugTimings.ToString() )
                     } );
                 }
             }
@@ -2698,12 +2698,12 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Gets the page route and query string parameters
+        /// Gets the page route and query string parameters.
         /// </summary>
-        /// <returns>A <see cref="System.Collections.Generic.Dictionary{String, Object}"/> containing the page route and query string value, the Key is the is the parameter name/key and the object is the value.</returns>
+        /// <returns>A case-insensitive <see cref="System.Collections.Generic.Dictionary{String, Object}"/> containing the page route and query string values, where the Key is the parameter name and the object is the value.</returns>
         public Dictionary<string, object> PageParameters()
         {
-            var parameters = new Dictionary<string, object>();
+            var parameters = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
 
             foreach ( var key in Page.RouteData.Values.Keys )
             {

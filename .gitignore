@@ -12,6 +12,7 @@ _ReSharper.*
 
 #specific files
 web.[Cc]onnectionStrings.config
+app.[Cc]onnectionStrings.config
 desktop.ini
 Rock.XML
 Quartz.xml

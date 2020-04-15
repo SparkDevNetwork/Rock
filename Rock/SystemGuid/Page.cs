@@ -1023,6 +1023,12 @@ namespace Rock.SystemGuid
         public const string LOCATION_SERVICES = "1FD5698F-7279-463F-9637-9A80DB86BB86";
 
         /// <summary>
+        /// The login viewer
+        /// ParentPage: System Settings
+        /// </summary>
+        public const string LOG_VIEWER = "82EC7718-6549-4531-A0AB-7957919AE71C";
+
+        /// <summary>
         /// Gets the Login page guid
         /// ParentPage: Security
         /// </summary>
@@ -1177,6 +1183,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Routes
         /// </summary>
         public const string PAGE_ROUTE_DETAIL = "649A2B1E-7A15-4DA8-AF67-17874B6FE98F";
+
+        /// <summary>
+        /// Gets the Page Map page guid
+        /// ParentPage: CMS Configuration
+        /// </summary>
+        public const string PAGE_VIEWS = "E556D6C5-E2DB-4041-81AB-4F582008155C";
 
         /// <summary>
         /// Gets the People page guid
@@ -1511,6 +1523,12 @@ namespace Rock.SystemGuid
         /// ParentPage: Communications
         /// </summary>
         public const string SEND_PHOTO_REQUESTS = "B64D0429-488C-430E-8C32-5C7F32589F73";
+
+        /// <summary>
+        /// Gets the short link page GUID
+        /// ParentPage: System Dialogs
+        /// </summary>
+        public const string SHORT_LINK = "A9188D7A-80D9-4865-9C77-9F90E992B65C";
 
         /// <summary>
         /// Gets the Sites page guid

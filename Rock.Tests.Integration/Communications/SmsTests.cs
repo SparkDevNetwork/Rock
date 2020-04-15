@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communications.Sms
@@ -29,8 +30,6 @@ namespace Rock.Tests.Integration.Communications.Sms
     [TestClass]
     public class SmsTests
     {
-        private CommunicationsModuleTestHelper _Helper = new CommunicationsModuleTestHelper();
-
         public static class Constants
         {
             // Constants
@@ -42,7 +41,7 @@ namespace Rock.Tests.Integration.Communications.Sms
         [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromUnknownMobileNumber_CreatesNamelessPerson()
         {
-            var message = this.GetTestIncomingSmsMessage( CommunicationsModuleTestHelper.Constants.UnknownPerson1MobileNumber );
+            var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.UnknownPerson1MobileNumber );
 
             var dataContext = new RockContext();
 
@@ -58,20 +57,18 @@ namespace Rock.Tests.Integration.Communications.Sms
             var unnamedPersonRecordValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS ).Id;
 
             // Verify that the Record Type is "Unnamed".
-            Assert.AreEqual( unnamedPersonRecordValueId, unnamedPerson.RecordTypeValueId, "Person Type for Unnamed Person record is invalid." );
+            Assert.That.AreEqual( unnamedPersonRecordValueId, unnamedPerson.RecordTypeValueId, "Person Type for Unnamed Person record is invalid." );
 
             // Verify that the correct Phone Number has been recorded.
-            Assert.IsNotNull( unnamedPerson.PhoneNumbers.FirstOrDefault( x => x.Number == CommunicationsModuleTestHelper.Constants.UnknownPerson1MobileNumber ) );
+            Assert.That.IsNotNull( unnamedPerson.PhoneNumbers.FirstOrDefault( x => x.Number == TestGuids.Communications.UnknownPerson1MobileNumber ) );
 
             //var outcomes = SmsActionService.ProcessIncomingMessage(message);
 
             // Delete the newly-created unnamed person record.
-            var _Helper = new CommunicationsModuleTestHelper();
-
             dataContext = new RockContext();
             personService = new PersonService( dataContext );
 
-            _Helper.DeleteNamelessPersonRecord( dataContext, CommunicationsModuleTestHelper.Constants.UnknownPerson1MobileNumber );
+            DeleteNamelessPersonRecord( dataContext, TestGuids.Communications.UnknownPerson1MobileNumber );
 
             dataContext.SaveChanges();
         }
@@ -83,7 +80,7 @@ namespace Rock.Tests.Integration.Communications.Sms
         [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromKnownNamelessPerson_ReturnsMatchedPerson()
         {
-            var message = this.GetTestIncomingSmsMessage( CommunicationsModuleTestHelper.Constants.UnknownPerson1MobileNumber );
+            var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.UnknownPerson1MobileNumber );
 
             var dataContext = new RockContext();
 
@@ -96,10 +93,10 @@ namespace Rock.Tests.Integration.Communications.Sms
             var unnamedPerson2 = personService.GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
             // Verify that the same record has been retrieved both times.
-            Assert.AreEqual( unnamedPerson1.Id, unnamedPerson2.Id, "Multiple Unnamed Person records created for the same mobile number." );
+            Assert.That.AreEqual( unnamedPerson1.Id, unnamedPerson2.Id, "Multiple Unnamed Person records created for the same mobile number." );
 
             // Delete the newly-created unnamed person record.
-            _Helper.DeleteNamelessPersonRecord( dataContext, CommunicationsModuleTestHelper.Constants.UnknownPerson1MobileNumber );
+            DeleteNamelessPersonRecord( dataContext, TestGuids.Communications.UnknownPerson1MobileNumber );
 
             dataContext.SaveChanges();
         }
@@ -111,7 +108,7 @@ namespace Rock.Tests.Integration.Communications.Sms
         [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromKnownNamedPerson_ReturnsMatchedPerson()
         {
-            var message = this.GetTestIncomingSmsMessage( CommunicationsModuleTestHelper.Constants.MobilePhoneTedDecker );
+            var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.MobilePhoneTedDecker );
 
             var dataContext = new RockContext();
 
@@ -121,7 +118,7 @@ namespace Rock.Tests.Integration.Communications.Sms
             var namedPerson1 = personService.GetPersonFromMobilePhoneNumber( message.FromNumber, createNamelessPersonIfNotFound: false );
 
             // Verify that the correct record has been retrieved.
-            Assert.AreEqual( namedPerson1.Guid, CommunicationsModuleTestHelper.Constants.TedDeckerPersonGuid.AsGuid(), "Incorrect Person record retrieved by mobile phone number." );
+            Assert.That.AreEqual( namedPerson1.Guid, TestGuids.Communications.TedDeckerPersonGuid.AsGuid(), "Incorrect Person record retrieved by mobile phone number." );
         }
         [TestMethod]
         [TestProperty( "Feature", TestFeatures.Communications )]
@@ -139,12 +136,12 @@ namespace Rock.Tests.Integration.Communications.Sms
             var unfilteredQuery = personService.Queryable( personQueryOptions );
 
 
-            Assert.IsTrue( this.PersonQueryContainsNamelessPersonRecordType( unfilteredQuery ),
+            Assert.That.IsTrue( this.PersonQueryContainsNamelessPersonRecordType( unfilteredQuery ),
                            "Test data set must contain at least one Person record with a Record Type of \"Nameless Person\"." );
 
             var defaultQuery = personService.Queryable();
 
-            Assert.IsFalse( this.PersonQueryContainsNamelessPersonRecordType( defaultQuery ),
+            Assert.That.IsFalse( this.PersonQueryContainsNamelessPersonRecordType( defaultQuery ),
                             "Base Person Queryable incorrectly includes a Person record with Record Type of \"Nameless Person\"." );
         }
 
@@ -175,7 +172,7 @@ namespace Rock.Tests.Integration.Communications.Sms
             var message = new SmsMessage();
 
             // Get Known SMS Recipient.
-            var smsSenderValue = DefinedValueCache.Get( CommunicationsModuleTestHelper.Constants.TestSmsSenderGuid );
+            var smsSenderValue = DefinedValueCache.Get( TestGuids.Communications.TestSmsSenderGuid );
 
             message.ToNumber = smsSenderValue.Description;
 
@@ -184,6 +181,93 @@ namespace Rock.Tests.Integration.Communications.Sms
             message.Message = $"Test Message { RockDateTime.Now:dd-MMM-yy hh:mm:ss}";
 
             return message;
+        }
+
+        /// <summary>
+        /// Delete a Person record associated with the specified mobile phone number.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="mobilePhoneNumber"></param>
+        /// <returns></returns>
+        private bool DeleteNamelessPersonRecord( RockContext dataContext, string mobilePhoneNumber )
+        {
+            var personService = new PersonService( dataContext );
+
+            var namelessPerson = personService.GetPersonFromMobilePhoneNumber( mobilePhoneNumber, createNamelessPersonIfNotFound: false );
+
+            if ( namelessPerson == null )
+            {
+                return false;
+            }
+
+            return DeletePerson( dataContext, namelessPerson.Id );
+        }
+
+        /// <summary>
+        /// Delete a Person record, and all dependent records.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <param name="personId"></param>
+        /// <returns></returns>
+        private bool DeletePerson( RockContext dataContext, int personId )
+        {
+            var personService = new PersonService( dataContext );
+
+            var person = personService.Get( personId );
+
+            if ( person == null )
+            {
+                return false;
+            }
+
+            // Delete Person Views
+            var personViewedService = new PersonViewedService( dataContext );
+
+            var personViewedQuery = personViewedService.Queryable()
+                .Where( x => x.TargetPersonAlias.PersonId == person.Id || x.ViewerPersonAlias.PersonId == person.Id );
+
+            personViewedService.DeleteRange( personViewedQuery );
+
+            // Delete Communications
+            var communicationService = new CommunicationService( dataContext );
+
+            var communicationQuery = communicationService.Queryable()
+                .Where( x => x.SenderPersonAlias.PersonId == person.Id );
+
+            communicationService.DeleteRange( communicationQuery );
+
+            // Delete Communication Recipients
+            var recipientsService = new CommunicationRecipientService( dataContext );
+
+            var recipientsQuery = recipientsService.Queryable()
+                .Where( x => x.PersonAlias.PersonId == person.Id );
+
+            recipientsService.DeleteRange( recipientsQuery );
+
+            // Delete Interactions
+            var interactionService = new InteractionService( dataContext );
+
+            var interactionQuery = interactionService.Queryable()
+                .Where( x => x.PersonAlias.PersonId == person.Id );
+
+            interactionService.DeleteRange( interactionQuery );
+
+            // Delete Person Aliases
+            var personAliasService = new PersonAliasService( dataContext );
+
+            personAliasService.DeleteRange( person.Aliases );
+
+            // Delete Person Search Keys
+            var personSearchKeyService = new PersonSearchKeyService( dataContext );
+
+            var searchKeys = person.GetPersonSearchKeys( dataContext );
+
+            personSearchKeyService.DeleteRange( searchKeys );
+
+            // Delete Person
+            personService.Delete( person );
+
+            return true;
         }
 
         #endregion

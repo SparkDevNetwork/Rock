@@ -102,8 +102,7 @@ namespace Rockweb.Blocks.Crm
     natural. Since there are no right or wrong answers, just go with your instinct.
 </p>";
 
-        private const string ResultsMessageDefaultValue = @"
-{% if DominantGifts != empty %}
+        private const string ResultsMessageDefaultValue = @"{% if DominantGifts != empty %}
     <div>
         <h2 class='h2'>Dominant Gifts</h2>
         <div class='table-responsive'>
@@ -208,7 +207,7 @@ namespace Rockweb.Blocks.Crm
                 <h2 class='panel-title'><b>Ranked Gifts</b></h2>
             </div>
             <div class='panel-body'>
-                {[ chart type:'horizontalBar' ]}
+                {[ chart type:'horizontalBar' xaxistype:'linearhorizontal0to100' ]}
                     {% assign sortedScores = GiftScores | OrderBy:'Percentage desc,SpiritualGiftName' %}
                     {% for score in sortedScores %}
                         [[ dataitem label:'{{ score.SpiritualGiftName }}' value:'{{ score.Percentage }}' fillcolor:'#709AC7' ]]

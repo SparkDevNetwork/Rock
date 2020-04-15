@@ -84,8 +84,8 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private static class PageParameterKey
         {
-            public const string ContentItemId = "contentItemId";
-            public const string ContentChannelId = "contentChannelId";
+            public const string ContentItemId = "ContentItemId";
+            public const string ContentChannelId = "ContentChannelId";
             public const string EventItemOccurrenceId = "EventItemOccurrenceId";
             public const string EventCalendarId = "EventCalendarId";
             public const string EventItemId = "EventItemId";
@@ -595,8 +595,8 @@ namespace RockWeb.Blocks.Cms
             if ( channelId.HasValue )
             {
                 var qryParams = new Dictionary<string, string>();
-                qryParams.Add( "contentItemId", "0" );
-                qryParams.Add( "contentChannelId", channelId.Value.ToString() );
+                qryParams.Add( "ContentItemId", "0" );
+                qryParams.Add( "ContentChannelId", channelId.Value.ToString() );
 
                 var hierarchy = GetNavHierarchy();
                 hierarchy.Add( hfId.Value );
@@ -1101,7 +1101,7 @@ namespace RockWeb.Blocks.Cms
         private void NavigateToNewItem( string itemId )
         {
             var qryParams = new Dictionary<string, string>();
-            qryParams.Add( "contentItemId", itemId );
+            qryParams.Add( "ContentItemId", itemId );
 
             var hierarchy = GetNavHierarchy();
             hierarchy.Add( hfId.Value );

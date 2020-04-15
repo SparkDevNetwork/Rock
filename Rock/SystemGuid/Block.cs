@@ -71,5 +71,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_CATEGORIES = "550D7229-2788-4C0E-BFE6-4AAE95D28267";
 
+        /// <summary>
+        /// The log viewer
+        /// </summary>
+        public const string LOG_VIEWER = "BDEF9AA0-55FC-4A66-8938-2AB2E075521B";
     }
 }

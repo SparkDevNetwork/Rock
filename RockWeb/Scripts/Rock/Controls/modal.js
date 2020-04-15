@@ -114,21 +114,22 @@
                     $modalDialog.modal('hide');
                 }
 
-                // if all modals are closed, remove all the modal-open class
-                if (!$('.modal').is(':visible')) {
-                    {
-                        $('.modal-open').removeClass('modal-open').css('padding-right', '');
-                    }
+                // if all modals are closed, remove the modal-open class from the body
+                if ($('.modal:visible').length === 0) {
+                    $('body').removeClass('modal-open').css('padding-right', '');
                 }
 
-                // ensure the modalBackdrop is removed if its owner is no longer visible
-                var $modalBackdrop = $('.modal-backdrop');
-                if ($modalBackdrop.length) {
-                    var $modalBackdropOwner = $('#' + $modalBackdrop.attr('data-modal-id'));
-                    if (!$modalBackdropOwner.is(':visible')) {
-                        $('.modal-backdrop').remove();
+                // Ensure any modalBackdrops are removed if its owner is no longer visible. Note that some
+                // backdrops do not have an owner
+                $('.modal-backdrop').each(function () {
+                    const $modalBackdrop = $(this);
+                    var $owner = $('#' + $modalBackdrop.attr('data-modal-id'));
+                    var hasOwner = $owner.length > 0;
+
+                    if (hasOwner && !$owner.is(':visible')) {
+                        $modalBackdrop.remove();
                     }
-                }
+                });
             },
             // shows the #modal-popup modal (IFrame Modal)
             show: function (sender, popupUrl, detailsId, postbackUrl) {

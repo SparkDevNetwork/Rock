@@ -343,8 +343,8 @@ namespace RockWeb.Blocks.Cms
         protected void gItems_Add( object sender, EventArgs e )
         {
             Dictionary<string, string> pageParams = new Dictionary<string, string>();
-            pageParams.Add( "contentItemId", "0" );
-            pageParams.Add( "contentChannelId", _channelId.ToString() );
+            pageParams.Add( "ContentItemId", "0" );
+            pageParams.Add( "ContentChannelId", _channelId.ToString() );
 
             NavigateToLinkedPage( "DetailPage", pageParams );
         }
@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gItems_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "contentItemId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "ContentItemId", e.RowKeyId );
         }
 
         /// <summary>

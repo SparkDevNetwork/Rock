@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
-using Rock.Tests.Integration.Crm.Steps;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.Reporting.DataFilter
 {
@@ -46,10 +46,10 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             var settingsSource = new StepsTakenFilter.FilterSettings();
 
-            settingsSource.StepProgramGuid = StepsTests.Constants.ProgramSacramentsGuid;
+            settingsSource.StepProgramGuid = TestGuids.Steps.ProgramSacramentsGuid;
 
-            settingsSource.StepTypeGuids = new List<Guid> { StepsTests.Constants.StepTypeBaptismGuid, StepsTests.Constants.StepTypeConfirmationGuid, StepsTests.Constants.StepTypeConfessionGuid };
-            settingsSource.StepStatusGuids = new List<Guid> { StepsTests.Constants.StatusSacramentsSuccessGuid, StepsTests.Constants.StatusSacramentsPendingGuid };
+            settingsSource.StepTypeGuids = new List<Guid> { TestGuids.Steps.StepTypeBaptismGuid, TestGuids.Steps.StepTypeConfirmationGuid, TestGuids.Steps.StepTypeConfessionGuid };
+            settingsSource.StepStatusGuids = new List<Guid> { TestGuids.Steps.StatusSacramentsSuccessGuid, TestGuids.Steps.StatusSacramentsPendingGuid };
 
             settingsSource.StartedInPeriod = startPeriod;
             settingsSource.CompletedInPeriod = endPeriod;
@@ -58,17 +58,17 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             var settingsTarget = new StepsTakenFilter.FilterSettings( settingsString );
 
-            Assert.AreEqual( StepsTests.Constants.ProgramSacramentsGuid, settingsTarget.StepProgramGuid );
+            Assert.That.AreEqual( TestGuids.Steps.ProgramSacramentsGuid, settingsTarget.StepProgramGuid );
 
-            Assert.AreEqual( StepsTests.Constants.StepTypeBaptismGuid, settingsTarget.StepTypeGuids[0] );
-            Assert.AreEqual( StepsTests.Constants.StepTypeConfirmationGuid, settingsTarget.StepTypeGuids[1] );
-            Assert.AreEqual( StepsTests.Constants.StepTypeConfessionGuid, settingsTarget.StepTypeGuids[2] );
+            Assert.That.AreEqual( TestGuids.Steps.StepTypeBaptismGuid, settingsTarget.StepTypeGuids[0] );
+            Assert.That.AreEqual( TestGuids.Steps.StepTypeConfirmationGuid, settingsTarget.StepTypeGuids[1] );
+            Assert.That.AreEqual( TestGuids.Steps.StepTypeConfessionGuid, settingsTarget.StepTypeGuids[2] );
 
-            Assert.AreEqual( StepsTests.Constants.StatusSacramentsSuccessGuid, settingsTarget.StepStatusGuids[0] );
-            Assert.AreEqual( StepsTests.Constants.StatusSacramentsPendingGuid, settingsTarget.StepStatusGuids[1] );
+            Assert.That.AreEqual( TestGuids.Steps.StatusSacramentsSuccessGuid, settingsTarget.StepStatusGuids[0] );
+            Assert.That.AreEqual( TestGuids.Steps.StatusSacramentsPendingGuid, settingsTarget.StepStatusGuids[1] );
 
-            Assert.AreEqual( startPeriod, settingsTarget.StartedInPeriod );
-            Assert.AreEqual( endPeriod, settingsTarget.CompletedInPeriod );
+            Assert.That.AreEqual( startPeriod, settingsTarget.StartedInPeriod );
+            Assert.That.AreEqual( endPeriod, settingsTarget.CompletedInPeriod );
         }
 
         /// <summary>
@@ -82,18 +82,18 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepsTakenFilter.FilterSettings();
 
             // Filter for Program=Sacraments
-            settings.StepProgramGuid = StepsTests.Constants.ProgramSacramentsGuid;
+            settings.StepProgramGuid = TestGuids.Steps.ProgramSacramentsGuid;
 
             var personQuery = GetPersonQueryWithStepsTakenFilter( settings );
 
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Baptism.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
             // Verify Sarah Simmons found - Confirmation.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.SarahSimmonsPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
             // Verify Ben Jones not found - no Sacraments Steps, only Alpha.
-            Assert.IsFalse( results.Any( x => x.Guid == StepsTests.Constants.BenJonesPersonGuid ) );
+            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BenJonesPersonGuid ) );
         }
 
         /// <summary>
@@ -107,20 +107,20 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepsTakenFilter.FilterSettings();
 
             // Filter for Program=Sacraments, Step Type=Confirmation
-            settings.StepProgramGuid = StepsTests.Constants.ProgramSacramentsGuid;
+            settings.StepProgramGuid = TestGuids.Steps.ProgramSacramentsGuid;
 
-            settings.StepTypeGuids = new List<Guid> { StepsTests.Constants.StepTypeConfirmationGuid };
+            settings.StepTypeGuids = new List<Guid> { TestGuids.Steps.StepTypeConfirmationGuid };
 
             var personQuery = GetPersonQueryWithStepsTakenFilter( settings );
 
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Confirmation.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
             // Verify Sarah Simmons found - Confirmation.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.SarahSimmonsPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
             // Verify Brian Jones not found - Baptism, no Confirmation.
-            Assert.IsFalse( results.Any( x => x.Guid == StepsTests.Constants.BrianJonesPersonGuid ) );
+            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
         }
 
         /// <summary>
@@ -134,22 +134,22 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepsTakenFilter.FilterSettings();
 
             // Filter for: Program=Sacraments, Step Type=Confirmation, Baptism
-            settings.StepProgramGuid = StepsTests.Constants.ProgramSacramentsGuid;
+            settings.StepProgramGuid = TestGuids.Steps.ProgramSacramentsGuid;
 
-            settings.StepTypeGuids = new List<Guid> { StepsTests.Constants.StepTypeBaptismGuid, StepsTests.Constants.StepTypeConfirmationGuid };
+            settings.StepTypeGuids = new List<Guid> { TestGuids.Steps.StepTypeBaptismGuid, TestGuids.Steps.StepTypeConfirmationGuid };
 
             var personQuery = GetPersonQueryWithStepsTakenFilter( settings );
 
             var results = personQuery.ToList();
 
             // Verify Ted Decker found - Confirmation.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
             // Verify Sarah Simmons found - Confirmation.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.SarahSimmonsPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.SarahSimmonsPersonGuid ) );
             // Verify Brian Jones found - Baptism.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.BrianJonesPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
             // Verify Ben Jones not found - no Sacraments Steps
-            Assert.IsFalse( results.Any( x => x.Guid == StepsTests.Constants.BenJonesPersonGuid ) );
+            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.BenJonesPersonGuid ) );
         }
 
         /// <summary>
@@ -163,18 +163,18 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepsTakenFilter.FilterSettings();
 
             // Filter for Step Program=Sacraments, Step Type=Baptism, Status=Pending
-            settings.StepProgramGuid = StepsTests.Constants.ProgramSacramentsGuid;
-            settings.StepTypeGuids = new List<Guid> { StepsTests.Constants.StepTypeBaptismGuid };
-            settings.StepStatusGuids = new List<Guid> { StepsTests.Constants.StatusSacramentsPendingGuid };
+            settings.StepProgramGuid = TestGuids.Steps.ProgramSacramentsGuid;
+            settings.StepTypeGuids = new List<Guid> { TestGuids.Steps.StepTypeBaptismGuid };
+            settings.StepStatusGuids = new List<Guid> { TestGuids.Steps.StatusSacramentsPendingGuid };
 
             var personQuery = GetPersonQueryWithStepsTakenFilter( settings );
 
             var results = personQuery.ToList();
 
             // Verify Brian Jones found - Baptism is Pending.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.BrianJonesPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
             // Verify Ted Decker not found - Baptism is Completed.
-            Assert.IsFalse( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
         }
 
         /// <summary>
@@ -188,18 +188,18 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepsTakenFilter.FilterSettings();
 
             // Filter for Step Program=Sacraments, Step Type=Baptism, Status=Pending,Success.
-            settings.StepProgramGuid = StepsTests.Constants.ProgramSacramentsGuid;
-            settings.StepTypeGuids = new List<Guid> { StepsTests.Constants.StepTypeBaptismGuid };
-            settings.StepStatusGuids = new List<Guid> { StepsTests.Constants.StatusSacramentsPendingGuid, StepsTests.Constants.StatusSacramentsSuccessGuid };
+            settings.StepProgramGuid = TestGuids.Steps.ProgramSacramentsGuid;
+            settings.StepTypeGuids = new List<Guid> { TestGuids.Steps.StepTypeBaptismGuid };
+            settings.StepStatusGuids = new List<Guid> { TestGuids.Steps.StatusSacramentsPendingGuid, TestGuids.Steps.StatusSacramentsSuccessGuid };
 
             var personQuery = GetPersonQueryWithStepsTakenFilter( settings );
 
             var results = personQuery.ToList();
 
             // Verify Brian Jones found - Baptism is Pending.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.BrianJonesPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BrianJonesPersonGuid ) );
             // Verify Ted Decker found - Baptism is Completed.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
         }
 
         /// <summary>
@@ -213,8 +213,8 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settings = new StepsTakenFilter.FilterSettings();
 
             // Filter for Step Program=Sacraments, Step Type=Baptism, Date Completed=2001
-            settings.StepProgramGuid = StepsTests.Constants.ProgramSacramentsGuid;
-            settings.StepTypeGuids = new List<Guid> { StepsTests.Constants.StepTypeBaptismGuid };
+            settings.StepProgramGuid = TestGuids.Steps.ProgramSacramentsGuid;
+            settings.StepTypeGuids = new List<Guid> { TestGuids.Steps.StepTypeBaptismGuid };
             settings.CompletedInPeriod = new TimePeriod( new DateTime( 2001, 7, 1 ), new DateTime( 2001, 12, 31 ) );
 
             var personQuery = GetPersonQueryWithStepsTakenFilter( settings );
@@ -222,11 +222,11 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var results = personQuery.ToList();
 
             // Verify Bill Marble found - baptised in second half of 2001.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.BillMarblePersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.BillMarblePersonGuid ) );
             // Verify Alisha Marble found - baptised in second half of 2001.
-            Assert.IsTrue( results.Any( x => x.Guid == StepsTests.Constants.AlishaMarblePersonGuid ) );
+            Assert.That.IsTrue( results.Any( x => x.Guid == TestGuids.Steps.AlishaMarblePersonGuid ) );
             // Verify Ted Decker not found - baptised in first half of 2001.
-            Assert.IsFalse( results.Any( x => x.Guid == StepsTests.Constants.TedDeckerPersonGuid ) );
+            Assert.That.IsFalse( results.Any( x => x.Guid == TestGuids.Steps.TedDeckerPersonGuid ) );
         }
 
         /// <summary>

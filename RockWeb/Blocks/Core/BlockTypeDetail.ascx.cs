@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Core
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "blockTypeId" ).AsInteger() );
+                ShowDetail( PageParameter( "BlockTypeId" ).AsInteger() );
             }
         }
 

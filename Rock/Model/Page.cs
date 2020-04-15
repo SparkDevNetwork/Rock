@@ -107,7 +107,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int LayoutId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a flag that indicates if the Page requires SSL encryption.
         /// </summary>
@@ -369,6 +369,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string AdditionalSettings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the median page load time in seconds. Typically calculated from a set of
+        /// <see cref="Interaction.InteractionTimeToServe"/> values.
+        /// </summary>
+        /// <value>
+        /// The median page load time in seconds.
+        /// </value>
+        [DataMember]
+        public double? MedianPageLoadTime { get; set; }
 
         #endregion
 
