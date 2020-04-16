@@ -20,7 +20,7 @@
                     </div>
                 </Rock:PanelWidget>
 
-                <Rock:PanelWidget ID="pwLoggingSettings" runat="server" Title="Log Settings" Expanded="true">
+                <Rock:PanelWidget ID="pwLoggingSettings" runat="server" Title="Log Settings" Expanded="false">
                     <Rock:NotificationBox ID="nbLoggingMessage" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
 
                     <Rock:RockRadioButtonList ID="rblVerbosityLevel" runat="server"
