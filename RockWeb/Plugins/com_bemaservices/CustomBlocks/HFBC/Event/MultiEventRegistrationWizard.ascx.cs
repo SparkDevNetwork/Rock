@@ -5938,6 +5938,20 @@ Registration By: {0} \nTotal Cost/Fees:{1}
         /// </summary>
         private void AutoApplyDiscounts()
         {
+            var rockContext = new RockContext();
+            var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
+
+            var categoryId = PageParameter( CATEGORY_ID_PARAM_NAME ).AsIntegerOrNull();
+            if ( categoryId == null || categoryId == 0 )
+            {
+                categoryId = GetAttributeValue( "DefaultCategoryId" ).AsInteger();
+            }
+
+            var personIds = CurrentPerson.GetFamilyMembers( true )
+                        .Select( gm => gm.PersonId )
+                        .ToList();
+            var registrants = registrationRegistrantService.Queryable().Where( rr => personIds.Contains( rr.PersonAlias.PersonId ) && rr.Registration.RegistrationInstance.RegistrationTemplate.CategoryId == categoryId ).ToList();
+
             var isSiblingCodeAdded = false;
             if ( RegistrationInformationList != null )
             {
@@ -5956,6 +5970,11 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                                 foreach ( var registrant in registrationInformation.RegistrationState.Registrants )
                                 {
                                     registrant.DiscountApplies = ( registrant.PersonId != primaryAlias.PersonId );
+
+                                    if ( registrationInformation.RegistrationInstanceState.RegistrationTemplate.Name.Contains( "Admin Fee" ) && registrants.Any() )
+                                    {
+                                        registrant.DiscountApplies = true;
+                                    }
                                 }
 
                                 if ( registrationInformation.RegistrationState.Registrants.Any( r => r.DiscountApplies ) )
@@ -5970,6 +5989,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                                     {
                                         registrationInformation.RegistrationState.DiscountAmount = discountAmount;
                                     }
+
                                     SaveViewState();
                                 }
                             }
