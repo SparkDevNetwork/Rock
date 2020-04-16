@@ -789,6 +789,7 @@ namespace RockWeb.Blocks.Cms
             {
                 contentItem = contentItemService
                     .Queryable( "ContentChannel,ContentChannelType" )
+                    .Include( cci => cci.ChildItems.Select( cca => cca.ContentChannelItem ) )
                     .FirstOrDefault( t => t.Id == contentItemId );
             }
 
