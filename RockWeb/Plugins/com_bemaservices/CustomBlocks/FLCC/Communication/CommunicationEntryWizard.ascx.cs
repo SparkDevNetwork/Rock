@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by BEMA Information Technologies
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -20,7 +36,16 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
+/*
+ * BEMA Modified Core Block ( v9.4.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ * 
+ * Additional Features:
+ * - FE1) Added ability to mark emails as bulk communication by default
+ * - FE2) Added ability to autofill the From Name,From Email, and ReplyTo address fields with the current user's information if they're blank on the template
+ * - FE3) Added ability to set a default category
+ * - FE4) Added ability to hide the generic template
+ */
 namespace RockWeb.Plugins.com_bemaservices.Communication
 {
     [DisplayName( "Communication Entry Wizard" )]
@@ -87,8 +112,26 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
         required: false,
         order: 10,
         key: "SimpleCommunicationPage" )]
+    [BooleanField( "Is Bulk Communication Checked by Default", "", false, "", 11, BemaAttributeKey.IsBulkCommunicationChecked )]
+    [BooleanField( "Are From Fields Autofilled", "Should the From fields be autofilled with the user's info?", false, "", 12, BemaAttributeKey.AreFromFieldsAutofilled )]
+    [CategoryField( "Default Category", "", false, "Rock.Model.CommunicationTemplate", "", "", false, "", "", 13, BemaAttributeKey.DefaultCategory )]
+    [BooleanField( "Is the Generic Template Hidden?", "", false, "", 14, BemaAttributeKey.IsGenericTemplateHidden )]
+
     public partial class CommunicationEntryWizard : RockBlock, IDetailBlock
     {
+        /* BEMA.Start */
+        #region BEMA Attribute Keys
+        private static class BemaAttributeKey
+        {
+            public const string IsBulkCommunicationChecked = "IsBulkCommunicationChecked";
+            public const string AreFromFieldsAutofilled = "AreFromFieldsAutofilled";
+            public const string DefaultCategory = "DefaultCategory";
+            public const string IsGenericTemplateHidden = "IsGenericTemplateHidden";
+        }
+
+        #endregion
+        /* BEMA.End */
+
         #region Fields
 
         private const string CATEGORY_COMMUNICATION_TEMPLATE = "CategoryCommunicationTemplate";
@@ -267,8 +310,12 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communication.EnabledLavaCommands = GetAttributeValue( "EnabledLavaCommands" );
 
-                // Fix to default communications to bulk
-                communication.IsBulkCommunication = true;
+                /* BEMA.FE1.Start */
+                if ( GetAttributeValue( BemaAttributeKey.IsBulkCommunicationChecked ).AsBoolean() )
+                {
+                    communication.IsBulkCommunication = true;
+                }
+                /* BEMA.FE1.End */
             }
             else
             {
@@ -396,17 +443,21 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
             // Email Summary fields
             tbFromName.Text = communication.FromName;
             ebFromAddress.Text = communication.FromEmail;
-            
-            // Checking if template has a value
-            if( string.IsNullOrEmpty( communication.FromName ) )
-            {
-                tbFromName.Text = CurrentPerson.FullName;
-            }
 
-            if( string.IsNullOrEmpty( communication.FromEmail ) )
+            /* BEMA.FE2.Start */
+            if ( GetAttributeValue( BemaAttributeKey.AreFromFieldsAutofilled ).AsBoolean() )
             {
-                ebFromAddress.Text = CurrentPerson.Email;
+                if ( string.IsNullOrEmpty( communication.FromName ) )
+                {
+                    tbFromName.Text = CurrentPerson.FullName;
+                }
+
+                if ( string.IsNullOrEmpty( communication.FromEmail ) )
+                {
+                    ebFromAddress.Text = CurrentPerson.Email;
+                }
             }
+            /* BEMA.FE2.End */
 
             // Email Summary fields: additional fields
             ebReplyToAddress.Text = communication.ReplyToEmail;
@@ -507,7 +558,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
         /// </summary>
         private List<CommunicationType> GetAllowedCommunicationTypes()
         {
-            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues(false);
+            var communicationTypes = this.GetAttributeValue( "CommunicationTypes" ).SplitDelimitedValues( false );
             var result = new List<CommunicationType>();
             if ( communicationTypes.Any() )
             {
@@ -1067,6 +1118,15 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
         private void ShowTemplateSelection()
         {
             cpCommunicationTemplate.SetValue( GetBlockUserPreference( CATEGORY_COMMUNICATION_TEMPLATE ).AsIntegerOrNull() );
+
+            /* BEMA.FE3.Start */
+            if ( GetAttributeValue( BemaAttributeKey.DefaultCategory ).AsGuidOrNull().HasValue )
+            {
+                var category = CategoryCache.Get( GetAttributeValue( BemaAttributeKey.DefaultCategory ).AsGuidOrNull().Value );
+                cpCommunicationTemplate.SetValue( category.Id );
+            }
+            /* BEMA.FE3.End */
+
             pnlTemplateSelection.Visible = true;
             nbTemplateSelectionWarning.Visible = false;
             SetNavigationHistory( pnlTemplateSelection );
@@ -1090,6 +1150,14 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
             {
                 templateQuery = templateQuery.Where( a => a.CategoryId == categoryId );
             }
+
+            /* BEMA.FE4.Start */
+            if ( GetAttributeValue( BemaAttributeKey.IsGenericTemplateHidden ).AsBoolean() )
+            {
+                var genericGuid = "A3C7F623-7F6F-4C48-B66F-CBEE2DF30B6A".AsGuid();
+                templateQuery = templateQuery.Where( a => a.Guid != genericGuid );
+            }
+            /* BEMA.FE4.End */
 
             templateQuery = templateQuery.OrderBy( a => a.Name );
 
@@ -1179,26 +1247,36 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
             //this change is being made explicitly as discussed in #3516
             tbFromName.Text = communicationTemplate.FromName;
             ebFromAddress.Text = communicationTemplate.FromEmail;
-           
-            // Checking if template has a value
-            if( string.IsNullOrEmpty( communicationTemplate.FromName ) )
-            {
-                tbFromName.Text = CurrentPerson.FullName;
-            }
 
-            if( string.IsNullOrEmpty( communicationTemplate.FromEmail ) )
+            /* BEMA.FE2.Start */
+            if ( GetAttributeValue( BemaAttributeKey.AreFromFieldsAutofilled ).AsBoolean() )
             {
-                ebFromAddress.Text = CurrentPerson.Email;
+                if ( string.IsNullOrEmpty( communicationTemplate.FromName ) )
+                {
+                    tbFromName.Text = CurrentPerson.FullName;
+                }
+
+                if ( string.IsNullOrEmpty( communicationTemplate.FromEmail ) )
+                {
+                    ebFromAddress.Text = CurrentPerson.Email;
+                }
             }
+            /* BEMA.FE2.End */
 
             // only set the ReplyToEmail, CCEMails, and BCCEmails if the template has one (just in case they already filled these in for this communication
             if ( communicationTemplate.ReplyToEmail.IsNotNullOrWhiteSpace() )
             {
                 ebReplyToAddress.Text = communicationTemplate.ReplyToEmail;
             }
-            else{
-                 ebReplyToAddress.Text = CurrentPerson.Email;
+            /* BEMA.FE2.Start */
+            else
+            {
+                if ( GetAttributeValue( BemaAttributeKey.AreFromFieldsAutofilled ).AsBoolean() )
+                {
+                    ebReplyToAddress.Text = CurrentPerson.Email;
+                }
             }
+            /* BEMA.FE2.End */
 
             if ( communicationTemplate.CCEmails.IsNotNullOrWhiteSpace() )
             {
@@ -1268,8 +1346,8 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                 selectedTemplate = new CommunicationTemplateService( new RockContext() ).Get( selectedTemplateId.Value );
             }
 
-            if ( selectedTemplate == null || 
-                ( ( communicationType == CommunicationType.Email  || communicationType == CommunicationType.RecipientPreference ) && !selectedTemplate.SupportsEmailWizard() ) )
+            if ( selectedTemplate == null ||
+                ( ( communicationType == CommunicationType.Email || communicationType == CommunicationType.RecipientPreference ) && !selectedTemplate.SupportsEmailWizard() ) )
             {
                 nbTemplateSelectionWarning.Text = "Please select a template.";
                 nbTemplateSelectionWarning.Visible = true;
@@ -1391,7 +1469,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                     string testPersonOriginalEmailAddress = CurrentPerson.Email;
                     var testPersonOriginalSMSPhoneNumber = CurrentPerson.PhoneNumbers
                                             .Where( p => p.IsMessagingEnabled )
-                                            .Select(a => a.Number)
+                                            .Select( a => a.Number )
                                             .FirstOrDefault();
 
                     Rock.Model.Communication testCommunication = null;
@@ -1474,7 +1552,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                                 }
                             }
                         }
-                        
+
                         testRecipient.PersonAliasId = sendTestToPerson.PrimaryAliasId.Value;
 
                         testRecipient.MediumEntityTypeId = mediumEntityTypeId;
@@ -1584,7 +1662,7 @@ namespace RockWeb.Plugins.com_bemaservices.Communication
                                             }
                                         }
                                     }
-                                    
+
                                 }
                             }
                         }
@@ -2241,19 +2319,6 @@ sendCountTerm.PluralizeIf( sendCount != 1 ) );
             SetNavigationHistory( pnlResult );
             pnlConfirmation.Visible = false;
             pnlResult.Visible = true;
-
-            /* Commenting out to make 8.9 complient
-            var communicationDateTime = communication.FutureSendDateTime.HasValue ?
-                communication.FutureSendDateTime.Value :
-                communication.CreatedDateTime.Value;
-            DateTime? dndEndingTime = null;
-            var isCommunicationInsideDND = ( communicationDateTime, out dndEndingTime );
-            nbWarning.Visible = isCommunicationInsideDND;
-            if ( isCommunicationInsideDND )
-            {
-                nbWarning.Text = "Do not disturb is active and it's falling inside the DND window. It will only be sent once the DND window has passed";
-            }
-            */
 
             nbResult.Text = message;
 
