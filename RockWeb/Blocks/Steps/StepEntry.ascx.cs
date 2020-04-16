@@ -370,6 +370,8 @@ namespace RockWeb.Blocks.Steps
             step.EndDateTime = stepType.HasEndDate ? rdpEndDate.SelectedDate : null;
             step.StepStatusId = rsspStatus.SelectedValueAsId();
 
+            step.CampusId = cpCampus.SelectedCampusId;
+
             // Update the completed date time, which is based on the start, end, and status
             if ( !step.StepStatusId.HasValue )
             {
@@ -579,6 +581,7 @@ namespace RockWeb.Blocks.Steps
                 rdpStartDate.SelectedDate = step.StartDateTime;
                 rdpEndDate.SelectedDate = step.EndDateTime;
                 rsspStatus.SelectedValue = step.StepStatusId.ToStringSafe();
+                cpCampus.SelectedCampusId = step.CampusId;
             }
 
             BuildDynamicControls( true );
@@ -636,6 +639,12 @@ namespace RockWeb.Blocks.Steps
             var descriptionListMain = new DescriptionList();
 
             descriptionListMain.Add( "Person", step.PersonAlias.Person.FullName );
+
+            var campusCount = CampusCache.All().Count;
+            if ( campusCount > 1 )
+            {
+                descriptionListMain.Add( "Campus", step.Campus == null ? string.Empty : step.Campus.Name );
+            }
 
             if ( stepType.HasEndDate )
             {
