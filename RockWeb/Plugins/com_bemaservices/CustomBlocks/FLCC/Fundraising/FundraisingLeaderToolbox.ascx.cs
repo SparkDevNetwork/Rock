@@ -30,6 +30,14 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+/*
+ * BEMA Modified Core Block ( v9.2.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ * 
+ * Additional Features:
+ * - UI1) Added Funding Total column
+ * - UI2) Added Funding Goal column
+ */
 namespace RockWeb.Plugins.com_bemaservices.Fundraising
 {
     [DisplayName( "Fundraising Leader Toolbox" )]
@@ -57,8 +65,36 @@ namespace RockWeb.Plugins.com_bemaservices.Fundraising
 
     [LinkedPage( "Participant Page", "The participant page for a participant of this fundraising opportunity", required: false, order: 2 )]
     [LinkedPage( "Main Page", "The main page for the fundraising opportunity", required: false, order: 3 )]
+
+    /* BEMA.UI1.Start */
+    [BooleanField(
+        "Show Funding Total Column?",
+        Key = BemaAttributeKey.ShowFundingTotalColumn,
+        DefaultValue = "False",
+        Category = "BEMA Additional Features" )]
+    // UMC Value = true
+    /* BEMA.UI1.End */
+
+    /* BEMA.UI2.Start */
+    [BooleanField(
+        "Show Funding Goal Column?",
+        Key = BemaAttributeKey.ShowFundingGoalColumn,
+        DefaultValue = "False",
+        Category = "BEMA Additional Features" )]
+    // UMC Value = true
+    /* BEMA.UI2.End */
     public partial class FundraisingLeaderToolbox : RockBlock
     {
+        /* BEMA.Start */
+        #region Attribute Keys
+        private static class BemaAttributeKey
+        {
+            public const string ShowFundingTotalColumn = "ShowFundingTotalColumn";
+            public const string ShowFundingGoalColumn = "ShowFundingGoalColumn";
+        }
+
+        #endregion
+        /* BEMA.End */
         #region Base Control Methods
 
         /// <summary>
@@ -79,6 +115,22 @@ namespace RockWeb.Plugins.com_bemaservices.Fundraising
             gGroupMembers.Actions.ShowMergeTemplate = false;
 
             gGroupMembers.GridRebind += gGroupMembers_GridRebind;
+       
+            /* BEMA.UI1.Start */
+            var fundingTotalField = gGroupMembers.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.DataField == "FundingTotal" );
+            if ( fundingTotalField != null )
+            {
+                fundingTotalField.Visible = GetAttributeValue( BemaAttributeKey.ShowFundingTotalColumn ).AsBoolean();
+            }
+            /* BEMA.UI1.End */
+
+            /* BEMA.UI1.Start */
+            var fundingGoalField = gGroupMembers.ColumnsOfType<CurrencyField>().FirstOrDefault( a => a.DataField == "FundingGoal" );
+            if ( fundingGoalField != null )
+            {
+                fundingGoalField.Visible = GetAttributeValue( BemaAttributeKey.ShowFundingGoalColumn ).AsBoolean();
+            }
+            /* BEMA.UI1.End */
         }
 
         /// <summary>
@@ -199,8 +251,12 @@ namespace RockWeb.Plugins.com_bemaservices.Fundraising
                     groupMember.Person.FullName,
                     groupMember.Person.Gender,
                     FundingRemaining = fundingRemaining,
+                    /* BEMA.UI1.Start */
 					FundingGoal = individualFundraisingGoal,
+                    /* BEMA.UI1.End */
+                    /* BEMA.UI2.Start */
 					FundingTotal = contributionTotal,
+                    /* BEMA.UI2.End */
                     GroupRoleName = a.GroupRole.Name
                 };
             } ).ToList();
