@@ -321,6 +321,11 @@ namespace Rock.Web.UI
         protected const string FILTER_HOME_PHONE_ID = "tbHomePhoneFilter";
 
         /// <summary>
+        /// Filter attribute prefix
+        /// </summary>
+        protected const string FILTER_ATTRIBUTE_PREFIX = "filterAttribute_";
+
+        /// <summary>
         /// The active RegistrationInstance in this context.
         /// </summary>
         public RegistrationInstance RegistrationInstance
@@ -751,7 +756,7 @@ namespace Rock.Web.UI
                         var attribute = field.Attribute;
 
                         // Add dynamic filter fields
-                        var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, "filterGroupPlacements_" + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
+                        var filterFieldControl = attribute.FieldType.Field.FilterControl( attribute.QualifierValues, FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString(), false, Rock.Reporting.FilterMode.SimpleFilter );
                         if ( filterFieldControl != null )
                         {
                             if ( filterFieldControl is IRockControl )
