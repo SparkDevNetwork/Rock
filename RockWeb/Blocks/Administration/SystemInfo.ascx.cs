@@ -375,7 +375,7 @@ namespace RockWeb.Blocks.Administration
                 databaseResults.AppendFormat( "<br />Database Size: {0} MB", RockInstanceConfig.Database.DatabaseSize );
                 databaseResults.AppendFormat( "<br />Log File Size: {0} MB", RockInstanceConfig.Database.LogSize );
                 databaseResults.AppendFormat( "<br />Recovery Model: {0}", RockInstanceConfig.Database.RecoverMode );
-                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", RockInstanceConfig.Database.AllowSnapshotIsolation.ToYesNo(), RockInstanceConfig.Database.ReadCommittedSnapshotEnabled.ToYesNo() );
+                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", RockInstanceConfig.Database.SnapshotIsolationAllowed.ToYesNo(), RockInstanceConfig.Database.ReadCommittedSnapshotEnabled.ToYesNo() );
             }
             catch ( Exception ex )
             {
