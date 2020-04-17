@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.BulkImport
     public partial class BulkImportTool : RockBlock
     {
 
-        #region Fields
+        #region Fields and Properties
 
         /// <summary>
         /// This holds the reference to the RockMessageHub SignalR Hub context.
@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.BulkImport
             }
         }
 
-        #endregion Fields
+        #endregion Fields and Properties
 
         #region Base Control Methods
 
@@ -255,7 +255,7 @@ namespace RockWeb.Blocks.BulkImport
             var physicalSlingshotFile = this.Request.MapPath( hfMainSlingshotFileName.Value );
             long totalMilliseconds = 0;
 
-            Rock.Slingshot.SlingshotImporter _importer = null;
+            SlingshotImporter slingshotImporter = null;
 
             var importTask = new Task( () =>
             {
@@ -280,25 +280,25 @@ namespace RockWeb.Blocks.BulkImport
                     importUpdateType = BulkImporter.ImportUpdateType.AlwaysUpdate;
                 }
 
-                _importer = new Rock.Slingshot.SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType, _importer_OnProgress );
-                _importer.FinancialTransactionChunkSize = 100000;
+                slingshotImporter = new SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType, slingshotImporter_OnProgress );
+                slingshotImporter.FinancialTransactionChunkSize = 100000;
 
                 if ( importType == ImportType.Import || importType == ImportType.All )
                 {
-                    _importer.DoImport();
+                    slingshotImporter.DoImport();
                 }
 
                 if ( importType == ImportType.Photos || importType == ImportType.All )
                 {
-                    _importer.TEST_UseSampleLocalPhotos = false;
-                    _importer.DoImportPhotos();
+                    slingshotImporter.TEST_UseSampleLocalPhotos = false;
+                    slingshotImporter.DoImportPhotos();
                 }
 
                 stopwatch.Stop();
 
-                if ( _importer.Exceptions.Any() )
+                if ( slingshotImporter.Exceptions.Any() )
                 {
-                    _importer.Results.Add( "ERRORS", string.Join( Environment.NewLine, _importer.Exceptions.Select( a => a.Message ).ToArray() ) );
+                    slingshotImporter.Results.Add( "ERRORS", string.Join( Environment.NewLine, slingshotImporter.Exceptions.Select( a => a.Message ).ToArray() ) );
                 }
 
                 totalMilliseconds = stopwatch.ElapsedMilliseconds;
@@ -313,17 +313,17 @@ namespace RockWeb.Blocks.BulkImport
                     foreach ( var exception in t.Exception.InnerExceptions )
                     {
                         LogException( exception );
-                        if ( _importer.Exceptions != null )
+                        if ( slingshotImporter.Exceptions != null )
                         {
-                            _importer.Exceptions.Add( exception.GetBaseException() );
+                            slingshotImporter.Exceptions.Add( exception.GetBaseException() );
                         }
                     }
 
-                    _importer_OnProgress( _importer, "ERROR: " + t.Exception.Message );
+                    slingshotImporter_OnProgress( slingshotImporter, "ERROR: " + t.Exception.Message );
                 }
                 else
                 {
-                    _importer_OnProgress( _importer, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
+                    slingshotImporter_OnProgress( slingshotImporter, string.Format( "{0} Complete: [{1}ms]", importType.ConvertToString(), totalMilliseconds ) );
                 }
 
             } );
@@ -336,9 +336,9 @@ namespace RockWeb.Blocks.BulkImport
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
-        private void _importer_OnProgress( object sender, object e )
+        private void slingshotImporter_OnProgress( object sender, object e )
         {
-            Rock.Slingshot.SlingshotImporter _importer = sender as Rock.Slingshot.SlingshotImporter;
+            var slingshotImporter = sender as SlingshotImporter;
 
             string progressMessage = string.Empty;
             DescriptionList progressResults = new DescriptionList();
@@ -347,7 +347,7 @@ namespace RockWeb.Blocks.BulkImport
                 progressMessage = e.ToString();
             }
 
-            var exceptionsCopy = _importer.Exceptions.ToArray();
+            var exceptionsCopy = slingshotImporter.Exceptions.ToArray();
             if ( exceptionsCopy.Any() )
             {
                 if ( exceptionsCopy.Count() > 50 )
@@ -361,7 +361,7 @@ namespace RockWeb.Blocks.BulkImport
                 }
             }
 
-            var resultsCopy = _importer.Results.ToArray();
+            var resultsCopy = slingshotImporter.Results.ToArray();
             foreach ( var result in resultsCopy )
             {
                 progressResults.Add( result.Key, result.Value );
