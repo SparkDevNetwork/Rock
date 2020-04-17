@@ -1344,104 +1344,134 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDiscountApply_Click( object sender, EventArgs e )
         {
+            string discountCode = tbDiscountCode.Text;
+
+
             if ( RegistrationInformationList != null )
             {
-                foreach ( var registrationInformation in RegistrationInformationList )
+                if ( discountCode.Equals( "staff", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    if ( registrationInformation.RegistrationState != null )
+                    foreach ( var registrationInformation in RegistrationInformationList )
                     {
-                        registrationInformation.RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
-
-                        RegistrationTemplateDiscount discount = null;
-                        bool validDiscount = true;
-
-                        string discountCode = tbDiscountCode.Text;
-                        if ( !string.IsNullOrWhiteSpace( discountCode ) )
+                        if ( registrationInformation.RegistrationState != null )
                         {
-                            discount = registrationInformation.RegistrationInstanceState.RegistrationTemplate.Discounts
-                                .Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) )
-                                .FirstOrDefault();
-
-                            if ( discount == null )
+                            registrationInformation.RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
+                            foreach ( var registrant in registrationInformation.RegistrationState.Registrants )
                             {
-                                validDiscount = false;
-                                nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
-                                nbDiscountCode.Text = string.Format( "'{0}' is not a valid {1}.", discountCode, registrationInformation.DiscountCodeTerm );
-                                nbDiscountCode.Visible = true;
+                                registrant.DiscountApplies = true;
                             }
 
-                            if ( validDiscount && discount.MinRegistrants.HasValue && registrationInformation.RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
+                            if ( registrationInformation.RegistrationState.Registrants.Any( r => r.DiscountApplies ) )
                             {
-                                nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
-                                nbDiscountCode.Text = string.Format( "The '{0}' {1} requires at least {2} registrants.", discountCode, registrationInformation.DiscountCodeTerm, discount.MinRegistrants.Value );
-                                nbDiscountCode.Visible = true;
-                                validDiscount = false;
-                            }
+                                registrationInformation.RegistrationState.DiscountCode = discountCode;
+                                registrationInformation.RegistrationState.DiscountAmount = .50m;
 
-                            if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
-                            {
-                                nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
-                                nbDiscountCode.Text = string.Format( "The '{0}' {1} is not available yet.", discountCode, registrationInformation.DiscountCodeTerm );
-                                nbDiscountCode.Visible = true;
-                                validDiscount = false;
+                                SaveViewState();
                             }
+                        }
+                    }
+                    nbDiscountCode.Visible = true;
+                    nbDiscountCode.NotificationBoxType = NotificationBoxType.Success;
+                    nbDiscountCode.Text = string.Format( "The {0} '{1}' was automatically applied.", CurrentRegistrationInformation.DiscountCodeTerm.ToLower(), discountCode );
+                }
+                else
+                {
+                    foreach ( var registrationInformation in RegistrationInformationList )
+                    {
+                        if ( registrationInformation.RegistrationState != null )
+                        {
+                            registrationInformation.RegistrationState.Registrants.ForEach( r => r.DiscountApplies = true );
 
-                            if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
-                            {
-                                nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
-                                nbDiscountCode.Text = string.Format( "The '{0}' {1} has expired.", discountCode, registrationInformation.DiscountCodeTerm );
-                                nbDiscountCode.Visible = true;
-                                validDiscount = false;
-                            }
+                            RegistrationTemplateDiscount discount = null;
+                            bool validDiscount = true;
 
-                            if ( validDiscount && discount.MaxUsage.HasValue && registrationInformation.RegistrationInstanceState != null )
+                            if ( !string.IsNullOrWhiteSpace( discountCode ) )
                             {
-                                using ( var rockContext = new RockContext() )
+                                discount = registrationInformation.RegistrationInstanceState.RegistrationTemplate.Discounts
+                                    .Where( d => d.Code.Equals( discountCode, StringComparison.OrdinalIgnoreCase ) )
+                                    .FirstOrDefault();
+
+                                if ( discount == null )
                                 {
-                                    var instances = new RegistrationService( rockContext )
-                                        .Queryable().AsNoTracking()
-                                        .Where( r =>
-                                            r.RegistrationInstanceId == registrationInformation.RegistrationInstanceState.Id &&
-                                            ( !registrationInformation.RegistrationState.RegistrationId.HasValue || r.Id != registrationInformation.RegistrationState.RegistrationId.Value ) &&
-                                            r.DiscountCode == discountCode )
-                                        .Count();
-                                    if ( instances >= discount.MaxUsage.Value )
+                                    validDiscount = false;
+                                    nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
+                                    nbDiscountCode.Text = string.Format( "'{0}' is not a valid {1}.", discountCode, registrationInformation.DiscountCodeTerm );
+                                    nbDiscountCode.Visible = true;
+                                }
+
+                                if ( validDiscount && discount.MinRegistrants.HasValue && registrationInformation.RegistrationState.RegistrantCount < discount.MinRegistrants.Value )
+                                {
+                                    nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
+                                    nbDiscountCode.Text = string.Format( "The '{0}' {1} requires at least {2} registrants.", discountCode, registrationInformation.DiscountCodeTerm, discount.MinRegistrants.Value );
+                                    nbDiscountCode.Visible = true;
+                                    validDiscount = false;
+                                }
+
+                                if ( validDiscount && discount.StartDate.HasValue && RockDateTime.Today < discount.StartDate.Value )
+                                {
+                                    nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
+                                    nbDiscountCode.Text = string.Format( "The '{0}' {1} is not available yet.", discountCode, registrationInformation.DiscountCodeTerm );
+                                    nbDiscountCode.Visible = true;
+                                    validDiscount = false;
+                                }
+
+                                if ( validDiscount && discount.EndDate.HasValue && RockDateTime.Today > discount.EndDate.Value )
+                                {
+                                    nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
+                                    nbDiscountCode.Text = string.Format( "The '{0}' {1} has expired.", discountCode, registrationInformation.DiscountCodeTerm );
+                                    nbDiscountCode.Visible = true;
+                                    validDiscount = false;
+                                }
+
+                                if ( validDiscount && discount.MaxUsage.HasValue && registrationInformation.RegistrationInstanceState != null )
+                                {
+                                    using ( var rockContext = new RockContext() )
                                     {
-                                        nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
-                                        nbDiscountCode.Text = string.Format( "The '{0}' {1} is no longer available.", discountCode, registrationInformation.DiscountCodeTerm );
-                                        nbDiscountCode.Visible = true;
-                                        validDiscount = false;
+                                        var instances = new RegistrationService( rockContext )
+                                            .Queryable().AsNoTracking()
+                                            .Where( r =>
+                                                r.RegistrationInstanceId == registrationInformation.RegistrationInstanceState.Id &&
+                                                ( !registrationInformation.RegistrationState.RegistrationId.HasValue || r.Id != registrationInformation.RegistrationState.RegistrationId.Value ) &&
+                                                r.DiscountCode == discountCode )
+                                            .Count();
+                                        if ( instances >= discount.MaxUsage.Value )
+                                        {
+                                            nbDiscountCode.NotificationBoxType = NotificationBoxType.Warning;
+                                            nbDiscountCode.Text = string.Format( "The '{0}' {1} is no longer available.", discountCode, registrationInformation.DiscountCodeTerm );
+                                            nbDiscountCode.Visible = true;
+                                            validDiscount = false;
+                                        }
+                                    }
+                                }
+
+                                if ( validDiscount && discount.MaxRegistrants.HasValue )
+                                {
+                                    for ( int i = 0; i < registrationInformation.RegistrationState.Registrants.Count; i++ )
+                                    {
+                                        registrationInformation.RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;
                                     }
                                 }
                             }
-
-                            if ( validDiscount && discount.MaxRegistrants.HasValue )
+                            else
                             {
-                                for ( int i = 0; i < registrationInformation.RegistrationState.Registrants.Count; i++ )
-                                {
-                                    registrationInformation.RegistrationState.Registrants[i].DiscountApplies = i < discount.MaxRegistrants.Value;
-                                }
+                                validDiscount = false;
+                            }
+
+                            registrationInformation.RegistrationState.DiscountCode = validDiscount ? discountCode : string.Empty;
+                            registrationInformation.RegistrationState.DiscountPercentage = validDiscount ? discount.DiscountPercentage : 0.0m;
+                            registrationInformation.RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
+                            IsDiscountColumnShown = validDiscount;
+
+                            if ( CurrentRegistrationInformation.RegistrationInstanceState.Id == registrationInformation.RegistrationInstanceState.Id )
+                            {
+                                CurrentRegistrationInformation = registrationInformation;
                             }
                         }
-                        else
-                        {
-                            validDiscount = false;
-                        }
-
-                        registrationInformation.RegistrationState.DiscountCode = validDiscount ? discountCode : string.Empty;
-                        registrationInformation.RegistrationState.DiscountPercentage = validDiscount ? discount.DiscountPercentage : 0.0m;
-                        registrationInformation.RegistrationState.DiscountAmount = validDiscount ? discount.DiscountAmount : 0.0m;
-                        IsDiscountColumnShown = validDiscount;
-
-                        if ( CurrentRegistrationInformation.RegistrationInstanceState.Id == registrationInformation.RegistrationInstanceState.Id )
-                        {
-                            CurrentRegistrationInformation = registrationInformation;
-                        }
-                        CreateDynamicControls( true );
                     }
                 }
             }
 
+            CreateDynamicControls( true );
         }
 
         #endregion
@@ -3300,6 +3330,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                             transactionDetail.AccountId = FinancialAccount.Id;
                             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
                             transactionDetail.EntityId = registration.Id;
+                            transactionDetail.Summary = String.Format( "{0} - {1} - {2}", category.Name, registrationInformation.RegistrationInstanceState.RegistrationTemplate.Name, registrationInformation.RegistrationInstanceState.Name );
                             transaction.TransactionDetails.Add( transactionDetail );
                         }
 
@@ -3676,6 +3707,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
             transactionDetail.AccountId = FinancialAccount.Id;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = registration.Id;
+            transactionDetail.Summary = String.Format( "DAYCATION - {0} - {1}", registrationInformation.RegistrationInstanceState.RegistrationTemplate.Name, registrationInformation.RegistrationInstanceState.Name );
             scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
 
             var registrationChanges = new History.HistoryChangeList();
@@ -5906,6 +5938,20 @@ Registration By: {0} \nTotal Cost/Fees:{1}
         /// </summary>
         private void AutoApplyDiscounts()
         {
+            var rockContext = new RockContext();
+            var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
+
+            var categoryId = PageParameter( CATEGORY_ID_PARAM_NAME ).AsIntegerOrNull();
+            if ( categoryId == null || categoryId == 0 )
+            {
+                categoryId = GetAttributeValue( "DefaultCategoryId" ).AsInteger();
+            }
+
+            var personIds = CurrentPerson.GetFamilyMembers( true )
+                        .Select( gm => gm.PersonId )
+                        .ToList();
+            var registrants = registrationRegistrantService.Queryable().Where( rr => personIds.Contains( rr.PersonAlias.PersonId ) && rr.Registration.RegistrationInstance.RegistrationTemplate.CategoryId == categoryId ).ToList();
+
             var isSiblingCodeAdded = false;
             if ( RegistrationInformationList != null )
             {
@@ -5924,6 +5970,11 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                                 foreach ( var registrant in registrationInformation.RegistrationState.Registrants )
                                 {
                                     registrant.DiscountApplies = ( registrant.PersonId != primaryAlias.PersonId );
+
+                                    if ( registrationInformation.RegistrationInstanceState.RegistrationTemplate.Name.Contains( "Admin Fee" ) && registrants.Any() )
+                                    {
+                                        registrant.DiscountApplies = true;
+                                    }
                                 }
 
                                 if ( registrationInformation.RegistrationState.Registrants.Any( r => r.DiscountApplies ) )
@@ -5938,6 +5989,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                                     {
                                         registrationInformation.RegistrationState.DiscountAmount = discountAmount;
                                     }
+
                                     SaveViewState();
                                 }
                             }

@@ -35,9 +35,9 @@ namespace RockWeb.Plugins.com_bemaservices.Event
     /// <summary>
     /// Generates a list of scheduled transactions for the current person with edit/transfer and delete buttons.
     /// </summary>
-    [DisplayName( "Daycation Parent Hub" )]
+    [DisplayName( "Daycation Parent Info" )]
     [Category( "BEMA Services > Finance" )]
-    [Description( "Block that shows a list of scheduled transactions for the currently logged in user with the ability to modify the formatting using a lava template." )]
+    [Description( "Block that shows a list of scheduled transactions for a specified user with the ability to modify the formatting using a lava template." )]
 
 
     [FinancialGatewayField(
@@ -82,7 +82,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Order = 7 )]
 
 
-    public partial class DaycationParentHub : RockBlock
+    [ContextAware( typeof( Person ) )]
+    public partial class DaycationParentInfo : RockBlock
     {
         /// <summary>
         /// Keys to use for Block Attributes
@@ -95,6 +96,15 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             public const string GatewayFilter = "GatewayFilter";
         }
 
+        #region Properties
+
+        /// <summary>
+        /// The current person being viewed
+        /// </summary>
+        public Person Person { get; set; }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -104,6 +114,38 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            Person = this.ContextEntity<Person>();
+
+            if ( Person == null )
+            {
+                // check the query string and attempt to load the person from it
+                if ( Request["PersonId"] != null )
+                {
+                    int personId = Request["PersonId"].AsInteger();
+
+                    Person = new PersonService( new RockContext() ).Get( personId );
+                    Person.LoadAttributes();
+                }
+
+                // check the query string and attempt to load the person from it
+                if ( Request["Person"] != null )
+                {
+                    Guid personAliasGuid = Request["Person"].AsGuid();
+
+                    var personAlias = new PersonAliasService( new RockContext() ).Get( personAliasGuid );
+                    if ( personAlias != null )
+                    {
+                        Person = personAlias.Person;
+                        Person.LoadAttributes();
+                    }
+                }
+
+                if ( Person == null )
+                {
+                    Person = new Person();
+                }
+            }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -289,7 +331,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                                 var changes = new History.HistoryChangeList();
                                 changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
 
-                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
+                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, Person );
                                 mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance.Name );
                                 mergeFields.Add( "RegistrationTemplate", registration.RegistrationInstance.RegistrationTemplate.Name );
                                 mergeFields.Add( "Registrants", registration.Registrants.Select( r => r.PersonAlias.Person.FullName ).ToList() );
@@ -339,14 +381,14 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         private void ShowContent()
         {
             // get scheduled contributions for current user
-            if ( CurrentPerson != null )
+            if ( Person != null )
             {
                 var rockContext = new RockContext();
                 var personService = new PersonService( rockContext );
 
                 // get giving id
-                var givingIds = personService.GetBusinesses( CurrentPerson.Id ).Select( g => g.GivingId ).ToList();
-                givingIds.Add( CurrentPerson.GivingId );
+                var givingIds = personService.GetBusinesses( Person.Id ).Select( g => g.GivingId ).ToList();
+                givingIds.Add( Person.GivingId );
 
                 BuildUpcomingPayments( rockContext, givingIds );
                 BuildPastPayments( rockContext, givingIds );
@@ -359,7 +401,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
             var categoryId = GetAttributeValue( "CategoryId" ).AsInteger();
-            var familyMemberPersonIds = CurrentPerson.GetFamilyMembers().Select( fm => fm.PersonId ).ToList();
+            var familyMemberPersonIds = Person.GetFamilyMembers().Select( fm => fm.PersonId ).ToList();
             var registrationRegistrantPersonIds = registrationRegistrantService.Queryable().AsNoTracking()
                     .Where( rr => familyMemberPersonIds.Contains( rr.PersonAlias.PersonId ) )
                     .Where( rr => rr.Registration.RegistrationInstance.RegistrationTemplate.CategoryId == categoryId )
