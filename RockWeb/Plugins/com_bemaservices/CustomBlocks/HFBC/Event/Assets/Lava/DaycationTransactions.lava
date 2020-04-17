@@ -1,14 +1,18 @@
 ﻿{% for detail in Transaction.TransactionDetails %}
  <div class="scheduledtransaction-summary">
     {% assign registrationInstance = detail.Registration.RegistrationInstance %}
-      <strong>{{registrationInstance.RegistrationTemplate.Category.Name}} - {{registrationInstance.RegistrationTemplate.Name}} - {{ registrationInstance.Name }}</strong><br/>
+      {% if registrationInstance %}
+        <strong>{{registrationInstance.RegistrationTemplate.Category.Name}} - {{registrationInstance.RegistrationTemplate.Name}} - {{ registrationInstance.Name }}</strong><br/>
+      {% else %}
+        <strong>Cancelled - {{detail.Summary}}</strong><br/>
+      {% endif %}
       {{ detail.Amount | FormatAsCurrency }} on
       {% if Transaction.CurrencyType != "Credit Card" %}
       {{ Transaction.CurrencyType }}
       {% else %}
       {{ Transaction.CreditCardType }} {{ Transaction.AccountNumberMasked }}
       {% endif %}<br>
-    
+
       {% if Transaction.PaymentDate != null %}
       on {{ Transaction.PaymentDate | Date:"MMMM d, yyyy" }}.
       {% endif %}
