@@ -36,7 +36,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v9.4.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -281,7 +281,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             if ( GetAttributeValue( AttributeKey.UseProjectCodes ).AsBoolean() )
             {
-                dProjectCodeContainer.Visible = true;
+                divProjectCodeContainer.Visible = true;
                 lProjectCode.Visible = true;
             }
 

@@ -80,7 +80,7 @@
                         <Rock:RegistrationInstanceEditor ID="rieDetails" runat="server" />
 
                         <%/* BEMA.FE1.Start */ %>
-                        <div class="row" runat="server" id="dProjectCodeContainer" visible="true">
+                        <div class="row" runat="server" id="divProjectCodeContainer" visible="true">
                             <div class="col-md-4">
                                 <Rock:RockTextBox ID="tbProjectCode" runat="server" Label="Project Code"></Rock:RockTextBox>
                             </div>
