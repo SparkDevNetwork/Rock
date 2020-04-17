@@ -104,6 +104,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.DoorContro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.BarcodeAttendance", "com.bemaservices.BarcodeAttendance\com.bemaservices.BarcodeAttendance.csproj", "{3598847D-A7C1-44BD-9912-EF3A1DF74ED8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.flatironschurch.Autobuild", "com.flatironschurch.Autobuild\com.flatironschurch.Autobuild.csproj", "{BFC209F5-AEAB-4601-8D0B-8DED00FBB887}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.MultiEventRegistration", "com.bemaservices.multieventregistration\com.bemaservices.MultiEventRegistration.csproj", "{890B227D-B53A-45EC-A538-166892240E3A}"
 EndProject
 Global
@@ -264,6 +266,10 @@ Global
 		{3598847D-A7C1-44BD-9912-EF3A1DF74ED8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3598847D-A7C1-44BD-9912-EF3A1DF74ED8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3598847D-A7C1-44BD-9912-EF3A1DF74ED8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFC209F5-AEAB-4601-8D0B-8DED00FBB887}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFC209F5-AEAB-4601-8D0B-8DED00FBB887}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFC209F5-AEAB-4601-8D0B-8DED00FBB887}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFC209F5-AEAB-4601-8D0B-8DED00FBB887}.Release|Any CPU.Build.0 = Release|Any CPU
 		{890B227D-B53A-45EC-A538-166892240E3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{890B227D-B53A-45EC-A538-166892240E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{890B227D-B53A-45EC-A538-166892240E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU

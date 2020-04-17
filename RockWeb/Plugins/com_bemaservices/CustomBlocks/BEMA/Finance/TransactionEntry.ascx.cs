@@ -171,6 +171,14 @@ TransactionAccountDetails: [
 
     /* Bema.FE3.Start */
     [BooleanField( "Allow Scheduled End Date", "Should the block allow users to set an end date for their scheduled transactions.", false, "", 36, BemaAttributeKey.AllowScheduledEndDate )]
+    [IntegerField(
+        "Default End Date Months",
+        Key = BemaAttributeKey.DefaultEndDateMonths,
+        Description = "The amount of months in the future the End Date will be defaulted to.",
+        IsRequired = false,
+        DefaultIntegerValue = 11,
+        Category = "BEMA Additional Features",
+        Order = 37 )]
     /* Bema.FE3.End */
 
     #endregion
@@ -200,6 +208,7 @@ TransactionAccountDetails: [
             public const string CommentRequired = "CommentRequired";
             public const string UseFirstName = "UseFirstName";
             public const string AllowScheduledEndDate = "AllowScheduledEndDate";
+            public const string DefaultEndDateMonths = "DefaultEndDateMonths";
         }
 
         #endregion
@@ -661,12 +670,20 @@ TransactionAccountDetails: [
             if ( !oneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date <= RockDateTime.Today ) )
             {
                 dtpStartDate.SelectedDate = RockDateTime.Today.AddDays( 1 );
+
                 /* BEMA.FE3.Start */
                 if ( GetAttributeValue( BemaAttributeKey.AllowScheduledEndDate ).AsBoolean() )
                 {
+
                     dtpEndDate.Visible = true;
+                    var months = GetAttributeValue( BemaAttributeKey.DefaultEndDateMonths ).AsIntegerOrNull();
+                    if ( months != null )
+                    {
+                        dtpEndDate.SelectedDate = RockDateTime.Today.AddMonths( months.Value );
+                    }
+
                 }
-				/* BEMA.FE3.End */
+                /* BEMA.FE3.End */
             }
 
             if ( oneTime && dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate.Value.Date != RockDateTime.Today )
@@ -1412,6 +1429,7 @@ TransactionAccountDetails: [
             // Evaluate if comment entry box should be displayed
             txtCommentEntry.Label = GetAttributeValue( "CommentEntryLabel" );
             txtCommentEntry.Visible = GetAttributeValue( "EnableCommentEntry" ).AsBoolean();
+			
             /* Bema.FE1.Start */
             txtCommentEntry.Required = GetAttributeValue( BemaAttributeKey.CommentRequired ).AsBoolean();
             /* Bema.FE1.End */
@@ -2097,6 +2115,17 @@ TransactionAccountDetails: [
             {
                 btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValueId.ToString();
                 dtpStartDate.SelectedDate = ( scheduledTransaction.NextPaymentDate.HasValue ) ? scheduledTransaction.NextPaymentDate : RockDateTime.Today.AddDays( 1 );
+
+                /* BEMA.FE3.Start */
+                if ( GetAttributeValue( BemaAttributeKey.AllowScheduledEndDate ).AsBoolean() )
+                {
+                    var months = GetAttributeValue( BemaAttributeKey.DefaultEndDateMonths ).AsIntegerOrNull();
+                    if ( months != null )
+                    {
+                        dtpEndDate.SelectedDate = RockDateTime.Today.AddMonths( months.Value );
+                    }
+                }
+                /* BEMA.FE3.End */
             }
         }
 
@@ -2326,7 +2355,7 @@ TransactionAccountDetails: [
             /* BEMA.FE3.Start */
             if ( schedule != null && schedule.EndDate != null && schedule.EndDate.HasValue )
             {
-                tdWhenConfirm.Description = tdWhenConfirm.Description + " and ending on " + schedule.EndDate.Value.ToShortDateString ();
+                tdWhenConfirm.Description = tdWhenConfirm.Description + " and ending on " + schedule.EndDate.Value.ToShortDateString();
             }
             /* BEMA.FE3.End */
 
@@ -2848,11 +2877,11 @@ TransactionAccountDetails: [
             /* BEMA.FE3.Start */
             if ( schedule.EndDate.HasValue )
             {
-                changeSummary.AppendFormat ( "{0} starting {1} and ending on {2}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString (), schedule.EndDate.Value.ToShortDateString () );
+                changeSummary.AppendFormat( "{0} starting {1} and ending on {2}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString(), schedule.EndDate.Value.ToShortDateString() );
             }
             else
             {
-                changeSummary.AppendFormat ( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString () );
+                changeSummary.AppendFormat( "{0} starting {1}", schedule.TransactionFrequencyValue.Value, schedule.StartDate.ToShortDateString() );
             }
             /* BEMA.FE3.End */
 

@@ -16,7 +16,7 @@
 //
 using Rock.Plugin;
 
-namespace org.hfbc.Autobuild
+namespace church.compass.Autobuild
 {
     [MigrationNumber( 1, "1.7.4" )]
     public class InitialSetup : Migration
