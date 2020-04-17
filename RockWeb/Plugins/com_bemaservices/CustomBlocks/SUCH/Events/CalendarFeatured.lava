@@ -1,0 +1,250 @@
+<style>
+	.current-series {
+		height: 260px;
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+	}
+	
+	@media (min-width: 992px) {
+		.current-series {
+			height: 420px;
+		}
+	}
+	
+	.current-series h1 {
+		background-color: rgba(0, 0, 0, 0.3);
+		text-align: center;
+		font-size: 16px;
+		font-weight: 600;
+		color: #fff;
+		margin: 0;
+		padding: 6px;
+	}
+	
+	.series {
+		position: relative;
+        
+	}
+		
+	.series h1 {
+		font-size: 18px;
+		font-weight: 600;
+		margin-top: 4px;
+		margin-bottom: 0;
+	}
+	
+	.series i {
+        margin-right:4px;
+
+	}
+
+	.series-dates {
+		opacity: .6;
+	}
+	
+	.series-body {
+		padding: 15px;
+		
+	}
+	
+	.series-summary {
+		height: 40px;
+		overflow: hidden;
+	}
+		
+	.series-link:hover {
+		text-decoration: none;
+	}
+	
+	.series-image {
+		height: 220px;
+		width: 100%;
+		background-size: cover;
+		background-position: center center;
+		background-repeat: no-repeat;
+	}
+	
+	.series-image:after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		transition: all .1s ease-in-out;
+	}
+	
+	.series-image:hover:after {
+		background: rgba(255,255,255,.4);
+	}
+
+    .entry-date {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background-color: #007DC3;
+        color: #FFF;
+        width: 60px;
+        height: 64px;
+        text-align: center;
+        padding-top: 7px;
+        font-size: 26px;
+        line-height: 1;
+    }
+        .entry-date span {
+            display: block;
+            font-size: 15px;
+            margin-top: 5px;
+        }
+
+    .event-time {
+        display:block;
+        margin-top:10px;
+        color:#000;
+        
+    }
+
+    .event-location {
+        display:block;
+        margin-top:10px;
+        color:#000;
+    }
+
+    .month-well h1 {
+        font-size:18px;
+        font-weight:600;
+        margin:0px;
+		line-height:1.1;
+            
+    }
+
+    .month-well i {
+        margin-right:8px;
+    }
+
+     .well.month-well {
+        background-color:#f9f9f9;
+        border:none;
+     
+    }
+
+     .event-info h1 {
+         margin-top:10px;
+		 line-height:1.1;
+     }
+
+     .event-info {
+         margin-top:10px;
+         margin-bottom:10px;
+     }
+
+     .event-info h1{
+         color:#444;
+         text-decoration:none;
+     }
+	 
+	 .event-date {
+		color:#888;
+	 }
+	 
+</style>
+
+  
+{% assign eventItemOccurrenceCount = EventItemOccurrences | Size %}
+
+  {% if eventItemOccurrenceCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+  {% endif %}
+<div class="col-md-12">
+<div class="row row-flex row-flex-wrap margin-t-md">
+  {% for eventItemOccurrence in EventItemOccurrences %}
+   
+  {% assign eventMonth = eventItemOccurrence.Date | Date: 'MMM' %}
+  {% assign eventYear = eventItemOccurrence.Date | Date: 'yyyy' %}
+
+  {% assign eventImage = eventItemOccurrence.EventItemOccurrence.EventItem.Photo %}
+
+    {% if forloop.first == true or eventMonthpre != eventMonth %}
+
+    {% assign eventMonthpre = eventItemOccurrence.Date | Date: 'MMM' %}
+   
+
+        {% if forloop.first or eventYear == eventYearpre %}
+
+        {% assign eventYearpre = eventItemOccurrence.Date | Date: 'yyyy' %}
+
+        <div class="col-md-12 text-center well month-well">
+            <h1><i class="fa fa-calendar"></i>{{ eventItemOccurrence.Date | Date: 'MMMM'}}</h1>
+        </div>
+        {% else %}
+         <div class="col-md-12 text-center well month-well">
+            <h1><i class="fa fa-calendar"></i>{{ eventItemOccurrence.Date | Date: 'MMMM'}} {{ eventItemOccurrence.Date | Date: 'yyyy'}}</h1>
+        </div>
+        {% endif %}
+
+
+
+    {% endif %}
+
+
+    {% assign currentDate = 'Now' | Date:'MM/dd/yyyy' %}
+    {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate >= currentDate %}
+    <div class="col-md-4 col-sm-6 margin-b-md">
+		{% if eventItemOccurrence.DetailPage != null %}
+        <a class="series-link" href="{{ eventItemOccurrence.DetailPage }}">
+        {% else %}
+        <a class="series-link" href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
+        {% endif %}
+		<article class="series">
+
+			{% if eventImage != '' %}
+				<div class="series-image" style="background-image: url('{{ eventImage.Url }}');" >
+                    <div class="entry-date">{{ eventItemOccurrence.Date | Date: 'd'}}<span>{{ eventItemOccurrence.Date | Date: 'MMM'}}</span></div>
+				</div>
+			{% endif %}
+			
+			<div class="event-info">
+				<h1 class="text-color">{{ eventItemOccurrence.Name }}</h1>
+				
+                    <span class="event-date">
+                    
+					  {% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+                        {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date: 'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date: 'MMM d'}}
+                      {% else %}
+                        {{ eventItemOccurrence.Date | Date: 'MMM d'}}
+                      {% endif %}
+
+                     {{ eventItemOccurrence.Time}}
+
+                   
+
+                     
+                   ({{ eventItemOccurrence.Location}})
+                         </span>
+
+		
+
+              
+               
+
+       
+			</div>
+		</article>
+		</a>
+	</div>
+    {% endif %}
+
+  {% endfor %}
+</div>
+</div>
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>

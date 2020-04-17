@@ -1,0 +1,277 @@
+<style>
+.btn-success {
+    color: #fff !important;
+    background-color: #5cb85c !important;
+    border-color: #4cae4c !important;
+}
+</style>
+
+{% assign groupId = PageParameter.GroupId | AsString %}
+{% assign groupMember = CurrentPerson | Group:groupId,'Active' | First %}
+{% assign isLeader = groupMember.GroupRole.IsLeader %}
+
+
+<!-- Missions Trip Task List  -->
+{% assign today = 'Now' | Date:'M/d/yyyy' %}
+{% assign trip = PageParameter.GroupId | AsInteger | GroupById %}
+{% assign tripTypeGuid = trip | Attribute:'TripDestinationType','RawValue' %} 
+{% assign tripImage = trip | Attribute:'OpportunityPhoto','RawValue' %} 
+{% assign TripStartDate = trip | Attribute:'TripStartDate','RawValue' | Date:'M/d/yyyy' %}
+
+{% if isLeader %}
+
+
+<div class="row padding-b-lg">
+
+		{% if tripImage and tripImage != '' %}
+			<div class="col-md-4" src="/GetImage.ashx?Guid={{ tripImage }}" >
+				<img src="/GetImage.ashx?Guid={{ tripImage }}" class="img-responsive"  />
+			</div>
+		{% endif %}
+		
+		<div class="col-md-8">
+		<h1>{{ trip | Attribute:'OpportunityTitle' }}</h1>
+		<h4>Trip Start Date: {{TripStartDate}} - {{ trip | Attribute:'OpportunityLocation' }}</h4>
+		<br />
+		<p>
+		{{ trip | Attribute:'OpportunitySummary' }}
+		<a href='/page/944?GroupId={{groupId}}&GroupMemberId={{groupMember.Id}}' class='btn btn-primary'>View My Trip Profile</a>
+		</p>
+		
+		</div>
+		
+	
+</div>
+
+<div class="well"> 
+<div class="panel panel-block padding-all-lg"> 
+    <div class="panel-body">
+
+
+
+    <div class="row">
+        <div class="col-md-12">
+          <div class="panel">
+             <div class="panel-heading"><h4 class="panel-title">Amount Due Dates</h4></div>
+             <div class="panel-body padding-l-none padding-r-none">
+             
+            {% definedvalue where:'TripType == "{{tripTypeGuid}}" && DefinedTypeId == 129' sort:'Order ' %}
+                {% for dfItem in definedvalueItems %}
+              
+                    {% assign attValues = dfItem | Attribute:'PersonAttributeofFile','Object' %}
+                    {% assign taskType = dfItem | Attribute:'TaskType','Object' %}
+                    {% assign hideUnlessSetOnGroupMember = '' %}
+                    {% assign hideUnlessSetOnGroupMember = dfItem | Attribute:'HideUnlessSetOnGroupMember' %}
+                    {% assign attKey = att.Key %}
+                    {% assign daysRequired = dfItem | Attribute:'DaysBeforeDepartureDue' | Times:-1 | AsInteger %}
+  
+                    {% assign personFile = tripPerson | Attribute:attKey,'Object' %}
+                    {% assign complete = '' %}
+                    
+                    {% assign cost = trip | Attribute:'IndividualFundraisingGoal' | AsInteger %}
+                    {% assign amountType = dfItem | Attribute:'AmountRequiredDueIfAmountType','Object' | Attribute:'Type' %}
+                    {% assign amountDue = dfItem | Attribute:'AmountRequiredDueIfAmountType','Object' | Attribute:'Amount' %}
+                    
+                    {% if amountType == 'Percent' %}
+                        {% assign amountDue = amountDue | DividedBy:100 | Times:cost %}
+                    {% endif %}
+            
+                    {% if taskType.Value == 'Amount' %}
+                          <div class="col-md-4 " style='border-radius:0px;'>
+							<div class="well">
+							  <h4 class="margin-b-none">{{ dfItem.Value }}: {{amountDue | FormatAsCurrency}} <br/>
+								<small>  Due Date: {{ TripStartDate | DateAdd:daysRequired,'d' | Date:'M/d/yyyy' }} </small> 
+							  </h4> 
+							</div>
+						  </div>
+                    {% endif %}
+                 
+                {% endfor %}      
+            {% enddefinedvalue %}
+     
+                </div>
+            </div>      
+        </div>
+    </div>  
+    
+        <div class="row">
+        <div class="col-md-12">
+          <div class="panel">
+             <div class="panel-heading"><h4 class="panel-title">Trip Members - Fundraising Progress</h4></div>
+             <div class="panel-body">
+             
+                    {% groupmember where:'GroupId == {{trip.Id}} && IsArchived == False && GroupMemberStatus == "Active"' %}
+                    {% for groupmember in groupmemberItems %}
+                    
+                        {% assign cost = trip | Attribute:'IndividualFundraisingGoal' | AsInteger %}
+                        {% assign costMember = groupmember | Attribute:'IndividualFundraisingGoal' | AsInteger %}
+                        {% assign percentRemaining = 0 %}
+                        {% assign totalPaid = 0 %}
+               
+                        {% sql return:'totalPaid' %}
+                            Select case when totalDeposit.total is null then 0 else totalDeposit.total end as total
+                            from GroupMember gm
+                            join Person p on p.id = gm.PersonId
+                            cross apply (
+                                select sum(d.Amount) as total
+                                from FinancialTransactionDetail d 
+                                where d.EntityId = gm.id
+                            ) as totalDeposit
+                            where  gm.PersonId = {{ groupmember.Person.Id }}
+                            and gm.GroupId = {{ trip.Id }}
+                        {% endsql %}
+                        
+                        {% for item in totalPaid %}{% assign totalPaid = item.total %}{% endfor %}
+
+                        
+                         {% if cost != costMember and costMember and costMember != ''  %}
+                         {% assign cost = costMember %}
+            
+                            {% if cost == 0 %}
+                                {% assign cost = 0 %}
+                            {% endif %}
+            
+                        {% endif %}
+            
+                        {% assign totalRemaining =  cost | Minus:totalPaid  %}
+            
+                        {% if totalPaid < cost and totalPaid > 0 %}
+                            {% assign percentRemaining = totalPaid | DividedBy:cost | Times:100  %}
+                        {% endif %}
+            
+                        {% if totalPaid >= cost  %}
+                            {% assign percentRemaining = 100 %}
+                        {% endif %}
+            
+                    
+                            <strong>
+                            {{ groupmember.Person.FullName }} - {{ groupmember.Person.Gender }} - {{ groupmember.Person.Age }} {% comment %}<a class="pull-right" href="/page/944?GroupId={{trip.Id}}&GroupMemberId={{ groupmember.Id }}"><i class="fa fa-user padding-r-xs"></i> View Trip Page</a>{% endcomment %}
+                            </strong>
+                            <br/>
+                            <div class="progress margin-b-none">
+                                <div class="progress-bar" role="progressbar" aria-valuenow="{{ percentRemaining }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ percentRemaining }}%;">
+                                {{ percentRemaining }}%
+                                </div>
+                            </div>
+                            {{ totalPaid | FormatAsCurrency }} of {{ cost | FormatAsCurrency }}  <br/><br/>
+                
+                        
+                    {% endfor %}
+                    {% endgroupmember %}
+               
+                </div>
+            </div>      
+        </div>
+    </div>  
+  
+       <div class="row">
+        <div class="col-md-12">
+          <div class="panel">
+             <div class="panel-heading"><h4 class="panel-title">Trip Tasks</h4></div>
+             <div class="panel-body ">
+              
+{% definedvalue where:'TripType == "{{tripTypeGuid}}" && DefinedTypeId == 129' sort:'Order ' %}
+    {% for dfItem in definedvalueItems %}
+
+        {% assign attValues = dfItem | Attribute:'PersonAttributeofFile','Object' %}
+        {% assign taskType = dfItem | Attribute:'TaskType','Object' %}
+        {% assign hideUnlessSetOnGroupMember = '' %}
+        {% assign hideUnlessSetOnGroupMember = dfItem | Attribute:'HideUnlessSetOnGroupMember' %}
+        {% assign attKey = att.Key %}
+        {% assign daysRequired = dfItem | Attribute:'DaysBeforeDepartureDue' | Times:-1 | AsInteger %}
+        {% assign personFile = tripPerson | Attribute:attKey,'Object' %}
+        {% assign complete = '' %}
+
+        {% if taskType.Value != 'Amount' and hideUnlessSetOnGroupMember != "Yes" %}
+        {% assign duedate = TripStartDate | DateAdd:daysRequired,'d' | Date:'M/d/yyyy' %} 
+		
+					<div class=''>
+                   	 <h4>{{ dfItem.Value }} <br/> <small> Due Date: {{ duedate }} </small> {% if hideUnlessSetOnGroupMember == "Yes" %} (Manual) {% endif %}    </h4>
+                     
+                    
+                    {% groupmember where:'GroupId == {{trip.Id}} && IsArchived == False && GroupMemberStatus == "Active" && GroupTypeId == 31' %}
+                        {% for groupmember in groupmemberItems %}
+                      
+                        {% assign gmAdditionalRequiredTasks = groupmember | Attribute:'AdditionalRequiredTasks','RawValue' %}
+                        
+                        {% if hideUnlessSetOnGroupMember != "Yes" or gmAdditionalRequiredTasks contains dfItem.Guid %}
+                        
+                        {% assign completed = '' %}
+                        {% assign workflowId = 0 %}
+                        
+                        {% assign gmCompletedTasks =  groupmember | Attribute:'Task','Object' %}
+                    
+                        {% for item in gmCompletedTasks.AttributeMatrixItems %}
+                            {% assign task = item | Attribute:'Task','RawValue' %}
+                            
+                            {% if task ==  dfItem.Guid %}
+                                {% assign iscomplete = item | Attribute:'IsComplete','Value' %}
+                                {% assign workflowId = item | Attribute:'WorkflowId' %}
+                                {% if iscomplete %}
+                                    {% assign completed = 'True' %}     
+                                {% endif %}
+                            {% endif %}
+                            
+                        {% endfor %}
+                        
+                        {% assign css = 'btn-default' %}   
+                        {% assign dateDiffDue = today | DateDiff:duedate,'d' %}
+                     
+                        {% if dateDiffDue <= 0 %}
+                            {% assign css = 'btn-danger' %}  
+                        {% endif %}
+                           
+                        {% if completed == 'True' %}
+                            {% assign css = 'btn-success' %}   
+                        {% endif %}
+                        
+                        
+                
+                        {% if workflowId > 0 %}
+                            <div class="btn {{css}} margin-b-md margin-r-md"> 
+                             {{ groupmember.Person.FullName }} 
+                            </div>
+                        {% else %}
+                            <a href='/page/1018?Trip={{trip.Guid}}&Task={{dfItem.Guid}}&Person={{groupmember.Person.PrimaryAlias.Guid}}' class="btn {{css}} margin-b-md margin-r-md" target="_blank" style="white-space: normal !important;"> 
+                                Send Reminder - {{ groupmember.Person.FullName }}
+                            </a>
+                         {% endif %}
+						 
+                         
+                         {% endif %}
+                    {% endfor %}
+					
+					 <br/>
+						   <a href='/page/1021?Trip={{ trip.Guid }}&Task={{ dfItem.Guid }}' class='btn btn-primary' target="_blank" ><i class="fa fa-envelope padding-r-xs"></i> Remind All</a>
+				
+						   
+                {% endgroupmember %}
+           
+			</div>
+			<hr/ style="border-color:#f7f7f7;">
+        {% endif %}
+        
+       
+    {% endfor %}
+	
+	  
+
+{% enddefinedvalue %}
+                </div>
+            </div>
+        </div>
+         </div>
+</div>
+</div>
+</div>
+{% else %}
+<div class='row clearfix'>
+	<div class="col-md-12">
+		<div class="alert alert-warning" role="alert">
+			Whoops. You are not a trip leader on this trip. Contact your trip leader to get access to this page. 
+		</div>
+	</div>
+</div>
+{% endif %}
+
+

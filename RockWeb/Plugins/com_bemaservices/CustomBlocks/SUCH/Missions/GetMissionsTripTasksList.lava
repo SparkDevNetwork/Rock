@@ -1,0 +1,196 @@
+<!-- 
+{% comment %}
+Required 
+
+{% assign tripGroup = Workflow | Attribute:'tripGroup','Object' %}
+{% assign tripPerson = Workflow | Attribute:'tripPerson','Object' %}
+{% assign reminderType = Workflow | Attribute:'reminderType','Object' %}
+{% assign singleTask = false %}
+
+Settings
+
+{% assign showHelper = false %}
+{% assign showProgress = false %}
+{% assign isEmail = true %}
+{% assign showTaskDescriptionAndLink = true %}
+{% assign showSendReminder = false %}
+
+{% include '\Plugins\com_bemadev\Missions\GetMissionsTripTasksList.lava' %}
+{% endcomment %}
+ -->
+
+{% if isEmail %}
+{{ 'Global' | Attribute:'EmailHeader' }}
+{% endif %}
+
+{% if showHelper %}
+    {{ tripGroup.Id }}
+    {{ tripPerson.Id }}
+    {{ reminderType.Id }}
+    {{ Workflow.Id }}
+{% endif %}
+
+{% assign tripIdString = tripGroup.Id | ToString %}
+{% assign tripTypeId = tripGroup | Attribute:'TripDestinationType','Id' %}
+{% assign tripGroupMember = tripPerson | Group:tripIdString,'All' | First %}
+{% assign now = 'Now' | Date:'M/d/yyyy' %}
+{% assign tripStartDate = tripGroup | Attribute:'TripStartDate','RawValue' | Date:'M/d/yyyy' %}
+{% assign scholarshipAmount = tripGroupMember | Attribute:'ScholarshipAmount','RawValue' %}
+{% assign isMinor = tripGroupMember | Attribute:'Minor','RawValue' %}
+{% assign tripGroupMemberAgeType = '' %}
+{% assign totalPaid = 0 %}
+{% assign showSendReminder = false %}
+
+
+{% if isMinor == true %}
+    {% assign tripGroupMemberAgeType = 'Minor' %}
+{% else %}
+    {% assign tripGroupMemberAgeType = 'Adult' %}
+{% endif %}
+
+<!-- get the total amount paid to the trip so far -->
+{% sql return:'totalPaid' %}
+    Select case when totalDeposit.total is null then 0 else totalDeposit.total end as total
+    from GroupMember gm
+    join Person p on p.id = gm.PersonId
+    cross apply (
+        select sum(d.Amount) as total
+        from FinancialTransactionDetail d 
+        where d.EntityId = gm.id
+    ) as totalDeposit
+    where  gm.PersonId = {{ tripPerson.Id }}
+    and gm.GroupId = {{ tripGroup.Id }}
+{% endsql %}
+
+{% for item in totalPaid %}{% assign totalPaid = item.total %}{% endfor %}
+
+{% if scholarshipAmount > 0 %}{% assign totalPaid = totalPaid | Plus:scholarshipAmount %}{% endif %}
+
+
+
+
+{% if isEmail %}
+<h5 style="text-align:center;">
+    {{ tripPerson.FullName }} - {{ tripGroup.Name }} <br/>
+    <small>Depart Date: {{ tripStartDate }} - Total Raised: {{ totalPaid }}</small>
+</h5>
+{% else %}
+<div class="panel panel-block">
+
+    <div class="panel-heading panel-follow clearfix" style='background:#0cc1ea;'>
+        <h1 class="panel-title pull-left" style="color:#fff;">
+            {{ tripPerson.FullName }}
+        </h1>
+      </div> 
+  
+<ul class="list-group">
+
+    {% if showProgress %}
+
+        {% assign cost = tripGroup | Attribute:'IndividualFundraisingGoal' | AsInteger %}
+        {% assign costMember = tripGroupMember | Attribute:'IndividualFundraisingGoal' | AsInteger %}
+        {% assign percentRemaining = 0 %}
+        {% comment %}{% assign totalPaid = 0 %}{% endcomment %}
+        
+            <!-- ovverride if the person has an individual cost -->
+            {% if cost != costMember and costMember and costMember != ''  %}
+                {% assign cost = costMember %}
+
+                {% if cost == 0 %}
+                    {% assign cost = 0 %}
+                {% endif %}
+
+            {% endif %}
+
+            {% assign totalRemaining =  cost | Minus:totalPaid  %}
+
+            {% if totalPaid < cost and totalPaid > 0 %}
+                {% assign percentRemaining = totalPaid | DividedBy:cost | Times:100  %}
+            {% endif %}
+
+            {% if totalPaid > cost  %}
+                {% assign percentRemaining = 100 %}
+            {% endif %}
+
+            <li class="list-group-item" style="padding:20px;">
+                <strong>
+                   Fundraising Progress
+                </strong>
+                <br/><br/>
+                <div class="progress margin-b-none">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="{{ percentRemaining }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ percentRemaining }}%;">
+                    {{ percentRemaining }}%
+                    </div>
+                </div>
+                {{ totalPaid | FormatAsCurrency }} of {{ cost | FormatAsCurrency }}  <br/>
+            </li>
+
+      {% endif %}
+
+{% endif %} 
+
+
+
+{% if reminderType and isEmail %}
+<div style="text-align:center;display:block"> {{ reminderType | Attribute:'EmailBody' }}</div>
+{% endif %}
+
+{% sql return:'taskItems' %}
+
+    Declare @tripTypeId int = {{ tripTypeId | AsInteger }}
+    Declare @reminderId int = {% if reminderType and reminderType != '' %}{{ reminderType.Id | AsInteger }}{% else %}null{% endif %}
+    Declare @groupMemberId int = {% if tripGroupMember %}{{ tripGroupMember.Id | AsInteger }}{% else %}null{% endif %}
+    Declare @taskId int = {% if singleTask and singleTask != '' %}{{ singleTask.Id | AsInteger }}{% else %}null{% endif %}
+    Declare @tastList varchar(1000) = null
+
+    SET @tastList = (
+        SELECT avAsTasks.Value
+        FROM DefinedValue v
+            JOIN AttributeValue avAsTasks on avAsTasks.EntityId = v.id and avAsTasks.AttributeId = 10471 -- Assocatied Tasks
+        WHERE v.Id = @reminderId -- Reminders
+    )
+
+    SELECT dvTasks.Guid
+    FROM 
+        DefinedValue dvTasks
+            JOIN AttributeValue avTripType on avTripType.EntityId = dvTasks.Id and avTripType.AttributeId = 9645
+            JOIN DefinedValue dvTripType on dvTripType.Guid = TRY_CAST( avTripType.Value as uniqueidentifier) 
+            LEFT JOIN AttributeValue avShowHide on avShowHide.EntityId = dvTasks.Id and avShowHide.AttributeId = 10483
+            OUTER APPLY (
+                    SELECT avShowHideV.Id, avShowHideV.Value
+                    FROM AttributeValue avShowHideV
+                    WHERE avShowHideV.EntityId = @groupMemberId
+                    and avShowHideV.AttributeId = 10486
+                    and convert(varchar(max), dvTasks.Guid) in (SELECT s FROM dbo.Split(',', avShowHideV.Value))
+                ) as showForGroupMember --Test To see if a task should be shown or hidden based on a group memeber attribute
+    WHERE 
+        dvTasks.DefinedTypeId = 129
+        and dvTripType.Id = @tripTypeId
+        and (avShowHide.ValueAsBoolean != 1 or avShowHide.ValueAsBoolean is null or showForGroupMember.Id is not null) -- hide if the task is hidden based on attribute
+        and (dvTasks.id = @taskId or @taskId is null) -- if we need to show a single task
+        and (convert(varchar(max), dvTasks.Guid) in (SELECT s FROM dbo.Split(',', @tastList)) or @reminderId is null ) -- show the tasks in a reminder
+        order by dvTasks.[Order]
+
+{% endsql %}
+
+{% for taskItemGuid in taskItems %}
+    {% definedvalue where:'Guid =="{{taskItemGuid.Guid}}"" && DefinedTypeId == 129' sort:'Order ' %}
+        {% for dfItem in definedvalueItems %}
+            
+            {% include '\Plugins\com_bemadev\Missions\GetMissionsTripTaskTemplate.lava' %}
+            
+        {% endfor %}
+    {% enddefinedvalue %}
+{% endfor %}
+
+{% unless isEmail %}
+    </ul>
+</div>
+{% endunless %}
+
+{% if isEmail %}
+<br/><br/>
+<a href="https://summitchurch.com/page/944?GroupId={{tripGroup.Id}}&GroupMemberId={{tripGroupMember.Id}}"  style="color:#0cc1ea;text-decoration:underline;text-align:center;display:block;">View My Trip Profile</a>
+
+{{ 'Global' | Attribute:'EmailFooter' }}
+{% endif %}
