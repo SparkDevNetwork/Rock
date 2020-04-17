@@ -259,13 +259,6 @@ namespace RockWeb.Blocks.Connection
                 // Set the person
                 Person = connectionRequest.PersonAlias.Person;
             }
-
-            var connectionRequest = GetConnectionRequest();
-            if ( connectionRequest != null )
-            {
-                // Set the person
-                Person = connectionRequest.PersonAlias.Person;
-            }
         }
 
         /// <summary>
