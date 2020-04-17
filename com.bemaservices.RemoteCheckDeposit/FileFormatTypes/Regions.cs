@@ -25,7 +25,7 @@ namespace com.bemaservices.RemoteCheckDeposit.FileFormatTypes
     [ExportMetadata( "ComponentName", "Regions" )]
     [CodeEditorField( "Deposit Slip Template", "The template for the deposit slip that will be generated. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Lava,
         defaultValue: @"Customer: {{ FileFormat | Attribute:'OriginName' }}
-CICL-{{ FileFormat | Attribute:'AccountNumber }}
+CICL-{{ FileFormat | Attribute:'AccountNumber' }}
 Account: {{ FileFormat | Attribute:'AccountNumber' }}
 Amount: {{ Amount }}
 ItemCount: {{ ItemCount }}", order: 20 )]
