@@ -126,6 +126,13 @@ namespace RockWeb.Blocks.Steps
                 gStepProgram.RowSelected += gStepProgram_Edit;
             }
 
+            var reorderField = gStepProgram.ColumnsOfType<ReorderField>().FirstOrDefault();
+
+            if ( reorderField != null )
+            {
+                reorderField.Visible = canAddEditDelete;
+            }
+
             var securityField = gStepProgram.ColumnsOfType<SecurityField>().FirstOrDefault();
 
             securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;

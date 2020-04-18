@@ -361,6 +361,13 @@ namespace RockWeb.Blocks.Steps
                 gStepType.RowSelected += gStepType_Edit;
             }
 
+            var reorderField = gStepType.ColumnsOfType<ReorderField>().FirstOrDefault();
+
+            if ( reorderField != null )
+            {
+                reorderField.Visible = canAddEditDelete;
+            }
+
             var securityField = gStepType.ColumnsOfType<SecurityField>().FirstOrDefault();
 
             securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepType ) ).Id;
