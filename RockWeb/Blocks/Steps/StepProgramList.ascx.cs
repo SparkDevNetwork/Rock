@@ -108,23 +108,32 @@ namespace RockWeb.Blocks.Steps
                 rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
             }
 
+            InitializeGrid();
+
+            // Set up Block Settings change notification.
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upStepProgramList );
+        }
+
+        /// <summary>
+        /// Set the properties of the main grid.
+        /// </summary>
+        private void InitializeGrid()
+        {
             // Initialize Grid
             gStepProgram.DataKeyNames = new string[] { "Id" };
             gStepProgram.Actions.AddClick += gStepProgram_Add;
             gStepProgram.GridReorder += gStepProgram_GridReorder;
             gStepProgram.GridRebind += gStepProgram_GridRebind;
+            gStepProgram.RowSelected += gStepProgram_Edit;
             gStepProgram.RowItemText = "Step Program";
 
             // Initialize Grid: Secured actions
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
+            bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             gStepProgram.Actions.ShowAdd = canAddEditDelete;
             gStepProgram.IsDeleteEnabled = canAddEditDelete;
-
-            if ( canAddEditDelete )
-            {
-                gStepProgram.RowSelected += gStepProgram_Edit;
-            }
 
             var reorderField = gStepProgram.ColumnsOfType<ReorderField>().FirstOrDefault();
 
@@ -135,11 +144,11 @@ namespace RockWeb.Blocks.Steps
 
             var securityField = gStepProgram.ColumnsOfType<SecurityField>().FirstOrDefault();
 
-            securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
-
-            // Set up Block Settings change notification.
-            this.BlockUpdated += Block_BlockUpdated;
-            this.AddConfigurationUpdateTrigger( upStepProgramList );
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepProgram ) ).Id;
+                securityField.Visible = canAdministrate;
+            }
         }
 
         /// <summary>
