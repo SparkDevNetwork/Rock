@@ -1609,49 +1609,51 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             var serviceJob = serviceJobService.Get( SystemGuid.ServiceJob.ROCK_CLEANUP.AsGuid() );
             var minDate = serviceJob?.LastSuccessfulRunDateTime ?? DateTime.MinValue;
 
-            // Build a query that contains all the interactions for the website
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
 
+            // Get all Website interactions with a page reference and time-to-serve value
             var websiteInteractionQuery = interactionService.Queryable().AsNoTracking()
                 .Where( i =>
                     i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
                     i.InteractionComponent.EntityId.HasValue &&
                     i.InteractionTimeToServe.HasValue );
 
-            // Get each distinct page that is referenced by those interactions that occurred since the last job run
-            var pageIdQuery = websiteInteractionQuery
+            // Get the unique, recent page interactions (recent = since the last successful Job run)
+            var uniquePageIdQuery = websiteInteractionQuery
                 .Where( i => i.InteractionDateTime > minDate )
-                .Select( i => i.InteractionComponent.EntityId.Value );
+                .Select( i => i.InteractionComponent.EntityId.Value )
+                .Distinct();
 
-            var pages = pageService.Queryable().Where( p => pageIdQuery.Contains( p.Id ) ).ToList();
+            // Get the most recent (up to) 100 interactions for each page
+            var timesToServeByPage = new Dictionary<int, List<double>>();
 
-            // Query for only the interactions of those recently viewed pages
-            var pageInteractionsQuery = websiteInteractionQuery.Where( i => pageIdQuery.Contains( i.InteractionComponent.EntityId.Value ) );
-
-            // Calculate the median response time for each of the pages and store the results in a dictionary
-            var medianDictionary = pageInteractionsQuery
-                .GroupBy( i => i.InteractionComponent.EntityId.Value )
-                .Select( g => new
-                {
-                    PageId = g.Key,
-                    Times = g
-                        .OrderByDescending( i => i.InteractionDateTime )
-                        .Take( 100 )
-                        .Select( i => i.InteractionTimeToServe.Value )
-                        .OrderBy( i => i )
-                } )
-                .ToDictionary( g => g.PageId, g =>
-                {
-                    var count = g.Times.Count();
-                    var firstMiddleValue = g.Times.ElementAt( ( count - 1 ) / 2 );
-                    var secondMiddleValue = g.Times.ElementAt( count / 2 );
-                    return ( firstMiddleValue + secondMiddleValue ) / 2;
-                } );
-
-            // Update each page's median page load time
-            foreach ( var page in pages )
+            foreach ( var pageId in uniquePageIdQuery.ToList() )
             {
-                page.MedianPageLoadTime = medianDictionary[page.Id];
+                var timesToServe = websiteInteractionQuery
+                    .Where( i => i.InteractionComponent.EntityId == pageId )
+                    .OrderByDescending( i => i.InteractionDateTime )
+                    .Take( 100 )
+                    .Select( i => i.InteractionTimeToServe.Value )
+                    .OrderBy( i => i );
+
+                timesToServeByPage.Add( pageId, timesToServe.ToList() );
+            }
+
+            var pages = pageService.Queryable().Where( p => uniquePageIdQuery.Contains( p.Id ) ).ToList();
+
+            // Calculate the median response time for each of the pages
+            foreach ( Page page in pages )
+            {
+                if ( !timesToServeByPage.TryGetValue( page.Id, out List<double> timesToServe ) )
+                {
+                    continue;
+                }
+
+                var count = timesToServe.Count;
+                var firstMiddleValue = timesToServe.ElementAt( ( count - 1 ) / 2 );
+                var secondMiddleValue = timesToServe.ElementAt( count / 2 );
+
+                page.MedianPageLoadTime = ( firstMiddleValue + secondMiddleValue ) / 2;
             }
 
             rockContext.SaveChanges();
