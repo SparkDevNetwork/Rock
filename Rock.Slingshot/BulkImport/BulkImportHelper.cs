@@ -177,7 +177,7 @@ namespace Rock.Slingshot
                 occurrence.OccurrenceDate = groupKey.OccurrenceDate;
 
                 // If we haven'r already added it to list, and it doesn't already exist, add it to list
-                if ( !existingOccurrencesLookup.ContainsKey( $"{occurrence.GroupId}|{occurrence.LocationId}|{occurrence.ScheduleId}|{occurrence.OccurrenceDate}" ))
+                if ( !existingOccurrencesLookup.ContainsKey( $"{occurrence.GroupId}|{occurrence.LocationId}|{occurrence.ScheduleId}|{occurrence.OccurrenceDate}" ) )
                 {
                     newOccurrences.Add( occurrence );
                 }
@@ -298,14 +298,14 @@ namespace Rock.Slingshot
             {
                 //if financialAccountImport variable does not have a cooresponding account, then create it.
 
-                if (!financialAccountAlreadyExistForeignIdHash.Contains(financialAccountImport.FinancialAccountForeignId))
+                if ( !financialAccountAlreadyExistForeignIdHash.Contains( financialAccountImport.FinancialAccountForeignId ) )
                 {
                     var financialAccount = new FinancialAccount();
                     financialAccount.ForeignId = financialAccountImport.FinancialAccountForeignId;
                     financialAccount.ForeignKey = foreignSystemKey;
-                    if (financialAccountImport.Name.Length > 50)
+                    if ( financialAccountImport.Name.Length > 50 )
                     {
-                        financialAccount.Name = financialAccountImport.Name.Left(50);
+                        financialAccount.Name = financialAccountImport.Name.Left( 50 );
                         financialAccount.Description = financialAccountImport.Name;
                     }
                     else
@@ -318,22 +318,22 @@ namespace Rock.Slingshot
                     financialAccount.CreatedDateTime = importDateTime;
                     financialAccount.ModifiedDateTime = importDateTime;
 
-                    financialAccountsToInsert.Add(financialAccount);
+                    financialAccountsToInsert.Add( financialAccount );
                 }
 
                 //else, the account already is in the system. check for updates (if apply updates selected)
-                else if (financialAccountAlreadyExistForeignIdHash.Contains(financialAccountImport.FinancialAccountForeignId))
+                else if ( financialAccountAlreadyExistForeignIdHash.Contains( financialAccountImport.FinancialAccountForeignId ) )
                 {
                     var isAccountUpdated = false;
-                    if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+                    if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
-                        FinancialAccount existingFinancialAccount = qryFinancialAccountsWithForeignIds.Where(a => a.ForeignId == financialAccountImport.FinancialAccountForeignId).First();
+                        FinancialAccount existingFinancialAccount = qryFinancialAccountsWithForeignIds.Where( a => a.ForeignId == financialAccountImport.FinancialAccountForeignId ).First();
 
-                        if (financialAccountImport.Name != existingFinancialAccount.Name)
+                        if ( financialAccountImport.Name != existingFinancialAccount.Name )
                         {
-                            if (financialAccountImport.Name.Length > 50)
+                            if ( financialAccountImport.Name.Length > 50 )
                             {
-                                existingFinancialAccount.Name = financialAccountImport.Name.Truncate(50);
+                                existingFinancialAccount.Name = financialAccountImport.Name.Truncate( 50 );
                                 existingFinancialAccount.Description = financialAccountImport.Name;
                             }
                             else
@@ -342,17 +342,17 @@ namespace Rock.Slingshot
                             }
                             isAccountUpdated = true;
                         }
-                        if (financialAccountImport.CampusId != existingFinancialAccount.CampusId)
+                        if ( financialAccountImport.CampusId != existingFinancialAccount.CampusId )
                         {
                             existingFinancialAccount.CampusId = financialAccountImport.CampusId;
                             isAccountUpdated = true;
                         }
-                        if (financialAccountImport.IsTaxDeductible != existingFinancialAccount.IsTaxDeductible)
+                        if ( financialAccountImport.IsTaxDeductible != existingFinancialAccount.IsTaxDeductible )
                         {
                             existingFinancialAccount.IsTaxDeductible = financialAccountImport.IsTaxDeductible;
                             isAccountUpdated = true;
                         }
-                        if (financialAccountImport.IsTaxDeductible != existingFinancialAccount.IsTaxDeductible)
+                        if ( financialAccountImport.IsTaxDeductible != existingFinancialAccount.IsTaxDeductible )
                         {
                             existingFinancialAccount.IsTaxDeductible = financialAccountImport.IsTaxDeductible;
                             isAccountUpdated = true;
@@ -559,9 +559,9 @@ namespace Rock.Slingshot
                     var financialBatch = new FinancialBatch();
                     financialBatch.ForeignId = financialBatchImport.FinancialBatchForeignId;
                     financialBatch.ForeignKey = foreignSystemKey;
-                    if (financialBatchImport.Name.Length > 50)
+                    if ( financialBatchImport.Name.Length > 50 )
                     {
-                        financialBatch.Name = financialBatchImport.Name.Left(50);
+                        financialBatch.Name = financialBatchImport.Name.Left( 50 );
                     }
                     else
                     {
@@ -577,7 +577,7 @@ namespace Rock.Slingshot
                     financialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime ?? importDateTime;
                     financialBatch.BatchStartDateTime = financialBatchImport.StartDate;
 
-                    switch (financialBatchImport.Status)
+                    switch ( financialBatchImport.Status )
                     {
                         case FinancialBatchImport.BatchStatus.Closed:
                             financialBatch.Status = BatchStatus.Closed;
@@ -592,32 +592,32 @@ namespace Rock.Slingshot
                             break;
                     }
 
-                    if (financialBatchImport.CreatedByPersonForeignId.HasValue)
+                    if ( financialBatchImport.CreatedByPersonForeignId.HasValue )
                     {
-                        financialBatch.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.CreatedByPersonForeignId.Value);
+                        financialBatch.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialBatchImport.CreatedByPersonForeignId.Value );
                     }
 
-                    if (financialBatchImport.ModifiedByPersonForeignId.HasValue)
+                    if ( financialBatchImport.ModifiedByPersonForeignId.HasValue )
                     {
-                        financialBatch.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.ModifiedByPersonForeignId.Value);
+                        financialBatch.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialBatchImport.ModifiedByPersonForeignId.Value );
                     }
 
-                    financialBatchsToInsert.Add(financialBatch);
+                    financialBatchsToInsert.Add( financialBatch );
                 }
 
                 //if batch already exists, see if always update is true and update existing batches.
-                else if (financialBatchAlreadyExistForeignIdHash.Contains(financialBatchImport.FinancialBatchForeignId))
+                else if ( financialBatchAlreadyExistForeignIdHash.Contains( financialBatchImport.FinancialBatchForeignId ) )
                 {
                     var isBatchUpdated = false;
-                    if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+                    if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
-                        FinancialBatch existingFinancialBatch = qryFinancialBatchsWithForeignIds.Where(a => a.ForeignId == financialBatchImport.FinancialBatchForeignId).First();
+                        FinancialBatch existingFinancialBatch = qryFinancialBatchsWithForeignIds.Where( a => a.ForeignId == financialBatchImport.FinancialBatchForeignId ).First();
 
-                        if (financialBatchImport.Name != existingFinancialBatch.Name)
+                        if ( financialBatchImport.Name != existingFinancialBatch.Name )
                         {
-                            if (financialBatchImport.Name.Length > 50)
+                            if ( financialBatchImport.Name.Length > 50 )
                             {
-                                existingFinancialBatch.Name = financialBatchImport.Name.Truncate(50);
+                                existingFinancialBatch.Name = financialBatchImport.Name.Truncate( 50 );
                             }
                             else
                             {
@@ -627,40 +627,40 @@ namespace Rock.Slingshot
                             isBatchUpdated = true;
                         }
 
-                        if (financialBatchImport.CampusId != existingFinancialBatch.CampusId)
+                        if ( financialBatchImport.CampusId != existingFinancialBatch.CampusId )
                         {
                             existingFinancialBatch.CampusId = financialBatchImport.CampusId;
                             isBatchUpdated = true;
                         }
-                        if (financialBatchImport.ControlAmount != existingFinancialBatch.ControlAmount)
+                        if ( financialBatchImport.ControlAmount != existingFinancialBatch.ControlAmount )
                         {
                             existingFinancialBatch.ControlAmount = financialBatchImport.ControlAmount;
                             isBatchUpdated = true;
                         }
 
-                        if (financialBatchImport.CreatedDateTime != existingFinancialBatch.CreatedDateTime)
+                        if ( financialBatchImport.CreatedDateTime != existingFinancialBatch.CreatedDateTime )
                         {
                             existingFinancialBatch.CreatedDateTime = financialBatchImport.CreatedDateTime;
                             isBatchUpdated = true;
                         }
-                        if (financialBatchImport.ModifiedDateTime != existingFinancialBatch.ModifiedDateTime)
+                        if ( financialBatchImport.ModifiedDateTime != existingFinancialBatch.ModifiedDateTime )
                         {
                             existingFinancialBatch.ModifiedDateTime = financialBatchImport.ModifiedDateTime;
                             isBatchUpdated = true;
                         }
-                        if (financialBatchImport.EndDate != existingFinancialBatch.BatchEndDateTime)
+                        if ( financialBatchImport.EndDate != existingFinancialBatch.BatchEndDateTime )
                         {
                             existingFinancialBatch.BatchEndDateTime = financialBatchImport.EndDate;
                             isBatchUpdated = true;
                         }
-                        if (financialBatchImport.StartDate != existingFinancialBatch.BatchStartDateTime)
+                        if ( financialBatchImport.StartDate != existingFinancialBatch.BatchStartDateTime )
                         {
                             existingFinancialBatch.BatchStartDateTime = financialBatchImport.StartDate;
                             isBatchUpdated = true;
                         }
 
                         //override status as necessary
-                        switch (financialBatchImport.Status)
+                        switch ( financialBatchImport.Status )
                         {
                             case FinancialBatchImport.BatchStatus.Closed:
                                 existingFinancialBatch.Status = BatchStatus.Closed;
@@ -676,18 +676,18 @@ namespace Rock.Slingshot
                         }
 
                         //override as necessary
-                        if (financialBatchImport.CreatedByPersonForeignId.HasValue)
+                        if ( financialBatchImport.CreatedByPersonForeignId.HasValue )
                         {
-                            existingFinancialBatch.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.CreatedByPersonForeignId.Value);
+                            existingFinancialBatch.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialBatchImport.CreatedByPersonForeignId.Value );
                         }
 
-                        if (financialBatchImport.ModifiedByPersonForeignId.HasValue)
+                        if ( financialBatchImport.ModifiedByPersonForeignId.HasValue )
                         {
-                            existingFinancialBatch.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialBatchImport.ModifiedByPersonForeignId.Value);
+                            existingFinancialBatch.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialBatchImport.ModifiedByPersonForeignId.Value );
                         }
 
                         //update totals
-                        if (isBatchUpdated)
+                        if ( isBatchUpdated )
                         {
                             financialBatchUpdatedCount++;
                         }
@@ -696,7 +696,7 @@ namespace Rock.Slingshot
 
             }
             //save changes to financial batches and insert new ones.
-            rockContext.SaveChanges(true);
+            rockContext.SaveChanges( true );
             rockContext.BulkInsert( financialBatchsToInsert );
 
             stopwatchTotal.Stop();
@@ -723,7 +723,7 @@ namespace Rock.Slingshot
             var financialTransactionAlreadyExistForeignIdHash = new HashSet<int>( qryFinancialTransactionsWithForeignIds.Select( a => a.ForeignId.Value ).ToList() );
 
             var newFinancialTransactionImports = financialTransactionImports.Where( a => !financialTransactionAlreadyExistForeignIdHash.Contains( a.FinancialTransactionForeignId ) ).ToList();
-            var existingFinancialTransactionImports = financialTransactionImports.Where(a => financialTransactionAlreadyExistForeignIdHash.Contains(a.FinancialTransactionForeignId)).ToList();
+            var existingFinancialTransactionImports = financialTransactionImports.Where( a => financialTransactionAlreadyExistForeignIdHash.Contains( a.FinancialTransactionForeignId ) ).ToList();
 
             // Get the primary alias id lookup for each person foreign id
             var personAliasIdLookup = new PersonAliasService( rockContext ).Queryable().Where( a => a.Person.ForeignId.HasValue && a.Person.ForeignKey == foreignSystemKey && a.PersonId == a.AliasPersonId )
@@ -840,20 +840,20 @@ namespace Rock.Slingshot
 
 
             //if apply updates is true, use existing transactions and update
-            if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+            if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
             {
-                foreach (var financialTransactionImport in existingFinancialTransactionImports)
+                foreach ( var financialTransactionImport in existingFinancialTransactionImports )
                 {
-                    FinancialTransaction financialTransaction = qryFinancialTransactionsWithForeignIds.Where(a => a.ForeignId.Value == financialTransactionImport.FinancialTransactionForeignId).First();
+                    FinancialTransaction financialTransaction = qryFinancialTransactionsWithForeignIds.Where( a => a.ForeignId.Value == financialTransactionImport.FinancialTransactionForeignId ).First();
 
                     //fors
-                    if (financialTransactionImport.AuthorizedPersonForeignId.HasValue)
+                    if ( financialTransactionImport.AuthorizedPersonForeignId.HasValue )
                     {
-                        financialTransaction.AuthorizedPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionImport.AuthorizedPersonForeignId.Value);
+                        financialTransaction.AuthorizedPersonAliasId = personAliasIdLookup.GetValueOrNull( financialTransactionImport.AuthorizedPersonForeignId.Value );
                     }
 
-                    financialTransaction.BatchId = batchIdLookup.GetValueOrNull(financialTransactionImport.BatchForeignId);
-                    financialTransaction.FinancialPaymentDetailId = financialPaymentDetailLookup.GetValueOrNull(financialTransactionImport.FinancialTransactionForeignId);
+                    financialTransaction.BatchId = batchIdLookup.GetValueOrNull( financialTransactionImport.BatchForeignId );
+                    financialTransaction.FinancialPaymentDetailId = financialPaymentDetailLookup.GetValueOrNull( financialTransactionImport.FinancialTransactionForeignId );
 
                     financialTransaction.Summary = financialTransactionImport.Summary;
                     financialTransaction.TransactionCode = financialTransactionImport.TransactionCode;
@@ -863,24 +863,24 @@ namespace Rock.Slingshot
                     financialTransaction.CreatedDateTime = financialTransactionImport.CreatedDateTime; 
                     financialTransaction.ModifiedDateTime = financialTransactionImport.ModifiedDateTime; 
 
-                    if (financialTransactionImport.CreatedByPersonForeignId.HasValue)
+                    if ( financialTransactionImport.CreatedByPersonForeignId.HasValue )
                     {
-                        financialTransaction.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionImport.CreatedByPersonForeignId.Value);
+                        financialTransaction.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialTransactionImport.CreatedByPersonForeignId.Value );
                     }
 
-                    if (financialTransactionImport.ModifiedByPersonForeignId.HasValue)
+                    if ( financialTransactionImport.ModifiedByPersonForeignId.HasValue )
                     {
-                        financialTransaction.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionImport.ModifiedByPersonForeignId.Value);
+                        financialTransaction.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialTransactionImport.ModifiedByPersonForeignId.Value );
                     }
 
 
-                    var qryFinancialTransactionDetailsWithForeignIds = new FinancialTransactionDetailService(rockContext).Queryable().Where(a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey);
+                    var qryFinancialTransactionDetailsWithForeignIds = new FinancialTransactionDetailService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == foreignSystemKey );
                     //loop through transactiondetails
-                    foreach (var financialTransactionDetailImport in financialTransactionImport.FinancialTransactionDetailImports)
+                    foreach ( var financialTransactionDetailImport in financialTransactionImport.FinancialTransactionDetailImports )
                     {
                         //var financialTransactionDetail = new FinancialTransactionDetail();
 
-                        FinancialTransactionDetail financialTransactionDetail = qryFinancialTransactionDetailsWithForeignIds.Where(a => a.ForeignId.Value == financialTransactionDetailImport.FinancialTransactionDetailForeignId).First();
+                        FinancialTransactionDetail financialTransactionDetail = qryFinancialTransactionDetailsWithForeignIds.Where( a => a.ForeignId.Value == financialTransactionDetailImport.FinancialTransactionDetailForeignId ).First();
 
 
                         financialTransactionDetail.TransactionId = financialTransactionIdLookup[financialTransactionImport.FinancialTransactionForeignId];
@@ -892,22 +892,22 @@ namespace Rock.Slingshot
                         financialTransactionDetail.CreatedDateTime = financialTransactionDetailImport.CreatedDateTime ?? importDateTime;
                         financialTransactionDetail.ModifiedDateTime = financialTransactionDetailImport.ModifiedDateTime ?? importDateTime;
 
-                        if (financialTransactionDetailImport.CreatedByPersonForeignId.HasValue)
+                        if ( financialTransactionDetailImport.CreatedByPersonForeignId.HasValue )
                         {
-                            financialTransactionDetail.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionDetailImport.CreatedByPersonForeignId.Value);
+                            financialTransactionDetail.CreatedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialTransactionDetailImport.CreatedByPersonForeignId.Value );
                         }
 
-                        if (financialTransactionDetailImport.ModifiedByPersonForeignId.HasValue)
+                        if ( financialTransactionDetailImport.ModifiedByPersonForeignId.HasValue )
                         {
-                            financialTransactionDetail.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull(financialTransactionDetailImport.ModifiedByPersonForeignId.Value);
+                            financialTransactionDetail.ModifiedByPersonAliasId = personAliasIdLookup.GetValueOrNull( financialTransactionDetailImport.ModifiedByPersonForeignId.Value );
                         }
 
-                        financialTransactionDetailsToInsert.Add(financialTransactionDetail);
+                        financialTransactionDetailsToInsert.Add( financialTransactionDetail );
                     }
 
                 }
                 //save existing updates to transactions
-                rockContext.SaveChanges(true);
+                rockContext.SaveChanges( true );
             }
 
 
@@ -1044,7 +1044,7 @@ namespace Rock.Slingshot
                 }
                 else
                 {
-                    if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
+                    if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
                         Stopwatch stopwatchGroupUpdates = Stopwatch.StartNew();
                         bool wasChanged = UpdateGroupFromGroupImport( groupImport, group, attributeValuesLookup, foreignSystemKey, importedDateTime );
@@ -1136,7 +1136,7 @@ namespace Rock.Slingshot
             var groupSchedulesToInsert = new List<Schedule>();
             foreach ( var groupWithSchedule in groupsToInsert.Where( g => g.Schedule != null && g.ForeignId != null ) )
             {
-                var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithSchedule.GroupTypeId )?.GetValueOrNull( (int)groupWithSchedule.ForeignId )?.Id;
+                var groupId = groupTypeGroupLookup.GetValueOrNull( groupWithSchedule.GroupTypeId )?.GetValueOrNull( ( int ) groupWithSchedule.ForeignId )?.Id;
                 groupSchedulesToInsert.Add( groupWithSchedule.Schedule );
             }
 
@@ -1177,36 +1177,9 @@ AND [Schedule].[ForeignKey] = '{0}'
                 }
             }
 
+            // WARNING:  Using BulkInsert on AttributeValues will circumvent tgrAttributeValue_InsertUpdate trigger, so
+            // AttributeValueService.UpdateAllValueAsDateTimeFromTextValue() should be executed before we're done.
             rockContext.BulkInsert( attributeValuesToInsert );
-
-            if ( attributeValuesToInsert.Any() )
-            {
-                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-                rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime =
-		CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END
-        where (CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END) is not null
-        and ValueAsDateTime is null
-" );
-            }
 
             // Addresses
             var locationsToInsert = new List<Location>();
@@ -1293,6 +1266,10 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                     {
                         group.ParentGroupId = parentGroupId;
                         groupsUpdated = true;
+                    }
+                    else if ( group.ParentGroupId == parentGroupId )
+                    {
+                        // The group's ParentGroupId is already set correctly, so ignore this.
                     }
                     else
                     {
@@ -1505,10 +1482,15 @@ WHERE gta.GroupTypeId IS NULL" );
                 // populate/update GroupMembers
                 foreach ( var groupMemberImport in groupImport.GroupMemberImports )
                 {
+                    var personId = personIdLookup.GetValueOrNull( groupMemberImport.PersonForeignId );
+                    if ( personId == null )
+                    {
+                        continue; // Avoids throwing an error if the specified Group Member has not been imported.
+                    }
 
                     var groupTypeRoleLookup = GroupTypeCache.Get( groupImport.GroupTypeId ).Roles.ToDictionary( k => k.Name, v => v.Id );
                     var groupRoleId = groupTypeRoleLookup.GetValueOrNull( groupMemberImport.RoleName );
-                    var personId = personIdLookup.GetValueOrNull( groupMemberImport.PersonForeignId );
+
                     GroupMember groupMember = group.Members.Where( m => m.Person.ForeignId == groupMemberImport.PersonForeignId && m.Person.ForeignKey == foreignSystemKey ).FirstOrDefault();
 
                     if ( groupMember == null )
@@ -1528,7 +1510,7 @@ WHERE gta.GroupTypeId IS NULL" );
                     }
                 }
 
-                foreach ( var member in groupMemberList.Where(gm => !groupImport.GroupMemberImports.Any( x => x.PersonForeignId == gm.ForeignId ) ) )
+                foreach ( var member in groupMemberList.Where( gm => !groupImport.GroupMemberImports.Any( x => x.PersonForeignId == gm.ForeignId ) ) )
                 {
                     var groupMember = groupMemberService.Get( member.Id );
                     if ( groupMember != null )
@@ -1624,6 +1606,18 @@ WHERE gta.GroupTypeId IS NULL" );
         private string _defaultPhoneCountryCode = null;
         private int _recordTypePersonId;
 
+        public class PersonImportResult
+        {
+            public int PersonUpdatesCount;
+            public int PersonUpdatesTime;
+            public int PersonUpdatesCheckTime;
+            public int PersonImportsCount;
+            public int FamilyImportsCount;
+            public int GroupMemberImportsCount;
+            public int PersonImportsTime;
+            public bool ClientDisconnected = false;
+        }
+
         /// <summary>
         /// Bulks the import.
         /// </summary>
@@ -1631,6 +1625,57 @@ WHERE gta.GroupTypeId IS NULL" );
         /// <returns></returns>
         public string BulkPersonImport( List<PersonImport> personImports, string foreignSystemKey )
         {
+            var result = BulkPersonImport( personImports, foreignSystemKey, 0, 0, new PersonImportResult() );
+            return ParsePersonImportResult( result );
+        }
+
+        /// <summary>
+        /// Translates a <see cref="PersonImportResult"/> into a user readable string.
+        /// </summary>
+        /// <param name="result">The <see cref="PersonImportResult"/>.</param>
+        /// <returns>A string suitable for display to users.</returns>
+        public string ParsePersonImportResult( PersonImportResult result )
+        {
+            if ( result.ClientDisconnected )
+            {
+                return "Client Disconnected";
+            }
+
+            StringBuilder sbStats = new StringBuilder();
+            if ( result.PersonUpdatesCount > 0 )
+            {
+                sbStats.AppendLine( $"Check for Person Updates [{result.PersonUpdatesCheckTime}ms]" );
+                sbStats.AppendLine( $"Updated {result.PersonUpdatesCount} Person records [{result.PersonUpdatesTime}ms]" );
+            }
+            else if ( result.PersonImportsCount == 0 )
+            {
+                sbStats.AppendLine( $"Check for Person Updates [{result.PersonUpdatesCheckTime}ms]" );
+                sbStats.AppendLine( $"No Person records need to be updated [{result.PersonUpdatesTime}ms]" );
+            }
+            else if ( result.PersonImportsCount > 0 || result.GroupMemberImportsCount > 0 || result.FamilyImportsCount > 0 )
+            {
+                sbStats.AppendLine( $"Imported {result.PersonImportsCount} People and {result.FamilyImportsCount} Families [{result.PersonImportsTime}ms] and {result.GroupMemberImportsCount} family members");
+            }
+            else
+            {
+                sbStats.AppendLine( $"No People were imported or updated. [{result.PersonImportsTime}ms]" );
+            }
+
+            return sbStats.ToString();
+        }
+
+        /// <summary>
+        /// Bulks the import.
+        /// </summary>
+        /// <param name="personImports">The person imports.</param>
+        /// <returns></returns>
+        public PersonImportResult BulkPersonImport( List<PersonImport> personImports, string foreignSystemKey, int recordsAlreadyProcessed, int totalRecords, PersonImportResult currentResults )
+        {
+            if ( totalRecords == 0 )
+            {
+                totalRecords = personImports.Count();
+            }
+
             var initiatedWithWebRequest = HttpContext.Current?.Request != null;
             Stopwatch stopwatchTotal = Stopwatch.StartNew();
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -1681,7 +1726,7 @@ WHERE gta.GroupTypeId IS NULL" );
 
             int personUpdatesCount = 0;
             long personUpdatesMS = 0;
-            int progress = 0;
+            int progress = recordsAlreadyProcessed + 0;
             int total = personImports.Count();
 
             foreach ( var personImport in personImports )
@@ -1692,10 +1737,10 @@ WHERE gta.GroupTypeId IS NULL" );
                     if ( initiatedWithWebRequest && HttpContext.Current?.Response?.IsClientConnected != true )
                     {
                         // if this was called from a WebRequest (versus a job or utility), quit if the client has disconnected
-                        return "Client Disconnected";
+                        return new PersonImportResult() { ClientDisconnected = true }; //"Client Disconnected"
                     }
 
-                    OnProgress?.Invoke( $"Bulk Importing Person {progress} of {total}..." );
+                    OnProgress?.Invoke( $"Bulk Importing Person {progress} of {totalRecords}..." );
                 }
 
                 Group family = null;
@@ -1762,15 +1807,9 @@ WHERE gta.GroupTypeId IS NULL" );
             if ( personUpdatesMS > 0 || personUpdatesCount > 0 )
             {
                 stopwatch.Stop();
-                sbStats.AppendLine( $"Check for Person Updates [{stopwatch.ElapsedMilliseconds - personUpdatesMS}ms]" );
-                if ( personUpdatesCount > 0 )
-                {
-                    sbStats.AppendLine( $"Updated {personUpdatesCount} Person records [{personUpdatesMS}ms]" );
-                }
-                else
-                {
-                    sbStats.AppendLine( $"No Person records need to be updated [{personUpdatesMS}ms]" );
-                }
+                currentResults.PersonUpdatesCheckTime += ( int ) ( stopwatch.ElapsedMilliseconds - personUpdatesMS );
+                currentResults.PersonUpdatesTime += ( int ) personUpdatesMS;
+                currentResults.PersonUpdatesTime += personUpdatesCount;
                 stopwatch.Restart();
             }
 
@@ -1953,38 +1992,9 @@ WHERE gta.GroupTypeId IS NULL" );
                 }
             }
 
+            // WARNING:  Using BulkInsert on AttributeValues will circumvent tgrAttributeValue_InsertUpdate trigger, so
+            // AttributeValueService.UpdateAllValueAsDateTimeFromTextValue() should be executed before we're done.
             rockContext.BulkInsert( attributeValuesToInsert );
-
-            if ( attributeValuesToInsert.Any() )
-            {
-                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-                var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime =
-		CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END
-        where (CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END) is not null
-        and ValueAsDateTime is null
-" );
-
-                Debug.WriteLine( "ValueAsDateTime RowsUpdated: " + rowsUpdated.ToString() );
-            }
 
             // since we bypassed Rock SaveChanges when Inserting Person records, sweep thru and ensure the AgeClassification, PrimaryFamily, and GivingLeaderId is set
             PersonService.UpdatePersonAgeClassificationAll( rockContext );
@@ -1992,18 +2002,15 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             PersonService.UpdateGivingLeaderIdAll( rockContext );
 
             stopwatchTotal.Stop();
+            currentResults.PersonImportsTime += ( int ) stopwatchTotal.ElapsedMilliseconds;
             if ( personsToInsert.Any() || groupMemberRecordsToInsertList.Any() || familiesToInsert.Any() )
             {
-                sbStats.AppendLine( $"Imported {personsToInsert.Count} People and {familiesToInsert.Count} Families [{stopwatchTotal.ElapsedMilliseconds}ms] and {groupMemberRecordsToInsertList.Count} family members" );
-            }
-            else
-            {
-                sbStats.AppendLine( $"No People were imported [{stopwatchTotal.ElapsedMilliseconds}ms]" );
+                currentResults.PersonImportsCount += personsToInsert.Count;
+                currentResults.FamilyImportsCount += familiesToInsert.Count;
+                currentResults.GroupMemberImportsCount += groupMemberRecordsToInsertList.Count;
             }
 
-            var responseText = sbStats.ToString();
-
-            return responseText;
+            return currentResults;
         }
 
         /// <summary>
@@ -2041,7 +2048,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
             person.BirthDay = personImport.BirthDay;
             person.BirthMonth = personImport.BirthMonth;
             person.BirthYear = personImport.BirthYear;
-            person.Gender = (Gender)personImport.Gender;
+            person.Gender = ( Gender ) personImport.Gender;
             person.MaritalStatusValueId = personImport.MaritalStatusValueId;
             person.AnniversaryDate = personImport.AnniversaryDate;
             person.GraduationYear = personImport.GraduationYear;
@@ -2054,7 +2061,7 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
 
             person.IsEmailActive = personImport.IsEmailActive;
             person.EmailNote = personImport.EmailNote.Left( 250 );
-            person.EmailPreference = (EmailPreference)personImport.EmailPreference;
+            person.EmailPreference = ( EmailPreference ) personImport.EmailPreference;
             person.InactiveReasonNote = personImport.InactiveReasonNote.Left( 1000 );
             person.CreatedDateTime = personImport.CreatedDateTime;
             person.ModifiedDateTime = personImport.ModifiedDateTime;
@@ -2166,9 +2173,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                     {
                         // Import fails if re-importing a person who has addresses but is not assigned to a family. When initially imported,
                         // Rock creates a family group for these people and we need to locate the ID before checking for matching locations.
-                        if (primaryFamily.Id == 0)
+                        if ( primaryFamily.Id == 0 )
                         {
-                            if (person.PrimaryFamilyId.HasValue)
+                            if ( person.PrimaryFamilyId.HasValue )
                             {
                                 primaryFamily.Id = person.PrimaryFamilyId.Value;
                             }
@@ -2568,38 +2575,9 @@ UPDATE [AttributeValue] SET ValueAsDateTime =
                 }
             }
 
+            // WARNING:  Using BulkInsert on AttributeValues will circumvent tgrAttributeValue_InsertUpdate trigger, so
+            // AttributeValueService.UpdateAllValueAsDateTimeFromTextValue() should be executed before we're done.
             rockContext.BulkInsert( attributeValuesToInsert );
-
-            if ( attributeValuesToInsert.Any() )
-            {
-                // manually update ValueAsDateTime since the tgrAttributeValue_InsertUpdate trigger won't fire during when using BulkInsert
-                var rowsUpdated = rockContext.Database.ExecuteSqlCommand( @"
-UPDATE [AttributeValue] SET ValueAsDateTime =
-		CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END
-        where (CASE WHEN
-			LEN(value) < 50 and
-			ISNULL(value,'') != '' and
-			ISNUMERIC([value]) = 0 THEN
-				CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN
-					ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-				ELSE
-					TRY_CAST( [value] as datetime )
-				END
-		END) is not null
-        and ValueAsDateTime is null
-" );
-
-                Debug.WriteLine( "ValueAsDateTime RowsUpdated: " + rowsUpdated.ToString() );
-            }
 
             // since we bypassed Rock SaveChanges when Inserting Person records, sweep thru and ensure the AgeClassification, PrimaryFamily, and GivingLeaderId is set
             PersonService.UpdatePersonAgeClassificationAll( rockContext );
@@ -3110,21 +3088,21 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
 
             foreach ( var financialPledgeImport in financialPledgeImports )
             {
-                if (!financialPledgeAlreadyExistForeignIdHash.Contains(financialPledgeImport.FinancialPledgeForeignId))
+                if ( !financialPledgeAlreadyExistForeignIdHash.Contains( financialPledgeImport.FinancialPledgeForeignId ) )
                 {
                     var financialPledge = new FinancialPledge();
                     financialPledge.ForeignId = financialPledgeImport.FinancialPledgeForeignId;
                     financialPledge.ForeignKey = foreignSystemKey;
-                    financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull(financialPledgeImport.PersonForeignId);
+                    financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull( financialPledgeImport.PersonForeignId );
 
-                    if (financialPledgeImport.FinancialAccountForeignId.HasValue)
+                    if ( financialPledgeImport.FinancialAccountForeignId.HasValue )
                     {
-                        financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull(financialPledgeImport.FinancialAccountForeignId.Value);
+                        financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull( financialPledgeImport.FinancialAccountForeignId.Value );
                     }
 
-                    if (financialPledgeImport.GroupForeignId.HasValue)
+                    if ( financialPledgeImport.GroupForeignId.HasValue )
                     {
-                        financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull(financialPledgeImport.GroupForeignId.Value);
+                        financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull( financialPledgeImport.GroupForeignId.Value );
                     }
 
                     financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
@@ -3136,25 +3114,25 @@ and ft.Id not in (select TransactionId from FinancialTransactionImage)" );
                     financialPledge.CreatedDateTime = financialPledgeImport.CreatedDateTime ?? importDateTime;
                     financialPledge.ModifiedDateTime = financialPledgeImport.ModifiedDateTime ?? importDateTime;
 
-                    financialPledgesToInsert.Add(financialPledge); 
+                    financialPledgesToInsert.Add( financialPledge );
                 }
                 // if pledge already exists and always update is true, update pledge
-                else if (financialPledgeAlreadyExistForeignIdHash.Contains(financialPledgeImport.FinancialPledgeForeignId))
+                else if ( financialPledgeAlreadyExistForeignIdHash.Contains( financialPledgeImport.FinancialPledgeForeignId ) )
                 {
-                    if (this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate)
+                    if ( this.ImportUpdateOption == ImportUpdateType.AlwaysUpdate )
                     {
-                        FinancialPledge financialPledge = qryFinancialPledgesWithForeignIds.Where(a => a.ForeignId == financialPledgeImport.FinancialPledgeForeignId).First();
+                        FinancialPledge financialPledge = qryFinancialPledgesWithForeignIds.Where( a => a.ForeignId == financialPledgeImport.FinancialPledgeForeignId ).First();
                         
-                        financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull(financialPledgeImport.PersonForeignId);
+                        financialPledge.PersonAliasId = personAliasIdLookup.GetValueOrNull( financialPledgeImport.PersonForeignId );
 
-                        if (financialPledgeImport.FinancialAccountForeignId.HasValue)
+                        if ( financialPledgeImport.FinancialAccountForeignId.HasValue )
                         {
-                            financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull(financialPledgeImport.FinancialAccountForeignId.Value);
+                            financialPledge.AccountId = financialAccountIdLookup.GetValueOrNull( financialPledgeImport.FinancialAccountForeignId.Value );
                         }
 
-                        if (financialPledgeImport.GroupForeignId.HasValue)
+                        if ( financialPledgeImport.GroupForeignId.HasValue )
                         {
-                            financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull(financialPledgeImport.GroupForeignId.Value);
+                            financialPledge.GroupId = familyGroupIdLookup.GetValueOrNull( financialPledgeImport.GroupForeignId.Value );
                         }
 
                         financialPledge.TotalAmount = financialPledgeImport.TotalAmount;
