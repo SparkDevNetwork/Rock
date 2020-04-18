@@ -306,6 +306,15 @@ namespace Rock.Slingshot
         public int? PhotoBatchSizeMB { get; set; }
 
         /// <summary>
+        /// Gets or sets the size of the person chunk.
+        /// Just in case the Target size reports a Timeout from the SqlBulkImport API.
+        /// </summary>
+        /// <value>
+        /// The size of the person chunk.
+        /// </value>
+        public int? PersonChunkSize { get; set; }
+
+        /// <summary>
         /// Gets or sets the size of the financial transaction chunk.
         /// Just in case the Target size reports a Timeout from the SqlBulkImport API.
         /// </summary>
@@ -401,6 +410,9 @@ namespace Rock.Slingshot
 
             // Family Notes
             SubmitEntityNotesImport<Group>( this.SlingshotFamilyNoteList, true );
+
+            // Update any new AttributeValues to set the [ValueAsDateTime] field.
+            AttributeValueService.UpdateAllValueAsDateTimeFromTextValue();
         }
 
         private const string PREPARE_PHOTO_DATA = "Prepare Photo Data:";
@@ -665,10 +677,10 @@ namespace Rock.Slingshot
             {
                 try
                 {
-                    HttpWebRequest imageRequest = (HttpWebRequest)HttpWebRequest.Create( photoUri );
-                    HttpWebResponse imageResponse = (HttpWebResponse)imageRequest.GetResponse();
+                    var imageRequest = ( HttpWebRequest ) HttpWebRequest.Create( photoUri );
+                    var imageResponse = ( HttpWebResponse ) imageRequest.GetResponse();
                     var imageStream = imageResponse.GetResponseStream();
-                    using ( MemoryStream ms = new MemoryStream() )
+                    using ( var ms = new MemoryStream() )
                     {
                         imageStream.CopyTo( ms );
                         photoImport.MimeType = imageResponse.ContentType;
@@ -1070,9 +1082,18 @@ namespace Rock.Slingshot
             }
 
             int postChunkSize = this.FinancialTransactionChunkSize ?? int.MaxValue;
+            int chunkCounter = 0;
+            int totalRecords = financialTransactionImportList.Count();
 
             while ( financialTransactionImportList.Any() )
             {
+                int recordsAlreadyProcessed = 0;
+                if ( this.PersonChunkSize.HasValue )
+                {
+                    recordsAlreadyProcessed = chunkCounter * PersonChunkSize.Value;
+                }
+                chunkCounter++;
+
                 var postChunk = financialTransactionImportList.Take( postChunkSize ).ToList();
                 this.ReportProgress( 0, "Bulk Importing FinancialTransactions..." );
                 var result = BulkImporter.BulkFinancialTransactionImport( postChunk, this.ForeignSystemKey );
@@ -1542,12 +1563,44 @@ namespace Rock.Slingshot
 
             this.ReportProgress( 0, "Bulk Importing Person..." );
 
-            var result = BulkImporter.BulkPersonImport( personImportList, this.ForeignSystemKey );
+            int postChunkSize = this.PersonChunkSize ?? int.MaxValue;
+            int chunkCounter = 0;
+            int totalRecords = personImportList.Count();
 
-            Results.Add( "Person Import", result );
+            var importResult = new BulkImporter.PersonImportResult();
+            while ( personImportList.Any() )
+            {
+                int recordsAlreadyProcessed = 0;
+                if ( this.PersonChunkSize.HasValue )
+                {
+                    recordsAlreadyProcessed = chunkCounter * PersonChunkSize.Value;
+                }
+                chunkCounter++;
+
+                var postChunk = personImportList.Take( postChunkSize ).ToList();
+                this.ReportProgress( 0, "Bulk Importing Person..." );
+                importResult = BulkImporter.BulkPersonImport( postChunk, this.ForeignSystemKey, recordsAlreadyProcessed, totalRecords, importResult );
+
+                if ( this.PersonChunkSize.HasValue )
+                {
+
+                    if ( personImportList.Count < postChunkSize )
+                    {
+                        personImportList.Clear();
+                    }
+                    else
+                    {
+                        personImportList.RemoveRange( 0, postChunkSize );
+                    }
+                }
+                else
+                {
+                    personImportList.Clear();
+                }
+            }
+
+            Results.Add( "Person Import", BulkImporter.ParsePersonImportResult( importResult ) );
         }
-
-        
 
         /// <summary>
         /// Bulks the importer on progress.
@@ -1669,7 +1722,7 @@ namespace Rock.Slingshot
                 {
                     personImport.BirthMonth = slingshotPerson.Birthdate.Value.Month;
                     personImport.BirthDay = slingshotPerson.Birthdate.Value.Day;
-                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? (int?)null : slingshotPerson.Birthdate.Value.Year;
+                    personImport.BirthYear = slingshotPerson.Birthdate.Value.Year == slingshotPerson.BirthdateNoYearMagicYear ? ( int? ) null : slingshotPerson.Birthdate.Value.Year;
                 }
 
                 switch ( slingshotPerson.Gender )

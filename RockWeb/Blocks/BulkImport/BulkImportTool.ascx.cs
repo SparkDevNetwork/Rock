@@ -19,10 +19,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Web.UI.WebControls;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Slingshot;
 using Rock.Web;
@@ -37,8 +39,30 @@ namespace RockWeb.Blocks.BulkImport
     [DisplayName( "Bulk Import" )]
     [Category( "Bulk Import" )]
     [Description( "Block to import Slingshot files into Rock using BulkImport" )]
+
+    [IntegerField(
+        "Person Record Import Batch Size",
+        Description = "If importing more than this many records, the import will be broken up into smaller batches to optimize memory use.  If you run into memory utilization problems while importing a large number of records, consider decreasing this value.  (A value less than 1 will result in the default of 25,000 records.)",
+        Key = AttributeKey.PersonRecordImportBatchSize,
+        DefaultIntegerValue = 25000,
+        IsRequired = true,
+        Order = 0 )]
+
+    [IntegerField(
+        "Financial Record Import Batch Size",
+        Description = "If importing more than this many records, the import will be broken up into smaller batches to optimize memory use.  If you run into memory utilization problems while importing a large number of records, consider decreasing this value.  (A value less than 1 will result in the default of 100,000 records.)",
+        Key = AttributeKey.FinancialRecordImportBatchSize,
+        DefaultIntegerValue = 100000,
+        IsRequired = true,
+        Order = 1 )]
+
     public partial class BulkImportTool : RockBlock
     {
+        private static class AttributeKey
+        {
+            public const string PersonRecordImportBatchSize = "PersonRecordImportBatchSize";
+            public const string FinancialRecordImportBatchSize = "FinancialRecordImportBatchSize";
+        }
 
         #region Fields and Properties
 
@@ -281,7 +305,20 @@ namespace RockWeb.Blocks.BulkImport
                 }
 
                 slingshotImporter = new SlingshotImporter( physicalSlingshotFile, tbForeignSystemKey.Text, importUpdateType, slingshotImporter_OnProgress );
+                slingshotImporter.PersonChunkSize = 25000;
                 slingshotImporter.FinancialTransactionChunkSize = 100000;
+
+                var personChunkSize = GetAttributeValue( AttributeKey.PersonRecordImportBatchSize ).AsInteger();
+                var financialTransactionChunkSize = GetAttributeValue( AttributeKey.FinancialRecordImportBatchSize ).AsInteger();
+
+                if ( personChunkSize > 0 )
+                {
+                    slingshotImporter.PersonChunkSize = personChunkSize;
+                }
+                if ( financialTransactionChunkSize > 0 )
+                {
+                    slingshotImporter.FinancialTransactionChunkSize = financialTransactionChunkSize;
+                }
 
                 if ( importType == ImportType.Import || importType == ImportType.All )
                 {
