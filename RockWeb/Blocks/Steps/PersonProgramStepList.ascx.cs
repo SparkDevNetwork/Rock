@@ -659,7 +659,7 @@ namespace RockWeb.Blocks.Steps
 
                 if ( program != null )
                 {
-                    _stepTypes = program.StepTypes.Where( st => st.IsActive ).ToList();
+                    _stepTypes = OrderStepTypes( program.StepTypes.Where( st => st.IsActive ) ).ToList();
                 }
             }
 
