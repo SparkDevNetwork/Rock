@@ -490,8 +490,8 @@ namespace RockWeb.Blocks.Steps
 
             // Existing step records panel
             var steps = GetPersonStepsOfType( stepTypeId );
-            var canEdit = cardData.StepType.AllowManualEditing || UserCanEdit;
-            var canDelete = cardData.StepType.AllowManualEditing || UserCanEdit;
+            var canEdit = cardData.StepType.AllowManualEditing && UserCanEdit;
+            var canDelete = cardData.StepType.AllowManualEditing && UserCanEdit;
 
             var data = steps.Select( s => new CardStepViewModel
             {
@@ -843,7 +843,7 @@ namespace RockWeb.Blocks.Steps
         /// <returns></returns>
         private bool CanAddStep( StepType stepType )
         {
-            if ( !stepType.AllowManualEditing && !UserCanEdit )
+            if ( !stepType.AllowManualEditing || !UserCanEdit )
             {
                 return false;
             }
