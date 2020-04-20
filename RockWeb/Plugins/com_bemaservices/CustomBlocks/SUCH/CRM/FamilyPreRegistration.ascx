@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilyPreRegistration.ascx.cs" Inherits="RockWeb.Plugins.com_bemadev.Crm.FamilyPreRegistration" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilyPreRegistration.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Crm.FamilyPreRegistration" %>
 <style>
     .panel-default>.panel-heading {
         border:none;

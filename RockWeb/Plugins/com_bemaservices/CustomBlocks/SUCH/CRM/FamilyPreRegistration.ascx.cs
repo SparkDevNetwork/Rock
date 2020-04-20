@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Plugins.com_bemadev.Crm
+namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Crm
 {
     [DisplayName( "Family Pre Registration" )]
     [Category( "BEMA Services > Crm" )]

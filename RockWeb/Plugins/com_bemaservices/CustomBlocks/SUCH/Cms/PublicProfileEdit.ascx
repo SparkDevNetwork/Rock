@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PublicProfileEdit.ascx.cs" Inherits="RockWeb.Blocks.Cms.PublicProfileEdit" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PublicProfileEdit.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Cms.PublicProfileEdit" %>
 
 <asp:UpdatePanel ID="upContent" runat="server">
     <ContentTemplate>

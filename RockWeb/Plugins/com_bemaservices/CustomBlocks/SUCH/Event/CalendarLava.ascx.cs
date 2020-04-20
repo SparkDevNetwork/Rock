@@ -33,7 +33,7 @@ using Rock.Store;
 using System.Text;
 using Rock.Security;
 
-namespace com_bemaservices.Event
+namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Event
 {
     /// <summary>
     /// Renders a particular calendar using Lava.

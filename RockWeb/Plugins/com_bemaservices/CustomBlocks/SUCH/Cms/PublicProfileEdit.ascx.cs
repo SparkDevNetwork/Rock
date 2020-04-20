@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Services
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace RockWeb.Blocks.Cms
+namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Cms
 {
     /// <summary>
     /// The main Person Profile block the main information about a person 
