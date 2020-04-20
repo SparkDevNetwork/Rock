@@ -41,6 +41,9 @@ namespace Rock.Client
         public bool EnableAttendance { get; set; }
 
         /// <summary />
+        public int /* DayOfWeek*/? FirstDayOfWeek { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -110,6 +113,7 @@ namespace Rock.Client
             this.Id = source.Id;
             this.Description = source.Description;
             this.EnableAttendance = source.EnableAttendance;
+            this.FirstDayOfWeek = source.FirstDayOfWeek;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.IsActive = source.IsActive;

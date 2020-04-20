@@ -292,6 +292,52 @@ namespace Rock.Model
         [DataMember]
         public virtual int? GroupAdministratorPersonAliasId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the inactive reason value identifier.
+        /// </summary>
+        /// <value>
+        /// The inactive reason value identifier.
+        /// </value>
+        [DataMember]
+        [DefinedValue]
+        public int? InactiveReasonValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive reason note.
+        /// </summary>
+        /// <value>
+        /// The inactive reason note.
+        /// </value>
+        [DataMember]
+        public string InactiveReasonNote  { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication object.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication RSVPReminderSystemCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the system communication to use for sending an RSVP reminder.
+        /// </summary>
+        /// <value>
+        /// The RSVP reminder system communication identifier.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of days prior to the RSVP date that a reminder should be sent.
+        /// </summary>
+        /// <value>
+        /// The number of days.
+        /// </value>
+        [DataMember]
+        public int? RSVPReminderOffsetDays { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -528,6 +574,14 @@ namespace Rock.Model
         /// The schedule cancellation person alias.
         /// </value>
         public virtual PersonAlias ScheduleCancellationPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive group reason.
+        /// </summary>
+        /// <value>
+        /// The inactive group reason.
+        /// </value>
+        public virtual DefinedValue InactiveReasonValue { get; set; }
 
         #endregion
 
@@ -857,7 +911,7 @@ namespace Rock.Model
             }
             else if ( originalInactiveDateTime.HasValue )
             {
-                // group was changed to from InActive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
+                // group was changed to from Inactive to Active, so change all Inactive GroupMembers to Active if their InactiveDateTime is within 24 hours of the Group's InactiveDateTime
                 foreach ( var groupMember in groupMemberQuery.Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue && Math.Abs( SqlFunctions.DateDiff( "hour", a.InactiveDateTime.Value, originalInactiveDateTime.Value ).Value ) < 24 ).ToList() )
                 {
                     groupMember.GroupMemberStatus = GroupMemberStatus.Active;
@@ -882,7 +936,10 @@ namespace Rock.Model
                 return;
             }
 
-            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == this.Id );
+            // IMPORTANT: When dealing with Archived Groups or GroupMembers, we always need to get
+            // a query without the "filter" (AsNoFilter) that comes from the GroupConfiguration and/or
+            // GroupMemberConfiguration because otherwise the query will not include archived items.
+            var groupMemberQuery = new GroupMemberService( rockContext ).AsNoFilter().Where( a => a.GroupId == this.Id );
 
             if ( newIsArchived )
             {
@@ -1177,6 +1234,8 @@ namespace Rock.Model
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.StatusValue ).WithMany().HasForeignKey( p => p.StatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCancellationPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Group queries.

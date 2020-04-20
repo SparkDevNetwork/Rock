@@ -41,6 +41,8 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string PAGE_MENU = "CACB9D1A-A820-4587-986A-D66A69EE9948";
 
+        #region Communication Block Types
+
         /// <summary>
         /// Communication Detail Block Type Guid
         /// </summary>
@@ -55,6 +57,18 @@ namespace Rock.SystemGuid
         /// The Communication Entry (Wizard) Block Type Guid
         /// </summary>
         public const string COMMUNICATION_ENTRY_WIZARD = "F7D464E2-5F7C-47BA-84DB-7CC7B0B623C0";
+
+        /// <summary>
+        /// System Communication List Block Type Guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_LIST = "13BD5FCC-8F03-46B4-B193-E9C0987D2F20";
+
+        /// <summary>
+        /// System Communication Detail Block Type Guid
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_DETAIL = "8713F91A-8738-453D-AF13-3ED57F74137E";
+
+        #endregion
 
         /// <summary>
         /// The connection opportunity signup Block Type GUID
@@ -85,6 +99,20 @@ namespace Rock.SystemGuid
         /// The PowerBI Account Registration Block Type Guid
         /// </summary>
         public const string POWERBI_ACCOUNT_REGISTRATION = "EA20D87E-ED46-3DAA-4C4D-4156C399B1C2";
+
+        #region Event Block Types
+
+        /// <summary>
+        /// Event category Registration Group Placement block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_GROUP_PLACEMENT = "9AF434D2-FB9B-43D7-8550-DD0B92B7A70A";
+
+        /// <summary>
+        /// Event category Registration Template Detail block type guid
+        /// </summary>
+        public const string EVENT_REGISTRATION_TEMPLATE_DETAIL = "91354899-304E-44C7-BD0D-55F42E6505D3";
+
+        #endregion
 
         #region Finance Block Types
 

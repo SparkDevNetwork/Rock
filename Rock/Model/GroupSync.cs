@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -71,6 +72,17 @@ namespace Rock.Model
         /// The welcome system email identifier.
         /// </value>
         [DataMember]
+        public int? WelcomeSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the welcome system email identifier.
+        /// </summary>
+        /// <value>
+        /// The welcome system email identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use WelcomeSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
         public int? WelcomeSystemEmailId { get; set; }
 
         /// <summary>
@@ -80,6 +92,17 @@ namespace Rock.Model
         /// The exit system email identifier.
         /// </value>
         [DataMember]
+        public int? ExitSystemCommunicationId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system email identifier.
+        /// </summary>
+        /// <value>
+        /// The exit system email identifier.
+        /// </value>
+        [DataMember]
+        [Obsolete( "Use ExitSystemCommunicationId instead." )]
+        [RockObsolete( "1.10" )]
         public int? ExitSystemEmailId { get; set; }
 
         /// <summary>
@@ -128,6 +151,8 @@ namespace Rock.Model
         /// The welcome system email.
         /// </value>
         [DataMember]
+        [Obsolete( "Use WelcomeSystemCommunication instead." )]
+        [RockObsolete( "1.10" )]
         public virtual Rock.Model.SystemEmail WelcomeSystemEmail { get; set; }
 
         /// <summary>
@@ -137,7 +162,27 @@ namespace Rock.Model
         /// The exit system email.
         /// </value>
         [DataMember]
+        [Obsolete( "Use ExitSystemCommunication instead." )]
+        [RockObsolete( "1.10" )]
         public virtual SystemEmail ExitSystemEmail { get; set; }
+
+        /// <summary>
+        /// Gets or sets the welcome system communication.
+        /// </summary>
+        /// <value>
+        /// The welcome system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication WelcomeSystemCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the exit system communication.
+        /// </summary>
+        /// <value>
+        /// The exit system communication.
+        /// </value>
+        [DataMember]
+        public virtual SystemCommunication ExitSystemCommunication { get; set; }
 
         #endregion
     }
@@ -157,8 +202,14 @@ namespace Rock.Model
             HasRequired( g => g.Group ).WithMany( g => g.GroupSyncs ).HasForeignKey( g => g.GroupId ).WillCascadeOnDelete( true );
             HasRequired( g => g.GroupTypeRole ).WithMany().HasForeignKey( g => g.GroupTypeRoleId ).WillCascadeOnDelete( false );
             HasRequired( g => g.SyncDataView ).WithMany().HasForeignKey( g => g.SyncDataViewId ).WillCascadeOnDelete( false );
+            HasOptional( g => g.WelcomeSystemCommunication ).WithMany().HasForeignKey( g => g.WelcomeSystemCommunicationId ).WillCascadeOnDelete( false );
+            HasOptional( g => g.ExitSystemCommunication ).WithMany().HasForeignKey( g => g.ExitSystemCommunicationId ).WillCascadeOnDelete( false );
+
+#pragma warning disable CS0618 // Type or member is obsolete
             HasOptional( g => g.WelcomeSystemEmail ).WithMany().HasForeignKey( g => g.WelcomeSystemEmailId ).WillCascadeOnDelete( false );
             HasOptional( g => g.ExitSystemEmail ).WithMany().HasForeignKey( g => g.ExitSystemEmailId ).WillCascadeOnDelete( false );
+#pragma warning restore CS0618 // Type or member is obsolete
+
         }
     }
     #endregion

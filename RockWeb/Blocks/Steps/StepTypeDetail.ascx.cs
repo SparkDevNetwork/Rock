@@ -532,7 +532,7 @@ namespace RockWeb.Blocks.Steps
             {
                 rockContext.SaveChanges();
 
-                Helper.SaveAttributeEdits( AttributesState, new Step().TypeId, "StepTypeId", stepTypeId.ToString(), rockContext );
+                Helper.SaveAttributeEdits( AttributesState, new Step().TypeId, "StepTypeId", stepType.Id.ToString(), rockContext );
             } );
 
             return stepType.Id;
@@ -927,6 +927,13 @@ namespace RockWeb.Blocks.Steps
         /// <param name="rockContext">The rock context.</param>
         private void LoadAttributeDefinitions( int targetEntityTypeId, string targetEntityParentForeignKeyName, int targetEntityParentId )
         {
+            if ( targetEntityParentId == 0 )
+            {
+                // If this is a new step type, then there are no attributes to load
+                AttributesState = new List<Attribute>();
+                return;
+            }
+
             var dataContext = this.GetDataContext();
 
             var attributeService = new AttributeService( dataContext );

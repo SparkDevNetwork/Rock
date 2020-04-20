@@ -812,14 +812,22 @@ $(document).ready(function() {
                         }
                     }
 
-                    int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
-                    if ( dataFilterId.HasValue )
+                    try
                     {
-                        var dataFilterService = new DataViewFilterService( rockContext );
-                        var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
-                        Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression, errorMessages ) : null;
+                        int? dataFilterId = GetAttributeValue( "FilterId" ).AsIntegerOrNull();
+                        if ( dataFilterId.HasValue )
+                        {
+                            var dataFilterService = new DataViewFilterService( rockContext );
+                            var dataFilter = dataFilterService.Queryable( "ChildFilters" ).FirstOrDefault( a => a.Id == dataFilterId.Value );
+                            Expression whereExpression = dataFilter != null ? dataFilter.GetExpression( itemType, contentChannelItemService, paramExpression, errorMessages ) : null;
 
-                        contentChannelItemQuery = contentChannelItemQuery.Where( paramExpression, whereExpression, null );
+                            contentChannelItemQuery = contentChannelItemQuery.Where( paramExpression, whereExpression, null );
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                        //Don't choke on the filter.
                     }
 
                     // All filtering has been added, now run query, check security and load attributes

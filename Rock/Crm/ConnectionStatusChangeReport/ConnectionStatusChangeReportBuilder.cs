@@ -313,7 +313,11 @@ namespace Rock.Crm.ConnectionStatusChangeReport
                             OldRawData = h.OldRawValue,
                             NewRawData = h.NewRawValue,
                             OldValue = h.OldValue,
-                            NewValue = h.NewValue
+                            NewValue = h.NewValue,
+                            PhotoId = x.PhotoId,
+                            Gender = x.Gender,
+                            BirthDate = x.BirthDate,
+                            RecordTypeValueGuid = x.RecordTypeValue.Guid
                         } );
 
             var eventsData = eventsQuery.ToList();
@@ -338,6 +342,9 @@ namespace Rock.Crm.ConnectionStatusChangeReport
 
                 // Set Campus Name.
                 changeEvent.CampusName = this.GetCampusNameById( changeEvent.CampusId );
+
+                // Set Age
+                changeEvent.Age = Person.GetAge( changeEvent.BirthDate );
             }
         }
 

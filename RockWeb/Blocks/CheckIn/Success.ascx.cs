@@ -180,14 +180,15 @@ namespace RockWeb.Blocks.CheckIn
                         mergeFields.Add( "Kiosk", CurrentCheckInState.Kiosk );
                         mergeFields.Add( "RegistrationModeEnabled", CurrentCheckInState.Kiosk.RegistrationModeEnabled );
                         mergeFields.Add( "Messages", CurrentCheckInState.Messages );
-                        if ( CurrentGroupTypeIds != null )
+                        if ( LocalDeviceConfig.CurrentGroupTypeIds != null )
                         {
-                            var checkInAreas = CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );
+                            var checkInAreas = LocalDeviceConfig.CurrentGroupTypeIds.Select( a => Rock.Web.Cache.GroupTypeCache.Get( a ) );
                             mergeFields.Add( "CheckinAreas", checkInAreas );
                         }
 
                         if ( printFromClient.Any() )
                         {
+                            // When debugging and using ngrok you will need to change this to the ngrok address (e.g. var urlRoot = "http://developrock.ngrok.io";). Not sure why this isn't using a global attribute.
                             var urlRoot = string.Format( "{0}://{1}", Request.Url.Scheme, Request.Url.Authority );
                             printFromClient
                                 .OrderBy( l => l.PersonId )
@@ -266,7 +267,7 @@ namespace RockWeb.Blocks.CheckIn
             string script = string.Format( @"
 
         // setup deviceready event to wait for cordova
-	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/)) {{
+	    if (navigator.userAgent.match(/(iPhone|iPod|iPad)/) && typeof window.RockCheckinNative === 'undefined') {{
             document.addEventListener('deviceready', onDeviceReady, false);
         }} else {{
             $( document ).ready(function() {{
@@ -286,10 +287,6 @@ namespace RockWeb.Blocks.CheckIn
             }}
 		}}
 		
-		function alertDismissed() {{
-		    // do something
-		}}
-		
 		function printLabels() {{
 		    ZebraPrintPlugin.printTags(
             	JSON.stringify(labelData), 
@@ -301,12 +298,7 @@ namespace RockWeb.Blocks.CheckIn
 				    // error[0] is the error message
 				    // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
 			        console.log('An error occurred: ' + error[0]);
-                    navigator.notification.alert(
-                        'An error occurred while printing the labels.' + error[0],  // message
-                        alertDismissed,         // callback
-                        'Error',            // title
-                        'Ok'                  // buttonName
-                    );
+                    alert('An error occurred while printing the labels. ' + error[0]);
 			    }}
             );
 	    }}

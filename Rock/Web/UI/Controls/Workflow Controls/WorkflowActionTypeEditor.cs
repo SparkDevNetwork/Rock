@@ -253,10 +253,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
                 {
                     result.WorkflowForm = new WorkflowActionForm();
                     result.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
-                    var systemEmail = new SystemEmailService(new RockContext()).Get(SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid());
+                    var systemEmail = new SystemCommunicationService(new RockContext()).Get(SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid());
                     if ( systemEmail != null )
                     {
-                        result.WorkflowForm.NotificationSystemEmailId = systemEmail.Id;
+                        result.WorkflowForm.NotificationSystemCommunicationId = systemEmail.Id;
                     }
                 }
             }
@@ -314,10 +314,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
                 {
                     value.WorkflowForm = new WorkflowActionForm();
                     value.WorkflowForm.Actions = "Submit^^^Your information has been submitted successfully.";
-                    var systemEmail = new SystemEmailService( new RockContext() ).Get( SystemGuid.SystemEmail.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
+                    var systemEmail = new SystemCommunicationService( new RockContext() ).Get( SystemGuid.SystemCommunication.WORKFLOW_FORM_NOTIFICATION.AsGuid() );
                     if ( systemEmail != null )
                     {
-                        value.WorkflowForm.NotificationSystemEmailId = systemEmail.Id;
+                        value.WorkflowForm.NotificationSystemCommunicationId = systemEmail.Id;
                     }
                 }
                 _formEditor.SetForm( value.WorkflowForm, workflowTypeAttributes );

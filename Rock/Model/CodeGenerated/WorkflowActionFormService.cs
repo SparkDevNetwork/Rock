@@ -102,7 +102,10 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.Header = source.Header;
             target.IncludeActionsInNotification = source.IncludeActionsInNotification;
+            target.NotificationSystemCommunicationId = source.NotificationSystemCommunicationId;
+            #pragma warning disable 612, 618
             target.NotificationSystemEmailId = source.NotificationSystemEmailId;
+            #pragma warning restore 612, 618
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

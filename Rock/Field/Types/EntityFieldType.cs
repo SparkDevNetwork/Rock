@@ -16,17 +16,21 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Web.UI;
 
+using Rock.Data;
+using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// 
+    /// Field Type to select a single (or null) Entity filtered by a selected Entity Type
+    /// Stored as EntityType.Guid|EntityId
     /// </summary>
-    public class EntityFieldType : FieldType
+    public class EntityFieldType : FieldType, IEntityFieldType
     {
 
         #region Configuration
@@ -115,14 +119,22 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             string formattedValue = string.Empty;
-            string[] values = ( value ?? string.Empty ).Split( '|' );
-            if ( values.Length == 2 )
+
+            int? entityId = GetEntityId( value, out EntityTypeCache entityType );
+            if ( entityType != null )
             {
-                var entityType = EntityTypeCache.Get( values[0].AsGuid() );
-                if ( entityType != null )
+                // Person is handled differently since it's stored as PersonAlias's EntityType.Guid|PersonAlias.Id
+                // (we need to return the Person tied to the PersonAlias instance)
+                if ( entityType.GetEntityType() == typeof( PersonAlias ) && entityId.HasValue )
                 {
-                    formattedValue = entityType.FriendlyName + "|EntityId:" + values[1].AsIntegerOrNull();
+                    entityType = EntityTypeCache.Get( SystemGuid.EntityType.PERSON );
+                    using ( var rockContext = new RockContext() )
+                    {
+                        entityId = new PersonAliasService( rockContext ).GetPersonId( entityId.Value );
+                    }
                 }
+
+                formattedValue = $"{entityType.FriendlyName}|EntityId:{entityId}";
             }
 
             return base.FormatValue( parentControl, formattedValue, null, condensed );
@@ -168,7 +180,7 @@ namespace Rock.Field.Types
                 var entityType = EntityTypeCache.Get( entityPicker.EntityTypeId.Value );
                 if ( entityType != null )
                 {
-                    return entityType.Guid.ToString() + "|" + entityPicker.EntityId;
+                    return $"{entityType.Guid}|{entityPicker.EntityId}";
                 }
             }
 
@@ -186,19 +198,7 @@ namespace Rock.Field.Types
             EntityPicker entityPicker = control as EntityPicker;
             if ( entityPicker != null )
             {
-                EntityTypeCache entityType = null;
-                int? entityId = null;
-                string[] values = ( value ?? string.Empty ).Split( '|' );
-                if ( values.Length == 2 )
-                {
-
-                    Guid? entityTypeGuid = values[0].AsGuidOrNull();
-                    entityId = values[1].AsIntegerOrNull();
-                    if ( entityTypeGuid.HasValue )
-                    {
-                        entityType = EntityTypeCache.Get( entityTypeGuid.Value );
-                    }
-                }
+                int? entityId = GetEntityId( value, out EntityTypeCache entityType );
 
                 if ( entityType != null )
                 {
@@ -212,6 +212,116 @@ namespace Rock.Field.Types
 
                 entityPicker.EntityId = entityId;
             }
+        }
+
+        #endregion
+
+        #region Entity Methods
+
+        /// <summary>
+        /// Gets the edit value as the IEntity.Id
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns></returns>
+        public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            string editValue = GetEditValue( control, configurationValues );
+
+            if ( string.IsNullOrEmpty( editValue ))
+            {
+                return null;
+            }
+
+            // we can return the EntityId itself, but it won't do the caller any good unless they already know what the EntityType is
+            return GetEntityId( editValue, out _ );
+        }
+
+        /// <summary>
+        /// Sets the edit value from IEntity.Id value
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The identifier of the entity.</param>
+        public void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id )
+        {
+            // nothing to do here, as we don't know the EntityType
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value )
+        {
+            return GetEntity( value, new RockContext() );
+        }
+
+        /// <summary>
+        /// Gets the entity.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public IEntity GetEntity( string value, RockContext rockContext )
+        {
+            int? entityId = GetEntityId( value, out EntityTypeCache entityType );
+
+            if ( entityType == null )
+            {
+                return null;
+            }
+
+            IService entityService;
+            MethodInfo getMethod;
+            var methodParamTypes = new Type[] { typeof( int ) };
+
+            // Person is handled differently since it's stored as PersonAlias's EntityType.Guid|PersonAlias.Id
+            // (we need to return the Person tied to the PersonAlias instance)
+            if ( entityType.GetEntityType() == typeof( PersonAlias ) )
+            {
+                entityService = new PersonAliasService( rockContext );
+                getMethod = entityService.GetType().GetMethod( "GetPerson", methodParamTypes );
+            }
+            else
+            {
+                entityService = Reflection.GetServiceForEntityType( entityType.GetEntityType(), rockContext );
+                getMethod = entityService.GetType().GetMethod( "Get", methodParamTypes );
+            }
+
+            return ( IEntity ) getMethod.Invoke( entityService, new object[] { entityId } );
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Gets the entity identifier, and also returns the EntityType as an out param.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        private int? GetEntityId( string value, out EntityTypeCache entityType )
+        {
+            entityType = null;
+
+            string[] values = ( value ?? string.Empty ).Split( '|' );
+            if ( values.Length != 2 )
+            {
+                return null;
+            }
+
+            Guid? entityTypeGuid = values[0].AsGuidOrNull();
+            if ( !entityTypeGuid.HasValue )
+            {
+                return null;
+            }
+
+            entityType = EntityTypeCache.Get( entityTypeGuid.Value );
+
+            return values[1].AsIntegerOrNull();
         }
 
         #endregion

@@ -36,6 +36,8 @@ namespace Rock.Attribute
         public EnumFieldAttribute( string name )
             : base( name )
         {
+            FieldTypeClass = typeof( Rock.Field.Types.SelectSingleFieldType ).FullName;
+            FieldConfigurationValues.Add( FIELDTYPE, new Field.ConfigurationValue( "rb" ) );
         }
 
         /// <summary>

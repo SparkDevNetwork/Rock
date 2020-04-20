@@ -26,7 +26,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    ///
+    /// Control that can be used to add a new address or edit an existing address
     /// </summary>
     public class LocationAddressPicker : Panel, IRockControl, INamingContainer
     {

@@ -66,13 +66,16 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlStructureType" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Structure Type" PropertyName="StructureType" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlStructureType_SelectedIndexChanged" AutoPostBack="true" />
+                            <Rock:DataDropDownList ID="ddlStructureType" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Linked Activity" PropertyName="StructureType" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlStructureType_SelectedIndexChanged" AutoPostBack="true" />
                             <Rock:GroupPicker ID="gpStructureGroupPicker" runat="server" Visible="false" />
                             <Rock:GroupTypePicker ID="gtpStructureGroupTypePicker" runat="server" Visible="false" />
-                            <Rock:DefinedValuePicker ID="dvpStructureGroupTypePurposePicker" runat="server" Visible="false" />
+                            <Rock:DefinedValuePicker ID="dvpStructureDefinedValuePicker" runat="server" Visible="false" />
+                            <Rock:InteractionChannelInteractionComponentPicker ID="icicComponentPicker" runat="server" Visible="false" />
+                            <Rock:InteractionChannelPicker ID="icChannelPicker" runat="server" Visible="false" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:DataDropDownList ID="ddlFrequencyOccurrence" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Frequency" PropertyName="OccurrenceFrequency" DataTextField="Text" DataValueField="Value" />
+                            <Rock:DataDropDownList ID="ddlFrequencyOccurrence" runat="server" SourceTypeName="Rock.Model.StreakType, Rock" Label="Frequency" PropertyName="OccurrenceFrequency" DataTextField="Text" DataValueField="Value" OnSelectedIndexChanged="ddlFrequencyOccurrence_SelectedIndexChanged" AutoPostBack="true" />
+                            <Rock:DayOfWeekPicker ID="dowPicker" runat="server" Label="Day of Week Start" Help="Allows this weekly streak type to calculate streaks based off a custom first day of the week setting. Leave this blank to use the system setting." />
                         </div>
                     </div>
 

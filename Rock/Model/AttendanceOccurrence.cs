@@ -264,7 +264,8 @@ namespace Rock.Model
         /// Gets the attendance rate.
         /// </summary>
         /// <value>
-        /// The attendance rate.
+        /// The attendance rate which is the number of attendance records marked as did attend
+        /// divided by the total number of attendance records for this occurrence.
         /// </value>
         public double AttendanceRate
         {
@@ -282,6 +283,32 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the percent members attended.
+        /// </summary>
+        /// <value>
+        /// The percent members attended is the number of attendance records marked as did attend
+        /// divided by the total number of members in the group.
+        /// </value>
+        public double PercentMembersAttended
+        {
+            get
+            {
+                var groupMemberCount = Group.Members
+                                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
+                                    .Where( m => !m.IsArchived )
+                                    .Count();
+
+                if ( groupMemberCount > 0 )
+                {
+                    return ( double ) ( DidAttendCount ) / ( double ) groupMemberCount;
+                }
+                else
+                {
+                    return 0.0d;
+                }
+            }
+        }
         /// <summary>
         /// Gets or sets the Step Type.
         /// </summary>

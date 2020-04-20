@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -95,7 +97,14 @@ namespace Rock.Web.UI.Controls
             _activityControls = new List<RockDropDownList>();
             _responseControls = new List<RockTextBox>();
 
-            string[] nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+            // Unpack the field values from a delimited string, and then decode any .
+            // Any delimiters that are part of a field value are URL-encoded.
+
+            var nameValues = this.Value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
+                .AsEnumerable()
+                .Select( s => HttpUtility.UrlDecode( s ) )
+                .ToArray();
+
             for ( int i = 0; i < nameValues.Length; i++ )
             {
                 string[] nameValueResponse = nameValues[i].Split( new char[] { '^' } );
@@ -310,18 +319,32 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private void RegisterClientScript()
         {
+            // Add client script to pack the field values into a delimited string.
+            // Any delimiters that are part of a field value are URL-encoded.
             string script = @"
     function updateFormActions( e ) {
         var $actionList = e.closest('div.form-action-list');
         var newValue = '';
+        var valueDelimiters = ['^', '|'];
+
+        var replaceDelimiters = function(input) {
+            valueDelimiters.forEach(function (v, i, a) {
+                var re = new RegExp('\\' + v, 'g');
+                if (input.indexOf(v) > -1) {
+                    input = input.replace(re, encodeURIComponent(v));
+                }
+            });
+            return input;
+        };
+
         $actionList.find('div.form-action-rows:first').children('div.form-row').each(function( index ) {
-            newValue += 
-                $(this).find('.form-action-key:first').val() + '^' + 
-                $(this).find('.form-action-button:first').val() + '^' + 
-                $(this).find('.form-action-value:first').val() + '^' + 
-                $(this).find('.form-action-response:first').val() + '|'
+                newValue +=
+                    replaceDelimiters( $(this).find('.form-action-key:first').val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-button:first').val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-value:first').val() ) + '^' + 
+                    replaceDelimiters( $(this).find('.form-action-response:first').val() ) + '|'
         });
-        $actionList.children('input:first').val(newValue);            
+        $actionList.children('input:first').val(newValue);
     }
 
     $('a.form-action-add').click(function (e) {
@@ -334,11 +357,11 @@ namespace Rock.Web.UI.Controls
         e.preventDefault();
         var $rows = $(this).closest('div.form-action-rows');
         $(this).closest('div.form-row').remove();
-        updateFormActions($rows);            
+        updateFormActions($rows);
     });
 
     $(document).on('focusout', '.js-form-action-input', function (e) {
-        updateFormActions($(this));            
+        updateFormActions($(this));
     });
 ";
 

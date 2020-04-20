@@ -355,4 +355,19 @@
   <data name="_201911010002535_CustomSundayDate_GivingAnalytics_spFinance_GivingAnalyticsQuery_TransactionData" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>version 10.0\version 1.10.1\201911010002535_customsundaydate_givinganalytics_spfinance_givinganalyticsquery_transactiondata.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
+  <data name="_201911122101551_PergeMerge_spCrm_PersonMerge" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 10.0\Version 1.10.2\201911122101551_pergemerge_spcrm_personmerge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201912042320379_Rollup_1204_chartjsfix" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 10.0\Version 1.10.2\201912042320379_rollup_1204_chartjsfix.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 10.0\Version 1.10.2\201912092001240_FamilyAnalyticsGivingId_spCrm_FamilyAnalyticsEraDataset.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202001071827547_Rollup_0107_EasyPieChartShortcodeMigration" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 10.0\Version 1.10.2\202001071827547_rollup_0107_easypiechartshortcodemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_202001071827547_Rollup_0107_SparklineShortcodeMigration" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>version 10.0\Version 1.10.2\202001071827547_rollup_0107_sparklineshortcodemigration.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
 </root>

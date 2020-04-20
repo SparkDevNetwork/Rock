@@ -26,7 +26,7 @@ namespace Rock.Model
     public partial class AssessmentService
     {
         /// <summary>
-        /// Updates the last reminder date of all pending assessments for the provided Person Alias ID.
+        /// Updates the last reminder date of the latest pending assessment of each type for the provided Person Alias ID.
         /// </summary>
         /// <param name="personAliasId">The person alias identifier.</param>
         public void UpdateLastReminderDateForPersonAlias( int personAliasId )
@@ -37,12 +37,90 @@ namespace Rock.Model
             sqlParams.Add( "@personAliasId", personAliasId );
 
             string sql = $@"
+                -- A pending assessment will stay in a pending status if it was never taken, even if a new one is requested.
+                -- This query will take that into account.
+                -- Uses ID instead of CreatedDate as the highest ID should also be the latest request. It also greatly simplifies the join.
+                -- Get a list of Assessments for the latest pending assessments for the person alias ID
+                WITH cte AS (
+	                SELECT [AssessmentTypeId], [PersonAliasId], MAX( [Id] ) AS Id
+	                FROM [Assessment]
+	                WHERE [PersonAliasId] = @personAliasId AND [Status] = @status
+	                GROUP BY [AssessmentTypeId], [PersonAliasId]
+                )
+
+                -- Update the latest pending assessments
                 UPDATE [dbo].[Assessment]
                 SET [LastReminderDate] = @lastReminderDate
-                WHERE [Status] = @status
-                    AND [PersonAliasId] = @personAliasId";
+                WHERE [Id] in (SELECT [Id] FROM cte)";
 
             DbService.ExecuteCommand( sql, System.Data.CommandType.Text, sqlParams, null );
+        }
+
+        /// <summary>
+        /// Gets the latest assessment of each type for each person
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<Assessment> GetLatestAssessments()
+        {
+            string sql = $@"
+                -- A pending assessment will stay in a pending status if it was never taken, even if a new one is requested.
+                -- This query will take that into account.
+                -- Uses ID instead of CreatedDate as the highest ID should also be the latest request. It also simplifies the join.
+                -- Get a list of the latest requested Assessment test of each type for each person
+
+                SELECT [Assessment].[Id]
+                FROM (
+		                SELECT [AssessmentTypeId], [PersonAliasId], MAX( [Id] ) AS latestRequestId
+		                FROM [Assessment]
+		                GROUP BY [AssessmentTypeId], [PersonAliasId]
+	                ) AS a1
+                INNER JOIN [Assessment] ON [Assessment].[Id] = a1.latestRequestId";
+
+            //var assessmentIds = this.ExecuteQuery( sql ).Select( a => a.Id ).ToList();
+            var assessmentIds = this.Context.Database.SqlQuery<int>( sql );
+            return base.Queryable().Where( a => assessmentIds.Contains( a.Id ) );
+        }
+
+        /// <summary>
+        /// Gets the latest assessments for person. If the person does not have an alias ID it uses 0 and the queryable will not have any data.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Assessment> GetLatestAssessmentsForPerson( int personId )
+        {
+            return GetLatestAssessmentsForPersonAlias( new PersonAliasService( ( RockContext )this.Context ).GetPrimaryAliasId( personId ) ?? 0 );
+        }
+
+        /// <summary>
+        /// Get the latest assessment of each type for a person alias.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns></returns>
+        public IQueryable<Assessment> GetLatestAssessmentsForPersonAlias( int personAliasId )
+        {
+            System.Data.SqlClient.SqlParameter[] sqlParams = new System.Data.SqlClient.SqlParameter[]
+            {
+                new System.Data.SqlClient.SqlParameter( "@personAliasId", personAliasId )
+            };
+
+            string sql = $@"
+                -- A pending assessment will stay in a pending status if it was never taken, even if a new one is requested.
+                -- This query will take that into account.
+                -- Uses ID instead of CreatedDate as the highest ID should also be the latest request. It also simplifies the join.
+                -- Get a list of Assessments for the latest pending assessments for the person alias ID
+
+                SELECT [Assessment].[Id]
+                FROM (
+		                SELECT [AssessmentTypeId], [PersonAliasId], MAX( [Id] ) AS latestRequestId
+		                FROM [Assessment]
+		                WHERE [PersonAliasId] = @personAliasId
+		                GROUP BY [AssessmentTypeId], [PersonAliasId]
+	                ) AS a1
+                INNER JOIN [Assessment] ON [Assessment].[Id] = a1.latestRequestId";
+
+            //var assessmentIds = this.ExecuteQuery( sql, sqlParams ).Select( a => a.Id ).ToList();
+            var assessmentIds = this.Context.Database.SqlQuery<int>( sql, sqlParams );
+            return base.Queryable().Where( a => assessmentIds.Contains( a.Id ) );
         }
     }
 }

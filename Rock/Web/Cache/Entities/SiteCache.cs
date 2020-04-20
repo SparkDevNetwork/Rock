@@ -754,6 +754,8 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes this instance.
         /// </summary>
+        [Obsolete("This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.")]
+        [RockObsolete("1.10")]
         public static void RemoveSiteDomains()
         {
             _siteDomains = new ConcurrentDictionary<string, int?>();

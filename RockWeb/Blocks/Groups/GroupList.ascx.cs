@@ -54,7 +54,21 @@ namespace RockWeb.Blocks.Groups
     [CustomDropdownListField( "Limit to Active Status", "Select which groups to show, based on active status. Select [All] to let the user filter by active status.", "all^[All], active^Active, inactive^Inactive", false, "all", Order = 12 )]
     [TextField( "Set Panel Title", "The title to display in the panel header. Leave empty to have the title be set automatically based on the group type or block name.", required: false, order: 13 )]
     [TextField( "Set Panel Icon", "The icon to display in the panel header. Leave empty to have the icon be set automatically based on the group type or default icon.", required: false, order: 14 )]
-    [BooleanField( "Allow Add", "Should block support adding new group?", true, "",  15)]
+    [BooleanField( "Allow Add", "Should block support adding new group?", true, "", 15 )]
+    [CustomDropdownListField( "Group Picker Type",
+        description: "Used to control which kind of picker is used when adding a person to a group.",
+        listSource: "GroupPicker^Group Picker, Dropdown^Drop-down",
+        IsRequired =  false,
+        DefaultValue = "Dropdown",
+        Category = "Add Group",
+        Order = 16,
+        Key = AttributeKey.GroupPickerType )]
+    [GroupField( "Root Group",
+        Description = "Select the root group to use as a starting point for the tree view.",
+        IsRequired = false,
+        Category = "Add Group",
+        Order = 17,
+        Key = AttributeKey.RootGroup )]
     [ContextAware]
     public partial class GroupList : RockBlock, ICustomGridColumns
     {
@@ -84,6 +98,19 @@ namespace RockWeb.Blocks.Groups
                 _groupListGridMode = value;
             }
         }
+
+        #region Attribute Keys
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string GroupPickerType = "GroupPickerType";
+            public const string RootGroup = "RootGroup";
+        }
+
+        #endregion
 
         #region Control Methods
 
@@ -185,7 +212,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             if ( GroupListGridMode == GridListGridMode.GroupsPersonMemberOf )
-            { 
+            {
                 var personContext = ContextEntity<Person>();
                 if ( personContext != null )
                 {
@@ -224,7 +251,7 @@ namespace RockWeb.Blocks.Groups
         {
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                var groupInfo = (GroupListRowInfo)e.Row.DataItem;
+                var groupInfo = ( GroupListRowInfo ) e.Row.DataItem;
 
                 // Show inactive entries in a lighter font.
                 if ( !groupInfo.IsActive || groupInfo.IsArchived )
@@ -268,6 +295,39 @@ namespace RockWeb.Blocks.Groups
         protected void GroupList_BlockUpdated( object sender, EventArgs e )
         {
             this.NavigateToCurrentPageReference();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroup control to populate the ddlGroupRole control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroup_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlGroupRole.Items.Clear();
+            int? groupId = ddlGroup.SelectedValue.AsIntegerOrNull();
+            if ( groupId == null )
+            {
+                return;
+            }
+
+            BindGroupRoleDropDown( groupId );
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroup control to populate the gpGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gpGroup_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlGroupRole.Items.Clear();
+            if ( gpGroup.GroupId == null )
+            {
+                return;
+            }
+
+            BindGroupRoleDropDown( gpGroup.GroupId );
         }
 
         #endregion
@@ -493,7 +553,7 @@ namespace RockWeb.Blocks.Groups
                             mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                             return;
                         }
-                        
+
                         groupService.Delete( group, true );
                     }
                 }
@@ -529,7 +589,19 @@ namespace RockWeb.Blocks.Groups
             var rockContext = new RockContext();
             var groupService = new GroupService( rockContext );
 
-            var group = groupService.Get( ddlGroup.SelectedValue.AsInteger() );
+            Group group = null;
+            if ( GetAttributeValue( AttributeKey.GroupPickerType ) == "GroupPicker" )
+            {
+                if ( gpGroup.GroupId.HasValue )
+                {
+                    group = groupService.Get( gpGroup.GroupId.Value );
+                }
+            }
+            else
+            {
+                group = groupService.Get( ddlGroup.SelectedValue.AsInteger() );
+            }
+
             if ( group == null )
             {
                 nbModalDetailsMessage.Title = "Please select a Group";
@@ -538,7 +610,7 @@ namespace RockWeb.Blocks.Groups
             }
 
             var roleId = ddlGroupRole.SelectedValue.AsIntegerOrNull();
-            if (roleId == null )
+            if ( roleId == null )
             {
                 nbModalDetailsMessage.Title = "Please select a role";
                 nbModalDetailsMessage.Visible = true;
@@ -568,6 +640,15 @@ namespace RockWeb.Blocks.Groups
             groupMember.PersonId = personContext.Id;
             groupMember.GroupRoleId = ddlGroupRole.SelectedValue.AsInteger();
             groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+
+            // Check if the group member is valid. This includes checking for met group requirements.
+            cvGroupMember.IsValid = groupMember.IsValidGroupMember( rockContext );
+
+            if ( !cvGroupMember.IsValid )
+            {
+                cvGroupMember.ErrorMessage = groupMember.ValidationResults.Select( a => a.ErrorMessage ).ToList().AsDelimited( "<br />" );
+                return;
+            }
 
             groupMemberService.Add( groupMember );
             rockContext.SaveChanges();
@@ -720,29 +801,29 @@ namespace RockWeb.Blocks.Groups
                     }
 
                     // load with Groups where the current person has GroupMemberHistory for
-                    _groupsWithGroupHistory = new HashSet<int>( new GroupMemberHistoricalService( rockContext ).Queryable().Where( a => qry.Any( x => x.GroupMember.Id == a.GroupMemberId )).Select( a => a.GroupId ).ToList() );
+                    _groupsWithGroupHistory = new HashSet<int>( new GroupMemberHistoricalService( rockContext ).Queryable().Where( a => qry.Any( x => x.GroupMember.Id == a.GroupMemberId ) ).Select( a => a.GroupId ).ToList() );
 
                     groupList = qry
                         .AsEnumerable()
                         .Where( gm => gm.Group.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                         .Select( m => new GroupListRowInfo
-                            {
-                                Id = m.Group.Id,
-                                GroupMemberId = m.GroupMember.Id,
-                                Path = string.Empty,
-                                Name = m.Group.Name,
-                                GroupType = GroupTypeCache.Get( m.Group.GroupTypeId ),
-                                GroupOrder = m.Group.Order,
-                                Description = m.Group.Description,
-                                IsSystem = m.Group.IsSystem,
-                                GroupRole = m.GroupMember.GroupRole.Name,
-                                DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
-                                IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
-                                IsArchived = m.Group.IsArchived || m.GroupMember.IsArchived,
-                                IsActiveOrder = m.Group.IsActive && m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ? 1 : 2,
-                                IsSynced = m.Group.GroupSyncs.Where( s => s.GroupTypeRoleId == m.GroupMember.GroupRoleId ).Any(),
-                                MemberCount = 0
-                            } )
+                        {
+                            Id = m.Group.Id,
+                            GroupMemberId = m.GroupMember.Id,
+                            Path = string.Empty,
+                            Name = m.Group.Name,
+                            GroupType = GroupTypeCache.Get( m.Group.GroupTypeId ),
+                            GroupOrder = m.Group.Order,
+                            Description = m.Group.Description,
+                            IsSystem = m.Group.IsSystem,
+                            GroupRole = m.GroupMember.GroupRole.Name,
+                            DateAdded = m.GroupMember.DateTimeAdded ?? m.GroupMember.CreatedDateTime,
+                            IsActive = m.Group.IsActive && ( m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ),
+                            IsArchived = m.Group.IsArchived || m.GroupMember.IsArchived,
+                            IsActiveOrder = m.Group.IsActive && m.GroupMember.GroupMemberStatus == GroupMemberStatus.Active ? 1 : 2,
+                            IsSynced = m.Group.GroupSyncs.Where( s => s.GroupTypeRoleId == m.GroupMember.GroupRoleId ).Any(),
+                            MemberCount = 0
+                        } )
                         .AsQueryable()
                         .Sort( sortProperty )
                         .ToList();
@@ -774,7 +855,7 @@ namespace RockWeb.Blocks.Groups
 
                 groupList = qryGroups
                     .AsEnumerable()
-                    .Where(g => g.IsAuthorized(Rock.Security.Authorization.VIEW, CurrentPerson))
+                    .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                     .Select( g => new GroupListRowInfo
                     {
                         Id = g.Id,
@@ -896,34 +977,86 @@ namespace RockWeb.Blocks.Groups
         /// </summary>
         private void BindModelDropDown()
         {
-            ddlGroup.Items.Clear();
-            ddlGroup.Required = true;
-
             var groupTypeIds = GetAvailableGroupTypes();
-            var groupService = new GroupService( new RockContext() );
-            bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
-
-            var qryGroups = groupService
-                .Queryable()
-                .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
-
-            string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
-            if ( limitToActiveStatus == "active" )
+            gpGroup.Visible = GetAttributeValue( AttributeKey.GroupPickerType ) == "GroupPicker";
+            ddlGroup.Visible = GetAttributeValue( AttributeKey.GroupPickerType ) != "GroupPicker";
+            if ( GetAttributeValue( AttributeKey.GroupPickerType ) == "GroupPicker" )
             {
-                qryGroups = qryGroups.Where( a => a.IsActive );
+                gpGroup.Required = true;
+                gpGroup.IncludedGroupTypeIds = groupTypeIds;
+                var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
+                if ( rootGroupGuid.HasValue )
+                {
+                    var group = new GroupService( new RockContext() ).Get(rootGroupGuid.Value);
+                    if ( group != null )
+                    {
+                        gpGroup.RootGroupId = group.Id;
+                    }
+                }
             }
+            else
+            {
+                ddlGroup.Items.Clear();
+                ddlGroup.Required = true;
+                
+                var groupService = new GroupService( new RockContext() );
+                bool onlySecurityGroups = GetAttributeValue( "LimittoSecurityRoleGroups" ).AsBoolean();
 
-            // only show groups that the current person is authorized to add members to
-            var groupList = qryGroups
-                .OrderBy( a => a.Name )
-                .ToList()
-                .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) || a.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson ) )
+                var qryGroups = groupService
+                    .Queryable()
+                    .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
+
+                string limitToActiveStatus = GetAttributeValue( "LimittoActiveStatus" );
+                if ( limitToActiveStatus == "active" )
+                {
+                    qryGroups = qryGroups.Where( a => a.IsActive );
+                }
+
+                // only show groups that the current person is authorized to add members to
+                var groupList = qryGroups
+                    .OrderBy( a => a.Name )
+                    .ToList()
+                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) || a.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson ) )
+                    .ToList();
+
+                ddlGroup.DataSource = groupList;
+                ddlGroup.DataBind();
+                ddlGroup.Items.Insert( 0, new ListItem() );
+            }
+            ddlGroupRole.Items.Clear();
+        }
+
+        /// <summary>
+        /// Sets the group role dropdown dropdown.
+        /// </summary>
+        private void BindGroupRoleDropDown( int? groupId )
+        {
+            ddlGroupRole.Required = true;
+            var rockContext = new RockContext();
+
+            var groupSyncService = new GroupSyncService( rockContext );
+            var syncList = groupSyncService
+                .Queryable()
+                .AsNoTracking()
+                .Where( s => s.GroupId == groupId )
+                .Select( s => s.GroupTypeRoleId )
                 .ToList();
 
-            ddlGroup.DataSource = groupList;
-            ddlGroup.DataBind();
-            ddlGroup.Items.Insert( 0, new ListItem() );
-            ddlGroupRole.Items.Clear();
+            nbModalDetailSyncMessage.Visible = syncList.Count > 0 ? true : false;
+
+            var groupService = new GroupService( rockContext );
+            var selectedGroup = groupService.GetNoTracking( groupId.Value );
+
+            var groupTypeRoleService = new GroupTypeRoleService( rockContext );
+            var qry = groupTypeRoleService
+                .Queryable()
+                .AsNoTracking()
+                .Where( r => r.GroupTypeId == selectedGroup.GroupTypeId )
+                .Where( r => !syncList.Contains( r.Id ) )
+                .ToList();
+
+            ddlGroupRole.DataSource = qry;
+            ddlGroupRole.DataBind();
         }
 
         #endregion
@@ -1077,49 +1210,6 @@ namespace RockWeb.Blocks.Groups
             /// The member count.
             /// </value>
             public int MemberCount { get; set; }
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlGroup control to populate the ddlGroupRole control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlGroup_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            ddlGroupRole.Items.Clear();
-
-            int? groupId = ddlGroup.SelectedValue.AsIntegerOrNull();
-            if ( groupId == null )
-            {
-                return;
-            }
-
-            ddlGroupRole.Required = true;
-            var rockContext = new RockContext();
-
-            var groupSyncService = new GroupSyncService( rockContext );
-            var syncList = groupSyncService
-                .Queryable()
-                .AsNoTracking()
-                .Where( s => s.GroupId == groupId )
-                .Select( s => s.GroupTypeRoleId )
-                .ToList();
-
-            nbModalDetailSyncMessage.Visible = syncList.Count > 0 ? true : false;
-
-            var groupService = new GroupService( rockContext );
-            var selectedGroup = groupService.GetNoTracking( groupId.Value );
-
-            var groupTypeRoleService = new GroupTypeRoleService( rockContext );
-            var qry = groupTypeRoleService
-                .Queryable()
-                .AsNoTracking()
-                .Where( r => r.GroupTypeId == selectedGroup.GroupTypeId )
-                .Where( r => !syncList.Contains( r.Id ) )
-                .ToList();
-
-            ddlGroupRole.DataSource = qry;
-            ddlGroupRole.DataBind();
         }
     }
 }

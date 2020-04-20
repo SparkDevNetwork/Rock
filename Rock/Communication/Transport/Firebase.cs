@@ -78,7 +78,7 @@ namespace Rock.Communication.Transport
                                 recipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
                             }
 
-                            PushMessage( sender, new List<string> { recipient.To }, pushMessage, recipient.MergeFields );
+                            PushMessage( sender, recipient.To.SplitDelimitedValues( "," ).ToList(), pushMessage, recipient.MergeFields );
                         }
                         catch ( Exception ex )
                         {
@@ -91,7 +91,7 @@ namespace Rock.Communication.Transport
                 {
                     try
                     {
-                        PushMessage( sender, recipients.Select( r => r.To ).ToList(), pushMessage, mergeFields );
+                        PushMessage( sender, recipients.SelectMany( r => r.To.SplitDelimitedValues( "," ).ToList() ).ToList(), pushMessage, mergeFields );
                     }
                     catch ( Exception ex )
                     {
@@ -170,11 +170,11 @@ namespace Rock.Communication.Transport
 
                                     var service = new PersonalDeviceService( recipientRockContext );
                                     List<string> devices = service.Queryable()
-                                        .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.NotificationsEnabled )
+                                        .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                         .Select( p => p.DeviceRegistrationId )
                                         .ToList();
 
-                                    if ( devices != null )
+                                    if ( devices.Any() )
                                     {
                                         // Create merge field dictionary
                                         var mergeObjects = recipient.CommunicationMergeValues( mergeFields );

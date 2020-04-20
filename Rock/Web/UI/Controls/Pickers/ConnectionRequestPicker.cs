@@ -25,7 +25,7 @@ using Rock.Model;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// Control that can be used to select a connection request
     /// </summary>
     public class ConnectionRequestPicker : ItemPicker
     {

@@ -174,7 +174,7 @@ namespace Rock.Model
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the InActiveDateTime value of the group at this point in history
+        /// Gets or sets the InactiveDateTime value of the group at this point in history
         /// </summary>
         /// <value>
         /// The in active date time.

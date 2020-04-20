@@ -41,6 +41,8 @@ namespace Rock.Client
         public bool AllowExternalRegistrationUpdates { get; set; } = true;
 
         /// <summary />
+        // Made Obsolete in Rock "1.10"
+        [Obsolete( "No longer used. Replaced by Group Placement feature (RegistrationTemplatePlacement, etc)", false )]
         public bool AllowGroupPlacement { get; set; }
 
         /// <summary />
@@ -242,7 +244,9 @@ namespace Rock.Client
             this.Id = source.Id;
             this.AddPersonNote = source.AddPersonNote;
             this.AllowExternalRegistrationUpdates = source.AllowExternalRegistrationUpdates;
+            #pragma warning disable 612, 618
             this.AllowGroupPlacement = source.AllowGroupPlacement;
+            #pragma warning restore 612, 618
             this.AllowMultipleRegistrants = source.AllowMultipleRegistrants;
             this.BatchNamePrefix = source.BatchNamePrefix;
             this.CategoryId = source.CategoryId;
@@ -323,6 +327,9 @@ namespace Rock.Client
 
         /// <summary />
         public ICollection<RegistrationTemplateForm> Forms { get; set; }
+
+        /// <summary />
+        public ICollection<RegistrationTemplatePlacement> Placements { get; set; }
 
         /// <summary />
         public WorkflowType RegistrationWorkflowType { get; set; }
