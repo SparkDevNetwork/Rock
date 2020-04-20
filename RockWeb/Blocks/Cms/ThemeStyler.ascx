@@ -41,7 +41,7 @@
 
                         <asp:Panel ID="pnlFontAwesomeSettings" runat="server">
                             <Rock:RockDropDownList ID="ddlFontAwesomeIconWeight" runat="server" Label="Font Awesome Icon Weight" AutoPostBack="true" OnSelectedIndexChanged="ddlFontAwesomeIconWeight_SelectedIndexChanged" />
-                            <Rock:RockCheckBoxList ID="cblFontAwesomeAlternateFonts" runat="server" Label="Font Awesome Alternate Fonts" Help="It allows you to also load those fonts to. So if you want to use 'fas fa-cog' and 'far fa-cog' and 'fal fa-cog' all on the same theme you could." />
+                            <Rock:RockCheckBoxList ID="cblFontAwesomeAlternateFonts" runat="server" Label="Font Awesome Alternate Fonts" Help="It allows you to also load those fonts too. So if you want to use 'fas fa-cog' and 'far fa-cog' and 'fal fa-cog' all on the same theme you could." />
                         </asp:Panel>
 
                         <Rock:CodeEditor ID="ceOverrides" runat="server" Label="CSS Overrides" EditorHeight="600"  />
