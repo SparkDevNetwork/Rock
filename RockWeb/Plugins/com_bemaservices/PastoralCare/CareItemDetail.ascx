@@ -135,7 +135,7 @@
         <Rock:ModalDialog ID="dlgCareContacts" runat="server" SaveButtonText="Add" OnSaveClick="btnAddCareContact_Click" Title="Add Contact" ValidationGroup="Contact">
             <Content>
                 <asp:ValidationSummary ID="valConnectorGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="Contact" />
-                <asp:HiddenField ID="hfAddCareContactGuid" runat="server" />
+                <asp:HiddenField ID="hfAddCareContactId" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:PersonPicker ID="ppContactor" runat="server" Label="Contactor" Required="true" EnableSelfSelection="true" ValidationGroup="Contact" />
