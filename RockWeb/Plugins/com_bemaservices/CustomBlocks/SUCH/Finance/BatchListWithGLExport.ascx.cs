@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Text;
 
-namespace RockWeb.Plugins.com_bemadev.Finance
+namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance
 {
     [DisplayName( "Batch List with GL Export" )]
     [Category( "com_bemadev > Finance" )]

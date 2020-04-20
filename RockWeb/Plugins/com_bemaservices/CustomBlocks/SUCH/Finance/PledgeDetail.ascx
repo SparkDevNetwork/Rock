@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PledgeDetail.ascx.cs" Inherits="com_bemaservices.Finance.PledgeDetail" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PledgeDetail.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance.PledgeDetail" %>
 
 <asp:UpdatePanel ID="upPledgeDetails" runat="server">
     <ContentTemplate>

@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchListWithGLExport.ascx.cs" Inherits="RockWeb.Plugins.com_bemadev.Finance.BatchListWithGLExport" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchListWithGLExport.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance.BatchListWithGLExport" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>

@@ -31,7 +31,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
-namespace com_bemaservices.Finance
+namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance
 {
     [DisplayName( "Pledge Detail" )]
     [Category( "com_bemaservices > Finance" )]
