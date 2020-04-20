@@ -109,6 +109,11 @@ namespace RockWeb.Blocks.Prayer
                 cpCampus.Visible = GetAttributeValue( "ShowCampus" ).AsBoolean();
             }
 
+            if ( EnableCommentsFlag )
+            {
+                cbAllowComments.Checked = GetAttributeValue( "DefaultAllowCommentsSetting" ).AsBoolean();
+            }
+
             pnbPhone.Visible = GetAttributeValue( "EnablePersonMatching" ).AsBoolean();
 
             var categoryGuid = GetAttributeValue( "GroupCategoryId" );

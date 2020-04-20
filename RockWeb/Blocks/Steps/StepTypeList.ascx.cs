@@ -345,27 +345,32 @@ namespace RockWeb.Blocks.Steps
             gStepType.Actions.AddClick += gStepType_Add;
             gStepType.GridReorder += gStepType_GridReorder;
             gStepType.GridRebind += gStepType_GridRebind;
+            gStepType.RowSelected += gStepType_Edit;
             gStepType.RowItemText = "Step Type";
             gStepType.ExportSource = ExcelExportSource.DataSource;
             gStepType.ExportFilename = _program.Name;
 
-            // Verify authorization to edit either the block or the parent step program.
+            // Initialize Grid: Secured actions
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT ) || _program.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
             bool canAdministrate = IsUserAuthorized( Authorization.ADMINISTRATE );
 
             gStepType.Actions.ShowAdd = canAddEditDelete;
             gStepType.IsDeleteEnabled = canAddEditDelete;
 
-            if ( canAddEditDelete )
+            var reorderField = gStepType.ColumnsOfType<ReorderField>().FirstOrDefault();
+
+            if ( reorderField != null )
             {
-                gStepType.RowSelected += gStepType_Edit;
+                reorderField.Visible = canAddEditDelete;
             }
 
             var securityField = gStepType.ColumnsOfType<SecurityField>().FirstOrDefault();
 
-            securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepType ) ).Id;
-
-            securityField.Visible = canAdministrate;
+            if ( securityField != null )
+            {
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.StepType ) ).Id;
+                securityField.Visible = canAdministrate;
+            }
 
             this.ConfigureGridFromBlockSettings();
         }

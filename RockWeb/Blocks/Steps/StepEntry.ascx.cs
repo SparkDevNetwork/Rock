@@ -471,6 +471,15 @@ namespace RockWeb.Blocks.Steps
         #region Internal Methods
 
         /// <summary>
+        /// Gets a flag indicating if the user can edit the current record.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanEdit()
+        {
+            return UserCanAdministrate && _step != null;
+        }
+
+        /// <summary>
         /// Sets the edit mode.
         /// </summary>
         /// <param name="editable">if set to <c>true</c> [editable].</param>
@@ -664,6 +673,12 @@ namespace RockWeb.Blocks.Steps
             BuildDynamicControls( false );
 
             BindWorkflows();
+
+            // Set the available actions according to current user permissions.
+            var canEdit = CanEdit();
+
+            btnEdit.Visible = canEdit;
+            btnDelete.Visible = canEdit;
         }
 
         /// <summary>
