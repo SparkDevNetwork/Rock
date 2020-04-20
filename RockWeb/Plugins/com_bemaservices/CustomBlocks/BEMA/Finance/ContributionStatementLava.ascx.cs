@@ -41,6 +41,7 @@ using Rock.Security;
  * - FE3) Added a 'Business' Lava object with the person if the person record is of type business
  * - FE4) Added Ability to further filter transactions by valid date times
  * - FE5) Added Ability to roll up child account giving into reported pledge account giving
+ * - FE6) Includes Parent Account Id in the lava object
  */
 namespace RockWeb.Plugins.com_bemaservices.Finance
 {
@@ -446,6 +447,9 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                                                 {
                                                     AccountName = s.Key.Name,
                                                     PublicName = s.Key.PublicName,
+                                                    /* BEMA.FE6.Start */
+                                                    ParentAccountId = s.Max( a => a.Account.ParentAccountId ),
+                                                    /* BEMA.FE6.End */
                                                     Description = s.Key.Description,
                                                     Total = s.Sum( a => a.Amount ),
                                                     Order = s.Max( a => a.Account.Order )
@@ -462,7 +466,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
             // pledge information
             var pledges = new FinancialPledgeService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains(p.PersonAliasId.Value)
+                                .Where( p => p.PersonAliasId.HasValue && personAliasIds.Contains( p.PersonAliasId.Value )
                                     && p.StartDate.Year <= statementYear && p.EndDate.Year >= statementYear )
 
                                 /* BEMA.FE4.Start */
@@ -640,6 +644,16 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             /// The public name of the account.
             /// </value>
             public string PublicName { get; set; }
+
+            /* BEMA.FE6.Start */
+            /// <summary>
+            /// Gets or sets the public name of the account.
+            /// </summary>
+            /// <value>
+            /// The public name of the account.
+            /// </value>
+            public int? ParentAccountId { get; set; }
+            /* BEMA.FE6.End */
 
             /// <summary>
             /// Gets or sets the description of the account.
