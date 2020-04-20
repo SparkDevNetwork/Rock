@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_bemadev.Crm
 {
     [DisplayName( "Family Pre Registration" )]
-    [Category( "BEMA -> CRM" )]
+    [Category( "BEMA Services > Crm" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
 
     [BooleanField( "Show Campus", "Should the campus field be displayed?", true, "", 0 )]
