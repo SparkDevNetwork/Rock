@@ -1,0 +1,94 @@
+
+  {% assign personId = 'Global' | PageParameter:'PersonId' %}
+  {% assign person = personId | PersonById %}
+
+<link rel="stylesheet" href="/Styles/bootstrap-sortable.css">
+<script type="text/javascript">
+			function completePathway(btn, requestId){
+			$.ajax({
+                url: '/Webhooks/Lava.ashx/CompletePathway?RequestId=' + requestId,
+                success: function (responseText) {
+                    $("a[id$='_RequestId_"+requestId+"']").each(function() {
+                     // $( this ).hide();
+                     $(this).css('opacity',.3);
+                     $(this).html("Completed");
+
+                    });
+                }
+            });				
+			}
+</script>
+<div class='panel panel-block'>
+  <div class='panel-heading'>
+    <h4 class='panel-title'>Family Pathways</h4>
+  </div>
+  {% assign midnightToday = 'Now' | Date:'M/d/yyyy' | DateAdd:1,'d' %}
+  {% if rows.size > 0 %}
+    <table class="table table-responsive sortable">
+      <thead>
+        <tr>
+          <th>Family Member</th>
+          <th>Pathway</th>
+          <th>State</th>
+          <th>Connector</th>
+          <th>Last Activity Date</th>
+          <th>Date Created</th>
+          <th>Actions</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in rows %}
+          <tr>
+            <td>{{ item.FamilyMember }} </td>
+            <td>{{ item.Pathway }}</td>
+            {% case item.ConnectionState %}
+            {% when 0 %}
+              <td><span class='label label-success'>Active</span></td>
+            {% when 1 %}
+              <td><span class='label label-danger'>Inactive</span></td>
+            {% when 2 %}
+              {% if item.FollowUpDate <= midnightToday %}
+                <td><span class='label label-danger'>Future Follow-up</span></td>
+              {% else %}
+                <td><span class='label label-info'>Future Follow-up</span></td>
+              {% endif %}
+            {% when 3 %}
+              <td><span class='label label-info'>Completed</span></td>
+            {% endcase %}
+            <td>{{ item.Connector }}</td>
+            <td>{{ item.LastActivityDate| Date:'M/d/yyyy' }}</td>
+            <td>{{ item.DateCreated | Date:'M/d/yyyy' }}</td>
+            <td>
+              {% if item.ConnectionState != 3 %}
+               <a class='label label-success' id="btn_RequestId_{{item.ConnectionRequestId}}"
+                onclick="completePathway(this, {{item.ConnectionRequestId}});" style="margin-top:15px;">Complete</a>
+              {% endif%}
+            </td> 
+            <td>
+              <a href='https://legacy.hfbc.org/page/1780?ConnectionRequestId={{item.ConnectionRequestId}}&ConnectionOpportunityId={{item.ConnectionOpportunityId}}' 
+              class='label label-default' style="margin-bottom:50px;">View</a>
+            </td>       
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
+  <div class='panel-body'>
+   <a href='/page/888?WorkflowTypeId=124&PersonId={{person.Id}}' class='btn btn-primary' style="margin-bottom:50px;">Add New Pathway For {{person.FullName}}</a>
+  </div> 
+  {% else %}
+    <div class='panel-body'>
+      <div class='alert alert-info'>There are no pathways currently assigned to this family.</div>
+      <a href='/page/888?WorkflowTypeId=124&PersonId={{person.Id}}' class='btn btn-primary' style="margin-bottom:50px;">Add New Pathway For {{person.FullName}}</a>
+    </div>
+  {% endif %}
+
+
+  
+
+</div>
+ 
+
+<script src="/Scripts/moment.min.js"></script>
+<script src="/Scripts/bootstrap-sortable.js"></script>

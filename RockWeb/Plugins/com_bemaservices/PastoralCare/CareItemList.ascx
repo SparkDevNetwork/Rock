@@ -48,9 +48,14 @@
                         <Rock:SlidingDateRangePicker ID="sdrpDateRange" runat="server" Label="Date Range" />
                         <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" />
                         <Rock:PersonPicker ID="ppContactor" runat="server" Label="Requester" />
+                        <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status">
+                            <asp:ListItem Text="All" Value="" />
+                            <asp:ListItem Text="Active" Value="Active" />
+                            <asp:ListItem Text="Inactive" Value="Inactive" />
+                        </Rock:RockDropDownList>
                         <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gItems" runat="server" OnRowSelected="gItems_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gItems_RowDataBound">
+                    <Rock:Grid ID="gItems" runat="server" OnRowSelected="gItems_Edit" CssClass="js-grid-requests" AllowSorting="true" OnRowDataBound="gItems_RowDataBound" ExportSource="ColumnOutput">
                         <Columns>
                             <Rock:SelectField />
                             <Rock:RockBoundField DataField="ContactDateTime" HeaderText="Request Date" SortExpression="CareItem.ContactDateTime" />

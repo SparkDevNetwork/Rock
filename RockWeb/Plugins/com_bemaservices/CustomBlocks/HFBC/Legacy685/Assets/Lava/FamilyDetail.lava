@@ -1,0 +1,140 @@
+﻿{% assign preferredContactPersonId = 0 %}
+{% assign connectStatus = Group | Attribute:'ConnectionStatus' %}
+{% assign stage = Group | Attribute:'STAGEMulti' %}
+
+{% groupmember Where:'GroupId == {{Group.Id}} && GroupRoleId == 3 && GroupMemberStatus == 1' %}
+  {% for gm in groupmemberItems %}
+    {% assign person = gm.Person %}
+    {% if preferredContactPersonId == 0 %}
+      {% assign isPreferredContact = person | Attribute:'IsPreferredContact' %}
+      {% if isPreferredContact == 'Yes' %}
+        {% assign preferredContact = person %}
+        {% assign preferredContactPersonId = person.Id %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  {% for gm in groupmemberItems %}
+    {% assign person = gm.Person %}
+    {% if preferredContactPersonId == 0 and person.Gender == 2 %}
+      {% assign preferredContact = person %}
+      {% assign preferredContactPersonId = person.Id %}
+    {% endif %}
+  {% endfor %}
+
+  {% for gm in groupmemberItems %}
+    {% assign person = gm.Person %}
+    {% if preferredContactPersonId == 0 %}
+      {% assign preferredContact = person %}
+      {% assign preferredContactPersonId = person.Id %}
+    {% endif %}
+  {% endfor %}
+{% endgroupmember %}
+
+{% assign hasLogin = false %}
+{% for familyMember in Group.Members %}
+    {% assign groupMembersSize = familyMember.Person | Group:'486871' | Size %}
+    {% if groupMembersSize > 0 %}{% assign hasLogin = true %}{% endif %}
+{% endfor %}
+
+
+<!--<h3> Stage: {{ Group | Attribute:'Legacy685-Stage' }}</h3>-->
+<div class="row">
+	<div class="col-md-5 margin-v-md">
+    {% if stage != null and stage != empty %}
+      <span class="label label-success" style="font-size: 16px; display: inline-block; margin-top: 1px; margin-bottom: 1px;">{{ stage }}</span>
+    {% endif %}
+    {% if connectStatus != null and connectStatus != empty %}
+		  <span class="label label-primary" style="font-size: 16px; display: inline-block; margin-top: 1px; margin-bottom: 1px;">{{ connectStatus }}</span>
+    {% endif %}
+    {% if hasLogin == true %}<span class="label label-danger" style="font-size: 16px; display: inline-block; margin-top: 1px; margin-bottom: 1px;">MyLegacy Login</span>{% endif %}
+
+		
+	</div>
+  <div class="actions margin-v-md clearfix pull-right">
+    <a href="/page/888?WorkflowTypeId=12&PersonId={{preferredContact.Id}}" class="btn" btn-default="" btn-xs="" pull-right=""">
+      <i class="fa fa-exclamation"></i> Person Data Error
+    </a>
+    <a href="/page/888?WorkflowTypeId=98&PersonId={{preferredContact.Id}}" class="btn" btn-default="" btn-xs="" pull-right=""">
+      <i class="fa fa-street-view"></i> Log Interaction
+    </a>
+    <a href="/page/888?WorkflowTypeId=124&PersonId={{preferredContact.Id}}" class="btn" btn-default="" btn-xs="" pull-right=""">
+      <i class="fas fa-sign-out-alt"></i> Create Pathway
+    </a>
+    <a href="/page/888?WorkflowTypeId=16&PersonId={{preferredContact.Id}}" class="btn" btn-default="" btn-xs="" pull-right=""">
+      <i class="fa fa-camera"></i> Photo Request
+    </a>
+    <a href="/page/888?WorkflowTypeId=53&PersonId={{preferredContact.Id}}" class="btn" btn-default="" btn-xs="" pull-right=""">
+      <i class="fa fa-envelope"></i> Send Login Credentials
+    </a>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-3">
+    {% assign photo = Group | Attribute:'Legacy685-FamilyPhoto' %}
+    {{photo}}
+    {% for groupLocation in Group.GroupLocations %}
+    <div class="row">
+      <div class="col-sm-12">
+        <strong>{{groupLocation.GroupLocationTypeValue.Value}} Address</strong>
+        <br>
+          {{groupLocation.Location.FormattedHtmlAddress}}
+          <br>
+            <br>
+            
+      </div>
+    </div>
+
+    {% endfor %}
+  </div>
+  <div class="col-md-9">
+
+    <div class="row">
+      <div class="col-md-8">
+        <h1>
+          {{ Group.Name }} <a class="btn btn-default btn-sm" style="margin-left:1em;" href="#" onclick="{{ Group.Id | Postback:'FollowButton' }}">{% if Following %}Unfollow{% else %}Follow{%endif%}</a>
+        </h1>
+        <div class="row">
+          <div class="col-md-6">
+            <strong>Connection Status:</strong> {{ connectStatus }} <br />
+          </div>
+          <div class="col-md-6">
+            <strong>Campus:</strong> {{ Group.Campus.Name }} <br />
+          </div>
+        </div>
+        <strong>Church Affiliation:</strong> {{ Group | Attribute:'Legacy685-ChurchAffiliation' }} <br />
+		<strong>Role: </strong> {{ Group | Attribute:'Legacy685Role' }}<br />
+        <br>
+          <strong>Connection Date:</strong> {{ Group | Attribute:'Legacy685-ConnectDate' }} <br />
+          <strong>Agency:</strong> {{ Group | Attribute:'Legacy685-Agency' }} <br />
+          {% if connectStatus == "Post-Foster" %}
+          <strong>Foster Children #:</strong> {{ Group | Attribute:'Legacy685-NumberofFosterChildren' }} <br />
+          <strong>Date Licensed:</strong> {{ Group | Attribute:'Legacy685-DateLicensed' }} <br />
+          {% endif %}
+        </div>
+      <div class="col-md-4">
+        <h3>Preferred Contact Info</h3>
+        <strong>Phone Number:</strong> {{ preferredContact | PhoneNumber:'Mobile'}} <br />
+        <strong>Email:</strong> {{ preferredContact.Email }} <br />
+        <br/>
+        <div class="row">
+          <div class="col-md-6">
+            <a href="/page/904?Person={{preferredContact.Id}}" class="btn" btn-default="" btn-xs="""><i class="fa fa-envelope-o"></i> Email
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a href="/page/904?Person={{preferredContact.Id}}" class="btn" btn-default="" btn-xs="""><i class="fa fa-envelope-o"></i> Send SMS
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if AllowedActions.Edit == true %}
+<div class="actions margin-v-md clearfix">
+  <a class="btn btn-default btn-sm pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>
+</div>
+{% endif %}
+

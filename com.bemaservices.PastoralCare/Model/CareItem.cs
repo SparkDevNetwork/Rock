@@ -26,6 +26,9 @@ namespace com.bemaservices.PastoralCare.Model
     {
         #region Entity Properties    
 
+        [DataMember]
+        public bool IsActive { get; set; }
+
         [Required]
         [DataMember]
         public int? PersonAliasId { get; set; }
@@ -82,7 +85,7 @@ namespace com.bemaservices.PastoralCare.Model
             var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
             careTypeIds.ForEach( c => inheritedAttributes.Add( c, new List<AttributeCache>() ) );
 
-           
+
             var careTypeItemEntityType = EntityTypeCache.Get( typeof( CareTypeItem ) );
             if ( careTypeItemEntityType != null )
             {
@@ -98,7 +101,7 @@ namespace com.bemaservices.PastoralCare.Model
                     }
                 }
             }
-            
+
             var attributes = new List<AttributeCache>();
             foreach ( var attributeGroup in inheritedAttributes )
             {

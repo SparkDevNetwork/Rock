@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 /*
  * BEMA Modified Core Block ( v10.1.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
- * 
+ *
  * Additional Features:
  * - FE1) Added Ability to navigate to a specified Person page
  */
@@ -42,7 +42,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
+    /// The main Person Profile block the main information about a person
     /// </summary>
     [DisplayName( "Edit Group" )]
     [Category( "BEMA Services > Person Detail" )]
@@ -1166,7 +1166,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                 confirmExit.Enabled = true;
 
                 var rockContext = new RockContext();
-                
+
                 try
                 {
                     rockContext.WrapTransaction( () =>
@@ -1175,23 +1175,23 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                    var groupMemberService = new GroupMemberService( rockContext );
 	                    var personService = new PersonService( rockContext );
 	                    var historyService = new HistoryService( rockContext );
-	
+
 	                    // SAVE GROUP
 	                    _group = groupService.Get( _group.Id );
-	
+
 	                    _group.Name = tbGroupName.Text;
                         _group.CampusId = cpCampus.SelectedValueAsInt();
                         _group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
-	
+
 	                    rockContext.SaveChanges();
-	
+
 	                    // SAVE GROUP MEMBERS
 	                    var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 	                    var reasonStatusReasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 	                    int? recordStatusValueID = dvpRecordStatus.SelectedValueAsInt();
 	                    int? reasonValueId = dvpReason.SelectedValueAsInt();
 	                    var newGroups = new List<Group>();
-	
+
 	                    foreach ( var groupMemberInfo in GroupMembers )
 	                    {
 	                        var role = _groupType.Roles.Where( r => r.Guid.Equals( groupMemberInfo.RoleGuid ) ).FirstOrDefault();
@@ -1199,9 +1199,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                        {
 	                            role = _groupType.Roles.FirstOrDefault();
 	                        }
-	
+
 	                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
-	
+
 	                        // People added to group (new or from other group )
 	                        if ( !groupMemberInfo.ExistingGroupMember )
 	                        {
@@ -1209,14 +1209,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                            if ( groupMemberInfo.PersonId == -1 )
 	                            {
 	                                person = new Person();
-	
+
 	                                person.TitleValueId = groupMemberInfo.TitleValueId;
 	                                person.FirstName = groupMemberInfo.FirstName;
 	                                person.NickName = groupMemberInfo.NickName;
 	                                person.LastName = groupMemberInfo.LastName;
 	                                person.SuffixValueId = groupMemberInfo.SuffixValueId;
 	                                person.Gender = groupMemberInfo.Gender;
-	
+
 	                                DateTime? birthdate = groupMemberInfo.BirthDate;
 	                                if ( birthdate.HasValue )
 	                                {
@@ -1227,9 +1227,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                                        birthdate = birthdate.Value.AddYears( -100 );
 	                                    }
 	                                }
-	
+
 	                                person.SetBirthDate( birthdate );
-	
+
 	                                person.MaritalStatusValueId = groupMemberInfo.MaritalStatusValueId;
 	                                person.GradeOffset = groupMemberInfo.GradeOffset;
 	                                person.ConnectionStatusValueId = groupMemberInfo.ConnectionStatusValueId;
@@ -1248,7 +1248,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                                {
 	                                    person.GivingGroupId = _group.Id;
 	                                }
-	
+
 	                                person.IsEmailActive = true;
 	                                person.EmailPreference = EmailPreference.EmailAllowed;
 	                                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
@@ -1257,7 +1257,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                            {
 	                                person = personService.Get( groupMemberInfo.PersonId );
 	                            }
-	
+
 	                            if ( person == null )
 	                            {
 	                                // shouldn't happen
@@ -1276,7 +1276,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                                         person.RecordStatusReasonValueId = reasonValueId.Value;
                                     }
                                 }
-	
+
 	                            PersonService.AddPersonToGroup( person, person.Id == 0, _group.Id, role.Id, rockContext );
 	                            groupMemberInfo.PersonId = person.Id;
 	                        }
@@ -1287,7 +1287,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                                m.PersonId == groupMemberInfo.PersonId &&
 	                                m.Group.GroupTypeId == _groupType.Id &&
 	                                m.GroupId == _group.Id ).FirstOrDefault();
-	
+
 	                            if ( groupMember != null )
 	                            {
 	                                if ( groupMemberInfo.Removed )
@@ -1301,22 +1301,22 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                                        newGroup.CampusId = _group.CampusId;
 	                                        groupService.Add( newGroup );
 	                                        rockContext.SaveChanges();
-	
+
 	                                        // If person's previous giving group was this family, set it to their new family id
 	                                        if ( _isFamilyGroupType && groupMember.Person.GivingGroup != null && groupMember.Person.GivingGroupId == _group.Id )
 	                                        {
 	                                            groupMember.Person.GivingGroupId = newGroup.Id;
 	                                        }
-	
+
 	                                        groupMember.Group = newGroup;
-	                                        
+
 	                                        // If this person is 18 or older, create them as an Adult in their new group
 	                                        if ((groupMember.Person.Age ?? 0) >= 18)
 	                                        {
 	                                            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 	                                            groupMember.GroupRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 	                                        }
-	
+
 	                                        rockContext.SaveChanges();
 
 	                                        newGroups.Add( newGroup );
@@ -1359,14 +1359,14 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                                }
 	                            }
 	                        }
-	
+
 	                        // Remove anyone that was moved from another family
 	                        if ( groupMemberInfo.RemoveFromOtherGroups )
 	                        {
 	                            PersonService.RemovePersonFromOtherFamilies( _group.Id, groupMemberInfo.PersonId, rockContext );
 	                        }
 	                    }
-	
+
 	                    // Now check if family group should be marked inactive or active
 	                    if ( _isFamilyGroupType )
 	                    {
@@ -1381,10 +1381,10 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                            _group.IsActive = true;
 	                        }
 	                    }
-	
+
 	                    // SAVE LOCATIONS
 	                    var groupLocationService = new GroupLocationService( rockContext );
-	
+
 	                    // delete any group locations that were removed
 	                    var remainingLocationIds = GroupAddresses.Where( a => a.Id > 0 ).Select( a => a.Id ).ToList();
 	                    foreach ( var removedLocation in groupLocationService.Queryable( "GroupLocationTypeValue,Location" )
@@ -1393,9 +1393,9 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                    {
 	                        groupLocationService.Delete( removedLocation );
 	                    }
-	
+
 	                    rockContext.SaveChanges();
-	
+
 	                    foreach ( var groupAddressInfo in GroupAddresses.Where( a => a.Id >= 0 ) )
 	                    {
 	                        Location updatedAddress = null;
@@ -1407,31 +1407,31 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                                     updatedAddress.County = groupAddressInfo.County;
                                 }
                             }
-	
+
 	                        GroupLocation groupLocation = null;
 	                        if ( groupAddressInfo.Id > 0 )
 	                        {
 	                            groupLocation = groupLocationService.Get( groupAddressInfo.Id );
 	                        }
-	
+
 	                        if ( groupLocation == null )
 	                        {
 	                            groupLocation = new GroupLocation();
 	                            groupLocation.GroupId = _group.Id;
 	                            groupLocationService.Add( groupLocation );
 	                        }
-	
+
 	                        groupLocation.GroupLocationTypeValueId = groupAddressInfo.LocationTypeId;
 	                        groupLocation.IsMailingLocation = groupAddressInfo.IsMailing;
 	                        groupLocation.IsMappedLocation = groupAddressInfo.IsLocation;
-	
+
 	                        if ( updatedAddress != null )
 	                        {
 	                            groupLocation.Location = updatedAddress;
 	                        }
-	
+
 	                        rockContext.SaveChanges();
-	
+
 	                        // Add the same locations to any new families created by removing an existing family member
 	                        if ( newGroups.Any() )
 	                        {
@@ -1447,11 +1447,11 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 	                                newGroupLocation.IsMappedLocation = groupLocation.IsMappedLocation;
 	                                groupLocationService.Add( newGroupLocation );
 	                            }
-	
+
 	                            rockContext.SaveChanges();
 	                        }
 	                    }
-	
+
 	                    _group.LoadAttributes();
 
                         Dictionary<string, AttributeValueCache> originalGroupAttributes = new Dictionary<string, AttributeValueCache>();
@@ -1468,8 +1468,15 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                         if ( !string.IsNullOrEmpty( this.GetAttributeValue( BemaAttributeKey.PersonDetailPage ) ) )
                         {
                             var parms = new Dictionary<string, string>();
-                            parms.Add( "PersonId", Person.Id.ToString() );
-                            NavigateToLinkedPage( BemaAttributeKey.PersonDetailPage, parms );
+                            if(Person != null && Person.Id != 0){
+                                parms.Add( "PersonId", Person.Id.ToString() );
+                            }
+
+                            if(_group != null && _group.Id != 0){
+                                parms.Add( "GroupId", _group.Id.ToString() );
+                            }
+
+                            NavigateToLinkedPage( "PersonDetailPage", parms );
                         }
                         else
                         {
@@ -1494,7 +1501,25 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            /* BEMA.FE1.Start */
+            if ( !string.IsNullOrEmpty( this.GetAttributeValue( "PersonDetailPage" ) ) )
+            {
+                var parms = new Dictionary<string, string>();
+                if(Person != null && Person.Id != 0){
+                    parms.Add( "PersonId", Person.Id.ToString() );
+                }
+
+                if(_group != null && _group.Id != 0){
+                    parms.Add( "GroupId", _group.Id.ToString() );
+                }
+
+                NavigateToLinkedPage( "PersonDetailPage", parms );
+            }
+            else
+            {
+                Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            }
+            /* BEMA.FE1.End */
         }
 
         /// <summary>
@@ -1544,7 +1569,25 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
                 rockContext.SaveChanges();
             }
 
-            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            /* BEMA.FE1.Start */
+            if ( !string.IsNullOrEmpty( this.GetAttributeValue( "PersonDetailPage" ) ) )
+            {
+                var parms = new Dictionary<string, string>();
+                if(Person != null && Person.Id != 0){
+                    parms.Add( "PersonId", Person.Id.ToString() );
+                }
+
+                if(_group != null && _group.Id != 0){
+                    parms.Add( "GroupId", _group.Id.ToString() );
+                }
+
+                NavigateToLinkedPage( "PersonDetailPage", parms );
+            }
+            else
+            {
+                Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
+            }
+            /* BEMA.FE1.End */
         }
 
         #endregion
@@ -1716,7 +1759,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     public class GroupMemberInfo
@@ -1725,7 +1768,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
 
         public int PersonId { get; set; }
 
-        public bool ExistingGroupMember { get; set; }  // Is this person part of the original group 
+        public bool ExistingGroupMember { get; set; }  // Is this person part of the original group
 
         public bool Removed { get; set; } // Was an existing person removed from the group (to their own group)
 
@@ -1862,7 +1905,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     public class GroupMemberPhoneInfo
@@ -1873,7 +1916,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     public class GroupAddressInfo

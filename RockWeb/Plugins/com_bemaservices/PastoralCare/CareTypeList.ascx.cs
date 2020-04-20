@@ -38,8 +38,11 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
     [Category( "BEMA Services > Pastoral Care" )]
     [Description( "Block to display the care types." )]
     [LinkedPage( "Detail Page", "Page used to view details of a care type." )]
-    [BooleanField( "Allow Shared Attributes", "Displays a link to a page for care item attributes shared across care types", false )]
-    [LinkedPage( "Shared Attribute Page", "Page used to view shared care item attributes." )]
+    [BooleanField( "Allow Shared Care Item Attributes", "Displays a link to a page for care item attributes shared across care types", false )]
+    [LinkedPage( "Shared Care Item Attribute Page", "Page used to view universal care item attributes." )]
+
+    [BooleanField( "Allow Shared Care Contact Attributes", "Displays a link to a page for care contact attributes shared across care types", false )]
+    [LinkedPage( "Shared Care Contact Attribute Page", "Page used to view universal care contact attributes." )]
 
     public partial class CareTypeList : Rock.Web.UI.RockBlock
     {
@@ -68,8 +71,9 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
             {
                 GetData();
             }
-            var areSharedAttributesAllowed = GetAttributeValue( "AllowSharedAttributes" ).AsBoolean();
-            liSharedAttributes.Visible = areSharedAttributesAllowed;
+
+            liSharedCareItemAttributes.Visible = GetAttributeValue( "AllowSharedCareItemAttributes" ).AsBoolean();
+            liSharedCareContactAttributes.Visible = GetAttributeValue( "AllowSharedCareContactAttributes" ).AsBoolean();
         }
 
         #endregion
@@ -143,9 +147,14 @@ namespace RockWeb.Plugins.com_bemaservices.PastoralCare
 
         #endregion
 
-        protected void lbSharedAttributes_Click( object sender, EventArgs e )
+        protected void lbSharedCareItemAttributes_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "SharedAttributePage" );
+            NavigateToLinkedPage( "SharedCareItemAttributePage" );
+        }
+
+        protected void lbSharedCareContactAttributes_Click( object sender, EventArgs e )
+        {
+            NavigateToLinkedPage( "SharedCareContactAttributePage" );
         }
     }
 }
