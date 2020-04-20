@@ -698,10 +698,15 @@ namespace Rock.Jobs
             workflowContext.Database.CommandTimeout = commandTimeout;
 
             var workflowService = new WorkflowService( workflowContext );
+            var workflowLogQuery = new WorkflowLogService( workflowContext ).Queryable();
 
+            // Get the list of workflows that haven't been modified since X days
+            // and have at least one workflow log (narrowing it down to ones with Logs improves performance of this cleanup)
             var workflowIdsOlderThanLogRetentionPeriodQuery = workflowService.Queryable()
-                .Where( w => w.WorkflowType.LogRetentionPeriod.HasValue
-                && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.LogRetentionPeriod ) )
+                .Where( w =>
+                    w.WorkflowType.LogRetentionPeriod.HasValue
+                    && DateTime.Now > DbFunctions.AddDays( w.ModifiedDateTime, w.WorkflowType.LogRetentionPeriod )
+                    && workflowLogQuery.Any( wl => wl.WorkflowId == w.Id ) )
                 .Select( w => w.Id );
 
             // WorkflowLogService.CanDelete( log ) always returns true, so no need to check
