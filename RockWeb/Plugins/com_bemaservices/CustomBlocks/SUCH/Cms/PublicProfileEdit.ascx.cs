@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Cms
     /// The main Person Profile block the main information about a person 
     /// </summary>
     [DisplayName( "Public Profile Edit" )]
-    [Category( "BEMA > CMS" )]
+    [Category( "BEMA Services > Cms" )]
     [Description( "Public block for users to manage their accounts" )]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Default Connection Status", "The connection status that should be set by default", false, false, "", "", order: 0 )]
