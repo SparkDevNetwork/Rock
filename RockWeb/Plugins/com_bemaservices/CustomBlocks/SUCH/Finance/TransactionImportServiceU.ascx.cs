@@ -24,7 +24,7 @@ using CsvHelper.TypeConversion;
 using System.Web;
 
 
-namespace RockWeb.Plugins.com_bemadev.Finance
+namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance
 {
     [DisplayName( "Transaction Import ServiceU" )]
     [Category( "com_bemadev > Finance" )]

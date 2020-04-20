@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionImportServiceU.ascx.cs" Inherits="RockWeb.Plugins.com_bemadev.Finance.TransactionImport" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionImportServiceU.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance.TransactionImport" %>
 
 <style>
     .mb0 {
