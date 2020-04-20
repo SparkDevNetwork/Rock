@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by the Spark Development Network
+// Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,7 +30,13 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
+/*
+ * BEMA Modified Core Block ( v9.4.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ * 
+ * Additional Features:
+ * - FE1) Added ability to use a group member attribute value for the group member name
+ */
 namespace RockWeb.Blocks.Fundraising
 {
     [DisplayName( "Fundraising Donation Entry" )]
@@ -41,9 +47,27 @@ namespace RockWeb.Blocks.Fundraising
     [BooleanField( "Show First Name Only", "Only show the First Name of each participant instead of Full Name", defaultValue: false, order: 2 )]
     [BooleanField( "Allow Automatic Selection", "If enabled and there is only one participant and registrations are not enabled then that participant will automatically be selected and this page will get bypassed.", defaultValue: false, order: 3 )]
     [GroupField( "Root Group", "Select the group that will be used as the base of the list.", required: false, order: 4 )]
-   
+
+    /* BEMA.UI1.Start */
+    [TextField(
+        "Member Name Attribute Key",
+        "The group member attribute key to use for the name column. Leave blank to use the person's full name.",
+        Key = BemaAttributeKey.MemberNameAttributeKey,
+        DefaultValue = "False",
+        Category = "BEMA Additional Features" )]
+    // SUCH Value = 'SupportDisplayName'
+    /* BEMA.UI1.End */
     public partial class FundraisingDonationEntry : RockBlock
     {
+        /* BEMA.Start */
+        #region Attribute Keys
+        private static class BemaAttributeKey
+        {
+            public const string MemberNameAttributeKey = "MemberNameAttributeKey";
+        }
+
+        #endregion
+        /* BEMA.End */
         #region Base Control Methods
 
         /// <summary>
@@ -229,8 +253,7 @@ namespace RockWeb.Blocks.Fundraising
                     // only include participants that have not disabled public contribution requests
                     if ( !groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean() )
                     {
-                        
-                        string memberName = groupMember.GetAttributeValue( "SupportDisplayName" );
+
 
 
                         var listItem = new ListItem();
@@ -241,17 +264,23 @@ namespace RockWeb.Blocks.Fundraising
                         }
                         else
                         {
-                            if(memberName != "")
+                            listItem.Text = groupMember.Person.FullName;
+
+                            /* BEMA.FE1.Start */
+                            var attributeKey = GetAttributeValue( BemaAttributeKey.MemberNameAttributeKey );
+                            if ( attributeKey.IsNotNullOrWhiteSpace() )
                             {
-                                listItem.Text = memberName;
+                                string memberName = groupMember.GetAttributeValue( attributeKey );
+                                if ( memberName != "" )
+                                {
+                                    listItem.Text = memberName;
+                                }
                             }
-                            else 
-                            {
-                                listItem.Text = groupMember.Person.FullName;
-                            }
+                            /* BEMA.FE1.End */
+
                         }
 
-                   
+
 
                         ddlParticipant.Items.Add( listItem );
                     }
@@ -291,7 +320,7 @@ namespace RockWeb.Blocks.Fundraising
                         var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                                     .Where( d => d.EntityTypeId == entityTypeIdGroupMember
                                             && d.EntityId == groupMemberId )
-                                    .Sum( a => (decimal?)a.Amount ) ?? 0.00M;
+                                    .Sum( a => ( decimal? ) a.Amount ) ?? 0.00M;
 
                         var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                         if ( !individualFundraisingGoal.HasValue )
