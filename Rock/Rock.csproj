@@ -474,6 +474,7 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\SendMessageResults.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
