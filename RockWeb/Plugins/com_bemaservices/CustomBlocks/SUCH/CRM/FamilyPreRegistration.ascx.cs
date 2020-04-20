@@ -1,5 +1,5 @@
 ﻿// <copyright>
-// Copyright by BEMA Information Services
+// Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
 // you may not use this file except in compliance with the License.
