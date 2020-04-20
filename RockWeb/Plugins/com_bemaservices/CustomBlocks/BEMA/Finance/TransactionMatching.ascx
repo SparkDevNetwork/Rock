@@ -68,6 +68,9 @@
 
                                         <div>
                                             <Rock:PersonPicker ID="ppSelectNew" runat="server" Label="Assign to New" FormGroupCssClass="pull-left" Help="Select a new person to match to the bank account." IncludeBusinesses="true" OnSelectPerson="ppSelectNew_SelectPerson" ExpandSearchOptions="true" />
+                                            <!-- BEMA.FE2.Start -->
+                                            <Rock:RockDropDownList ID='ddlMissionsList' runat="Server" Label="Assign To Missions Group & Person" EnhanceForLongLists="true" Visible="false" />
+                                            <!-- BEMA.FE2.End -->
                                             <Rock:RockControlWrapper ID="rcwEnvelope" runat="server" Label="Envelope #" Help="Select a person based on their assigned envelope number">
                                                 <Rock:RockTextBox ID="tbEnvelopeNumber" runat="server" CssClass="input-width-sm pull-left" />
                                                 <asp:LinkButton ID="btnFindByEnvelopeNumber" runat="server" CssClass="btn btn-default margin-l-sm" Text="Find" OnClick="btnFindByEnvelopeNumber_Click" />
@@ -260,7 +263,7 @@
                     }
                     var link = $(this);
 
-                    $('.address-extended').slideToggle(function() {
+                    $('.address-extended').slideToggle(function () {
                         if ($(this).is(':visible')) {
                             link.text('Show Less').prop('title', 'Hide additional addresses');
                         } else {
