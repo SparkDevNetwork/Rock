@@ -1619,15 +1619,16 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                     i.InteractionTimeToServe.HasValue );
 
             // Get the unique, recent page interactions (recent = since the last successful Job run)
-            var uniquePageIdQuery = websiteInteractionQuery
+            var uniquePageIds = websiteInteractionQuery
                 .Where( i => i.InteractionDateTime > minDate )
                 .Select( i => i.InteractionComponent.EntityId.Value )
-                .Distinct();
+                .Distinct()
+                .ToList();
 
             // Get the most recent (up to) 100 interactions for each page
             var timesToServeByPage = new Dictionary<int, List<double>>();
 
-            foreach ( var pageId in uniquePageIdQuery.ToList() )
+            foreach ( var pageId in uniquePageIds )
             {
                 var timesToServe = websiteInteractionQuery
                     .Where( i => i.InteractionComponent.EntityId == pageId )
@@ -1639,7 +1640,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 timesToServeByPage.Add( pageId, timesToServe.ToList() );
             }
 
-            var pages = pageService.Queryable().Where( p => uniquePageIdQuery.Contains( p.Id ) ).ToList();
+            var pages = pageService.Queryable().Where( p => uniquePageIds.Contains( p.Id ) ).ToList();
 
             // Calculate the median response time for each of the pages
             foreach ( Page page in pages )
