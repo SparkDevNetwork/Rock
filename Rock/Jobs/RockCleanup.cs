@@ -1601,6 +1601,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         private int UpdateMedianPageLoadTimes()
         {
             var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
             var pageService = new PageService( rockContext );
             var interactionService = new InteractionService( rockContext );
             var serviceJobService = new ServiceJobService( rockContext );
@@ -1608,6 +1609,19 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             // Get the last successful run date
             var serviceJob = serviceJobService.Get( SystemGuid.ServiceJob.ROCK_CLEANUP.AsGuid() );
             var minDate = serviceJob?.LastSuccessfulRunDateTime ?? DateTime.MinValue;
+
+            /* 2020-04-21 MDP
+             *
+             * NOTE: When testing this, set the minDate to DateTime.MinValue to make sure it can still perform even when the job hasn't run before, or in a long time
+             *
+             * Querying the Interaction table (which can be very large) can easily take a very long time out. So some optimizations might be needed.
+             * In this case, the query was timing out in a way that was hard to avoid, so we broke it into several simplier individual queries
+             * This results in more roundtrips, but easy roundtrip should be pretty fast, so the net time to do the task ends up taking much less time.
+
+             */
+
+            // Un-comment this out when debugging, and make sure to comment it back out when checking in (see above note)
+            // minDate = DateTime.MinValue;
 
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
 
@@ -1619,15 +1633,16 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                     i.InteractionTimeToServe.HasValue );
 
             // Get the unique, recent page interactions (recent = since the last successful Job run)
-            var uniquePageIdQuery = websiteInteractionQuery
+            var uniquePageIds = websiteInteractionQuery
                 .Where( i => i.InteractionDateTime > minDate )
                 .Select( i => i.InteractionComponent.EntityId.Value )
-                .Distinct();
+                .Distinct()
+                .ToList();
 
             // Get the most recent (up to) 100 interactions for each page
             var timesToServeByPage = new Dictionary<int, List<double>>();
 
-            foreach ( var pageId in uniquePageIdQuery.ToList() )
+            foreach ( var pageId in uniquePageIds )
             {
                 var timesToServe = websiteInteractionQuery
                     .Where( i => i.InteractionComponent.EntityId == pageId )
@@ -1639,7 +1654,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 timesToServeByPage.Add( pageId, timesToServe.ToList() );
             }
 
-            var pages = pageService.Queryable().Where( p => uniquePageIdQuery.Contains( p.Id ) ).ToList();
+            var pages = pageService.Queryable().Where( p => uniquePageIds.Contains( p.Id ) ).ToList();
 
             // Calculate the median response time for each of the pages
             foreach ( Page page in pages )
