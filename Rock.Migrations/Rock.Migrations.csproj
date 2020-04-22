@@ -197,6 +197,10 @@
     <Compile Include="Migrations\202004151820055_Rollup_0415.Designer.cs">
       <DependentUpon>202004151820055_Rollup_0415.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202004201900421_AddGroupSyncScheduleIntervalMinutes.cs" />
+    <Compile Include="Migrations\202004201900421_AddGroupSyncScheduleIntervalMinutes.Designer.cs">
+      <DependentUpon>202004201900421_AddGroupSyncScheduleIntervalMinutes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1280,6 +1284,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202004151820055_Rollup_0415.resx">
       <DependentUpon>202004151820055_Rollup_0415.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004201900421_AddGroupSyncScheduleIntervalMinutes.resx">
+      <DependentUpon>202004201900421_AddGroupSyncScheduleIntervalMinutes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
