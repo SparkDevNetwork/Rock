@@ -1,0 +1,40 @@
+{%- assign wrapperId = uniqueid -%}
+
+<div class="accordion panel-group text-left" id="accordion-{{ wrapperId }}" role="tablist" aria-multiselectable="true">
+
+    {%- for item in items -%}
+
+        <div class="panel panel-primary">
+            <a id="heading-{{ wrapperId }}-{{ forloop.index }}" role="button" data-toggle="collapse" data-parent="#accordion-{{ wrapperId }}" href="#{{ wrapperId }}-{{ forloop.index }}" aria-expanded="true" aria-controls="{{ wrapperId }}-{{ forloop.index }}" class="panel-heading display-block sans-serif strong text-decoration-none text-white">
+                {{ item.title }} <i class="fas fa-chevron-down pull-right" style="position:relative;top:5px;"></i>
+            </a>
+            <div id="{{ wrapperId }}-{{ forloop.index }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{ wrapperId }}-{{ forloop.index }}">
+                <div class="panel-body text-gray-darker hard-bottom xs-soft xs-hard-bottom">
+                    {{ item.content | Replace:"'","’" | Trim }}
+                </div>
+            </div>
+        </div>
+    {%- endfor -%}
+
+</div>
+
+<style>
+.accordion .panel-heading i {
+    transition: all .2s ease;
+}
+.flip {
+    transform: rotate(180deg);
+}
+</style>
+
+<script>
+$('.accordion .panel-heading').on('click',function(){
+    var arrow = $(this).find('.fa-chevron-down');
+    if(arrow.hasClass('flip')) {
+        arrow.css('top',5 + 'px');
+    } else {
+        arrow.css('top',2 + 'px');
+    }
+    arrow.toggleClass('flip');
+});
+</script>

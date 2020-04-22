@@ -1,0 +1,31 @@
+﻿.my-workflow-alerts {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.login-status {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.workflowNotifications {
+    display: inline-block;
+    text-align: left;
+    height: 35px;
+    margin-left: 10px;
+}
+
+.workflowNotifications i {
+    color: #fff;
+    font-size: 30px;
+    position: relative;
+}
+
+.workflowNotifications .badge {
+    height: 35px;
+    line-height: 40px;
+    border-radius: 5px;
+    padding: 0 10px;
+    font-size: 16px;
+    min-width: 40px;
+}

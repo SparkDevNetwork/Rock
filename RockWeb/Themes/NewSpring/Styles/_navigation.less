@@ -1,0 +1,118 @@
+// Navigation
+
+.nav {
+	font-family: @font-family-sans-serif;
+	font-weight: 700;
+
+	a {
+		font-size: 16px;
+		text-decoration: none;
+	}
+}
+
+.nav-logo {
+	span {
+		position: absolute;
+		top: 21px;
+		left: 70px;
+		font-size: @font-size-base*.95;
+		line-height: 1.05;
+		font-weight: 900;
+		text-transform: uppercase;
+		text-align: left;
+		display: none;
+	}
+}
+
+.nav-primary {
+	position: relative;
+	z-index: 1;
+	box-shadow: 0 0 6px rgba(0,0,0,.2);
+	background-color: @white;
+
+	.nav-icon {
+		position: relative;
+		z-index: 1;
+		width: @nav-width / 3;
+	}
+
+	li {
+		position: relative;
+		display: inline-block;
+		width: 20%;
+	}
+
+	a {
+		position: relative;
+		display: inline-block;
+		width: 100%;
+		height: @nav-width;
+		line-height: @nav-width;
+		text-align: center;
+		color: @gray-darker;
+		outline: none;
+		border-left: 1px solid rgba(0,0,0,.05);
+
+		i {
+			font-size: 1.1em;
+		}
+	}
+
+	.nav-logo {
+		border-left: 0;
+	}
+
+	li:last-child a {
+		border-right: 0;
+	}
+
+	li:nth-child(6n) a {
+		border-right: 0;
+	}
+
+	// Raise navigation icon position for iPhone X
+	@media only screen and (device-width : 375px) and (device-height : 812px) 
+    and (-webkit-device-pixel-ratio : 3) { 
+		a {
+			line-height: @nav-width - 10;
+		}
+    }
+
+	@desk-nav-start: (@screen-sm-min + 1);
+	
+	@media (min-width: @desk-nav-start) {
+		li {
+			width: 25%;
+		}
+
+		.nav-logo {
+			span {
+				display: block;
+			}
+		}
+
+		.nav-icon {
+			width: 36px;
+		}
+
+		a {
+			width: @nav-width;
+
+			i {
+				position: relative;
+				z-index: 2;
+				font-size: 1.25em;
+			}
+		}
+	}
+}
+
+.nav-secondary {
+	li {
+		a {
+			&:focus {
+				color: @brand-primary;
+			}
+		}
+	}
+}

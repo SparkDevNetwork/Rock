@@ -11,12 +11,16 @@ _ReSharper.*
 #*.Framework.XML
 
 #specific files
+RockJobSchedulerService.Xml
 web.[Cc]onnectionStrings.config
 app.[Cc]onnectionStrings.config
 desktop.ini
 Rock.XML
+pageviews.csv
+RockLogster.csv
 Quartz.xml
 StyleCop.Cache
+.vscode
 
 #specific folders
 [Oo]bj/
@@ -27,11 +31,14 @@ RockWeb/App_Data/MobileAppBundles
 /scaffolding.config
 *.sln.GhostDoc.xml
 .vs/
-.vshistory/
 .localhistory/
 .vshistory/
 TestResults/
 
+
+/RockWeb/Plugins/*
+!/RockWeb/Plugins/cc_newspring
+/RockWeb/Plugins/cc_newspring/AttendedCheckin
 Packages/*
 
 # javascript deps

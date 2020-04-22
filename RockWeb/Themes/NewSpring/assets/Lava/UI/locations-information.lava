@@ -1,0 +1,152 @@
+{% assign campusSlug = 'Global' | PageParameter:'CampusSlug' | Replace:'-',' ' | Capitalize %}
+{% assign campus = 'campuses' | PersistedDataset | Where:'Name', campusSlug | First %}
+{% assign mailingAddress = campus.MailingAddress %}
+{% assign officeAddress = campus.OfficeAddress %}
+{% assign getDirections = campus.GetDirectionsURL %}
+
+{% capture serviceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'NewSpring' ]}{% endcapture %}
+{% capture fuseServiceTimes %}{[ serviceTimes campusid:'{{ campus.Id }}' servicetype:'Fuse' ]}{% endcapture %}
+
+{% assign serviceTimes = serviceTimes | Trim %}
+{% assign fuseServiceTimes = fuseServiceTimes | Trim %}
+
+{[ section title:'' ]}
+    <div class="row {% if servicetype == 'Fuse' %}row-reverse{% endif %} soft-double-sides xs-soft-half-sides xs-text-center sm-text-center">
+        <div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype != 'Fuse' %}push-bottom{% endif %}">
+            <h3 class="push-half-bottom">Sunday Gatherings</h3>
+            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for the {{ campus.Name }} location of NewSpring Church.</small></p>
+            <p class="lead">{{ serviceTimes }}
+            {% if getDirections != empty %}
+                <a href="{{ getDirections }}" >Get Directions</a>
+            {% endif %}
+            </p>
+        </div>{% if fuseServiceTimes != empty and fuseServiceTimes != '' %}<div class="col-xs-12 col-sm-12 col-md-6 {% if servicetype == 'Fuse' %}push-bottom{% endif %}">
+            <h3 class="push-half-bottom">Fuse Student Ministry</h3>
+            <p class="push-half-bottom" style="max-width: 400px;"><small>Weekly gathering times for Fuse &mdash; the Student Ministry of NewSpring Church.</small></p>
+            <p class="lead">{{ fuseServiceTimes }}</p>
+        </div>{% endif %}
+    </div>
+{[ endsection ]}
+
+{[ section title:'' ]}
+    <div class="row soft-double-sides xs-soft-half-sides xs-text-center sm-text-center">
+        <div class="col-xs-12 col-sm-12 col-md-4">
+            {% if location != empty %}
+                <h3 class="push-half-bottom">Campus Address</h3>
+                <p class="lead">
+                    {{ campus.LocationStreet1 }}<br>
+                    {% if campus.LocationStreet2 != empty %}
+                        {{ campus.LocationStreet2 }}<br>
+                    {% endif %}
+                    {{ campus.LocationCity }}, {{ campus.LocationState }} {{ campus.LocationPostalCode | Slice: 0, 5 }}
+                </p>
+            {% endif %}
+
+            {% if officeAddress.Street1 != null and officeAddress.Street1 != '' and officeAddress.Street1 != location.Street1 %}
+                <h3 class="push-half-bottom">Office Address</h3>
+                <p class="lead"> 
+                    {{ officeAddress.Street1 }}<br>
+                    {% if officeAddress.Street2 != empty %}
+                        {{ officeAddress.Street2 }}<br>
+                    {% endif %}
+                    {{ officeAddress.City }}, {{ officeAddress.State }} {{ officeAddress.PostalCode | Slice: 0, 5 }}
+                </p>
+            {% endif %}
+
+            {% if mailingAddress.Street1 != null and mailingAddress.Street1 != '' and mailingAddress.Street1 != location.Street1 and mailingAddress.Street1 != officeAddress.Street1 %}
+                <h3 class="push-half-bottom">Mailing Address</h3>
+                <p class="lead">
+                    {{ mailingAddress.Street1 }}<br>
+                    {% if mailingAddress.Street2 != empty %}
+                        {{ mailingAddress.Street2 }}<br>
+                    {% endif %}
+                    {{ mailingAddress.City }}, {{ mailingAddress.State }} {{ mailingAddress.PostalCode | Slice: 0, 5 }}
+                </p>
+            {% endif %}
+
+        </div><div class="col-xs-12 col-sm-12 col-md-4">
+            <h3 class="push-half-bottom">Phone</h3>
+            <p class="lead"><a href="tel:+1{{ campus.PhoneNumber | Remove:'-' }}">({{ campus.PhoneNumber | Slice:0,3 }}) {{ campus.PhoneNumber | Slice:4,9 }}</a></p>
+        </div><div class="col-xs-12 col-sm-12 col-md-4">
+            <h3 class="push-half-bottom">Email</h3>
+            <p class="lead"><a href="mailto:{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc">{{ campus.Name | Downcase | Remove:' ' }}@newspring.cc</a></p>
+        </div>
+    </div>
+{[ endsection ]}
+
+{% if servicetype != 'Fuse' %}
+    {% assign placesId = campus.GooglePlacesId %}
+    {% assign markerImage = 'Global' | Attribute:'GoogleMapsMarkerImageActive','Url' %}
+    {% if placesId != null and placesId != '' %}
+
+        <script src="https://maps.googleapis.com/maps/api/js?v=3&key={{ 'Global' | Attribute:'GoogleAPIKey' }}&libraries=places"></script>
+
+        <div id="map-canvas" class="ratio ratio-landscape xs-ratio-square push-bottom xs-push-half-bottom rounded shadowed overflow-hidden"></div>
+
+        <script>
+        function initialize() {
+            var map = new google.maps.Map(document.getElementById('map-canvas'), {
+                center: new google.maps.LatLng(0, 0),
+                zoom: 16,
+                disableDefaultUI: true
+            });
+
+            var service = new google.maps.places.PlacesService(map);
+
+            service.getDetails({
+                placeId: '{{ placesId }}'
+            }, function (place, status) {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+
+                    // Create marker
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        position: place.geometry.location,
+                        icon: '{{ markerImage }}'
+                    });
+
+                    // Center map on place location
+                    map.setCenter(place.geometry.location);
+
+                }
+            });
+        }
+
+        initialize();
+        </script>
+
+    {% endif %}
+{% endif %}
+
+
+{% if servicetype == 'NewSpring' %}
+    <script type="application/ld+json">
+    {
+    "@context": "http://schema.org/",
+    "@type": "Church",
+    "name": "{{ 'Global' | Attribute:'OrganizationName' }}",
+    "logo":"{{ 'Global' | Attribute:'NewSpringLogoSquare','RawValue' }}",
+    "image": "{{ campus.LandscapeImage }}",
+    "description": "{{ 'Global' | Attribute:'OrganizationVision' }}",
+    "branchCode": "{{ campus.ShortCode }}",
+    "telephone":"+1{{ campus.PhoneNumber | Remove:'-' }}",
+    "additionalProperty": {
+        "@type": "PropertyValue",
+        "propertyID": "email",
+        "value":"{{ campus.Name | Remove:' ' | Downcase }}@newspring.cc"
+    },
+    "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "{{ campus.Location.Street1 }}{% if campus.Location.Street2 != empty %} {{ campus.Location.Street2 }}{% endif %}",
+        "addressLocality":"{{ campus.Location.City }}",
+        "addressRegion":"{{ campus.Location.State }}",
+        "postalCode":"{{ campus.Location.PostalCode | Slice:0,5 }}"
+    },
+    "latitude": "{{ campus.Location.Latitude }}",
+    "longitude": "{{ campus.Location.Longitude }}",
+    "url":"{{ 'Global' | Page:'Url' }}",
+    "isAccessibleForFree":"true",
+    "publicAccess":"true"
+    }
+    </script>
+{% endif %}
