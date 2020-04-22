@@ -89,8 +89,14 @@ namespace RockWeb.Blocks.Administration
             var site = RockPage.Site;
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
+                ServiceJob serviceJob = e.Row.DataItem as ServiceJob;
+                if ( serviceJob == null )
+                {
+                    return;
+                }
+
                 // Remove the "Run Now" option and "History" button from the Job Pulse job
-                Guid? jobGuid = e.Row.DataItem.GetPropertyValue( "Guid" ).ToString().AsGuidOrNull();
+                Guid? jobGuid = serviceJob.Guid;
                 if ( jobGuid.HasValue && jobGuid.Value.Equals( Rock.SystemGuid.ServiceJob.JOB_PULSE.AsGuid() ) )
                 {
                     var runNowColumn = gScheduledJobs.ColumnsOfType<EditField>().Where( a => a.HeaderText == "Run Now" ).FirstOrDefault();
@@ -101,9 +107,9 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 // format duration
-                if ( e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ) != null )
+                if ( serviceJob.LastRunDurationSeconds.HasValue )
                 {
-                    int durationSeconds = e.Row.DataItem.GetPropertyValue( "LastRunDurationSeconds" ).ToString().AsIntegerOrNull() ?? 0;
+                    int durationSeconds = serviceJob.LastRunDurationSeconds.Value;
                     TimeSpan duration = TimeSpan.FromSeconds( durationSeconds );
 
                     var lLastRunDurationSeconds = e.Row.FindControl( "lLastRunDurationSeconds" ) as Literal;
@@ -130,16 +136,16 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 // format inactive jobs
-                if ( !e.Row.DataItem.GetPropertyValue( "IsActive" ).ToStringSafe().AsBoolean( false ) )
+                if ( serviceJob.IsActive == false )
                 {
                     e.Row.AddCssClass( "inactive" );
                 }
 
                 // format last status
                 var lLastStatus = e.Row.FindControl( "lLastStatus" ) as Literal;
-                if ( e.Row.DataItem.GetPropertyValue( "LastStatus" ) != null && lLastStatus != null )
+                if ( serviceJob.LastStatus.IsNotNullOrWhiteSpace() )
                 {
-                    string lastStatus = e.Row.DataItem.GetPropertyValue( "LastStatus" ).ToString();
+                    string lastStatus = serviceJob.LastStatus;
 
                     switch ( lastStatus )
                     {
@@ -163,9 +169,23 @@ namespace RockWeb.Blocks.Administration
                             break;
                     }
                 }
+
+                var lLastStatusMessageAsHtml = e.Row.FindControl( "lLastStatusMessageAsHtml" ) as Literal;
+                if ( lLastStatusMessageAsHtml != null )
+                {
+                    if ( serviceJob.LastStatusMessageAsHtml.Length > 255 )
+                    {
+                        // if over 255 chars, limit the height to 100px so we don't get a giant summary displayed in the grid
+                        // Also, we don't want to use .Truncate(255) since that could break any html that is in the LastStatusMessageAsHtml
+                        lLastStatusMessageAsHtml.Text = string.Format( "<div style='max-height:100px;overflow:hidden'>{0}</div>", serviceJob.LastStatusMessageAsHtml );
+                    }
+                    else
+                    {
+                        lLastStatusMessageAsHtml.Text = serviceJob.LastStatusMessageAsHtml;
+                    }
+                }
             }
         }
-
 
         /// <summary>
         /// Handles the Add event of the gScheduledJobs control.

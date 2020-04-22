@@ -15,6 +15,8 @@ namespace Rock.Tests.Integration.Jobs
         MultipleAggregateException,
         SingleAggregateException,
         Warning,
+        WarningWithMultipleAggregateException,
+        WarningWithSingleAggregateException,
         Success
     }
 
@@ -56,6 +58,14 @@ namespace Rock.Tests.Integration.Jobs
                     throw new AggregateException( singleException1 );
                 case TestResultType.Warning:
                     throw new RockJobWarningException( exceptionMessage );
+                case TestResultType.WarningWithMultipleAggregateException:
+                    var WarningException1 = new Exception( $"{exceptionMessage} 3" );
+                    var WarningException2 = new Exception( $"{exceptionMessage} 4" );
+                    throw new RockJobWarningException( exceptionMessage, new AggregateException( WarningException1, WarningException2 ) );
+                case TestResultType.WarningWithSingleAggregateException:
+                    var WarningSingleException = new Exception( $"{exceptionMessage} 5" );
+                    throw new RockJobWarningException( exceptionMessage, new AggregateException( WarningSingleException ) );
+
                 default:
                     context.Result = exceptionMessage;
                     break;

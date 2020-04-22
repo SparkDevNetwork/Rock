@@ -171,13 +171,13 @@ namespace Rock.Jobs
 
                 var warningException = exceptionToLog as RockJobWarningException;
 
+                // log the exception to the database (even if it is a RockJobWarningException)
+                ExceptionLogService.LogException( exceptionToLog, null );
+
                 if ( warningException == null )
                 {
                     // put the exception into the status
                     job.LastStatus = "Exception";
-
-                    // log the exception to the database (
-                    ExceptionLogService.LogException( exceptionToLog, null );
 
                     AggregateException aggregateException = exceptionToLog as AggregateException;
                     if ( aggregateException != null && aggregateException.InnerExceptions != null && aggregateException.InnerExceptions.Count > 1 )
@@ -192,9 +192,9 @@ namespace Rock.Jobs
                 }
                 else
                 {
-                    // put the exception into the status
+                    // if the context.Result hasn't been set, use the warningException.Message
                     job.LastStatus = "Warning";
-                    job.LastStatusMessage = warningException.Message;
+                    job.LastStatusMessage = context.Result?.ToString() ?? warningException.Message;
                 }
 
                 if ( job.NotificationStatus == JobNotificationStatus.Error )
