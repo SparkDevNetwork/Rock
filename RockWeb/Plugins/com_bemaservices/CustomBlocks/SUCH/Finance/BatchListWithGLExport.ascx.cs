@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by BEMA Information Technologies
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -22,7 +38,7 @@ using System.Text;
 namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance
 {
     [DisplayName( "Batch List with GL Export" )]
-    [Category( "com_bemadev > Finance" )]
+    [Category( "BEMA Services > Finance" )]
     [Description( "Financial batch list that supports GL exports." )]
     [LinkedPage( "Detail Page", order: 0 )]
     [BooleanField( "Show Accounting Code", "Should the accounting code column be displayed.", false, "", 1 )]

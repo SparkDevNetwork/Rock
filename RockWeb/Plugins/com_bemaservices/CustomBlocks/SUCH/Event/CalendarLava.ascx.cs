@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by BEMA Information Technologies
 //
 // Licensed under the Rock Community License (the "License");
@@ -39,7 +39,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Event
     /// Renders a particular calendar using Lava.
     /// </summary>
     [DisplayName( "Calendar Lava" )]
-    [Category("com_bemaservices > Event")]
+    [Category("BEMA Services > Event")]
     [Description( "Renders a particular calendar using Lava." )]
 
     [EventCalendarField( "Event Calendar", "The event calendar to be displayed", true, "1", order: 0 )]

@@ -34,7 +34,7 @@ using Rock.Web.UI;
 namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.SUCH.Finance
 {
     [DisplayName( "Pledge Detail" )]
-    [Category( "com_bemaservices > Finance" )]
+    [Category( "BEMA Services > Finance" )]
     [Description( "Allows the details of a given pledge to be edited." )]
     [GroupTypeField( "Select Group Type", "Optional Group Type that if selected will display a list of groups that pledge can be associated to for selected user", false, "", "", 1 )]
 
