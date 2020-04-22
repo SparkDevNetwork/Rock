@@ -31,7 +31,7 @@ namespace Rock.Migrations
         {
             AddColumn("dbo.PhoneNumber", "FullNumber", c => c.String(nullable: false, maxLength: 23));
             Sql( "UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
-            Sql( "ALTER TABLE [PhoneNumber] ALTER COLUMN [FullNumber] nvarchar(20) NOT NULL" );
+            Sql( "ALTER TABLE [PhoneNumber] ALTER COLUMN [FullNumber] nvarchar(23) NOT NULL" );
             CreateIndex( "dbo.PhoneNumber", "FullNumber" );
         }
         
