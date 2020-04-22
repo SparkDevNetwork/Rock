@@ -22,17 +22,15 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class PhoneFullNumber : Rock.Migrations.RockMigration
+    public partial class PhoneFullNumber23 : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.PhoneNumber", "FullNumber", c => c.String(nullable: false, maxLength: 23));
-            Sql( "UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
+            // Just in case a buggy version of 202004092317523_PhoneFullNumber was run, make sure that FullNumber has a length of 23 
             Sql( "ALTER TABLE [PhoneNumber] ALTER COLUMN [FullNumber] nvarchar(23) NOT NULL" );
-            CreateIndex( "dbo.PhoneNumber", "FullNumber" );
         }
         
         /// <summary>
@@ -40,8 +38,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropIndex("dbo.PhoneNumber", new[] { "FullNumber" });
-            DropColumn("dbo.PhoneNumber", "FullNumber");
         }
     }
 }
