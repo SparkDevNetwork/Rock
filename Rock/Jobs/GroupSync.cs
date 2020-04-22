@@ -99,8 +99,11 @@ namespace Rock.Jobs
                 {
                     // Get groups that are not archived and are still active.
                     activeSyncList = new GroupSyncService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( x => !x.Group.IsArchived && x.Group.IsActive )
+                        .Queryable()
+                        .AsNoTracking()
+                        .AreNotArchived()
+                        .AreActive()
+                        .NeedToBeSynced()
                         .Select( x => new GroupSyncInfo { SyncId = x.Id, GroupName = x.Group.Name } )
                         .ToList();
                 }
@@ -380,6 +383,18 @@ namespace Rock.Jobs
 
                         // Increment the Groups Synced Counter
                         groupsSynced++;
+                    }
+
+                    // Update last refresh datetime in different context to avoid side-effects.
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var sync = new GroupSyncService( rockContext )
+                            .Queryable()
+                            .FirstOrDefault( s => s.Id == syncId );
+
+                        sync.LastRefreshDateTime = RockDateTime.Now;
+
+                        rockContext.SaveChanges();
                     }
                 }
 
