@@ -21,7 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
+using System.Text;
 using Quartz;
 
 using Rock.Attribute;
@@ -81,8 +81,7 @@ namespace Rock.Jobs
         {
         }
 
-        private List<RockCleanupJobResult> _databaseRowsCleanedUp = new List<RockCleanupJobResult>();
-        private List<Exception> _rockCleanupExceptions = new List<Exception>();
+        private List<RockCleanupJobResult> rockCleanupJobResultList = new List<RockCleanupJobResult>();
         private IJobExecutionContext jobContext;
 
         private int commandTimeout;
@@ -103,6 +102,15 @@ namespace Rock.Jobs
 
             batchAmount = dataMap.GetString( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
+
+            /* IMPORTANT!!:
+
+            Whenever you do a new RockContext() in RockCleanup make sure to set the commandtimeout, like this:
+
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            */
 
             RunCleanupTask( "Purge Exception Log", () => this.PurgeExceptionLog( dataMap ) );
 
@@ -165,38 +173,74 @@ namespace Rock.Jobs
             // ***********************
             //  Final count and report
             // ***********************
-            if ( _databaseRowsCleanedUp.Any( a => a.RowsAffected > 0 ) )
+
+            StringBuilder jobSummaryBuilder = new StringBuilder();
+            jobSummaryBuilder.AppendLine( "Summary:" );
+            jobSummaryBuilder.AppendLine( "" );
+            foreach ( var rockCleanupJobResult in rockCleanupJobResultList )
             {
-                context.Result = string.Format( "Processed {0}",
-                    _databaseRowsCleanedUp
-                        .Where( a => a.RowsAffected > 0 )
-                        .Select( GetFormattedResult )
-                        .ToList()
-                        .AsDelimited( ", ", " and " ) );
+                jobSummaryBuilder.AppendLine( $"{GetFormattedResult( rockCleanupJobResult )}" );
+            }
+
+            if ( rockCleanupJobResultList.Any( a => a.RowsAffected > 0 ) || rockCleanupJobResultList.Any( a => a.HasException ) )
+            {
+                if ( rockCleanupJobResultList.Any( a => a.HasException ) )
+                {
+                    jobSummaryBuilder.AppendLine( "\n<span class='label label-warning'>Warning</span> Some jobs have errors. See exception log for details." );
+                }
+
+                context.Result = jobSummaryBuilder.ToString();
             }
             else
             {
-                context.Result = "Rock Cleanup completed";
+                context.Result = "Rock Cleanup completed successfully";
             }
 
-            if ( _rockCleanupExceptions.Count > 0 )
+            var rockCleanupExceptions = rockCleanupJobResultList.Where( a => a.HasException ).Select( a => a.Exception ).ToList();
+
+            if ( rockCleanupExceptions.Any() )
             {
-                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", _rockCleanupExceptions );
+                var exceptionList = new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
+                throw new RockJobWarningException( "RockCleanup completed with warnings", exceptionList );
             }
         }
 
         /// <summary>
         /// Get a cleanup job result as a formatted string
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="rockCleanupJobResult"></param>
         /// <returns></returns>
-        private string GetFormattedResult( RockCleanupJobResult result )
+        private string GetFormattedResult( RockCleanupJobResult rockCleanupJobResult )
         {
-            var rowsAffectedString = string.Format( "{0:n0}", result.RowsAffected );
-            var elapsedMillisecondsString = string.Format( "{0:n0}", result.ElapsedMilliseconds );
-            var titleString = result.Title.PluralizeIf( result.RowsAffected != 1 );
+            if ( rockCleanupJobResult.HasException )
+            {
+                return $"<span class='label label-danger'>Error</span> { rockCleanupJobResult.Title}";
+            }
+            else
+            {
+                string completionResultString;
+                if ( rockCleanupJobResult.RowsAffected > 0 )
+                {
+                    completionResultString = string.Format( "processed {0:n0} rows", rockCleanupJobResult.RowsAffected );
+                }
+                else
+                {
+                    completionResultString = string.Empty;
+                }
 
-            return $"{rowsAffectedString} {titleString} ({elapsedMillisecondsString}ms)";
+                var titleString = rockCleanupJobResult.Title;
+                string elapsedTimeString = string.Empty;
+                if ( rockCleanupJobResult.Elapsed.TotalMinutes > 1 )
+                {
+                    elapsedTimeString = $"[{Math.Round( rockCleanupJobResult.Elapsed.TotalMinutes, 1 )} minutes]";
+                }
+                else if ( rockCleanupJobResult.Elapsed.TotalSeconds > 1 )
+                {
+                    elapsedTimeString = $"[{Math.Round( rockCleanupJobResult.Elapsed.TotalSeconds, 1 )} seconds]";
+                }
+
+                return $"<span class='label label-success'>Success</span> {titleString} {completionResultString} {elapsedTimeString}";
+            }
         }
 
         /// <summary>
@@ -206,25 +250,31 @@ namespace Rock.Jobs
         /// <param name="cleanupMethod">The cleanup method.</param>
         private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
         {
+            var stopwatch = new Stopwatch();
             try
             {
-                var stopwatch = new Stopwatch();
                 jobContext.UpdateLastStatusMessage( $"Running {cleanupTitle}" );
-
                 stopwatch.Start();
                 var cleanupRowsAffected = cleanupMethod();
                 stopwatch.Stop();
 
-                _databaseRowsCleanedUp.Add( new RockCleanupJobResult
+                rockCleanupJobResultList.Add( new RockCleanupJobResult
                 {
                     Title = cleanupTitle,
                     RowsAffected = cleanupRowsAffected,
-                    ElapsedMilliseconds = stopwatch.ElapsedMilliseconds,
+                    Elapsed = stopwatch.Elapsed
                 } );
             }
             catch ( Exception ex )
             {
-                _rockCleanupExceptions.Add( new RockCleanupException( cleanupTitle, ex ) );
+                stopwatch.Stop();
+                rockCleanupJobResultList.Add( new RockCleanupJobResult
+                {
+                    Title = cleanupTitle,
+                    RowsAffected = 0,
+                    Elapsed = stopwatch.Elapsed,
+                    Exception = new RockCleanupException( cleanupTitle, ex )
+                } );
             }
         }
 
@@ -387,6 +437,7 @@ namespace Rock.Jobs
             // update any PhoneNumber.FullNumber's that aren't correct. 
             using ( var phoneNumberRockContext = new RockContext() )
             {
+                phoneNumberRockContext.Database.CommandTimeout = commandTimeout;
                 int phoneNumberUpdates = phoneNumberRockContext.Database.ExecuteSqlCommand( @"UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
                 resultCount += phoneNumberUpdates;
             }
@@ -434,6 +485,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
                 var userLoginService = new UserLoginService( rockContext );
                 var anonymousGiver = new PersonService( rockContext ).GetOrCreateAnonymousGiverPerson();
                 if ( anonymousGiver == null )
@@ -783,7 +835,7 @@ namespace Rock.Jobs
                 var exceptionLogRockContext = new Rock.Data.RockContext();
 
                 // Assuming a 10 minute minimum CommandTimeout for this process.
-                exceptionLogRockContext.Database.CommandTimeout = commandTimeout >=600 ? commandTimeout : 600;
+                exceptionLogRockContext.Database.CommandTimeout = commandTimeout >= 600 ? commandTimeout : 600;
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
                 var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
@@ -1697,12 +1749,16 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             public int RowsAffected { get; set; }
 
             /// <summary>
-            /// Gets or sets the time taken in milliseconds.
+            /// Gets or sets the amount of time taken
             /// </summary>
             /// <value>
             /// The time.
             /// </value>
-            public long ElapsedMilliseconds { get; set; }
+            public TimeSpan Elapsed { get; set; }
+
+            public bool HasException => Exception != null;
+
+            public Exception Exception { get; set; }
         }
     }
 }

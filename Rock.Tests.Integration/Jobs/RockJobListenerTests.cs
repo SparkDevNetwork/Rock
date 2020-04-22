@@ -189,14 +189,45 @@ namespace Rock.Tests.Integration.Jobs
 
             RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedResultMessage ) );
 
-            var actualExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
+            var actualJob = GetAddTestJob();
+
+            Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
+            Assert.That.AreEqual( "Warning", actualJob.LastStatus );
+
+            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
+            Assert.That.IsTrue( exceptions.Count() == 1 );
+        }
+
+        [TestMethod]
+        public void RockJobListnerShouldHandleWarningWithMultipleAggregateException()
+        {
+            var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
+
+            RunJob( GetJobDataMapDictionary( TestResultType.WarningWithMultipleAggregateException, expectedResultMessage ) );
 
             var actualJob = GetAddTestJob();
 
             Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
             Assert.That.AreEqual( "Warning", actualJob.LastStatus );
 
-            Assert.That.AreEqual( expectedExceptionsCount, actualExceptionsCount );
+            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
+            Assert.That.IsTrue( exceptions.Count() == 1 );
+        }
+
+        [TestMethod]
+        public void RockJobListnerShouldHandleWarningWithSingleAggregateException()
+        {
+            var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
+
+            RunJob( GetJobDataMapDictionary( TestResultType.WarningWithSingleAggregateException, expectedResultMessage ) );
+
+            var actualJob = GetAddTestJob();
+
+            Assert.That.AreEqual( expectedResultMessage, actualJob.LastStatusMessage );
+            Assert.That.AreEqual( "Warning", actualJob.LastStatus );
+
+            var exceptions = new ExceptionLogService( new RockContext() ).Queryable().Where( els => els.Description == expectedResultMessage );
+            Assert.That.IsTrue( exceptions.Count() == 1 );
         }
 
         [TestMethod]
