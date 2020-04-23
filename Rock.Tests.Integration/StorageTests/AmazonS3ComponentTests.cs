@@ -339,6 +339,9 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestCreateDownloadLink()
         {
+            // Make sure TestUploadObjectByName exists first.
+            TestUploadObjectByName();
+
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
                 var assetStorageProvider = GetAssetStorageProvider();
@@ -359,9 +362,16 @@ namespace Rock.Tests.Integration.StorageTests
                     response.Close();
                     valid = response.StatusCode == System.Net.HttpStatusCode.OK ? true : false;
                 }
-                catch
+                catch ( System.Net.WebException e )
                 {
-                    valid = false;
+                    using ( System.Net.WebResponse response = e.Response )
+                    {
+                        System.Net.HttpWebResponse httpResponse = ( System.Net.HttpWebResponse ) response;
+                        if ( httpResponse.StatusCode == System.Net.HttpStatusCode.Forbidden )
+                        {
+                            Assert.That.Inconclusive( $"File ({asset.Key}) was not forbidden from viewing." );
+                        }
+                    }
                 }
 
                 Assert.That.IsTrue( valid );
@@ -420,7 +430,7 @@ namespace Rock.Tests.Integration.StorageTests
                 asset.Key = "UnitTestFolder/TwoThousandObjects/";
                 asset.Type = AssetType.Folder;
 
-                var assetList = s3Component.ListFoldersInFolder( GetAssetStorageProvider(), asset );
+                var assetList = s3Component.ListFoldersInFolder( assetStorageProvider, asset );
 
                 Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
                 Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-1" ) );
@@ -505,15 +515,33 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestDeleteFile()
         {
-            var assetStorageProvider = GetAssetStorageProvider();
-            var s3Component = assetStorageProvider.GetAssetStorageComponent();
+            // Make sure the file is there so we can rename it
+            TestUploadObjectByName();
 
-            Asset asset = new Asset();
-            asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
-            asset.Type = AssetType.File;
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
 
-            bool hasDeleted = s3Component.DeleteAsset( assetStorageProvider, asset );
-            Assert.That.IsTrue( hasDeleted );
+                Asset asset = new Asset();
+                asset.Key = "UnitTestFolder/SubFolder1/TestUploadObjectByName.jpg";
+                asset.Type = AssetType.File;
+
+                var origAssetList = s3Component.ListObjects( assetStorageProvider, asset );
+
+                if ( origAssetList.Count == 1 )
+                {
+                    Assert.That.IsTrue( s3Component.DeleteAsset( assetStorageProvider, asset ) );
+
+                    // Verify file is not present
+                    var assetList = s3Component.ListObjects( assetStorageProvider, asset );
+                    Assert.That.IsFalse( assetList.Any( a => a.Name == "TestUploadObjectByName.jpg" ) );
+                }
+                else
+                {
+                    Assert.That.Inconclusive( $"File ({asset.Key}) was not present for 'delete' test." );
+                }
+            }
         }
 
         /// <summary>
