@@ -696,17 +696,41 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             var breadCrumbs = new List<BreadCrumb>();
 
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
+            string registrationSlug = PageParameter( SLUG_PARAM_NAME );
 
             if ( registrationInstanceId.HasValue )
             {
-                var registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
+                string registrationInstanceName = new RegistrationInstanceService( new RockContext() ).GetSelect( registrationInstanceId.Value, a => a.Name );
 
                 RockPage.Title = registrationInstanceName;
                 breadCrumbs.Add( new BreadCrumb( registrationInstanceName, pageReference ) );
-                return breadCrumbs;
+            }
+            else if ( registrationSlug.IsNotNullOrWhiteSpace() )
+            {
+                var dateTime = RockDateTime.Now;
+                var linkage = new EventItemOccurrenceGroupMapService( new RockContext() )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( l => l.UrlSlug == registrationSlug )
+                    .Where( l => l.RegistrationInstance != null )
+                    .Where( l => l.RegistrationInstance.IsActive )
+                    .Where( l => l.RegistrationInstance.RegistrationTemplate != null )
+                    .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
+                    .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
+                    .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
+
+                if ( linkage != null )
+                {
+                    RockPage.Title = linkage.RegistrationInstance.Name;
+                    breadCrumbs.Add( new BreadCrumb( linkage.RegistrationInstance.Name, pageReference ) );
+                }
+            }
+            else
+            {
+                breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             }
 
-            breadCrumbs.Add( new BreadCrumb( this.PageCache.PageTitle, pageReference ) );
             return breadCrumbs;
         }
 
@@ -1797,7 +1821,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
             if ( RegistrationState != null )
             {
-                // Calculate the available slots. If maxAttendees is 0 that means unlimited since this is not a nullable.
+                // Calculate the available slots. If maxAttendees is null that means unlimited registrants and RegistrationState.SlotsAvailable should not be calculated.
                 if ( !RegistrationState.RegistrationId.HasValue && RegistrationInstanceState != null && RegistrationInstanceState.MaxAttendees.HasValue )
                 {
                     var existingRegistrantIds = RegistrationState.Registrants.Select( r => r.Id ).ToList();
@@ -3033,7 +3057,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     familyGroup,
                     true,
                     false );
-                
+
                 var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 if ( homeLocationType != null && familyGroup != null )
                 {
@@ -3617,7 +3641,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 {
                     max = RegistrationState.SlotsAvailable.Value;
                 }
-                
+
                 if ( max > MinRegistrants )
                 {
                     // If registration allows multiple registrants show the 'How Many' panel
@@ -3654,32 +3678,34 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         /// </summary>
         private void ShowWaitingListNotice()
         {
-            if ( RegistrationTemplate.WaitListEnabled )
+            if ( !RegistrationTemplate.WaitListEnabled || !RegistrationState.SlotsAvailable.HasValue )
             {
-                nbWaitingList.Title = string.Format( "{0} Full", RegistrationTerm );
+                return;
+            }
 
-                if ( !RegistrationState.SlotsAvailable.HasValue || RegistrationState.SlotsAvailable.Value <= 0 )
+            nbWaitingList.Title = string.Format( "{0} Full", RegistrationTerm );
+
+            if ( RegistrationState.SlotsAvailable.Value <= 0 )
+            {
+                nbWaitingList.Text = string.Format( "<p>This {0} has reached its capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
+                nbWaitingList.Visible = true;
+            }
+            else
+            {
+                if ( numHowMany.Value > RegistrationState.SlotsAvailable )
                 {
-                    nbWaitingList.Text = string.Format( "<p>This {0} has reached its capacity. Complete the registration below to be added to the waitlist.</p>", RegistrationTerm );
+                    int slots = RegistrationState.SlotsAvailable.Value;
+                    int wait = numHowMany.Value - slots;
+                    nbWaitingList.Text = string.Format(
+                        "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
+                        RegistrationTerm.ToLower(),
+                        slots,
+                        RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(),
+                        slots > 1 ? slots.ToString() + " " : string.Empty,
+                        RegistrationInstanceState.Name,
+                        wait > 1 ? wait.ToString() + " " : string.Empty,
+                        RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
                     nbWaitingList.Visible = true;
-                }
-                else
-                {
-                    if ( numHowMany.Value > RegistrationState.SlotsAvailable )
-                    {
-                        int slots = RegistrationState.SlotsAvailable.Value;
-                        int wait = numHowMany.Value - slots;
-                        nbWaitingList.Text = string.Format(
-                            "<p>This {0} only has capacity for {1} more {2}. The first {3}{2} you add will be registered for {4}. The remaining {5}{6} will be added to the waitlist.",
-                            RegistrationTerm.ToLower(),
-                            slots,
-                            RegistrantTerm.PluralizeIf( slots > 1 ).ToLower(),
-                            slots > 1 ? slots.ToString() + " " : string.Empty,
-                            RegistrationInstanceState.Name,
-                            wait > 1 ? wait.ToString() + " " : string.Empty,
-                            RegistrantTerm.PluralizeIf( wait > 1 ).ToLower() );
-                        nbWaitingList.Visible = true;
-                    }
                 }
             }
         }
@@ -5270,12 +5296,12 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                                 // default Payment is more than min and less than balance due, so we can use it
                                 RegistrationState.PaymentAmount = defaultPayment;
                             }
-                            else if (defaultPayment <= minimumPayment)
+                            else if ( defaultPayment <= minimumPayment )
                             {
                                 // default Payment is less than min, so use min instead
                                 RegistrationState.PaymentAmount = minimumPayment;
                             }
-                            else if (defaultPayment >= balanceDue)
+                            else if ( defaultPayment >= balanceDue )
                             {
                                 // default Payment is more than balance due, so use balance due
                                 RegistrationState.PaymentAmount = balanceDue;
@@ -5704,48 +5730,166 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                                 } );
                             }
 
-                            foreach ( Control control in phRegistrantControls.Controls )
+
+                            string fieldId = "attribute_field_" + singleSelectField.AttributeId;
+                            Control control = phRegistrantControls.FindControl( fieldId );
+                            ListItemCollection removedItems = new ListItemCollection();
+                            if ( field.Attribute.FieldType.Guid == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
                             {
-                                if ( control.ID == string.Format( "attribute_field_{0}", singleSelectField.AttributeId ) )
+                                var definedValueList = control as DefinedValuePicker;
+                                foreach ( ListItem item in definedValueList.Items )
                                 {
-                                    ListItemCollection removedItems = new ListItemCollection();
-                                    if ( field.Attribute.FieldType.Guid == Rock.SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
+                                    var singleSelectValue = item.Value;
+                                    var definedValue = DefinedValueCache.Get( singleSelectValue.AsInteger() );
+                                    if ( singleSelectValue.IsNotNullOrWhiteSpace() && definedValue != null )
                                     {
-                                        var definedValueList = control as DefinedValuePicker;
-                                        foreach ( ListItem item in definedValueList.Items )
+                                        var slotValue = slots.Where( s => s.Key.Trim() == singleSelectValue.Trim() ).FirstOrDefault();
+                                        if ( slotValue.Key.IsNotNullOrWhiteSpace() )
                                         {
-                                            var singleSelectValue = item.Value;
-                                            var definedValue = DefinedValueCache.Get( singleSelectValue.AsInteger() );
-                                            if ( singleSelectValue.IsNotNullOrWhiteSpace() && definedValue != null )
+                                            if ( slotValue.Value.ToString().Trim().ToUpper() == "HIDE" )
                                             {
-                                                var slotValue = slots.Where( s => s.Key.Trim() == singleSelectValue.Trim() ).FirstOrDefault();
-                                                if ( slotValue.Key.IsNotNullOrWhiteSpace() )
+                                                removedItems.Add( item );
+                                            }
+                                            else
+                                            {
+                                                var totalSlots = slotValue.Value.ToString().AsIntegerOrNull();
+                                                if ( totalSlots != null )
                                                 {
-                                                    if ( slotValue.Value.ToString().Trim().ToUpper() == "HIDE" )
+                                                    var existingSlots = registrantsAndValues.Where( r => r.SlotValue == definedValue.Guid.ToString() ).Count();
+
+                                                    var currentRegistrationSlots = RegistrationState.Registrants.Where( r =>
+                                                        r.FieldValues.ContainsKey( singleSelectField.Id ) &&
+                                                        r.FieldValues[singleSelectField.Id] != null &&
+                                                        r.FieldValues[singleSelectField.Id].FieldValue != null &&
+                                                        r.FieldValues[singleSelectField.Id].FieldValue.ToString() == definedValue.Guid.ToString() &&
+                                                        r.Guid != RegistrationState.Registrants[CurrentRegistrantIndex].Guid
+                                                    ).Count();
+
+                                                    var availableSlots = totalSlots - ( existingSlots + currentRegistrationSlots );
+                                                    if ( availableSlots < 0 )
                                                     {
-                                                        removedItems.Add( item );
+                                                        availableSlots = 0;
+                                                    }
+
+                                                    if ( availableSlots == 1 )
+                                                    {
+                                                        item.Text += " (1 slot available)";
                                                     }
                                                     else
                                                     {
-                                                        var totalSlots = slotValue.Value.ToString().AsIntegerOrNull();
-                                                        if ( totalSlots != null )
+                                                        item.Text += string.Format( " ({0} slots available)", availableSlots );
+                                                    }
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                }
+                                foreach ( ListItem item in removedItems )
+                                {
+                                    definedValueList.Items.Remove( item );
+                                }
+                            }
+                            else
+                            {
+
+                                var fieldType = field.Attribute.AttributeQualifiers.Where( aq => aq.Key == "fieldtype" ).FirstOrDefault();
+                                if ( fieldType != null && fieldType.Value == "rb" )
+                                {
+                                    var radioButtonList = control as RockRadioButtonList;
+                                    foreach ( ListItem item in radioButtonList.Items )
+                                    {
+                                        var singleSelectValue = item.Value;
+                                        if ( singleSelectValue.IsNotNullOrWhiteSpace() )
+                                        {
+                                            var slotValue = slots.Where( s => s.Key.Trim() == singleSelectValue.Trim() ).FirstOrDefault();
+                                            if ( slotValue.Key.IsNotNullOrWhiteSpace() )
+                                            {
+                                                if ( slotValue.Value.ToString().Trim().ToUpper() == "HIDE" )
+                                                {
+                                                    removedItems.Add( item );
+                                                }
+                                                else
+                                                {
+                                                    var totalSlots = slotValue.Value.ToString().AsIntegerOrNull();
+                                                    if ( totalSlots != null )
+                                                    {
+                                                        var existingSlots = registrantsAndValues.Where( r => r.SlotValue == singleSelectValue ).Count();
+
+                                                        var currentRegistrationSlots = RegistrationState.Registrants.Where( r =>
+                                                            r.FieldValues.ContainsKey( singleSelectField.Id ) &&
+                                                            r.FieldValues[singleSelectField.Id] != null &&
+                                                            r.FieldValues[singleSelectField.Id].FieldValue != null &&
+                                                            r.FieldValues[singleSelectField.Id].FieldValue.ToString() == singleSelectValue &&
+                                                            r.Guid != RegistrationState.Registrants[CurrentRegistrantIndex].Guid
+                                                        ).Count();
+
+                                                        var availableSlots = totalSlots - ( existingSlots + currentRegistrationSlots );
+                                                        if ( availableSlots < 0 )
                                                         {
-                                                            var existingSlots = registrantsAndValues.Where( r => r.SlotValue == definedValue.Guid.ToString() ).Count();
+                                                            availableSlots = 0;
+                                                        }
 
-                                                            var currentRegistrationSlots = RegistrationState.Registrants.Where( r =>
-                                                                r.FieldValues.ContainsKey( singleSelectField.Id ) &&
-                                                                r.FieldValues[singleSelectField.Id] != null &&
-                                                                r.FieldValues[singleSelectField.Id].FieldValue != null &&
-                                                                r.FieldValues[singleSelectField.Id].FieldValue.ToString() == definedValue.Guid.ToString() &&
-                                                                r.Guid != RegistrationState.Registrants[CurrentRegistrantIndex].Guid
-                                                            ).Count();
+                                                        if ( availableSlots == 1 )
+                                                        {
+                                                            item.Text += " (1 slot available)";
+                                                        }
+                                                        else
+                                                        {
+                                                            item.Text += string.Format( " ({0} slots available)", availableSlots );
+                                                        }
+                                                    }
+                                                }
 
-                                                            var availableSlots = totalSlots - ( existingSlots + currentRegistrationSlots );
-                                                            if ( availableSlots < 0 )
-                                                            {
-                                                                availableSlots = 0;
-                                                            }
+                                            }
+                                        }
+                                    }
+                                    foreach ( ListItem item in removedItems )
+                                    {
+                                        radioButtonList.Items.Remove( item );
+                                    }
 
+                                }
+                                else
+                                {
+                                    var dropDownList = control as RockDropDownList;
+                                    foreach ( ListItem item in dropDownList.Items )
+                                    {
+                                        var singleSelectValue = item.Value;
+                                        if ( singleSelectValue.IsNotNullOrWhiteSpace() )
+                                        {
+                                            var slotValue = slots.Where( s => s.Key.Trim() == singleSelectValue.Trim() ).FirstOrDefault();
+                                            if ( slotValue.Key.IsNotNullOrWhiteSpace() )
+                                            {
+                                                if ( slotValue.Value.ToString().Trim().ToUpper() == "HIDE" )
+                                                {
+                                                    removedItems.Add( item );
+                                                }
+                                                else
+                                                {
+                                                    var totalSlots = slotValue.Value.ToString().AsIntegerOrNull();
+                                                    if ( totalSlots != null )
+                                                    {
+                                                        var existingSlots = registrantsAndValues.Where( r => r.SlotValue == singleSelectValue ).Count();
+
+                                                        var currentRegistrationSlots = RegistrationState.Registrants.Where( r =>
+                                                            r.FieldValues.ContainsKey( singleSelectField.Id ) &&
+                                                            r.FieldValues[singleSelectField.Id] != null &&
+                                                            r.FieldValues[singleSelectField.Id].FieldValue != null &&
+                                                            r.FieldValues[singleSelectField.Id].FieldValue.ToString() == singleSelectValue &&
+                                                            r.Guid != RegistrationState.Registrants[CurrentRegistrantIndex].Guid
+                                                        ).Count();
+
+                                                        var availableSlots = totalSlots - ( existingSlots + currentRegistrationSlots );
+                                                        if ( availableSlots < 0 )
+                                                        {
+                                                            availableSlots = 0;
+                                                        }
+
+                                                        if ( CurrentPerson != null &&
+                                                            CurrentPerson.ConnectionStatusValue != null &&
+                                                            CurrentPerson.ConnectionStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid() )
+                                                        {
                                                             if ( availableSlots == 1 )
                                                             {
                                                                 item.Text += " (1 slot available)";
@@ -5755,151 +5899,27 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                                                                 item.Text += string.Format( " ({0} slots available)", availableSlots );
                                                             }
                                                         }
-                                                    }
+                                                        else
+                                                        {
+                                                            item.Text += " (0 slots currently available)";
+                                                        }
 
+                                                    }
                                                 }
+
                                             }
                                         }
-                                        foreach ( ListItem item in removedItems )
-                                        {
-                                            definedValueList.Items.Remove( item );
-                                        }
                                     }
-                                    else
+                                    foreach ( ListItem item in removedItems )
                                     {
-
-                                        var fieldType = field.Attribute.AttributeQualifiers.Where( aq => aq.Key == "fieldtype" ).FirstOrDefault();
-                                        if ( fieldType != null && fieldType.Value == "rb" )
-                                        {
-                                            var radioButtonList = control as RockRadioButtonList;
-                                            foreach ( ListItem item in radioButtonList.Items )
-                                            {
-                                                var singleSelectValue = item.Value;
-                                                if ( singleSelectValue.IsNotNullOrWhiteSpace() )
-                                                {
-                                                    var slotValue = slots.Where( s => s.Key.Trim() == singleSelectValue.Trim() ).FirstOrDefault();
-                                                    if ( slotValue.Key.IsNotNullOrWhiteSpace() )
-                                                    {
-                                                        if ( slotValue.Value.ToString().Trim().ToUpper() == "HIDE" )
-                                                        {
-                                                            removedItems.Add( item );
-                                                        }
-                                                        else
-                                                        {
-                                                            var totalSlots = slotValue.Value.ToString().AsIntegerOrNull();
-                                                            if ( totalSlots != null )
-                                                            {
-                                                                var existingSlots = registrantsAndValues.Where( r => r.SlotValue == singleSelectValue ).Count();
-
-                                                                var currentRegistrationSlots = RegistrationState.Registrants.Where( r =>
-                                                                    r.FieldValues.ContainsKey( singleSelectField.Id ) &&
-                                                                    r.FieldValues[singleSelectField.Id] != null &&
-                                                                    r.FieldValues[singleSelectField.Id].FieldValue != null &&
-                                                                    r.FieldValues[singleSelectField.Id].FieldValue.ToString() == singleSelectValue &&
-                                                                    r.Guid != RegistrationState.Registrants[CurrentRegistrantIndex].Guid
-                                                                ).Count();
-
-                                                                var availableSlots = totalSlots - ( existingSlots + currentRegistrationSlots );
-                                                                if ( availableSlots < 0 )
-                                                                {
-                                                                    availableSlots = 0;
-                                                                }
-
-                                                                if ( availableSlots == 1 )
-                                                                {
-                                                                    item.Text += " (1 slot available)";
-                                                                }
-                                                                else
-                                                                {
-                                                                    item.Text += string.Format( " ({0} slots available)", availableSlots );
-                                                                }
-                                                            }
-                                                        }
-
-                                                    }
-                                                }
-                                            }
-                                            foreach ( ListItem item in removedItems )
-                                            {
-                                                radioButtonList.Items.Remove( item );
-                                            }
-
-                                        }
-                                        else
-                                        {
-                                            var dropDownList = control as RockDropDownList;
-                                            foreach ( ListItem item in dropDownList.Items )
-                                            {
-                                                var singleSelectValue = item.Value;
-                                                if ( singleSelectValue.IsNotNullOrWhiteSpace() )
-                                                {
-                                                    var slotValue = slots.Where( s => s.Key.Trim() == singleSelectValue.Trim() ).FirstOrDefault();
-                                                    if ( slotValue.Key.IsNotNullOrWhiteSpace() )
-                                                    {
-                                                        if ( slotValue.Value.ToString().Trim().ToUpper() == "HIDE" )
-                                                        {
-                                                            removedItems.Add( item );
-                                                        }
-                                                        else
-                                                        {
-                                                            var totalSlots = slotValue.Value.ToString().AsIntegerOrNull();
-                                                            if ( totalSlots != null )
-                                                            {
-                                                                var existingSlots = registrantsAndValues.Where( r => r.SlotValue == singleSelectValue ).Count();
-
-                                                                var currentRegistrationSlots = RegistrationState.Registrants.Where( r =>
-                                                                    r.FieldValues.ContainsKey( singleSelectField.Id ) &&
-                                                                    r.FieldValues[singleSelectField.Id] != null &&
-                                                                    r.FieldValues[singleSelectField.Id].FieldValue != null &&
-                                                                    r.FieldValues[singleSelectField.Id].FieldValue.ToString() == singleSelectValue &&
-                                                                    r.Guid != RegistrationState.Registrants[CurrentRegistrantIndex].Guid
-                                                                ).Count();
-
-                                                                var availableSlots = totalSlots - ( existingSlots + currentRegistrationSlots );
-                                                                if ( availableSlots < 0 )
-                                                                {
-                                                                    availableSlots = 0;
-                                                                }
-
-                                                                if ( CurrentPerson != null &&
-                                                                    CurrentPerson.ConnectionStatusValue != null &&
-                                                                    CurrentPerson.ConnectionStatusValue.Guid == Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_MEMBER.AsGuid() )
-                                                                {
-                                                                    if ( availableSlots == 1 )
-                                                                    {
-                                                                        //  item.Text += " (1 slot available)";
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        //  item.Text += string.Format( " ({0} slots available)", availableSlots );
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    // item.Text += " (0 slots currently available)";
-                                                                }
-
-                                                            }
-                                                        }
-
-                                                    }
-                                                }
-                                            }
-                                            foreach ( ListItem item in removedItems )
-                                            {
-                                                dropDownList.Items.Remove( item );
-                                            }
-                                        }
+                                        dropDownList.Items.Remove( item );
                                     }
-
-                                    break;
                                 }
                             }
                         }
                     }
                 }
             }
-
         }
 
         #endregion

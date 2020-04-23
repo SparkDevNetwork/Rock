@@ -31,11 +31,12 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v9.2.1)
+ * BEMA Modified Core Block ( v9.4.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
  * - FE1) Added Ability to view transaction attributes
+ * - FE2) Added Ability to assign transactions to mission trips
  */
 
 namespace RockWeb.Plugins.com_bemaservices.Finance
@@ -66,7 +67,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     [LinkedPage(
         "Add Business Link",
         Key = AttributeKey.AddBusinessLink,
-        Description ="Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked",
+        Description = "Select the page where a new business can be added. If specified, a link will be shown which will open in a new window when clicked",
         IsRequired = false,
         Order = 2 )]
 
@@ -95,21 +96,42 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         "Prompt to Edit Payment Detail Attributes",
         Key = AttributeKey.DisplayPaymentDetailAttributeControls,
         Description = "If Transaction Payment Detail has attributes configured, this will prompt to edit the values for those.",
-        DefaultBooleanValue =  false,
+        DefaultBooleanValue = false,
         Order = 6 )]
 
     /* BEMA.FE1.Start */
     [BooleanField(
         "Show Transaction Attributes?",
-        Key = AttributeKey.ShowTransactionAttributes,
+        Key = BemaAttributeKey.ShowTransactionAttributes,
         DefaultValue = "False",
         Category = "BEMA Additional Features" )]
     // UMC Value = true
     /* BEMA.FE1.End */
 
+    /* BEMA.FE2.Start */
+    [BooleanField(
+        "Show Mission Trip Matching?",
+        Key = BemaAttributeKey.ShowMissionTripMatching,
+        DefaultValue = "False",
+        Category = "BEMA Additional Features" )]
+    // UMC Value = true
+    /* BEMA.FE2.End */
+
     public partial class TransactionMatching : RockBlock, IDetailBlock
     {
         #region Attribute Keys
+
+        /* BEMA.Start */
+        /// <summary>
+        /// Keys to use for custom BEMA Attributes
+        /// </summary>
+        protected static class BemaAttributeKey
+        {
+            public const string ShowTransactionAttributes = "ShowTransactionAttributes";
+            public const string ShowMissionTripMatching = "ShowTransactionAttributes";
+        }
+
+        /* BEMA.End */
 
         /// <summary>
         /// Keys to use for Block Attributes
@@ -123,7 +145,6 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             public const string TransactionDetailPage = "TransactionDetailPage";
             public const string ExpandPersonSearchOptions = "ExpandPersonSearchOptions";
             public const string DisplayPaymentDetailAttributeControls = "DisplayPaymentDetailAttributeControls";
-            public const string ShowTransactionAttributes = "ShowTransactionAttributes";
         }
 
         #endregion Attribute Keys
@@ -249,11 +270,15 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 }
 
                 /* BEMA.FE1.Start */
-                var transactionToMatch = new FinancialTransaction();
-                transactionToMatch.LoadAttributes();
+                if ( GetAttributeValue( BemaAttributeKey.ShowTransactionAttributes ).AsBoolean() )
+                {
+                    var transactionToMatch = new FinancialTransaction();
+                    transactionToMatch.LoadAttributes();
 
-                phAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( transactionToMatch, phAttributes, true, BlockValidationGroup );
+                    phAttributes.Controls.Clear();
+                    Rock.Attribute.Helper.AddEditControls( transactionToMatch, phAttributes, true, BlockValidationGroup );
+
+                }
                 /* BEMA.FE1.End */
             }
 
@@ -328,6 +353,25 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             var accountQry = new FinancialAccountService( rockContext )
                 .GetTree()
                 .Where( a => a.IsActive );
+
+            /* BEMA.FE2.Start */
+            ddlMissionsList.Visible = GetAttributeValue( BemaAttributeKey.ShowMissionTripMatching ).AsBoolean();
+            if ( GetAttributeValue( BemaAttributeKey.ShowMissionTripMatching ).AsBoolean() )
+            {
+                var missionsTripPeople = new GroupMemberService( rockContext ).Queryable().AsNoTracking().Where( a => a.Group.GroupTypeId == 31 && a.GroupMemberStatus == GroupMemberStatus.Active )
+                                .Select( x => new { Name = x.Person.NickName + " " + x.Person.LastName + " (" + x.Group.Name + ")", Id = x.Id, GroupName = x.Group.Name } )
+                                .ToList();
+
+                missionsTripPeople.Insert( 0, new { Name = "", Id = 0, GroupName = "" } );
+                missionsTripPeople.OrderBy( i => i.GroupName );
+
+                ddlMissionsList.DataSource = missionsTripPeople;
+                ddlMissionsList.DataTextField = "Name";
+                ddlMissionsList.DataValueField = "Id";
+
+                ddlMissionsList.DataBind();
+            }
+            /* BEMA.FE2.End */
 
             // no accounts specified means "all Active"
             if ( blockAccountGuidList.Any() )
@@ -460,7 +504,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             hfBatchId.Value = batchId.ToString();
             hfTransactionId.Value = string.Empty;
 
-            int? specificTransactionId = PageParameter(  PageParameterKey.TransactionId ).AsIntegerOrNull();
+            int? specificTransactionId = PageParameter( PageParameterKey.TransactionId ).AsIntegerOrNull();
             if ( specificTransactionId.HasValue )
             {
                 hfBackNextHistory.Value = specificTransactionId.Value.ToString();
@@ -553,8 +597,8 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                 {
                     qryTransactionsToMatch = financialTransactionService
                         .Queryable()
-                        .Include(a => a.AuthorizedPersonAlias.Person)
-                        .Include(a => a.ProcessedByPersonAlias.Person)
+                        .Include( a => a.AuthorizedPersonAlias.Person )
+                        .Include( a => a.ProcessedByPersonAlias.Person )
                         .Where( a => a.Id == toTransactionId );
                 }
 
@@ -778,13 +822,16 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     tbSummary.Text = transactionToMatch.Summary;
 
                     /* BEMA.FE1.Start */
-                    var txn = GetTransaction( transactionToMatch.Id, rockContext );
-                    transactionToMatch.LoadAttributes( rockContext );
+                    if ( GetAttributeValue( BemaAttributeKey.ShowTransactionAttributes ).AsBoolean() )
+                    {
+                        var txn = GetTransaction( transactionToMatch.Id, rockContext );
+                        transactionToMatch.LoadAttributes( rockContext );
 
-                    phAttributes.Controls.Clear();
-                    Rock.Attribute.Helper.AddEditControls( txn, phAttributes, true, BlockValidationGroup );
+                        phAttributes.Controls.Clear();
+                        Rock.Attribute.Helper.AddEditControls( txn, phAttributes, true, BlockValidationGroup );
+                    }
                     /* BEMA.FE1.End */
-					
+
                     if ( transactionToMatch.Images.Any() )
                     {
                         var primaryImage = transactionToMatch.Images
@@ -1175,6 +1222,18 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                         financialTransactionDetail.TransactionId = financialTransaction.Id;
                         financialTransactionDetail.AccountId = accountBox.Attributes["data-account-id"].AsInteger();
                         financialTransactionDetail.Amount = amount.Value;
+
+                        /* BEMA.FE2.Start */
+                        if ( GetAttributeValue( BemaAttributeKey.ShowMissionTripMatching ).AsBoolean() )
+                        {
+                            if ( ddlMissionsList.SelectedValue != "" )
+                            {
+                                financialTransactionDetail.EntityTypeId = 90; // Group  Member
+                                financialTransactionDetail.EntityId = ddlMissionsList.SelectedValue.AsInteger();
+                            }
+                        }
+                        /* BEMA.FE2.End */
+
                         financialTransactionDetailService.Add( financialTransactionDetail );
 
                         History.EvaluateChange( changes, accountBox.Label, 0.0M.FormatAsCurrency(), amount.Value.FormatAsCurrency() );
@@ -1187,11 +1246,15 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                 financialTransaction.ProcessedByPersonAliasId = this.CurrentPersonAlias.Id;
                 financialTransaction.ProcessedDateTime = RockDateTime.Now;
-				
-				/* BEMA.FE1.Start */
-                // Update any attributes
-                financialTransaction.LoadAttributes( rockContext );
-                Rock.Attribute.Helper.GetEditValues( phAttributes, financialTransaction );
+
+                /* BEMA.FE1.Start */
+                if ( GetAttributeValue( BemaAttributeKey.ShowTransactionAttributes ).AsBoolean() )
+                {
+                    // Update any attributes
+                    financialTransaction.LoadAttributes( rockContext );
+                    Rock.Attribute.Helper.GetEditValues( phAttributes, financialTransaction );
+
+                }
                 /* BEMA.FE1.End */
 
                 if ( this.GetAttributeValue( AttributeKey.DisplayPaymentDetailAttributeControls ).AsBoolean() )
@@ -1216,9 +1279,13 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
 
                 rockContext.SaveChanges();
                 financialTransaction.FinancialPaymentDetail.SaveAttributeValues( rockContext );
-				/* BEMA.FE1.Start */
-                financialTransaction.SaveAttributeValues( rockContext );
-				/* BEMA.FE1.End */
+
+                /* BEMA.FE1.Start */
+                if ( GetAttributeValue( BemaAttributeKey.ShowTransactionAttributes ).AsBoolean() )
+                {
+                    financialTransaction.SaveAttributeValues( rockContext );
+                }
+                /* BEMA.FE1.End */
             }
             else
             {
@@ -1383,7 +1450,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     }
                 }
 
-                NavigateToLinkedPage( AttributeKey.BatchDetailPage, new Dictionary<string, string> { { PageParameterKey.BatchId , batchId.Value.ToString() } } );
+                NavigateToLinkedPage( AttributeKey.BatchDetailPage, new Dictionary<string, string> { { PageParameterKey.BatchId, batchId.Value.ToString() } } );
             }
         }
 
@@ -1428,7 +1495,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     rptrAddresses.DataBind();
                     btnMoreAddress.Visible = false;
                 }
-                
+
             }
         }
 

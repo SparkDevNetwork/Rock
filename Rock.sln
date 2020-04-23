@@ -108,6 +108,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.flatironschurch.Autobui
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.MultiEventRegistration", "com.bemaservices.multieventregistration\com.bemaservices.MultiEventRegistration.csproj", "{890B227D-B53A-45EC-A538-166892240E3A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.summitchurch.Autobuild", "com.summitchurch.Autobuild\com.summitchurch.Autobuild.csproj", "{152A0411-F469-48DC-8A6A-491B490341C7}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "com.bemaservices.ReportingTools", "com.bemaservices.ReportingTools\com.bemaservices.ReportingTools.csproj", "{E2E3F8B9-88B8-42A9-BE96-FF5C7AA86D75}"
 EndProject
 Global
@@ -276,6 +278,10 @@ Global
 		{890B227D-B53A-45EC-A538-166892240E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{890B227D-B53A-45EC-A538-166892240E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{890B227D-B53A-45EC-A538-166892240E3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{152A0411-F469-48DC-8A6A-491B490341C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{152A0411-F469-48DC-8A6A-491B490341C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{152A0411-F469-48DC-8A6A-491B490341C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{152A0411-F469-48DC-8A6A-491B490341C7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E2E3F8B9-88B8-42A9-BE96-FF5C7AA86D75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E2E3F8B9-88B8-42A9-BE96-FF5C7AA86D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2E3F8B9-88B8-42A9-BE96-FF5C7AA86D75}.Release|Any CPU.ActiveCfg = Release|Any CPU

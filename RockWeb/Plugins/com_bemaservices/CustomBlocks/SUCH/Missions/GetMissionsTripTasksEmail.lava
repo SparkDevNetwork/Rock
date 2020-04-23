@@ -1,0 +1,114 @@
+{% if isEmail %}
+{{ 'Global' | Attribute:'EmailHeader' }}
+{% endif %}
+
+{% assign person = personId | PersonById %}
+{% assign tripIdString = tripId | ToString %}
+{% assign tripPerson = person %}
+{% assign personGroupMember = tripPerson | Group: tripIdString,'All' | First %}
+{% assign now = 'Now' | Date:'M/d/yyyy' %}
+{% group where:'Id == {{tripId}}' %} {% assign tripGroup = group %} {% endgroup %}
+{% assign tripTypeGuid = tripGroup | Attribute:'TripDestinationType','RawValue' %} 
+{% assign TripStartDate = tripGroup | Attribute:'TripStartDate','RawValue' | Date:'M/d/yyyy' %}
+{% assign scholarshipAmount = personGroupMember | Attribute:'ScholarshipAmount','RawValue' %}
+
+{% sql %}
+Select case when totalDeposit.total is null then 0 else totalDeposit.total end as total
+from GroupMember gm
+join Person p on p.id = gm.PersonId
+cross apply (
+	select sum(d.Amount) as total
+	from FinancialTransactionDetail d 
+	where d.EntityId = gm.id
+ ) as totalDeposit
+where  gm.PersonId = {{ tripPerson.Id }}
+and gm.GroupId = {{ tripGroup.Id }}
+{% endsql %}
+
+{% for item in results %}
+    {% assign totalPaid = item.total %}
+{% endfor %}
+
+{% if scholarshipAmount > 0 %}
+    {% assign totalPaid = totalPaid | Plus:scholarshipAmount %}
+{% endif %}
+
+
+{% if isEmail %}
+<h5>
+    {{ tripPerson.FirstName }}<br/> 
+    <small>{{ tripGroup.Name }} - {{ now }}</small>
+</h5>
+{% else %}
+<div class="panel panel-block">
+
+    <div class="panel-heading panel-follow clearfix" style='background:#0cc1ea;'>
+        <h1 class="panel-title pull-left" style="color:#fff;">
+            {{ tripPerson.FullName }} 
+        </h1>
+      </div> 
+
+<ul class="list-group">
+{% endif %}
+
+{% if reminderType and isEmail %}
+<p style="text-align:center;"> {{ reminderType | Attribute:'EmailBody' }}</p>
+{% endif %}
+
+
+{% if reminderType %}
+
+{% assign tasks = reminderType | Attribute:'AssociatedTasks','RawValue' | Split:',' %}
+
+<!-- if cominging from a reminder emails with specific tasks -->
+
+    {% for taskObj in tasks %}
+        {% definedvalue where:'Guid == "{{taskObj}}"' sort:'Order ' %}
+            {% for dfItem in definedvalueItems %}
+                <br/>
+                <strong>Tasks</strong>
+        
+            {% include '\Plugins\com_bemadev\Missions\GetMissionsTripTask.lava' %}
+                
+            {% endfor %}
+        {% enddefinedvalue %}
+    {% endfor %}
+
+{% elseif singleTaskGuid %}
+
+<!-- Get a single task -->
+
+    {% definedvalue where:'Guid == "{{singleTaskGuid}}" && DefinedTypeId == 129' sort:'Order ' %}
+        {% for dfItem in definedvalueItems %}
+            
+        {% include '\Plugins\com_bemadev\Missions\GetMissionsTripTask.lava' %}
+            
+        {% endfor %}
+    {% enddefinedvalue %}
+
+{% else %}
+
+<!-- All tasks for a trip type -->
+
+    {% definedvalue where:'TripType == "{{tripTypeGuid}}" && DefinedTypeId == 129' sort:'Order ' %}
+        {% for dfItem in definedvalueItems %}
+            
+        {% include '\Plugins\com_bemadev\Missions\GetMissionsTripTask.lava' %}
+            
+        {% endfor %}
+    {% enddefinedvalue %}
+
+{% endif %}
+
+
+{% unless isEmail %}
+    </ul>
+</div>
+{% endunless %}
+
+{% if isEmail %}
+<br/><br/>
+<a href="https://summitchurch.com/page/944?GroupId={{tripGroup.Id}}&GroupMemberId={{personGroupMember.Id}}"  style="color:#0cc1ea;text-decoration:underline;">View Missions Trip Profile Page</a>
+
+{{ 'Global' | Attribute:'EmailFooter' }}
+{% endif %}

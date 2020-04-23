@@ -1,0 +1,85 @@
+
+        
+        {% assign attValues = dfItem | Attribute:'PersonAttributeofFile','Object' %}
+        {% assign taskType = dfItem | Attribute:'TaskType','Object' %}
+        {% assign attKey = att.Key %}
+        {% assign daysRequired = dfItem | Attribute:'DaysBeforeDepartureDue' | Times:-1 | AsInteger %}
+        {% assign personFile = tripPerson | Attribute:attKey,'Object' %}
+        {% assign complete = '' %}
+        {% assign amountDueText = '' %}
+
+        {% if isEmail %}
+        <li style="padding:20px 20px;border-bottom:1px solid #ccc;list-style: none;">
+        {% elseif isStaff %}
+        <li class="list-group-item" style="padding:10px 20px;">
+        {% else %}
+        <li class="list-group-item" style="padding:20px;">
+        {% endif %}
+
+         {% if taskType.Value == 'Document' %}
+       
+                {% for value in attValues %}
+                
+                    {% assign attKey = value.Key %}
+                    {% assign personFile = tripPerson | Attribute:attKey,'Object' %}
+                       
+                    {% if personFile and personFile != '' %}
+                        {% if complete != 'false' %}{% assign complete = 'true' %}{% endif %}
+                    {% else %}
+                        {% assign complete = 'false' %}
+                    {% endif %}
+                    
+                {% endfor %}
+          
+        {% endif %}
+        
+        {% if taskType.Value == 'Amount' %}
+            
+            {% assign cost = tripGroup | Attribute:'IndividualFundraisingGoal' | AsInteger %}
+            {% assign amountType = dfItem | Attribute:'AmountRequiredDueIfAmountType','Object' | Attribute:'Type' %}
+            {% assign amountDue = dfItem | Attribute:'AmountRequiredDueIfAmountType','Object' | Attribute:'Amount' %}
+            
+            {% if amountType == 'Percent' %}
+            {% assign amountDue = amountDue | DividedBy:100 | Times:cost %}
+            {% endif %}
+
+            {% capture amountDueText %}
+            <span style="border: 1px solid #d4442e;padding:8px 20px;color:#222;margin-top:10px;margin-bottom:10px;display:block;color:#222;">
+                Raised: {{ totalPaid | FormatAsCurrency }} - Amount Due: {{ amountDue | FormatAsCurrency }} {% if totalPaid <= amountDue %} - Remaining: {{ amountDue | Minus:totalPaid | FormatAsCurrency }}{% endif %} 
+            </span>
+            {% endcapture %}
+
+            {% if totalPaid >= amountDue %}{% assign complete = 'true' %}{% endif %}
+            
+        {% endif %}
+
+        {% if complete == 'true' %}
+        <strong>{{ dfItem.Value }}</strong> <span style="color:#16c98d;">( <i class="fa fa-star"></i> Completed )</span>
+        {% else %}
+        <strong>{{ dfItem.Value }}</strong> <span style="color:#d4442e;">( Due By: {{ TripStartDate | DateAdd:daysRequired,'d' | Date:'M/d/yyyy' }} )</span>
+
+        {{ amountDueText }}
+
+        {% endif %}
+
+        {% unless isStaff == true %}
+
+            {% if dfItem.Description != '' %}
+                <br/> {{dfItem.Description}} 
+            {% endif %}
+            
+            {% assign linkText = dfItem | Attribute:'LinkToSubmitDocumentText' %}
+            {% assign linkUrl = dfItem | Attribute:'LinkToSubmitDocument','RawValue' %}
+            
+            {% if linkUrl and linkText and linkText != ''  %}
+            
+                <br/><a href="{{linkUrl}}?Trip={{tripGroup.Guid}}&Person={{tripPerson.PrimaryAlias.Guid}}" target="_blank" style="color:#0cc1ea;text-decoration:underline;">{{linkText}}</a>
+            
+            {% endif %}
+        {% else %}
+                <a href="https://staff.summitchurch.com/WorkflowEntry/86?Person={{tripPerson.PrimaryAlias.Guid}}&TripGroup={{tripPerson.Guid}}&Task={{dfItem.Guid}}" class="btn btn-default btn-sm pull-right" target="_blank">Send Reminder</a>
+        {% endunless %}
+
+        </li>
+        
+   
