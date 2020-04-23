@@ -4,7 +4,8 @@ The goal of this project is to be a permanent place to store tests that require 
 
 > *We've merged in Daniel's changes [described here](https://github.com/SparkDevNetwork/Rock/issues/3227#issuecomment-583567407).*
 
-
+## Running (for the first time)
+If you've not done this, you'll need to set your Test > Test Settings > Test Settings File to something like the `test.runsettings` file which would have any custom secret settings in there (like Amazon S3 Storage provider connection/key settings, etc.)  Note: Only some tests use that file so many tests can run without doing this.
 
 ### Timings
 The very first initial run, meaning where it has to generate the archive, may take around 4 minutes.
