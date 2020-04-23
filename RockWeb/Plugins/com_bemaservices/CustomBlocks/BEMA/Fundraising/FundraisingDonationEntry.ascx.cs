@@ -40,7 +40,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Fundraising
 {
     [DisplayName( "Fundraising Donation Entry" )]
-    [Category( "bemadev > Fundraising" )]
+    [Category( "BEMA Services > Fundraising" )]
     [Description( "Block that starts out a Fundraising Donation by prompting for information prior to going to a TransactionEntry block" )]
 
     [LinkedPage( "Transaction Entry Page", "The Transaction Entry page to navigate to after prompting for the Fundraising Specific inputs", required: true, order: 1 )]
