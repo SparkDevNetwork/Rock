@@ -56,6 +56,7 @@ namespace Rock.Tests.Integration.StorageTests
         private static readonly System.Guid _AmazonS3TestGuid = "A3000000-8CF7-4441-A3FA-FB45AD1FF9B9".AsGuid();
 
         private static string webContentFolder = string.Empty;
+        private static string appDataTempFolder = string.Empty;
 
         [TestInitialize]
         public void Initialize()
@@ -65,6 +66,21 @@ namespace Rock.Tests.Integration.StorageTests
 
             webContentFolder = Path.Combine( TestContext.DeploymentDirectory, "TestData", "Content" );
             EnsureFolder( webContentFolder );
+
+            appDataTempFolder = Path.Combine( TestContext.DeploymentDirectory, "App_Data", $"{System.Guid.NewGuid()}" );
+            EnsureFolder( appDataTempFolder );
+        }
+
+        /// <summary>
+        /// Cleanups this any mess made by these tests.
+        /// </summary>
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if ( !string.IsNullOrEmpty( appDataTempFolder ) )
+            {
+                RockLoggingHelpers.DeleteFilesInFolder( appDataTempFolder );
+            }
         }
 
         /// <summary>
@@ -75,56 +91,116 @@ namespace Rock.Tests.Integration.StorageTests
         private AssetStorageProvider GetAssetStorageProvider()
         {
             AssetStorageProvider assetStorageProvider = null;
-            using ( var rockContext = new RockContext() )
+
+            var accessKey = TestContext.Properties["AWSAccessKey"].ToStringSafe();
+            var secretKey = TestContext.Properties["AWSSecretKey"].ToStringSafe();
+
+            // Just Assert Inconclusive if the AWSAccessKey and AWSSecretKey are blank
+            if ( string.IsNullOrEmpty( accessKey ) || string.IsNullOrEmpty( secretKey ) )
             {
-                var assetStorageProviderService = new AssetStorageProviderService( rockContext );
-                assetStorageProvider = assetStorageProviderService.Get( _AmazonS3TestGuid );
-                var isNew = false;
+                Assert.That.Inconclusive( $"The AWSAccessKey and AWSSecretKey must be set up in your Test > Test Settings > Test Setting File in order to run these tests." );
+                return null;
+            }
 
-                if ( assetStorageProvider == null )
+            try
+            {
+                using ( var rockContext = new RockContext() )
                 {
-                    isNew = true;
-                    var entityType = EntityTypeCache.Get( "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8".AsGuid() );
+                    var assetStorageProviderService = new AssetStorageProviderService( rockContext );
+                    assetStorageProvider = assetStorageProviderService.Get( _AmazonS3TestGuid );
+                    var isNew = false;
 
-                    assetStorageProvider = new AssetStorageProvider();
-                    assetStorageProvider.Name = "TEST Amazon S3 AssetStorageProvider";
-                    assetStorageProvider.Guid = _AmazonS3TestGuid;
-                    assetStorageProvider.EntityTypeId = entityType.Id;
-                    assetStorageProvider.IsActive = true;
+                    if ( assetStorageProvider == null )
+                    {
+                        isNew = true;
+                        var entityType = EntityTypeCache.Get( "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8".AsGuid() );
 
-                    assetStorageProviderService.Add( assetStorageProvider );
+                        assetStorageProvider = new AssetStorageProvider();
+                        assetStorageProvider.Name = "TEST Amazon S3 AssetStorageProvider";
+                        assetStorageProvider.Guid = _AmazonS3TestGuid;
+                        assetStorageProvider.EntityTypeId = entityType.Id;
+                        assetStorageProvider.IsActive = true;
 
-                    rockContext.SaveChanges();
+                        assetStorageProviderService.Add( assetStorageProvider );
 
-                    var assetStorageProviderComponentEntityType = EntityTypeCache.Get( assetStorageProvider.EntityTypeId.Value );
-                    var assetStorageProviderEntityType = EntityTypeCache.Get<Rock.Model.AssetStorageProvider>();
+                        rockContext.SaveChanges();
 
-                    Helper.UpdateAttributes(
-                            assetStorageProviderComponentEntityType.GetEntityType(),
-                            assetStorageProviderEntityType.Id,
-                            "EntityTypeId",
-                            assetStorageProviderComponentEntityType.Id.ToString(),
-                            rockContext );
+                        var assetStorageProviderComponentEntityType = EntityTypeCache.Get( assetStorageProvider.EntityTypeId.Value );
+                        var assetStorageProviderEntityType = EntityTypeCache.Get<Rock.Model.AssetStorageProvider>();
 
+                        Helper.UpdateAttributes(
+                                assetStorageProviderComponentEntityType.GetEntityType(),
+                                assetStorageProviderEntityType.Id,
+                                "EntityTypeId",
+                                assetStorageProviderComponentEntityType.Id.ToString(),
+                                rockContext );
+
+                    }
+
+                    assetStorageProvider.LoadAttributes();
+                    assetStorageProvider.SetAttributeValue( "GenerateSingedURLs", "False" ); // The attribute Key has that typo.
+                    assetStorageProvider.SetAttributeValue( "AWSRegion", TestContext.Properties["AWSRegion"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "Bucket", TestContext.Properties["AWSBucket"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "Expiration", "525600" );
+                    assetStorageProvider.SetAttributeValue( "RootFolder", TestContext.Properties["UnitTestRootFolder"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "AWSProfileName", TestContext.Properties["AWSProfileName"].ToStringSafe() );
+                    assetStorageProvider.SetAttributeValue( "AWSAccessKey", accessKey );
+                    assetStorageProvider.SetAttributeValue( "AWSSecretKey", secretKey );
+
+                    if ( isNew )
+                    {
+                        assetStorageProvider.SaveAttributeValues( rockContext );
+                    }
                 }
-
-                assetStorageProvider.LoadAttributes();
-                assetStorageProvider.SetAttributeValue( "GenerateSingedURLs", "False" ); // The attribute Key has that typo.
-                assetStorageProvider.SetAttributeValue( "AWSRegion", TestContext.Properties["AWSRegion"].ToStringSafe() );
-                assetStorageProvider.SetAttributeValue( "Bucket", TestContext.Properties["AWSBucket"].ToStringSafe() );
-                assetStorageProvider.SetAttributeValue( "Expiration", "525600" );
-                assetStorageProvider.SetAttributeValue( "RootFolder", TestContext.Properties["UnitTestRootFolder"].ToStringSafe() );
-                assetStorageProvider.SetAttributeValue( "AWSProfileName", TestContext.Properties["AWSProfileName"].ToStringSafe() );
-                assetStorageProvider.SetAttributeValue( "AWSAccessKey", TestContext.Properties["AWSAccessKey"].ToStringSafe() );
-                assetStorageProvider.SetAttributeValue( "AWSSecretKey", TestContext.Properties["AWSSecretKey"].ToStringSafe() );
-                
-                if ( isNew )
-                {
-                    assetStorageProvider.SaveAttributeValues( rockContext );
-                }
+            }
+            catch ( System.Exception ex )
+            {
+                Assert.That.Inconclusive( $"Unable to get the Amazon S3 Asset Storage Provider ({ex.Message})." );
             }
 
             return assetStorageProvider;
+        }
+
+
+        /// <summary>
+        /// Upload a small set of folders and files.  Used for simple folder/file listing that requires ONLY one request.
+        /// </summary>
+        public void TestUploadFewSimpleObjects()
+        {
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
+
+                var subFolder = new Asset();
+                subFolder.Name = "SimpleFolder/";
+                subFolder.Type = AssetType.Folder;
+
+                s3Component.CreateFolder( assetStorageProvider, subFolder );
+
+                int i = 0;
+                while ( i < 5 )
+                {
+                    subFolder = new Asset();
+                    subFolder.Name = $"SimpleFolder/TestFolder-{i}/";
+                    subFolder.Type = AssetType.Folder;
+
+                    s3Component.CreateFolder( assetStorageProvider, subFolder );
+                    i++;
+                }
+
+                FileStream fs;
+                i = 0;
+                while ( i < 10 )
+                {
+                    using ( fs = new FileStream( @"TestData\TextDoc.txt", FileMode.Open ) )
+                    {
+                        Asset asset = new Asset { Name = $"SimpleFolder/TestFile-{i}.txt", AssetStream = fs };
+                        s3Component.UploadObject( assetStorageProvider, asset );
+                        i++;
+                    }
+                }
+            }
         }
 
         //[TestMethod]
@@ -401,7 +477,7 @@ namespace Rock.Tests.Integration.StorageTests
                 {
                     var responseAsset = s3Component.GetObject( assetStorageProvider, asset, false );
                     using ( responseAsset.AssetStream )
-                    using ( FileStream fs = new FileStream( $@"C:\temp\{responseAsset.Name}", FileMode.Create ) )
+                    using ( FileStream fs = new FileStream( Path.Combine( appDataTempFolder, responseAsset.Name ), FileMode.Create ) )
                     {
                         responseAsset.AssetStream.CopyTo( fs );
                     }
@@ -416,10 +492,40 @@ namespace Rock.Tests.Integration.StorageTests
         }
 
         /// <summary>
-        /// List only the folders.
+        /// List only the folders.  This represents a simple case where there are only a handful of
+        /// files and folders under the UnitTestFolder/SimpleFolder/ folder.
         /// </summary>
         [TestMethod]
-        public void TestListFolders()
+        public void TestListFoldersOfSimpleFolder()
+        {
+            // Make sure some simple files and folders are up there...
+            TestUploadFewSimpleObjects();
+
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
+
+                var asset = new Asset();
+                asset.Key = "UnitTestFolder/SimpleFolder/";
+                asset.Type = AssetType.Folder;
+
+                var assetList = s3Component.ListFoldersInFolder( assetStorageProvider, asset );
+
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-1" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-2" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-3" ) );
+                Assert.That.IsFalse( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
+                Assert.That.IsFalse( assetList.Any( a => a.Name == "TestFile-7.txt" ) );
+            }
+        }
+
+        /// <summary>
+        /// List only the folders from the full two thousand objects.
+        /// </summary>
+        [TestMethod]
+        public void TestListFoldersOfTwoThousandObjects()
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
@@ -453,6 +559,11 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestListFiles()
         {
+            // Make sure the files and folder are there so we can check for them.
+            TestUploadObjectByName();
+            TestUploadObjectByKey();
+            TestAWSCreateFolderByName();
+
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
                 var assetStorageProvider = GetAssetStorageProvider();
