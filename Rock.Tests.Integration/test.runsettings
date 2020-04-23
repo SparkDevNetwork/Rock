@@ -10,6 +10,15 @@
     <Parameter name="webAppUrl" value="http://localhost" />
     <Parameter name="webAppUserName" value="" />
     <Parameter name="webAppPassword" value="" />
+
+    <!-- AWS Amazon S3 Storage Provider tests -->
+    <Parameter name="AWSAccessKey" value="" />
+    <Parameter name="AWSSecretKey" value="" />
+    <Parameter name="AWSProfileName" value="rocksolid3saccount" />
+    <Parameter name="AWSBucket" value="rocksolidchurch-comm-team" />
+    <Parameter name="AWSRegion" value="us-east-1" />
+    <Parameter name="UnitTestRootFolder" value="UnitTestFolder" />
+
   </TestRunParameters>
   
   <!-- MSTest adapter -->
