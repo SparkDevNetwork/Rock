@@ -17,15 +17,29 @@
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.Storage.AssetStorage;
 using Rock.Tests.Shared;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.StorageTests
 {
     /// <summary>
-    /// This class tests the AmazonS3 storage component. It currently requires
-    /// that your S3 storage provider be defined in Rock with ID #1.
+    /// This class tests the AmazonS3 storage component.
+    /// It requires that you set your Test > Test Settings to use a Test Setting File
+    /// to have the following parameters:
+    ///
+    ///    <!-- AWS Amazon S3 Storage Provider tests -->
+    ///    <Parameter name = "AWSAccessKey" value="xxxxxxxxxxx" />
+    ///    <Parameter name = "AWSSecretKey" value="xxxxxxxxxxx" />
+    ///    <Parameter name = "AWSProfileName" value="xxxxxxxxxxx" />
+    ///    <Parameter name = "AWSBucket" value="xxxxxxxxxxx" />
+    ///    <Parameter name = "AWSRegion" value="xxxxxxxxxxx" />
+    ///    <Parameter name = "UnitTestRootFolder" value="UnitTestFolder" />
+
     /// </summary>
     /// <remarks>
     /// Some data under the TestData folder is needed for these tests.  These are auto-magically copied
@@ -33,15 +47,13 @@ namespace Rock.Tests.Integration.StorageTests
     /// https://stackoverflow.com/questions/3738819/do-mstest-deployment-items-only-work-when-present-in-the-project-test-settings-f?rq=1
     /// </remarks>
     [TestClass]
-    [DeploymentItem( @"app.ConnectionStrings.config" )]
     [DeploymentItem( @"TestData\", "TestData" )]
     public class AmazonS3ComponentTests
     {
-        //private string AWSAccessKey = "";
-        //private string AWSSecretKey = @"";
-        //private RegionEndpoint AWSRegion = RegionEndpoint.USWest1;
-        //private string Bucket = "rockphotostest0";
-        //private string UnitTestRootFolder = "UnitTestFolder";
+        /// <summary>
+        /// The amazon s3 test unique identifier (used only for tests).
+        /// </summary>
+        private static readonly System.Guid _AmazonS3TestGuid = "A3000000-8CF7-4441-A3FA-FB45AD1FF9B9".AsGuid();
 
         private static string webContentFolder = string.Empty;
 
@@ -55,12 +67,62 @@ namespace Rock.Tests.Integration.StorageTests
             EnsureFolder( webContentFolder );
         }
 
+        /// <summary>
+        /// Gets the asset storage provider, but note, it will add a test S3 Storage Provider
+        /// if it could not be found.
+        /// </summary>
+        /// <returns>A S3 storage provider</returns>
         private AssetStorageProvider GetAssetStorageProvider()
         {
-            var assetStorageProviderService = new AssetStorageProviderService( new Data.RockContext() );
-            AssetStorageProvider assetStorageProvider = assetStorageProviderService.Get( 1 );// need mock
-            assetStorageProvider.LoadAttributes();
-            assetStorageProvider.SetAttributeValue( "RootFolder", "UnitTestFolder" );
+            AssetStorageProvider assetStorageProvider = null;
+            using ( var rockContext = new RockContext() )
+            {
+                var assetStorageProviderService = new AssetStorageProviderService( rockContext );
+                assetStorageProvider = assetStorageProviderService.Get( _AmazonS3TestGuid );
+                var isNew = false;
+
+                if ( assetStorageProvider == null )
+                {
+                    isNew = true;
+                    var entityType = EntityTypeCache.Get( "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8".AsGuid() );
+
+                    assetStorageProvider = new AssetStorageProvider();
+                    assetStorageProvider.Name = "TEST Amazon S3 AssetStorageProvider";
+                    assetStorageProvider.Guid = _AmazonS3TestGuid;
+                    assetStorageProvider.EntityTypeId = entityType.Id;
+                    assetStorageProvider.IsActive = true;
+
+                    assetStorageProviderService.Add( assetStorageProvider );
+
+                    rockContext.SaveChanges();
+
+                    var assetStorageProviderComponentEntityType = EntityTypeCache.Get( assetStorageProvider.EntityTypeId.Value );
+                    var assetStorageProviderEntityType = EntityTypeCache.Get<Rock.Model.AssetStorageProvider>();
+
+                    Helper.UpdateAttributes(
+                            assetStorageProviderComponentEntityType.GetEntityType(),
+                            assetStorageProviderEntityType.Id,
+                            "EntityTypeId",
+                            assetStorageProviderComponentEntityType.Id.ToString(),
+                            rockContext );
+
+                }
+
+                assetStorageProvider.LoadAttributes();
+                assetStorageProvider.SetAttributeValue( "GenerateSingedURLs", "False" ); // The attribute Key has that typo.
+                assetStorageProvider.SetAttributeValue( "AWSRegion", TestContext.Properties["AWSRegion"].ToStringSafe() );
+                assetStorageProvider.SetAttributeValue( "Bucket", TestContext.Properties["AWSBucket"].ToStringSafe() );
+                assetStorageProvider.SetAttributeValue( "Expiration", "525600" );
+                assetStorageProvider.SetAttributeValue( "RootFolder", TestContext.Properties["UnitTestRootFolder"].ToStringSafe() );
+                assetStorageProvider.SetAttributeValue( "AWSProfileName", TestContext.Properties["AWSProfileName"].ToStringSafe() );
+                assetStorageProvider.SetAttributeValue( "AWSAccessKey", TestContext.Properties["AWSAccessKey"].ToStringSafe() );
+                assetStorageProvider.SetAttributeValue( "AWSSecretKey", TestContext.Properties["AWSSecretKey"].ToStringSafe() );
+                
+                if ( isNew )
+                {
+                    assetStorageProvider.SaveAttributeValues( rockContext );
+                }
+            }
 
             return assetStorageProvider;
         }
