@@ -274,9 +274,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                var client = GetCloudBlobClient( assetStorageProvider );
-                string containerName = GetAttributeValue( assetStorageProvider, AttributeKey.DefaultContainerName );
-                var container = client.GetContainerReference( containerName );
+                var container = GetCloudBlobContainer( assetStorageProvider );
 
                 // Get a reference to a blob with a request to the server.
                 // If the blob does not exist, this call will fail with a 404 (Not Found).
@@ -311,9 +309,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                var client = GetCloudBlobClient( assetStorageProvider );
-                string containerName = GetAttributeValue( assetStorageProvider, AttributeKey.DefaultContainerName );
-                var container = client.GetContainerReference( containerName );
+                var container = GetCloudBlobContainer( assetStorageProvider );
 
                 // Retrieve reference to a blob named "myblob".
                 CloudBlockBlob blockBlob = container.GetBlockBlobReference( asset.Key );
@@ -341,9 +337,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                var client = GetCloudBlobClient( assetStorageProvider );
-                string containerName = GetAttributeValue( assetStorageProvider, AttributeKey.DefaultContainerName );
-                var container = client.GetContainerReference( containerName );
+                var container = GetCloudBlobContainer( assetStorageProvider );
 
                 // Retrieve reference to a blob named "myblob".
                 CloudBlockBlob blockBlob = container.GetBlockBlobReference( asset.Key + "/" + DEFAULT_FILE_NAME );
@@ -375,9 +369,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                var client = GetCloudBlobClient( assetStorageProvider );
-                string containerName = GetAttributeValue( assetStorageProvider, AttributeKey.DefaultContainerName );
-                var container = client.GetContainerReference( containerName );
+                var container = GetCloudBlobContainer( assetStorageProvider );
 
                 if ( asset.Type == AssetType.File )
                 {
@@ -476,9 +468,7 @@ namespace Rock.Storage.AssetStorage
 
             try
             {
-                var client = GetCloudBlobClient( assetStorageProvider );
-                string containerName = GetAttributeValue( assetStorageProvider, AttributeKey.DefaultContainerName );
-                var container = client.GetContainerReference( containerName );
+                var container = GetCloudBlobContainer( assetStorageProvider );
 
                 // Get a reference to a blob with a request to the server.
                 // If the blob does not exist, this call will fail with a 404 (Not Found).
@@ -647,8 +637,9 @@ namespace Rock.Storage.AssetStorage
         /// Returns an cloud blob client obj using the settings in the provided AssetStorageProvider obj.
         /// </summary>
         /// <param name="assetStorageProvider">The asset storage provider.</param>
+        /// <param name="createIfNotExisits">if set to <c>true</c> [create if not exists].</param>
         /// <returns></returns>
-        private CloudBlobClient GetCloudBlobClient( AssetStorageProvider assetStorageProvider )
+        private CloudBlobContainer GetCloudBlobContainer( AssetStorageProvider assetStorageProvider, bool createIfNotExisits = false )
         {
 
             string storageAccountName = GetAttributeValue( assetStorageProvider, AttributeKey.StorageAccountName );
@@ -661,7 +652,15 @@ namespace Rock.Storage.AssetStorage
             {
                 storageAccount = new CloudStorageAccount( storageCredentials, customDomain, true );
             }
-            return storageAccount.CreateCloudBlobClient();
+            var client = storageAccount.CreateCloudBlobClient();
+
+            string containerName = GetAttributeValue( assetStorageProvider, AttributeKey.DefaultContainerName );
+            var container = client.GetContainerReference( containerName );
+            if ( createIfNotExisits )
+            {
+                container.CreateIfNotExists();
+            }
+            return container;
         }
 
         /// <summary>
@@ -712,10 +711,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         private List<Asset> GetAssetsFromAzureCloud( AssetStorageProvider assetStorageProvider, string prefix, AssetType? assetTypeToList )
         {
-            CloudBlobClient client = GetCloudBlobClient( assetStorageProvider );
-
-            string containerName = GetAttributeValue( assetStorageProvider, AttributeKey.DefaultContainerName );
-            var container = client.GetContainerReference( containerName );
+            var container = GetCloudBlobContainer( assetStorageProvider, true );
 
             var assets = new List<Asset>();
 
