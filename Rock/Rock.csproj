@@ -452,8 +452,10 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Jobs\CampaignManager.cs" />
     <Compile Include="Jobs\SendMessageResults.cs" />
     <Compile Include="Jobs\PostV103DataMigrationsSpiritualGifts.cs" />
+    <Compile Include="Model\CampaignConnectionItem.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
     <Compile Include="Plugin\HotFixes\115_RegistrationLinkage.cs" />
@@ -467,6 +469,8 @@
     <Compile Include="Plugin\HotFixes\114_MigrationRollupsFor10_3_3.cs" />
     <Compile Include="Reporting\DataFilter\Person\StepParticipantsByAttributeValueFilter.cs" />
     <Compile Include="Reporting\DataFilter\Step\StepsAttributeValuesFilter.cs" />
+    <Compile Include="SystemKey\CampaignConnectionKey.cs" />
+    <Compile Include="Utility\CampaignConnectionHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
