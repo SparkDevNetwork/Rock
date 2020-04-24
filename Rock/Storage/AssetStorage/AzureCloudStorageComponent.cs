@@ -352,7 +352,7 @@ namespace Rock.Storage.AssetStorage
                 throw;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
