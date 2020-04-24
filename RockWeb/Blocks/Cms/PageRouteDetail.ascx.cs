@@ -229,13 +229,21 @@ namespace RockWeb.Blocks.Cms
             tbRoute.Text = pageRoute.Route;
             cbIsGlobal.Checked = pageRoute.IsGlobal;
 
-            // render UI based on Authorized and IsSystem
-            //bool readOnly = false;
-
+            // render UI based on Authorized and IsSystem. Do IsSystem check first so the IsUserAuthorized check can overwrite the settings.
             nbEditModeMessage.Text = string.Empty;
+
+            if ( pageRoute.IsSystem )
+            {
+                nbEditModeMessage.Text = EditModeMessage.System( PageRoute.FriendlyTypeName );
+
+                ppPage.Enabled = false;
+                tbRoute.ReadOnly = true;
+                cbIsGlobal.Enabled = true;
+                btnSave.Visible = true;
+            }
+
             if ( !IsUserAuthorized( Authorization.EDIT ) )
             {
-                //readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PageRoute.FriendlyTypeName );
 
                 lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -245,29 +253,7 @@ namespace RockWeb.Blocks.Cms
                 tbRoute.ReadOnly = true;
                 cbIsGlobal.Enabled = false;
                 btnSave.Visible = false;
-
             }
-
-            if ( pageRoute.IsSystem )
-            {
-                //readOnly = true;
-                nbEditModeMessage.Text = EditModeMessage.System( PageRoute.FriendlyTypeName );
-
-                ppPage.Enabled = false;
-                tbRoute.ReadOnly = true;
-                cbIsGlobal.Enabled = true;
-                btnSave.Visible = true;
-            }
-
-            //if ( readOnly )
-            //{
-            //    lActionTitle.Text = ActionTitle.View( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
-            //    btnCancel.Text = "Close";
-            //}
-
-            //ppPage.Enabled = !readOnly;
-            //tbRoute.ReadOnly = readOnly;
-            //btnSave.Visible = !readOnly;
         }
 
         private void ShowSite()
