@@ -112,5 +112,9 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string STEPS_AUTOMATION = "97858941-0447-49D6-9E35-B03665FEE965";
 
+        /// <summary>
+        /// The collect hosting metrcis job - collect metrics regarding database connections, Etc.
+        /// </summary>
+        public const string COLLECT_HOSTING_METRICS = "36FA38CA-9DB0-40A8-BABD-5411121B4809";
     }
 }
