@@ -45,6 +45,7 @@
             <div class="row">
                 <div class="col-md-offset-4 col-md-4">
                     <asp:HiddenField ID="hfGradeRequired" runat="server" />
+                    <asp:HiddenField ID="hfChildrenOnly" runat="server" />
 
                     <asp:Repeater ID="rFamilyMembers" runat="server" OnItemDataBound="rFamilyMembers_ItemDataBound" OnItemCommand="rFamilyMembers_ItemCommand">
                         <HeaderTemplate>
@@ -56,6 +57,8 @@
                             <div class="row" style="text-align: left;">
                                 <div class="col-md-10">
                                     <asp:CheckBox ID="cbFamilyMember" runat="server" />
+                                    <asp:Panel id="divFamilyText" runat="server" style="margin-top: 10px; margin-bottom: 10px;">
+                                        <asp:Literal ID="lFamilyMember" runat="server" /></asp:Panel>
                                 </div>
                                 <div class="col-md-2">
                                     <asp:LinkButton ID="lbEditGroupMember" runat="server" CssClass="btn btn-danger btn-xs" CommandArgument='<%# Eval("Guid") %>' CommandName="Update" Visible="false"> Edit</asp:LinkButton>

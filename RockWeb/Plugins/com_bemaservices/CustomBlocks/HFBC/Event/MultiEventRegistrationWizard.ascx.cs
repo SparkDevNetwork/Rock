@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Humanizer;
 using Newtonsoft.Json;
@@ -3843,16 +3844,17 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                     }
 
                     hfGradeRequired.Value = isGradeRequired.ToString();
+                    hfChildrenOnly.Value = isChildrenOnly.ToString();
 
                     List<GroupMember> familyMembers = CurrentPerson.GetFamilyMembers( true )
-                        .Where( gm => !isChildrenOnly || gm.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD )
+                    //    .Where( gm => !isChildrenOnly || gm.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD )
                         .ToList();
 
-                    DateTime? minimumBirthDate = category.GetAttributeValue( "MinimumDateofBirth" ).AsDateTime();
-                    if ( minimumBirthDate.HasValue )
-                    {
-                        familyMembers = familyMembers.Where( fm => fm.Person.BirthDate <= minimumBirthDate.Value ).ToList();
-                    }
+                    //DateTime? minimumBirthDate = category.GetAttributeValue( "MinimumDateofBirth" ).AsDateTime();
+                    //if ( minimumBirthDate.HasValue )
+                    //{
+                    //    familyMembers = familyMembers.Where( fm => fm.Person.BirthDate <= minimumBirthDate.Value ).ToList();
+                    //}
 
                     rFamilyMembers.DataSource = familyMembers;
                     rFamilyMembers.DataBind();
@@ -3864,29 +3866,72 @@ Registration By: {0} \nTotal Cost/Fees:{1}
 
         protected void rFamilyMembers_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var groupMember = e.Item.DataItem as GroupMember;
-            if ( groupMember != null )
+            var categoryId = PageParameter( CATEGORY_ID_PARAM_NAME ).AsIntegerOrNull();
+            if ( categoryId == null || categoryId == 0 )
             {
-                var hfPersonAliasId = e.Item.FindControl( "hfPersonAliasId" ) as HiddenField;
-                var cbFamilyMember = e.Item.FindControl( "cbFamilyMember" ) as CheckBox;
-                var lbEditGroupMember = e.Item.FindControl( "lbEditGroupMember" ) as LinkButton;
+                categoryId = GetAttributeValue( "DefaultCategoryId" ).AsInteger();
+            }
 
-                var gradeFormatted = groupMember.Person.GradeFormatted;
-                if ( gradeFormatted.IsNullOrWhiteSpace() && hfGradeRequired.Value.AsBoolean() )
+            if ( categoryId != null )
+            {
+                var category = CategoryCache.Get( categoryId.Value );
+                if ( category != null )
                 {
-                    gradeFormatted = "<b style='color:red;'>Grade Required</b>";
-                    lbEditGroupMember.Visible = true;
-                }
+                    var groupMember = e.Item.DataItem as GroupMember;
+                    if ( groupMember != null )
+                    {
+                        var hfPersonAliasId = e.Item.FindControl( "hfPersonAliasId" ) as HiddenField;
+                        var cbFamilyMember = e.Item.FindControl( "cbFamilyMember" ) as CheckBox;
+                        var lFamilyMember = e.Item.FindControl( "lFamilyMember" ) as Literal;
+                        var divFamilyText = e.Item.FindControl( "divFamilyText" ) as Panel;
+                        var lbEditGroupMember = e.Item.FindControl( "lbEditGroupMember" ) as LinkButton;
+                        var isGradeRequired = true;
+                        var isChildrenOnly = true;
+                        var isValidRegistrant = true;
 
-                hfPersonAliasId.Value = groupMember.Person.PrimaryAliasId.ToString();
-                cbFamilyMember.Text = String.Format( "{0}&nbsp;&nbsp;&nbsp;&nbsp;{1}&nbsp;&nbsp;&nbsp;&nbsp;{2}",
-                    groupMember.Person.NickName,
-                    groupMember.Person.Age.HasValue ? string.Format( "Age({0})", groupMember.Person.Age.ToString() ) : "",
-                    gradeFormatted );
+                        if ( isChildrenOnly && groupMember.GroupRole.Guid.ToString().ToUpper() != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD )
+                        {
+                            isValidRegistrant = false;
+                        }
 
-                if ( MultiEventRegistrants != null && MultiEventRegistrants.Any( mer => mer.PersonAliasId == groupMember.Person.PrimaryAliasId ) )
-                {
-                    cbFamilyMember.Checked = true;
+                        DateTime? minimumBirthDate = category.GetAttributeValue( "MinimumDateofBirth" ).AsDateTime();
+                        if ( minimumBirthDate.HasValue && groupMember.Person.BirthDate > minimumBirthDate.Value )
+                        {
+                            isValidRegistrant = false;
+                        }
+
+                        var gradeFormatted = groupMember.Person.GradeFormatted;
+                        if ( gradeFormatted.IsNullOrWhiteSpace() && isGradeRequired && isValidRegistrant )
+                        {
+                            gradeFormatted = "<b style='color:red;'>Grade Required</b>";
+                            lbEditGroupMember.Visible = true;
+                        }
+
+                        hfPersonAliasId.Value = groupMember.Person.PrimaryAliasId.ToString();
+                        var nameText = String.Format( "{0}&nbsp;&nbsp;&nbsp;&nbsp;{1}&nbsp;&nbsp;&nbsp;&nbsp;{2}",
+                            groupMember.Person.NickName,
+                            groupMember.Person.Age.HasValue ? string.Format( "Age({0})", groupMember.Person.Age.ToString() ) : "",
+                            gradeFormatted );
+
+
+                        if ( isValidRegistrant )
+                        {
+                            cbFamilyMember.Visible = true;
+                            lFamilyMember.Visible = divFamilyText.Visible = false;
+                            cbFamilyMember.Text = nameText;
+
+                            if ( MultiEventRegistrants != null && MultiEventRegistrants.Any( mer => mer.PersonAliasId == groupMember.Person.PrimaryAliasId ) )
+                            {
+                                cbFamilyMember.Checked = true;
+                            }
+                        }
+                        else
+                        {
+                            cbFamilyMember.Visible = false;
+                            lFamilyMember.Visible = divFamilyText.Visible = true;
+                            lFamilyMember.Text = String.Format( "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{0}", nameText );
+                        }
+                    }
                 }
             }
         }
