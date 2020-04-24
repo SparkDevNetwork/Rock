@@ -778,14 +778,17 @@ namespace Rock.Storage.AssetStorage
                 Key = blobItem.Name,
                 Uri = blobItem.Uri.ToString(),
                 Type = AssetType.File,
-                FileSize = blobItem.StreamMinimumReadSizeInBytes,
-                AssetStorageProviderId = assetStorageProvider.Id,
-                Description = $"{blobItem.BlobType} {blobItem.StreamMinimumReadSizeInBytes} byte{( blobItem.StreamMinimumReadSizeInBytes == 1 ? string.Empty : "s" )}"
+                AssetStorageProviderId = assetStorageProvider.Id
             };
 
-            if ( blobItem.Properties != null && blobItem.Properties.LastModified != null )
+            if ( blobItem.Properties != null )
             {
-                asset.LastModifiedDateTime = blobItem.Properties.LastModified.Value.DateTime;
+                asset.FileSize = blobItem.Properties.Length;
+                asset.Description = $"{blobItem.Properties.Length} byte{( blobItem.Properties.Length == 1 ? string.Empty : "s" )}";
+                if ( blobItem.Properties.LastModified != null )
+                {
+                    asset.LastModifiedDateTime = RockDateTime.ConvertLocalDateTimeToRockDateTime( blobItem.Properties.LastModified.Value.LocalDateTime );
+                }
             }
 
             if ( createThumbnail )
