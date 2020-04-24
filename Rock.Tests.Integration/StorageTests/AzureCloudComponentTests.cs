@@ -33,7 +33,7 @@ namespace Rock.Tests.Integration.StorageTests
     /// It requires that you set your Test > Test Settings to use a Test Setting File
     /// to have the following parameters:
     ///
-    ///    <!-- AWS Azure Cloud Storage Provider tests -->
+    ///    <!-- Azure Cloud Storage Provider tests -->
     //<Parameter name = "StorageAccountName" value="" />
     //<Parameter name = "AccountAccessKey" value="" />
     //<Parameter name = "DefaultContainerName" value="" />
@@ -89,14 +89,13 @@ namespace Rock.Tests.Integration.StorageTests
         {
             if ( !string.IsNullOrEmpty( appDataTempFolder ) )
             {
-                RockLoggingHelpers.DeleteFilesInFolder( appDataTempFolder );
+                Directory.Delete( appDataTempFolder, recursive: true );
             }
         }
 
         /// <summary>
         /// Create folders using RootFolder and Asset.Name
         /// These folders are used for other tests.
-        /// Requires TestAWSCreateFolderByKey
         /// </summary>
         [TestMethod]
         public void TestAzureCreateFolderByName()
@@ -212,6 +211,35 @@ namespace Rock.Tests.Integration.StorageTests
             }
         }
 
+        /// <summary>
+        /// List only the folders.  This represents a simple case where there are only a handful of
+        /// files and folders under the UnitTestFolder/SimpleFolder/ folder.
+        /// </summary>
+        [TestMethod]
+        public void TestListFoldersOfSimpleFolder()
+        {
+            // Make sure some simple files and folders are up there...
+            TestUploadFewSimpleObjects();
+
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var assetStorageProvider = GetAssetStorageProvider();
+                var component = assetStorageProvider.GetAssetStorageComponent();
+
+                var asset = new Asset();
+                asset.Key = "UnitTestFolder/SimpleFolder/";
+                asset.Type = AssetType.Folder;
+
+                var assetList = component.ListFoldersInFolder( assetStorageProvider, asset );
+
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-0" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-1" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-2" ) );
+                Assert.That.IsTrue( assetList.Any( a => a.Name == "TestFolder-3" ) );
+                Assert.That.IsFalse( assetList.Any( a => a.Name == "TestFile-0.txt" ) );
+                Assert.That.IsFalse( assetList.Any( a => a.Name == "TestFile-7.txt" ) );
+            }
+        }
 
         /// <summary>
         /// CRUD > 2K objects. Used to test listing that requires more than one request.
@@ -229,7 +257,7 @@ namespace Rock.Tests.Integration.StorageTests
 
                 azureComponent.CreateFolder( assetStorageProvider, subFolder );
 
-
+                // Create 2000 files
                 FileStream fs;
                 int i = 0;
                 while ( i < 2000 )
@@ -242,17 +270,37 @@ namespace Rock.Tests.Integration.StorageTests
                     }
                 }
 
-                subFolder = new Asset();
-                subFolder.Name = "TwoThousandObjects/";
-                subFolder.Type = AssetType.Folder;
-                var assets = azureComponent.ListFilesInFolder( assetStorageProvider, subFolder );
-                Assert.That.IsTrue( assets.Where( a => a.Name.Contains( "TestFile-" ) ).Count() == 2000 );
+                // Create 10 child folders (AFTER the 2000 files so we can try to cause some components
+                // to fail the ListFoldersInFolder test due to the way they could be written).
+                i = 0;
+                Asset childFolder;
+                while ( i < 10 )
+                {
+                    childFolder = new Asset();
+                    childFolder.Name = $"TwoThousandObjects/TestFolder-{i}/";
+                    childFolder.Type = AssetType.Folder;
 
+                    azureComponent.CreateFolder( assetStorageProvider, childFolder );
+                    i++;
+                }
+
+                subFolder = new Asset();
+                subFolder.Name = "TwoThousandObjects/"; // <- why the trailing slash? Is that how all the providers behave?
+                subFolder.Type = AssetType.Folder;
+
+                // Check for all 2000 files:
+                var assets = azureComponent.ListFilesInFolder( assetStorageProvider, subFolder );
+                Assert.That.IsTrue( assets.Where( a => a.Name.Contains( "TestFile-" ) ).Count() == 2000, "Did not find all 2000 files." );
+
+                // Check for all 10 sub folders:
+                var foldersList = azureComponent.ListFoldersInFolder( assetStorageProvider, subFolder );
+                Assert.That.IsTrue( foldersList.Where( a => a.Name.Contains( "TestFolder-" ) ).Count() == 10, "Did not find all 10 folders." );
+
+                // Delete the whole TwoThousandObjects folder.
                 var isDeleteSuccess = azureComponent.DeleteAsset( assetStorageProvider, subFolder );
                 Assert.That.IsTrue( isDeleteSuccess );
             }
         }
-
 
         /// <summary>
         /// Create a download link for an asset on the fly.
@@ -356,7 +404,6 @@ namespace Rock.Tests.Integration.StorageTests
         [TestMethod]
         public void TestRenameAsset()
         {
-
             var assetStorageProvider = GetAssetStorageProvider();
             var azureComponent = assetStorageProvider.GetAssetStorageComponent();
 
@@ -425,7 +472,7 @@ namespace Rock.Tests.Integration.StorageTests
         }
 
         /// <summary>
-        /// 
+        /// Deletes everything that was created during the unit tests.
         /// </summary>
         [ClassCleanup()]
         public static void ClassCleanup()
@@ -496,7 +543,8 @@ namespace Rock.Tests.Integration.StorageTests
 
                     if ( assetStorageProvider == null )
                     {
-                        var entityType = EntityTypeCache.Get( "1576800F-BFD2-4309-A2C9-AE6DF6C0A1A5".AsGuid() );
+                        // This is the registered Guid for the 'Rock.Storage.AssetStorage.AzureCloudStorageComponent' entity type
+                        var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_AZURECLOUD.AsGuid() );
 
                         assetStorageProvider = new AssetStorageProvider();
                         assetStorageProvider.Name = "TEST Azure Cloud AssetStorageProvider";
@@ -595,6 +643,46 @@ namespace Rock.Tests.Integration.StorageTests
             return assetStorageProvider;
         }
 
+        /// <summary>
+        /// Upload a small set of folders and files.  Used for simple folder/file listing that requires ONLY one request.
+        /// </summary>
+        private void TestUploadFewSimpleObjects()
+        {
+            using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
+            {
+                var assetStorageProvider = GetAssetStorageProvider();
+                var s3Component = assetStorageProvider.GetAssetStorageComponent();
+
+                var subFolder = new Asset();
+                subFolder.Name = "SimpleFolder/";
+                subFolder.Type = AssetType.Folder;
+
+                s3Component.CreateFolder( assetStorageProvider, subFolder );
+
+                int i = 0;
+                while ( i < 5 )
+                {
+                    subFolder = new Asset();
+                    subFolder.Name = $"SimpleFolder/TestFolder-{i}/";
+                    subFolder.Type = AssetType.Folder;
+
+                    s3Component.CreateFolder( assetStorageProvider, subFolder );
+                    i++;
+                }
+
+                FileStream fs;
+                i = 0;
+                while ( i < 10 )
+                {
+                    using ( fs = new FileStream( @"TestData\TextDoc.txt", FileMode.Open ) )
+                    {
+                        Asset asset = new Asset { Name = $"SimpleFolder/TestFile-{i}.txt", AssetStream = fs };
+                        s3Component.UploadObject( assetStorageProvider, asset );
+                        i++;
+                    }
+                }
+            }
+        }
         #endregion Private Methods
 
     }

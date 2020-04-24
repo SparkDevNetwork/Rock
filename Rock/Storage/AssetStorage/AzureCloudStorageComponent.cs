@@ -584,7 +584,7 @@ namespace Rock.Storage.AssetStorage
         #region Private Methods
 
         /// <summary>
-        /// Determines whether Asset has the required elements for an AWS file.
+        /// Determines whether Asset has the required elements for an Azure file.
         /// </summary>
         /// <param name="asset">The asset.</param>
         /// <exception cref="Exception">Asset Type is set to 'Folder' instead of 'File.'</exception>
@@ -597,7 +597,7 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Determines whether the Asset has the required elements for a AWS folder.
+        /// Determines whether the Asset has the required elements for a Azure folder.
         /// </summary>
         /// <param name="asset">The asset.</param>
         /// <exception cref="Exception">
