@@ -3905,6 +3905,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                         {
                             gradeFormatted = "<b style='color:red;'>Grade Required</b>";
                             lbEditGroupMember.Visible = true;
+                            isValidRegistrant = false;
                         }
 
                         hfPersonAliasId.Value = groupMember.Person.PrimaryAliasId.ToString();
