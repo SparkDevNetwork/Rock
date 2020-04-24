@@ -483,6 +483,7 @@
     <Compile Include="Blocks\Types\Mobile\Prayer\PrayerSessionSetup.cs" />
     <Compile Include="Field\Types\ConnectionRequestActivityFieldType.cs" />
     <Compile Include="Field\Types\StepFieldType.cs" />
+    <Compile Include="Jobs\CollectHostingMetrics.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\SendMessageResults.cs" />
     <Compile Include="Jobs\PostV110DataMigrationsUpdateDateKeyValues.cs" />
@@ -499,6 +500,7 @@
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
     <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs" />
+    <Compile Include="SystemGuid\Metric.cs" />
     <Compile Include="Transactions\RunReportTransaction.cs" />
     <Compile Include="Plugin\HotFixes\110_UpdateSpiritualGiftsResultsLava.cs" />
     <Compile Include="Plugin\HotFixes\113_MigrationRollupsFor10_3_2.cs" />
