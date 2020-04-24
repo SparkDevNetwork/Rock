@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -32,9 +33,12 @@ namespace Rock.Jobs
 {
 
     /// <summary>
-    /// Sends RSVP Reminder messages.
+    /// This job send RSVP reminder notifications for any groups of the specified group type with notifications needing to be sent.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Send RSVP Reminders" )]
+    [Description( "This job send RSVP reminder notifications for any groups of the specified group type with notifications needing to be sent." )]
+
     #region DataMap Field Attributes
     [GroupTypeField( "Group Type",
         Key = AttributeKey.GroupType,

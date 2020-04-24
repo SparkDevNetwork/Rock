@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.Web;
 
@@ -31,6 +32,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to get a National Change of Address (NCOA) report for all active people's addresses.
     /// </summary>
+    [DisplayName( "Get National Change of Address (NCOA)" )]
+    [Description( "Job that gets National Change of Address (NCOA) data." )]
+
     [DisallowConcurrentExecution]
     public class GetNcoa : IJob
     {

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
 using System.Linq;
 
 using Quartz;
@@ -26,8 +27,11 @@ namespace Rock.Jobs
 {
 
     /// <summary>
-    /// Job to process event registration reminders
+    /// This job fetches Rock notifications from the Spark Development Network.
     /// </summary>
+    [DisplayName( "Spark Link" )]
+    [Description( "This job fetches Rock notifications from the Spark Development Network." )]
+
     [DisallowConcurrentExecution]
     [GroupField( "Notification Group", "The group that should receive incoming notifications", true, Rock.SystemGuid.Group.GROUP_ADMINISTRATORS )]
     public class SparkLink : IJob

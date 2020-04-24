@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -37,6 +38,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to process communications
     /// </summary>
+    [DisplayName( "Send Attendance Reminders" )]
+    [Description( "Sends a reminder to group leaders about entering attendance for their group meeting." )]
+
     [GroupTypeField( "Group Type", "The Group type to send attendance reminders for.", true, Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP, "", 0, AttributeKey.GroupType )]
 
     #region Job Attributes

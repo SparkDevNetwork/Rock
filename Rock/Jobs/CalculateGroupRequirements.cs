@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
@@ -30,6 +31,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to update Group Members' Group Requirement statuses for requirements that are calculated from SQL or DataView
     /// </summary>
+    [DisplayName( "Calculate Group Requirements" )]
+    [Description( "Calculate Group Requirements for group members that are in groups that have group requirements." )]
+
     [DisallowConcurrentExecution]
     public class CalculateGroupRequirements : IJob
     {
