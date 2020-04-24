@@ -225,6 +225,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
+            // This needs to be done AFTER all of the attributeValuse for each fieldVisibilityWrapper are collected in order to work correctly.
             foreach ( var fieldVisibilityWrapper in fieldVisibilityWrappers.Values )
             {
                 fieldVisibilityWrapper.UpdateVisibility( attributeValues, personFieldValues );
