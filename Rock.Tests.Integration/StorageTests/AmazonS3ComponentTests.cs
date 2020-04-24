@@ -79,7 +79,7 @@ namespace Rock.Tests.Integration.StorageTests
         {
             if ( !string.IsNullOrEmpty( appDataTempFolder ) )
             {
-                RockLoggingHelpers.DeleteFilesInFolder( appDataTempFolder );
+                Directory.Delete( appDataTempFolder, recursive: true );
             }
         }
 
@@ -113,7 +113,8 @@ namespace Rock.Tests.Integration.StorageTests
                     if ( assetStorageProvider == null )
                     {
                         isNew = true;
-                        var entityType = EntityTypeCache.Get( "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8".AsGuid() );
+
+                        var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_AMAZONS3.AsGuid() );
 
                         assetStorageProvider = new AssetStorageProvider();
                         assetStorageProvider.Name = "TEST Amazon S3 AssetStorageProvider";
@@ -161,11 +162,10 @@ namespace Rock.Tests.Integration.StorageTests
             return assetStorageProvider;
         }
 
-
         /// <summary>
         /// Upload a small set of folders and files.  Used for simple folder/file listing that requires ONLY one request.
         /// </summary>
-        public void TestUploadFewSimpleObjects()
+        private void TestUploadFewSimpleObjects()
         {
             using ( new HttpSimulator( "/", webContentFolder ).SimulateRequest() )
             {
