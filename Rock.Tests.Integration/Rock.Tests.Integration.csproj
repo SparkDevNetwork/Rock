@@ -103,6 +103,7 @@
     <Compile Include="Jobs\SendPrayerCommentsJobTests.cs" />
     <Compile Include="Jobs\RockJobListenerTests.cs" />
     <Compile Include="Rock.Logging\RockLoggingHelpers.cs" />
+    <Compile Include="StorageTests\AzureCloudComponentTests.cs" />
     <Compile Include="TestFramework\DatabaseIntegrationTestClassBase.cs" />
     <Compile Include="DotLiquid\TemplateTests.cs" />
     <Compile Include="Interactions\PageViewTests.cs" />
@@ -148,6 +149,7 @@
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>test.runsettings</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
     <Compile Include="TestData\TestDataHelper.cs" />
@@ -162,6 +164,7 @@
     <None Include="test.runsettings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>test.Designer.cs</LastGenOutput>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="app.ConnectionStrings.config.example" />
   </ItemGroup>
