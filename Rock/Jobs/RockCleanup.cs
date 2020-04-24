@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
@@ -35,6 +36,9 @@ namespace Rock.Jobs
     /// Job that executes routine cleanup tasks on Rock.
     /// Cleanup tasks are tasks that fixes (add, update or purge) invalid, missing or obsolete data.
     /// </summary>
+    [DisplayName( "Rock Cleanup" )]
+    [Description( "General job to clean up various areas of Rock." )]
+
     [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
     [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
