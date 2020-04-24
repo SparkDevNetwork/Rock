@@ -46,8 +46,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Description = "When set, causes only scheduled transaction's of a particular gateway to be shown.",
         IsRequired = false,
         Order = 1 )]
-
-    [BooleanField( "Show Event Registration Payments", order: 2 )]
+    [LinkedPage( "Scheduled Transaction Detail Page" )]
+    [LinkedPage( "Transaction Detail Page" )]
     [IntegerField( "Category Id", order: 3 )]
     [SystemEmailField( "Registration Deleted Notification", "", false, "", "", 4, "RegistrationDeletedNotification" )]
 
@@ -83,7 +83,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
 
     [ContextAware( typeof( Person ) )]
-    public partial class DaycationParentInfo : RockBlock
+    public partial class DaycationParentInfo : PersonBlock
     {
         /// <summary>
         /// Keys to use for Block Attributes
@@ -96,15 +96,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             public const string GatewayFilter = "GatewayFilter";
         }
 
-        #region Properties
-
-        /// <summary>
-        /// The current person being viewed
-        /// </summary>
-        public Person Person { get; set; }
-
-        #endregion
-
         #region Base Control Methods
 
         /// <summary>
@@ -115,37 +106,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             base.OnInit( e );
 
-            Person = this.ContextEntity<Person>();
-
-            if ( Person == null )
-            {
-                // check the query string and attempt to load the person from it
-                if ( Request["PersonId"] != null )
-                {
-                    int personId = Request["PersonId"].AsInteger();
-
-                    Person = new PersonService( new RockContext() ).Get( personId );
-                    Person.LoadAttributes();
-                }
-
-                // check the query string and attempt to load the person from it
-                if ( Request["Person"] != null )
-                {
-                    Guid personAliasGuid = Request["Person"].AsGuid();
-
-                    var personAlias = new PersonAliasService( new RockContext() ).Get( personAliasGuid );
-                    if ( personAlias != null )
-                    {
-                        Person = personAlias.Person;
-                        Person.LoadAttributes();
-                    }
-                }
-
-                if ( Person == null )
-                {
-                    Person = new Person();
-                }
-            }
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -194,7 +154,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             {
                 var transactionSchedule = e.Item.DataItem as FinancialScheduledTransaction;
 
-                BootstrapButton bbtnDelete = ( BootstrapButton ) e.Item.FindControl( "bbtnDelete" );
                 HiddenField hfScheduledTransactionId = ( HiddenField ) e.Item.FindControl( "hfScheduledTransactionId" );
                 hfScheduledTransactionId.Value = transactionSchedule.Id.ToString();
 
@@ -243,7 +202,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                     if ( registration != null )
                     {
                         scheduleSummary.Add( "Registration", registration );
-                        bbtnDelete.Text = "Cancel Registration";
                     }
 
                 }
@@ -278,99 +236,6 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             }
         }
 
-        /// <summary>
-        /// Handles the Click event of the bbtnDelete control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void bbtnDelete_Click( object sender, EventArgs e )
-        {
-            BootstrapButton bbtnDelete = ( BootstrapButton ) sender;
-            RepeaterItem riItem = ( RepeaterItem ) bbtnDelete.NamingContainer;
-
-            HiddenField hfScheduledTransactionId = ( HiddenField ) riItem.FindControl( "hfScheduledTransactionId" );
-            Literal content = ( Literal ) riItem.FindControl( "lScheduledContent" );
-
-            using ( var rockContext = new Rock.Data.RockContext() )
-            {
-                FinancialScheduledTransactionService fstService = new FinancialScheduledTransactionService( rockContext );
-                RegistrationService registrationService = new RegistrationService( rockContext );
-                var currentTransaction = fstService.Get( hfScheduledTransactionId.Value.AsInteger() );
-                if ( currentTransaction != null && currentTransaction.FinancialGateway != null )
-                {
-                    currentTransaction.FinancialGateway.LoadAttributes( rockContext );
-                }
-
-                string errorMessage = string.Empty;
-                if ( fstService.Cancel( currentTransaction, out errorMessage ) )
-                {
-                    try
-                    {
-                        fstService.GetStatus( currentTransaction, out errorMessage );
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
-
-                    rockContext.SaveChanges();
-                    content.Text = "<div class='alert alert-success'>Your upcoming payment has been deleted.</div>";
-
-                    var entityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
-                    var registrationId = currentTransaction.ScheduledTransactionDetails.Where( std => std.EntityTypeId == entityTypeId ).Max( std => std.EntityId );
-                    if ( registrationId != null )
-                    {
-                        var registration = registrationService.Get( registrationId.Value );
-                        if ( registration != null )
-                        {
-                            if ( registration != null )
-                            {
-                                int registrationInstanceId = registration.RegistrationInstanceId;
-
-
-                                var changes = new History.HistoryChangeList();
-                                changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
-
-                                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, Person );
-                                mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance.Name );
-                                mergeFields.Add( "RegistrationTemplate", registration.RegistrationInstance.RegistrationTemplate.Name );
-                                mergeFields.Add( "Registrants", registration.Registrants.Select( r => r.PersonAlias.Person.FullName ).ToList() );
-
-                                var emailMessage = new RockEmailMessage( GetAttributeValue( "RegistrationDeletedNotification" ).AsGuid() );
-                                emailMessage.AddRecipient( new RecipientData( "Daycation@houstonsfirst.org", mergeFields ) );
-                                emailMessage.AppRoot = ResolveRockUrl( "~/" );
-                                emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                                emailMessage.CreateCommunicationRecord = false;
-                                emailMessage.Send();
-
-                                rockContext.WrapTransaction( () =>
-                                {
-                                    HistoryService.SaveChanges(
-                                        rockContext,
-                                        typeof( Registration ),
-                                        Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                                        registration.Id,
-                                        changes );
-
-                                    registrationService.Delete( registration );
-                                    rockContext.SaveChanges();
-                                    content.Text = "<div class='alert alert-success'>Your registration and related scheduled payment has been deleted.</div>";
-
-                                } );
-                            }
-                        }
-
-                    }
-                }
-                else
-                {
-                    content.Text = string.Format( "<div class='alert alert-danger'>An error occurred while deleting your scheduled transaction. Message: {0}</div>", errorMessage );
-                }
-            }
-
-            bbtnDelete.Visible = false;
-        }
-
         #endregion
 
         #region Methods
@@ -388,7 +253,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
                 // get giving id
                 var givingIds = personService.GetBusinesses( Person.Id ).Select( g => g.GivingId ).ToList();
-                givingIds.Add( Person.GivingId );
+                foreach ( var person in Person.GetFamilyMembers( true ).Select( fm => fm.Person ).ToList() )
+                {
+                    givingIds.Add( person.GivingId );
+                }
 
                 BuildUpcomingPayments( rockContext, givingIds );
                 BuildPastPayments( rockContext, givingIds );
@@ -401,11 +269,10 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             var registrationRegistrantService = new RegistrationRegistrantService( rockContext );
             var categoryId = GetAttributeValue( "CategoryId" ).AsInteger();
-            var familyMemberPersonIds = Person.GetFamilyMembers().Select( fm => fm.PersonId ).ToList();
+            var familyMemberPersonIds = Person.GetFamilyMembers( true ).Select( fm => fm.PersonId ).ToList();
             var registrationRegistrantPersonIds = registrationRegistrantService.Queryable().AsNoTracking()
                     .Where( rr => familyMemberPersonIds.Contains( rr.PersonAlias.PersonId ) )
                     .Where( rr => rr.Registration.RegistrationInstance.RegistrationTemplate.CategoryId == categoryId )
-                    .Where( rr => rr.Registration.RegistrationInstance.RegistrationTemplate.Name.Contains( "Admin" ) )
                     .Select( rr => rr.PersonAlias.PersonId )
                     .ToList();
 
@@ -426,12 +293,11 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             var transactionService = new FinancialTransactionService( rockContext );
             var registrationService = new RegistrationService( rockContext );
             var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
-            var showEventRegistrationPayments = GetAttributeValue( "ShowEventRegistrationPayments" ).AsBoolean();
 
             var transactions = transactionService.Queryable()
                 .Include( a => a.TransactionDetails.Select( s => s.Account ) )
                 .Where( s => givingIds.Contains( s.AuthorizedPersonAlias.Person.GivingId ) )
-                .Where( s => ( s.TransactionTypeValue.Guid == txnType.Guid ) == showEventRegistrationPayments );
+                .Where( s => ( s.TransactionTypeValue.Guid == txnType.Guid ) == true );
 
             var entityIds = transactions.SelectMany( t => t.TransactionDetails.Select( td => td.EntityId ) ).ToList();
             var registrationIds = registrationService.Queryable().AsNoTracking().Where( r => entityIds.Contains( r.Id ) ).Select( r => r.Id ).ToList();
@@ -459,12 +325,11 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         {
             var scheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
             var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
-            var showEventRegistrationPayments = GetAttributeValue( "ShowEventRegistrationPayments" ).AsBoolean();
 
             var schedules = scheduledTransactionService.Queryable()
                 .Include( a => a.ScheduledTransactionDetails.Select( s => s.Account ) )
                 .Where( s => givingIds.Contains( s.AuthorizedPersonAlias.Person.GivingId ) && s.IsActive == true )
-                .Where( s => ( s.TransactionTypeValue.Guid == txnType.Guid ) == showEventRegistrationPayments );
+                .Where( s => ( s.TransactionTypeValue.Guid == txnType.Guid ) == true );
 
             // filter the list if necessary
             var gatewayFilterGuid = GetAttributeValue( AttributeKey.GatewayFilter ).AsGuidOrNull();
@@ -569,8 +434,8 @@ namespace RockWeb.Plugins.com_bemaservices.Event
 
                 personSummary.Add( "AdminFeeRegistration", registrationRegistrants.Where( rr => rr.Registration.RegistrationInstance.RegistrationTemplate.Name.Contains( "Admin" ) ).FirstOrDefault() );
                 personSummary.Add( "Registrants", registrationRegistrants
-                                                        .Where( rr => !rr.Registration.RegistrationInstance.RegistrationTemplate.Name.Contains( "Admin" ) )
-                                                        .OrderBy( rr => rr.Registration.RegistrationInstance.EndDateTime )
+                                                        .OrderByDescending( rr => rr.Registration.RegistrationInstance.RegistrationTemplate.Name.Contains( "Admin" ) )
+                                                        .ThenBy( rr => rr.Registration.RegistrationInstance.EndDateTime )
                                                         .ToList() );
 
                 Dictionary<string, object> personLava = new Dictionary<string, object>();
@@ -582,6 +447,24 @@ namespace RockWeb.Plugins.com_bemaservices.Event
                 lRegistrantContent.Text = GetAttributeValue( AttributeKey.RegistrantTemplate ).ResolveMergeFields( personLava );
 
             }
+        }
+
+        protected void bbtnViewScheduledDetails_Click( object sender, EventArgs e )
+        {
+            BootstrapButton bbtnViewScheduledDetails = ( BootstrapButton ) sender;
+            RepeaterItem riItem = ( RepeaterItem ) bbtnViewScheduledDetails.NamingContainer;
+
+            HiddenField hfScheduledTransactionId = ( HiddenField ) riItem.FindControl( "hfScheduledTransactionId" );
+            NavigateToLinkedPage( "ScheduledTransactionDetailPage", "ScheduledTransactionId", hfScheduledTransactionId.Value.AsInteger() );
+        }
+
+        protected void bbtnViewDetails_Click( object sender, EventArgs e )
+        {
+            BootstrapButton bbtnViewDetails = ( BootstrapButton ) sender;
+            RepeaterItem riItem = ( RepeaterItem ) bbtnViewDetails.NamingContainer;
+
+            HiddenField hfTransactionId = ( HiddenField ) riItem.FindControl( "hfTransactionId" );
+            NavigateToLinkedPage( "TransactionDetailPage", "TransactionId", hfTransactionId.Value.AsInteger() );
         }
     }
 }
