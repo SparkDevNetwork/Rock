@@ -389,8 +389,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Set and validate the persistence schedule settings.
         /// </summary>
-        /// <param name="isEnabled"></param>
-        /// <param name="persistedScheduleIntervalMinutes"></param>
+        /// <param name="persistedScheduleIntervalMinutes">The persisted schedule interval minutes.</param>
         /// <param name="scheduleUnit">The schedule unit, or null if the unit should be determined by the interval.</param>
         private void SetPersistenceScheduleFromInterval( int? persistedScheduleIntervalMinutes, IntervalTimeUnit? scheduleUnit )
         {
