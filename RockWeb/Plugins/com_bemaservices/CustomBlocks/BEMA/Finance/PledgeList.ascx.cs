@@ -31,7 +31,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.1.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -51,13 +51,13 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
     [Description( "Generic list of all pledges in the system." )]
 
     [LinkedPage( "Detail Page", "", false )]
-    [BooleanField( "Show Account Column", "Allows the account column to be hidden.", true, "", 1 )]
-    [BooleanField( "Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2 )]
+    [BooleanField("Show Account Column", "Allows the account column to be hidden.", true, "", 1)]
+    [BooleanField("Show Last Modified Date Column", "Allows the Last Modified Date column to be hidden.", true, "", 2)]
     [BooleanField( "Show Group Column", "Allows the group column to be hidden.", false, "", 3 )]
-    [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4 )]
+    [BooleanField( "Limit Pledges To Current Person", "Limit the results to pledges for the current person.", false, "", 4)]
     [BooleanField( "Show Account Summary", "Should the account summary be displayed at the bottom of the list?", false, order: 5 )]
     [AccountsField( "Accounts", "Limit the results to pledges that match the selected accounts.", false, "", "", 5 )]
-    [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0 )]
+    [BooleanField( "Show Person Filter", "Allows person filter to be hidden.", true, "Display Filters", 0)]
     [BooleanField( "Show Account Filter", "Allows account filter to be hidden.", true, "Display Filters", 1 )]
     [BooleanField( "Show Date Range Filter", "Allows date range filter to be hidden.", true, "Display Filters", 2 )]
     [BooleanField( "Show Last Modified Filter", "Allows last modified filter to be hidden.", true, "Display Filters", 3 )]
@@ -705,7 +705,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             gfPledges.SaveUserPreference( "Date Range", drpDates.DelimitedValues );
             gfPledges.SaveUserPreference( "Last Modified", drpLastModifiedDates.DelimitedValues );
             gfPledges.SaveUserPreference( "Person", ppFilterPerson.PersonId.ToString() );
-            gfPledges.SaveUserPreference( "Accounts", apFilterAccount.SelectedValues.ToList().AsDelimited( "," ) );
+            gfPledges.SaveUserPreference( "Accounts", apFilterAccount.SelectedValues.ToList().AsDelimited(",") );
             if ( AvailableAttributes != null )
             {
                 foreach ( var attribute in AvailableAttributes )
@@ -738,7 +738,6 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
 
-
             Person person = null;
             if ( TargetPerson != null )
             {
@@ -752,7 +751,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
                     person = new PersonService( rockContext ).Get( personId.Value );
                 }
             }
-
+            
             if ( person != null )
             {
                 // if a person is specified, get pledges for that person ( and also anybody in their GivingUnit )
@@ -802,7 +801,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
             // exclude pledges that start after the filter's end date or end before the filter's start date
             if ( drpDates.Visible && ( filterDateRange.Start.HasValue || filterDateRange.End.HasValue ) )
             {
-                pledges = pledges.Where( p => !( p.StartDate > filterEndDate ) && !( p.EndDate < filterStartDate ) );
+                pledges = pledges.Where( p => !(p.StartDate > filterEndDate) && !(p.EndDate < filterStartDate) );
             }
 
             // Filter query by any configured attribute filters

@@ -1,10 +1,5 @@
 <%@ Control Language="C#" AutoEventWireup="true" CodeFile="BusinessDetail.ascx.cs" Inherits="RockWeb.Plugins.com_bemaservices.Finance.BusinessDetail" %>
 
-<style>
-    .btn-no-label {
-        margin-top: 28px;
-    }
-</style>
 <asp:UpdatePanel ID="upnlBusinesses" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">

@@ -38,7 +38,7 @@ using Rock.Web.UI.Controls;
  *******************************************************************************************************************************/
  
 /*
- * BEMA Modified Core Block ( v10.1.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -88,6 +88,7 @@ namespace RockWeb.Plugins.com_bemaservices.CustomBlocks.BEMA.Crm.PersonDetail
         IsRequired = false,
         Order = 3 )]
     /* BEMA.FE1.End */
+	
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
 		/* BEMA.Start */

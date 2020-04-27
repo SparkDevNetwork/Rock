@@ -33,7 +33,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 /*
- * BEMA Modified Core Block ( v10.1.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -553,8 +553,6 @@ namespace RockWeb.Plugins.com_bemaservices.Prayer
                 }
             }
             /* BEMA.UI1.End */
-
-
 
             // Filter by approved/unapproved
             if ( ddlApprovedFilter.SelectedIndex > -1 )

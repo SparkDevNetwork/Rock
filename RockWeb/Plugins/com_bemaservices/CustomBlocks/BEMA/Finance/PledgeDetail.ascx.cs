@@ -33,7 +33,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 
 /*
- * BEMA Modified Core Block ( v10.1.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -91,9 +91,9 @@ namespace Rock.Plugins.com_bemaservices.Finance
         /* BEMA.End */
 
         #region Properties
-        //BEMA Custom Code Start: Added SaveNew Button
+        /* BEMA.FE1.Start */
         private Control _focusControl = null;
-        //BEMA Custom Code End
+        /* BEMA.FE1.End */
         #endregion
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.

@@ -32,7 +32,7 @@ using Rock.Security;
 using Rock.Web.Cache;
 
 /*
- * BEMA Modified Core Block ( v10.1.1)
+ * BEMA Modified Core Block ( v10.2.1)
  * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
  * 
  * Additional Features:
@@ -70,6 +70,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
         Category = "BEMA Additional Features" )]
     // UMC Value = true
     /* BEMA.FE2.End */
+	
     public partial class EventItemOccurrenceLava : Rock.Web.UI.RockBlock
     {
         /* BEMA.Start */
