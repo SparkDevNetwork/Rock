@@ -621,14 +621,14 @@ namespace Rock.Blocks.Types.Mobile.Prayer
             if ( ShowPublicDisplayFlag )
             {
                 field = MobileHelper.GetCheckBoxFieldXaml( "allowPublication", "Allow Publication", request?.IsPublic ?? DefaultToPublic );
-                sb.AppendLine( MobileHelper.GetSingleFieldXaml( field, false ) );
+                sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
                 parameters.Add( "allowPublication", "IsChecked" );
             }
 
             if ( ShowUrgentFlag )
             {
                 field = MobileHelper.GetCheckBoxFieldXaml( "urgent", "Urgent", request?.IsUrgent ?? false );
-                sb.AppendLine( MobileHelper.GetSingleFieldXaml( field, false ) );
+                sb.AppendLine( MobileHelper.GetSingleFieldXaml( field ) );
                 parameters.Add( "urgent", "IsChecked" );
             }
 
