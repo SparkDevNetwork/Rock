@@ -31,10 +31,10 @@ namespace Rock.Workflow.Action
     /// <summary>
     /// Creates a step for the person
     /// </summary>
-    [ActionCategory( "Steps" )]
+    [ActionCategory( "People" )]
     [Description( "Adds a step for a person." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Add Step" )]
+    [ExportMetadata( "ComponentName", "Step Add" )]
 
     #region Attributes
 
