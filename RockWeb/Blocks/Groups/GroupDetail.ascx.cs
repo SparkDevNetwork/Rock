@@ -3447,16 +3447,16 @@ namespace RockWeb.Blocks.Groups
             int groupTypeId = ddlGroupType.SelectedValue.AsInteger();
             int groupId = hfGroupId.ValueAsInt();
 
-            // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
-            if ( groupId > 0 )
-            {
-                currentSyncdRoles = GroupSyncState
+            currentSyncdRoles = GroupSyncState
                     .Where( s => s.GroupId == groupId )
                     .Select( s => s.GroupTypeRoleId )
                     .ToList();
 
-                currentSyncdRoles.Remove( roleId );
+            currentSyncdRoles.Remove( roleId );
 
+            // If not 0 then get the existing roles to remove, if 0 then this is a new group that has not yet been saved.
+            if ( groupId > 0 )
+            { 
                 groupTypeId = new GroupService( rockContext ).Get( groupId ).GroupTypeId;
             }
 
@@ -3483,7 +3483,7 @@ namespace RockWeb.Blocks.Groups
             ddlWelcomeCommunication.Items.Clear();
             ddlExitCommunication.Items.Clear();
             cbCreateLoginDuringSync.Checked = false;
-            ipScheduleIntervalMinutes.IntervalInMinutes = 20;
+            ipScheduleIntervalMinutes.IntervalInMinutes = 12 * 60;
         }
 
         #endregion
