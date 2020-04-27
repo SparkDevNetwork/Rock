@@ -617,9 +617,10 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="fieldXaml">The field.</param>
         /// <param name="wrapped">if set to <c>true</c> the SingleField wraps the field in a border.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0060:Remove unused parameter", Justification = "Public API, and it may come back to be used later. -dsh" )]
         public static string GetSingleFieldXaml( string fieldXaml, bool wrapped = true )
         {
-            return $"<Rock:SingleField Wrapped=\"{wrapped}\">{fieldXaml}</Rock:SingleField>";
+            return $"<Rock:FieldContainer>{fieldXaml}</Rock:FieldContainer>";
         }
 
         /// <summary>
@@ -631,7 +632,7 @@ namespace Rock.Mobile
         {
             text = text ?? string.Empty;
 
-            return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />", false );
+            return GetSingleFieldXaml( $"<Rock:Literal Label=\"{label.EncodeXml( true )}\" Text=\"{text.EncodeXml( true )}\" />" );
         }
 
         /// <summary>
