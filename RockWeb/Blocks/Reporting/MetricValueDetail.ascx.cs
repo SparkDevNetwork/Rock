@@ -141,6 +141,7 @@ namespace RockWeb.Blocks.Reporting
                                 
                                 var entityTypeRockControl = ( entityTypeEditControl as IRockControl );
                                 entityTypeRockControl.Label = metricPartition.Label;
+                                entityTypeRockControl.Required = metricPartition.IsRequired;
                                 if ( entityTypeEditControl is WebControl )
                                 {
                                     ( entityTypeEditControl as WebControl ).Enabled = !readOnly;
