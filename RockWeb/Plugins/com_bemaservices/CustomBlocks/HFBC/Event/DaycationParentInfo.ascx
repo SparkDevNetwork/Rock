@@ -11,7 +11,7 @@
                             <asp:Literal ID="lScheduledContent" runat="server" />
                             <asp:HiddenField ID="hfScheduledTransactionId" runat="server"></asp:HiddenField>
                             <div class="actions">
-                                <Rock:BootstrapButton ID="bbtnDelete" runat="server" OnClick="bbtnDelete_Click" Text="Delete" CssClass="btn btn-danger" />
+                                <Rock:BootstrapButton ID="bbtnViewScheduledDetails" runat="server" OnClick="bbtnViewScheduledDetails_Click" Text="View Details" CssClass="btn btn-info" />
                             </div>
                         </div>
                     </ItemTemplate>
@@ -31,6 +31,9 @@
                         <div class="scheduledtransaction-item">
                             <asp:Literal ID="lTransactionContent" runat="server" />
                             <asp:HiddenField ID="hfTransactionId" runat="server"></asp:HiddenField>
+                            <div class="actions">
+                                <Rock:BootstrapButton ID="bbtnViewDetails" runat="server" OnClick="bbtnViewDetails_Click" Text="View Details" CssClass="btn btn-info" />
+                            </div>
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
