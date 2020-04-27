@@ -110,7 +110,7 @@ namespace org.hfbc.Autobuild
             " );
 
             Sql( @" Update BlockType
-                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Finance/ScheduledFilteredTransactionListLiquid.ascx'
+                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/BEMA/Finance/ScheduledTransactionListLiquid.ascx'
                     Where Path = '~/Plugins/com_bemaservices/Event/ScheduledFilteredTransactionListLiquid.ascx'
             " );
         }

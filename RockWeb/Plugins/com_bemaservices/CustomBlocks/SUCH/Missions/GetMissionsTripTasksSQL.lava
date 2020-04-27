@@ -1,0 +1,37 @@
+{% sql return:'taskItems' %}
+    Declare @tripTypeId int = {{ tripTypeId | AsInteger }}
+    Declare @reminderId int = {% if reminderType and reminderType != '' %}{{ reminderType.Id | AsInteger }}{% else %}null{% endif %}
+    Declare @groupMemberId int = {% if tripGroupMember %}{{ tripGroupMember.Id | AsInteger }}{% else %}null{% endif %}
+    Declare @taskId int = {% if singleTask and singleTask != '' %}{{ singleTask.Id | AsInteger }}{% else %}null{% endif %}
+    Declare @tastList varchar(1000) = null
+
+    SET @tastList = (
+        SELECT avAsTasks.Value
+        FROM DefinedValue v
+            JOIN AttributeValue avAsTasks on avAsTasks.EntityId = v.id and avAsTasks.AttributeId = 10471 -- Assocatied Tasks
+        WHERE v.Id = @reminderId -- Reminders
+    )
+
+    SELECT dvTasks.Guid
+    FROM 
+        DefinedValue dvTasks
+            JOIN AttributeValue avTripType on avTripType.EntityId = dvTasks.Id and avTripType.AttributeId = 9645
+            JOIN DefinedValue dvTripType on dvTripType.Guid = TRY_CAST( avTripType.Value as uniqueidentifier) 
+            LEFT JOIN AttributeValue avShowHide on avShowHide.EntityId = dvTasks.Id and avShowHide.AttributeId = 10483
+            OUTER APPLY (
+                    SELECT avShowHideV.Id, avShowHideV.Value
+                    FROM AttributeValue avShowHideV
+                    WHERE avShowHideV.EntityId = @groupMemberId
+                    and avShowHideV.AttributeId = 10486
+                    and convert(varchar(max), dvTasks.Guid) in (SELECT s FROM dbo.Split(',', avShowHideV.Value))
+                ) as showForGroupMember --Test To see if a task should be shown or hidden based on a group memeber attribute
+    WHERE 
+        dvTasks.DefinedTypeId = 129
+        and dvTripType.Id = @tripTypeId
+        and (avShowHide.ValueAsBoolean != 1 or avShowHide.ValueAsBoolean is null or showForGroupMember.Id is not null) -- hide if the task is hidden based on attribute
+        and (dvTasks.id = @taskId or @taskId is null) -- if we need to show a single task
+        and (convert(varchar(max), dvTasks.Guid) in (SELECT s FROM dbo.Split(',', @tastList)) or @reminderId is null ) -- show the tasks in a reminder
+        order by dvTasks.[Order]
+
+{% endsql %}
+

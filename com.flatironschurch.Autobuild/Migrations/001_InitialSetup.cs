@@ -27,13 +27,13 @@ namespace com.flatironschurch.Autobuild
         public override void Up()
         {
             Sql( @" Update BlockType
-                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/CPCC/Finance/RunSQLOnClick.ascx',
+                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/FLCC/Finance/RunSQLOnClick.ascx',
                         Category = 'BEMA Services > Finance'
                     Where Path = '~/Plugins/com_bemadev/Finance/RunSQLOnClick.ascx'
             " );
 
             Sql( @" Update BlockType
-                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/CPCC/Groups/GroupDetailLava.ascx'
+                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/FLCC/Groups/GroupDetailLava.ascx'
                     Where Path = '~/Plugins/com_bemaservices/Groups/GroupDetailLava.ascx'
             " );
 
@@ -48,7 +48,7 @@ namespace com.flatironschurch.Autobuild
             " );
 
             Sql( @" Update BlockType
-                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/CPCC/Finance/ExportToGL.ascx'
+                    Set Path = '~/Plugins/com_bemaservices/CustomBlocks/FLCC/Finance/ExportToGL.ascx'
                     Where Path = '~/Plugins/com_bemaservices/Finance/ExportToGL.ascx'
             " );
 
