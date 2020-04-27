@@ -1,5 +1,12 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ConnectionTypeList.ascx.cs" Inherits="RockWeb.Blocks.Connection.ConnectionTypeList" %>
 
+<div class="clearfix margin-b-sm">		
+    <div class="pull-right">
+                <a href="/CampaignConfiguration" class="btn btn-xs btn-default">Connection Campaigns
+                </a>
+    </div>
+</div>
+
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
 
