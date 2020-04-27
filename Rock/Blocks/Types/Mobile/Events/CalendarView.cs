@@ -125,7 +125,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <summary>
             /// The event summary default value
             /// </summary>
-            public const string EventSummary = @"<Frame HasShadow=""false"" StyleClass=""calendar-event"">
+            public const string EventSummary = @"<Frame HasShadow=""false"" StyleClass=""calendar-event-summary"">
     <StackLayout Spacing=""0"">
         <Label StyleClass=""calendar-event-title"" Text=""{Binding Name}"" />
         {% if Item.EndDateTime == null %}
