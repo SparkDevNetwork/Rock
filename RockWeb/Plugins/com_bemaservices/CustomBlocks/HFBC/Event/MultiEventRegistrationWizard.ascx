@@ -57,8 +57,9 @@
                             <div class="row" style="text-align: left;">
                                 <div class="col-md-10">
                                     <asp:CheckBox ID="cbFamilyMember" runat="server" />
-                                    <asp:Panel id="divFamilyText" runat="server" style="margin-top: 10px; margin-bottom: 10px;">
-                                        <asp:Literal ID="lFamilyMember" runat="server" /></asp:Panel>
+                                    <asp:Panel ID="divFamilyText" runat="server" Style="margin-top: 10px; margin-bottom: 10px;">
+                                        <asp:Literal ID="lFamilyMember" runat="server" />
+                                    </asp:Panel>
                                 </div>
                                 <div class="col-md-2">
                                     <asp:LinkButton ID="lbEditGroupMember" runat="server" CssClass="btn btn-danger btn-xs" CommandArgument='<%# Eval("Guid") %>' CommandName="Update" Visible="false"> Edit</asp:LinkButton>
@@ -78,6 +79,8 @@
                     <asp:HiddenField ID="hfMemberId" runat="server" />
 
                     <div class="well col-md-offset-2 col-md-8">
+                        <Rock:NotificationBox ID="nbBirthdate" runat="server" Visible="false" NotificationBoxType="Danger" />
+
                         <div style="text-align: center;">
                         </div>
                         <div class="row">
