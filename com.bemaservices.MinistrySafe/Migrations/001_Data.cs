@@ -109,8 +109,8 @@ namespace com.bemaservices.MinistrySafe.Migrations
             RockMigrationHelper.AddSecurityRoleGroup( "RSR - Ministry Safe Training Administration", "The group of people responsible for approving Ministry Safe Trainings.", "22AD73FD-B267-49C3-ABF3-DF8805898E9C" );
 
             // Person Profile Badge
-            RockMigrationHelper.UpdatePersonBadge( "Ministry Safe Badge", "Shows whether someone has taken a Ministry Safe Training, as well as their score.", "Rock.PersonProfile.Badge.Liquid", 0, "9E9B9FAF-C7B8-40AA-B0C9-24177058943B" );
-            RockMigrationHelper.AddPersonBadgeAttributeValue( "9E9B9FAF-C7B8-40AA-B0C9-24177058943B", "01C9BA59-D8D4-4137-90A6-B3C06C70BBC3", @"{% assign trainingDate = Person | Attribute:'TrainingDate' %} 
+            UpdateBadge( "Ministry Safe Badge", "Shows whether someone has taken a Ministry Safe Training, as well as their score.", "Rock.Badge.Component.Liquid", 0, "9E9B9FAF-C7B8-40AA-B0C9-24177058943B" );
+            AddBadgeAttributeValue( "9E9B9FAF-C7B8-40AA-B0C9-24177058943B", "01C9BA59-D8D4-4137-90A6-B3C06C70BBC3", @"{% assign trainingDate = Person | Attribute:'TrainingDate' %} 
             {% assign trainingScore = Person | Attribute:'TrainingScore' %}
             {% assign trainingResult = Person | Attribute:'TrainingResult' %}
             {% assign isDisabled = false %}
@@ -154,6 +154,69 @@ namespace com.bemaservices.MinistrySafe.Migrations
                 ALTER TABLE [dbo].[_com_bemaservices_MinistrySafe_MinistrySafeUser] DROP CONSTRAINT [FK__com_bemaservices_MinistrySafe_MinistrySafeUser_CreatedByPersonAliasId]
                 DROP TABLE [dbo].[_com_bemaservices_MinistrySafe_MinistrySafeUser]
 " );
+        }
+
+        public void UpdateBadge( string name, string description, string entityTypeName, int order, string guid )
+        {
+            Sql( string.Format( @"
+                    DECLARE @BadgeComponentEntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = '{2}')
+                    DECLARE @EntityTypeId int = (SELECT [ID] FROM [EntityType] WHERE [Name] = 'Rock.Model.Person')
+
+                    IF EXISTS ( SELECT * FROM [Badge] where [Guid] = '{4}')
+                    BEGIN
+                        UPDATE [Badge] set
+                            [Name] = '{0}',
+                            [Description] = '{1}',
+                            [BadgeComponentEntityTypeId] = @BadgeComponentEntityTypeId,
+                            [EntityTypeId] = @EntityTypeId,
+                            [Order] = {3}
+                        WHERE [Guid] = '{4}'
+
+                    END
+                    ELSE
+                    BEGIN
+                        INSERT INTO [Badge] ([Name],[Description],[BadgeComponentEntityTypeId],[EntityTypeId],[Order],[Guid])
+                            VALUES ('{0}', '{1}', @BadgeComponentEntityTypeId,@EntityTypeId, {3}, '{4}')
+                    END
+
+",
+                    name.Replace( "'", "''" ),
+                    description.Replace( "'", "''" ),
+                    entityTypeName,
+                    order,
+                    guid )
+            );
+        }
+
+        public void AddBadgeAttributeValue( string personBadgeGuid, string attributeGuid, string value )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @PersonBadgeId int
+                SET @PersonBadgeId = (SELECT [Id] FROM [Badge] WHERE [Guid] = '{0}')
+
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute value first (might have been created by Rock system)
+                DELETE [AttributeValue]
+                WHERE [AttributeId] = @AttributeId
+                AND [EntityId] = @PersonBadgeId
+
+                INSERT INTO [AttributeValue] (
+                    [IsSystem],[AttributeId],[EntityId],
+                    [Value],
+                    [Guid])
+                VALUES(
+                    1,@AttributeId,@PersonBadgeId,
+                    '{2}',
+                    NEWID())
+",
+                    personBadgeGuid,
+                    attributeGuid,
+                    value.Replace( "'", "''" )
+                )
+            );
         }
     }
 }
