@@ -475,6 +475,7 @@ namespace Rock.Utility
         /// <summary>
         /// Assigns the connection requests from the SelectedCampaign's entity set.
         /// </summary>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="selectedCampaignItem">The selected campaign item.</param>
         /// <param name="numberOfRequestsRemaining">The number of requests remaining.</param>
         /// <param name="connectorPerson">The connector person.</param>

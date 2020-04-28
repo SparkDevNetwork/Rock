@@ -380,13 +380,57 @@ namespace Rock.Jobs
 
         #region Helper Classes
 
+        /// <summary>
+        /// 
+        /// </summary>
         public class ConnectionConnector
         {
+            /// <summary>
+            /// Gets or sets the person alias identifier.
+            /// </summary>
+            /// <value>
+            /// The person alias identifier.
+            /// </value>
             public int? PersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the person identifier.
+            /// </summary>
+            /// <value>
+            /// The person identifier.
+            /// </value>
             public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the limit.
+            /// </summary>
+            /// <value>
+            /// The limit.
+            /// </value>
             public int Limit { get; set; }
+
+            /// <summary>
+            /// Gets or sets the current.
+            /// </summary>
+            /// <value>
+            /// The current.
+            /// </value>
             public int Current { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campus identifier.
+            /// </summary>
+            /// <value>
+            /// The campus identifier.
+            /// </value>
             public int? CampusId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the days of week.
+            /// </summary>
+            /// <value>
+            /// The days of week.
+            /// </value>
             public List<DayOfWeek> DaysOfWeek { get; set; }
         }
 
