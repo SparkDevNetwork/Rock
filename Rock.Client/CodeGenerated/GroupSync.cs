@@ -57,10 +57,16 @@ namespace Rock.Client
         /// <summary />
         public int GroupTypeRoleId { get; set; }
 
+        /// <summary />
+        public DateTime? LastRefreshDateTime { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
+
+        /// <summary />
+        public int? ScheduleIntervalMinutes { get; set; }
 
         /// <summary />
         public int SyncDataViewId { get; set; }
@@ -115,7 +121,9 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.GroupId = source.GroupId;
             this.GroupTypeRoleId = source.GroupTypeRoleId;
+            this.LastRefreshDateTime = source.LastRefreshDateTime;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.ScheduleIntervalMinutes = source.ScheduleIntervalMinutes;
             this.SyncDataViewId = source.SyncDataViewId;
             this.WelcomeSystemCommunicationId = source.WelcomeSystemCommunicationId;
             #pragma warning disable 612, 618

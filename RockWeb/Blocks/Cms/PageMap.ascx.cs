@@ -20,7 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
-
+using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -33,6 +33,7 @@ namespace RockWeb.Blocks.Cms
     [DisplayName( "Page Map" )]
     [Category( "CMS" )]
     [Description( "Displays a page map in a tree view." )]
+
     #region Block Attributes
 
     [LinkedPage(
@@ -40,8 +41,15 @@ namespace RockWeb.Blocks.Cms
         Description = "Select the root page to use as a starting point for the tree view. Leaving empty will build a tree of all pages.",
         IsRequired = false,
         Key = AttributeKey.RootPage)]
+    [EnumsField(
+        "Site Type",
+        Description = "Select the Site Types of the root-level pages shown in the page map. If no items are selected, all root-level pages will be shown.",
+        IsRequired = false,
+        EnumSourceType = typeof( SiteType ),
+        Key = AttributeKey.SiteType )]
 
     #endregion Block Attributes
+
     public partial class PageMap : RockBlock
     {
         #region Attribute Keys
@@ -49,6 +57,7 @@ namespace RockWeb.Blocks.Cms
         private static class AttributeKey
         {
             public const string RootPage = "RootPage";
+            public const string SiteType = "SiteType";
         }
 
         #endregion Attribute Keys
@@ -67,6 +76,17 @@ namespace RockWeb.Blocks.Cms
         #endregion
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            InitializeSettingsNotification( upPanel );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -93,15 +113,15 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                string pageSearch = this.PageParameter( PageParameterKey.PageSearch  );
+                string pageSearch = this.PageParameter( PageParameterKey.PageSearch );
 
                 // NOTE: using "Page" instead of "PageId" since PageId is already parameter of the current page
                 int? selectedPageId = this.PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
                 if ( !string.IsNullOrWhiteSpace( pageSearch ) )
                 {
-                    foreach ( Page page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
+                    foreach ( var page in pageService.Queryable().Where( a => a.InternalName.IndexOf( pageSearch ) >= 0 ) )
                     {
-                        Page selectedPage = page;
+                        var selectedPage = page;
                         while ( selectedPage != null )
                         {
                             selectedPage = selectedPage.ParentPage;
@@ -148,6 +168,21 @@ namespace RockWeb.Blocks.Cms
             else
             {
                 rootPagesQry = rootPagesQry.Where( a => a.ParentPageId == null );
+            }
+
+            // Apply the Site Type filter to the root page list.
+            var siteTypeList = GetAttributeValue( AttributeKey.SiteType ).SplitDelimitedValues( "," ).AsIntegerList();
+
+            if ( siteTypeList.Any() )
+            {
+                var siteService = new SiteService( rockContext );
+
+                var siteIdList = siteService.Queryable()
+                    .Where( x => siteTypeList.Contains( ( int ) x.SiteType ) )
+                    .Select( x => x.Id )
+                    .ToList();
+
+                rootPagesQry = rootPagesQry.Where( a => siteIdList.Contains( a.Layout.Site.Id ) );
             }
 
             var rootPageList = rootPagesQry.OrderBy( a => a.Order ).Select( a => a.Id ).ToList();
@@ -251,6 +286,32 @@ namespace RockWeb.Blocks.Cms
             NavigateToPage( this.RockPage.Guid, qryParams );
         }
 
+        /// <summary>
+        /// Handles the BlockUpdated event.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        private void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            // Reload the page to refresh the map.
+            NavigateToCurrentPageReference();
+        }
+
         #endregion Events
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Initialize handlers for block configuration changes.
+        /// </summary>
+        /// <param name="triggerPanel"></param>
+        private void InitializeSettingsNotification( UpdatePanel triggerPanel )
+        {
+            // Set up Block Settings change notification.
+            BlockUpdated += Block_BlockUpdated;
+            AddConfigurationUpdateTrigger( triggerPanel );
+        }
+
+        #endregion
     }
 }

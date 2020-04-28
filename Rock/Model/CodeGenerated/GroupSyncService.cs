@@ -97,6 +97,8 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.GroupId = source.GroupId;
             target.GroupTypeRoleId = source.GroupTypeRoleId;
+            target.LastRefreshDateTime = source.LastRefreshDateTime;
+            target.ScheduleIntervalMinutes = source.ScheduleIntervalMinutes;
             target.SyncDataViewId = source.SyncDataViewId;
             target.WelcomeSystemCommunicationId = source.WelcomeSystemCommunicationId;
             #pragma warning disable 612, 618

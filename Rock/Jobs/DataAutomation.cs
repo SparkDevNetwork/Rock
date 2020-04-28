@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Web;
@@ -33,6 +34,9 @@ namespace Rock.Jobs
     /// Job to update people/families based on the Data Automation settings.
     /// Data Automation tasks are tasks that update the status of data.
     /// </summary>
+    [DisplayName( "Data Automation" )]
+    [Description( "Updates person/family information based on data automation settings." )]
+
     [DisallowConcurrentExecution]
     public class DataAutomation : IJob
     {

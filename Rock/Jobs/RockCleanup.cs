@@ -16,12 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
+using System.Text;
 using Quartz;
 
 using Rock.Attribute;
@@ -35,6 +36,9 @@ namespace Rock.Jobs
     /// Job that executes routine cleanup tasks on Rock.
     /// Cleanup tasks are tasks that fixes (add, update or purge) invalid, missing or obsolete data.
     /// </summary>
+    [DisplayName( "Rock Cleanup" )]
+    [Description( "General job to clean up various areas of Rock." )]
+
     [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
     [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
@@ -81,8 +85,7 @@ namespace Rock.Jobs
         {
         }
 
-        private List<RockCleanupJobResult> _databaseRowsCleanedUp = new List<RockCleanupJobResult>();
-        private List<Exception> _rockCleanupExceptions = new List<Exception>();
+        private List<RockCleanupJobResult> rockCleanupJobResultList = new List<RockCleanupJobResult>();
         private IJobExecutionContext jobContext;
 
         private int commandTimeout;
@@ -104,13 +107,22 @@ namespace Rock.Jobs
             batchAmount = dataMap.GetString( AttributeKey.BatchCleanupAmount ).AsIntegerOrNull() ?? 1000;
             commandTimeout = dataMap.GetString( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 900;
 
+            /* IMPORTANT!!:
+
+            Whenever you do a new RockContext() in RockCleanup make sure to set the commandtimeout, like this:
+
+            var rockContext = new RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            */
+
             RunCleanupTask( "Purge Exception Log", () => this.PurgeExceptionLog( dataMap ) );
 
             RunCleanupTask( "Expired Entity Set", () => CleanupExpiredEntitySets( dataMap ) );
 
             RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
 
-            RunCleanupTask( "Old Interaction Cleanup", () => CleanupInteractions( dataMap ) );
+            RunCleanupTask( "Old Interaction Cleanup", () => CleanupOldInteractions( dataMap ) );
 
             RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
@@ -165,38 +177,74 @@ namespace Rock.Jobs
             // ***********************
             //  Final count and report
             // ***********************
-            if ( _databaseRowsCleanedUp.Any( a => a.RowsAffected > 0 ) )
+
+            StringBuilder jobSummaryBuilder = new StringBuilder();
+            jobSummaryBuilder.AppendLine( "Summary:" );
+            jobSummaryBuilder.AppendLine( "" );
+            foreach ( var rockCleanupJobResult in rockCleanupJobResultList )
             {
-                context.Result = string.Format( "Processed {0}",
-                    _databaseRowsCleanedUp
-                        .Where( a => a.RowsAffected > 0 )
-                        .Select( GetFormattedResult )
-                        .ToList()
-                        .AsDelimited( ", ", " and " ) );
+                jobSummaryBuilder.AppendLine( $"{GetFormattedResult( rockCleanupJobResult )}" );
+            }
+
+            if ( rockCleanupJobResultList.Any( a => a.RowsAffected > 0 ) || rockCleanupJobResultList.Any( a => a.HasException ) )
+            {
+                if ( rockCleanupJobResultList.Any( a => a.HasException ) )
+                {
+                    jobSummaryBuilder.AppendLine( "\n<span class='label label-warning'>Warning</span> Some jobs have errors. See exception log for details." );
+                }
+
+                context.Result = jobSummaryBuilder.ToString();
             }
             else
             {
-                context.Result = "Rock Cleanup completed";
+                context.Result = "Rock Cleanup completed successfully";
             }
 
-            if ( _rockCleanupExceptions.Count > 0 )
+            var rockCleanupExceptions = rockCleanupJobResultList.Where( a => a.HasException ).Select( a => a.Exception ).ToList();
+
+            if ( rockCleanupExceptions.Any() )
             {
-                throw new AggregateException( "One or more exceptions occurred in RockCleanup.", _rockCleanupExceptions );
+                var exceptionList = new AggregateException( "One or more exceptions occurred in RockCleanup.", rockCleanupExceptions );
+                throw new RockJobWarningException( "RockCleanup completed with warnings", exceptionList );
             }
         }
 
         /// <summary>
         /// Get a cleanup job result as a formatted string
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="rockCleanupJobResult"></param>
         /// <returns></returns>
-        private string GetFormattedResult( RockCleanupJobResult result )
+        private string GetFormattedResult( RockCleanupJobResult rockCleanupJobResult )
         {
-            var rowsAffectedString = string.Format( "{0:n0}", result.RowsAffected );
-            var elapsedMillisecondsString = string.Format( "{0:n0}", result.ElapsedMilliseconds );
-            var titleString = result.Title.PluralizeIf( result.RowsAffected != 1 );
+            if ( rockCleanupJobResult.HasException )
+            {
+                return $"<span class='label label-danger'>Error</span> { rockCleanupJobResult.Title}";
+            }
+            else
+            {
+                string completionResultString;
+                if ( rockCleanupJobResult.RowsAffected > 0 )
+                {
+                    completionResultString = string.Format( "processed {0:n0} rows", rockCleanupJobResult.RowsAffected );
+                }
+                else
+                {
+                    completionResultString = string.Empty;
+                }
 
-            return $"{rowsAffectedString} {titleString} ({elapsedMillisecondsString}ms)";
+                var titleString = rockCleanupJobResult.Title;
+                string elapsedTimeString = string.Empty;
+                if ( rockCleanupJobResult.Elapsed.TotalMinutes > 1 )
+                {
+                    elapsedTimeString = $"[{Math.Round( rockCleanupJobResult.Elapsed.TotalMinutes, 1 )} minutes]";
+                }
+                else if ( rockCleanupJobResult.Elapsed.TotalSeconds > 1 )
+                {
+                    elapsedTimeString = $"[{Math.Round( rockCleanupJobResult.Elapsed.TotalSeconds, 1 )} seconds]";
+                }
+
+                return $"<span class='label label-success'>Success</span> {titleString} {completionResultString} {elapsedTimeString}";
+            }
         }
 
         /// <summary>
@@ -206,25 +254,31 @@ namespace Rock.Jobs
         /// <param name="cleanupMethod">The cleanup method.</param>
         private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
         {
+            var stopwatch = new Stopwatch();
             try
             {
-                var stopwatch = new Stopwatch();
                 jobContext.UpdateLastStatusMessage( $"Running {cleanupTitle}" );
-
                 stopwatch.Start();
                 var cleanupRowsAffected = cleanupMethod();
                 stopwatch.Stop();
 
-                _databaseRowsCleanedUp.Add( new RockCleanupJobResult
+                rockCleanupJobResultList.Add( new RockCleanupJobResult
                 {
                     Title = cleanupTitle,
                     RowsAffected = cleanupRowsAffected,
-                    ElapsedMilliseconds = stopwatch.ElapsedMilliseconds,
+                    Elapsed = stopwatch.Elapsed
                 } );
             }
             catch ( Exception ex )
             {
-                _rockCleanupExceptions.Add( new RockCleanupException( cleanupTitle, ex ) );
+                stopwatch.Stop();
+                rockCleanupJobResultList.Add( new RockCleanupJobResult
+                {
+                    Title = cleanupTitle,
+                    RowsAffected = 0,
+                    Elapsed = stopwatch.Elapsed,
+                    Exception = new RockCleanupException( cleanupTitle, ex )
+                } );
             }
         }
 
@@ -387,6 +441,7 @@ namespace Rock.Jobs
             // update any PhoneNumber.FullNumber's that aren't correct. 
             using ( var phoneNumberRockContext = new RockContext() )
             {
+                phoneNumberRockContext.Database.CommandTimeout = commandTimeout;
                 int phoneNumberUpdates = phoneNumberRockContext.Database.ExecuteSqlCommand( @"UPDATE [PhoneNumber] SET [FullNumber] = CONCAT([CountryCode], [Number]) where [FullNumber] is null OR [FullNumber] != CONCAT([CountryCode], [Number])" );
                 resultCount += phoneNumberUpdates;
             }
@@ -434,6 +489,7 @@ namespace Rock.Jobs
 
             using ( var rockContext = new RockContext() )
             {
+                rockContext.Database.CommandTimeout = commandTimeout;
                 var userLoginService = new UserLoginService( rockContext );
                 var anonymousGiver = new PersonService( rockContext ).GetOrCreateAnonymousGiverPerson();
                 if ( anonymousGiver == null )
@@ -783,7 +839,7 @@ namespace Rock.Jobs
                 var exceptionLogRockContext = new Rock.Data.RockContext();
 
                 // Assuming a 10 minute minimum CommandTimeout for this process.
-                exceptionLogRockContext.Database.CommandTimeout = commandTimeout >=600 ? commandTimeout : 600;
+                exceptionLogRockContext.Database.CommandTimeout = commandTimeout >= 600 ? commandTimeout : 600;
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
                 var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
@@ -825,10 +881,12 @@ namespace Rock.Jobs
         /// Cleans up Interactions for Interaction Channels that have a retention period
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private int CleanupInteractions( JobDataMap dataMap )
+        private int CleanupOldInteractions( JobDataMap dataMap )
         {
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
+
+            //var interactionSessionIdsOfDeletedInteractions = new List<int>();
 
             using ( var interactionRockContext = new Rock.Data.RockContext() )
             {
@@ -848,14 +906,79 @@ namespace Rock.Jobs
                         i.InteractionComponent.InteractionChannelId == interactionChannel.Id &&
                         i.InteractionDateTime < retentionCutoffDateTime );
 
+                    //var interactionSessionIdsForInteractionChannel = interactionsToDeleteQuery
+                    //    .Where( i => i.InteractionSessionId != null )
+                    //    .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i.Id ) )
+                    //    .Select( i => ( int ) i.InteractionSessionId )
+                    //    .ToList();
+
+                    //interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
+
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
                 }
             }
 
+            //RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
+
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the unused interactions.
+        /// </summary>
+        /// <param name="interactionSessionIds">The interaction session ids.</param>
+        /// <returns></returns>
+        private int CleanupUnusedInteractionSessions( List<int> interactionSessionIds )
+        {
+            int totalRowsDeleted = 0;
+            var currentDateTime = RockDateTime.Now;
+            
+            // delete any InteractionSession records that are no longer used.
+            var rockContext = new Rock.Data.RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            // Find a list of session IDs in the delete list that are being used for other interactions
+            var interactionSessionsIdsToKeep = new InteractionService( rockContext )
+                .Queryable()
+                .Where( s => interactionSessionIds.Contains( s.InteractionSessionId.Value ) )
+                .Select( s => s.InteractionSessionId.Value )
+                .ToList();
+
+            // filter list to remove InteractionSessionIds that are still being used
+            var interactionSessionsIdsToRemove = interactionSessionIds.Where( i => !interactionSessionsIdsToKeep.Contains( i ) );
+
+            var interactionSessionQueryable = new InteractionSessionService( rockContext ).Queryable().Where( s => interactionSessionsIdsToRemove.Contains( s.Id ) );
+
+            // take a snapshot of the most recent session id so we don't have to worry about deleting a session id that might be right in the middle of getting used
+            int maxInteractionSessionId = interactionSessionQueryable.Max( a => ( int? ) a.Id ) ?? 0;
+
+            // put the batchCount in the where clause to make sure that the BulkDeleteInChunks puts its Take *after* we've batched it
+            var batchUnusedInteractionSessionsQuery = interactionSessionQueryable
+                    .Where( a => a.Id < maxInteractionSessionId )
+                    .OrderBy( a => a.Id )
+                    .Take( batchAmount );
+
+            var unusedInteractionSessionsQueryToRemove = new InteractionSessionService( rockContext )
+                .Queryable()
+                .Where( a => batchUnusedInteractionSessionsQuery.Any( u => u.Id == a.Id ) );
+
+            totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
+
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// This is the old code, use it to compare results.
+        /// </summary>
+        /// <returns></returns>
+        private int CleanupUnusedInteractionSessions()
+        {
+            int totalRowsDeleted = 0;
+            var currentDateTime = RockDateTime.Now;
+
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = new Rock.Data.RockContext() )
             {
-                interactionSessionRockContext.Database.CommandTimeout = commandTimeout;
                 var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable().Where( a => a.InteractionSessionId.HasValue );
                 var interactionSessionQueryable = new InteractionSessionService( interactionSessionRockContext ).Queryable();
 
@@ -872,6 +995,7 @@ namespace Rock.Jobs
                 totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
             }
 
+            Debug.WriteLine( $"Total InteractionSessions deleted: {totalRowsDeleted}" );
             return totalRowsDeleted;
         }
 
@@ -915,6 +1039,7 @@ namespace Rock.Jobs
                 var keepDeleting = true;
                 while ( keepDeleting )
                 {
+                    Debug.WriteLine( "Deleting Chunk" );
                     var rowsDeleted = bulkDeleteContext.BulkDelete( chunkQuery );
                     keepDeleting = rowsDeleted > 0;
                     totalRowsDeleted += rowsDeleted;
@@ -1602,6 +1727,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeout;
+
             var pageService = new PageService( rockContext );
             var interactionService = new InteractionService( rockContext );
             var serviceJobService = new ServiceJobService( rockContext );
@@ -1617,34 +1743,29 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
              * Querying the Interaction table (which can be very large) can easily take a very long time out. So some optimizations might be needed.
              * In this case, the query was timing out in a way that was hard to avoid, so we broke it into several simplier individual queries
              * This results in more roundtrips, but easy roundtrip should be pretty fast, so the net time to do the task ends up taking much less time.
-
+             *
+             * 2020-04-27 ETD
+             * Also for the same reason as above this job will process all of the page IDs. Trying to query them from recent interactions has a high
+             * likelyhood of getting a SQL command timeout exception. The overall job takes longer but no single transaction is long enough to timeout.
              */
 
             // Un-comment this out when debugging, and make sure to comment it back out when checking in (see above note)
-            // minDate = DateTime.MinValue;
+            //minDate = DateTime.MinValue;
 
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
 
-            // Get all Website interactions with a page reference and time-to-serve value
-            var websiteInteractionQuery = interactionService.Queryable().AsNoTracking()
-                .Where( i =>
-                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
-                    i.InteractionComponent.EntityId.HasValue &&
-                    i.InteractionTimeToServe.HasValue );
-
-            // Get the unique, recent page interactions (recent = since the last successful Job run)
-            var uniquePageIds = websiteInteractionQuery
-                .Where( i => i.InteractionDateTime > minDate )
-                .Select( i => i.InteractionComponent.EntityId.Value )
-                .Distinct()
-                .ToList();
+            var uniquePageIds = PageCache.All().Select( p => p.Id );
 
             // Get the most recent (up to) 100 interactions for each page
             var timesToServeByPage = new Dictionary<int, List<double>>();
 
             foreach ( var pageId in uniquePageIds )
             {
-                var timesToServe = websiteInteractionQuery
+                var timesToServe = interactionService.Queryable().AsNoTracking()
+                    .Where( i => i.InteractionDateTime > minDate )
+                    .Where( i => i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
+                    .Where( i => i.InteractionComponent.EntityId.HasValue )
+                    .Where( i => i.InteractionTimeToServe.HasValue )
                     .Where( i => i.InteractionComponent.EntityId == pageId )
                     .OrderByDescending( i => i.InteractionDateTime )
                     .Take( 100 )
@@ -1665,6 +1786,11 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 }
 
                 var count = timesToServe.Count;
+                if ( count < 1 )
+                {
+                    continue;
+                }
+
                 var firstMiddleValue = timesToServe.ElementAt( ( count - 1 ) / 2 );
                 var secondMiddleValue = timesToServe.ElementAt( count / 2 );
 
@@ -1697,12 +1823,16 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             public int RowsAffected { get; set; }
 
             /// <summary>
-            /// Gets or sets the time taken in milliseconds.
+            /// Gets or sets the amount of time taken
             /// </summary>
             /// <value>
             /// The time.
             /// </value>
-            public long ElapsedMilliseconds { get; set; }
+            public TimeSpan Elapsed { get; set; }
+
+            public bool HasException => Exception != null;
+
+            public Exception Exception { get; set; }
         }
     }
 }

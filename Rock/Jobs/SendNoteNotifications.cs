@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -32,9 +33,12 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// 
+    /// Send note watch and note approval notifications.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Send Note Notifications" )]
+    [Description( "Send note watch and note approval notifications." )]
+
     [DisallowConcurrentExecution]
     [SystemCommunicationField( "Note Watch Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_WATCH_NOTIFICATION, required: false, order: 1 )]
     [SystemCommunicationField( "Note Approval Notification Email", "", defaultSystemCommunicationGuid: Rock.SystemGuid.SystemCommunication.NOTE_APPROVAL_NOTIFICATION, required: false, order: 2 )]

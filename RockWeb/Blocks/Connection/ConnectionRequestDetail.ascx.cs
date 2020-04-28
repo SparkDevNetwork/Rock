@@ -252,6 +252,13 @@ namespace RockWeb.Blocks.Connection
             {
                 ShowDetail( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger(), PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
             }
+
+            var connectionRequest = GetConnectionRequest();
+            if ( connectionRequest != null )
+            {
+                // Set the person
+                Person = connectionRequest.PersonAlias.Person;
+            }
         }
 
         /// <summary>
@@ -292,13 +299,7 @@ namespace RockWeb.Blocks.Connection
             var rockContext = new RockContext();
             var breadCrumbs = new List<BreadCrumb>();
 
-            ConnectionRequest connectionRequest = null;
-
-            int? requestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
-            if ( requestId.HasValue && requestId.Value > 0 )
-            {
-                connectionRequest = new ConnectionRequestService( rockContext ).Get( requestId.Value );
-            }
+            ConnectionRequest connectionRequest = GetConnectionRequest( rockContext );
 
             if ( connectionRequest != null )
             {
@@ -1448,9 +1449,6 @@ namespace RockWeb.Blocks.Connection
             }
             else
             {
-                // Set the person
-                Person = connectionRequest.PersonAlias.Person;
-
                 connectionOpportunity = connectionRequest.ConnectionOpportunity;
             }
 
@@ -2633,6 +2631,24 @@ namespace RockWeb.Blocks.Connection
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the connection request
+        /// </summary>
+        /// <returns></returns>
+        private ConnectionRequest GetConnectionRequest( RockContext rockContext = null )
+        {
+            ConnectionRequest connectionRequest = null;
+            rockContext = rockContext ?? new RockContext();
+            var connectionRequestId = PageParameter( "ConnectionRequestId" ).AsIntegerOrNull();
+
+            if ( connectionRequestId.HasValue )
+            {
+                connectionRequest = new ConnectionRequestService( rockContext ).Get( connectionRequestId.Value );
+            }
+
+            return connectionRequest;
         }
 
         #endregion

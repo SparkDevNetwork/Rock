@@ -147,6 +147,11 @@ namespace Rock.SystemKey
         public const string ROCK_LOGGING_SETTINGS = "core_LoggingConfig";
 
         /// <summary>
+        /// Enable system.diagnostics ADO.NET Off-By-Default Performance Counters
+        /// </summary>
+        public const string SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS = "core_EnableAdoNetPerformanceCounters";
+
+        /// <summary>
         /// Settings for Do Not Disturb Start
         /// </summary>
         [Obsolete( "This functionality is no longer used." )]

@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
@@ -29,6 +30,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to re-calculate the top signal for all individuals in the database.
     /// </summary>
+    [DisplayName( "Calculate Person Signals" )]
+    [Description( "Re-calculates all person signals to ensure that the top-most signal is still the current one." )]
+
     [DisallowConcurrentExecution]
     public class CalculatePersonSignals : IJob
     {

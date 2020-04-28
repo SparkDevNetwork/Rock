@@ -383,9 +383,24 @@ namespace Rock.SystemGuid
         public const string SYSTEM_COMMUNICATION = "D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4";
 
         /// <summary>
-        /// The guid for the filesystem storage provider entity
+        /// The guid for the file-system storage provider entity (Rock.Storage.Provider.FileSystem)
         /// </summary>
         public const string STORAGE_PROVIDER_FILESYSTEM = "A97B6002-454E-4890-B529-B99F8F2F376A";
+
+        /// <summary>
+        /// The asset storage 'Amazon S3' component (Rock.Storage.AssetStorage.AmazonS3Component)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_AMAZONS3 = "FFE9C4A0-7AB7-48CA-8938-EC73DEC134E8";
+
+        /// <summary>
+        /// The asset storage 'Azure Cloud Storage' component (Rock.Storage.AssetStorage.AzureCloudStorageComponent)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_AZURECLOUD = "1576800F-BFD2-4309-A2C9-AE6DF6C0A1A5";
+
+        /// <summary>
+        /// The asset storage file-system component (Rock.Storage.AssetStorage.FileSystemComponent)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";
 
         /// <summary>
         /// The guid for the Rock.Model.WorkflowType entity

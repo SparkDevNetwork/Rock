@@ -39,7 +39,9 @@
 
                 <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
 
-                <div class="panel-badges" id="divBadgeContainer" runat="server"><Rock:BadgeListControl ID="blBadgeList" runat="server" /></div>
+                <div class="panel-badges" id="divBadgeContainer" runat="server">
+                    <Rock:BadgeListControl ID="blBadgeList" runat="server" />
+                </div>
 
                 <div class="panel-body">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
@@ -53,7 +55,7 @@
                     <asp:CustomValidator ID="cvGroup" runat="server" Display="None" />
 
                     <div id="pnlEditDetails" runat="server">
-                        <div class="row" style="display:flex; align-items:center;">
+                        <div class="row" style="display: flex; align-items: center;">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                             </div>
@@ -133,7 +135,7 @@
 
                         <Rock:PanelWidget ID="wpMeetingDetails" runat="server" Title="Meeting Details">
                             <div class="grid">
-                                <Rock:Grid ID="gGroupLocations" runat="server" AllowPaging="false"  DisplayType="Light" RowItemText="Location">
+                                <Rock:Grid ID="gGroupLocations" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Location">
                                     <Columns>
                                         <Rock:RockBoundField DataField="Location" HeaderText="Location" />
                                         <Rock:RockBoundField DataField="Type" HeaderText="Type" />
@@ -175,7 +177,7 @@
 
                                     <Rock:PersonPicker ID="ppScheduleCancellationPerson" runat="server" EnableSelfSelection="true" Label="Schedule Cancellation Person to Notify" Help="The person to notify when a person cancels." />
                                 </div>
-                                <div class="col-md-6">                                    
+                                <div class="col-md-6">
                                 </div>
                             </div>
                             <div class="row">
@@ -261,6 +263,8 @@
                                     <Columns>
                                         <Rock:RockBoundField DataField="GroupTypeRole.Name" HeaderText="Role Name"></Rock:RockBoundField>
                                         <Rock:RockBoundField DataField="SyncDataView.Name" HeaderText="Data View Name"></Rock:RockBoundField>
+                                        <Rock:RockBoundField DataField="ScheduleTimeInterval" HeaderText="Sync Interval"></Rock:RockBoundField>
+                                        <Rock:DateTimeField DataField="LastRefreshDateTime" HeaderText="Last Sync"></Rock:DateTimeField>
                                         <Rock:EditField OnClick="gGroupSyncs_Edit" />
                                         <Rock:DeleteField OnClick="gGroupSyncs_Delete" />
                                     </Columns>
@@ -362,7 +366,7 @@
                         <Rock:RockDropDownList ID="ddlMember" runat="server" Label="Member" ValidationGroup="Location" />
                     </asp:Panel>
                     <asp:Panel ID="pnlLocationSelect" runat="server" Visible="false">
-                        <Rock:LocationPicker ID="locpGroupLocation"  runat="server" Label="Location" ValidationGroup="Location"  OnSelectLocation="locpGroupLocation_SelectLocation" />
+                        <Rock:LocationPicker ID="locpGroupLocation" runat="server" Label="Location" ValidationGroup="Location" OnSelectLocation="locpGroupLocation_SelectLocation" />
                     </asp:Panel>
                 </div>
 
@@ -370,8 +374,8 @@
 
                 <div class="row">
                     <div class="col-md-3">
-                       <asp:HiddenField ID="hfGroupLocationGuid" runat="server" />
-                       <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" />
+                        <asp:HiddenField ID="hfGroupLocationGuid" runat="server" />
+                        <Rock:SchedulePicker ID="spSchedules" runat="server" Label="Schedule(s)" OnSelectItem="spSchedules_SelectItem" ValidationGroup="Location" AllowMultiSelect="true" />
                     </div>
                     <div class="col-md-9">
                         <%-- Group Location Schedule Capacities (if Group Scheduling Enabled) --%>
@@ -397,7 +401,7 @@
                                 <ItemTemplate>
                                     <div class="row margin-t-sm">
                                         <div>
-                                         <asp:HiddenField ID="hfScheduleId" runat="server" />
+                                            <asp:HiddenField ID="hfScheduleId" runat="server" />
                                         </div>
                                         <div class="col-xs-3">
                                             <asp:Literal ID="lScheduleName" runat="server" />
@@ -450,6 +454,18 @@
                     </div>
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlGroupRoles" runat="server" Label="Group Role to Assign" Help="Select the role to assign the members added by the selected Data View" Required="true" ValidationGroup="GroupSyncSettings" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:IntervalPicker
+                            ID="ipScheduleIntervalMinutes"
+                            runat="server"
+                            Label="Sync Interval"
+                            Help="How often the group should sync in minutes. It will never be less then the Group Sync job execution interval."
+                            ValidationGroup="GroupSyncSettings"
+                            DefaultValue="12"
+                            DefaultInterval="Hour" />
                     </div>
                 </div>
                 <div class="row">
@@ -556,10 +572,10 @@
                     if (jqObj != null) {
                         var domObj = jqObj.get(0);
                         if (domObj != null) {
-                            console.log( validatorId + ': found');
+                            console.log(validatorId + ': found');
                             ValidatorEnable(domObj, enable);
                         } else {
-                            console.log( validatorId + ': NOT found');
+                            console.log(validatorId + ': NOT found');
                         }
                     }
                 }
