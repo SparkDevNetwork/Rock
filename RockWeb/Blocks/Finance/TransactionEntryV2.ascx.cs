@@ -164,7 +164,6 @@ namespace RockWeb.Blocks.Finance
         IsRequired = false,
         Description = "The tool-tip for the 'Give Anonymously' check box.",
         Category = AttributeCategory.None,
-        IsRequired = false,
         Order = 25 )]
 
     #region Scheduled Transactions
