@@ -118,7 +118,10 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
 
-            RunCleanupTask( "Old Interaction Cleanup", () => CleanupInteractions( dataMap ) );
+            RunCleanupTask( "Old Interaction Cleanup", () => CleanupOldInteractions( dataMap ) );
+
+            // use this for compare only, delete before checkin
+            //RunCleanupTask( "Unused Interaction Sessions Cleanup", () => CleanupUnusedInteractionSessions() );
 
             RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
@@ -275,6 +278,10 @@ namespace Rock.Jobs
                     Elapsed = stopwatch.Elapsed,
                     Exception = new RockCleanupException( cleanupTitle, ex )
                 } );
+            }
+            finally
+            {
+                System.Diagnostics.Debug.WriteLine( $"{cleanupTitle} {cleanupMethod} took {stopwatch.ElapsedMilliseconds}ms" );
             }
         }
 
@@ -877,10 +884,13 @@ namespace Rock.Jobs
         /// Cleans up Interactions for Interaction Channels that have a retention period
         /// </summary>
         /// <param name="dataMap">The data map.</param>
-        private int CleanupInteractions( JobDataMap dataMap )
+        private int CleanupOldInteractions( JobDataMap dataMap )
         {
+            Debug.WriteLine( "Starting CleanupOldInteractions" );
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
+
+            var interactionSessionIdsOfDeletedInteractions = new List<int>();
 
             using ( var interactionRockContext = new Rock.Data.RockContext() )
             {
@@ -889,6 +899,7 @@ namespace Rock.Jobs
 
                 foreach ( var interactionChannel in interactionChannels )
                 {
+                    Debug.WriteLine( $"Starting CleanupOldInteractions Channel {interactionChannel.Name}" );
                     var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
 
                     if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
@@ -900,14 +911,81 @@ namespace Rock.Jobs
                         i.InteractionComponent.InteractionChannelId == interactionChannel.Id &&
                         i.InteractionDateTime < retentionCutoffDateTime );
 
+                    var interactionSessionIdsForInteractionChannel = interactionsToDeleteQuery
+                        .Where( i => i.InteractionSessionId != null )
+                        .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i.Id ) )
+                        .Select( i => ( int ) i.InteractionSessionId )
+                        .ToList();
+
+                    interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
+
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
                 }
             }
 
+            RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
+
+            Debug.WriteLine( $"Total Unused Interaction Sessions to be cleaned {interactionSessionIdsOfDeletedInteractions.Count}" );
+            Debug.WriteLine( $"Total Interactions deleted: {totalRowsDeleted}" );
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// Cleanups the unused interactions.
+        /// </summary>
+        /// <param name="interactionSessionIds">The interaction session ids.</param>
+        /// <returns></returns>
+        private int CleanupUnusedInteractionSessions( List<int> interactionSessionIds )
+        {
+            int totalRowsDeleted = 0;
+            var currentDateTime = RockDateTime.Now;
+            
+            // delete any InteractionSession records that are no longer used.
+            var rockContext = new Rock.Data.RockContext();
+            rockContext.Database.CommandTimeout = commandTimeout;
+
+            // Find a list of session IDs in the delete list that are being used for other interactions
+            var interactionSessionsIdsToKeep = new InteractionService( rockContext )
+                .Queryable()
+                .Where( s => interactionSessionIds.Contains( s.InteractionSessionId.Value ) )
+                .Select( s => s.InteractionSessionId.Value )
+                .ToList();
+
+            // filter list to remove InteractionSessionIds that are still being used
+            var interactionSessionsIdsToRemove = interactionSessionIds.Where( i => !interactionSessionsIdsToKeep.Contains( i ) );
+
+            var interactionSessionQueryable = new InteractionSessionService( rockContext ).Queryable().Where( s => interactionSessionsIdsToRemove.Contains( s.Id ) );
+
+            // take a snapshot of the most recent session id so we don't have to worry about deleting a session id that might be right in the middle of getting used
+            int maxInteractionSessionId = interactionSessionQueryable.Max( a => ( int? ) a.Id ) ?? 0;
+
+            // put the batchCount in the where clause to make sure that the BulkDeleteInChunks puts its Take *after* we've batched it
+            var batchUnusedInteractionSessionsQuery = interactionSessionQueryable
+                    .Where( a => a.Id < maxInteractionSessionId )
+                    .OrderBy( a => a.Id )
+                    .Take( batchAmount );
+
+            var unusedInteractionSessionsQueryToRemove = new InteractionSessionService( rockContext )
+                .Queryable()
+                .Where( a => batchUnusedInteractionSessionsQuery.Any( u => u.Id == a.Id ) );
+
+            totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
+
+            return totalRowsDeleted;
+        }
+
+        /// <summary>
+        /// This is the old code, use it to compare results.
+        /// </summary>
+        /// <returns></returns>
+        private int CleanupUnusedInteractionSessions()
+        {
+            int totalRowsDeleted = 0;
+            var currentDateTime = RockDateTime.Now;
+
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = new Rock.Data.RockContext() )
             {
-                interactionSessionRockContext.Database.CommandTimeout = commandTimeout;
                 var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable().Where( a => a.InteractionSessionId.HasValue );
                 var interactionSessionQueryable = new InteractionSessionService( interactionSessionRockContext ).Queryable();
 
@@ -924,6 +1002,7 @@ namespace Rock.Jobs
                 totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
             }
 
+            Debug.WriteLine( $"Total InteractionSessions deleted: {totalRowsDeleted}" );
             return totalRowsDeleted;
         }
 
@@ -967,6 +1046,7 @@ namespace Rock.Jobs
                 var keepDeleting = true;
                 while ( keepDeleting )
                 {
+                    Debug.WriteLine( "Deleting Chunk" );
                     var rowsDeleted = bulkDeleteContext.BulkDelete( chunkQuery );
                     keepDeleting = rowsDeleted > 0;
                     totalRowsDeleted += rowsDeleted;
@@ -1654,6 +1734,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeout;
+
             var pageService = new PageService( rockContext );
             var interactionService = new InteractionService( rockContext );
             var serviceJobService = new ServiceJobService( rockContext );
@@ -1669,34 +1750,29 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
              * Querying the Interaction table (which can be very large) can easily take a very long time out. So some optimizations might be needed.
              * In this case, the query was timing out in a way that was hard to avoid, so we broke it into several simplier individual queries
              * This results in more roundtrips, but easy roundtrip should be pretty fast, so the net time to do the task ends up taking much less time.
-
+             *
+             * 2020-04-27 ETD
+             * Also for the same reason as above this job will process all of the page IDs. Trying to query them from recent interactions has a high
+             * likelyhood of getting a SQL command timeout exception. The overall job takes longer but no single transaction is long enough to timeout.
              */
 
             // Un-comment this out when debugging, and make sure to comment it back out when checking in (see above note)
-            // minDate = DateTime.MinValue;
+            //minDate = DateTime.MinValue;
 
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
 
-            // Get all Website interactions with a page reference and time-to-serve value
-            var websiteInteractionQuery = interactionService.Queryable().AsNoTracking()
-                .Where( i =>
-                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId &&
-                    i.InteractionComponent.EntityId.HasValue &&
-                    i.InteractionTimeToServe.HasValue );
-
-            // Get the unique, recent page interactions (recent = since the last successful Job run)
-            var uniquePageIds = websiteInteractionQuery
-                .Where( i => i.InteractionDateTime > minDate )
-                .Select( i => i.InteractionComponent.EntityId.Value )
-                .Distinct()
-                .ToList();
+            var uniquePageIds = PageCache.All().Select( p => p.Id );
 
             // Get the most recent (up to) 100 interactions for each page
             var timesToServeByPage = new Dictionary<int, List<double>>();
 
             foreach ( var pageId in uniquePageIds )
             {
-                var timesToServe = websiteInteractionQuery
+                var timesToServe = interactionService.Queryable().AsNoTracking()
+                    .Where( i => i.InteractionDateTime > minDate )
+                    .Where( i => i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
+                    .Where( i => i.InteractionComponent.EntityId.HasValue )
+                    .Where( i => i.InteractionTimeToServe.HasValue )
                     .Where( i => i.InteractionComponent.EntityId == pageId )
                     .OrderByDescending( i => i.InteractionDateTime )
                     .Take( 100 )
@@ -1717,6 +1793,11 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 }
 
                 var count = timesToServe.Count;
+                if ( count < 1 )
+                {
+                    continue;
+                }
+
                 var firstMiddleValue = timesToServe.ElementAt( ( count - 1 ) / 2 );
                 var secondMiddleValue = timesToServe.ElementAt( count / 2 );
 
