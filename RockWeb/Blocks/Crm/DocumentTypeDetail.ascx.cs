@@ -438,6 +438,11 @@ namespace RockWeb.Blocks.Crm
 
             var documentType = GetDocumentType();
 
+            if ( documentType != null )
+            {
+                pdAuditDetails.SetEntity( documentType, ResolveRockUrl( "~" ) );
+            }
+
             lReadOnlyTitle.Text = documentType.Name.FormatAsHtmlTitle();
             lIcon.Text = string.Format( "<i class='{0}'></i>", documentType.IconCssClass );
             etpEntityType.SelectedEntityTypeId = documentType.EntityTypeId;
@@ -468,6 +473,8 @@ namespace RockWeb.Blocks.Crm
             {
                 return;
             }
+
+            pdAuditDetails.Visible = false;
 
             BindEntityTypes();
             InitializeAdvancedSettingsToggle();
@@ -501,6 +508,12 @@ namespace RockWeb.Blocks.Crm
             btnSecurity.Visible = canEdit;
 
             var documentType = GetDocumentType();
+
+            if ( documentType != null )
+            {
+                pdAuditDetails.SetEntity( documentType, ResolveRockUrl( "~" ) );
+            }
+
             lReadOnlyTitle.Text = documentType.Name.FormatAsHtmlTitle();
             lIcon.Text = string.Format( "<i class='{0}'></i>", documentType.IconCssClass );
 

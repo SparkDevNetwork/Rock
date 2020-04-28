@@ -592,6 +592,7 @@
                     <div class="col-md-6">
                         <Rock:RockRadioButtonList ID="rblFeeType" runat="server" Label="Options" ValidationGroup="Fee" RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblFeeType_SelectedIndexChanged" />
                         <Rock:NotificationBox ID="nbFeeItemsConfigurationWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
+
                         <Rock:RockControlWrapper ID="rcwFeeItemsSingle" runat="server" Label="">
                             <asp:HiddenField ID="hfFeeItemSingleGuid" runat="server" />
                             <Rock:CurrencyBox ID="cbFeeItemSingleCost" runat="server" Label="Cost" ValidationGroup="Fee" />
@@ -615,10 +616,12 @@
                                     </div>
                                 </ItemTemplate>
                             </asp:Repeater>
+
+                            <div class="actions">
+                                <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
+                            </div>
                         </Rock:RockControlWrapper>
-                        <div class="actions">
-                            <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
-                        </div>
+
                     </div>
                     <div class="col-md-3">
                         <Rock:RockCheckBox ID="cbAllowMultiple" runat="server" Label="Enable Quantity" ValidationGroup="Fee" Text="Yes" Help="Should registrants be able to select more than one of this item?" CssClass="form-check" />

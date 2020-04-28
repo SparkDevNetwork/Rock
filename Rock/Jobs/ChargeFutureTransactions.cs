@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Web;
@@ -29,6 +30,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Charges financial transactions that have a FutureProcessingDateTime
     /// </summary>
+    [DisplayName( "Charge Future Transactions" )]
+    [Description( "Charge future transactions where the FutureProcessingDateTime is now or has passed." )]
+
     [DisallowConcurrentExecution]
     public class ChargeFutureTransactions : IJob
     {

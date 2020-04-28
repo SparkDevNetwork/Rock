@@ -49,12 +49,53 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Entry" )]
     [Category( "Event" )]
     [Description( "Block used to register for a registration instance." )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS, "Connection Status", "The connection status to use for new individuals (default: 'Web Prospect'.)", true, false, Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT, "", 0 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS, "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING, "", 1 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, false, Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE, "", 2 )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Event Registration", "", 3 )]
-    [BooleanField( "Display Progress Bar", "Display a progress bar for the registration.", true, "", 4 )]
-    [BooleanField( "Allow InLine Digital Signature Documents", "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline", true, "", 6, "SignInline" )]
+
+    #region BlockAttributes
+    [DefinedValueField( "Connection Status",
+        Key = AttributeKey.ConnectionStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_WEB_PROSPECT,
+        Order = 0 )]
+
+    [DefinedValueField( "Record Status",
+        Key = AttributeKey.RecordStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 1 )]
+
+    [DefinedValueField( "Source",
+        Key = AttributeKey.Source,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE,
+        Description = "The Financial Source Type to use when creating transactions",
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.FINANCIAL_SOURCE_TYPE_WEBSITE,
+        Order = 2 )]
+
+    [TextField( "Batch Name Prefix",
+        Key = AttributeKey.BatchNamePrefix,
+        Description = "The batch prefix name to use when creating a new batch",
+        IsRequired = false,
+        DefaultValue = "Event Registration",
+        Order = 3 )]
+
+    [BooleanField( "Display Progress Bar",
+        Key = AttributeKey.DisplayProgressBar,
+        Description = "Display a progress bar for the registration.",
+        DefaultBooleanValue = true,
+        Order = 4 )]
+
+    [BooleanField( "Allow InLine Digital Signature Documents",
+        Key = AttributeKey.SignInline,
+        Description = "Should inline digital documents be allowed? This requires that the registration template is configured to display the document inline",
+        DefaultBooleanValue = true,
+        Order = 6 )]
 
     [SystemCommunicationField( "Confirm Account Template",
         Description = "Confirm Account Email Template",
@@ -86,10 +127,17 @@ namespace RockWeb.Blocks.Event
         Description = "Set this to false to disable the using Saved Account as a payment option, and to also disable the option to create saved account for future use.",
         DefaultBooleanValue = true,
         Order = 11 )]
+    #endregion BlockAttributes
     public partial class RegistrationEntry : RockBlock
     {
         private static class AttributeKey
         {
+            public const string ConnectionStatus = "ConnectionStatus";
+            public const string RecordStatus = "RecordStatus";
+            public const string Source = "Source";
+            public const string BatchNamePrefix = "BatchNamePrefix";
+            public const string DisplayProgressBar = "DisplayProgressBar";
+            public const string SignInline = "SignInline";
             public const string ConfirmAccountTemplate = "ConfirmAccountTemplate";
             public const string FamilyTerm = "FamilyTerm";
             public const string ForceEmailUpdate = "ForceEmailUpdate";
@@ -671,8 +719,8 @@ namespace RockWeb.Blocks.Event
             divSaveAccount.Style[HtmlTextWriterStyle.Display] = cbSaveAccount.Checked ? "block" : "none";
 
             // Change the display when family members are allowed
-            rblFamilyOptions.Label = RegistrantTerm + " is in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
-            rblRegistrarFamilyOptions.Label = "You are in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
+            rblFamilyOptions.Label = RegistrantTerm + " is in the same " + GetAttributeValue( AttributeKey.FamilyTerm ) + " as";
+            rblRegistrarFamilyOptions.Label = "You are in the same " + GetAttributeValue( AttributeKey.FamilyTerm ) + " as";
             pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = RegistrationTemplate != null && RegistrationTemplate.RegistrantsSameFamily == RegistrantsSameFamily.Yes ? "block" : "none";
 
             if ( !Page.IsPostBack )
@@ -986,7 +1034,7 @@ namespace RockWeb.Blocks.Event
             {
                 decimal currentStep = 1;
                 PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
                 lRegistrationAttributesStartTitle.Text = this.RegistrationAttributeTitleStart;
 
@@ -1040,7 +1088,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+                pnlRegistrationAttributesStartProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
                 lRegistrationAttributesEndTitle.Text = this.RegistrationAttributeTitleEnd;
                 avcRegistrationAttributesEnd.ShowCategoryLabel = false;
@@ -1420,7 +1468,7 @@ namespace RockWeb.Blocks.Event
 
             decimal currentStep = ( FormCount * CurrentRegistrantIndex ) + CurrentFormIndex + 1;
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlRegistrantProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlRegistrantProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
             pnlFamilyMembers.Style[HtmlTextWriterStyle.Display] = "block";
         }
 
@@ -1641,7 +1689,7 @@ namespace RockWeb.Blocks.Event
                                 mergeFields.Add( "Person", authorizedPersonAlias.Person );
                                 mergeFields.Add( "User", user );
 
-                                var emailMessage = new RockEmailMessage( GetAttributeValue( "ConfirmAccountTemplate" ).AsGuid() );
+                                var emailMessage = new RockEmailMessage( GetAttributeValue( AttributeKey.ConfirmAccountTemplate ).AsGuid() );
                                 emailMessage.AddRecipient( new RockEmailMessageRecipient( authorizedPersonAlias.Person, mergeFields ) );
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
@@ -1969,7 +2017,7 @@ namespace RockWeb.Blocks.Event
                 var provider = DigitalSignatureContainer.GetComponent( RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderEntityType.Name );
                 if ( provider != null && provider.IsActive )
                 {
-                    SignInline = GetAttributeValue( "SignInline" ).AsBoolean() && RegistrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
+                    SignInline = GetAttributeValue( AttributeKey.SignInline ).AsBoolean() && RegistrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
                     DigitalSignatureComponentTypeName = RegistrationTemplate.RequiredSignatureDocumentTemplate.ProviderEntityType.Name;
                     DigitalSignatureComponent = provider;
                 }
@@ -2391,8 +2439,8 @@ namespace RockWeb.Blocks.Event
             int? singleFamilyId = null;
             var multipleFamilyGroupIds = new Dictionary<Guid, int>();
 
-            var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( "ConnectionStatus" ).AsGuid() );
-            var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( "RecordStatus" ).AsGuid() );
+            var dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
+            var dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
             var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
             var adultRoleId = familyGroupType.Roles
                 .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
@@ -3447,7 +3495,7 @@ namespace RockWeb.Blocks.Event
                 }
 
                 Guid sourceGuid = Guid.Empty;
-                if ( Guid.TryParse( GetAttributeValue( "Source" ), out sourceGuid ) )
+                if ( Guid.TryParse( GetAttributeValue( AttributeKey.Source ), out sourceGuid ) )
                 {
                     var source = DefinedValueCache.Get( sourceGuid );
                     if ( source != null )
@@ -3479,7 +3527,7 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        batchPrefix = GetAttributeValue( "BatchNamePrefix" );
+                        batchPrefix = GetAttributeValue( AttributeKey.BatchNamePrefix );
                     }
 
                     // Get the batch
@@ -3958,7 +4006,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-                    pnlRegistrantProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+                    pnlRegistrantProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
                     if ( SignInline && CurrentFormIndex >= FormCount )
                     {
@@ -4065,7 +4113,7 @@ namespace RockWeb.Blocks.Event
             }
 
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
             SetPanel( PanelIndex.PanelSummary );
         }
@@ -4088,7 +4136,7 @@ namespace RockWeb.Blocks.Event
             }
 
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlSummaryAndPaymentProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
             SetPanel( PanelIndex.PanelPayment );
 
@@ -4142,7 +4190,7 @@ namespace RockWeb.Blocks.Event
             }
 
             PercentComplete = ( currentStep / ProgressBarSteps ) * 100.0m;
-            pnlSuccessProgressBar.Visible = GetAttributeValue( "DisplayProgressBar" ).AsBoolean();
+            pnlSuccessProgressBar.Visible = GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean();
 
             lSuccessTitle.Text = "Congratulations";
             lSuccess.Text = "You have successfully completed this registration.";
@@ -4429,7 +4477,7 @@ namespace RockWeb.Blocks.Event
             , hfRequiredDocumentQueryString.ClientID // {7}
             , this.Page.ClientScript.GetPostBackEventReference( lbRequiredDocumentNext, "" ) // {8}
             , hfRequiredDocumentLinkUrl.ClientID     // {9}
-            , GetAttributeValue( "FamilyTerm" )      // {10}
+            , GetAttributeValue( AttributeKey.FamilyTerm )      // {10}
             , RegistrantTerm                         // {11}
             , rblFamilyOptions.ClientID              // {12}
             , pnlFamilyMembers.ClientID              // {13}
@@ -4599,7 +4647,7 @@ namespace RockWeb.Blocks.Event
                     }
                     else
                     {
-                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( "ShowFieldDescriptions" ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
+                        CreateAttributeField( hasDependantVisibilityRule, field, setValues, value, GetAttributeValue( AttributeKey.ShowFieldDescriptions ).AsBoolean(), BlockValidationGroup, phRegistrantControls );
                     }
                 }
 
@@ -5114,11 +5162,11 @@ namespace RockWeb.Blocks.Event
                 }
 
                 rblRegistrarFamilyOptions.Label = string.IsNullOrWhiteSpace( tbYourFirstName.Text ) ?
-                    "You are in the same " + GetAttributeValue( "FamilyTerm" ) + " as" :
-                    tbYourFirstName.Text + " is in the same " + GetAttributeValue( "FamilyTerm" ) + " as";
+                    "You are in the same " + GetAttributeValue( AttributeKey.FamilyTerm ) + " as" :
+                    tbYourFirstName.Text + " is in the same " + GetAttributeValue( AttributeKey.FamilyTerm ) + " as";
 
-                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email ) && !GetAttributeValue( "ForceEmailUpdate" ).AsBoolean();
-                if ( CurrentPerson != null && GetAttributeValue( "ForceEmailUpdate" ).AsBoolean() )
+                cbUpdateEmail.Visible = CurrentPerson != null && !string.IsNullOrWhiteSpace( CurrentPerson.Email ) && !GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean();
+                if ( CurrentPerson != null && GetAttributeValue( AttributeKey.ForceEmailUpdate ).AsBoolean() )
                 {
                     lUpdateEmailWarning.Visible = true;
                 }

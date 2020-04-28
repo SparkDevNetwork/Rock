@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -30,8 +31,11 @@ using Rock.Web.Cache;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to trigger connection request workflows
+    /// This job triggers connection request workflows.
     /// </summary>
+    [DisplayName( "Connection Request Workflow Triggers" )]
+    [Description( "This job triggers connection request workflows." )]
+
     [IntegerField(
         "Number of Days to Look Back",
         Description = "This is the number of days that the workflow should look back to find connection requests with past future follow-up dates.",

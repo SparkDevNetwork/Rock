@@ -521,32 +521,34 @@ namespace Rock.Web.UI.Controls
             ddlFilterType.SelectedIndexChanged += ddlFilterType_SelectedIndexChanged;
 
             ddlFilterType.Items.Clear();
-
-            foreach ( var section in AuthorizedComponents )
+            if ( AuthorizedComponents != null )
             {
-                foreach ( var item in section.Value )
+                foreach ( var section in AuthorizedComponents )
                 {
-                    if ( !this.ExcludedFilterTypes.Any( a => a == item.Key ) )
+                    foreach ( var item in section.Value )
                     {
-                        ListItem li = new ListItem( item.Value, item.Key );
-
-                        if ( !string.IsNullOrWhiteSpace( section.Key ) )
+                        if ( !this.ExcludedFilterTypes.Any( a => a == item.Key ) )
                         {
-                            li.Attributes.Add( "optiongroup", section.Key );
-                        }
+                            ListItem li = new ListItem( item.Value, item.Key );
 
-                        var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( item.Key );
-                        if ( filterComponent != null )
-                        {
-                            string description = Reflection.GetDescription( filterComponent.GetType() );
-                            if ( !string.IsNullOrWhiteSpace( description ) )
+                            if ( !string.IsNullOrWhiteSpace( section.Key ) )
                             {
-                                li.Attributes.Add( "title", description );
+                                li.Attributes.Add( "optiongroup", section.Key );
                             }
-                        }
 
-                        li.Selected = item.Key == FilterEntityTypeName;
-                        ddlFilterType.Items.Add( li );
+                            var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( item.Key );
+                            if ( filterComponent != null )
+                            {
+                                string description = Reflection.GetDescription( filterComponent.GetType() );
+                                if ( !string.IsNullOrWhiteSpace( description ) )
+                                {
+                                    li.Attributes.Add( "title", description );
+                                }
+                            }
+
+                            li.Selected = item.Key == FilterEntityTypeName;
+                            ddlFilterType.Items.Add( li );
+                        }
                     }
                 }
             }

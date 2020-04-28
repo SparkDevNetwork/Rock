@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,9 +31,12 @@ namespace Rock.Jobs
 {
 
     /// <summary>
-    /// Runs the Group Leader Absence Notification Job
+    /// This job sends a list of group member absences to the group's leaders.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Group Leader Absence Notifications" )]
+    [Description( "This job sends a list of group member absences to the group's leaders." )]
+
     #region DataMap Field Attributes
     [GroupTypeField( "Group Type",
         Key = AttributeKey.GroupType,

@@ -19,12 +19,15 @@ using System.ComponentModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Microsoft.Web.XmlTransform;
+
 using Rock;
+using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.SystemKey;
@@ -57,7 +60,7 @@ namespace RockWeb.Blocks.Administration
 
         #region Fields
 
-        // used for private variables
+        private static readonly string WebConfigPath = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", "web.config" ) );
 
         #endregion
 
@@ -116,6 +119,8 @@ namespace RockWeb.Blocks.Administration
             BindCookieTimeout();
 
             BindExperimentalSettings();
+
+            BindSystemDiagnosticsSettings();
         }
 
         #endregion
@@ -178,11 +183,24 @@ namespace RockWeb.Blocks.Administration
 
             rockWebConfig.Save();
 
+            string errorMessage = null;
+            string errorMessageTemplate = "An error occurred which prevented the {0} from being saved within the web.config.";
+
             if ( !SaveMaxAllowedContentLength() )
+            {
+                errorMessage = string.Format( errorMessageTemplate, "'MaxAllowedContentLength'" );
+            }
+
+            if ( errorMessage == null && !SaveSystemDiagnosticsSettings() )
+            {
+                errorMessage = string.Format( errorMessageTemplate, "system.diagnostics configuration" );
+            }
+
+            if ( !string.IsNullOrEmpty( errorMessage ) )
             {
                 nbMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbMessage.Title = "Error";
-                nbMessage.Text = "An error occurred which prevented the 'MaxAllowedContentLength' to be saved in the web.config";
+                nbMessage.Text = errorMessage;
             }
             else
             {
@@ -322,37 +340,101 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Binds the system diagnostics settings.
+        /// </summary>
+        private void BindSystemDiagnosticsSettings()
+        {
+            cbEnableAdoNetPerformanceCounters.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS ).AsBoolean();
+        }
+
+        /// <summary>
         /// Transform the web.config to inject the maximum allowed content length
         /// into the requestLimits tag of the requestFiltering section of the web.config.
         /// </summary>
         /// <returns>true if the transform was successful; false otherwise.</returns>
         protected bool SaveMaxAllowedContentLength()
         {
-            string webConfig = System.Web.HttpContext.Current.Server.MapPath( Path.Combine( "~", "web.config" ) );
-            bool isSuccess = false;
+            int maxContentLengthBytes = int.Parse( numbMaxSize.Text ) * 1048576;
 
-            using ( XmlTransformableDocument document = new XmlTransformableDocument() )
-            {
-                document.PreserveWhitespace = true;
-                document.Load( webConfig );
-
-                int maxContentLengthBytes = int.Parse( numbMaxSize.Text ) * 1048576;
-
-                string transformString = string.Format( @"<?xml version='1.0'?>
-<configuration xmlns:xdt='http://schemas.microsoft.com/XML-Document-Transform'>  
-    <system.webServer>
+            string transformString = string.Format( @"<?xml version='1.0'?>
+<configuration xmlns:xdt='http://schemas.microsoft.com/XML-Document-Transform'>
+  <system.webServer>
     <security>
       <requestFiltering>
         <requestLimits maxAllowedContentLength='{0}' xdt:Transform='SetAttributes(maxAllowedContentLength)'/>
       </requestFiltering>
     </security>
-    </system.webServer>
+  </system.webServer>
 </configuration>", maxContentLengthBytes );
+
+            return TransformWebConfig( transformString );
+        }
+
+        /// <summary>
+        /// Transform the web.config to inject system.diagnostics configuration and save related system settings.
+        /// </summary>
+        /// <returns>true if the transform was successful; false otherwise.</returns>
+        private bool SaveSystemDiagnosticsSettings()
+        {
+            var adoNetPerformanceCountersAreEnabled = cbEnableAdoNetPerformanceCounters.Checked;
+
+            var transformSb = new StringBuilder( @"<?xml version='1.0'?>
+<configuration xmlns:xdt='http://schemas.microsoft.com/XML-Document-Transform'>
+  <system.diagnostics xdt:Transform='InsertIfMissing'>
+    <switches xdt:Transform='InsertIfMissing'>
+      <add name='ConnectionPoolPerformanceCounterDetail' xdt:Transform='RemoveAll' xdt:Locator='Match(name)' />" );
+
+            if ( adoNetPerformanceCountersAreEnabled )
+            {
+                transformSb.Append( @"
+      <add name='ConnectionPoolPerformanceCounterDetail' value='4' xdt:Transform='Insert' />" );
+            }
+
+            transformSb.Append( @"
+    </switches>
+  </system.diagnostics>
+</configuration>" );
+
+            if ( !TransformWebConfig( transformSb.ToString() ) )
+            {
+                return false;
+            }
+
+            // Update the "core_EnableAdoNetPerformanceCounters" System Setting
+            Rock.Web.SystemSettings.SetValue( SystemSetting.SYSTEM_DIAGNOSTICS_ENABLE_ADO_NET_PERFORMANCE_COUNTERS, adoNetPerformanceCountersAreEnabled.ToString() );
+
+            // Toggle the "Collect Hosting Metrics" ServiceJob's IsActive status if necessary
+            var rockContext = new RockContext();
+            var serviceJob = new ServiceJobService( rockContext ).Get( Rock.SystemGuid.ServiceJob.COLLECT_HOSTING_METRICS.AsGuid() );
+
+            if ( serviceJob != null && serviceJob.IsActive != adoNetPerformanceCountersAreEnabled )
+            {
+                serviceJob.IsActive = !serviceJob.IsActive;
+
+                rockContext.SaveChanges();
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Transform the web.config given the supplied transform string.
+        /// </summary>
+        /// <param name="transformString">The transform string used to instantiate a new <see cref="XmlTransformation"/>.</param>
+        /// <returns>true if the transform was successful; false otherwise.</returns>
+        private bool TransformWebConfig( string transformString )
+        {
+            bool isSuccess = false;
+
+            using ( XmlTransformableDocument document = new XmlTransformableDocument() )
+            {
+                document.PreserveWhitespace = true;
+                document.Load( WebConfigPath );
 
                 using ( XmlTransformation transform = new XmlTransformation( transformString, false, null ) )
                 {
                     isSuccess = transform.Apply( document );
-                    document.Save( webConfig );
+                    document.Save( WebConfigPath );
                 }
             }
 

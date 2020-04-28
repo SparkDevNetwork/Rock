@@ -27,7 +27,7 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// 
+    /// This job will update the persisted data in any Persisted Datasets that need to be refreshed.
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
     [DisplayName( "Update Persisted Datasets" )]
