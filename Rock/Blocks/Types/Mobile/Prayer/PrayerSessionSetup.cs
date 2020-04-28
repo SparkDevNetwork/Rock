@@ -176,12 +176,12 @@ namespace Rock.Blocks.Types.Mobile.Events
 
             sb.Append( $@"<StackLayout>
     <Label StyleClass=""heading1"" Text=""Pray For"" />
-    <Rock:SingleField>
+    <Rock:FieldContainer>
         <Rock:Picker x:Name=""pCategory"" IsRequired=""True"" SelectedValue="""">
             <Rock:PickerItem Value=""{ParentCategory}"" Text=""All Requests"" />
             {categoryPickerItems}
         </Rock:Picker>
-    </Rock:SingleField>
+    </Rock:FieldContainer>
     {campusPicker}
     <Button Text=""Start Praying"" StyleClass=""btn, btn-primary"" Margin=""0,12,0,0"" Command=""{{Binding PushPage}}"">
         <Button.CommandParameter>
