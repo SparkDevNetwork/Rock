@@ -497,6 +497,7 @@
     <Compile Include="Model\CampaignConnectionItem.cs" />
     <Compile Include="Plugin\HotFixes\105_PageParameterFilterBlock.cs" />
     <Compile Include="Plugin\HotFixes\104_MigrationRollupsFor10_3_0.cs" />
+    <Compile Include="Plugin\HotFixes\116_MigrationRollupsFor10_3_4.cs" />
     <Compile Include="Plugin\HotFixes\115_RegistrationLinkage.cs" />
     <Compile Include="Plugin\HotFixes\109_DisableCommunicationPersonParameter.cs" />
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />

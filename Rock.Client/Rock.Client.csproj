@@ -269,7 +269,9 @@
     <Compile Include="CodeGenerated\StreakAchievementAttempt.cs" />
     <Compile Include="CodeGenerated\StreakType.cs" />
     <Compile Include="CodeGenerated\StreakTypeAchievementType.cs" />
+    <Compile Include="CodeGenerated\StreakTypeAchievementTypePrerequisite.cs" />
     <Compile Include="CodeGenerated\StreakTypeExclusion.cs" />
+    <Compile Include="CodeGenerated\SystemCommunication.cs" />
     <Compile Include="CodeGenerated\SystemEmail.cs" />
     <Compile Include="CodeGenerated\SystemGuid\RockSystemGuids.cs" />
     <Compile Include="CodeGenerated\Tag.cs" />
