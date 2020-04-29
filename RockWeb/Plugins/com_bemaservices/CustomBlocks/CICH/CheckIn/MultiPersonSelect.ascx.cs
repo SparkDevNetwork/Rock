@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by BEMA Information Technologies
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -13,13 +29,21 @@ using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
+/*
+ * BEMA Modified Core Block ( v9.4.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ * 
+ * Additional Features:
+ * - IU1) Added Ability to display the person's age
+ */
+
 namespace RockWeb.Plugins.com_bemaservices.CheckIn
 {
-    [DisplayName("Person Select (Family Check-in)")]
-    [Category("BEMA Services > Check-in")]
-    [Description("Lists people who match the selected family and provides option of selecting multiple.")]
+    [DisplayName( "Person Select (Family Check-in)" )]
+    [Category( "BEMA Services > Check-in" )]
+    [Description( "Lists people who match the selected family and provides option of selecting multiple." )]
 
-    [LinkedPage("Auto Select Next Page", "The page to navigate to after selecting people in auto-select mode.", false, "", "", 5 )]
+    [LinkedPage( "Auto Select Next Page", "The page to navigate to after selecting people in auto-select mode.", false, "", "", 5 )]
     [CodeEditorField( "Pre-Selected Options Format", "The format to use when displaying auto-checkin options", CodeEditorMode.Lava, CodeEditorTheme.Rock, 100, false, @"
 <span class='auto-select-schedule'>{{ Schedule.Name }}:</span>
 <span class='auto-select-group'>{{ Group.Name }}</span>
@@ -33,8 +57,22 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
     [TextField( "No Option Message", "", false, "Sorry, there are currently not any available areas that the selected people can check into.", "Text", 11 )]
     [TextField( "Next Button Text", "", false, "Next", "Text", 12 )]
 
+    /* BEMA.UI1.Start */
+    [BooleanField( "Is Person's Age Displayed", "Whether the person's age should be displayed", false, "BEMA Additional Features", 13, BemaAttributeKey.IsPersonAgeDisplayed )]
+    /* BEMA.UI1.End */
+
     public partial class MultiPersonSelect : CheckInBlock
     {
+        /* BEMA.Start */
+        #region Attribute Keys
+        private static class BemaAttributeKey
+        {
+            public const string IsPersonAgeDisplayed = "IsPersonAgeDisplayed";
+        }
+
+        #endregion
+        /* BEMA.End */
+
         bool _hidePhotos = false;
         bool _autoCheckin = false;
 
@@ -252,45 +290,31 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
                     if ( options.Any() )
                     {
                         lPersonButton.Text = string.Format( @"
-                            <div class='row'>
-                                <div class='col-md-4 family-personselect'>{0}<br/>{2}</div>
-                                <div class='col-md-8 auto-select text-light'>
-                                    <div class='auto-select-caption'>is checking into...</div>
-                                    <div class='auto-select-details'>{1}</div>
-                                </div>
-                            </div>
-                            ", 
-                            person.Person.FullName, 
-                            options.AsDelimited( "<br/>" ), 
-                            GetAgeFormatted( person.Person )
-                        );
+<div class='row'>
+    <div class='col-md-4 family-personselect'>{0}</div>
+    <div class='col-md-8 auto-select text-light'>
+        <div class='auto-select-caption'>is checking into...</div>
+        <div class='auto-select-details'>{1}</div>
+    </div>
+</div>
+
+", person.Person.FullName, options.AsDelimited( "<br/>" ) );
                     }
                     else
                     {
                         lPersonButton.Text = string.Format( @"
-<div class='family-personselect'>{0}<br>{1} years old</div>
-", person.Person.FullName, GetAgeFormatted( person.Person ) );
+<div class='family-personselect'>{0}</div>
+", person.Person.FullName );
                     }
+
+                    /* BEMA.UI1.Start */
+                    if ( GetAttributeValue( BemaAttributeKey.IsPersonAgeDisplayed ).AsBoolean() )
+                    {
+                        UpdateTextWithName( lPersonButton, person, options );
+                    }
+                    /* BEMA.UI1.End */
                 }
             }
-        }
-
-        private string GetAgeFormatted( Person person )
-        {
-            if( person.Age == null ) {
-                return string.Empty;    
-            }
-
-            int age = (int)person.Age;
-            if( age == 1 ) {
-                return "1 year old";
-            }
-            else if ( age > 1 && age < 19 )
-            {
-                return string.Format("{0} years old", age.ToString() );
-            } 
-
-            return string.Empty;
         }
 
         /// <summary>
@@ -703,6 +727,53 @@ namespace RockWeb.Plugins.com_bemaservices.CheckIn
             }
         }
 
+        /* BEMA.UI1.Start */
+        private void UpdateTextWithName( Literal lPersonButton, CheckInPerson person, List<string> options )
+        {
+            if ( options.Any() )
+            {
+                lPersonButton.Text = string.Format( @"
+                            <div class='row'>
+                                <div class='col-md-4 family-personselect'>{0}<br/>{2}</div>
+                                <div class='col-md-8 auto-select text-light'>
+                                    <div class='auto-select-caption'>is checking into...</div>
+                                    <div class='auto-select-details'>{1}</div>
+                                </div>
+                            </div>
+                            ",
+                    person.Person.FullName,
+                    options.AsDelimited( "<br/>" ),
+                    GetAgeFormatted( person.Person )
+                );
+            }
+            else
+            {
+                lPersonButton.Text = string.Format( @"
+<div class='family-personselect'>{0}<br>{1} years old</div>
+", person.Person.FullName, GetAgeFormatted( person.Person ) );
+            }
+        }
 
+        private string GetAgeFormatted( Person person )
+        {
+            if ( person.Age == null )
+            {
+                return string.Empty;
+            }
+
+            int age = ( int ) person.Age;
+            if ( age == 1 )
+            {
+                return "1 year old";
+            }
+            else if ( age > 1 && age < 19 )
+            {
+                return string.Format( "{0} years old", age.ToString() );
+            }
+
+            return string.Empty;
+        }
+
+        /* BEMA.UI1.End */
     }
 }
