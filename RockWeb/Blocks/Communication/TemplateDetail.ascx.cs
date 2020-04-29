@@ -135,7 +135,10 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( !Page.IsValid ) return;
+            if ( !Page.IsValid )
+            {
+                return;
+            }
 
             var rockContext = new RockContext();
 
@@ -305,24 +308,28 @@ namespace RockWeb.Blocks.Communication
                 imgTemplateLogo.BinaryFileId = null;
             }
 
-            var templateDoc = new HtmlAgilityPack.HtmlDocument();
-            templateDoc.LoadHtml( ceEmailTemplate.Text );
-            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
-            imgTemplateLogo.Visible = templateLogoNode != null;
+            var templateLogoHtmlMatch = new Regex( "<img[^>]+id=[',\"]template-logo[',\"].*src=[',\"]([^\">]+)[',\"].*>" ).Match( ceEmailTemplate.Text );
 
-            if ( templateLogoNode != null && templateLogoNode.Attributes["src"] != null )
+            if ( templateLogoHtmlMatch.Groups.Count == 2 )
             {
-                // if a template-logo exists in the template, update it's src attribute to whatever the uploaded logo is (or set it to the placeholder if it is not set)
+                string originalTemplateLogoHtml = templateLogoHtmlMatch.Groups[0].Value;
+                string originalTemplateLogoSrc = templateLogoHtmlMatch.Groups[1].Value;
+
+                string newTemplateLogoSrc;
+
+                // if a template-logo exists in the template, update the src attribute to whatever the uploaded logo is (or set it to the placeholder if it is not set)
                 if ( imgTemplateLogo.BinaryFileId != null && imgTemplateLogo.BinaryFileId > 0 )
                 {
-                    templateLogoNode.Attributes["src"].Value = ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
+                    newTemplateLogoSrc = ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
                 }
                 else
                 {
-                    templateLogoNode.Attributes["src"].Value = "/Content/EmailTemplates/placeholder-logo.png";
+                    newTemplateLogoSrc = "/Content/EmailTemplates/placeholder-logo.png";
                 }
 
-                ceEmailTemplate.Text = templateDoc.DocumentNode.OuterHtml;
+                string newTemplateLogoHtml = originalTemplateLogoHtml.Replace( originalTemplateLogoSrc, newTemplateLogoSrc );
+
+                ceEmailTemplate.Text = ceEmailTemplate.Text.Replace( originalTemplateLogoHtml, newTemplateLogoHtml );
             }
 
             UpdatePreview();
@@ -335,6 +342,11 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbUpdateLavaFields_Click( object sender, EventArgs e )
         {
+            // do an UpdatePreview to make sure the "lava-fields" tag exists if there are lava fields defined in the UI
+            UpdatePreview();
+
+            /* This will populate the kvlMergeFields on the advanced tab from the lava fields that are defined in template */
+
             var templateDoc = new HtmlAgilityPack.HtmlDocument();
             templateDoc.LoadHtml( ceEmailTemplate.Text );
 
@@ -350,7 +362,10 @@ namespace RockWeb.Blocks.Communication
                 foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
                 {
                     var match = Regex.Match( templateDocLavaFieldLine, @"{% assign (.*)\=(.*) %}" );
-                    if ( match.Groups.Count != 3 ) continue;
+                    if ( match.Groups.Count != 3 )
+                    {
+                        continue;
+                    }
 
                     var key = match.Groups[1].Value.Trim().RemoveSpaces();
                     var value = match.Groups[2].Value.Trim().Trim( '\'' );
@@ -648,65 +663,36 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         protected void UpdatePreview()
         {
-            var templateDoc = new HtmlAgilityPack.HtmlDocument();
-            templateDoc.LoadHtml( ceEmailTemplate.Text );
+            ShowTemplateLogoPicker();
 
-            // only show the template logo uploader if there is a div with id='template-logo'
-            // then update the help-message on the loader based on the template-logo's data-instructions attribute and width and height
-            // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
-            var templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
-            if ( templateLogoNode != null )
+            var origHtml = ceEmailTemplate.Text;
+
+            /* We want to update the lava-fields node of template so that the lava-fields tag
+             * is in sync with the lava merge fields in kvlMergeFields (which comes from CommunicationTemplate.LavaFields).
+             * NOTE: We don't want to use a HTML Parser (like HtmlAgilityPack or AngleSharp),
+             * because this is a mix of html and lava, and html parsers will end up corrupting the html+lava
+             * So we'll..
+             * 1) Use regex to find the lava-fields html and remove it from the code editor text
+             * 2) make a new lava-fields tag with the values from kvlMergeFields (which comes from CommunicationTemplate.LavaFields)
+             * 3) Put thge new lava-fields html back into the code editor text in the head in a noscript tag
+             */
+
+            // First, we'll take out the lava-fields tag (could be a div or a noscript, depending on which version of Rock last edited it)
+            var lavaFieldsRegExLegacy = new System.Text.RegularExpressions.Regex( @"<div[\s\S]*lava-fields[\s\S]+?</div>([\n,\r])?", RegexOptions.Multiline );
+            var lavaFieldsHtmlLegacy = lavaFieldsRegExLegacy.Match( ceEmailTemplate.Text ).Value;
+            if ( lavaFieldsHtmlLegacy.IsNotNullOrWhiteSpace() )
             {
-                string helpText = null;
-                if ( templateLogoNode.Attributes.Contains( "data-instructions" ) )
-                {
-                    helpText = templateLogoNode.Attributes["data-instructions"].Value;
-                }
-
-                if ( helpText.IsNullOrWhiteSpace() )
-                {
-                    helpText = "The Logo that can be included in the contents of the message";
-                }
-
-                string helpWidth = null;
-                string helpHeight = null;
-                if ( templateLogoNode.Attributes.Contains( "width" ) )
-                {
-                    helpWidth = templateLogoNode.Attributes["width"].Value;
-                }
-
-                if ( templateLogoNode.Attributes.Contains( "height" ) )
-                {
-                    helpHeight = templateLogoNode.Attributes["height"].Value;
-                }
-
-                if ( helpWidth.IsNotNullOrWhiteSpace() && helpHeight.IsNotNullOrWhiteSpace() )
-                {
-                    helpText += string.Format( " (Image size: {0}px x {1}px)", helpWidth, helpHeight );
-                }
-
-                imgTemplateLogo.Help = helpText;
+                ceEmailTemplate.Text = ceEmailTemplate.Text.Replace( lavaFieldsHtmlLegacy, string.Empty );
             }
 
-            pnlTemplateLogo.Visible = templateLogoNode != null;
-
-            // take care of the lava fields stuff
-            var lavaFieldsNode = templateDoc.GetElementbyId( "lava-fields" );
-
-            if ( lavaFieldsNode == null )
+            var lavaFieldsRegEx = new System.Text.RegularExpressions.Regex( @"<noscript[\s\S]*lava-fields[\s\S]+?</noscript>([\n,\r])?", RegexOptions.Multiline );
+            var lavaFieldsHtml = lavaFieldsRegEx.Match( ceEmailTemplate.Text ).Value;
+            if ( lavaFieldsHtml.IsNotNullOrWhiteSpace() )
             {
-                lavaFieldsNode = templateDoc.CreateElement( "noscript" );
-                lavaFieldsNode.Attributes.Add( "id", "lava-fields" );
-            }
-            else if ( lavaFieldsNode.ParentNode.Name == "body" )
-            {
-                // if the lava-fields is a in the body (from pre-v9 template), remove it from body, and let it get added to head instead
-                lavaFieldsNode.Attributes.Remove( "style" );
-                lavaFieldsNode.Remove();
-                lavaFieldsNode.Name = "noscript";
+                ceEmailTemplate.Text = ceEmailTemplate.Text.Replace( lavaFieldsHtml, string.Empty );
             }
 
-            var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
+            var templateDocLavaFieldLines = lavaFieldsHtml.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
 
             // dictionary of keys and default values from Lava Fields KeyValueList control
             var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
@@ -728,7 +714,10 @@ namespace RockWeb.Blocks.Communication
                 foreach ( var keyValue in lavaFieldsDefaultDictionary )
                 {
                     var pattern = string.Format( @"{{%\s+assign\s+{0}.*\s+=\s", keyValue.Key );
-                    if ( !Regex.IsMatch( templateDocLavaFieldLine, pattern ) ) continue;
+                    if ( !Regex.IsMatch( templateDocLavaFieldLine, pattern ) )
+                    {
+                        continue;
+                    }
 
                     found = true;
                     break;
@@ -746,7 +735,10 @@ namespace RockWeb.Blocks.Communication
             foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
             {
                 var match = Regex.Match( templateDocLavaFieldLine, @"{% assign (.*)\=(.*) %}" );
-                if ( match.Groups.Count != 3 ) continue;
+                if ( match.Groups.Count != 3 )
+                {
+                    continue;
+                }
 
                 var key = match.Groups[1].Value.Trim().RemoveSpaces();
                 var value = match.Groups[2].Value.Trim().Trim( '\'' );
@@ -763,47 +755,52 @@ namespace RockWeb.Blocks.Communication
 
             if ( lavaFieldsTemplateDictionary.Any() )
             {
-                var lavaAssignsHtml = new StringBuilder();
-                lavaAssignsHtml.AppendLine();
-                lavaAssignsHtml.AppendLine( "    {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}" );
+                // there are 3 cases of where the <noscript> tag should be
+                // 1) There is a head tag (usually the case)
+                // 2) There is not head tag, but there is a html tag
+                // 3) There isn't a head or html tag
+                var headTagRegex = new Regex( "<head(.*?)>" );
+                var htmlTagRegex = new Regex( "<html(.*?)>" );
+
+                // indent the lava-fields tag if there is a head or html tag
+                string indent = string.Empty;
+                if ( headTagRegex.Match( ceEmailTemplate.Text ).Success || htmlTagRegex.Match( ceEmailTemplate.Text ).Success )
+                {
+                    indent = " ";
+                }
+
+                var lavaAssignsHtmlBuilder = new StringBuilder();
+                lavaAssignsHtmlBuilder.Append( indent + "<noscript id=\"lava-fields\">\n" );
+                lavaAssignsHtmlBuilder.Append( indent + "  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}\n" );
                 foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
                 {
-                    lavaAssignsHtml.AppendLine( string.Format( "    {{% assign {0} = '{1}' %}}", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
+                    lavaAssignsHtmlBuilder.Append( indent + string.Format( "  {{% assign {0} = '{1}' %}}\n", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
                 }
 
-                lavaAssignsHtml.Append( "  " );
+                lavaAssignsHtmlBuilder.Append( indent + "</noscript>" );
+                var lavaAssignsHtml = lavaAssignsHtmlBuilder.ToString();
 
-                lavaFieldsNode.InnerHtml = lavaAssignsHtml.ToString();
-
-                if ( lavaFieldsNode.ParentNode == null )
+                if ( headTagRegex.Match( ceEmailTemplate.Text ).Success )
                 {
-                    var headNode = templateDoc.DocumentNode.SelectSingleNode( "//head" );
-                    if ( headNode != null )
+                    ceEmailTemplate.Text = headTagRegex.Replace( ceEmailTemplate.Text, ( m ) =>
                     {
-                        // prepend a linefeed so that it is after the lava node (to make it pretty printed)
-                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n" ) );
-
-                        headNode.PrependChild( lavaFieldsNode );
-
-                        // prepend a indented linefeed so that it ends up prior the lava node (to make it pretty printed)
-                        headNode.PrependChild( templateDoc.CreateTextNode( "\r\n  " ) );
-                    }
+                        return m.Value.TrimEnd() + "\n" + lavaAssignsHtml;
+                    } );
                 }
-            }
-            else if ( lavaFieldsNode.ParentNode != null )
-            {
-                if ( lavaFieldsNode.NextSibling != null && lavaFieldsNode.NextSibling.Name == "#text" )
+                else if ( htmlTagRegex.Match( ceEmailTemplate.Text ).Success )
                 {
-                    // remove the extra line endings
-                    lavaFieldsNode.NextSibling.InnerHtml = lavaFieldsNode.NextSibling.InnerHtml.TrimStart( ' ', '\r', '\n' );
+                    ceEmailTemplate.Text = htmlTagRegex.Replace( ceEmailTemplate.Text, ( m ) =>
+                    {
+                        return m.Value.TrimEnd() + "\n" + lavaAssignsHtml;
+                    } );
                 }
-
-                lavaFieldsNode.Remove();
+                else
+                {
+                    ceEmailTemplate.Text = lavaAssignsHtml + "\n\n" + ceEmailTemplate.Text.TrimStart();
+                }
             }
 
             hfLavaFieldsState.Value = lavaFieldsTemplateDictionary.ToJson( Newtonsoft.Json.Formatting.None );
-
-            ceEmailTemplate.Text = templateDoc.DocumentNode.OuterHtml;
 
             CreateDynamicLavaValueControls();
 
@@ -818,6 +815,57 @@ namespace RockWeb.Blocks.Communication
             ifEmailPreview.Attributes["srcdoc"] = resolvedPreviewHtml;
             pnlEmailPreview.Visible = true;
             upnlEmailPreview.Update();
+        }
+
+        /// <summary>
+        /// If there is a template logo node in the email template, show the template logo file uploader and set its help text
+        /// </summary>
+        private void ShowTemplateLogoPicker()
+        {
+            var templateDoc = new HtmlAgilityPack.HtmlDocument();
+            templateDoc.LoadHtml( ceEmailTemplate.Text );
+
+            // only show the template logo uploader if there is a div with id='template-logo'
+            // then update the help-message on the loader based on the template-logo's data-instructions attribute and width and height
+            // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
+            HtmlAgilityPack.HtmlNode templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
+
+            if ( templateLogoNode == null )
+            {
+                pnlTemplateLogo.Visible = false;
+                return;
+            }
+
+            pnlTemplateLogo.Visible = true;
+            string helpText = null;
+            if ( templateLogoNode.Attributes.Contains( "data-instructions" ) )
+            {
+                helpText = templateLogoNode.Attributes["data-instructions"].Value;
+            }
+
+            if ( helpText.IsNullOrWhiteSpace() )
+            {
+                helpText = "The Logo that can be included in the contents of the message";
+            }
+
+            string helpWidth = null;
+            string helpHeight = null;
+            if ( templateLogoNode.Attributes.Contains( "width" ) )
+            {
+                helpWidth = templateLogoNode.Attributes["width"].Value;
+            }
+
+            if ( templateLogoNode.Attributes.Contains( "height" ) )
+            {
+                helpHeight = templateLogoNode.Attributes["height"].Value;
+            }
+
+            if ( helpWidth.IsNotNullOrWhiteSpace() && helpHeight.IsNotNullOrWhiteSpace() )
+            {
+                helpText += string.Format( " (Image size: {0}px x {1}px)", helpWidth, helpHeight );
+            }
+
+            imgTemplateLogo.Help = helpText;
         }
 
         /// <summary>

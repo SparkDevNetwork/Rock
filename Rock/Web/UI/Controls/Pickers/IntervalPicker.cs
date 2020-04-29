@@ -28,16 +28,10 @@ namespace Rock.Web.UI.Controls
     public class IntervalPicker : CompositeControl, IRockControl
     {
         private TimeIntervalSetting _timeIntervalSetting = new TimeIntervalSetting( 0, IntervalTimeUnit.None );
+        private TimeIntervalSetting _defaultIntervalSetting = new TimeIntervalSetting( 12, IntervalTimeUnit.Hour );
 
         #region Controls
-        /// <summary>
-        /// BackgroundChecker service selector
-        /// </summary>
         private RangeSlider _scheduleInterval;
-
-        /// <summary>
-        /// The PMM FileUploader
-        /// </summary>
         private ButtonGroup _scheduleUnit;
         #endregion
 
@@ -48,7 +42,15 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The default value.
         /// </value>
-        public int DefaultValue { get; set; } = 12;
+        public int DefaultValue
+        {
+            get => _defaultIntervalSetting.IntervalValue;
+            set
+            {
+                _defaultIntervalSetting.IntervalValue = value;
+                _defaultIntervalSetting.UpdateIntervalSettings( value, _defaultIntervalSetting.IntervalUnit, null );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the default interval.
@@ -56,7 +58,14 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The default interval.
         /// </value>
-        public IntervalTimeUnit DefaultInterval { get; set; } = IntervalTimeUnit.None;
+        public IntervalTimeUnit DefaultInterval
+        {
+            get => _defaultIntervalSetting.IntervalUnit;
+            set
+            {
+                _defaultIntervalSetting.UpdateIntervalSettings( _defaultIntervalSetting.IntervalValue, value, null );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the interval in minutes.
@@ -324,7 +333,7 @@ namespace Rock.Web.UI.Controls
 
             _scheduleUnit = new ButtonGroup()
             {
-                CssClass = "pull-right margin-b-md",
+                CssClass = "text-right margin-b-md",
                 UnselectedItemClass = "btn btn-xs btn-default",
                 SelectedItemClass = "btn btn-xs btn-primary",
                 AutoPostBack = true
@@ -337,6 +346,8 @@ namespace Rock.Web.UI.Controls
                 } );
             _scheduleUnit.SelectedIndexChanged += ScheduleUnit_SelectedIndexChanged;
             _scheduleUnit.ID = this.ID + "_scheduleUnit";
+
+            BindViewToModelProperties( _defaultIntervalSetting );
 
             Controls.Add( _scheduleInterval );
             Controls.Add( _scheduleUnit );
@@ -389,34 +400,33 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Set and validate the persistence schedule settings.
         /// </summary>
-        /// <param name="isEnabled"></param>
-        /// <param name="persistedScheduleIntervalMinutes"></param>
+        /// <param name="persistedScheduleIntervalMinutes">The persisted schedule interval minutes.</param>
         /// <param name="scheduleUnit">The schedule unit, or null if the unit should be determined by the interval.</param>
         private void SetPersistenceScheduleFromInterval( int? persistedScheduleIntervalMinutes, IntervalTimeUnit? scheduleUnit )
         {
             _timeIntervalSetting.UpdateIntervalSettings( persistedScheduleIntervalMinutes, scheduleUnit, _scheduleInterval.SelectedValue.GetValueOrDefault( 0 ) );
 
-            BindViewToModelProperties();
+            BindViewToModelProperties(_timeIntervalSetting);
         }
 
         /// <summary>
         /// Update the view controls to synchronise with the model.
         /// </summary>
-        private void BindViewToModelProperties()
+        private void BindViewToModelProperties(TimeIntervalSetting timeIntervalSetting)
         {
             // Bind the persistence view controls to the model.
-            if ( _timeIntervalSetting.IntervalUnit == IntervalTimeUnit.None )
+            if ( timeIntervalSetting.IntervalUnit == IntervalTimeUnit.None )
             {
                 _scheduleUnit.SelectedValue = null;
             }
             else
             {
-                _scheduleUnit.SelectedValue = _timeIntervalSetting.IntervalUnit.ConvertToInt().ToString();
+                _scheduleUnit.SelectedValue = timeIntervalSetting.IntervalUnit.ConvertToInt().ToString();
             }
 
             _scheduleInterval.MinValue = 1;
-            _scheduleInterval.MaxValue = _timeIntervalSetting.MaxValue;
-            _scheduleInterval.SelectedValue = _timeIntervalSetting.IntervalValue;
+            _scheduleInterval.MaxValue = timeIntervalSetting.MaxValue;
+            _scheduleInterval.SelectedValue = timeIntervalSetting.IntervalValue;
         }
 
         /// <summary>

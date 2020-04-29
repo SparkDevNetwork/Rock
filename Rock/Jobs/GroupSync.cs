@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
@@ -54,6 +55,9 @@ namespace Rock.Jobs
     /// NOTE: It should do this regardless of the person's IsDeceased flag.
     /// NOTE: The job can sync new people at about 45/sec or 2650/minute.
     /// </summary>
+    [DisplayName( "Group Sync" )]
+    [Description( "Processes groups that are marked to be synced with a data view." )]
+
     [DisallowConcurrentExecution]
     [BooleanField( "Require Password Reset On New Logins", "Determines if new logins should be created in such a way that the individual will need to reset the password on their first login.", Key = "RequirePasswordReset" )]
     [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for each operation to complete. Leave blank to use the default for this job (180).", false, 3 * 60, "General", 1, "CommandTimeout" )]

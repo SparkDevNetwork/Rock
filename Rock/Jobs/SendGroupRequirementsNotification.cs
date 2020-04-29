@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -31,8 +32,11 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Sends out reminders to group leaders when group members do not meet all requirements.
+    /// This job sends out reminders to group leaders when group members do not meet all requirements.
     /// </summary>
+    [DisplayName( "Send Group Requirements Notification" )]
+    [Description( "This job sends out reminders to group leaders when group members do not meet all requirements." )]
+
     [SystemCommunicationField( "Notification Email Template", required: true, order: 0 )]
     [GroupTypesField( "Group Types", "Group types use to check the group requirements on.", order: 1 )]
     [EnumField( "Notify Parent Leaders", "", typeof( NotificationOption ), true, "None", order: 2 )]
