@@ -209,6 +209,10 @@
     <Compile Include="Migrations\202004240006402_CollectHostingMetrics.Designer.cs">
       <DependentUpon>202004240006402_CollectHostingMetrics.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202004282116183_Rollup_0428.cs" />
+    <Compile Include="Migrations\202004282116183_Rollup_0428.Designer.cs">
+      <DependentUpon>202004282116183_Rollup_0428.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.cs" />
     <Compile Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.Designer.cs">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>
@@ -1301,6 +1305,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202004240006402_CollectHostingMetrics.resx">
       <DependentUpon>202004240006402_CollectHostingMetrics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202004282116183_Rollup_0428.resx">
+      <DependentUpon>202004282116183_Rollup_0428.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 10.0\Version 1.10.2\202002042011136_Rollup_0220.resx">
       <DependentUpon>202002042011136_Rollup_0220.cs</DependentUpon>

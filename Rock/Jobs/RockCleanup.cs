@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
@@ -35,6 +36,9 @@ namespace Rock.Jobs
     /// Job that executes routine cleanup tasks on Rock.
     /// Cleanup tasks are tasks that fixes (add, update or purge) invalid, missing or obsolete data.
     /// </summary>
+    [DisplayName( "Rock Cleanup" )]
+    [Description( "General job to clean up various areas of Rock." )]
+
     [IntegerField( "Days to Keep Exceptions in Log", "The number of days to keep exceptions in the exception log (default is 14 days.)", false, 14, "General", 1, "DaysKeepExceptions" )]
     [IntegerField( "Audit Log Expiration Days", "The number of days to keep items in the audit log (default is 14 days.)", false, 14, "General", 2, "AuditLogExpirationDays" )]
     [IntegerField( "Days to Keep Cached Files", "The number of days to keep cached files in the cache folder (default is 14 days.)", false, 14, "General", 3, "DaysKeepCachedFiles" )]
@@ -119,9 +123,6 @@ namespace Rock.Jobs
             RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
 
             RunCleanupTask( "Old Interaction Cleanup", () => CleanupOldInteractions( dataMap ) );
-
-            // use this for compare only, delete before checkin
-            //RunCleanupTask( "Unused Interaction Sessions Cleanup", () => CleanupUnusedInteractionSessions() );
 
             RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
@@ -278,10 +279,6 @@ namespace Rock.Jobs
                     Elapsed = stopwatch.Elapsed,
                     Exception = new RockCleanupException( cleanupTitle, ex )
                 } );
-            }
-            finally
-            {
-                System.Diagnostics.Debug.WriteLine( $"{cleanupTitle} {cleanupMethod} took {stopwatch.ElapsedMilliseconds}ms" );
             }
         }
 
@@ -887,11 +884,10 @@ namespace Rock.Jobs
         /// <param name="dataMap">The data map.</param>
         private int CleanupOldInteractions( JobDataMap dataMap )
         {
-            Debug.WriteLine( "Starting CleanupOldInteractions" );
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
 
-            var interactionSessionIdsOfDeletedInteractions = new List<int>();
+            //var interactionSessionIdsOfDeletedInteractions = new List<int>();
 
             using ( var interactionRockContext = new Rock.Data.RockContext() )
             {
@@ -900,7 +896,6 @@ namespace Rock.Jobs
 
                 foreach ( var interactionChannel in interactionChannels )
                 {
-                    Debug.WriteLine( $"Starting CleanupOldInteractions Channel {interactionChannel.Name}" );
                     var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
 
                     if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
@@ -912,22 +907,20 @@ namespace Rock.Jobs
                         i.InteractionComponent.InteractionChannelId == interactionChannel.Id &&
                         i.InteractionDateTime < retentionCutoffDateTime );
 
-                    var interactionSessionIdsForInteractionChannel = interactionsToDeleteQuery
-                        .Where( i => i.InteractionSessionId != null )
-                        .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i.Id ) )
-                        .Select( i => ( int ) i.InteractionSessionId )
-                        .ToList();
+                    //var interactionSessionIdsForInteractionChannel = interactionsToDeleteQuery
+                    //    .Where( i => i.InteractionSessionId != null )
+                    //    .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i.Id ) )
+                    //    .Select( i => ( int ) i.InteractionSessionId )
+                    //    .ToList();
 
-                    interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
+                    //interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
 
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
                 }
             }
 
-            RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
+            //RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
 
-            Debug.WriteLine( $"Total Unused Interaction Sessions to be cleaned {interactionSessionIdsOfDeletedInteractions.Count}" );
-            Debug.WriteLine( $"Total Interactions deleted: {totalRowsDeleted}" );
             return totalRowsDeleted;
         }
 

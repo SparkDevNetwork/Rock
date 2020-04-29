@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -38,6 +39,9 @@ namespace Rock.Jobs
     /// Job to take care of schema changes ( dynamic attribute value fields ) and data updates to the BI related analytic tables
     /// </summary>
     /// <seealso cref="Quartz.IJob" />
+    [DisplayName( "Process BI Analytics" )]
+    [Description( "Job to take care of schema changes ( dynamic Attribute Value Fields ) and data updates to the BI related analytic tables." )]
+
     [DisallowConcurrentExecution]
     [BooleanField( "Process Person BI Analytics", "Do the BI Analytics tasks related to the Person Analytics tables", true, "", 1 )]
     [BooleanField( "Process Family BI Analytics", "Do the BI Analytics tasks related to the Family Analytics tables", true, "", 2 )]

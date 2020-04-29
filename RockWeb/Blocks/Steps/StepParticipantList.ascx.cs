@@ -945,42 +945,40 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => statusIds.Contains( m.StepStatusId ?? 0 ) );
             }
 
-            if ( _stepType.HasEndDate )
+            // Filter By Start Date
+            var startDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateStarted.DelimitedValues );
+
+            if ( startDateRange.Start.HasValue )
             {
-                var startDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateStarted.DelimitedValues );
+                qry = qry.Where( m =>
+                    m.StartDateTime.HasValue &&
+                    m.StartDateTime.Value >= startDateRange.Start.Value );
+            }
 
-                if ( startDateRange.Start.HasValue )
-                {
-                    qry = qry.Where( m =>
-                        m.StartDateTime.HasValue &&
-                        m.StartDateTime.Value >= startDateRange.Start.Value );
-                }
-
-                if ( startDateRange.End.HasValue )
-                {
-                    var end = startDateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
-                    qry = qry.Where( m =>
-                        m.StartDateTime.HasValue &&
-                        m.StartDateTime.Value < end );
-                }
+            if ( startDateRange.End.HasValue )
+            {
+                var exclusiveEndDate = startDateRange.End.Value.Date.AddDays( 1 );
+                qry = qry.Where( m =>
+                    m.StartDateTime.HasValue &&
+                    m.StartDateTime.Value < exclusiveEndDate );
             }
 
             // Filter by Date Completed
-            var endDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateCompleted.DelimitedValues );
+            var completedDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateCompleted.DelimitedValues );
 
-            if ( endDateRange.Start.HasValue )
+            if ( completedDateRange.Start.HasValue )
             {
                 qry = qry.Where( m =>
-                    m.EndDateTime.HasValue &&
-                    m.EndDateTime.Value >= endDateRange.Start.Value );
+                    m.CompletedDateTime.HasValue &&
+                    m.CompletedDateTime.Value >= completedDateRange.Start.Value );
             }
 
-            if ( endDateRange.End.HasValue )
+            if ( completedDateRange.End.HasValue )
             {
-                var end = endDateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                var exclusiveEndDate = completedDateRange.End.Value.Date.AddDays( 1 );
                 qry = qry.Where( m =>
-                    m.EndDateTime.HasValue &&
-                    m.EndDateTime.Value < end );
+                    m.CompletedDateTime.HasValue &&
+                    m.CompletedDateTime.Value < exclusiveEndDate );
             }
 
             // Filter by Note

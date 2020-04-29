@@ -16,6 +16,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -34,6 +35,9 @@ namespace Rock.Jobs
     /// <summary>
     /// Job to run quick SQL queries on a schedule
     /// </summary>
+    [DisplayName( "Database Maintenance" )]
+    [Description( "Performs routine SQL Server database maintenance." )]
+
     [BooleanField( "Run Integrity Check", "Determines if an integrity check should be performed.", true, order: 0 )]
     [BooleanField( "Run Index Rebuild", "Determines if indexes should be rebuilt.", true, order: 1 )]
     [BooleanField( "Run Statistics Update", "Determines if the statistics should be updated.", true, order: 2 )]

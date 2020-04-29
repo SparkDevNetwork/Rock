@@ -264,7 +264,7 @@
                                         <Rock:RockBoundField DataField="GroupTypeRole.Name" HeaderText="Role Name"></Rock:RockBoundField>
                                         <Rock:RockBoundField DataField="SyncDataView.Name" HeaderText="Data View Name"></Rock:RockBoundField>
                                         <Rock:RockBoundField DataField="ScheduleTimeInterval" HeaderText="Sync Interval"></Rock:RockBoundField>
-                                        <Rock:RockBoundField DataField="LastRefreshDateTime" HeaderText="Last Sync"></Rock:RockBoundField>
+                                        <Rock:DateTimeField DataField="LastRefreshDateTime" HeaderText="Last Sync"></Rock:DateTimeField>
                                         <Rock:EditField OnClick="gGroupSyncs_Edit" />
                                         <Rock:DeleteField OnClick="gGroupSyncs_Delete" />
                                     </Columns>
@@ -463,7 +463,9 @@
                             runat="server"
                             Label="Sync Interval"
                             Help="How often the group should sync in minutes. It will never be less then the Group Sync job execution interval."
-                            ValidationGroup="GroupSyncSettings" />
+                            ValidationGroup="GroupSyncSettings"
+                            DefaultValue="12"
+                            DefaultInterval="Hour" />
                     </div>
                 </div>
                 <div class="row">
