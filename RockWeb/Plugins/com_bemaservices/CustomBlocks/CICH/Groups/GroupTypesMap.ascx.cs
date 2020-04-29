@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_bemadev.Groups
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Group Types Map" )]
-    [Category( "com_bemadev > Groups" )]
+    [Category( "BEMA Services > Groups" )]
     [Description( "Displays groups on a map." )]
 
     [GroupTypesField( "Group Types", "The type of group to map.", false, "", "", 0 )]

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,7 +41,7 @@ namespace RockWeb.Plugins.com_bemadev.Groups
     /// Template block for developers to use to start a new block.
     /// </summary>
     [DisplayName( "Group Map" )]
-    [Category( "com_bemadev > Groups" )]
+    [Category( "BEMA Services > Groups" )]
     [Description( "Displays a group on a map." )]
 
     [LinkedPage( "Group Page", "The page to display group details.", true, "", "", 0 )]
