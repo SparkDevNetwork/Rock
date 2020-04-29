@@ -1000,6 +1000,26 @@ namespace Rock.DownhillCss
     font-size: 28;
 }
 
+/* Hero Block */
+.hero .hero-title {
+    font-size: 24;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.hero .hero-subtitle {
+    font-size: 18;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.tablet .hero .hero-title {
+    font-size: 36;
+}
+
+.tablet .hero .hero-subtitle {
+    font-size: 28;
+}
 ";
     }
 }

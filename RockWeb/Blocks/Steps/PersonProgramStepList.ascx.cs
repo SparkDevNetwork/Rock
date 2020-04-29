@@ -486,7 +486,7 @@ namespace RockWeb.Blocks.Steps
             var lbCardAddStep = e.Item.FindControl( "lbCardAddStep" ) as LinkButton;
 
             lbCardAddStep.Visible = cardData.CanAddStep;
-            pnlPrereqs.Visible = !cardData.HasMetPrerequisites;
+            pnlPrereqs.Visible = UserCanEdit && !cardData.HasMetPrerequisites;
 
             // Existing step records panel
             var steps = GetPersonStepsOfType( stepTypeId );
@@ -1047,7 +1047,7 @@ namespace RockWeb.Blocks.Steps
                     cardCssClasses.Add( "has-add" );
                 }
 
-                if ( !hasMetPrerequisites )
+                if ( UserCanEdit && !hasMetPrerequisites )
                 {
                     cardCssClasses.Add( "has-prerequisite" );
                 }
