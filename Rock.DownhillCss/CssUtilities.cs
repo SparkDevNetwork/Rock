@@ -1000,6 +1000,45 @@ namespace Rock.DownhillCss
 .tablet .hero .hero-subtitle {
     font-size: 28;
 }
+
+.calendar-filter-panel {
+    margin-bottom: 5;
+}
+
+/* Calendar Classes */
+.calendar-filter {
+    padding: 8;
+    border-radius: ?radius-base;
+    background-color: ?color-gray-200;
+}
+
+.calendar-filter label,
+.calendar-filter icon {
+    color: ?color-text;
+    vertical-align: center;
+}
+.calendar-filter icon {
+    font-size: small;
+    margin-right: 6;
+}
+
+.calendar-toolbar {
+    padding: 12 16;
+    border-radius: ?radius-base;
+    background-color: ?color-primary;
+    margin-top: 0;
+}
+.calendar-toolbar .calendar-toolbar-currentmonth {
+    font-style: bold;
+    color: #ffffff;
+}
+.calendar-toolbar .calendar-toolbar-adjacentmonth {
+    color: rgba(255,255,255,0.5);
+}
+
+.calendar-header {
+    font-style: bold;
+}
 ";
     }
 }
