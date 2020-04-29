@@ -120,7 +120,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Expired Entity Set", () => CleanupExpiredEntitySets( dataMap ) );
 
-            RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
+            //RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
 
             RunCleanupTask( "Old Interaction Cleanup", () => CleanupOldInteractions( dataMap ) );
 
