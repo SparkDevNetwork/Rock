@@ -306,7 +306,7 @@ namespace Rock.Jobs
             /// </summary>
             /// <param name="title">The title.</param>
             /// <param name="ex">The ex.</param>
-            public RockCleanupException( string title, Exception ex ) : base()
+            public RockCleanupException( string title, Exception ex ) : base( ex.Message, ex.InnerException )
             {
                 _title = title;
                 _exception = ex;
@@ -328,6 +328,7 @@ namespace Rock.Jobs
                     var innerException = _exception.InnerException;
                     while ( innerException != null )
                     {
+                        stackTrace += "\n\n" + innerException.Message;
                         stackTrace += "\n" + innerException.StackTrace;
                         innerException = innerException.InnerException;
                     }
@@ -1766,20 +1767,36 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             // Get the most recent (up to) 100 interactions for each page
             var timesToServeByPage = new Dictionary<int, List<double>>();
 
+            var failedPageIds = new List<string>();
+            var stopWatch = new System.Diagnostics.Stopwatch();
+
             foreach ( var pageId in uniquePageIds )
             {
-                var timesToServe = interactionService.Queryable().AsNoTracking()
-                    .Where( i => i.InteractionDateTime > minDate )
-                    .Where( i => i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
-                    .Where( i => i.InteractionComponent.EntityId.HasValue )
-                    .Where( i => i.InteractionTimeToServe.HasValue )
-                    .Where( i => i.InteractionComponent.EntityId == pageId )
-                    .OrderByDescending( i => i.InteractionDateTime )
-                    .Take( 100 )
-                    .Select( i => i.InteractionTimeToServe.Value )
-                    .OrderBy( i => i );
+                try
+                {
+                    stopWatch.Restart();
+                    var timesToServe = interactionService.Queryable().AsNoTracking()
+                        .Where( i => i.InteractionDateTime > minDate )
+                        .Where( i => i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
+                        .Where( i => i.InteractionComponent.EntityId.HasValue )
+                        .Where( i => i.InteractionTimeToServe.HasValue )
+                        .Where( i => i.InteractionComponent.EntityId == pageId )
+                        .OrderByDescending( i => i.InteractionDateTime )
+                        .Take( 100 )
+                        .Select( i => i.InteractionTimeToServe.Value )
+                        .OrderBy( i => i );
 
-                timesToServeByPage.Add( pageId, timesToServe.ToList() );
+                    timesToServeByPage.Add( pageId, timesToServe.ToList() );
+                }
+                catch ( Exception ex )
+                {
+                    failedPageIds.Add( $"{pageId}: {ex.Message}" );
+                }
+                finally
+                {
+                    stopWatch.Stop();
+                    Debug.WriteLine( $"UpdateMedianPageLoadTimes get data for pageId {pageId} took {stopWatch.ElapsedMilliseconds}ms" );
+                }
             }
 
             var pages = pageService.Queryable().Where( p => uniquePageIds.Contains( p.Id ) ).ToList();
@@ -1805,6 +1822,12 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             }
 
             rockContext.SaveChanges();
+
+            if ( failedPageIds.Any() )
+            {
+                throw new Exception( String.Join( Environment.NewLine, failedPageIds ) );
+            }
+
             return pages.Count;
         }
 
