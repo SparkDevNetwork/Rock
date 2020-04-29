@@ -110,7 +110,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             /// <summary>
             /// The event template default value.
             /// </summary>
-            public const string EventTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-event"">
+            public const string EventTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-event-summary"">
     <StackLayout Spacing=""0"">
         <Label StyleClass=""calendar-event-title"" Text=""{Binding Name}"" />
         {% if Item.EndDateTime == null %}
