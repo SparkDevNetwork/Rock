@@ -1046,11 +1046,13 @@ namespace Rock.MyWell
 
                 //// The gateway tells us what the CreditCardType is since it was selected using their hosted payment entry frame.
                 //// So, first see if we can determine CreditCardTypeValueId using the CardType response from the gateway
-                var creditCardTypeValue = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) )?.GetDefinedValueFromValue( creditCardResponse.CardType );
+
+                // See if we can figure it out from the CC Type (Amex, Visa, etc)
+                var creditCardTypeValue = CreditCardPaymentInfo.GetCreditCardTypeFromName( creditCardResponse.CardType );
                 if ( creditCardTypeValue == null )
                 {
-                    // otherwise, see if we can figure it out from the MaskedCard using RegEx
-                    creditCardTypeValue = CreditCardPaymentInfo.GetCreditCardType( creditCardResponse.MaskedCard );
+                    // GetCreditCardTypeFromName should have worked, but just in case, see if we can figure it out from the MaskedCard using RegEx
+                    creditCardTypeValue = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( creditCardResponse.MaskedCard );
                 }
 
                 financialPaymentDetail.CreditCardTypeValueId = creditCardTypeValue?.Id;

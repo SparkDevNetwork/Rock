@@ -413,7 +413,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                     transaction.FinancialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}" );
                     transaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                    transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
+                    transaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     transaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
                     string mmyy = threeStepChangeStep3Response.Billing?.CcExp;
@@ -638,7 +638,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                     // cc payment
                     var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                     scheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                    scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
+                    scheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
                     scheduledTransaction.FinancialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
                     string mmyy = threeStepSubscriptionStep3Response.Billing?.CcExp;
@@ -1359,7 +1359,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
             transaction.ForeignKey = chargeResponse.CustomerVaultId;
 
             Customer customerInfo = this.GetCustomerVaultQueryResponse( financialGateway, customerId )?.CustomerVault.Customer;
-            transaction.FinancialPaymentDetail = PopulatePaymentInfo( customerInfo );
+            transaction.FinancialPaymentDetail = CreatePaymentPaymentDetail( customerInfo );
 
             transaction.AdditionalLavaFields = GetAdditionalLavaFields( chargeResponse );
 
@@ -1371,9 +1371,20 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
         /// </summary>
         /// <param name="customerInfo">The customer information.</param>
         /// <returns></returns>
-        private FinancialPaymentDetail PopulatePaymentInfo( Customer customerInfo )
+        private FinancialPaymentDetail CreatePaymentPaymentDetail( Customer customerInfo )
         {
             var financialPaymentDetail = new FinancialPaymentDetail();
+            UpdateFinancialPaymentDetail( customerInfo, financialPaymentDetail );
+            return financialPaymentDetail;
+        }
+
+        /// <summary>
+        /// Updates the financial payment detail fields from the information in customerInfo
+        /// </summary>
+        /// <param name="customerInfo">The customer information.</param>
+        /// <param name="financialPaymentDetail">The financial payment detail.</param>
+        private void UpdateFinancialPaymentDetail( Customer customerInfo, FinancialPaymentDetail financialPaymentDetail )
+        {
             financialPaymentDetail.GatewayPersonIdentifier = customerInfo.CustomerVaultId;
 
             string ccNumber = customerInfo.CcNumber;
@@ -1383,7 +1394,19 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 var curType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD );
                 financialPaymentDetail.NameOnCardEncrypted = Encryption.EncryptString( $"{customerInfo.FirstName} {customerInfo.LastName}" );
                 financialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
-                financialPaymentDetail.CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardType( ccNumber.Replace( '*', '1' ).AsNumeric() )?.Id;
+
+                //// The gateway tells us what the CreditCardType is since it was selected using their hosted payment entry frame.
+                //// So, first see if we can determine CreditCardTypeValueId using the CardType response from the gateway
+
+                // See if we can figure it out from the CC Type (Amex, Visa, etc)
+                var creditCardTypeValue = CreditCardPaymentInfo.GetCreditCardTypeFromName( customerInfo.CcType );
+                if ( creditCardTypeValue == null )
+                {
+                    // GetCreditCardTypeFromName should have worked, but just in case, see if we can figure it out from the MaskedCard using RegEx
+                    creditCardTypeValue = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( customerInfo.CcNumber );
+                }
+
+                financialPaymentDetail.CreditCardTypeValueId = creditCardTypeValue?.Id;
                 financialPaymentDetail.AccountNumberMasked = ccNumber.Masked( true );
 
                 string mmyy = customerInfo.CcExp;
@@ -1400,8 +1423,6 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 financialPaymentDetail.CurrencyTypeValueId = curType != null ? curType.Id : ( int? ) null;
                 financialPaymentDetail.AccountNumberMasked = customerInfo.CheckAccount;
             }
-
-            return financialPaymentDetail;
         }
 
         /// <summary>
@@ -1526,7 +1547,7 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
                 scheduledTransaction.IsActive = true;
                 scheduledTransaction.GatewayScheduleId = addSubscriptionResponse.TransactionId;
                 scheduledTransaction.FinancialGatewayId = financialGateway.Id;
-                scheduledTransaction.FinancialPaymentDetail = PopulatePaymentInfo( customerInfo );
+                scheduledTransaction.FinancialPaymentDetail = CreatePaymentPaymentDetail( customerInfo );
                 scheduledTransaction.TransactionCode = addSubscriptionResponse.TransactionId;
 
                 errorMessage = string.Empty;
@@ -1645,7 +1666,17 @@ Transaction id: {threeStepChangeStep3Response.TransactionId}.
 
                 scheduledTransaction.IsActive = true;
                 scheduledTransaction.FinancialGatewayId = financialGateway.Id;
-                scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, this, new RockContext() );
+
+                try
+                {
+                    // update FinancialPaymentDetail with any changes in payment information
+                    Customer customerInfo = this.GetCustomerVaultQueryResponse( financialGateway, referencedPaymentInfo.GatewayPersonIdentifier )?.CustomerVault.Customer;
+                    UpdateFinancialPaymentDetail( customerInfo, scheduledTransaction.FinancialPaymentDetail );
+                }
+                catch ( Exception ex )
+                {
+                    throw new NMIGatewayException( $"Exception getting Customer Information for Scheduled Payment.", ex );
+                }
 
                 errorMessage = string.Empty;
 
