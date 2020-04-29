@@ -542,15 +542,14 @@ namespace Rock.DownhillCss
         private static string baseStylesMobile = @"
 /* Resets */
 ^label {
-    line-height: 1.25;
-    font-size: ?font-size-default;
+    font-size: default;
     color: ?color-text;
 }
 
 .heading1 {
     color: ?color-heading;
     font-style: bold;
-    font-size: 22;
+    font-size: 34;
     margin-bottom: 0;
     line-height: 1;
 }
@@ -558,8 +557,29 @@ namespace Rock.DownhillCss
 .heading2 {
     color: ?color-heading;
     font-style: bold;
-    font-size: 18;
+    font-size: title;
     line-height: 1;
+}
+
+.heading3 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: subtitle;
+    line-height: 1.05;
+}
+
+.heading4 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: default;
+    line-height: 1.1;
+}
+
+.heading5, .heading6 {
+    color: ?color-heading;
+    font-style: bold;
+    font-size: small;
+    line-height: 1.25;
 }
 
 .link{
@@ -731,42 +751,81 @@ namespace Rock.DownhillCss
 /* Text Named Sizes */
 .text-default {
     font-size: default;
+    color: ?color-text;
 }
 
 .text-micro {
     font-size: micro;
+    color: ?color-text;
 }
 
 .text-small {
     font-size: small;
+    color: ?color-text;
 }
 
 .text-medium {
     font-size: medium;
+    color: ?color-text;
 }
 
 .text-large {
     font-size: large;
+    color: ?color-text;
 }
 
 .text-title {
     font-size: title;
+    color: ?color-text;
 }
 
 .text-subtitle {
     font-size: subtitle;
+    color: ?color-text;
 }
 
 .text-header {
     font-size: header;
+    color: ?color-text;
 }
 
 .text-caption {
     font-size: caption;
+    color: ?color-text;
 }
 
 .text-body {
     font-size: body;
+    color: ?color-text;
+}
+
+/* Body Styles */
+.body {
+    font-size: default;
+    color: ?color-text;
+    line-height: 1.15;
+    margin-bottom: 12;
+}
+
+.body-small {
+    font-size: small;
+    color: ?color-text;
+    line-height: 1.25;
+    margin-bottom: 12;
+}
+
+.body-micro {
+    font-size: micro;
+    color: ?color-text;
+    line-height: 1.25;
+    margin-bottom: 8;
+}
+
+.body-large {
+    font-size: large;
+    color: ?color-text;
+    line-height: 1;
+    margin-bottom: 16;
 }
 
 /* Text Decoration */
@@ -890,27 +949,6 @@ namespace Rock.DownhillCss
     border-radius: 1000;
 }
 
-
-/* Hero Block */
-.hero .hero-title {
-    font-size: 24;
-    color: white;
-    -rock-text-shadow: 2 2 4 black;
-}
-
-.hero .hero-subtitle {
-    font-size: 18;
-    color: white;
-    -rock-text-shadow: 2 2 4 black;
-}
-
-.tablet .hero .hero-title {
-    font-size: 36;
-}
-
-.tablet .hero .hero-subtitle {
-    font-size: 28;
-
 /* Toggle Button CSS */
 .toggle-button {
     border-radius: 0;
@@ -940,6 +978,7 @@ namespace Rock.DownhillCss
 
 .toggle-button.checked .icon {
     color: white;
+}
 
 /* Hero Block */
 .hero .hero-title {
@@ -961,7 +1000,6 @@ namespace Rock.DownhillCss
 .tablet .hero .hero-subtitle {
     font-size: 28;
 }
-
 ";
     }
 }
