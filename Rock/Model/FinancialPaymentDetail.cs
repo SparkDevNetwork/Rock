@@ -297,8 +297,6 @@ namespace Rock.Model
         public void ClearPaymentInfo()
         {
             AccountNumberMasked = null;
-            GatewayPersonIdentifier = null;
-            FinancialPersonSavedAccountId = null;
 
             CurrencyTypeValueId = null;
             CreditCardTypeValueId = null;
