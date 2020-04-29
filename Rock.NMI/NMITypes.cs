@@ -367,7 +367,7 @@ namespace Rock.NMI
         public string Phone { get; set; }
 
         /// <summary>
-        /// Gets or sets the cc number.
+        /// Gets or sets the cc number (Masked)
         /// </summary>
         /// <value>
         /// The cc number.
