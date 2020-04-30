@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Humanizer;
 using Newtonsoft.Json;
@@ -3843,16 +3844,21 @@ Registration By: {0} \nTotal Cost/Fees:{1}
                     }
 
                     hfGradeRequired.Value = isGradeRequired.ToString();
+                    hfChildrenOnly.Value = isChildrenOnly.ToString();
 
                     List<GroupMember> familyMembers = CurrentPerson.GetFamilyMembers( true )
-                        .Where( gm => !isChildrenOnly || gm.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD )
+                        .OrderBy(gm=> gm.GroupRole.Order)
+                        .ThenByDescending(gm=> gm.Person.BirthDate.HasValue)
+                        .ThenBy(gm=> gm.Person.BirthDate)
+                        .ThenBy(gm=> gm.Person.NickName)
+                    //    .Where( gm => !isChildrenOnly || gm.GroupRole.Guid.ToString() == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD )
                         .ToList();
 
-                    DateTime? minimumBirthDate = category.GetAttributeValue( "MinimumDateofBirth" ).AsDateTime();
-                    if ( minimumBirthDate.HasValue )
-                    {
-                        familyMembers = familyMembers.Where( fm => fm.Person.BirthDate <= minimumBirthDate.Value ).ToList();
-                    }
+                    //DateTime? minimumBirthDate = category.GetAttributeValue( "MinimumDateofBirth" ).AsDateTime();
+                    //if ( minimumBirthDate.HasValue )
+                    //{
+                    //    familyMembers = familyMembers.Where( fm => fm.Person.BirthDate <= minimumBirthDate.Value ).ToList();
+                    //}
 
                     rFamilyMembers.DataSource = familyMembers;
                     rFamilyMembers.DataBind();
@@ -3864,29 +3870,73 @@ Registration By: {0} \nTotal Cost/Fees:{1}
 
         protected void rFamilyMembers_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var groupMember = e.Item.DataItem as GroupMember;
-            if ( groupMember != null )
+            var categoryId = PageParameter( CATEGORY_ID_PARAM_NAME ).AsIntegerOrNull();
+            if ( categoryId == null || categoryId == 0 )
             {
-                var hfPersonAliasId = e.Item.FindControl( "hfPersonAliasId" ) as HiddenField;
-                var cbFamilyMember = e.Item.FindControl( "cbFamilyMember" ) as CheckBox;
-                var lbEditGroupMember = e.Item.FindControl( "lbEditGroupMember" ) as LinkButton;
+                categoryId = GetAttributeValue( "DefaultCategoryId" ).AsInteger();
+            }
 
-                var gradeFormatted = groupMember.Person.GradeFormatted;
-                if ( gradeFormatted.IsNullOrWhiteSpace() && hfGradeRequired.Value.AsBoolean() )
+            if ( categoryId != null )
+            {
+                var category = CategoryCache.Get( categoryId.Value );
+                if ( category != null )
                 {
-                    gradeFormatted = "<b style='color:red;'>Grade Required</b>";
-                    lbEditGroupMember.Visible = true;
-                }
+                    var groupMember = e.Item.DataItem as GroupMember;
+                    if ( groupMember != null )
+                    {
+                        var hfPersonAliasId = e.Item.FindControl( "hfPersonAliasId" ) as HiddenField;
+                        var cbFamilyMember = e.Item.FindControl( "cbFamilyMember" ) as CheckBox;
+                        var lFamilyMember = e.Item.FindControl( "lFamilyMember" ) as Literal;
+                        var divFamilyText = e.Item.FindControl( "divFamilyText" ) as Panel;
+                        var lbEditGroupMember = e.Item.FindControl( "lbEditGroupMember" ) as LinkButton;
+                        var isGradeRequired = true;
+                        var isChildrenOnly = true;
+                        var isValidRegistrant = true;
 
-                hfPersonAliasId.Value = groupMember.Person.PrimaryAliasId.ToString();
-                cbFamilyMember.Text = String.Format( "{0}&nbsp;&nbsp;&nbsp;&nbsp;{1}&nbsp;&nbsp;&nbsp;&nbsp;{2}",
-                    groupMember.Person.NickName,
-                    groupMember.Person.Age.HasValue ? string.Format( "Age({0})", groupMember.Person.Age.ToString() ) : "",
-                    gradeFormatted );
+                        if ( isChildrenOnly && groupMember.GroupRole.Guid.ToString().ToUpper() != Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD )
+                        {
+                            isValidRegistrant = false;
+                        }
 
-                if ( MultiEventRegistrants != null && MultiEventRegistrants.Any( mer => mer.PersonAliasId == groupMember.Person.PrimaryAliasId ) )
-                {
-                    cbFamilyMember.Checked = true;
+                        DateTime? minimumBirthDate = category.GetAttributeValue( "MinimumDateofBirth" ).AsDateTime();
+                        if ( minimumBirthDate.HasValue && groupMember.Person.BirthDate > minimumBirthDate.Value )
+                        {
+                            isValidRegistrant = false;
+                        }
+
+                        var gradeFormatted = groupMember.Person.GradeFormatted;
+                        if ( gradeFormatted.IsNullOrWhiteSpace() && isGradeRequired && isValidRegistrant )
+                        {
+                            gradeFormatted = "<b style='color:red;'>Grade Required</b>";
+                            lbEditGroupMember.Visible = true;
+                            isValidRegistrant = false;
+                        }
+
+                        hfPersonAliasId.Value = groupMember.Person.PrimaryAliasId.ToString();
+                        var nameText = String.Format( "{0}&nbsp;&nbsp;&nbsp;&nbsp;{1}&nbsp;&nbsp;&nbsp;&nbsp;{2}",
+                            groupMember.Person.NickName,
+                            groupMember.Person.Age.HasValue ? string.Format( "Age({0})", groupMember.Person.Age.ToString() ) : "",
+                            gradeFormatted );
+
+
+                        if ( isValidRegistrant )
+                        {
+                            cbFamilyMember.Visible = true;
+                            lFamilyMember.Visible = divFamilyText.Visible = false;
+                            cbFamilyMember.Text = nameText;
+
+                            if ( MultiEventRegistrants != null && MultiEventRegistrants.Any( mer => mer.PersonAliasId == groupMember.Person.PrimaryAliasId ) )
+                            {
+                                cbFamilyMember.Checked = true;
+                            }
+                        }
+                        else
+                        {
+                            cbFamilyMember.Visible = false;
+                            lFamilyMember.Visible = divFamilyText.Visible = true;
+                            lFamilyMember.Text = String.Format( "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{0}", nameText );
+                        }
+                    }
                 }
             }
         }
@@ -3907,7 +3957,7 @@ Registration By: {0} \nTotal Cost/Fees:{1}
         {
             var familyType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
             var childRole = familyType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ) );
-
+            nbBirthdate.Visible = false;
             pnlEditFamilyMember.Visible = rtbMemberFirstName.Enabled = rtbMemberLastName.Enabled = rtbMemberRelationship.Enabled = dpMemberBirthDate.Enabled = dvpMemberSchool.Enabled = dvpMemberGrade.Enabled = true;
 
             rtbMemberFirstName.Text = rtbMemberLastName.Text = String.Empty;
@@ -4048,101 +4098,122 @@ Registration By: {0} \nTotal Cost/Fees:{1}
 
         protected void lbSaveGroupMember_Click( object sender, EventArgs e )
         {
-            GroupMember member = null;
-            var rockContext = new RockContext();
-            var memberService = new GroupMemberService( rockContext );
-
-            if ( hfMemberId.ValueAsInt() > 0 )
+            var categoryId = PageParameter( CATEGORY_ID_PARAM_NAME ).AsIntegerOrNull();
+            if ( categoryId == null || categoryId == 0 )
             {
-                var memberId = hfMemberId.Value.AsIntegerOrNull();
-
-                if ( memberId.HasValue )
-                {
-                    member = memberService.Get( memberId.Value );
-                }
-            }
-            else
-            {
-                var person = new Person();
-                person.FirstName = rtbMemberFirstName.Text;
-                person.LastName = rtbMemberLastName.Text;
-                var familyRoleId = rtbMemberRelationship.GroupRoleId;
-                var familyId = CurrentPerson.GetFamily().Id;
-                PersonService.AddPersonToFamily( person, true, familyId, familyRoleId.Value, rockContext );
-
-                member = memberService.Queryable().Where( gm => gm.PersonId == person.Id && gm.GroupId == familyId ).FirstOrDefault();
+                categoryId = GetAttributeValue( "DefaultCategoryId" ).AsInteger();
             }
 
-            if ( member != null )
+            if ( categoryId != null )
             {
-                var person = member.Person;
-
-                if ( !person.BirthDate.HasValue )
+                var category = CategoryCache.Get( categoryId.Value );
+                if ( category != null )
                 {
-                    person.SetBirthDate( dpMemberBirthDate.SelectedDate );
-                }
+                    GroupMember member = null;
+                    var rockContext = new RockContext();
+                    var memberService = new GroupMemberService( rockContext );
 
-                var gradeOffset = person.GradeOffset;
-                if ( !gradeOffset.HasValue && dvpMemberGrade.SelectedGradeValue != null )
-                {
-                    person.GradeOffset = dvpMemberGrade.SelectedGradeValue.Value.AsIntegerOrNull();
-                }
-
-                int? orphanedPhotoId = null;
-                if ( person.PhotoId != imgPhoto.BinaryFileId )
-                {
-                    orphanedPhotoId = person.PhotoId;
-                    person.PhotoId = imgPhoto.BinaryFileId;
-                }
-
-                if ( rockContext.SaveChanges() > 0 )
-                {
-                    if ( orphanedPhotoId.HasValue )
+                    DateTime? minimumBirthDate = category.GetAttributeValue( "MinimumDateofBirth" ).AsDateTime();
+                    if ( minimumBirthDate.HasValue && ( dpMemberBirthDate.SelectedDate.Value > minimumBirthDate.Value || !dpMemberBirthDate.SelectedDate.HasValue ) )
                     {
-                        BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                        var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
-                        if ( binaryFile != null )
-                        {
-                            // marked the old images as IsTemporary so they will get cleaned up later
-                            binaryFile.IsTemporary = true;
-                            rockContext.SaveChanges();
-                        }
+                        nbBirthdate.Visible = true;
+                        nbBirthdate.Text = String.Format( "Please enter a birthdate on or before {0}", minimumBirthDate.Value.ToShortDateString() );
+                        return;
                     }
 
-                    // if they used the ImageEditor, and cropped it, the un-cropped file is still in BinaryFile. So clean it up
-                    if ( imgPhoto.CropBinaryFileId.HasValue )
+                    if ( hfMemberId.ValueAsInt() > 0 )
                     {
-                        if ( imgPhoto.CropBinaryFileId != person.PhotoId )
+                        var memberId = hfMemberId.Value.AsIntegerOrNull();
+
+                        if ( memberId.HasValue )
                         {
-                            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
-                            var binaryFile = binaryFileService.Get( imgPhoto.CropBinaryFileId.Value );
-                            if ( binaryFile != null && binaryFile.IsTemporary )
+                            member = memberService.Get( memberId.Value );
+                        }
+                    }
+                    else
+                    {
+                        var person = new Person();
+                        person.FirstName = rtbMemberFirstName.Text;
+                        person.LastName = rtbMemberLastName.Text;
+                        var familyRoleId = rtbMemberRelationship.GroupRoleId;
+                        var familyId = CurrentPerson.GetFamily().Id;
+                        PersonService.AddPersonToFamily( person, true, familyId, familyRoleId.Value, rockContext );
+
+                        member = memberService.Queryable().Where( gm => gm.PersonId == person.Id && gm.GroupId == familyId ).FirstOrDefault();
+                    }
+
+                    if ( member != null )
+                    {
+                        var person = member.Person;
+
+                        if ( !person.BirthDate.HasValue )
+                        {
+                            person.SetBirthDate( dpMemberBirthDate.SelectedDate );
+                        }
+
+                        var gradeOffset = person.GradeOffset;
+                        if ( !gradeOffset.HasValue && dvpMemberGrade.SelectedGradeValue != null )
+                        {
+                            person.GradeOffset = dvpMemberGrade.SelectedGradeValue.Value.AsIntegerOrNull();
+                        }
+
+                        int? orphanedPhotoId = null;
+                        if ( person.PhotoId != imgPhoto.BinaryFileId )
+                        {
+                            orphanedPhotoId = person.PhotoId;
+                            person.PhotoId = imgPhoto.BinaryFileId;
+                        }
+
+                        if ( rockContext.SaveChanges() > 0 )
+                        {
+                            if ( orphanedPhotoId.HasValue )
                             {
-                                string errorMessage;
-                                if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                                BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                                var binaryFile = binaryFileService.Get( orphanedPhotoId.Value );
+                                if ( binaryFile != null )
                                 {
-                                    binaryFileService.Delete( binaryFile );
+                                    // marked the old images as IsTemporary so they will get cleaned up later
+                                    binaryFile.IsTemporary = true;
                                     rockContext.SaveChanges();
                                 }
                             }
+
+                            // if they used the ImageEditor, and cropped it, the un-cropped file is still in BinaryFile. So clean it up
+                            if ( imgPhoto.CropBinaryFileId.HasValue )
+                            {
+                                if ( imgPhoto.CropBinaryFileId != person.PhotoId )
+                                {
+                                    BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+                                    var binaryFile = binaryFileService.Get( imgPhoto.CropBinaryFileId.Value );
+                                    if ( binaryFile != null && binaryFile.IsTemporary )
+                                    {
+                                        string errorMessage;
+                                        if ( binaryFileService.CanDelete( binaryFile, out errorMessage ) )
+                                        {
+                                            binaryFileService.Delete( binaryFile );
+                                            rockContext.SaveChanges();
+                                        }
+                                    }
+                                }
+                            }
                         }
+
+                        person.LoadAttributes();
+                        var memberSchoolValue = person.GetAttributeValue( "School" ).AsGuidOrNull();
+                        if ( !memberSchoolValue.HasValue && dvpMemberSchool.SelectedDefinedValueId.HasValue )
+                        {
+                            var memberSchool = DefinedValueCache.Get( dvpMemberSchool.SelectedDefinedValueId.Value );
+                            if ( memberSchool != null )
+                            {
+                                person.SetAttributeValue( "School", memberSchool.Guid.ToString() );
+                                person.SaveAttributeValue( "School", rockContext );
+                            }
+                        }
+
+                        pnlEditFamilyMember.Visible = false;
+                        ShowStart();
                     }
                 }
-
-                person.LoadAttributes();
-                var memberSchoolValue = person.GetAttributeValue( "School" ).AsGuidOrNull();
-                if ( !memberSchoolValue.HasValue && dvpMemberSchool.SelectedDefinedValueId.HasValue )
-                {
-                    var memberSchool = DefinedValueCache.Get( dvpMemberSchool.SelectedDefinedValueId.Value );
-                    if ( memberSchool != null )
-                    {
-                        person.SetAttributeValue( "School", memberSchool.Guid.ToString() );
-                        person.SaveAttributeValue( "School", rockContext );
-                    }
-                }
-
-                pnlEditFamilyMember.Visible = false;
-                ShowStart();
             }
         }
 

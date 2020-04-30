@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("com.bemaservices.MailChimp")]
+[assembly: AssemblyTitle("com.citizenschurch.Autobuild")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("com.bemaservices.MailChimp")]
+[assembly: AssemblyProduct("com.citizenschurch.Autobuild")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("f5210b1f-ccdd-44be-880e-2f2ad331939d")]
+[assembly: Guid("9d0b5af5-63cb-4f46-aacc-22d60a427879")]
 
 // Version information for an assembly consists of the following four values:
 //

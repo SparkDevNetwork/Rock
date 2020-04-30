@@ -5,11 +5,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F5210B1F-CCDD-44BE-880E-2F2AD331939D}</ProjectGuid>
+    <ProjectGuid>{9D0B5AF5-63CB-4F46-AACC-22D60A427879}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>com.bemaservices.MailChimp</RootNamespace>
-    <AssemblyName>com.bemaservices.MailChimp</AssemblyName>
+    <RootNamespace>com.citizenschurch.Autobuild</RootNamespace>
+    <AssemblyName>com.citizenschurch.Autobuild</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -33,20 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DotLiquid, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="DotLiquid">
       <HintPath>..\RockWeb\Bin\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="EntityFramework">
       <HintPath>..\RockWeb\Bin\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\RockWeb\Bin\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="MailChimp.Net.V3, Version=2.1.0.0, Culture=neutral, PublicKeyToken=37d26d538413c581, processorArchitecture=MSIL">
-      <HintPath>..\packages\MailChimp.Net.V3.2.1.0.0\lib\net45\MailChimp.Net.V3.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Data.Edm, Version=5.6.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -60,22 +54,16 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Quartz">
-      <HintPath>..\libs\Quartz\Quartz.dll</HintPath>
-    </Reference>
-    <Reference Include="Rock, Version=1.9.4.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Rock">
       <HintPath>..\RockWeb\Bin\Rock.dll</HintPath>
     </Reference>
     <Reference Include="Rock.Rest">
       <HintPath>..\RockWeb\Bin\Rock.Rest.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.Entity" />
-    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -84,20 +72,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Jobs\MailChimpSync.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Migrations\001_AddSystemData.cs" />
+    <Compile Include="Migrations\001_InitialSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SystemGuid\Attribute.cs" />
-    <Compile Include="SystemGuid\SystemDefinedTypes.cs" />
-    <Compile Include="Utility\MailChimpApi.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="app.config" />
     <None Include="Build.tasks" />
     <None Include="builds\.version" />
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -122,10 +103,10 @@
   <!-- Prepare the files to be zipped -->
   <Target Name="CopyFiles" DependsOnTargets="DeleteFiles">
     <ItemGroup>
-      <CopyFiles Include="$(OutputPath)com.bemaservices.MailChimp.dll;" />
-      <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\MailChimp\**\*.*" />
+      <CopyFiles Include="$(OutputPath)com.citizenschurch.Autobuild.dll;" />
+      <BlockCode Include="..\RockWeb\Plugins\com_bemaservices\CustomBlocks\BEMA\**\*.*" />
+      <ClientCode Include="..\RockWeb\Plugins\com_bemaservices\CustomBlocks\CICH\**\*.*" />
       <VersionFile Include="builds\.version" />
-      <LibFiles Include="lib\*.*" />
     </ItemGroup>
     <MakeDir Directories="$(BuildDir)\tmp" Condition="!Exists('$(BuildDir)\tmp')" />
     <MakeDir Directories="$(BuildDir)\tmp\content" Condition="!Exists('$(BuildDir)\tmp\content')" />
@@ -134,8 +115,8 @@
     <MakeDir Directories="$(BuildDir)\tmp\install" Condition="!Exists('$(BuildDir)\tmp\install')" />
     <MakeDir Directories="$(BuildDir)\tmp\uninstall" Condition="!Exists('$(BuildDir)\tmp\uninstall')" />
     <Copy SourceFiles="@(CopyFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
-    <Copy SourceFiles="@(LibFiles)" DestinationFolder="$(BuildDir)\tmp\content\bin\" />
-    <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\MailChimp\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(BlockCode)" DestinationFiles="@(BlockCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\CustomBlocks\BEMA\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(ClientCode)" DestinationFiles="@(ClientCode->'$(BuildDir)\tmp\content\Plugins\com_bemaservices\CustomBlocks\CICH\%(RecursiveDir)%(Filename)%(Extension)')" />
     <!-- Just put the .version file into the install and uninstall folder so that those folders are created in the zip -->
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\install" />
     <Copy SourceFiles="@(VersionFile)" DestinationFolder="$(BuildDir)\tmp\uninstall" />
@@ -156,7 +137,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(PackageOut)" Condition="!Exists('$(PackageOut)')" />
     <Message Text="Version: $(Major).$(Minor).$(Build).$(Revision)" />
-    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\MailChimp-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
+    <Zip Files="@(ZipFiles)" WorkingDirectory="$(BuildDir)\tmp\" ZipFileName="$(PackageOut)\Autobuild-v$(Major).$(Minor).$(Build).$(Revision).plugin" ZipLevel="9" />
   </Target>
   <Import Project="..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets" Condition="Exists('..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
