@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Jobs\UpdateDoorLocks.cs" />
+    <Compile Include="Migrations\009_IsHvacOnly.cs" />
     <Compile Include="Migrations\008_CreateProcessDoorLockAttribute.cs" />
     <Compile Include="Migrations\007_DoorLockUpdates.cs" />
     <Compile Include="Migrations\006_AddingRoomNameColumn.cs" />

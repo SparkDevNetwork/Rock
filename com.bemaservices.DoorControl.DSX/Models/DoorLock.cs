@@ -61,6 +61,9 @@ namespace com.bemaservices.DoorControl.DSX.Models
         [DataMember]
         public int LocationId { get; set; }
 
+        [DataMember]
+        public bool? IsHvacOnly { get; set; }
+
         #endregion Entity Properties
 
         #region Virtual Properties
