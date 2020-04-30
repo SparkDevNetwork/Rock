@@ -39,17 +39,35 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given location." )]
 
-    [CodeEditorField( "Map HTML", "The HTML to use for displaying group location maps. Lava syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]", CodeEditorMode.Lava, CodeEditorTheme.Rock, 300, false, @"
-    {% if point or polygon %}
-        <div class='group-location-map'>
-            <img class='img-thumbnail' src='//maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% if point %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endif %}{% if polygon %}&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}{% endif %}&visual_refresh=true'/>
-        </div>
-    {% endif %}
-" )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the GeoPicker map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK )]
+    [CodeEditorField( "Map HTML",
+        Description = "The HTML to use for displaying group location maps. Lava syntax is used to render data from the following data structure: points[type, latitude, longitude], polygons[type, polygon_wkt, google_encoded_polygon]",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 300,
+        IsRequired = false,
+        DefaultValue = @"{% if point or polygon %}
+    <div class='group-location-map'>
+        <img class='img-thumbnail' src='//maps.googleapis.com/maps/api/staticmap?sensor=false&size=350x200&format=png&style=feature:all|saturation:0|hue:0xe7ecf0&style=feature:road|saturation:-70&style=feature:transit|visibility:off&style=feature:poi|visibility:off&style=feature:water|visibility:simplified|saturation:-60{% if point %}&markers=color:0x779cb1|{{ point.latitude }},{{ point.longitude }}{% endif %}{% if polygon %}&path=fillcolor:0x779cb155|color:0xFFFFFF00|enc:{{ polygon.google_encoded_polygon }}{% endif %}&visual_refresh=true'/>
+    </div>
+{% endif %}",
+        Key = AttributeKey.MapHtml)]
+
+    [DefinedValueField( "Map Style",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.MAP_STYLES,
+        Description = "The map theme that should be used for styling the GeoPicker map.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK,
+        Key = AttributeKey.MapStyle )]
 
     public partial class LocationDetail : RockBlock, IDetailBlock
     {
+        public static class AttributeKey
+        {
+            public const string MapStyle = "MapStyle";
+            public const string MapHtml = "MapHTML";
+        }
+
         private int? _personId = null;
 
         private int? LocationTypeValueId
@@ -155,7 +173,7 @@ namespace RockWeb.Blocks.Core
             {
                 parentLocationId = location.ParentLocationId;
                 string errorMessage;
-                if ( ! locationService.CanDelete( location, out errorMessage ) )
+                if ( !locationService.CanDelete( location, out errorMessage ) )
                 {
                     mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
@@ -490,7 +508,7 @@ namespace RockWeb.Blocks.Core
             nbSoftThreshold.Text = location.SoftRoomThreshold.HasValue ? location.SoftRoomThreshold.Value.ToString() : "";
             nbFirmThreshold.Text = location.FirmRoomThreshold.HasValue ? location.FirmRoomThreshold.Value.ToString() : "";
 
-            Guid mapStyleValueGuid = GetAttributeValue( "MapStyle" ).AsGuid();
+            Guid mapStyleValueGuid = GetAttributeValue( AttributeKey.MapStyle ).AsGuid();
             geopPoint.MapStyleValueGuid = mapStyleValueGuid;
             geopFence.MapStyleValueGuid = mapStyleValueGuid;
 
@@ -601,7 +619,7 @@ namespace RockWeb.Blocks.Core
             Rock.Attribute.Helper.AddDisplayControls( location, phAttributes );
 
             phMaps.Controls.Clear();
-            var mapStyleValue = DefinedValueCache.Get( GetAttributeValue( "MapStyle" ) );
+            var mapStyleValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ) );
             var googleAPIKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
 
             if ( mapStyleValue == null )

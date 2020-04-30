@@ -33,9 +33,16 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of all campuses." )]
 
-    [LinkedPage( "Detail Page" )]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class Campuses : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region fields
 
         /// <summary>
@@ -120,7 +127,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gCampuses_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "CampusId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "CampusId", 0 );
         }
 
         /// <summary>
@@ -130,7 +137,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gCampuses_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "CampusId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "CampusId", e.RowKeyId );
         }
 
         /// <summary>

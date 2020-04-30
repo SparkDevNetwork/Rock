@@ -39,12 +39,31 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Defined Value List Lava" )]
     [Category( "Core" )]
     [Description( "Takes a defined type and returns all defined values and merges them with a lava template." )]
-    [DefinedTypeField("Defined Type", "The defined type to load values for merge fields.")]
-    [CodeEditorField("Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% for definedValue in DefinedValues %}
+
+    [DefinedTypeField( "Defined Type",
+        Description = "The defined type to load values for merge fields.",
+        Key = AttributeKey.DefinedType )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"{% for definedValue in DefinedValues %}
     {{ definedValue.Value }}
-{% endfor %}", "", 4, "LiquidTemplate" )]
+{% endfor %}",
+        Order = 4,
+        Key = AttributeKey.LiquidTemplate )]
+
     public partial class DefinedValueListLiquid : Rock.Web.UI.RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string DefinedType = "DefinedType";
+            public const string LiquidTemplate = "LiquidTemplate";
+        }
+
         #region Fields
 
         // used for private variables
@@ -119,10 +138,11 @@ namespace RockWeb.Blocks.Core
             mergeFields.AddOrIgnore( "Person", CurrentPerson );
 
 
-            string selectedDefinedType = GetAttributeValue("DefinedType");
+            string selectedDefinedType = GetAttributeValue( AttributeKey.DefinedType );
 
-            if (! string.IsNullOrWhiteSpace(selectedDefinedType)) {
-                var dtItem = DefinedTypeCache.Get( Guid.Parse(selectedDefinedType) );
+            if ( !string.IsNullOrWhiteSpace( selectedDefinedType ) )
+            {
+                var dtItem = DefinedTypeCache.Get( Guid.Parse( selectedDefinedType ) );
 
                 foreach ( var item in dtItem.DefinedValues )
                 {
@@ -131,7 +151,7 @@ namespace RockWeb.Blocks.Core
 
                 mergeFields.Add( "DefinedValues", definedValues );
 
-                string template = GetAttributeValue("LiquidTemplate");
+                string template = GetAttributeValue( AttributeKey.LiquidTemplate );
                 lContent.Text = template.ResolveMergeFields( mergeFields );
             }
 

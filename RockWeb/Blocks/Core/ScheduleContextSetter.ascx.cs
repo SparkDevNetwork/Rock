@@ -36,15 +36,66 @@ namespace RockWeb.Blocks.Core
     [DisplayName( "Schedule Context Setter" )]
     [Category( "Core" )]
     [Description( "Block that can be used to set the default schedule context for the site." )]
-    [CustomRadioListField( "Context Scope", "The scope of context to set", "Site,Page", true, "Site", order: 0 )]
-    [SchedulesField( "Schedule Group", "Choose a schedule group to populate the dropdown", order: 1 )]
-    [TextField( "Current Item Template", "Lava template for the current item. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
-    [TextField( "Dropdown Item Template", "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.", true, "{{ ScheduleName }}", order: 2 )]
-    [TextField( "No Schedule Text", "The text to show when there is no schedule in the context.", true, "Select Schedule", order: 3 )]
-    [TextField( "Clear Selection Text", "The text displayed when a schedule can be unselected. This will not display when the text is empty.", false, "", order: 4 )]
-    [BooleanField( "Display Query Strings", "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.", false, "", order: 5 )]
+
+    [CustomRadioListField( "Context Scope",
+        Description = "The scope of context to set",
+        ListSource = "Site,Page",
+        IsRequired = true,
+        DefaultValue = "Site",
+        Order = 0,
+        Key = AttributeKey.ContextScope )]
+
+    [SchedulesField( "Schedule Group",
+        Description = "Choose a schedule group to populate the dropdown",
+        Order = 1,
+        Key = AttributeKey.ScheduleGroup )]
+
+    [TextField( "Current Item Template",
+        Description = "Lava template for the current item. The only merge field is {{ ScheduleName }}.",
+        IsRequired = true,
+        DefaultValue = "{{ ScheduleName }}",
+        Order = 2,
+        Key = AttributeKey.CurrentItemTemplate )]
+
+    [TextField( "Dropdown Item Template",
+        Description = "Lava template for items in the dropdown. The only merge field is {{ ScheduleName }}.",
+        IsRequired = true,
+        DefaultValue = "{{ ScheduleName }}",
+        Order = 2,
+        Key = AttributeKey.DropdownItemTemplate )]
+
+    [TextField( "No Schedule Text",
+        Description = "The text to show when there is no schedule in the context.",
+        IsRequired = true,
+        DefaultValue = "Select Schedule",
+        Order = 3,
+        Key = AttributeKey.NoScheduleText )]
+
+    [TextField( "Clear Selection Text",
+        Description = "The text displayed when a schedule can be unselected. This will not display when the text is empty.",
+        IsRequired = false,
+        Order = 4,
+        Key = AttributeKey.ClearSelectionText )]
+
+    [BooleanField( "Display Query Strings",
+        Description = "Select to always display query strings. Default behavior will only display the query string when it's passed to the page.",
+        DefaultValue = "false",
+        Order = 5,
+        Key = AttributeKey.DisplayQueryStrings )]
+
     public partial class ScheduleContextSetter : Rock.Web.UI.RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string ContextScope = "ContextScope";
+            public const string ScheduleGroup = "ScheduleGroup";
+            public const string CurrentItemTemplate = "CurrentItemTemplate";
+            public const string DropdownItemTemplate = "DropdownItemTemplate";
+            public const string NoScheduleText = "NoScheduleText";
+            public const string ClearSelectionText = "ClearSelectionText";
+            public const string DisplayQueryStrings = "DisplayQueryStrings";
+        }
+
         #region Base Control Methods
 
         /// <summary>
@@ -103,18 +154,18 @@ namespace RockWeb.Blocks.Core
             {
                 var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Add( "ScheduleName", currentSchedule.Name );
-                lCurrentSelection.Text = GetAttributeValue( "CurrentItemTemplate" ).ResolveMergeFields( mergeObjects );
+                lCurrentSelection.Text = GetAttributeValue( AttributeKey.CurrentItemTemplate ).ResolveMergeFields( mergeObjects );
             }
             else
             {
-                lCurrentSelection.Text = GetAttributeValue( "NoScheduleText" );
+                lCurrentSelection.Text = GetAttributeValue( AttributeKey.NoScheduleText );
             }
 
             var schedules = new List<ScheduleItem>();
 
-            if ( GetAttributeValue( "ScheduleGroup" ) != null )
+            if ( GetAttributeValue( AttributeKey.ScheduleGroup ) != null )
             {
-                var selectedSchedule = GetAttributeValue( "ScheduleGroup" );
+                var selectedSchedule = GetAttributeValue( AttributeKey.ScheduleGroup );
                 var selectedScheduleList = selectedSchedule.Split( ',' ).AsGuidList();
 
                 schedules.AddRange( new ScheduleService( new RockContext() ).Queryable()
@@ -132,15 +183,15 @@ namespace RockWeb.Blocks.Core
                 var mergeObjects = new Dictionary<string, object>();
                 mergeObjects.Clear();
                 mergeObjects.Add( "ScheduleName", schedule.Name );
-                schedule.Name = GetAttributeValue( "DropdownItemTemplate" ).ResolveMergeFields( mergeObjects );
+                schedule.Name = GetAttributeValue( AttributeKey.DropdownItemTemplate ).ResolveMergeFields( mergeObjects );
             }
 
             // check if the schedule can be unselected
-            if ( !string.IsNullOrEmpty( GetAttributeValue( "ClearSelectionText" ) ) )
+            if ( !string.IsNullOrEmpty( GetAttributeValue( AttributeKey.ClearSelectionText ) ) )
             {
                 var blankCampus = new ScheduleItem
                 {
-                    Name = GetAttributeValue( "ClearSelectionText" ),
+                    Name = GetAttributeValue( AttributeKey.ClearSelectionText ),
                     Id = Rock.Constants.All.Id
                 };
 
@@ -159,14 +210,14 @@ namespace RockWeb.Blocks.Core
         /// <returns></returns>
         protected Schedule SetScheduleContext( int scheduleId, bool refreshPage = false )
         {
-            bool pageScope = GetAttributeValue( "ContextScope" ) == "Page";
+            bool pageScope = GetAttributeValue( AttributeKey.ContextScope ) == "Page";
             var schedule = new ScheduleService( new RockContext() ).Get( scheduleId );
             if ( schedule == null )
             {
                 // clear the current schedule context
                 schedule = new Schedule()
                 {
-                    Name = GetAttributeValue( "NoScheduleText" ),
+                    Name = GetAttributeValue( AttributeKey.NoScheduleText ),
                     Guid = Guid.Empty
                 };
             }
@@ -177,7 +228,7 @@ namespace RockWeb.Blocks.Core
             if ( refreshPage )
             {
                 // Only redirect if refreshPage is true
-                if ( !string.IsNullOrWhiteSpace( PageParameter( "ScheduleId" ) ) || GetAttributeValue( "DisplayQueryStrings" ).AsBoolean() )
+                if ( !string.IsNullOrWhiteSpace( PageParameter( "ScheduleId" ) ) || GetAttributeValue( AttributeKey.DisplayQueryStrings ).AsBoolean() )
                 {
                     var queryString = HttpUtility.ParseQueryString( Request.QueryString.ToStringSafe() );
                     queryString.Set( "ScheduleId", scheduleId.ToString() );

@@ -35,9 +35,16 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the devices." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class DeviceList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -51,7 +58,7 @@ namespace RockWeb.Blocks.Core
             BindFilter();
             fDevice.ApplyFilterClick += fDevice_ApplyFilterClick;
             fDevice.DisplayFilterValue += fDevice_DisplayFilterValue;
-            
+
             gDevice.DataKeyNames = new string[] { "Id" };
             gDevice.Actions.ShowAdd = true;
             gDevice.Actions.AddClick += gDevice_Add;
@@ -141,16 +148,16 @@ namespace RockWeb.Blocks.Core
 
                 case "Print To":
 
-                    e.Value = ( (PrintTo)System.Enum.Parse( typeof( PrintTo ), e.Value ) ).ToString();
+                    e.Value = ( ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), e.Value ) ).ToString();
                     break;
 
                 case "Print From":
 
-                    e.Value = ( (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), e.Value ) ).ToString();
+                    e.Value = ( ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), e.Value ) ).ToString();
                     break;
                 case "Active Status":
 
-                    if ( !string.IsNullOrEmpty( e.Value) && e.Value == "all" )
+                    if ( !string.IsNullOrEmpty( e.Value ) && e.Value == "all" )
                     {
                         e.Value = string.Empty;
                     }
@@ -167,7 +174,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDevice_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "DeviceId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "DeviceId", 0 );
         }
 
         /// <summary>
@@ -177,7 +184,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDevice_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "DeviceId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "DeviceId", e.RowKeyId );
         }
 
         /// <summary>
@@ -241,7 +248,7 @@ namespace RockWeb.Blocks.Core
             foreach ( var attribute in new AttributeService( new RockContext() ).Queryable()
                 .Where( a =>
                     a.EntityTypeId == entityTypeId &&
-                    a.IsGridColumn && 
+                    a.IsGridColumn &&
                     a.EntityTypeQualifierColumn == string.Empty
                     )
                 .OrderBy( a => a.Order )
@@ -304,7 +311,7 @@ namespace RockWeb.Blocks.Core
                 {
                     itemActiveStatus.Selected = true;
                 }
-            }            
+            }
         }
 
         /// <summary>
@@ -339,7 +346,8 @@ namespace RockWeb.Blocks.Core
 
             if ( !string.IsNullOrWhiteSpace( fDevice.GetUserPreference( "Print To" ) ) )
             {
-                PrintTo printTo = (PrintTo)System.Enum.Parse( typeof( PrintTo ), fDevice.GetUserPreference( "Print To" ) ); ;
+                PrintTo printTo = ( PrintTo ) System.Enum.Parse( typeof( PrintTo ), fDevice.GetUserPreference( "Print To" ) );
+                ;
                 queryable = queryable.Where( d => d.PrintToOverride == printTo );
             }
 
@@ -351,7 +359,8 @@ namespace RockWeb.Blocks.Core
 
             if ( !string.IsNullOrWhiteSpace( fDevice.GetUserPreference( "Print From" ) ) )
             {
-                PrintFrom printFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), fDevice.GetUserPreference( "Print From" ) ); ;
+                PrintFrom printFrom = ( PrintFrom ) System.Enum.Parse( typeof( PrintFrom ), fDevice.GetUserPreference( "Print From" ) );
+                ;
                 queryable = queryable.Where( d => d.PrintFrom == printFrom );
             }
 

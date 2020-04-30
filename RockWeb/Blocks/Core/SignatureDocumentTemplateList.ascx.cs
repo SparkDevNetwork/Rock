@@ -38,9 +38,16 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all the signature document templates and allows for managing them." )]
 
-    [LinkedPage("Detail Page")]
+    [LinkedPage( "Detail Page",
+        Key = AttributeKey.DetailPage )]
+
     public partial class SignatureDocumentTemplateList : RockBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
         #region Control Methods
 
         /// <summary>
@@ -89,12 +96,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSignatureDocumentTemplate_Add( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "SignatureDocumentTemplateId", 0 );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SignatureDocumentTemplateId", 0 );
         }
 
         protected void gSignatureDocumentTemplate_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( "DetailPage", "SignatureDocumentTemplateId", e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, "SignatureDocumentTemplateId", e.RowKeyId );
         }
 
 
@@ -177,9 +184,9 @@ namespace RockWeb.Blocks.Core
             }
 
             var types = new List<SignatureDocumentTemplate>();
-            foreach( var type in queryable )
+            foreach ( var type in queryable )
             {
-                if ( type.IsAuthorized( Authorization.VIEW, CurrentPerson))
+                if ( type.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
                     types.Add( type );
                 }

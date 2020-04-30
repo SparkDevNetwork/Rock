@@ -39,9 +39,18 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of the given defined type." )]
 
-    [DefinedTypeField( "Defined Type", "If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).", required: false, defaultValue: "" )]
+    [DefinedTypeField( "Defined Type",
+        Description = "If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).",
+        IsRequired = false,
+        Key = AttributeKey.DefinedType )]
+
     public partial class DefinedTypeDetail : RockBlock, IDetailBlock
     {
+        public static class AttributeKey
+        {
+            public const string DefinedType = "DefinedType";
+        }
+
 
         #region Fields
 
@@ -109,7 +118,7 @@ namespace RockWeb.Blocks.Core
         /// <returns>An <see cref="System.Int32"/> of the Id for a <see cref="Rock.Model.DefinedType"/> or null if it was not found.</returns>
         private int? InitItemId()
         {
-            Guid? definedTypeGuid = GetAttributeValue( "DefinedType" ).AsGuidOrNull();
+            Guid? definedTypeGuid = GetAttributeValue( AttributeKey.DefinedType ).AsGuidOrNull();
             int? itemId = null;
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
@@ -261,7 +270,7 @@ namespace RockWeb.Blocks.Core
             else
             {
                 // Cancelling on Edit.  Return to Details
-                DefinedTypeService definedTypeService = new DefinedTypeService(new RockContext());
+                DefinedTypeService definedTypeService = new DefinedTypeService( new RockContext() );
                 DefinedType definedType = definedTypeService.Get( hfDefinedTypeId.ValueAsInt() );
                 ShowReadonlyDetails( definedType );
             }
@@ -293,7 +302,7 @@ namespace RockWeb.Blocks.Core
 
             definedType.LoadAttributes();
 
-            if (!_isStandAlone && definedType.Category != null )
+            if ( !_isStandAlone && definedType.Category != null )
             {
                 lblMainDetails.Text = new DescriptionList()
                     .Add( "Category", definedType.Category.Name )
@@ -417,10 +426,10 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            BindDefinedTypeAttributesGrid();         
-  
+            BindDefinedTypeAttributesGrid();
+
         }
-                
+
         #endregion
 
         #region DefinedTypeAttributes Grid and Picker
@@ -442,7 +451,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Edit( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             gDefinedTypeAttributes_ShowEdit( attributeGuid );
         }
 
@@ -475,7 +484,7 @@ namespace RockWeb.Blocks.Core
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) &&
-                    !a.Guid.Equals(attributeGuid) )
+                    !a.Guid.Equals( attributeGuid ) )
                 .Select( a => a.Key )
                 .Distinct()
                 .ToList();
@@ -511,7 +520,7 @@ namespace RockWeb.Blocks.Core
             {
                 attribute.Order = order++;
             }
-            
+
             var movedItem = attributes.Where( a => a.Order == e.OldIndex ).FirstOrDefault();
             if ( movedItem != null )
             {
@@ -546,7 +555,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedTypeAttributes_Delete( object sender, RowEventArgs e )
         {
-            Guid attributeGuid = (Guid)e.RowKeyValue;
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
             var rockContext = new RockContext();
             AttributeService attributeService = new AttributeService( rockContext );
             Attribute attribute = attributeService.Get( attributeGuid );
@@ -564,7 +573,7 @@ namespace RockWeb.Blocks.Core
                 rockContext.SaveChanges();
             }
 
-            BindDefinedTypeAttributesGrid();            
+            BindDefinedTypeAttributesGrid();
         }
 
         /// <summary>
@@ -584,11 +593,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveDefinedTypeAttribute_Click( object sender, EventArgs e )
         {
-            var attribute = Rock.Attribute.Helper.SaveAttributeEdits( 
+            var attribute = Rock.Attribute.Helper.SaveAttributeEdits(
                 edtDefinedTypeAttributes, EntityTypeCache.Get( typeof( DefinedValue ) ).Id, "DefinedTypeId", hfDefinedTypeId.Value );
 
             // Attribute will be null if it was not valid
-            if (attribute == null)
+            if ( attribute == null )
             {
                 return;
             }
