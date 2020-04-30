@@ -256,6 +256,29 @@ namespace Rock.Mobile
                 .ToList();
 
             //
+            // Get all the defined values.
+            //
+            var definedTypeGuids = new[]
+            {
+                SystemGuid.DefinedType.LOCATION_COUNTRIES,
+                SystemGuid.DefinedType.LOCATION_ADDRESS_STATE
+            };
+            var definedValues = new List<MobileDefinedValue>();
+            foreach ( var definedTypeGuid in definedTypeGuids )
+            {
+                var definedType = DefinedTypeCache.Get( definedTypeGuid );
+                definedValues.AddRange( definedType.DefinedValues
+                    .Select( a => new MobileDefinedValue
+                    {
+                        Guid = a.Guid,
+                        DefinedTypeGuid = a.DefinedType.Guid,
+                        Value = a.Value,
+                        Description = a.Description,
+                        Attributes = GetMobileAttributeValues( a, a.Attributes.Select( b => b.Value ) )
+                    } ) );
+            }
+
+            //
             // Build CSS Styles
             //
             var settings = additionalSettings.DownhillSettings;
@@ -279,6 +302,7 @@ namespace Rock.Mobile
                 LoginPageGuid = site.LoginPageId.HasValue ? PageCache.Get( site.LoginPageId.Value )?.Guid : null,
                 ProfileDetailsPageGuid = additionalSettings.ProfilePageId.HasValue ? PageCache.Get( additionalSettings.ProfilePageId.Value )?.Guid : null,
                 PhoneFormats = phoneFormats,
+                DefinedValues = definedValues,
                 TabsOnBottomOnAndroid = additionalSettings.TabLocation == TabLocation.Bottom
             };
 
