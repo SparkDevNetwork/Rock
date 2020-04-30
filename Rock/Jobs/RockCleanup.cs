@@ -176,13 +176,13 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Match nameless person records", () => MatchNamelessPersonToRegularPerson() );
 
-            // ***********************
-            //  Final count and report
-            // ***********************
+            //// ***********************
+            ////  Final count and report
+            //// ***********************
 
             StringBuilder jobSummaryBuilder = new StringBuilder();
             jobSummaryBuilder.AppendLine( "Summary:" );
-            jobSummaryBuilder.AppendLine( "" );
+            jobSummaryBuilder.AppendLine( string.Empty );
             foreach ( var rockCleanupJobResult in rockCleanupJobResultList )
             {
                 jobSummaryBuilder.AppendLine( $"{GetFormattedResult( rockCleanupJobResult )}" );
@@ -939,8 +939,6 @@ namespace Rock.Jobs
         /// <returns></returns>
         private int CleanupUnusedInteractionSessions( List<int> interactionSessionIds )
         {
-            Debug.WriteLine( $"InteractionSessionIds to be checked for deletion: {interactionSessionIds.Count}" );
-
             if ( !interactionSessionIds.Any() )
             {
                 return 0;
@@ -978,9 +976,7 @@ namespace Rock.Jobs
                 .Queryable()
                 .Where( a => batchUnusedInteractionSessionsQuery.Any( u => u.Id == a.Id ) );
 
-            Debug.WriteLine( $"Starting BulkDelete of InteractionSessions" );
             totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
-            Debug.WriteLine( $"Ended BulkDelete of InteractionSessions" );
             return totalRowsDeleted;
         }
 
@@ -1744,7 +1740,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeout;
-
             
             var interactionService = new InteractionService( rockContext );
             var serviceJobService = new ServiceJobService( rockContext );
@@ -1767,7 +1762,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
              */
 
             // Un-comment this out when debugging, and make sure to comment it back out when checking in (see above note)
-            //minDate = DateTime.MinValue;
+            ////minDate = DateTime.MinValue;
 
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
 
