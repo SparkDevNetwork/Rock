@@ -29,7 +29,7 @@ namespace com.bemaservices.DoorControl.DSX.Utility
             RockContext rockContext = new RockContext();
             ReservationService reservationService = new ReservationService( rockContext );
             AttributeCache processDoorLock = AttributeCache.Get( config.ProcessDoorLockAttribute );
-            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ApprovalState == ReservationApprovalState.Approved ).WhereAttributeValue( rockContext, processDoorLock.Key, true.ToString() );
+            var qry = reservationService.Queryable().AsNoTracking().Where( r => r.ApprovalState == ReservationApprovalState.Approved );
 
             // Getting all reservations that will happen during our window
             var reservationSummaries = reservationService.GetReservationSummaries( qry, config.DateToSync, config.DateToSync.AddDays( 1 ).AddMinutes( -1 ) ).ToList();
@@ -39,8 +39,10 @@ namespace com.bemaservices.DoorControl.DSX.Utility
             foreach ( var reservation in reservations )
             {
                 reservation.LoadAttributes();
-                List<DoorLockOverride> scheduledLocks = GetScheduleLocks( reservation, config );
-                List<DoorLockOverride> overrideLocks = GetOverrideLocksForAReservation( reservation, config, rockContext );
+                var isHvacOnly = !reservation.GetAttributeValue( processDoorLock.Key ).AsBoolean();
+
+                List<DoorLockOverride> scheduledLocks = GetScheduleLocks( reservation, config, isHvacOnly );
+                List<DoorLockOverride> overrideLocks = GetOverrideLocksForAReservation( reservation, config, rockContext, isHvacOnly );
                 allLocks.AddRange( scheduledLocks );
                 allLocks.AddRange( overrideLocks );
             }
@@ -191,7 +193,7 @@ namespace com.bemaservices.DoorControl.DSX.Utility
 
             return overrideLocks;
         }
-        private static List<DoorLockOverride> GetOverrideLocksForAReservation( Reservation reservation, UpdateDoorLocks_Config config, RockContext rockContext )
+        private static List<DoorLockOverride> GetOverrideLocksForAReservation( Reservation reservation, UpdateDoorLocks_Config config, RockContext rockContext, bool isHvacOnly )
         {
             AttributeMatrixService attributeMatrixService = new AttributeMatrixService( rockContext );
             ScheduleService scheduleService = new ScheduleService( rockContext );
@@ -289,7 +291,8 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                                         ReservationId = reservation.Id,
                                         LocationId = location.Id,
                                         OverrideGroup = overrideGroup.Value,
-                                        RoomName = roomName
+                                        RoomName = roomName,
+                                        IsHvacOnly = isHvacOnly
                                     };
 
                                     overrideLocks.Add( newDoorOverride );
@@ -310,7 +313,7 @@ namespace com.bemaservices.DoorControl.DSX.Utility
         /// <param name="reservation">The reservation.</param>
         /// <param name="config">The job configuration.</param>
         /// <returns></returns>
-        private List<DoorLockOverride> GetScheduleLocks( Reservation reservation, UpdateDoorLocks_Config config )
+        private List<DoorLockOverride> GetScheduleLocks( Reservation reservation, UpdateDoorLocks_Config config, bool isHvacOnly )
         {
             List<DoorLockOverride> output = new List<DoorLockOverride>();
 
@@ -354,7 +357,8 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                             ReservationId = reservation.Id,
                             LocationId = location.Id,
                             OverrideGroup = overrideGroup.Value,
-                            RoomName = roomName
+                            RoomName = roomName,
+                            IsHvacOnly = isHvacOnly
                         };
 
                         output.Add( newDoorOverride );
@@ -451,7 +455,8 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                                                 ReservationId = null,
                                                 LocationId = locationObject.Id,
                                                 OverrideGroup = overrideGroup.Value,
-                                                RoomName = roomName
+                                                RoomName = roomName,
+                                                IsHvacOnly = false
                                             };
 
                                             output.Add( newDoorOverride );
@@ -524,6 +529,23 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                                                     var startDate = DateTime.Compare( sharedRoom.StartTime, doorLock.StartTime ) >= 0 ? sharedRoom.StartTime : doorLock.StartTime;
                                                     var endDate = DateTime.Compare( sharedRoom.EndTime, doorLock.EndTime ) <= 0 ? sharedRoom.EndTime : doorLock.EndTime;
 
+                                                    var isHvacOnly = false;
+                                                    if ( sharedRoom.IsHvacOnly.HasValue && doorLock.IsHvacOnly.HasValue )
+                                                    {
+                                                        isHvacOnly = sharedRoom.IsHvacOnly.Value && doorLock.IsHvacOnly.Value;
+                                                    }
+                                                    else if ( sharedRoom.IsHvacOnly.HasValue )
+                                                    {
+                                                        isHvacOnly = sharedRoom.IsHvacOnly.Value;
+                                                    }
+                                                    else if ( doorLock.IsHvacOnly.HasValue )
+                                                    {
+                                                        isHvacOnly = doorLock.IsHvacOnly.Value;
+                                                    }
+                                                    else
+                                                    {
+                                                        isHvacOnly = true;
+                                                    }
                                                     var newDoorOverride = new DoorLockOverride
                                                     {
                                                         StartTime = startDate,
@@ -532,7 +554,8 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                                                         EndTimeAction = DoorLockActions.Lock,
                                                         ReservationId = null,
                                                         LocationId = sharedLocationId.Value,
-                                                        OverrideGroup = overrideGroup.Value
+                                                        OverrideGroup = overrideGroup.Value,
+                                                        IsHvacOnly = isHvacOnly
                                                     };
 
                                                     if ( !output.Contains( newDoorOverride ) )
@@ -598,7 +621,8 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                             ReservationId = doorLock.ReservationId,
                             LocationId = doorLock.LocationId,
                             OverrideGroup = doorLock.OverrideGroup,
-                            RoomName = doorLock.RoomName
+                            RoomName = doorLock.RoomName,
+                            IsHvacOnly = doorLock.IsHvacOnly
                         };
 
                         // Adding if not in DB
@@ -662,11 +686,40 @@ namespace com.bemaservices.DoorControl.DSX.Utility
                     // Getting count of Rows deleted
                     rowsRemoved = sql.ExecuteNonQuery();
 
-                    // Clearing parameters so we can use the connection again
-                    sql.Parameters.Clear();
+                    PushDoorLocks( startTime, now, ref errorCount, ref totalRecords, sql );
+                    PushHvacOnlyRecords( startTime, now, ref errorCount, ref totalRecords, sql );
+                }
+                catch ( Exception ex )
+                {
+                    // Oh No! Something bad happened.
+                    sql.Connection.Close();
 
-                    // Setting query we will use for inserting records
-                    sql.CommandText = @"
+                    ExceptionLogService.LogException( ex );
+                    return "DSX: [ERROR] An error occured while connecting/querying DSX. Please check the Rock Exception Log for details";
+                }
+
+                // Closing DB Connection
+                sql.Connection.Close();
+
+                // Returning string with DSX results
+                if ( errorCount > 0 )
+                {
+                    return "DSX: [ERROR] Threw " + errorCount + " exception(s). Please check the Rock Exception Log for details";
+                }
+                else
+                {
+                    return "DSX: [SUCCESS] Purged " + rowsRemoved + " records and added " + totalRecords + " record into DSX";
+                }
+            }
+        }
+
+        private static void PushDoorLocks( DateTime startTime, DateTime now, ref int errorCount, ref int totalRecords, SqlCommand sql )
+        {
+            // Clearing parameters so we can use the connection again
+            sql.Parameters.Clear();
+
+            // Setting query we will use for inserting records
+            sql.CommandText = @"
                         DECLARE @NewId int;
                         INSERT INTO [dbo].[OvrSchedule] (
                             [PointID],
@@ -695,77 +748,106 @@ namespace com.bemaservices.DoorControl.DSX.Utility
 
                         INSERT INTO [dbo].[BacTalkRoomXref] (
                             [FKScheduleID],
-                            [RoomNumber]
+                            [RoomNumber],
+                            [StartDate],
+                            [StopDate]
                         ) VALUES (
                             @NewId,
-                            @LocationName
+                            @LocationName,
+                            @StartDate,
+                            @StopDate
                         )";
 
-                    RockContext rockContext = new RockContext();
-                    DoorLockService doorLockService = new DoorLockService( rockContext );
+            RockContext rockContext = new RockContext();
+            DoorLockService doorLockService = new DoorLockService( rockContext );
 
-                    var items = doorLockService.Queryable().AsNoTracking().Where( x => DbFunctions.TruncateTime( x.StartDateTime ) == startTime.Date && x.StartDateTime > now ).ToList();
-                    // Updating counter
-                    totalRecords = items.Count;
+            var items = doorLockService.Queryable().AsNoTracking().Where( x => x.IsHvacOnly == false && DbFunctions.TruncateTime( x.StartDateTime ) == startTime.Date && x.StartDateTime > now ).ToList();
+            // Updating counter
+            totalRecords += items.Count;
 
-                    // Debugging
-                    //ExceptionLogService.LogException( new Exception( "DEBUG: Total Records to be processed are: " + totalRecords ) );
+            // Debugging
+            //ExceptionLogService.LogException( new Exception( "DEBUG: Total Records to be processed are: " + totalRecords ) );
 
-                    // Looping through items and writing to DSX DB
-                    foreach ( var item in items )
-                    {
-                        // Starting with clean paramerters
-                        sql.Parameters.Clear();
+            // Looping through items and writing to DSX DB
+            foreach ( var item in items )
+            {
+                // Starting with clean paramerters
+                sql.Parameters.Clear();
 
-                        int startAction = ( int ) item.StartAction;
-                        int endAction = ( int ) item.EndAction;
+                int startAction = ( int ) item.StartAction;
+                int endAction = ( int ) item.EndAction;
 
-                        sql.Parameters.AddWithValue( "@PointID", item.OverrideGroup );
-                        sql.Parameters.AddWithValue( "@PointType", 2 );
-                        sql.Parameters.AddWithValue( "@StartCmd", startAction );
-                        sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
-                        sql.Parameters.AddWithValue( "@StopCmd", endAction );
-                        sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
-                        sql.Parameters.AddWithValue( "@Opr", "Rock " + RockDateTime.Now.ToShortDateTimeString() );
-                        sql.Parameters.AddWithValue( "@OprID", 29 );
-                        sql.Parameters.AddWithValue( "@Status", 1 );
-                        sql.Parameters.AddWithValue( "@LocationName", item.RoomName );
+                sql.Parameters.AddWithValue( "@PointID", item.OverrideGroup );
+                sql.Parameters.AddWithValue( "@PointType", 2 );
+                sql.Parameters.AddWithValue( "@StartCmd", startAction );
+                sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                sql.Parameters.AddWithValue( "@StopCmd", endAction );
+                sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                sql.Parameters.AddWithValue( "@Opr", "Rock " + RockDateTime.Now.ToShortDateTimeString() );
+                sql.Parameters.AddWithValue( "@OprID", 29 );
+                sql.Parameters.AddWithValue( "@Status", 1 );
+                sql.Parameters.AddWithValue( "@LocationName", item.RoomName );
 
-                        // Validating record was added
-                        if ( sql.ExecuteNonQuery() < 1 )
-                        {
-                            var innerException = new Exception( string.Format( "PointID: {0} @StartDate: {1} @StopDate: {2}", item.OverrideGroup, item.StartDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ), item.EndDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ) ) );
-                            var exception = new Exception( "A potiential error occurred while pushing configuration to DSX", innerException );
-                            ExceptionLogService.LogException( exception );
-
-                            errorCount++;
-                        }
-                    }
-                }
-                catch ( Exception ex )
+                // Validating record was added
+                if ( sql.ExecuteNonQuery() < 1 )
                 {
-                    // Oh No! Something bad happened.
-                    sql.Connection.Close();
+                    var innerException = new Exception( string.Format( "PointID: {0} @StartDate: {1} @StopDate: {2}", item.OverrideGroup, item.StartDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ), item.EndDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ) ) );
+                    var exception = new Exception( "A potiential error occurred while pushing configuration to DSX", innerException );
+                    ExceptionLogService.LogException( exception );
 
-                    ExceptionLogService.LogException( ex );
-                    return "DSX: [ERROR] An error occured while connecting/querying DSX. Please check the Rock Exception Log for details";
-                }
-
-                // Closing DB Connection
-                sql.Connection.Close();
-
-                // Returning string with DSX results
-                if ( errorCount > 0 )
-                {
-                    return "DSX: [ERROR] Threw " + errorCount + " exception(s). Please check the Rock Exception Log for details";
-                }
-                else
-                {
-                    return "DSX: [SUCCESS] Purged " + rowsRemoved + " records and added " + totalRecords + " record into DSX";
+                    errorCount++;
                 }
             }
         }
+        private static void PushHvacOnlyRecords( DateTime startTime, DateTime now, ref int errorCount, ref int totalRecords, SqlCommand sql )
+        {
+            // Clearing parameters so we can use the connection again
+            sql.Parameters.Clear();
 
+            // Setting query we will use for inserting records
+            sql.CommandText = @"
+                        INSERT INTO [dbo].[BacTalkRoomXref] (
+                            [FKScheduleID],
+                            [RoomNumber],
+                            [StartDate],
+                            [StopDate]
+                        ) VALUES (
+                            0,
+                            @LocationName,
+                            @StartDate,
+                            @StopDate
+                        )";
+
+            RockContext rockContext = new RockContext();
+            DoorLockService doorLockService = new DoorLockService( rockContext );
+
+            var items = doorLockService.Queryable().AsNoTracking().Where( x => x.IsHvacOnly == true && DbFunctions.TruncateTime( x.StartDateTime ) == startTime.Date && x.StartDateTime > now ).ToList();
+            // Updating counter
+            totalRecords += items.Count;
+
+            // Debugging
+            //ExceptionLogService.LogException( new Exception( "DEBUG: Total Records to be processed are: " + totalRecords ) );
+
+            // Looping through items and writing to DSX DB
+            foreach ( var item in items )
+            {
+                // Starting with clean paramerters
+                sql.Parameters.Clear();
+                
+                sql.Parameters.AddWithValue( "@LocationName", item.RoomName );                
+                sql.Parameters.AddWithValue( "@StartDate", item.StartDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                sql.Parameters.AddWithValue( "@StopDate", item.EndDateTime.ToUniversalTime().ToString( "yyyy-MM-dd HH:mm:ss.fff" ) );
+                // Validating record was added
+                if ( sql.ExecuteNonQuery() < 1 )
+                {
+                    var innerException = new Exception( string.Format( "LocationName: {0} @StartDate: {1} @StopDate: {2}", item.RoomName, item.StartDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ), item.EndDateTime.ToString( "yyyy-MM-dd HH:mm:ss.fff" ) ) );
+                    var exception = new Exception( "A potiential error occurred while pushing configuration to DSX", innerException );
+                    ExceptionLogService.LogException( exception );
+
+                    errorCount++;
+                }
+            }
+        }
     }
 
     public class UpdateDoorLocks_Config

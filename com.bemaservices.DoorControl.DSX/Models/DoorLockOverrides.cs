@@ -16,5 +16,6 @@ namespace com.bemaservices.DoorControl.DSX.Models
         public int? ReservationId { get; set; }
         public int OverrideGroup { get; set; }
         public string RoomName { get; set; }
+        public bool? IsHvacOnly { get; set; }
     }
 }
