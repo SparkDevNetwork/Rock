@@ -120,9 +120,11 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Expired Entity Set", () => CleanupExpiredEntitySets( dataMap ) );
 
-            //RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
+            RunCleanupTask( "Update median page load times", () => UpdateMedianPageLoadTimes() );
 
             RunCleanupTask( "Old Interaction Cleanup", () => CleanupOldInteractions( dataMap ) );
+
+            RunCleanupTask( "Orphaned InteractionSessions Cleanup", () => CleanupUnusedInteractionSessions() );
 
             RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
@@ -254,7 +256,6 @@ namespace Rock.Jobs
         /// <param name="cleanupMethod">The cleanup method.</param>
         private void RunCleanupTask( string cleanupTitle, Func<int> cleanupMethod )
         {
-            Debug.WriteLine( $"Starting task {cleanupTitle}" );
             var stopwatch = new Stopwatch();
             try
             {
@@ -272,6 +273,7 @@ namespace Rock.Jobs
             }
             catch ( Exception ex )
             {
+                stopwatch.Stop();
                 rockCleanupJobResultList.Add( new RockCleanupJobResult
                 {
                     Title = cleanupTitle,
@@ -279,11 +281,6 @@ namespace Rock.Jobs
                     Elapsed = stopwatch.Elapsed,
                     Exception = new RockCleanupException( cleanupTitle, ex )
                 } );
-            }
-            finally
-            {
-                stopwatch.Stop();
-                Debug.WriteLine( $"{cleanupTitle} took {stopwatch.ElapsedMilliseconds}ms" );
             }
         }
 
@@ -905,7 +902,6 @@ namespace Rock.Jobs
 
                     if ( retentionCutoffDateTime < System.Data.SqlTypes.SqlDateTime.MinValue.Value )
                     {
-                        Debug.WriteLine( $"InteractionChannel {interactionChannel.Name} keeps everything" );
                         continue;
                     }
 
@@ -922,9 +918,7 @@ namespace Rock.Jobs
 
                     interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
 
-                    Debug.WriteLine( $"Starting bulk delete of Interactions for InteractionChannel {interactionChannel.Name}" );
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
-                    Debug.WriteLine( $"Bulk deleted {totalRowsDeleted} Interactions for InteractionChannel {interactionChannel.Name}" );
                 }
             }
 
@@ -932,6 +926,8 @@ namespace Rock.Jobs
             {
                 RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
             }
+
+            CleanupUnusedInteractionSessions();
 
             return totalRowsDeleted;
         }
@@ -989,7 +985,7 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// This is the old code, use it to compare results.
+        /// This method will look for any orphaned InteractionSession rows and delete them.
         /// </summary>
         /// <returns></returns>
         private int CleanupUnusedInteractionSessions()
@@ -1000,6 +996,8 @@ namespace Rock.Jobs
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = new Rock.Data.RockContext() )
             {
+                interactionSessionRockContext.Database.CommandTimeout = commandTimeout;
+
                 var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable().Where( a => a.InteractionSessionId.HasValue );
                 var interactionSessionQueryable = new InteractionSessionService( interactionSessionRockContext ).Queryable();
 
@@ -1016,7 +1014,6 @@ namespace Rock.Jobs
                 totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
             }
 
-            Debug.WriteLine( $"Total InteractionSessions deleted: {totalRowsDeleted}" );
             return totalRowsDeleted;
         }
 
@@ -1779,36 +1776,20 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             // Get the most recent (up to) 100 interactions for each page
             var timesToServeByPage = new Dictionary<int, List<double>>();
 
-            var failedPageIds = new List<string>();
-            var stopWatch = new System.Diagnostics.Stopwatch();
-
             foreach ( var pageId in uniquePageIds )
             {
-                try
-                {
-                    stopWatch.Restart();
-                    var timesToServe = interactionService.Queryable().AsNoTracking()
-                        .Where( i => i.InteractionDateTime > minDate )
-                        .Where( i => i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
-                        .Where( i => i.InteractionComponent.EntityId.HasValue )
-                        .Where( i => i.InteractionTimeToServe.HasValue )
-                        .Where( i => i.InteractionComponent.EntityId == pageId )
-                        .OrderByDescending( i => i.InteractionDateTime )
-                        .Take( 100 )
-                        .Select( i => i.InteractionTimeToServe.Value )
-                        .OrderBy( i => i );
+                var timesToServe = interactionService.Queryable().AsNoTracking()
+                    .Where( i => i.InteractionDateTime > minDate )
+                    .Where( i => i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == channelMediumTypeValueId )
+                    .Where( i => i.InteractionComponent.EntityId.HasValue )
+                    .Where( i => i.InteractionTimeToServe.HasValue )
+                    .Where( i => i.InteractionComponent.EntityId == pageId )
+                    .OrderByDescending( i => i.InteractionDateTime )
+                    .Take( 100 )
+                    .Select( i => i.InteractionTimeToServe.Value )
+                    .OrderBy( i => i );
 
-                    timesToServeByPage.Add( pageId, timesToServe.ToList() );
-                }
-                catch ( Exception ex )
-                {
-                    failedPageIds.Add( $"{pageId}: {ex.Message}" );
-                }
-                finally
-                {
-                    stopWatch.Stop();
-                    Debug.WriteLine( $"UpdateMedianPageLoadTimes get data for pageId {pageId} took {stopWatch.ElapsedMilliseconds}ms" );
-                }
+                timesToServeByPage.Add( pageId, timesToServe.ToList() );
             }
 
             var pageContext = new RockContext();
@@ -1836,12 +1817,6 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
             }
 
             rockContext.SaveChanges();
-
-            if ( failedPageIds.Any() )
-            {
-                throw new Exception( String.Join( Environment.NewLine, failedPageIds ) );
-            }
-
             return pages.Count;
         }
 
