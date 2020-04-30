@@ -1040,6 +1040,71 @@ namespace Rock.DownhillCss
 .calendar-header {
     font-style: bold;
 }
+
+/* Forms Styles */
+^borderlessentry,
+^datepicker,
+^checkbox, 
+^picker,
+^entry, 
+^switch {
+    color: ?color-text;
+    font-size: default;
+}
+
+/* Field Titles */
+fieldgroupheader {
+    margin-bottom: 4;
+}
+
+fieldgroupheader .title,
+formfield .title {
+    color: ?color-text;
+    font-style: bold;
+    font-size: default;
+}
+
+fieldgroupheader.error .title,
+formfield.error .title {
+    color: ?color-danger;
+}
+
+formfield .title {
+    margin-right: 12;
+    line-height: 1;
+}
+
+/* Required Indicator */
+fieldgroupheader .required-indicator,
+formfield .required-indicator {
+    color: transparent;
+    width: 4;
+    height: 4;
+    border-radius: 2;
+}
+
+fieldgroupheader.required .required-indicator,
+formfield.required .required-indicator {
+    color: ?color-danger;
+}
+
+/* Field Stacks */
+fieldstack {
+    border-radius: 0;
+    border-color: ?color-secondary;
+    border-width: 1;
+    margin-bottom: 12;
+}
+
+/* Form Fields  */
+formfield {
+    padding: 12 12 12 6;
+}
+
+formfield .required-indicator {
+    margin-right: 4;
+}
+
 ";
     }
 }
