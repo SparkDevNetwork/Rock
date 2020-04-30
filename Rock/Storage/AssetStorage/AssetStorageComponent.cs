@@ -48,7 +48,7 @@ namespace Rock.Storage.AssetStorage
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetStorageComponent"/> class.
         /// </summary>
-        public AssetStorageComponent() : base(false)
+        public AssetStorageComponent() : base( false )
         {
             // Override default constructor of Component that loads attributes (not needed for asset storage components, needs to be done by each AssetStorageProvider)
         }
@@ -447,7 +447,7 @@ namespace Rock.Storage.AssetStorage
 
             // Get file extension and then trim any trailing spaces (to catch any nefarious stuff).
             string fileExtension = Path.GetExtension( fileName ).ToLower().TrimStart( new char[] { '.' } ).Trim();
-            
+
             if ( contentFileTypeWhiteList.Any() && !contentFileTypeWhiteList.Contains( fileExtension ) )
             {
                 return false;

@@ -121,7 +121,7 @@ namespace Rock.Storage.AssetStorage
             HasRequirementsFolder( asset );
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
             asset.Key = FixKey( asset, rootFolder );
-            
+
             string physicalFolder = FileSystemCompontHttpContext.Server.MapPath( asset.Key );
 
             try
@@ -359,7 +359,7 @@ namespace Rock.Storage.AssetStorage
         public override bool RenameAsset( AssetStorageProvider assetStorageProvider, Asset asset, string newName )
         {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, "RootFolder" ) );
-            
+
             if ( !IsFileTypeAllowedByBlackAndWhiteLists( newName ) )
             {
                 string ext = System.IO.Path.GetExtension( asset.Key );
@@ -524,7 +524,7 @@ namespace Rock.Storage.AssetStorage
             {
                 var fileInfos = baseDirectory.GetFiles( "*", searchOption );
 
-                foreach( var fileInfo in fileInfos )
+                foreach ( var fileInfo in fileInfos )
                 {
                     var asset = CreateAssetFromFileInfo( assetStorageProvider, fileInfo, true );
                     assets.Add( asset );
@@ -625,7 +625,7 @@ namespace Rock.Storage.AssetStorage
             return new Asset
             {
                 Name = directoryInfo.Name,
-                Key = ReverseMapPath( directoryInfo.FullName ) +"/",
+                Key = ReverseMapPath( directoryInfo.FullName ) + "/",
                 Uri = string.Empty,
                 Type = AssetType.Folder,
                 IconPath = "fa fa-folder",

@@ -159,6 +159,22 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override List<Asset> ListObjects( AssetStorageProvider assetStorageProvider, Asset asset )
         {
+            return ListObjects( assetStorageProvider, asset, false );
+        }
+
+        /// <summary>
+        /// Lists the objects. If Asset.Key is not provided then one is created using the RootFolder and Asset.Name.
+        /// If key and name are not provided then list all objects from the current RootFolder.
+        /// If a key is provided it MUST use the full path, RootFolder is not used, and Name is not used.
+        /// The last segment in Key is treated as a begins with search if it does not end in a '/'. e.g. to get all
+        /// files starting with 'mr' in folder 'pictures/cats/' set key = 'pictures/cats/mr' to get 'mr. whiskers'
+        /// and 'mrs. whiskers' but not 'fluffy' or 'carnage the attack cat'.
+        /// </summary>
+        /// <param name="assetStorageProvider"></param>
+        /// <param name="asset"></param>
+        /// <returns></returns>
+        private List<Asset> ListObjects( AssetStorageProvider assetStorageProvider, Asset asset, bool isRecursive )
+        {
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
 
@@ -179,7 +195,12 @@ namespace Rock.Storage.AssetStorage
                     response = client.ListObjectsV2( request );
                     foreach ( S3Object s3Object in response.S3Objects )
                     {
-                        if ( s3Object.Key == null )
+                        var objectName = s3Object.Key.Replace( request.Prefix, "" );
+                        var slashIndex = objectName.IndexOf( "/" );
+                        var isSubitem = slashIndex > 0 && slashIndex < ( objectName.Length - 1 );
+                        var ignoreItem = isSubitem || string.IsNullOrWhiteSpace( objectName );
+
+                        if ( s3Object.Key == null || ( !isRecursive && ignoreItem ) )
                         {
                             continue;
                         }
@@ -225,7 +246,7 @@ namespace Rock.Storage.AssetStorage
             string rootFolder = FixRootFolder( GetAttributeValue( assetStorageProvider, AttributeKeys.RootFolder ) );
             asset.Key = FixKey( asset, rootFolder );
             HasRequirementsFolder( asset );
-            
+
             try
             {
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
@@ -245,7 +266,7 @@ namespace Rock.Storage.AssetStorage
                     response = client.ListObjectsV2( request );
                     foreach ( S3Object s3Object in response.S3Objects )
                     {
-                        if ( s3Object.Key == null || s3Object.Key.EndsWith("/") )
+                        if ( s3Object.Key == null || s3Object.Key.EndsWith( "/" ) )
                         {
                             continue;
                         }
@@ -294,7 +315,7 @@ namespace Rock.Storage.AssetStorage
 
             asset.Key = FixKey( asset, rootFolder );
             HasRequirementsFolder( asset );
-            
+
             try
             {
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
@@ -332,7 +353,7 @@ namespace Rock.Storage.AssetStorage
         /// <param name="assetStorageProvider">The asset storage provider.</param>
         /// <param name="asset">The asset.</param>
         /// <returns></returns>
-        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset)
+        public override Asset GetObject( AssetStorageProvider assetStorageProvider, Asset asset )
         {
             return GetObject( assetStorageProvider, asset, true );
         }
@@ -356,7 +377,7 @@ namespace Rock.Storage.AssetStorage
 
                 GetObjectResponse response = client.GetObject( GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket ), asset.Key );
                 return CreateAssetFromGetObjectResponse( assetStorageProvider, response, client.Config.RegionEndpoint.SystemName, createThumbnail );
-                
+
             }
             catch ( Exception ex )
             {
@@ -477,7 +498,7 @@ namespace Rock.Storage.AssetStorage
                     DeleteImageThumbnail( assetStorageProvider, asset );
                     return true;
                 }
-                catch (Exception ex )
+                catch ( Exception ex )
                 {
                     ExceptionLogService.LogException( ex );
                     throw;
@@ -561,7 +582,7 @@ namespace Rock.Storage.AssetStorage
                 }
 
             }
-            catch( Exception ex )
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex );
                 throw;
@@ -583,11 +604,11 @@ namespace Rock.Storage.AssetStorage
             string bucketName = GetAttributeValue( assetStorageProvider, AttributeKeys.Bucket );
             asset.Key = FixKey( asset, rootFolder );
             HasRequirementsFolder( asset );
-            
+
             try
             {
                 AmazonS3Client client = GetAmazonS3Client( assetStorageProvider );
-                
+
                 ListObjectsV2Request request = new ListObjectsV2Request();
                 request.BucketName = bucketName;
                 request.Prefix = asset.Key == "/" ? rootFolder : asset.Key;
@@ -595,7 +616,7 @@ namespace Rock.Storage.AssetStorage
 
                 var assets = new List<Asset>();
                 var subFolders = new HashSet<string>();
-                
+
                 ListObjectsV2Response response;
 
                 // S3 will only return 1,000 keys per response and sets IsTruncated = true, the do-while loop will run and fetch keys until IsTruncated = false.
@@ -625,7 +646,7 @@ namespace Rock.Storage.AssetStorage
 
                     request.ContinuationToken = response.NextContinuationToken;
 
-                } while ( response.IsTruncated ) ;
+                } while ( response.IsTruncated );
 
                 // Add the subfolders to the asset collection
                 foreach ( string subFolder in subFolders )
@@ -672,7 +693,7 @@ namespace Rock.Storage.AssetStorage
             // Encode the name thumb path since it can contain special characters
             virtualThumbPath = virtualThumbPath.EncodeHtml();
 
-            if (File.Exists( physicalThumbPath ) )
+            if ( File.Exists( physicalThumbPath ) )
             {
                 var thumbLastModDate = File.GetLastWriteTimeUtc( physicalThumbPath );
                 if ( lastModifiedDateTime <= thumbLastModDate )
@@ -683,7 +704,7 @@ namespace Rock.Storage.AssetStorage
             }
 
             CreateImageThumbnail( assetStorageProvider, new Asset { Name = name, Key = assetKey, Type = AssetType.File }, physicalThumbPath, false );
-            
+
             return virtualThumbPath;
         }
 
@@ -720,7 +741,7 @@ namespace Rock.Storage.AssetStorage
             try
             {
                 // Get a list of objest with prefix
-                var assetDeleteList = ListObjects( assetStorageProvider, asset );
+                var assetDeleteList = ListObjects( assetStorageProvider, asset, true );
 
                 // Create the list of keys
                 foreach ( var assetDelete in assetDeleteList )
@@ -748,7 +769,7 @@ namespace Rock.Storage.AssetStorage
                 ExceptionLogService.LogException( ex );
                 throw;
             }
-            
+
         }
 
         /// <summary>
@@ -770,7 +791,7 @@ namespace Rock.Storage.AssetStorage
                 Key = s3Object.Key,
                 Uri = $"https://{s3Object.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = assetType,
-                IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail(assetStorageProvider, s3Object.Key, s3Object.LastModified ),
+                IconPath = assetType == AssetType.Folder ? string.Empty : GetThumbnail( assetStorageProvider, s3Object.Key, s3Object.LastModified ),
                 FileSize = s3Object.Size,
                 LastModifiedDateTime = s3Object.LastModified,
                 Description = s3Object.StorageClass == null ? string.Empty : s3Object.StorageClass.ToString(),
@@ -796,7 +817,7 @@ namespace Rock.Storage.AssetStorage
                 Key = response.Key,
                 Uri = $"https://{response.BucketName}.s3.{regionEndpoint}.amazonaws.com/{uriKey}",
                 Type = GetAssetType( response.Key ),
-                IconPath = createThumbnail == true ? GetThumbnail( assetStorageProvider, response.Key, response.LastModified) : GetFileTypeIcon( response.Key ),
+                IconPath = createThumbnail == true ? GetThumbnail( assetStorageProvider, response.Key, response.LastModified ) : GetFileTypeIcon( response.Key ),
                 FileSize = response.ResponseStream.Length,
                 LastModifiedDateTime = response.LastModified,
                 Description = response.StorageClass == null ? string.Empty : response.StorageClass.ToString(),
@@ -874,16 +895,16 @@ namespace Rock.Storage.AssetStorage
         {
             if ( asset.Key.IsNullOrWhiteSpace() && asset.Name.IsNullOrWhiteSpace() )
             {
-                asset.Key = "/";
+                asset.Key = rootFolder;
             }
             else if ( asset.Key.IsNullOrWhiteSpace() && asset.Name.IsNotNullOrWhiteSpace() )
             {
                 asset.Key = rootFolder + asset.Name;
             }
 
-            if ( asset.Type == AssetType.Folder )
+            if ( asset.Type == AssetType.Folder && !asset.Key.EndsWith( "/" ) )
             {
-                asset.Key = asset.Key.EndsWith( "/" ) == true ? asset.Key : asset.Key += "/";
+                asset.Key += "/";
             }
 
             return asset.Key;
@@ -896,7 +917,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         private AssetType GetAssetType( string name )
         {
-            if ( name.EndsWith("/"))
+            if ( name.EndsWith( "/" ) )
             {
                 return AssetType.Folder;
             }
