@@ -651,68 +651,69 @@ namespace Rock.DownhillCss
     color: ?color-primary;
     border-color: ?color-primary;
     border-width: 1;
+    background-color: transparent;
 }
 
 .btn.btn-link {
     color: ?color-primary;
     border-width: 0;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-primary {
     color: ?color-primary;
     border-color: ?color-primary;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-secondary {
     color: ?color-secondary;
     border-color: ?color-secondary;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-success {
     color: ?color-success;
     border-color: ?color-success;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-danger {
     color: ?color-danger;
     border-color: ?color-danger;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-warning {
     color: ?color-warning;
     border-color: ?color-warning;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-info {
     color: ?color-info;
     border-color: ?color-info;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-light {
     color: ?color-text;
     border-color: ?color-light;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-dark {
     color: ?color-dark;
     border-color: ?color-dark;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 /* Button Sizes */
