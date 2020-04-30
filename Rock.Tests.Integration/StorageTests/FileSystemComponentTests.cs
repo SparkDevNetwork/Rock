@@ -13,23 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
+
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Rock;
-using Rock.Storage;
-using Rock.Storage.AssetStorage;
-using Rock.Model;
 using Rock.Data;
-using Rock.Tests.Integration.Utility;
+using Rock.Model;
+using Rock.Storage.AssetStorage;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.StorageTests
@@ -393,9 +386,9 @@ namespace Rock.Tests.Integration.StorageTests
             var path = Path.GetDirectoryName( pathAndFile );
             var filename = Path.GetFileName( pathAndFile );
             Directory.CreateDirectory( path );
-            if ( ! string.IsNullOrEmpty( filename ) )
+            if ( !string.IsNullOrEmpty( filename ) )
             {
-                File.Create( pathAndFile ).Dispose();
+                File.Copy( @"TestData\test.jpg", pathAndFile, true );
             }
         }
 

@@ -630,6 +630,16 @@ namespace Rock.Storage.AssetStorage
                 asset.Key = rootFolder + asset.Name;
             }
 
+            if ( asset.Type == AssetType.Folder && !asset.Key.EndsWith( "/" ) )
+            {
+                asset.Key += "/";
+            }
+
+            if ( asset.Key == "/" )
+            {
+                asset.Key = "";
+            }
+
             return asset.Key;
         }
 
@@ -738,7 +748,12 @@ namespace Rock.Storage.AssetStorage
                         {
                             var directory = item as CloudBlobDirectory;
                             var responseAsset = TranslateDirectoryObjectToRockAsset( assetStorageProvider, directory );
-                            assets.Add( responseAsset );
+                            // Azure returns the current directory in the list along with its children.
+                            // We only want the children.
+                            if ( responseAsset.Key != $"{prefix}/" )
+                            {
+                                assets.Add( responseAsset );
+                            }
                         }
 
                         if ( item is CloudBlob && ( !assetTypeToList.HasValue || assetTypeToList == AssetType.File ) )

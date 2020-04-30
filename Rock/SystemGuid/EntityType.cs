@@ -398,6 +398,11 @@ namespace Rock.SystemGuid
         public const string STORAGE_ASSETSTORAGE_AZURECLOUD = "1576800F-BFD2-4309-A2C9-AE6DF6C0A1A5";
 
         /// <summary>
+        /// The asset storage 'Google Cloud Storage' component (Rock.Storage.AssetStorage.GoogleCloudStorageComponent)
+        /// </summary>
+        public const string STORAGE_ASSETSTORAGE_GOOGLECLOUD = "71344FA8-4210-4B6C-ADC1-9F63C4CA15CA";
+
+        /// <summary>
         /// The asset storage file-system component (Rock.Storage.AssetStorage.FileSystemComponent)
         /// </summary>
         public const string STORAGE_ASSETSTORAGE_FILESYSTEM = "FFEA94EA-D394-4C1A-A3AE-23E6C50F047A";

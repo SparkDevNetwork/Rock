@@ -25,17 +25,18 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.StorageTests
 {
     [TestClass]
-    public class AzureCloudComponentTests : BaseStorageComponentTests
+    public class GoogleCloudComponentTests : BaseStorageComponentTests
     {
-        static AzureCloudComponentTests()
+        static GoogleCloudComponentTests()
         {
-            _assetStorageProviderServiceGuid = "E7C23582-DB82-4912-AED0-7CDFBE3C452B".AsGuid();
+            _assetStorageProviderServiceGuid = "16B3AC07-1433-477B-9D27-2D20D926CAC8".AsGuid();
         }
 
         [ClassInitialize()]
         public static void ClassInit( TestContext context )
         {
             CreateAssetStorageProvider( context );
+
             ClassInitialize( context );
         }
 
@@ -49,14 +50,13 @@ namespace Rock.Tests.Integration.StorageTests
         {
             AssetStorageProvider assetStorageProvider = null;
 
-            var storageAccountName = testContext.Properties["AzureStorageAccountName"].ToStringSafe();
-            var accountAccessKey = testContext.Properties["AzureAccountAccessKey"].ToStringSafe();
-            var defaultContainerName = testContext.Properties["AzureDefaultContainerName"].ToStringSafe();
+            var bucketName = testContext.Properties["GoogleBucketName"].ToStringSafe();
+            var apiKey = testContext.Properties["GoogleServiceAccountJsonKey"].ToStringSafe();
 
-            // Just Assert Inconclusive if the AzureStorageAccountName and AzureAccountAccessKey are blank
-            if ( string.IsNullOrEmpty( storageAccountName ) || string.IsNullOrEmpty( accountAccessKey ) || string.IsNullOrEmpty( defaultContainerName ) )
+            // Just Assert Inconclusive if the GoogleStorageAccountName and GoogleAccountAccessKey are blank
+            if ( string.IsNullOrEmpty( bucketName ) || string.IsNullOrEmpty( apiKey ) )
             {
-                Assert.That.Inconclusive( $"The AzureStorageAccountName, AzureAccountAccessKey and AzureDefaultContainerName must be set up in your Test > Test Settings > Test Setting File in order to run these tests." );
+                Assert.That.Inconclusive( $"The GoogleStorageAccountName and GoogleAccountAccessKey must be set up in your Test > Test Settings > Test Setting File in order to run these tests." );
             }
 
             try
@@ -68,11 +68,11 @@ namespace Rock.Tests.Integration.StorageTests
 
                     if ( assetStorageProvider == null )
                     {
-                        // This is the registered Guid for the 'Rock.Storage.AssetStorage.AzureCloudStorageComponent' entity type
-                        var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_AZURECLOUD.AsGuid() );
+                        // This is the registered Guid for the 'Rock.Storage.AssetStorage.GoogleCloudStorageComponent' entity type
+                        var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.STORAGE_ASSETSTORAGE_GOOGLECLOUD.AsGuid() );
 
                         assetStorageProvider = new AssetStorageProvider();
-                        assetStorageProvider.Name = "TEST Azure Cloud AssetStorageProvider";
+                        assetStorageProvider.Name = "TEST Google Cloud AssetStorageProvider";
                         assetStorageProvider.Guid = _assetStorageProviderServiceGuid;
                         assetStorageProvider.EntityTypeId = entityType.Id;
                         assetStorageProvider.IsActive = true;
@@ -94,17 +94,15 @@ namespace Rock.Tests.Integration.StorageTests
                     }
 
                     assetStorageProvider.LoadAttributes();
-                    assetStorageProvider.SetAttributeValue( "StorageAccountName", storageAccountName );
-                    assetStorageProvider.SetAttributeValue( "AccountAccessKey", Encryption.EncryptString( accountAccessKey ) );
+                    assetStorageProvider.SetAttributeValue( "BucketName", bucketName );
+                    assetStorageProvider.SetAttributeValue( "ApiKey", Encryption.EncryptString( apiKey ) );
                     assetStorageProvider.SetAttributeValue( "RootFolder", testContext.Properties["UnitTestRootFolder"].ToStringSafe() );
-                    assetStorageProvider.SetAttributeValue( "DefaultContainerName", defaultContainerName );
-                    assetStorageProvider.SetAttributeValue( "CustomDomain", testContext.Properties["AzureCustomDomain"].ToStringSafe() );
                     assetStorageProvider.SaveAttributeValues( rockContext );
                 }
             }
             catch ( System.Exception ex )
             {
-                Assert.That.Inconclusive( $"Unable to get the Azure Cloud Asset Storage Provider ({ex.Message})." );
+                Assert.That.Inconclusive( $"Unable to get the Google Cloud Asset Storage Provider ({ex.Message})." );
             }
         }
 
