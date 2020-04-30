@@ -41,9 +41,21 @@ namespace RockWeb.Blocks.Core
     [Category( "Core" )]
     [Description( "List of dates that schedules are not active for an entire category." )]
 
-    [CategoryField("Category", "Optional Category to use (if not specified, query will be determined by query string).", false, "Rock.Model.Schedule", "", "", false, "", "", 0)]
+    [CategoryField( "Category",
+        Description = "Optional Category to use (if not specified, query will be determined by query string).",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.Schedule",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.Category )]
+
     public partial class ScheduleCategoryExclusionList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {
+        public static class AttributeKey
+        {
+            public const string Category = "Category";
+        }
+
         #region Fields
 
         int? _categoryId = null;
@@ -61,7 +73,7 @@ namespace RockWeb.Blocks.Core
         {
             base.OnInit( e );
 
-            var categoryGuid = GetAttributeValue( "Category" ).AsGuidOrNull();
+            var categoryGuid = GetAttributeValue( AttributeKey.Category ).AsGuidOrNull();
             if ( categoryGuid.HasValue )
             {
                 var category = CategoryCache.Get( categoryGuid.Value );
@@ -162,7 +174,7 @@ namespace RockWeb.Blocks.Core
 
                     service.Delete( exclusion );
                     rockContext.SaveChanges();
-                    
+
                     Rock.CheckIn.KioskDevice.Clear();
                 }
                 else
@@ -218,7 +230,7 @@ namespace RockWeb.Blocks.Core
                 exclusion = new ScheduleCategoryExclusion();
                 service.Add( exclusion );
             }
-        
+
             exclusion.CategoryId = _categoryId.Value;
             exclusion.Title = tbTitle.Text;
             if ( drpExclusion.LowerValue.HasValue )
@@ -233,7 +245,7 @@ namespace RockWeb.Blocks.Core
             if ( exclusion.IsValid )
             {
                 rockContext.SaveChanges();
-                
+
                 Rock.CheckIn.KioskDevice.Clear();
 
                 hfIdValue.Value = string.Empty;
