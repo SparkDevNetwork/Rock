@@ -310,14 +310,8 @@
     <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
     </Reference>
-    <Reference Include="Z.EntityFramework.Extensions, Version=4.0.64.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Z.EntityFramework.Extensions.4.0.64\lib\net45\Z.EntityFramework.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.12.20.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.12.20\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
-    </Reference>
-    <Reference Include="Z.Expressions.Eval, Version=3.1.10.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
-      <HintPath>..\packages\Z.Expressions.Eval.3.1.10\lib\net45\Z.Expressions.Eval.dll</HintPath>
+    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.8.6.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.8.6\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
