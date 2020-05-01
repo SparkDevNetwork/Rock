@@ -486,10 +486,10 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int BulkDelete<T>( IQueryable<T> queryable, int? batchSize = null ) where T : class
         {
-            return queryable.DeleteFromQuery( options =>
+            return queryable.Delete( d =>
             {
-                options.BatchTimeout = this.Database.CommandTimeout ?? 30;
-                options.BatchSize = batchSize ?? 0;
+                d.BatchSize = batchSize ?? 0;
+                d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
             } );
         }
 
