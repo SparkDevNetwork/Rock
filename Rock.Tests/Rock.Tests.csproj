@@ -93,6 +93,7 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Communications\TwilioTests.cs" />
+    <Compile Include="Communications\CommunicationTemplateTests.cs" />
     <Compile Include="ExternalSupportClasses\HttpSimulator.cs" />
     <Compile Include="ExternalSupportClasses\ReflectionHelper.cs" />
     <Compile Include="ExternalSupportClasses\SimulatedHttpRequest.cs" />
