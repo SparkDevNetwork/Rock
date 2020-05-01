@@ -13,19 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Text;
-using System.Text.RegularExpressions;
-
-using Humanizer;
-
 using Rock;
+using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -55,14 +50,7 @@ namespace RockWeb.Blocks.Communication
 
         #endregion Page Parameter Keys
 
-        private string _ItemFriendlyName = SystemCommunication.FriendlyTypeName;
-
         #region Control Methods
-
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -87,7 +75,14 @@ namespace RockWeb.Blocks.Communication
             }
             else
             {
-                CreateDynamicLavaValueControls();
+                // Create Controls for LavaFields Values
+                var lavaFieldsTemplateDictionary = hfLavaFieldsState.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+                // dictionary of keys and default values from Lava Fields KeyValueList control
+                var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
+
+                CommunicationTemplateHelper.CreateDynamicLavaValueControls( lavaFieldsTemplateDictionary, lavaFieldsDefaultDictionary, phLavaFieldsControls );
+                btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
             }
         }
 
@@ -104,7 +99,7 @@ namespace RockWeb.Blocks.Communication
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            string pageTitle = "New " + _ItemFriendlyName;
+            string pageTitle = "New " + SystemCommunication.FriendlyTypeName;
 
             // Get the CommunicationId if it is specified as a parameter.
             // If not found, check for the legacy parameter "EmailId".
@@ -241,7 +236,7 @@ namespace RockWeb.Blocks.Communication
                 pdAuditDetails.Visible = true;
                 pdAuditDetails.SetEntity( emailTemplate, ResolveRockUrl( "~" ) );
 
-                lActionTitle.Text = ActionTitle.Edit( _ItemFriendlyName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Edit( SystemCommunication.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
                 cbIsActive.Checked = emailTemplate.IsActive.GetValueOrDefault();
@@ -255,6 +250,8 @@ namespace RockWeb.Blocks.Communication
                 tbSubject.Text = emailTemplate.Subject;
                 ceEmailTemplate.Text = emailTemplate.Body;
 
+                nbTemplateHelp.InnerHtml = CommunicationTemplateHelper.GetTemplateHelp( false );
+
                 kvlMergeFields.Value = emailTemplate.LavaFields.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
 
                 hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( emailTemplate.Cc ) || !string.IsNullOrEmpty( emailTemplate.Bcc ) ).ToTrueFalse().ToLower();
@@ -266,7 +263,7 @@ namespace RockWeb.Blocks.Communication
             else
             {
                 pdAuditDetails.Visible = false;
-                lActionTitle.Text = ActionTitle.Add( _ItemFriendlyName ).FormatAsHtmlTitle();
+                lActionTitle.Text = ActionTitle.Add( SystemCommunication.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = 0.ToString();
 
                 cbIsActive.Checked = true;
@@ -313,7 +310,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( isEnabled )
             {
-                UpdatePreview();
+                UpdateControls();
             }
         }
 
@@ -343,32 +340,7 @@ namespace RockWeb.Blocks.Communication
                 imgTemplateLogo.BinaryFileId = null;
             }
 
-            var templateLogoHtmlMatch = new Regex( "<img[^>]+id=[',\"]template-logo[',\"].*src=[',\"]([^\">]+)[',\"].*>" ).Match( ceEmailTemplate.Text );
-
-            if ( templateLogoHtmlMatch.Groups.Count == 2 )
-            {
-                string originalTemplateLogoHtml = templateLogoHtmlMatch.Groups[0].Value;
-                string originalTemplateLogoSrc = templateLogoHtmlMatch.Groups[1].Value;
-
-                string newTemplateLogoSrc;
-
-                // if a template-logo exists in the template, update the src attribute to whatever the uploaded logo is (or set it to the placeholder if it is not set)
-                if ( imgTemplateLogo.BinaryFileId != null && imgTemplateLogo.BinaryFileId > 0 )
-                {
-                    newTemplateLogoSrc = ResolveRockUrl( string.Format( "~/GetImage.ashx?Id={0}", imgTemplateLogo.BinaryFileId ) );
-                }
-                else
-                {
-                    newTemplateLogoSrc = "/Content/EmailTemplates/placeholder-logo.png";
-                }
-
-                string newTemplateLogoHtml = originalTemplateLogoHtml.Replace( originalTemplateLogoSrc, newTemplateLogoSrc );
-
-                ceEmailTemplate.Text = ceEmailTemplate.Text.Replace( originalTemplateLogoHtml, newTemplateLogoHtml );
-            }
-
-
-            UpdatePreview();
+            UpdateControls();
         }
 
         /// <summary>
@@ -378,35 +350,10 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbUpdateLavaFields_Click( object sender, EventArgs e )
         {
-            // do an UpdatePreview to make sure the "lava-fields" tag exists if there are lava fields defined in the UI
-            UpdatePreview();
+            // do an UpdateControls to make sure the "lava-fields" tag exists if there are lava fields defined in the UI
+            UpdateControls();
 
-            var templateDoc = new HtmlAgilityPack.HtmlDocument();
-            templateDoc.LoadHtml( ceEmailTemplate.Text );
-
-            // take care of the lava fields stuff
-            var lavaFieldsNode = templateDoc.GetElementbyId( "lava-fields" );
-            var lavaFieldsTemplateDictionary = new Dictionary<string, string>();
-
-            if ( lavaFieldsNode != null )
-            {
-                var templateDocLavaFieldLines = lavaFieldsNode.InnerText.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
-
-                // dictionary of keys and values from the lava fields in the 'lava-fields' div
-                foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
-                {
-                    var match = Regex.Match( templateDocLavaFieldLine, @"{% assign (.*)\=(.*) %}" );
-                    if ( match.Groups.Count != 3 )
-                    {
-                        continue;
-                    }
-
-                    var key = match.Groups[1].Value.Trim().RemoveSpaces();
-                    var value = match.Groups[2].Value.Trim().Trim( '\'' );
-                    lavaFieldsTemplateDictionary.Add( key, value );
-                }
-            }
-
+            Dictionary<string, string> lavaFieldsTemplateDictionary = CommunicationTemplateHelper.GetLavaFieldsTemplateDictionaryFromTemplateHtml( ceEmailTemplate.Text );
             kvlMergeFields.Value = lavaFieldsTemplateDictionary.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
         }
 
@@ -438,158 +385,32 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnUpdateTemplatePreview_Click( object sender, EventArgs e )
         {
-            UpdatePreview();
+            UpdateControls();
         }
 
         /// <summary>
-        /// Updates the preview.
+        /// Updates the controls
         /// </summary>
-        protected void UpdatePreview()
+        private void UpdateControls()
         {
-            ShowTemplateLogoPicker();
+            pnlTemplateLogo.Visible = CommunicationTemplateHelper.HasTemplateLogo( ceEmailTemplate.Text );
+            imgTemplateLogo.Help = CommunicationTemplateHelper.GetTemplateLogoHelpText( ceEmailTemplate.Text );
 
-            var origHtml = ceEmailTemplate.Text;
-
-            /* We want to update the lava-fields node of template so that the lava-fields tag
-             * is in sync with the lava merge fields in kvlMergeFields (which comes from CommunicationTemplate.LavaFields).
-             * NOTE: We don't want to use a HTML Parser (like HtmlAgilityPack or AngleSharp),
-             * because this is a mix of html and lava, and html parsers will end up corrupting the html+lava
-             * So we'll..
-             * 1) Use regex to find the lava-fields html and remove it from the code editor text
-             * 2) make a new lava-fields tag with the values from kvlMergeFields (which comes from CommunicationTemplate.LavaFields)
-             * 3) Put thge new lava-fields html back into the code editor text in the head in a noscript tag
-             */
-
-            // First, we'll take out the lava-fields tag (could be a div or a noscript, depending on which version of Rock last edited it)
-            var lavaFieldsRegExLegacy = new System.Text.RegularExpressions.Regex( @"<div[\s\S]*lava-fields[\s\S]+?</div>([\n,\r])?", RegexOptions.Multiline );
-            var lavaFieldsHtmlLegacy = lavaFieldsRegExLegacy.Match( ceEmailTemplate.Text ).Value;
-            if ( lavaFieldsHtmlLegacy.IsNotNullOrWhiteSpace() )
-            {
-                ceEmailTemplate.Text = ceEmailTemplate.Text.Replace( lavaFieldsHtmlLegacy, string.Empty );
-            }
-
-            var lavaFieldsRegEx = new System.Text.RegularExpressions.Regex( @"<noscript[\s\S]*lava-fields[\s\S]+?</noscript>([\n,\r])?", RegexOptions.Multiline );
-            var lavaFieldsHtml = lavaFieldsRegEx.Match( ceEmailTemplate.Text ).Value;
-            if ( lavaFieldsHtml.IsNotNullOrWhiteSpace() )
-            {
-                ceEmailTemplate.Text = ceEmailTemplate.Text.Replace( lavaFieldsHtml, string.Empty );
-            }
-
-            var templateDocLavaFieldLines = lavaFieldsHtml.Split( new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries ).Select( a => a.Trim() ).Where( a => a.IsNotNullOrWhiteSpace() ).ToList();
+            var lavaFieldsTemplateDictionaryFromControls = hfLavaFieldsState.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+            lavaFieldsTemplateDictionaryFromControls = CommunicationTemplateHelper.UpdateLavaFieldsTemplateDictionaryFromControls( phLavaFieldsControls, lavaFieldsTemplateDictionaryFromControls );
 
             // dictionary of keys and default values from Lava Fields KeyValueList control
             var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
 
-            // add any new lava fields that were added to the KeyValueList editor
-            foreach ( var keyValue in lavaFieldsDefaultDictionary )
-            {
-                string pattern = string.Format( @"{{%\s+assign\s+{0}.*\s+=\s", keyValue.Key );
-                if ( !templateDocLavaFieldLines.Any( a => Regex.IsMatch( a, pattern ) ) )
-                {
-                    templateDocLavaFieldLines.Add( "{% assign " + keyValue.Key + " = '" + keyValue.Value + "' %}" );
-                }
-            }
+            ceEmailTemplate.Text = CommunicationTemplateHelper.GetUpdatedTemplateHtml( ceEmailTemplate.Text, imgTemplateLogo.BinaryFileId, lavaFieldsTemplateDictionaryFromControls, lavaFieldsDefaultDictionary );
 
-            // remove any lava fields that are not in the KeyValueList editor
-            foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines.ToList() )
-            {
-                var found = false;
-                foreach ( var keyValue in lavaFieldsDefaultDictionary )
-                {
-                    var pattern = string.Format( @"{{%\s+assign\s+{0}.*\s+=\s", keyValue.Key );
-                    if ( !Regex.IsMatch( templateDocLavaFieldLine, pattern ) )
-                    {
-                        continue;
-                    }
-
-                    found = true;
-                    break;
-                }
-
-                // if not found, delete it
-                if ( !found )
-                {
-                    templateDocLavaFieldLines.Remove( templateDocLavaFieldLine );
-                }
-            }
-
-            // dictionary of keys and values from the lava fields in the 'lava-fields' div
-            var lavaFieldsTemplateDictionary = new Dictionary<string, string>();
-            foreach ( var templateDocLavaFieldLine in templateDocLavaFieldLines )
-            {
-                var match = Regex.Match( templateDocLavaFieldLine, @"{% assign (.*)\=(.*) %}" );
-                if ( match.Groups.Count != 3 )
-                {
-                    continue;
-                }
-
-                var key = match.Groups[1].Value.Trim().RemoveSpaces();
-                var value = match.Groups[2].Value.Trim().Trim( '\'' );
-
-                // If this is a postback, there will be a control that holds the value
-                var lavaValueControl = phLavaFieldsControls.FindControl( "lavaValue_" + key ) as RockTextBox;
-                if ( lavaValueControl != null && lavaValueControl.Text != value )
-                {
-                    value = lavaValueControl.Text;
-                }
-
-                lavaFieldsTemplateDictionary.Add( key, value );
-            }
-
-            if ( lavaFieldsTemplateDictionary.Any() )
-            {
-                // there are 3 cases of where the <noscript> tag should be
-                // 1) There is a head tag (usually the case)
-                // 2) There is not head tag, but there is a html tag
-                // 3) There isn't a head or html tag
-                var headTagRegex = new Regex( "<head(.*?)>" );
-                var htmlTagRegex = new Regex( "<html(.*?)>" );
-
-                // indent the lava-fields tag if there is a head or html tag
-                string indent = string.Empty;
-                if ( headTagRegex.Match( ceEmailTemplate.Text ).Success || htmlTagRegex.Match( ceEmailTemplate.Text ).Success )
-                {
-                    indent = " ";
-                }
-
-                var lavaAssignsHtmlBuilder = new StringBuilder();
-                lavaAssignsHtmlBuilder.Append( indent + "<noscript id=\"lava-fields\">\n" );
-                lavaAssignsHtmlBuilder.Append( indent + "  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}\n" );
-                foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
-                {
-                    lavaAssignsHtmlBuilder.Append( indent + string.Format( "  {{% assign {0} = '{1}' %}}\n", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
-                }
-
-                lavaAssignsHtmlBuilder.Append( indent + "</noscript>" );
-                var lavaAssignsHtml = lavaAssignsHtmlBuilder.ToString();
-
-                if ( headTagRegex.Match( ceEmailTemplate.Text ).Success )
-                {
-                    ceEmailTemplate.Text = headTagRegex.Replace( ceEmailTemplate.Text, ( m ) =>
-                    {
-                        return m.Value.TrimEnd() + "\n" + lavaAssignsHtml;
-                    } );
-                }
-                else if ( htmlTagRegex.Match( ceEmailTemplate.Text ).Success )
-                {
-                    ceEmailTemplate.Text = htmlTagRegex.Replace( ceEmailTemplate.Text, ( m ) =>
-                    {
-                        return m.Value.TrimEnd() + "\n" + lavaAssignsHtml;
-                    } );
-                }
-                else
-                {
-                    ceEmailTemplate.Text = lavaAssignsHtml + "\n\n" + ceEmailTemplate.Text.TrimStart();
-                }
-            }
-
+            var lavaFieldsTemplateDictionary = CommunicationTemplateHelper.GetLavaFieldsTemplateDictionaryFromTemplateHtml( ceEmailTemplate.Text );
             hfLavaFieldsState.Value = lavaFieldsTemplateDictionary.ToJson( Newtonsoft.Json.Formatting.None );
-
-            CreateDynamicLavaValueControls();
+            btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
+            CommunicationTemplateHelper.CreateDynamicLavaValueControls( lavaFieldsTemplateDictionary, lavaFieldsDefaultDictionary, phLavaFieldsControls );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( RockPage );
-            var resolvedPreviewHtml = ceEmailTemplate.Text.ResolveMergeFields( mergeFields );
-
+            string resolvedPreviewHtml = ceEmailTemplate.Text.ResolveMergeFields( mergeFields );
             if ( cbCssInliningEnabled.Checked )
             {
                 resolvedPreviewHtml = resolvedPreviewHtml.ConvertHtmlStylesToInlineAttributes();
@@ -598,95 +419,6 @@ namespace RockWeb.Blocks.Communication
             ifEmailPreview.Attributes["srcdoc"] = resolvedPreviewHtml;
             pnlEmailPreview.Visible = true;
             upnlEmailPreview.Update();
-        }
-
-        /// <summary>
-        /// If there is a template logo node in the email template, show the template logo file uploader and set its help text
-        /// </summary>
-        private void ShowTemplateLogoPicker()
-        {
-            var templateDoc = new HtmlAgilityPack.HtmlDocument();
-            templateDoc.LoadHtml( ceEmailTemplate.Text );
-
-            // only show the template logo uploader if there is a div with id='template-logo'
-            // then update the help-message on the loader based on the template-logo's data-instructions attribute and width and height
-            // this gets called when the codeeditor is done initializing and when the cursor blurs out of the template code editor
-            HtmlAgilityPack.HtmlNode templateLogoNode = templateDoc.GetElementbyId( "template-logo" );
-
-            if ( templateLogoNode == null )
-            {
-                pnlTemplateLogo.Visible = false;
-                return;
-            }
-
-            pnlTemplateLogo.Visible = true;
-            string helpText = null;
-            if ( templateLogoNode.Attributes.Contains( "data-instructions" ) )
-            {
-                helpText = templateLogoNode.Attributes["data-instructions"].Value;
-            }
-
-            if ( helpText.IsNullOrWhiteSpace() )
-            {
-                helpText = "The Logo that can be included in the contents of the message";
-            }
-
-            string helpWidth = null;
-            string helpHeight = null;
-            if ( templateLogoNode.Attributes.Contains( "width" ) )
-            {
-                helpWidth = templateLogoNode.Attributes["width"].Value;
-            }
-
-            if ( templateLogoNode.Attributes.Contains( "height" ) )
-            {
-                helpHeight = templateLogoNode.Attributes["height"].Value;
-            }
-
-            if ( helpWidth.IsNotNullOrWhiteSpace() && helpHeight.IsNotNullOrWhiteSpace() )
-            {
-                helpText += string.Format( " (Image size: {0}px x {1}px)", helpWidth, helpHeight );
-            }
-
-            imgTemplateLogo.Help = helpText;
-        }
-
-        /// <summary>
-        /// Creates the dynamic lava value controls.
-        /// </summary>
-        private void CreateDynamicLavaValueControls()
-        {
-            // Create Controls for LavaFields Values
-            var lavaFieldsTemplateDictionary = hfLavaFieldsState.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
-
-            // dictionary of keys and default values from Lava Fields KeyValueList control
-            var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
-
-            phLavaFieldsControls.Controls.Clear();
-
-            btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
-
-            foreach ( var keyValue in lavaFieldsTemplateDictionary )
-            {
-                var lavaValueControl = keyValue.Key.EndsWith( "Color" ) ? new ColorPicker() : new RockTextBox() { CssClass = "input-width-lg" };
-
-                var rcwLavaValue = new RockControlWrapper();
-                phLavaFieldsControls.Controls.Add( rcwLavaValue );
-
-                rcwLavaValue.Label = keyValue.Key.SplitCase().Transform( To.TitleCase );
-                rcwLavaValue.ID = "rcwLavaValue_" + keyValue.Key;
-
-                lavaValueControl.ID = "lavaValue_" + keyValue.Key;
-                lavaValueControl.AddCssClass( "pull-left" );
-                lavaValueControl.Text = keyValue.Value;
-                rcwLavaValue.Controls.Add( lavaValueControl );
-
-                var btnRevertLavaValue = new Literal { ID = "btnRevertLavaValue_" + keyValue.Key };
-                var defaultValue = lavaFieldsDefaultDictionary.GetValueOrNull( keyValue.Key );
-                var visibility = keyValue.Value != defaultValue ? "visible" : "hidden";
-                btnRevertLavaValue.Text = string.Format( "<div class='btn js-revertlavavalue' title='Revert to default' data-value-control='{0}' data-default='{1}' style='visibility:{2}'><i class='fa fa-times'></i></div>", lavaValueControl.ClientID, defaultValue, visibility );
-                rcwLavaValue.Controls.Add( btnRevertLavaValue );
-            }
         }
 
         #endregion

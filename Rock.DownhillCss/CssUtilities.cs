@@ -651,68 +651,69 @@ namespace Rock.DownhillCss
     color: ?color-primary;
     border-color: ?color-primary;
     border-width: 1;
+    background-color: transparent;
 }
 
 .btn.btn-link {
     color: ?color-primary;
     border-width: 0;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-primary {
     color: ?color-primary;
     border-color: ?color-primary;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-secondary {
     color: ?color-secondary;
     border-color: ?color-secondary;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-success {
     color: ?color-success;
     border-color: ?color-success;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-danger {
     color: ?color-danger;
     border-color: ?color-danger;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-warning {
     color: ?color-warning;
     border-color: ?color-warning;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-info {
     color: ?color-info;
     border-color: ?color-info;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-light {
     color: ?color-text;
     border-color: ?color-light;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 .btn.btn-outline-dark {
     color: ?color-dark;
     border-color: ?color-dark;
     border-width: 1;
-    background-color: ?color-background;
+    background-color: transparent;
 }
 
 /* Button Sizes */
@@ -1020,6 +1021,110 @@ namespace Rock.DownhillCss
 .tablet .hero .hero-subtitle {
     font-size: 28;
 }
+
+.calendar-filter-panel {
+    margin-bottom: 5;
+}
+
+/* Calendar Classes */
+.calendar-filter {
+    padding: 8;
+    border-radius: ?radius-base;
+    background-color: ?color-gray-200;
+}
+
+.calendar-filter label,
+.calendar-filter icon {
+    color: ?color-text;
+    vertical-align: center;
+}
+.calendar-filter icon {
+    font-size: small;
+    margin-right: 6;
+}
+
+.calendar-toolbar {
+    padding: 12 16;
+    border-radius: ?radius-base;
+    background-color: ?color-primary;
+    margin-top: 0;
+}
+.calendar-toolbar .calendar-toolbar-currentmonth {
+    font-style: bold;
+    color: #ffffff;
+}
+.calendar-toolbar .calendar-toolbar-adjacentmonth {
+    color: rgba(255,255,255,0.5);
+}
+
+.calendar-header {
+    font-style: bold;
+}
+
+/* Forms Styles */
+^borderlessentry,
+^datepicker,
+^checkbox, 
+^picker,
+^entry, 
+^switch {
+    color: ?color-text;
+    font-size: default;
+}
+
+/* Field Titles */
+fieldgroupheader {
+    margin-bottom: 4;
+}
+
+fieldgroupheader .title,
+formfield .title {
+    color: ?color-text;
+    font-style: bold;
+    font-size: default;
+}
+
+fieldgroupheader.error .title,
+formfield.error .title {
+    color: ?color-danger;
+}
+
+formfield .title {
+    margin-right: 12;
+    line-height: 1;
+}
+
+/* Required Indicator */
+fieldgroupheader .required-indicator,
+formfield .required-indicator {
+    color: transparent;
+    width: 4;
+    height: 4;
+    border-radius: 2;
+}
+
+fieldgroupheader.required .required-indicator,
+formfield.required .required-indicator {
+    color: ?color-danger;
+}
+
+/* Field Stacks */
+fieldstack {
+    border-radius: 0;
+    border-color: ?color-secondary;
+    border-width: 1;
+    margin-bottom: 12;
+}
+
+/* Form Fields  */
+formfield {
+    padding: 12 12 12 6;
+}
+
+formfield .required-indicator {
+    margin-right: 4;
+}
+
 ";
     }
 }
