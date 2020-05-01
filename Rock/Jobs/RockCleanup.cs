@@ -927,8 +927,6 @@ namespace Rock.Jobs
                 RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
             }
 
-            CleanupUnusedInteractionSessions();
-
             return totalRowsDeleted;
         }
 
