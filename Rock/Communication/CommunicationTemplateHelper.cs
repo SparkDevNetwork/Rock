@@ -150,14 +150,14 @@ namespace Rock.Communication
              */
 
             // First, we'll take out the lava-fields tag (could be a div or a noscript, depending on which version of Rock last edited it)
-            var lavaFieldsRegExLegacy = new System.Text.RegularExpressions.Regex( @"<div[\s\S]*lava-fields[\s\S]+?</div>([\n,\r])?", RegexOptions.Multiline );
+            var lavaFieldsRegExLegacy = new System.Text.RegularExpressions.Regex( @"<div[\s\S]*lava-fields[\s\S]+?</div>?", RegexOptions.Multiline );
             var lavaFieldsHtmlLegacy = lavaFieldsRegExLegacy.Match( templateHtml ).Value;
             if ( lavaFieldsHtmlLegacy.IsNotNullOrWhiteSpace() )
             {
                 templateHtml = templateHtml.Replace( lavaFieldsHtmlLegacy, string.Empty );
             }
 
-            var lavaFieldsRegEx = new System.Text.RegularExpressions.Regex( @"<noscript[\s\S]*lava-fields[\s\S]+?</noscript>([\n,\r])?", RegexOptions.Multiline );
+            var lavaFieldsRegEx = new System.Text.RegularExpressions.Regex( @"<noscript[\s\S]*lava-fields[\s\S]+?</noscript>?", RegexOptions.Multiline );
             var lavaFieldsHtml = lavaFieldsRegEx.Match( templateHtml ).Value;
             if ( lavaFieldsHtml.IsNotNullOrWhiteSpace() )
             {
@@ -238,35 +238,28 @@ namespace Rock.Communication
             var headTagRegex = new Regex( "<head(.*?)>" );
             var htmlTagRegex = new Regex( "<html(.*?)>" );
 
-            // indent the lava-fields tag if there is a head or html tag
-            string indent = string.Empty;
-            if ( headTagRegex.Match( templateHtml ).Success || htmlTagRegex.Match( templateHtml ).Success )
-            {
-                indent = " ";
-            }
-
             var lavaAssignsHtmlBuilder = new StringBuilder();
-            lavaAssignsHtmlBuilder.Append( indent + "<noscript id=\"lava-fields\">\n" );
-            lavaAssignsHtmlBuilder.Append( indent + "  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}\n" );
+            lavaAssignsHtmlBuilder.Append( "<noscript id=\"lava-fields\">\n" );
+            lavaAssignsHtmlBuilder.Append( "  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}\n" );
             foreach ( var lavaFieldsTemplateItem in lavaFieldsTemplateDictionary )
             {
-                lavaAssignsHtmlBuilder.Append( indent + string.Format( "  {{% assign {0} = '{1}' %}}\n", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
+                lavaAssignsHtmlBuilder.Append( string.Format( "  {{% assign {0} = '{1}' %}}\n", lavaFieldsTemplateItem.Key, lavaFieldsTemplateItem.Value ) );
             }
 
-            lavaAssignsHtmlBuilder.Append( indent + "</noscript>" );
+            lavaAssignsHtmlBuilder.Append( "</noscript>" );
             var lavaAssignsHtml = lavaAssignsHtmlBuilder.ToString();
 
             if ( headTagRegex.Match( templateHtml ).Success )
             {
-                templateHtml = headTagRegex.Replace( templateHtml, ( m ) => { return m.Value.TrimEnd() + "\n" + lavaAssignsHtml; } );
+                templateHtml = headTagRegex.Replace( templateHtml, ( m ) => { return m.Value.TrimEnd() + lavaAssignsHtml; } );
             }
             else if ( htmlTagRegex.Match( templateHtml ).Success )
             {
-                templateHtml = htmlTagRegex.Replace( templateHtml, ( m ) => { return m.Value.TrimEnd() + "\n" + lavaAssignsHtml; } );
+                templateHtml = htmlTagRegex.Replace( templateHtml, ( m ) => { return m.Value.TrimEnd() + lavaAssignsHtml; } );
             }
             else
             {
-                templateHtml = lavaAssignsHtml + "\n\n" + templateHtml.TrimStart();
+                templateHtml = lavaAssignsHtml + "\n" + templateHtml.TrimStart();
             }
 
             return templateHtml;
