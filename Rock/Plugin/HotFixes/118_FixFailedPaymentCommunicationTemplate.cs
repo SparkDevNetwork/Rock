@@ -20,7 +20,7 @@ namespace Rock.Plugin.HotFixes
     /// Plug-in migration
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
-    [MigrationNumber( 117, "1.10.2" )]
+    [MigrationNumber( 118, "1.10.2" )]
     public class FixFailedPaymentCommunicationTemplate : Migration
     {
         /// <summary>

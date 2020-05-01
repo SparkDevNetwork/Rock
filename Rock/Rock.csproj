@@ -476,7 +476,7 @@
     <Compile Include="Utility\CampaignConnectionHelper.cs" />
     <Compile Include="Utility\ExtensionMethods\ICollectionExtensions.cs" />
     <Compile Include="Plugin\HotFixes\106_EnableLavaDefaultSetting.cs" />
-    <Compile Include="Plugin\HotFixes\117_FixFailedPaymentCommunicationTemplate.cs" />
+    <Compile Include="Plugin\HotFixes\118_FixFailedPaymentCommunicationTemplate.cs" />
     <Compile Include="Web\UI\RegistrationInstanceBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
