@@ -1,16 +1,21 @@
-﻿using Xunit;
+﻿using System.Collections.Generic;
 using Rock.Communication;
-using System.Collections.Generic;
+using Xunit;
 
 namespace Rock.Tests.Communications
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CommunicationTemplateTests
     {
+        /// <summary>
+        /// Should correctly update the 'Default' communication template when custom values for lava fields are set
+        /// </summary>
         [Fact]
-        public void TemplateEditor()
+        public void TemplateEditor_DefaultCommunicationTemplate()
         {
-            {
-                string defaultCommunicationTemplate = @"<!DOCTYPE html>
+            string defaultCommunicationTemplate = @"<!DOCTYPE html>
 <html>
 
 
@@ -441,24 +446,23 @@ namespace Rock.Tests.Communications
 
 
 </html>";
-                var defaultCommunicationTemplateLavaFieldsDefaultDictionary = @"{ ""headerBackgroundColor"":""#5e5e5e"",""linkColor"":""#2199e8"",""bodyBackgroundColor"":""#f3f3f3"",""textColor"":""#0a0a0a""}".FromJsonOrNull<Dictionary<string, string>>();
-                Dictionary<string, string> lavaFieldsTemplateDictionaryFromControls = new Dictionary<string, string>()
+            var defaultCommunicationTemplateLavaFieldsDefaultDictionary = @"{ ""headerBackgroundColor"":""#5e5e5e"",""linkColor"":""#2199e8"",""bodyBackgroundColor"":""#f3f3f3"",""textColor"":""#0a0a0a""}".FromJsonOrNull<Dictionary<string, string>>();
+            Dictionary<string, string> lavaFieldsTemplateDictionaryFromControls = new Dictionary<string, string>()
             {
                 { "headerBackgroundColor", "blue" }
             };
 
-                var expectedDefaultCommunicationTemplateOutput = @"<!DOCTYPE html>
+            var expectedDefaultCommunicationTemplateOutput = @"<!DOCTYPE html>
 <html>
 
 
-<head>
- <noscript id=""lava-fields"">
-   {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
-   {% assign headerBackgroundColor = 'blue' %}
-   {% assign linkColor = '#2199e8' %}
-   {% assign bodyBackgroundColor = '#f3f3f3' %}
-   {% assign textColor = '#0a0a0a' %}
- </noscript>
+<head><noscript id=""lava-fields"">
+  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
+  {% assign headerBackgroundColor = 'blue' %}
+  {% assign linkColor = '#2199e8' %}
+  {% assign bodyBackgroundColor = '#f3f3f3' %}
+  {% assign textColor = '#0a0a0a' %}
+</noscript>
   <meta http-equiv=""Content-Type"" content=""text/html; charset=utf-8"">
   <meta name=""viewport"" content=""width=device-width"">
   <title>My Basic Email Template Subject</title>
@@ -879,69 +883,145 @@ namespace Rock.Tests.Communications
 
 
 </html>";
-                var defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplate, 1, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
-                Assert.Equal( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
-            }
+            var defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplate, 1, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
+            Assert.Equal( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
 
+            // see if it still ok after running it again
+            defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplateOutput, 1, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
+            Assert.Equal( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
+        }
+
+        /// <summary>
+        /// Should correctly update the a very simple html doc when lava fields are defined in the UI
+        /// </summary>
+        [Fact]
+        public void TemplateEditor_SimpleHtml()
+        {
             /* simple html*/
             string originalTemplate = @"<html><head></head><body><body></html>";
             Dictionary<string, string> lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
             Dictionary<string, string> lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
-            string expectedOutput = @"<html><head>
- <noscript id=""lava-fields"">
-   {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
-   {% assign headerBackgroundColor = 'blue' %}
- </noscript></head><body><body></html>";
+            string expectedOutput = @"<html><head><noscript id=""lava-fields"">
+  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
+  {% assign headerBackgroundColor = 'blue' %}
+</noscript></head><body><body></html>";
 
             var actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
 
             Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
 
-
-            /* formatted simple html*/
-            originalTemplate =
-@"<html>
-  <head>
-  </head>
-  <body>
-  <body>
-</html>";
-            lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
-            lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
-            expectedOutput =
-@"<html>
-  <head>
- <noscript id=""lava-fields"">
-   {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
-   {% assign headerBackgroundColor = 'blue' %}
- </noscript>
-  </head>
-  <body>
-  <body>
-</html>";
-
-            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            // see if it still ok after running it again
+            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
             Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+        }
 
-            /* empty html*/
-            originalTemplate = "";
-            lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
-            lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
-
-            expectedOutput =
-@"<noscript id=""lava-fields"">
+        /// <summary>
+        /// Should correctly update the a formatted simple html doc when lava fields are defined in the UI
+        /// </summary>
+        [Fact]
+        public void TemplateEditor_FormattedSimpleHtml()
+        {
+            /* formatted simple html*/
+            string originalTemplate =
+            @"<html>
+  <head>
+  </head>
+  <body>
+  <body>
+</html>";
+            Dictionary<string, string> lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
+            Dictionary<string, string> lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
+            string expectedOutput =
+            @"<html>
+  <head><noscript id=""lava-fields"">
   {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
   {% assign headerBackgroundColor = 'blue' %}
 </noscript>
-
-";
-
-            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+  </head>
+  <body>
+  <body>
+</html>";
+            string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
             Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
 
+            // see if it still ok after running it again
+            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+        }
 
+        /// <summary>
+        /// Should correctly update the a formatted simple html doc when lava fields are defined in the UI
+        /// </summary>
+        [Fact]
+        public void TemplateEditor_FormattedSimpleHtmlWithMeta()
+        {
+            /* formatted simple html*/
+            string originalTemplate =
+            @"<html>
+  <head>
+    <meta http-equiv=""Content-Type"" content=""text/html; charset=utf-8"">
+    <meta name=""viewport"" content=""width=device-width"">
+    <title>My Test Template</title> 
+  </head>
+  <body>
+  <body>
+</html>";
+            Dictionary<string, string> lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
+            Dictionary<string, string> lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
+            string expectedOutput =
+            @"<html>
+  <head><noscript id=""lava-fields"">
+  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
+  {% assign headerBackgroundColor = 'blue' %}
+</noscript>
+    <meta http-equiv=""Content-Type"" content=""text/html; charset=utf-8"">
+    <meta name=""viewport"" content=""width=device-width"">
+    <title>My Test Template</title> 
+  </head>
+  <body>
+  <body>
+</html>";
+            string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+
+            // see if it still ok after running it again
+            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+        }
+
+        /// <summary>
+        /// Should correctly update an empty html doc when lava fields are defined in the UI
+        /// </summary>
+        [Fact]
+        public void TemplateEditor_EmptyHtml()
+        {
+            /* empty html*/
+            string originalTemplate = string.Empty;
+            Dictionary<string, string> lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
+            Dictionary<string, string> lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
+            string expectedOutput =
+            @"<noscript id=""lava-fields"">
+  {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
+  {% assign headerBackgroundColor = 'blue' %}
+</noscript>
+";
+            string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+
+            // see if it still ok after running it again
+            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+        }
+
+        /// <summary>
+        /// Should correctly update an html doc that has lava logic in it when lava fields are defined in the UI
+        /// </summary>
+        /// [Fact]
+        [Fact]
+        public void TemplateEditor_HasLavaLogic()
+        {
             /* already has lava html*/
-            originalTemplate =
+            string originalTemplate =
 @"{% if Person.NickName == 'Ted' %}
     Great Guy!
 {% elseif Person.NickName == 'Alisha' %}
@@ -949,15 +1029,14 @@ namespace Rock.Tests.Communications
 {% else %}
     Who are you?
 {% endif %}";
-            lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
-            lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
+            Dictionary<string, string> lavaFieldsDefaultDictionary = new Dictionary<string, string>() { { "headerBackgroundColor", "#5e5e5e" } };
+            Dictionary<string, string> lavaFieldsFromControls = new Dictionary<string, string>() { { "headerBackgroundColor", "blue" } };
 
-            expectedOutput =
+            string expectedOutput =
 @"<noscript id=""lava-fields"">
   {% comment %}  Lava Fields: Code-Generated from Template Editor {% endcomment %}
   {% assign headerBackgroundColor = 'blue' %}
 </noscript>
-
 {% if Person.NickName == 'Ted' %}
     Great Guy!
 {% elseif Person.NickName == 'Alisha' %}
@@ -966,7 +1045,11 @@ namespace Rock.Tests.Communications
     Who are you?
 {% endif %}";
 
-            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            string actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( originalTemplate, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
+            Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
+
+            // see if it still ok after running it again
+            actualOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( actualOutput, 1, lavaFieldsFromControls, lavaFieldsDefaultDictionary );
             Assert.Equal( expectedOutput.Replace( "\r\n", "\n" ), actualOutput.Replace( "\r\n", "\n" ) );
         }
     }
