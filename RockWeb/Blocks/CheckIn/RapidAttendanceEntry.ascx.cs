@@ -100,6 +100,7 @@ namespace RockWeb.Blocks.CheckIn
         EntityTypeQualifierColumn = "GroupTypeId",
         EntityTypeQualifierValue = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
+        AllowMultiple = true,
         Order = 1 )]
     [CodeEditorField(
         "Header Lava Template",
