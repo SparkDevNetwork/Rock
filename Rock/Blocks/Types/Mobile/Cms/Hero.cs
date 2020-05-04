@@ -83,13 +83,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.HorizontalTextAlign,
         Order = 6 )]
 
-    [TextField( "Title Color",
+    [ColorField( "Title Color",
         Description = "Will override the theme's hero title (.hero-title) color.",
         IsRequired = false,
         Key = AttributeKeys.TitleColor,
         Order = 7 )]
 
-    [TextField( "Subtitle Color",
+    [ColorField( "Subtitle Color",
         Description = "Will override the theme's hero subtitle (.hero-subtitle) color.",
         IsRequired = false,
         Key = AttributeKeys.SubtitleColor,
