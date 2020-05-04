@@ -651,7 +651,7 @@ ORDER BY [Text]",
                 if ( txtPassword.Text.IsNullOrWhiteSpace() )
                 {
                     nbAccountWarning.Title = "Missing Information";
-                    nbAccountWarning.Text = "You forget to enter the password. Password is required in order to create account.";
+                    nbAccountWarning.Text = "Please type a password. A password is required if you would like to create an account.";
                     nbAccountWarning.NotificationBoxType = NotificationBoxType.Danger;
                     nbAccountWarning.Visible = true;
                     return;
@@ -660,7 +660,7 @@ ORDER BY [Text]",
                 if ( txtUserName.Text.IsNullOrWhiteSpace() )
                 {
                     nbAccountWarning.Title = "Missing Information";
-                    nbAccountWarning.Text = "You forget to enter the password. Password is required in order to create account.";
+                    nbAccountWarning.Text = "Please type a username. A username is required if you would like to create an account.";
                     nbAccountWarning.NotificationBoxType = NotificationBoxType.Danger;
                     nbAccountWarning.Visible = true;
                     return;
@@ -669,7 +669,7 @@ ORDER BY [Text]",
                 if ( new UserLoginService( rockContext ).GetByUserName( txtUserName.Text ) != null )
                 {
                     nbAccountWarning.Title = "Invalid Username";
-                    nbAccountWarning.Text = "The selected Username is already being used.  Please select a different Username";
+                    nbAccountWarning.Text = "The selected username is already being used. Please select a different username.";
                     nbAccountWarning.NotificationBoxType = NotificationBoxType.Danger;
                     nbAccountWarning.Visible = true;
                     return;
