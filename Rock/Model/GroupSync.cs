@@ -114,6 +114,23 @@ namespace Rock.Model
         [DataMember]
         public bool AddUserAccountsDuringSync { get; set; }
 
+        /// <summary>
+        /// Gets or sets the schedule interval minutes.
+        /// </summary>
+        /// <value>
+        /// The schedule interval minutes.
+        /// </value>
+        [DataMember]
+        public int? ScheduleIntervalMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last refresh date time.
+        /// </summary>
+        /// <value>
+        /// The last refresh date time.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRefreshDateTime { get; set; }
         #endregion
 
         #region Virtual Properties

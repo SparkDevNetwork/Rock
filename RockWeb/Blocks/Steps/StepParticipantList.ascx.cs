@@ -126,6 +126,7 @@ namespace RockWeb.Blocks.Steps
             public const string DateStarted = "DateStarted";
             public const string DateCompleted = "DateCompleted";
             public const string Note = "Note";
+            public const string Campus = "Campus";
         }
 
         #endregion Filter Keys
@@ -362,6 +363,7 @@ namespace RockWeb.Blocks.Steps
             rFilter.SaveUserPreference( FilterKey.DateStarted, "Date Started", drpDateStarted.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.DateCompleted, "Date Completed", drpDateCompleted.DelimitedValues );
             rFilter.SaveUserPreference( FilterKey.Note, "Note", tbNote.Text );
+            rFilter.SaveUserPreference( FilterKey.Campus, "Campus", cpCampusFilter.SelectedCampusId.ToString() );
 
             // Save filter settings for custom attributes.
             if ( this.AvailableAttributes != null )
@@ -666,6 +668,7 @@ namespace RockWeb.Blocks.Steps
             tbFirstName.Text = rFilter.GetUserPreference( FilterKey.FirstName );
             tbLastName.Text = rFilter.GetUserPreference( FilterKey.LastName );
             tbNote.Text = rFilter.GetUserPreference( FilterKey.Note );
+            cpCampusFilter.SelectedCampusId = rFilter.GetUserPreference( FilterKey.Campus ).AsIntegerOrNull();
 
             string statusValue = rFilter.GetUserPreference( FilterKey.StepStatus );
             if ( !string.IsNullOrWhiteSpace( statusValue ) )
@@ -883,6 +886,16 @@ namespace RockWeb.Blocks.Steps
             rFilter.Visible = true;
             gSteps.Visible = true;
 
+            var campusCount = CampusCache.All().Count;
+            if (campusCount <= 1 )
+            {
+                var campusColumn = gSteps.ColumnsOfType<RockBoundField>().Where( a => a.DataField == "CampusName" ).FirstOrDefault();
+                if ( campusColumn != null )
+                {
+                    gSteps.Columns.Remove( campusColumn );
+                }
+            }
+
             lHeading.Text = string.Format( "{0} Steps", _stepType.Name );
 
             _fullNameField = gSteps.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lExportFullName" ).FirstOrDefault();
@@ -932,42 +945,40 @@ namespace RockWeb.Blocks.Steps
                 qry = qry.Where( m => statusIds.Contains( m.StepStatusId ?? 0 ) );
             }
 
-            if ( _stepType.HasEndDate )
+            // Filter By Start Date
+            var startDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateStarted.DelimitedValues );
+
+            if ( startDateRange.Start.HasValue )
             {
-                var startDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateStarted.DelimitedValues );
+                qry = qry.Where( m =>
+                    m.StartDateTime.HasValue &&
+                    m.StartDateTime.Value >= startDateRange.Start.Value );
+            }
 
-                if ( startDateRange.Start.HasValue )
-                {
-                    qry = qry.Where( m =>
-                        m.StartDateTime.HasValue &&
-                        m.StartDateTime.Value >= startDateRange.Start.Value );
-                }
-
-                if ( startDateRange.End.HasValue )
-                {
-                    var end = startDateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
-                    qry = qry.Where( m =>
-                        m.StartDateTime.HasValue &&
-                        m.StartDateTime.Value < end );
-                }
+            if ( startDateRange.End.HasValue )
+            {
+                var exclusiveEndDate = startDateRange.End.Value.Date.AddDays( 1 );
+                qry = qry.Where( m =>
+                    m.StartDateTime.HasValue &&
+                    m.StartDateTime.Value < exclusiveEndDate );
             }
 
             // Filter by Date Completed
-            var endDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateCompleted.DelimitedValues );
+            var completedDateRange = DateRangePicker.CalculateDateRangeFromDelimitedValues( drpDateCompleted.DelimitedValues );
 
-            if ( endDateRange.Start.HasValue )
+            if ( completedDateRange.Start.HasValue )
             {
                 qry = qry.Where( m =>
-                    m.EndDateTime.HasValue &&
-                    m.EndDateTime.Value >= endDateRange.Start.Value );
+                    m.CompletedDateTime.HasValue &&
+                    m.CompletedDateTime.Value >= completedDateRange.Start.Value );
             }
 
-            if ( endDateRange.End.HasValue )
+            if ( completedDateRange.End.HasValue )
             {
-                var end = endDateRange.End.Value.AddHours( 23 ).AddMinutes( 59 ).AddSeconds( 59 );
+                var exclusiveEndDate = completedDateRange.End.Value.Date.AddDays( 1 );
                 qry = qry.Where( m =>
-                    m.EndDateTime.HasValue &&
-                    m.EndDateTime.Value < end );
+                    m.CompletedDateTime.HasValue &&
+                    m.CompletedDateTime.Value < exclusiveEndDate );
             }
 
             // Filter by Note
@@ -975,6 +986,12 @@ namespace RockWeb.Blocks.Steps
             if ( !string.IsNullOrWhiteSpace( note ) )
             {
                 qry = qry.Where( m => m.Note.Contains( note ) );
+            }
+
+            var campusId = cpCampusFilter.SelectedCampusId;
+            if ( campusId != null )
+            {
+                qry = qry.Where( m => m.CampusId == campusId );
             }
 
             // Filter query by any configured attribute filters
@@ -1031,6 +1048,7 @@ namespace RockWeb.Blocks.Steps
                 StepStatusName = ( x.StepStatus == null ? "" : x.StepStatus.Name ),
                 IsCompleted = ( x.StepStatus == null ? false : x.StepStatus.IsCompleteStatus ),
                 Note = x.Note,
+                CampusName = x.Campus == null ? string.Empty : x.Campus.Name,
                 Person = x.PersonAlias.Person
             } );
 
@@ -1112,6 +1130,7 @@ namespace RockWeb.Blocks.Steps
             public string Note { get; set; }
 
             public Person Person { get; set; }
+            public string CampusName { get; set; }
         }
 
         #endregion

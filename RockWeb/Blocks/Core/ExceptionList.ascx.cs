@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -1509,7 +1510,7 @@ function(item) {
         /// <summary>
         /// Represents an item in the Exception List.
         /// </summary>
-        private class ExceptionLogViewModel : DotLiquid.Drop
+        private class ExceptionLogViewModel : RockDynamic
         {
             public int Id { get; set; }
             public string ExceptionTypeName { get; set; }
@@ -1522,6 +1523,38 @@ function(item) {
         #endregion
 
         #endregion
-    }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gExceptionList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        protected void gExceptionList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                ExceptionLogViewModel exceptionLogViewModel = e.Row.DataItem as ExceptionLogViewModel;
+                if ( exceptionLogViewModel == null )
+                {
+                    return;
+                }
+
+                var lDescription = e.Row.FindControl( "lDescription" ) as Literal;
+                if ( lDescription != null )
+                {
+                    var descriptionAsHtml = exceptionLogViewModel.Description.ConvertCrLfToHtmlBr();
+                    if ( descriptionAsHtml.Length > 255 )
+                    {
+                        // if over 255 chars, limit the height to 100px so we don't get a giant summary displayed in the grid
+                        // Also, we don't want to use .Truncate(255) since that could break any html that is in the LastStatusMessageAsHtml
+                        lDescription.Text = string.Format( "<div style='max-height:100px;overflow:hidden'>{0}</div>", descriptionAsHtml );
+                    }
+                    else
+                    {
+                        lDescription.Text = descriptionAsHtml;
+                    }
+                }
+            }
+        }
+    }
 }

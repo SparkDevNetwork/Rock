@@ -354,6 +354,12 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         protected virtual string GetFileTypeIcon( string fileName )
         {
+            // If this not running in an actual HttpContext (tests), just return the "other" icon.
+            if ( FileSystemCompontHttpContext == null )
+            {
+                return "/Assets/Icons/FileTypes/other.png";
+            }
+
             string fileExtension = Path.GetExtension( fileName ).TrimStart( '.' );
             string virtualThumbnailFilePath = string.Format( "/Assets/Icons/FileTypes/{0}.png", fileExtension );
             string thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
@@ -361,7 +367,7 @@ namespace Rock.Storage.AssetStorage
             if ( !File.Exists( thumbnailFilePath ) )
             {
                 virtualThumbnailFilePath = "/Assets/Icons/FileTypes/other.png";
-                thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
+                //thumbnailFilePath = FileSystemCompontHttpContext.Request.MapPath( virtualThumbnailFilePath );
             }
 
             return virtualThumbnailFilePath;

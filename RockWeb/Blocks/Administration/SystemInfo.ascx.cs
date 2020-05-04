@@ -32,6 +32,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Transactions;
+using Rock.Utility.Settings;
 using Rock.VersionInfo;
 using Rock.Web.Cache;
 
@@ -357,112 +358,24 @@ namespace RockWeb.Blocks.Administration
             return string.Format( "<span class='{0}'>{1}</span> out of {2} worker threads in use ({3}%)", badgeType, workerThreadsInUse, maxWorkerThreads, ( int ) Math.Ceiling( pctUse * 100 ) );
         }
 
+        /// <summary>
+        /// Get information about the current Rock database.
+        /// </summary>
+        /// <returns></returns>
         private string GetDbInfo()
         {
-            StringBuilder databaseResults = new StringBuilder();
-            
-            var csBuilder = new System.Data.Odbc.OdbcConnectionStringBuilder( ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString );
-            object dataSource, catalog = string.Empty;
-            if ( csBuilder.TryGetValue( "data source", out dataSource ) && csBuilder.TryGetValue( "initial catalog", out catalog ) )
-            {
-                _catalog = catalog.ToString();
-                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", catalog, dataSource ) );
-            }
+            var databaseResults = new StringBuilder();
 
             try
             {
-                // get database version
-                var reader = DbService.GetDataReader( "SELECT SERVERPROPERTY('productversion'), @@Version ", System.Data.CommandType.Text, null );
-                if ( reader != null )
-                {
-                    string version = "";
-                    string versionInfo = "";
-                    
-                    while ( reader.Read() )
-                    {
-                        version = reader[0].ToString();
-                        versionInfo = reader[1].ToString();
-                    }
+                _catalog = RockInstanceConfig.Database.DatabaseName;
 
-                    databaseResults.Append( string.Format( "<br />Database Version: {0}", versionInfo ) );
-                }
-
-                // Get database size.
-                try
-                {
-                    reader = DbService.GetDataReader( "SELECT CAST( SUM( size * 8.0 ) / 1024.0 AS NUMERIC( 12, 2 ) ) AS 'Db Size (MB)' FROM sys.database_files WHERE data_space_id = 1", System.Data.CommandType.Text, null );
-
-                    if ( reader != null )
-                    {
-                        reader.Read();
-
-                        string size = reader.GetValue(0).ToString();
-
-                        databaseResults.AppendFormat( "<br />Database Size: {0} MB", size );
-                    }
-                }
-                catch
-                {
-                    databaseResults.AppendFormat( "<br />Database Size: unable to determine" );
-                }
-
-                // Get log size.
-                try
-                {
-                    reader = DbService.GetDataReader( "SELECT CAST( (size * 8.0)/1024.0 AS NUMERIC(12,2) ) AS 'Db Log Size (MB)' FROM sys.database_files WHERE data_space_id = 0", System.Data.CommandType.Text, null );
-
-                    if ( reader != null )
-                    {
-                        reader.Read();
-
-                        string size = reader.GetValue( 0 ).ToString();
-
-                        databaseResults.AppendFormat( "<br />Log File Size: {0} MB", size );
-                    }
-                }
-                catch
-                {
-                    databaseResults.AppendFormat( "<br />Log File Size: unable to determine" );
-                }
-
-                // Get Recovery Model.
-                try
-                {
-                    reader = DbService.GetDataReader( "SELECT recovery_model_desc FROM sys.databases WHERE name = DB_NAME()", System.Data.CommandType.Text, null );
-
-                    if ( reader != null )
-                    {
-                        reader.Read();
-
-                        string modelName = reader.GetValue( 0 ).ToString();
-
-                        databaseResults.AppendFormat( "<br />Recovery Model: {0}", modelName );
-                    }
-                }
-                catch
-                {
-                    databaseResults.AppendFormat( "<br />Recovery Model: unable to determine" );
-                }
-
-                // Get database snapshot isolation details.
-                try
-                {
-                    reader = DbService.GetDataReader( string.Format( "SELECT [snapshot_isolation_state], [is_read_committed_snapshot_on] FROM sys.databases WHERE [name] = '{0}'", _catalog ), System.Data.CommandType.Text, null );
-                    if ( reader != null )
-                    {
-                        bool isAllowSnapshotIsolation = false;
-                        bool isReadCommittedSnapshopOn = true;
-
-                        while ( reader.Read() )
-                        {
-                            isAllowSnapshotIsolation = reader[0].ToStringSafe().AsBoolean();
-                            isReadCommittedSnapshopOn = reader[1].ToString().AsBoolean();
-                        }
-
-                        databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", isAllowSnapshotIsolation.ToYesNo(), isReadCommittedSnapshopOn.ToYesNo() );
-                    }
-                }
-                catch { }
+                databaseResults.Append( string.Format( "Name: {0} <br /> Server: {1}", _catalog, RockInstanceConfig.Database.ServerName ) );
+                databaseResults.Append( string.Format( "<br />Database Version: {0}", RockInstanceConfig.Database.Version ) );
+                databaseResults.AppendFormat( "<br />Database Size: {0} MB", RockInstanceConfig.Database.DatabaseSize );
+                databaseResults.AppendFormat( "<br />Log File Size: {0} MB", RockInstanceConfig.Database.LogSize );
+                databaseResults.AppendFormat( "<br />Recovery Model: {0}", RockInstanceConfig.Database.RecoverMode );
+                databaseResults.AppendFormat( "<br />Allow Snapshot Isolation: {0}<br />Is Read Committed Snapshot On: {1}<br />", RockInstanceConfig.Database.SnapshotIsolationAllowed.ToYesNo(), RockInstanceConfig.Database.ReadCommittedSnapshotEnabled.ToYesNo() );
             }
             catch ( Exception ex )
             {
@@ -577,9 +490,17 @@ namespace RockWeb.Blocks.Administration
         private void LoadPageDiagnostics()
         {
             lDatabase.Text = GetDbInfo();
-            lSystemDateTime.Text = DateTime.Now.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
-            lRockTime.Text = Rock.RockDateTime.Now.ToString( "G" ) + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset.ToString();
+
+            var systemDataTime = RockInstanceConfig.SystemDateTime;
+
+            lSystemDateTime.Text = systemDataTime.ToString( "G" ) + " " + systemDataTime.ToString( "zzz" );
+
+            var rockDateTime = RockInstanceConfig.RockDateTime;
+
+            lRockTime.Text = rockDateTime.ToString( "G" ) + " " + Rock.RockDateTime.OrgTimeZoneInfo.BaseUtcOffset.ToString();
+
             var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+
             if ( currentProcess != null && currentProcess.StartTime != null )
             {
                 lProcessStartTime.Text = currentProcess.StartTime.ToString( "G" ) + " " + DateTime.Now.ToString( "zzz" );
@@ -589,11 +510,8 @@ namespace RockWeb.Blocks.Administration
                 lProcessStartTime.Text = "-";
             }
 
-            try
-            {
-                lExecLocation.Text = Assembly.GetExecutingAssembly().Location + "<br/>" + HttpRuntime.AppDomainAppPath;
-            }
-            catch { }
+            lExecLocation.Text = Assembly.GetExecutingAssembly().Location + "<br/>" + RockInstanceConfig.PhysicalDirectory;
+
             lLastMigrations.Text = GetLastMigrationData();
 
             var transactionQueueStats = RockQueue.TransactionQueue.ToList().GroupBy( a => a.GetType().Name ).ToList().Select( a => new { Name = a.Key, Count = a.Count() } );

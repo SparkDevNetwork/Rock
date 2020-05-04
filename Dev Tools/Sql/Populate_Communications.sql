@@ -2,12 +2,18 @@ SET NOCOUNT ON
 
 ----------------------------------------------
 -- README
--- Adds 250,000 sample communications (takes a long time, 20+ minutes)
+-- Adds 25000 sample Communications with an avg of 8 Communication Recipients
+-- So this end up with around 200000 CommunicationRecipient records
+-- It could take a couple of minutes to run this script
+-- This generates mostly garbage data, so it is really only useful for performance testing
 ----------------------------------------------
 DECLARE @recipientPersonAliasId INT
 	,@senderPersonAliasId INT
 	,@communicationCounter INT = 0
-	,@maxCommunicationCount INT = 250000
+	,@maxCommunicationCount INT = 25000
+
+    -- it does a batch communications around 5% of the time, and then a random number of recipients (up to 500) for each batch communication
+    ,@maxCommunicationRecipientBatchCount INT = 500
 	,@maxPersonAliasIdForCommunications INT = (
 		SELECT max(Id)
 		FROM (
@@ -24,6 +30,7 @@ DECLARE @recipientPersonAliasId INT
 	,@mediumEntityTypeId INT
     ,@mediumEntityTypeName NVARCHAR(max)
     ,@transportEntityTypeId int
+    ,@transportEntityTypeName nvarchar(max)
 	,@yearsBack INT = 4
 	,@isbulk BIT
 	,@communicationStatus INT = 0
@@ -36,8 +43,10 @@ declare
 DECLARE @daysBack INT = @yearsBack * 366
 
 BEGIN
-	--begin transaction
-	/*
+
+/*
+ select count(*) from Communication
+ select count(*) from CommunicationRecipient
  delete [CommunicationRecipient]
  delete [Communication]
 */
@@ -99,12 +108,12 @@ BEGIN
 		ORDER BY newid()
 
         if (@mediumEntityTypeName like '%.Sms') begin
-            SELECT TOP 1 @transportEntityTypeId = id
+            SELECT TOP 1 @transportEntityTypeId = id, @transportEntityTypeName = [Name]
 		    FROM EntityType
 		    WHERE Name LIKE 'Rock.Communication.Transport.Twilio'
 		    ORDER BY newid()
         end else begin
-            SELECT TOP 1 @transportEntityTypeId = id
+            SELECT TOP 1 @transportEntityTypeId = id, @transportEntityTypeName = [Name]
 		    FROM EntityType
 		    WHERE Name LIKE 'Rock.Communication.Transport%'
 		    ORDER BY newid()
@@ -178,29 +187,34 @@ BEGIN
 				,[ResponseCode]
 				,[PersonAliasId]
                 ,[MediumEntityTypeId]
+                ,[SentMessage]
 				)
 			VALUES (
 				@communicationId
-				,ROUND(5 * RAND(), 0)
-				,NULL
-				,NULL
+				,ROUND(5 * RAND(), 0) -- [Status]
+				,NULL -- [StatusNote]
+				,CONCAT(newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid()) -- [AdditionalMergeValuesJson]
 				,newid()
-				,@communicationDateTime
-				,@communicationDateTime
+				,@communicationDateTime -- CreatedDateTime
+				,@communicationDateTime -- ModifiedDateTIme
+				,NULL -- [CreatedByPersonAliasId]
+				,NULL -- [ModifiedByPersonAliasId]
+				,DATEADD(day, 5, @communicationDateTime) -- [OpenedDateTime]
+				,NULL --OpenedClient
+				,NULL -- ForeignId
+				,@transportEntityTypeName
 				,NULL
-				,NULL
-				,DATEADD(day, 5, @communicationDateTime)
-				,NULL
-				,NULL
-				,NULL
-				,NULL
-				,NULL
+				,ABS(CHECKSUM(NewId())) % 99999 -- ResponseCode
 				,@recipientPersonAliasId
                 ,@mediumEntityTypeId
+                ,CONCAT(newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid()) -- [SentMessage]
 				)
 		END
 		ELSE
 		BEGIN
+            -- get a random number of recipients between 1 and @maxCommunicationRecipientBatchCount, but have it tend to be on the lower side
+            declare @recipientCount int = round(SQUARE(rand() * SQRT(@maxCommunicationRecipientBatchCount)), 0);
+
 			INSERT INTO [dbo].[CommunicationRecipient] (
 				[CommunicationId]
 				,[Status]
@@ -218,8 +232,10 @@ BEGIN
 				,[UniqueMessageId]
 				,[ResponseCode]
 				,[PersonAliasId]
+                ,[MediumEntityTypeId]
+                ,[SentMessage]
 				)
-			SELECT TOP 40 @communicationId
+			SELECT top (@recipientCount) @communicationId
 				,ROUND(5 * RAND(), 0)
 				,NULL
 				,NULL
@@ -231,23 +247,25 @@ BEGIN
 				,DATEADD(day, 5, @communicationDateTime)
 				,NULL
 				,NULL
+				, @transportEntityTypeName
 				,NULL
-				,NULL
-				,NULL
+				,ABS(CHECKSUM(NewId())) % 99999 -- ResponseCode
 				,Id
-			FROM PersonAlias
-			ORDER BY newid()
+                ,@mediumEntityTypeId
+                ,CONCAT(newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid(), newid())
+			FROM PersonAlias tablesample( 2500 rows)
 		END
 
-		DECLARE @messageKey NVARCHAR(11) = (
-				SELECT TOP 1 CONCAT (
-						isnull(CountryCode, 1)
-						,Number
-						)
-				FROM PhoneNumber
-				WHERE IsMessagingEnabled = 1
-				ORDER BY newid()
-				)
+		DECLARE @messageKey NVARCHAR(11)
+        
+        if @mediumEntityTypeName like '%.Sms' begin
+			select top 1 @messageKey = FullNumber
+			FROM PhoneNumber tablesample(10 percent)
+			WHERE IsMessagingEnabled = 1
+        end
+        else begin
+            set @messageKey =  ''
+        end
 
 		INSERT INTO [dbo].[CommunicationResponse] (
 			[MessageKey]
@@ -277,8 +295,17 @@ BEGIN
 			,NEWID()
 			)
 
-		SET @communicationCounter += 1;
+        if (@communicationCounter % 50 = 0)
+		begin
+  		  print @communicationCounter  
+        end
+
+        SET @communicationCounter += 1;
+        
 		SET @communicationDateTime = DATEADD(ss, (86000 * @daysBack / @maxCommunicationCount), @communicationDateTime);
 	END
-			--commit transaction
 END;
+
+select count(*) [Total Communications] from Communication 
+select count(*) [Total Communication Recipients] from CommunicationRecipient
+

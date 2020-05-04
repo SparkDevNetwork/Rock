@@ -370,6 +370,8 @@ namespace RockWeb.Blocks.Steps
             step.EndDateTime = stepType.HasEndDate ? rdpEndDate.SelectedDate : null;
             step.StepStatusId = rsspStatus.SelectedValueAsId();
 
+            step.CampusId = cpCampus.SelectedCampusId;
+
             // Update the completed date time, which is based on the start, end, and status
             if ( !step.StepStatusId.HasValue )
             {
@@ -467,6 +469,15 @@ namespace RockWeb.Blocks.Steps
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Gets a flag indicating if the user can edit the current record.
+        /// </summary>
+        /// <returns></returns>
+        private bool CanEdit()
+        {
+            return UserCanAdministrate && _step != null;
+        }
 
         /// <summary>
         /// Sets the edit mode.
@@ -579,6 +590,7 @@ namespace RockWeb.Blocks.Steps
                 rdpStartDate.SelectedDate = step.StartDateTime;
                 rdpEndDate.SelectedDate = step.EndDateTime;
                 rsspStatus.SelectedValue = step.StepStatusId.ToStringSafe();
+                cpCampus.SelectedCampusId = step.CampusId;
             }
 
             BuildDynamicControls( true );
@@ -637,6 +649,12 @@ namespace RockWeb.Blocks.Steps
 
             descriptionListMain.Add( "Person", step.PersonAlias.Person.FullName );
 
+            var campusCount = CampusCache.All().Count;
+            if ( campusCount > 1 )
+            {
+                descriptionListMain.Add( "Campus", step.Campus == null ? string.Empty : step.Campus.Name );
+            }
+
             if ( stepType.HasEndDate )
             {
                 descriptionListMain.Add( "Start Date", step.StartDateTime, "d" );
@@ -655,6 +673,12 @@ namespace RockWeb.Blocks.Steps
             BuildDynamicControls( false );
 
             BindWorkflows();
+
+            // Set the available actions according to current user permissions.
+            var canEdit = CanEdit();
+
+            btnEdit.Visible = canEdit;
+            btnDelete.Visible = canEdit;
         }
 
         /// <summary>

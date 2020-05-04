@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
@@ -27,8 +28,11 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Job to close workflows
+    /// This job closes workflows.
     /// </summary>
+    [DisplayName( "Complete Workflows" )]
+    [Description( "This job closes workflows." )]
+
     [WorkflowTypeField("Workflow Types", "The type of workflows to close.", true, true, order: 0 )]
     [TextField("Close Status", "The status to set the workflow to when closed.", true, "Completed", order: 1)]
     [IntegerField("Expiration Age", "The age in minutes that a workflow needs to be in order to close them.", false, order: 2)]
