@@ -682,8 +682,6 @@ namespace Rock.Jobs
         /// </summary>
         private int CleanUpWorkflows( JobDataMap dataMap )
         {
-            throw new Exception( "Kaboomo" );
-
             int totalRowsDeleted = 0;
             var workflowContext = new RockContext();
             workflowContext.Database.CommandTimeout = commandTimeout;
