@@ -103,9 +103,11 @@
 .modal.modal-overflow {
   top: @grid-gutter-width;
   margin-bottom: @grid-gutter-width;
+}
 
-  @supports (-webkit-overflow-scrolling: touch) {
-    // CSS specific to iOS devices
+@supports (-webkit-overflow-scrolling: touch) {
+  // CSS specific to iOS devices
+  .modal.modal-overflow {
     top: 1%;
     height: ~"calc(100% - 1px)" !important;
   }
