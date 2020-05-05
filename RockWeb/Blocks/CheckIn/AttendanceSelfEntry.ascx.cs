@@ -535,7 +535,11 @@ ORDER BY [Text]",
             {
                 var personGuid = e.CommandArgument.ToString().AsGuid();
                 OtherWatchers.RemoveAll( a => a.Guid == personGuid );
+                BindRelationDropDown();
+                ddlRelation_SelectedIndexChanged( null, null );
+                BindCurrentlyListed();
             }
+
         }
 
         /// <summary>
