@@ -126,6 +126,10 @@ namespace com.bemaservices.OpenConnectionsDigest.Migrations
 
             // Create the new Rock Job
             Sql( string.Format( @"
+                DELETE
+                FROM [ServiceJob]
+                Where [Guid] = '{0}'
+
 			    INSERT INTO ServiceJob
 			    (
 				    IsSystem
