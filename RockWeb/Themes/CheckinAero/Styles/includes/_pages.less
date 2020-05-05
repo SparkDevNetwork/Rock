@@ -1,0 +1,142 @@
+// Checkin Header
+.checkin-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+  padding: 0;
+  margin: 10px 0 30px 0;
+  text-align: center;
+
+  h1{
+    padding: 0;
+    margin: 0;
+    font-size: @font-size-h1;
+    font-weight: 900;
+  }
+
+  .checkin-sub-title {
+    display: block;
+    margin-top: 0;
+    font-size: 20px;
+    font-weight: 400;
+    color: #fff;
+
+    &:empty {
+      display: none;
+    }
+  }
+}
+
+// Checkin Footer
+.checkin-footer {
+  position: inherit;
+  height: 90px;
+  padding: 0;
+  margin: 0;
+
+  .location-select &,
+  .family-select & {
+    height: 0;
+  }
+
+  .checkin-actions {
+    .btn-cancel,
+    .btn-back {
+      position: absolute;
+      top: 10px;
+      width: 60px;
+      height: 60px;
+      padding: 0;
+      font-size: 0;
+      line-height: 56px;
+      color: #fff;
+      background: rgba(255, 255, 255, .3);
+      border: 1px solid #cbd5e0;
+      border-radius: 50%;
+
+      &::before {
+        font-family: @fa-font-face;
+        font-size: 20px;
+        font-weight: @fa-theme-weight;
+      }
+    }
+
+    .btn-back {
+      left: 10px;
+      &::before {
+        content: @fa-var-chevron-left;
+      }
+    }
+
+    .btn-cancel {
+      right: 10px;
+      &::before {
+        content: @fa-var-times;
+      }
+    }
+  }
+}
+
+.checkin-footer .checkin-actions .btn-primary,
+.group-type-select .btn-primary { // Room Disabled
+  position: absolute;
+  right: 100px;
+  bottom: 24px;
+  left: 100px;
+  z-index: 100;
+  padding: 14px 26px;
+  font-size: 24px;
+  font-weight: @checkin-button-text-weight;
+  background: @primary-button-background;
+  border-radius: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, .05), 0 10px 15px rgba(0, 0, 0, .1);
+}
+
+.sheet-background,
+.block-instance,
+.kioskmanager-locations,
+.js-manager-login {
+  &::before {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    content: "";
+    background: @sheet-background;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 0 6px rgba(0, 0, 0, .1), 0 0 4px rgba(0, 0, 0, .06);
+  }
+}
+
+.block-instance,
+.kioskmanager-locations {
+  &::before {
+    top: 90px;
+  }
+
+  &.search {
+    &::before {
+      top: 220px;
+    }
+  }
+
+  &.welcome,
+  &.edit-family {
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.js-manager-login {
+  &::before {
+    top: 80px;
+  }
+}
+
+// No Checkin Avalible Styling
+.group-type-select {
+  text-align: center;
+}

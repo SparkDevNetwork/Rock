@@ -1,0 +1,128 @@
+.welcome {
+  .checkin-body .scroller,
+  .checkin-scroll-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100% !important;
+    padding: 0;
+  }
+
+  .kioskmanager-locations .checkin-scroll-panel {
+    right: 40px;
+    bottom: 90px;
+    left: 40px;
+    width: auto !important;
+  }
+
+  .js-active {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    // Images are contained in checkin-theme.less for easier compilation
+  }
+
+  .checkin-start {
+    margin-top: 0;
+  }
+
+  .js-start-button-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    align-items: center;
+    justify-content: center;
+    width: 40.3%;
+    margin-top: 0;
+    text-align: center;
+    background: #b4d782;
+
+    .checkin-search-actions {
+      width: 100%;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 50vh;
+      font-size: 80px;
+      border-radius: 0;
+    }
+
+    .btn-barcode {
+      margin-top: 0;
+    }
+  }
+}
+
+.welcome-banner {
+  position: absolute;
+  top: 25%;
+  right: 44.4%;
+  left: 4%;
+  font-size: 18px;
+  font-style: normal;
+  line-height: 1.2;
+  color: @welcome-text-color;
+
+  @media (min-width: @screen-sm-min) and (min-height: 650px) {
+    font-size: 24px;
+  }
+
+  @media (min-width: @screen-lg-min) {
+    font-size: 28px;
+  }
+
+  .heading {
+    display: block;
+    font-size: 2.433em;
+    font-weight: 800;
+  }
+
+  .emphasis {
+    color: @welcome-emphasis-color;
+  }
+}
+
+// Kiosk Manager and Scheduled Locations Blocks
+.scheduled-locations-actions,
+.kioskmanager-actions {
+  right: 85px !important;
+  bottom: 24px !important;
+  left: 25px !important;
+  display: flex;
+  flex-direction: row-reverse;
+
+  .btn,
+  .btn:active {
+    display: inline-flex;
+    min-height: auto;
+    padding: 12px;
+    margin: 0 15px;
+    font-size: 26px;
+
+    + .btn {
+      margin-top: 0;
+    }
+  }
+}
+
+/* stylelint-disable */
+.welcome-cover-mixin(@welcome-background-cover-mode) when not (@welcome-background-cover-mode = false) {
+  .welcome .js-active::before {
+    background-position: center;
+    background-size: cover;
+  }
+}
+/* stylelint-enable */
