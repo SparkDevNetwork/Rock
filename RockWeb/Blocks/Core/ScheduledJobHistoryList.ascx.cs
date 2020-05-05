@@ -75,10 +75,16 @@ namespace RockWeb.Blocks.Administration
             var site = RockPage.Site;
             if ( e.Row.RowType == DataControlRowType.DataRow )
             {
-                // format duration
-                if ( e.Row.DataItem.GetPropertyValue( "DurationSeconds" ) != null )
+                ServiceJobHistory serviceJobHistory = e.Row.DataItem as ServiceJobHistory;
+                if ( serviceJobHistory == null )
                 {
-                    int durationSeconds = e.Row.DataItem.GetPropertyValue( "DurationSeconds" ).ToString().AsIntegerOrNull() ?? 0;
+                    return;
+                }
+
+                // format duration
+                if ( serviceJobHistory.DurationSeconds.HasValue )
+                {
+                    int durationSeconds = serviceJobHistory.DurationSeconds.Value;
                     TimeSpan duration = TimeSpan.FromSeconds( durationSeconds );
 
                     var lDurationSeconds = e.Row.FindControl( "lDurationSeconds" ) as Literal;
@@ -106,9 +112,9 @@ namespace RockWeb.Blocks.Administration
 
                 // format last status
                 var lStatus = e.Row.FindControl( "lStatus" ) as Literal;
-                if ( e.Row.DataItem.GetPropertyValue( "Status" ) != null && lStatus != null )
+                if ( lStatus != null )
                 {
-                    string status = e.Row.DataItem.GetPropertyValue( "Status" ).ToString();
+                    string status = serviceJobHistory.Status ?? string.Empty;
 
                     switch ( status )
                     {
@@ -135,17 +141,7 @@ namespace RockWeb.Blocks.Administration
                     var lStatusMessageAsHtml = e.Row.FindControl( "lStatusMessageAsHtml" ) as Literal;
                     if ( lStatusMessageAsHtml != null )
                     {
-                        var statusMessageAsHtml = e.Row.DataItem.GetPropertyValue( "StatusMessageAsHtml" ) as string;
-                        if ( statusMessageAsHtml.Length > 255 )
-                        {
-                            // if over 255 chars, limit the height to 100px so we don't get a giant summary displayed in the grid
-                            // Also, we don't want to use .Truncate(255) since that could break any html that is in the LastStatusMessageAsHtml
-                            lStatusMessageAsHtml.Text = string.Format( "<div style='max-height:100px;overflow:hidden'>{0}</div>", statusMessageAsHtml );
-                        }
-                        else
-                        {
-                            lStatusMessageAsHtml.Text = statusMessageAsHtml;
-                        }
+                        lStatusMessageAsHtml.Text = serviceJobHistory.StatusMessageAsHtml;
                     }
                 }
             }
