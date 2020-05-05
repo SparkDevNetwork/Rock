@@ -93,10 +93,11 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, .05), 0 10px 15px rgba(0, 0, 0, .1);
 }
 
+// Checkin Background Sheet
 .sheet-background,
 .block-instance,
 .kioskmanager-locations,
-.checkin-closed-header,
+.checkin-inactive,
 .js-manager-login {
   &::before {
     position: absolute;
@@ -111,13 +112,16 @@
   }
 }
 
+
 .block-instance,
-.checkin-closed-header,
+.checkin-inactive,
 .kioskmanager-locations {
   &::before {
     top: 90px;
   }
+}
 
+.block-instance {
   &.search {
     &::before {
       top: 220px;
@@ -125,7 +129,8 @@
   }
 
   &.welcome,
-  &.edit-family {
+  &.edit-family,
+  &.idle-redirect {
     &::before {
       display: none;
     }

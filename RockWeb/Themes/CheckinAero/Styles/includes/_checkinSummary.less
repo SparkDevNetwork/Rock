@@ -7,8 +7,6 @@
   padding: 16px 0;
   font-weight: @checkin-button-text-weight;
   color: @default-button-color;
-  background: @default-button-background;
-  border: 1px solid @default-button-border;
   border-radius: 10px;
 }
 
@@ -17,5 +15,7 @@
 
   li {
     &:extend(.checkin-error);
+    background: @default-button-background;
+    border: 1px solid @default-button-border;
   }
 }
