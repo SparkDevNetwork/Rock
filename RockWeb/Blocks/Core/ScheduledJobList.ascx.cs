@@ -184,16 +184,7 @@ namespace RockWeb.Blocks.Administration
                 var lLastStatusMessageAsHtml = e.Row.FindControl( "lLastStatusMessageAsHtml" ) as Literal;
                 if ( lLastStatusMessageAsHtml != null )
                 {
-                    if ( serviceJob.LastStatusMessageAsHtml.Length > 255 )
-                    {
-                        // if over 255 chars, limit the height to 100px so we don't get a giant summary displayed in the grid
-                        // Also, we don't want to use .Truncate(255) since that could break any html that is in the LastStatusMessageAsHtml
-                        lLastStatusMessageAsHtml.Text = string.Format( "<div style='max-height:100px;overflow:hidden'>{0}</div>", serviceJob.LastStatusMessageAsHtml );
-                    }
-                    else
-                    {
-                        lLastStatusMessageAsHtml.Text = serviceJob.LastStatusMessageAsHtml;
-                    }
+                    lLastStatusMessageAsHtml.Text = serviceJob.LastStatusMessageAsHtml;
                 }
             }
         }
