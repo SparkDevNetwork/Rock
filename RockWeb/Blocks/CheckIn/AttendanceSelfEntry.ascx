@@ -4,7 +4,8 @@
         <div class="panel panel-block">
             <div class="panel-body">
                 <asp:Panel runat="server" CssClass="js-navigation-panel" ID="pnlPrimaryWatcher" Visible="false">
-                    <h2><asp:Literal ID="lPanel1Title" runat="server" /></h2>
+                    <h2>
+                        <asp:Literal ID="lPanel1Title" runat="server" /></h2>
                     <asp:Literal ID="lPanel1Text" runat="server" />
                     <asp:ValidationSummary ID="valValidation" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgPrimary" />
                     <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
@@ -39,14 +40,15 @@
                     </div>
                 </asp:Panel>
                 <asp:Panel runat="server" ID="pnlOtherWatcher" Visible="false" CssClass="js-navigation-panel">
-                    <h2><asp:Literal ID="lPanel2Title" runat="server" /></h2>
+                    <h2>
+                        <asp:Literal ID="lPanel2Title" runat="server" /></h2>
                     <asp:Literal ID="lPanel2Text" runat="server" />
                     <asp:ValidationSummary ID="valOtherWatcher" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="vgOther" />
                     <Rock:NotificationBox ID="nbOtherWarning" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
                     <div class="row">
                         <div class="col-md-6">
                             <fieldset>
-                                <Rock:RockDropDownList ID="ddlRelation" runat="server" Label="Relation" ValidationGroup="vgOther" OnSelectedIndexChanged="ddlRelation_SelectedIndexChanged" AutoPostBack="true"/>
+                                <Rock:RockDropDownList ID="ddlRelation" runat="server" Label="Relation" ValidationGroup="vgOther" OnSelectedIndexChanged="ddlRelation_SelectedIndexChanged" AutoPostBack="true" />
                                 <Rock:RockTextBox ID="tbOtherFirstName" runat="server" Label="First Name" Required="true" ValidationGroup="vgOther" />
                                 <Rock:RockTextBox ID="tbOtherLastName" runat="server" Label="Last Name" Required="false" ValidationGroup="vgOther" />
                                 <Rock:EmailBox ID="tbOtherEmail" runat="server" Label="Email" Required="false" ValidationGroup="vgOther" />
@@ -76,11 +78,12 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnOtherNext" runat="server" AccessKey="s" ToolTip="Alt+n" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnOtherNext_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnOtherNext" runat="server" AccessKey="s" ToolTip="Alt+n" Text="Next" CssClass="btn btn-primary pull-right" OnClick="btnOtherNext_Click" />
                     </div>
                 </asp:Panel>
                 <asp:Panel ID="pnlAccount" runat="server" Visible="false" CssClass="js-navigation-panel">
-                    <h2><asp:Literal ID="lPanel3Title" runat="server" /></h2>
+                    <h2>
+                        <asp:Literal ID="lPanel3Title" runat="server" /></h2>
                     <asp:Literal ID="lPanel3Text" runat="server" />
                     <Rock:NotificationBox ID="nbAccountWarning" runat="server" NotificationBoxType="Warning" Title="Warning" Visible="false" />
                     <Rock:RockTextBox ID="txtUserName" runat="server" Label="Username" CssClass="input-medium" />
@@ -96,16 +99,59 @@
 
                 </asp:Panel>
                 <asp:Panel ID="pnlKnownIndividual" runat="server" Visible="false" CssClass="js-navigation-panel">
-                    <h2><asp:Literal ID="lKnownIndividualTitle" runat="server" /></h2>
+                    <h2>
+                        <asp:Literal ID="lKnownIndividualTitle" runat="server" /></h2>
                     <asp:Literal ID="lKnownIndividualText" runat="server" />
-                    <Rock:RockCheckBoxList ID="cblIndividuals" runat="server" RepeatDirection="Horizontal" Required="true" ValidationGroup="vgCheckIn"></Rock:RockCheckBoxList>
-                    <asp:LinkButton ID="lbAdjustWatchers" runat="server" Text="Adjust Remembered Watchers" CssClass="btn btn-link" OnClick="lbAdjustWatchers_Click" CausesValidation="false" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="controls checkin-family btn-group" data-toggle="buttons-checkbox">
+                                <asp:Repeater ID="rptFamilyMembers" runat="server">
+                                    <ItemTemplate>
+                                        <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
+                                            <i class="fa fa-square-o"></i>
+                                            <div>
+                                                <%# Eval("FullName") %>
+                                                <br />
+                                                <%# Eval("RelationshipType") %>
+                                            </div>
+                                        </button>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                                <asp:HiddenField ID="hfSelectedFamilyMembers" runat="server"></asp:HiddenField>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="controls checkin-other btn-group" data-toggle="buttons-checkbox">
+                                <asp:Repeater ID="rptOtherMembers" runat="server">
+                                    <ItemTemplate>
+                                        <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
+                                            <i class="fa fa-square-o"></i>
+                                            <div>
+                                                <%# Eval("FullName") %>
+                                                <br />
+                                                <%# Eval("RelationshipType") %>
+                                            </div>
+                                        </button>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                                <asp:HiddenField ID="hfSelectedOtherMembers" runat="server"></asp:HiddenField>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <asp:LinkButton ID="lbAdjustWatchers" runat="server" Text="Adjust Remembered Watchers" CssClass="btn btn-link" OnClick="lbAdjustWatchers_Click" OnClientClick="return GetSelection();" CausesValidation="false" />
+                        </div>
+                    </div>
                     <div class="actions">
-                        <asp:LinkButton ID="btnCheckIn" runat="server" AccessKey="s" ToolTip="Alt+n" Text="Check-In" ValidationGroup="vgCheckIn" CssClass="btn btn-primary" OnClick="btnCheckIn_Click" />
+                        <asp:LinkButton ID="btnCheckIn" runat="server" AccessKey="s" ToolTip="Alt+n" Text="Check-In" ValidationGroup="vgCheckIn" CssClass="btn btn-primary" OnClientClick="return GetSelection(true);" OnClick="btnCheckIn_Click" />
                     </div>
                 </asp:Panel>
                 <asp:Panel ID="pnlThanks" runat="server" Visible="false" CssClass="js-navigation-panel">
-                    <h2><asp:Literal ID="lSuccessTitle" runat="server" /></h2>
+                    <h2>
+                        <asp:Literal ID="lSuccessTitle" runat="server" /></h2>
                     <asp:Literal ID="lSuccessText" runat="server" />
                     <asp:Literal ID="lSuccessDebug" runat="server" Visible="false" />
                 </asp:Panel>
@@ -128,6 +174,27 @@
                     }
                 });
             })
+
+            function GetSelection(isCheckIn) {
+                var familyIds = '';
+                $('div.checkin-family button.active').each(function () {
+                    familyIds += $(this).attr('person-id') + ',';
+                });
+                if (isCheckIn && familyIds == '') {
+                    bootbox.alert('Please select at least one family member');
+                    return false;
+                } else {
+                    $('#<%=hfSelectedFamilyMembers.ClientID%>').val(familyIds);
+
+                }
+
+                var otherIds = '';
+                $('div.checkin-other button.active').each(function () {
+                    otherIds += $(this).attr('person-id') + ',';
+                });
+                $('#<%=hfSelectedOtherMembers.ClientID%>').val(otherIds);
+                return true;
+            }
         </script>
     </ContentTemplate>
 </asp:UpdatePanel>
