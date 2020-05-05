@@ -124,6 +124,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Old Interaction Cleanup", () => CleanupOldInteractions( dataMap ) );
 
+            RunCleanupTask( "Orphaned InteractionSessions Cleanup", () => CleanupUnusedInteractionSessions() );
+
             RunCleanupTask( "Audit Log Cleanup", () => PurgeAuditLog( dataMap ) );
 
             RunCleanupTask( "Clean Cached File Directory", () => CleanCachedFileDirectory( context, dataMap ) );
@@ -174,13 +176,13 @@ namespace Rock.Jobs
 
             RunCleanupTask( "Match nameless person records", () => MatchNamelessPersonToRegularPerson() );
 
-            // ***********************
-            //  Final count and report
-            // ***********************
+            //// ***********************
+            ////  Final count and report
+            //// ***********************
 
             StringBuilder jobSummaryBuilder = new StringBuilder();
             jobSummaryBuilder.AppendLine( "Summary:" );
-            jobSummaryBuilder.AppendLine( "" );
+            jobSummaryBuilder.AppendLine( string.Empty );
             foreach ( var rockCleanupJobResult in rockCleanupJobResultList )
             {
                 jobSummaryBuilder.AppendLine( $"{GetFormattedResult( rockCleanupJobResult )}" );
@@ -887,14 +889,14 @@ namespace Rock.Jobs
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
 
-            //var interactionSessionIdsOfDeletedInteractions = new List<int>();
+            var interactionSessionIdsOfDeletedInteractions = new List<int>();
+            var interactionChannelsWithRentionDurations = InteractionChannelCache.All().Where( ic => ic.RetentionDuration.HasValue );
 
             using ( var interactionRockContext = new Rock.Data.RockContext() )
             {
                 interactionRockContext.Database.CommandTimeout = commandTimeout;
-                var interactionChannels = InteractionChannelCache.All().Where( ic => ic.RetentionDuration.HasValue );
-
-                foreach ( var interactionChannel in interactionChannels )
+                
+                foreach ( var interactionChannel in interactionChannelsWithRentionDurations )
                 {
                     var retentionCutoffDateTime = currentDateTime.AddDays( -interactionChannel.RetentionDuration.Value );
 
@@ -907,19 +909,23 @@ namespace Rock.Jobs
                         i.InteractionComponent.InteractionChannelId == interactionChannel.Id &&
                         i.InteractionDateTime < retentionCutoffDateTime );
 
-                    //var interactionSessionIdsForInteractionChannel = interactionsToDeleteQuery
-                    //    .Where( i => i.InteractionSessionId != null )
-                    //    .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i.Id ) )
-                    //    .Select( i => ( int ) i.InteractionSessionId )
-                    //    .ToList();
+                    var interactionSessionIdsForInteractionChannel = interactionsToDeleteQuery
+                        .Where( i => i.InteractionSessionId != null )
+                        .Where( i => !interactionSessionIdsOfDeletedInteractions.Contains( i.Id ) )
+                        .Select( i => ( int ) i.InteractionSessionId )
+                        .Distinct()
+                        .ToList();
 
-                    //interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
+                    interactionSessionIdsOfDeletedInteractions.AddRange( interactionSessionIdsForInteractionChannel );
 
                     totalRowsDeleted += BulkDeleteInChunks( interactionsToDeleteQuery, batchAmount, commandTimeout );
                 }
             }
 
-            //RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
+            if ( interactionSessionIdsOfDeletedInteractions.Any() )
+            {
+                RunCleanupTask( "Unused Interaction Session Cleanup", () => CleanupUnusedInteractionSessions( interactionSessionIdsOfDeletedInteractions ) );
+            }
 
             return totalRowsDeleted;
         }
@@ -931,6 +937,11 @@ namespace Rock.Jobs
         /// <returns></returns>
         private int CleanupUnusedInteractionSessions( List<int> interactionSessionIds )
         {
+            if ( !interactionSessionIds.Any() )
+            {
+                return 0;
+            }
+
             int totalRowsDeleted = 0;
             var currentDateTime = RockDateTime.Now;
             
@@ -964,12 +975,11 @@ namespace Rock.Jobs
                 .Where( a => batchUnusedInteractionSessionsQuery.Any( u => u.Id == a.Id ) );
 
             totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
-
             return totalRowsDeleted;
         }
 
         /// <summary>
-        /// This is the old code, use it to compare results.
+        /// This method will look for any orphaned InteractionSession rows and delete them.
         /// </summary>
         /// <returns></returns>
         private int CleanupUnusedInteractionSessions()
@@ -980,6 +990,8 @@ namespace Rock.Jobs
             // delete any InteractionSession records that are no longer used.
             using ( var interactionSessionRockContext = new Rock.Data.RockContext() )
             {
+                interactionSessionRockContext.Database.CommandTimeout = commandTimeout;
+
                 var interactionQueryable = new InteractionService( interactionSessionRockContext ).Queryable().Where( a => a.InteractionSessionId.HasValue );
                 var interactionSessionQueryable = new InteractionSessionService( interactionSessionRockContext ).Queryable();
 
@@ -996,7 +1008,6 @@ namespace Rock.Jobs
                 totalRowsDeleted += BulkDeleteInChunks( unusedInteractionSessionsQueryToRemove, batchAmount, commandTimeout );
             }
 
-            Debug.WriteLine( $"Total InteractionSessions deleted: {totalRowsDeleted}" );
             return totalRowsDeleted;
         }
 
@@ -1040,7 +1051,6 @@ namespace Rock.Jobs
                 var keepDeleting = true;
                 while ( keepDeleting )
                 {
-                    Debug.WriteLine( "Deleting Chunk" );
                     var rowsDeleted = bulkDeleteContext.BulkDelete( chunkQuery );
                     keepDeleting = rowsDeleted > 0;
                     totalRowsDeleted += rowsDeleted;
@@ -1728,8 +1738,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
         {
             var rockContext = new RockContext();
             rockContext.Database.CommandTimeout = commandTimeout;
-
-            var pageService = new PageService( rockContext );
+            
             var interactionService = new InteractionService( rockContext );
             var serviceJobService = new ServiceJobService( rockContext );
 
@@ -1751,7 +1760,7 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
              */
 
             // Un-comment this out when debugging, and make sure to comment it back out when checking in (see above note)
-            //minDate = DateTime.MinValue;
+            ////minDate = DateTime.MinValue;
 
             var channelMediumTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ).Id;
 
@@ -1776,6 +1785,8 @@ where ISNULL(ValueAsNumeric, 0) != ISNULL((case WHEN LEN([value]) < (100)
                 timesToServeByPage.Add( pageId, timesToServe.ToList() );
             }
 
+            var pageContext = new RockContext();
+            var pageService = new PageService( pageContext );
             var pages = pageService.Queryable().Where( p => uniquePageIds.Contains( p.Id ) ).ToList();
 
             // Calculate the median response time for each of the pages
