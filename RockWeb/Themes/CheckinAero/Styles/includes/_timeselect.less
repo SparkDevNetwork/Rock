@@ -66,18 +66,21 @@
       right: 0;
       bottom: 0;
       left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: @fa-font-face;
-      font-size: 1.5em;
+      font-size: 1.25em;
       font-weight: @fa-theme-weight;
-      line-height: 1.4;
+      line-height: 1;
       -webkit-user-select: none; /* Safari */
       -moz-user-select: none; /* Firefox */
       -ms-user-select: none; /* IE10+/Edge */
       user-select: none; /* Standard */
       opacity: 0;
 
-      @media (min-width: @screen-lg-min) {
-        line-height: 1.6;
+      @media (min-width: @screen-sm-min) {
+        font-size: 1.5em;
       }
 
       &::before {
@@ -86,10 +89,6 @@
     }
 
     div {
-      // position: absolute;
-      // top: 50%;
-      // left: 0;
-      // width: 100%;
       display: flex;
       flex-shrink: 0;
       flex-grow: 0;
