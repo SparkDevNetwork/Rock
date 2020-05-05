@@ -488,7 +488,7 @@ namespace Rock.Data
         {
             return queryable.Delete( d =>
             {
-                d.BatchSize = batchSize ?? 0;
+                d.BatchSize = batchSize ?? 4000;
                 d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
             } );
         }
