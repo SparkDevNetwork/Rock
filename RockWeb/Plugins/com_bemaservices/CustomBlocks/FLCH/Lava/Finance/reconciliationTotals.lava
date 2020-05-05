@@ -1,0 +1,83 @@
+{% if PageParameter.Print %}
+<html>
+<head>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">  
+
+</head>
+
+<body style="padding:20px 40px">
+{% endif %}
+
+{% if PageParameter.DateRange %}
+
+{% assign dateRange = '' %}
+{% assign dateRange = PageParameter.DateRange | Split:',' %}
+{% assign dateStart = dateRange[0] | Date:'M/d/yyyy'  %}
+{% assign dateEnd = dateRange[1] | Date:'M/d/yyyy' %}
+
+
+
+{% sql return:'transactions' %}
+     select
+    	  sum(case when pd.CurrencyTypeValueId = 9
+    		then d.Amount else 0 end) as [Check]
+    	,  sum(case when pd.CurrencyTypeValueId = 6
+    		then d.Amount else 0 end) as [Cash]
+    	,  sum(case when pd.CurrencyTypeValueId = 156
+    		then d.Amount else 0 end) as [CC]
+    	,  sum(case when pd.CurrencyTypeValueId = 157
+    		then d.Amount else 0 end) as [ACH]
+    	,  sum(case when pd.CurrencyTypeValueId = 677
+    		then d.Amount else 0 end) as [Unknown]
+    	,  sum(case when pd.CurrencyTypeValueId = 703
+    		then d.Amount else 0 end) as [Other]
+    	,  sum(d.Amount) as [Total]
+    	 	 
+    from FinancialTransaction t
+    	join FinancialTransactionDetail d on d.TransactionId = t.id
+    	join FinancialPaymentDetail pd on pd.id = t.FinancialPaymentDetailId
+    	join FinancialAccount a on a.id = d.AccountId
+    where cast(t.TransactionDateTime as date) between '{{ dateStart }}' and '{{ dateEnd }}'
+
+       
+    {% if PageParameter.Account %}
+        and a.id = {{ PageParameter.Account }}
+    {% endif %}
+
+    {% if PageParameter.Type %}
+        and pd.CurrencyTypeValueId = {{ PageParameter.Type }}
+    {% endif %}
+
+{% endsql %}
+
+
+
+    
+        
+                        
+                        {% for item in transactions %}
+                        
+                        <strong>Total Cash:</strong> {{ item.Cash | FormatAsCurrency }} <br/>
+                        <strong>Total Check:</strong> {{ item.Check | FormatAsCurrency }} <br/>
+                        <strong>Subtotal:</strong> {{ item.Check | Plus:item.Cash | FormatAsCurrency }} <br/>
+                        <strong>Total Payroll:</strong> 0  <br/>
+                        <strong>Total ACH:</strong> {{ item.ACH | FormatAsCurrency }} <br/>
+                        <strong>Total CC:</strong>  {{ item.CC | FormatAsCurrency }} <br/>
+                        <strong>Total Stock:</strong> 0 <br/>
+                        <strong>Total Deposit:</strong> {{ item.Total | FormatAsCurrency }}
+                     
+                        {% endfor %}
+                        
+    
+
+ <br/> <hr>
+
+{% endif %}
+
+{% if PageParameter.Print %}
+
+</body>
+</html>
+
+{% endif %}

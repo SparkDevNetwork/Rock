@@ -1,0 +1,47 @@
+
+{% if PageParameter.DateRange %}
+
+{% assign dateRange = '' %}
+{% assign dateRange = PageParameter.DateRange | Split:',' %}
+{% assign dateStart = dateRange[0] | Date:'M/d/yyyy'  %}
+{% assign dateEnd = dateRange[1] | Date:'M/d/yyyy' %}
+
+
+{% sql return:'transactions' %}
+     select
+    	  sum(case when pd.CurrencyTypeValueId = 9
+    		then d.Amount else 0 end) as [Check]
+    	,  sum(case when pd.CurrencyTypeValueId = 6
+    		then d.Amount else 0 end) as [Cash]
+		, sum(case when pd.CurrencyTypeValueId = 9
+    		then 1 else 0 end) as [TotalChecks]
+    	,  sum(d.Amount) as [Total]
+    	 	 
+    from FinancialTransaction t
+    	join FinancialTransactionDetail d on d.TransactionId = t.id
+    	join FinancialPaymentDetail pd on pd.id = t.FinancialPaymentDetailId
+    	join FinancialAccount a on a.id = d.AccountId
+    where cast(t.TransactionDateTime as date) between '{{ dateStart }}' and '{{ dateEnd }}'
+
+{% endsql %}
+
+
+
+    
+        
+                        
+                        {% for item in transactions %}
+                        
+                        <strong>Total Cash:</strong> {{ item.Cash | FormatAsCurrency }} <br/>
+                        <strong>Total Check:</strong> {{ item.Check | FormatAsCurrency }} ({{item.TotalChecks}})<br/>
+                        <strong>Total:</strong> {{ item.Check | Plus:item.Cash | FormatAsCurrency }} <br/>
+                      
+                     
+                        {% endfor %}
+                        
+    
+
+<hr>
+
+{% endif %}
+

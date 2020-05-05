@@ -1,0 +1,162 @@
+
+
+{% if PageParameter.DateRange %}
+
+{% assign dateRange = '' %}
+{% assign dateRange = PageParameter.DateRange | Split:',' %}
+{% assign dateStart = dateRange[0] | Date:'M/d/yyyy'  %}
+{% assign dateEnd = dateRange[1] | Date:'M/d/yyyy' %}
+
+
+
+<html>
+<head>
+
+<style>
+table, tr, td, th, tbody, thead, tfoot {
+    page-break-inside: avoid !important;
+    font-size:12px;
+}
+
+</style>
+
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">  
+
+</head>
+
+<body style="padding:20px 40px">
+
+<!-- Run SQL to get groups (or any other set of information), must have "Id" column-->
+
+{% sql return:'data' %}
+
+
+ select 
+    	person.FirstName + ' ' + Person.LastName as [Name]
+		, '$' + CONVERT(varchar, CAST(d.Amount AS money), 1) as [Amount]
+		, t.TransactionCode as [CheckNumber]
+    from FinancialTransaction t
+    	join FinancialTransactionDetail d on d.TransactionId = t.id
+    	join FinancialPaymentDetail pd on pd.id = t.FinancialPaymentDetailId
+		left join DefinedValue vType on vType.id = pd.CurrencyTypeValueId
+    	join FinancialAccount a on a.id = d.AccountId
+		join FinancialBatch fb on fb.id = t.BatchId
+		join PersonAlias pa on pa.id = t.AuthorizedPersonAliasId
+		join Person person on person.id = pa.PersonId
+    where cast(t.TransactionDateTime as date) between '{{ dateStart }}' and '{{ dateEnd }}'
+	 and  pd.CurrencyTypeValueId in (9,6)
+
+ 
+    
+{% endsql %}
+
+
+
+{% sql return:'transactions' %}
+     select
+    	  sum(case when pd.CurrencyTypeValueId = 9
+    		then d.Amount else 0 end) as [Check]
+    	,  sum(case when pd.CurrencyTypeValueId = 6
+    		then d.Amount else 0 end) as [Cash]
+		, sum(case when pd.CurrencyTypeValueId = 9
+    		then 1 else 0 end) as [TotalChecks]
+    	,  sum(d.Amount) as [Total]
+    	 	 
+    from FinancialTransaction t
+    	join FinancialTransactionDetail d on d.TransactionId = t.id
+    	join FinancialPaymentDetail pd on pd.id = t.FinancialPaymentDetailId
+    	join FinancialAccount a on a.id = d.AccountId
+    where cast(t.TransactionDateTime as date) between '{{ dateStart }}' and '{{ dateEnd }}'
+
+{% endsql %}
+
+
+
+    
+        
+                        
+                        {% for item in transactions %}
+                        
+                        <strong>Total Cash:</strong> {{ item.Cash | FormatAsCurrency }} <br/>
+                        <strong>Total Check:</strong> {{ item.Check | FormatAsCurrency }} ({{item.TotalChecks}})<br/>
+                        <strong>Total:</strong> {{ item.Check | Plus:item.Cash | FormatAsCurrency }} <br/>
+                      
+                     
+                        {% endfor %}
+                        
+    
+
+<hr>
+
+
+
+<!-- Set groupid to lava entity --> 
+
+<div class="content">
+        <div class='text-center'>
+           <h3>Reconciliation - Details</h3>
+           <small>Printed by <i>{{ CurrentPerson.FullName }}</i> on {{ 'Now' | Date:'M/d/yyyy' }}<small>
+        </div>
+
+    <div class="table-responsive">
+    <table class="table">
+    
+        <thead>
+        
+           
+            
+            <tr class="tr-header " >
+                 <th>Name</th>
+                 <th>Amount</th>
+                 <th>Check Number</th>
+
+            </tr>
+            
+        </thead>
+    
+        <tbody>
+    
+              {% for item in data %}
+    
+               
+                                        
+                        <!--Test for row color-->
+                        {% assign rowTest = forloop.index | Modulo:2 %}
+                
+                        {% if rowTest == 1 %}
+                            <tr style="background:#f9f9f9">
+                        {% else %}
+                            <tr>
+                        {% endif %}
+                        
+                                <!-- Column content -->
+                                <td>{{ item.Name }}</td> 
+                                <td>{{ item.Amount }}</td> 
+                                <td>{{ item.CheckNumber }}</td> 
+    
+                            </tr>
+                        
+
+                    {% endfor %}
+        </tbody>
+        
+    </table>
+    </div>
+</div>
+
+<!--Page break after each group-->
+<div style="page-break-after:always;"></div>
+
+
+</body>
+</html>
+
+
+{% endif %}
+
+{% if PageParameter.Print %}
+
+</body>
+</html>
+
+{% endif %}

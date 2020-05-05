@@ -1,0 +1,95 @@
+{% assign reservation = Workflow | Attribute:'ReservationObject','Object' %}
+{% assign registration = Workflow | Attribute:'RegistrationObject','Object' %}
+{% assign calendar = Workflow | Attribute:'EventCalendarObject','Object' %}
+{% assign announcement = Workflow | Attribute:'AnnouncementObject','Object' %}
+<style>
+    .check-list i {
+        margin-right:8px;
+        color:#555;
+        margin-left:20px;
+    }
+    .check-list .fa-check-square {
+        color:#16c98d !important;
+    }
+    
+    h1 {
+        font-size:32px;
+    }
+
+    small {
+        font-size:14px;
+        color:#ccc;
+    }
+
+    .panel-custom .panel-heading {
+        border:none;
+    }
+
+    .panel-block.panel-custom {
+        border:none;
+    }
+
+    .panel-custom .panel-body {
+        border: 2px solid #f3f3f3;
+    }
+
+    .list-item-title {
+        display: inline-block;
+        margin-bottom: 0;
+        font-weight: normal;
+        text-align: center;
+        vertical-align: middle;
+        touch-action: manipulation;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        padding: 2px 12px;
+        font-size: 21.5px;
+        line-height: 1.5;
+        border-radius: 0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+</style>
+{{ Workflow | Attribute:'EventName' | SetPageTitle }} 
+
+{% if reservation %}
+
+
+<ul class="list-group">
+
+            {% assign labelStatus = 'primary' %}
+
+            {% if reservation.ApprovalState == 'Unapproved'  %}
+            {% assign labelStatus = 'warning' %}
+            {% elseif reservation.ApprovalState == 'Denied' %}
+            {% assign labelStatus = 'danger' %}
+            {% elseif reservation.ApprovalState == 'Approved' %}
+            {% assign labelStatus = 'success' %}
+            {% endif %}
+
+        
+            <li class="list-group-item">
+            
+                <a href="/ReservationDetail?ReservationId={{reservation.Id}}" class=" list-item-title">
+                    <i class="fa fa-home"></i> Room Reservation
+                </a> 
+                <span class="label label-{{labelStatus}}">Status: {{ reservation.ApprovalState }}</span>
+
+                <span style="float: right;">
+
+                    <a href="/ReservationDetail?ReservationId={{reservation.Id}}" target="_blank" class="btn btn-primary">
+                        <i class="fa fa-sun-o"></i> View Reservation
+                    </a>
+                    
+
+                </span>
+        
+            </li>
+</ul>
+ 
+ {% endif %}   

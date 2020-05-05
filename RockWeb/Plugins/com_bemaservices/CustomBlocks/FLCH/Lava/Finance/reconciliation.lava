@@ -1,0 +1,295 @@
+{% if PageParameter.Print %}
+<html>
+<head>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+</head>
+
+<body style="padding:20px 40px">
+{% endif %}
+
+{% if PageParameter.DateRange %}
+    {% assign dateRange = PageParameter.DateRange | Split:',' %}
+    {% assign dateStart = dateRange[0] | Date:'M/d/yyyy'  %}
+    {% assign dateEnd = dateRange[1] | Date:'M/d/yyyy' %}
+{% endif %}
+
+{% if PageParameter.DateRange or PageParameter.Batch %}
+
+
+<style>
+
+
+.table>thead>tr>th {
+    background:none;
+}
+
+.tr-header {
+    border:none;
+    background:#666; /* Orange */
+}
+
+.tr-header th {
+    border:none !important;
+    color:#fff !important;
+}
+
+.top-table-header h3 {
+    margin:0px;
+    font-size:27px;
+    text-transform: uppercase;
+}
+
+.top-table-header {
+    background:none;
+    border:none;
+}
+
+.top-table-header th {
+    background:none !Important;
+    border:none !important;
+    text-align:center;
+}
+
+.td-total {
+     background:#999;
+     text-align:right;
+     color:#fff !important;
+     font-weight:bold;
+}
+
+.td-total-number {
+     background:#777;
+     text-align:left;
+     color:#fff !important;
+     font-weight:bold;
+}
+
+@media print {
+
+    table tbody tr td:before,
+    table tbody tr td:after {
+        content : "" ;
+        height : 4px ;
+        display : block ;
+    }
+    table.table td, table.table th {
+        font-size: 75%;
+    }
+
+}
+</style>
+
+{% sql return:'transactions' %}
+
+Declare @StartDate Date = '{{ dateStart }}'
+,@EndDate Date = '{{ dateEnd }}'
+
+Select
+	isNull(a.[Name], 'Total' ) as Account
+	, isNull(dv.[Value], 'Total') as CurrencyType
+	, sum(isNull(avc.[ValueAsNumeric],0)) as Coin
+	, sum(isNull(avp.[ValueAsNumeric],0)) as Paper
+	, sum(d.Amount) as Amount
+Into #Data
+From FinancialTransaction t
+Join FinancialTransactionDetail d on d.TransactionId = t.Id
+Join FinancialPaymentDetail p on p.Id = t.FinancialPaymentDetailId
+Join FinancialAccount a on a.Id = d.AccountId
+Left Join AttributeValue avc on avc.EntityId = t.Id and avc.AttributeId = 6429
+Left Join AttributeValue avp on avp.EntityId = t.Id and avp.AttributeId = 6428
+Left Join DefinedValue dv on dv.Id = p.CurrencyTypeValueId
+Where     1 = 1
+
+    {% if PageParameter.DateRange %}
+       and cast(t.TransactionDateTime as date) between '{{ dateStart }}' and '{{ dateEnd }}'
+    {% endif %}
+
+    {% if PageParameter.Account %}
+        and a.id in ( {{ PageParameter.Account }} )
+    {% endif %}
+
+    {% if PageParameter.Type %}
+        and pd.CurrencyTypeValueId in ( {{ PageParameter.Type }} )
+    {% endif %}
+
+    {% if PageParameter.Batch %}
+        and t.BatchId in ( {{ PageParameter.Batch }} )
+    {% endif %}
+
+
+Group By RollUp(dv.[Value]), RollUp(a.[Name])
+Order by a.[Name]
+
+DECLARE @columns NVARCHAR(MAX), @sql NVARCHAR(MAX), @selectColumns NVARCHAR(MAX);
+
+SET @columns = N'';
+SELECT @columns += N', p.' + QUOTENAME(Name)
+  FROM (SELECT dv.[Value] as [Name] FROM DefinedValue dv
+  where dv.DefinedTypeId = 10
+ ) AS x;
+
+ SET @selectColumns = N'';
+SELECT @selectColumns += N', Sum(p.' + QUOTENAME(Name) + ') as ' + QUOTENAME(Name)
+  FROM (SELECT dv.[Value] as [Name] FROM DefinedValue dv
+  where dv.DefinedTypeId = 10
+ ) AS x;
+SET @sql = N'
+SELECT Account, Sum(Coin) as Coin, Sum(Paper) as Paper, ' + STUFF(@selectColumns, 1, 2, '') + ', Sum([Total]) as Total
+FROM #Data d
+PIVOT
+(
+  SUM(Amount) FOR CurrencyType IN ('
+  + STUFF(REPLACE(@columns, ', p.[', ',['), 1, 1, '')
+  + ', [Total])
+) AS p
+Group By Account
+Order by Account;';
+PRINT @sql;
+
+EXEC sp_executesql @sql;
+
+Drop Table #Data
+
+{% endsql %}
+
+{% sql return:'currencyTypes' %}
+    Declare @StartDate Date = '{{ dateStart }}'
+            ,@EndDate Date = '{{ dateEnd }}'
+
+    Select Distinct dv.[Value] as [Name]
+    From DefinedValue dv
+    Join FinancialPaymentDetail p on p.CurrencyTypeValueId = dv.Id
+    Join FinancialTransaction t on t.FinancialPaymentDetailId = p.Id
+    Join FinancialTransactionDetail d on d.TransactionId = t.Id
+    Where dv.DefinedTypeId = 10
+
+    {% if PageParameter.DateRange %}
+       and cast(t.TransactionDateTime as date) between '{{ dateStart }}' and '{{ dateEnd }}'
+    {% endif %}
+
+    {% if PageParameter.Account %}
+        and a.id in ( {{ PageParameter.Account }} )
+    {% endif %}
+
+    {% if PageParameter.Type %}
+        and pd.CurrencyTypeValueId in ( {{ PageParameter.Type }} )
+    {% endif %}
+
+    {% if PageParameter.Batch %}
+        and t.BatchId in ( {{ PageParameter.Batch }} )
+    {% endif %}
+{% endsql %}
+
+
+    <div class="table-responsive">
+    <table class="table">
+
+        <thead>
+
+            <tr class="top-table-header" >
+                <!-- Repeatable header content (repeats per page)-->
+                <th colspan="{{ currencyTypes | Size | Plus:'4' }}">   <!-- Set to the number of columns -->
+                    <h3>Reconciliation Dates for </h3>
+                    <small>Printed by <i>{{ CurrentPerson.FullName }}</i> on  {% if dateStart == dateEnd %}
+                        {{ dateStart }}
+                    {% else %}
+                        {{ dateStart }} - {{ dateEnd }}
+                    {% endif %}
+                    <small>
+                    <hr/>
+                </th>
+            </tr>
+
+            <tr class="tr-header " >
+                <th>Fund Designation</th>
+                <th class='text-right'>Paper</th>
+                <th class='text-right'>Coin</th>
+                {% for type in currencyTypes %}
+                <th class='text-right'>{{ type.Name }}</th>
+                {% endfor %}
+                <th class='text-right'>Total</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+
+
+                    {% for item in transactions %}
+
+                        <!--Test for row color-->
+                        {% assign rowTest = forloop.index | Modulo:2 %}
+                        {% if item.Account != 'Total' %}
+                            {% if rowTest == 1 %}
+                            <tr style="background:#f9f9f9">
+                            {% else %}
+                            <tr>
+                            {% endif %}
+
+                                <!-- Column content -->
+                                <td class='text-right'>{{ item.Account }}</td>
+                                <td class='text-right'>{{ item.Paper | FormatAsCurrency }}</td>
+                                <td class='text-right'>{{ item.Coin | FormatAsCurrency }}</td>
+                                {% for type in currencyTypes %}
+                                <td class='text-right'>{{ item | Property:type.Name | FormatAsCurrency }}</td>
+                                {% endfor %}
+                                <td class='text-right'>{{ item.Total | FormatAsCurrency }}</td>
+                            </tr>
+
+
+                        {% else %}
+
+                        <!-- Column Totals -->
+
+                            <tr>
+                                <td class="text-right"><strong>Totals:</strong></td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                {% for type in currencyTypes %}
+                                <td class='text-right'>{{ item | Property:type.Name | FormatAsCurrency }}</td>
+                                {% endfor %}
+                                <td class='text-right'>{{ item.Total | FormatAsCurrency }}</td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-right"><strong>Total Cash/Check:</strong></td>
+                                <td class="td-total-number text-right">{{ item.Cash | Plus:item.Check | FormatAsCurrency }}</td>
+
+                            </tr>
+
+                            <tr>
+                                <td class="text-right"><strong>Coin:</strong></td>
+                                <td class="text-right">{{ item.Coin | FormatAsCurrency }}</td>
+                            </tr>
+
+                              <tr>
+                                <td class="text-right"><strong>Paper:</strong></td>
+                                <td class="text-right">{{ item.Paper | FormatAsCurrency }}</td>
+                            </tr>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+
+        </tbody>
+
+    </table>
+    </div>
+
+
+<!--Page break after each group-->
+
+
+
+{% endif %}
+
+{% if PageParameter.Print %}
+
+</body>
+</html>
+
+{% endif %}
