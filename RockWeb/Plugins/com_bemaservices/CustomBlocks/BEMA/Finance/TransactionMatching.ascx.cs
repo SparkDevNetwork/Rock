@@ -128,7 +128,7 @@ namespace RockWeb.Plugins.com_bemaservices.Finance
         protected static class BemaAttributeKey
         {
             public const string ShowTransactionAttributes = "ShowTransactionAttributes";
-            public const string ShowMissionTripMatching = "ShowTransactionAttributes";
+            public const string ShowMissionTripMatching = "ShowMissionTripMatching";
         }
 
         /* BEMA.End */
