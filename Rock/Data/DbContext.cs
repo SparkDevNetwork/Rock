@@ -476,7 +476,9 @@ namespace Rock.Data
         /// <summary>
         /// Does a direct bulk DELETE.
         /// Example: rockContext.BulkDelete( groupMembersToDeleteQuery );
-        /// NOTE: This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database
+        /// NOTES:
+        /// - This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database.
+        /// - This will use the Database.CommandTimeout value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable">The queryable for the records to delete</param>
@@ -484,18 +486,11 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual int BulkDelete<T>( IQueryable<T> queryable, int? batchSize = null ) where T : class
         {
-            int recordsUpdated;
-
-            if ( batchSize.HasValue )
+            return queryable.Delete( d =>
             {
-                recordsUpdated = queryable.Delete( d => d.BatchSize = batchSize.Value );
-            }
-            else
-            {
-                recordsUpdated = queryable.Delete();
-            }
-
-            return recordsUpdated;
+                d.BatchSize = batchSize ?? 4000;
+                d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+            } );
         }
 
         #endregion Bulk Operations
