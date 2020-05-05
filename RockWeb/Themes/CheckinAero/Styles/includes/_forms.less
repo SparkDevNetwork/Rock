@@ -1,0 +1,129 @@
+.btn-barcode {
+  .button-variant(@checkin-button-color; @checkin-button-background; @checkin-button-border);
+}
+
+input[type="text"] {
+  -webkit-appearance: none;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: none;
+}
+
+.btn-checkin-select {
+  border-radius: 10px;
+
+  &:active,
+  &:active:focus,
+  &:active:hover,
+  &:hover,
+  & {
+    box-sizing: border-box;
+    display: flex;
+    -ms-flex-direction: column !important;
+    flex-direction: column !important;
+    justify-content: center;
+    min-height: 88px;
+    padding: 12px;
+    font-size: 26px;
+    font-weight: @checkin-button-text-weight;
+    color: @default-button-color;
+    background: @default-button-background;
+    border: 1px solid @default-button-border;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, .1), 0 2px 4px rgba(0, 0, 0, .06);
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  }
+
+  .checkbox-container {
+    display: none;
+  }
+
+  .checkin-sub-title {
+    margin-left: 0;
+    font-size: 18px;
+    font-weight: 300;
+    color: @gray-500;
+  }
+
+  &.active,
+  &.active:hover
+  {
+    color: @default-button-active-color;
+    background: @default-button-active-background;
+    border-color: @default-button-active-border;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .06);
+  }
+
+  &.active:active,
+  &.active:focus,
+  &.active:hover,
+  &.disabled {
+    color: @default-button-active-color;
+    background: @default-button-active-background;
+    border-color: @default-button-active-border;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .06), 0 0 0 3px rgba(160, 208, 118, .3);
+  }
+}
+
+.checkin-person-has-change {
+  .btn {
+    border-right-color: transparent;
+  }
+}
+
+.control-label {
+  font-weight: 700;
+}
+
+.form-control {
+  color: var(--input-color);
+  background: var(--input-bg);
+  border-color: var(--input-border);
+  -webkit-box-shadow: none;
+  box-shadow: none;
+
+  &:focus {
+    border-color: @input-border-focus;
+    border-color: var(--input-border-focus);
+  }
+}
+
+select.form-control {
+  display: inline-block;
+  width: 100%;
+  vertical-align: middle;
+  background: @custom-select-background;
+  border-radius: @input-border-radius;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+input.namesearch,
+input.checkin-phone-entry {
+  width: 100%;
+  max-width: 710px;
+  height: 96px;
+  font-size: 68px;
+  font-weight: 400;
+  text-align: center;
+}
+
+label {
+  font-weight: 600;
+}
+
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
+  &:focus {
+    outline: none;
+    box-shadow: @input-focus-box-shadow;
+  }
+}

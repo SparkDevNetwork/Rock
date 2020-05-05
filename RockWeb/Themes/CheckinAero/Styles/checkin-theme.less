@@ -1,0 +1,152 @@
+/*
+
+     Aero Check-in Theme
+     Crafted by: Spark Development Network
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+
+:root {
+  --welcome-text-emphasis: @welcome-text-emphasis;
+  --welcome-text-main: @welcome-text;
+  --welcome-text-instructions: @welcome-instructions;
+  --btn-checkinselect-bg: @btn-default-bg;
+  --btn-checkinselect-color: @btn-default-color;
+  --btn-checkinselect-disabled-bg: @btn-default-bg;
+  --btn-default-color: @btn-default-color;
+  --btn-default-border: @btn-default-border;
+  --btn-default-bg: @btn-default-bg;
+  --input-bg: @input-bg;
+  --input-color: @input-color;
+  --input-border: @input-border;
+  --input-border-focus: @input-border-focus;
+  --btn-transition: width 300ms cubic-bezier(.5,.25,.25,.75), min-width 300ms cubic-bezier(.5,.25,.25,.75), height 300ms cubic-bezier(.5,.25,.25,.75), min-height 300ms cubic-bezier(.5,.25,.25,.75), color 300ms cubic-bezier(.5,.25,.25,.75), font-size 300ms cubic-bezier(.5,.25,.25,.75), box-shadow 200ms cubic-bezier(0,.25,.25,.75), background-color 300ms cubic-bezier(.5,.25,.25,.75);
+}
+
+
+@import url("https://rsms.me/inter/inter.css");
+
+html {
+  & when (@font-family-base = ~'"Inter", sans-serif') {
+    font-family: "Inter", sans-serif;
+    @supports (font-variation-settings: normal) {
+      font-family: "Inter var", sans-serif;
+    }
+  }
+}
+
+@import "../../../Styles/Bootstrap/bootstrap.less";
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/_checkin-core.less";
+@import "../../../Styles/_modal.less";
+@import "../../../Styles/_helpers.less";
+
+@import "includes/_defaults.less";
+@import "includes/_forms.less";
+@import "includes/_kioskmanager.less";
+
+
+@import "includes/_pages.less";
+@import "includes/_welcome.less";
+@import "includes/_search.less";
+@import "includes/_timeselect.less";
+@import "includes/_checkinSummary.less";
+
+@import "_variables.less";
+@import "_variable-overrides.less";
+
+
+
+.checkin-scroll-panel {
+  bottom: 0;
+}
+
+// Checkin Body Label and Edit Family Link Adjustment
+// .checkin-body-container > .btn-link,
+.checkin-body-container > label,
+.checkin-time-select > label.control-label {
+  font-size: 14px;
+
+  @media (min-width: @screen-sm-min) {
+    font-size: 20px;
+  }
+}
+
+@media (min-width: @screen-sm-min) {
+  .checkin-body-container > label,
+  .checkin-time-select > label.control-label {
+    display: block;
+    text-align: center;
+  }
+
+  .checkin-body-container > .btn-link {
+    position: absolute;
+    top: 0;
+    right: (@scrollbar-width+ @scroller-gutters);
+  }
+}
+
+.checkin-body-container > .btn-link {
+  padding-top: 0;
+  padding-right: 0;
+  margin-bottom: 5px;
+  color: @text-muted;
+}
+
+// Family Select Page
+
+.photo-round.photo-round-md {
+  width: 30px;
+  height: 30px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .1);
+  @media (min-width: @screen-xs-min) {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+.family-personselect {
+  font-size: 18px;
+  @media (min-width: @screen-xs-min) {
+    font-size: 26px;
+  }
+}
+
+.photo-container {
+  @media (max-width: @screen-xs-min + 1) {
+    flex-shrink: 1;
+    width: auto;
+    margin-right: 10px;
+  }
+}
+
+.welcome .js-active {
+  &::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 59.7%;
+    content: "";
+    background: url(@welcome-image) no-repeat bottom right, linear-gradient(180deg, rgba(255, 255, 255, 0) 44.27%, #fff 86.98%);
+    background-size: contain;
+  }
+
+  &::after {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 300px;
+    height: 60px;
+    content: "";
+    background: url(@logo-image) no-repeat top left;
+    background-size: contain;
+  }
+}
+.welcome-cover-mixin(@welcome-background-cover-mode);
+
+@import "_css-overrides.less";

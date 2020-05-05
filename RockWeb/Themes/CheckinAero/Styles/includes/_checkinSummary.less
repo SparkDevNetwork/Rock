@@ -1,0 +1,21 @@
+.checkin-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 88px;
+  padding: 16px 0;
+  font-weight: @checkin-button-text-weight;
+  color: @default-button-color;
+  background: @default-button-background;
+  border: 1px solid @default-button-border;
+  border-radius: 10px;
+}
+
+.checkin-summary {
+  text-align: center;
+
+  li {
+    &:extend(.checkin-error);
+  }
+}

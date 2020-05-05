@@ -1,0 +1,111 @@
+.search {
+  .checkin-header {
+    margin-bottom: 0;
+  }
+
+  .checkin-actions {
+    width: 300px;
+    margin: 0 auto;
+
+    .btn {
+      border-radius: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, .05), 0 10px 15px rgba(0, 0, 0, .1);
+    }
+  }
+
+  .search-phone-form-group {
+    margin-bottom: 48px;
+  }
+}
+
+// Search Page
+.checkin-phone-keypad {
+  margin-bottom: 10px;
+}
+
+.checkin-search-body.search-name,
+.checkin-search-body.search-phone {
+  width: 100%;
+}
+
+.search-name-form-group,
+.search-phone-form-group {
+  width: 100%;
+  margin: 0 auto 60px;
+  text-align: center;
+}
+
+
+.tenkey {
+  width: 274px;
+  @media (min-width: @screen-sm-min) {
+    .btn {
+      margin: 6px 5px;
+    }
+
+    .btn:first-of-type {
+      margin-left: 0;
+    }
+
+    .btn:last-of-type {
+      margin-right: 0;
+    }
+
+    div:first-child .btn{
+      margin-top: 0;
+    }
+
+    div:last-child .btn{
+      margin-bottom: 0;
+    }
+  }
+
+  .btn.digit {
+    font-weight: @checkin-button-text-weight;
+    line-height: 1.2;
+    border-radius: 50%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, .05), 0 10px 15px rgba(0, 0, 0, .1);
+  }
+
+  .btn.command {
+    padding: 24px 0 0 0;
+    font-weight: @checkin-button-text-weight;
+    text-transform: lowercase;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  // Override keypad for short devices
+  @media (max-height: 680px) {
+    .btn {
+      height: 60px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .btn.digit {
+      border-radius: 0;
+    }
+
+    .btn.command {
+      padding: 18px 0 0 0;
+    }
+  }
+}
+
+// Search page button equal to other buttons
+.checkin-body .checkin-actions .btn-primary {
+  padding: 12px 24px;
+  font-size: 22px;
+}
+
+.btn-checkin-select,
+.row-checkin-item {
+  margin-bottom: 10px;
+
+  @media (min-width: @screen-sm-min) {
+    margin-bottom: 20px;
+  }
+}
+// End Search Page

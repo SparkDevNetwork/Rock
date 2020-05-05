@@ -1,0 +1,45 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="google" content="notranslate">
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/checkin-theme.css", true) %>"/>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+</head>
+<body runat="server" id="body">
+    <form id="form1" runat="server">
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+    </form>
+
+    <script>
+        // add quick fade-in effect to the page
+        $(document).ready(function () {
+            welcomeBanner();
+            $("#form1").rockFadeIn();
+        });
+
+        function welcomeBanner() {
+            if ($('.js-active').length){
+                var bodyStyles = window.getComputedStyle(document.body),
+                    emphasis = bodyStyles.getPropertyValue('--welcome-text-emphasis').trim().slice(1,-1),
+                    main = bodyStyles.getPropertyValue('--welcome-text-main').trim().slice(1,-1),
+                    instruction = bodyStyles.getPropertyValue('--welcome-text-instructions').trim().slice(1,-1);
+                $('.js-active > .checkin-body').prepend('<div class="welcome-banner"><span class="heading"><span class="emphasis">'+emphasis+'</span> '+main+'</span>'+ instruction +'</div>');
+            }
+        }
+
+        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(welcomeBanner);
+    </script>
+</body>
+</html>

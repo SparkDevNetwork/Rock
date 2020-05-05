@@ -1,0 +1,121 @@
+body {
+  display: block !important;
+  height: 100%;
+  overflow: hidden;
+  -ms-touch-action: none !important;
+  touch-action: none; /* Disable any special actions on tap/touch */
+  background-color: @background-color;
+  -ms-content-zooming: none; /* Disables zooming */
+}
+
+#form1,
+.edit-family .modal-footer {
+  display: none;
+}
+
+.checkin-search-actions a {
+  display: block;
+  padding: 20px 30px;
+  font-weight: 900;
+
+  svg {
+    margin: 0 auto;
+  }
+
+  @media (min-width: @screen-xs-min) {
+    display: inline-block;
+    padding: 20px 0;
+    svg {
+      margin: inherit;
+    }
+  }
+
+  @media (min-width: @screen-sm-min) {
+    padding: 20px 0;
+  }
+}
+
+.checkin-search-body {
+  max-width: 100%;
+}
+
+.body-content {
+  position: inherit;
+  width: 100%;
+  height: calc(100vh - 52px);
+  padding: 0;
+
+  @media (min-width: @screen-sm-min) {
+    padding: 0 30px;
+  }
+}
+
+.checkin-body {
+  .scroller {
+    min-height: 100%;
+    padding: 0 15px;
+  }
+
+  .iScrollVerticalScrollbar,
+  .iScrollLoneScrollbar {
+    width: 6px;
+  }
+
+  .iScrollIndicator {
+    background-color: #edf2f7;
+    border-radius: @scrollbar-width;
+  }
+
+  @media (min-width: @screen-sm-min) {
+    margin: 0 -15px;
+    .scroller {
+      padding: 0 55px;
+    }
+
+    .iScrollVerticalScrollbar,
+    .iScrollLoneScrollbar {
+      top: 38px;
+      right: 20px;
+      width: @scrollbar-width;
+    }
+  }
+}
+
+@media (min-width: @screen-xs-min) {
+  .btn-block + .btn-block {
+    margin-top: 14px;
+  }
+}
+
+.bootbox {
+  .modal-body {
+    padding: 24px 24px 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 24px;
+    background: @gray-50;
+  }
+
+  .btn {
+    font-weight: 500;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,.05);
+  }
+}
+
+.modal {
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,.1), 0 10px 10px -5px rgba(0,0,0,.04);
+}
+
+.modal-content {
+  box-shadow: none;
+}
+
+// Required Mixins
+/* stylelint-disable */
+.checkinBackground () {
+}
+
+.checkinBackgroundRetina() {
+}
+/* stylelint-enable */

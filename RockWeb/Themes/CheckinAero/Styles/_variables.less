@@ -1,0 +1,135 @@
+// Variable Mapping
+@font-weight-light:     300; // The font's light weight
+@font-weight-bold:      700; // The font's bold weight
+@font-weight-semibold:  600; // The font's semibold weight
+//--
+@gray-50: #f9fafb;
+@gray-100: #f4f5f7;
+@gray-200: #e5e7eb;
+@gray-300: #d2d6dc;
+@gray-400: #9fa6b2;
+@gray-500: #6b7280;
+@gray-600: #4b5563;
+@gray-700: #374151;
+@gray-800: #252f3f;
+@gray-900: #161e2e;
+//--
+@gray-base:              #000;
+@gray-darker:            @gray-900;
+@gray-dark:              @gray-800;
+@gray:                   @gray-700;
+@gray-light:             @gray-500;
+@gray-lighter:           @gray-200;
+//--
+@scrollbar-width: 10px;
+@scroller-gutters: 40px;
+
+// Theme Controls *show in editor*
+@background-color:      #7ECDEF; // The page's background color #color
+@brand-primary:  #88BC5E; // #color
+@header-text-color:    #FFFFFF; // The header text color #color
+@text-color: #161E2E; // The text color #color
+@sheet-background: #F9FAFB; // #color
+
+// Welcome Screen *show in editor* *advanced options*
+@logo-image: '../Assets/RockSolidR.svg'; // The logo image URL should be a URL, to a image. Will be resized to be 16px tall. #image
+@welcome-image: "../Assets/KidsIllustration.svg"; // The welcome screen image URL should be a URL to a image. #image
+//// Welcome Text
+@welcome-text-emphasis: "Hello!"; // Emphasis word displayed on the checkin welcome screen. Default- Hello! Welcome to Rock Solid Church
+@welcome-text: "Welcome to Rock Solid Church"; // The headline displayed on the checkin welcome screen.
+@welcome-instructions: "Tap an option on the right to get started."; // Instuctions displayed on the checkin welcome screen.
+//--
+@welcome-text-color: @text-color; // Color of the Welcome Text block. #color
+@welcome-emphasis-color: #FFFFFF; // Color of the welcome text emphasis. #color
+
+// Typography *show in editor* *advanced options*
+@font-family-base:     "Inter", sans-serif; // The primary font to use for the site (note- custom fonts must be registered in the CSS overrides section)
+//--
+@header-font-weight:    @font-weight-bold; // The header text weight
+
+@subheader-text-color:      @text-color; // The sub-header text color #color
+@subheader-font-weight:     @font-weight-light; // The sub-header text weight #color
+
+@link-color:    @text-color; // The link color #color
+// Button Styles *show in editor* *advanced options*
+@primary-button-background: @brand-primary; // The primary button background color #color
+@primary-button-color: #FFFFFF; // The primary button text color #color
+@primary-button-border: @brand-primary; // The primary button border color #color
+//--
+@checkin-button-background: #B4D782; // The primary button background color #color
+@checkin-button-color: #FFFFFF; // The primary button text color #color
+@checkin-button-border: @checkin-button-background; // The primary button border color #color
+//--
+@default-button-background: #FFFFFF; // The default button background color #color
+@default-button-color:     @gray-900; // The default button text color #color
+@default-button-border:   @gray-300; // The default button border color #color
+//--
+@default-button-active-background: @primary-button-background;
+@default-button-active-color: @primary-button-color;
+@default-button-active-border: @primary-button-border;
+//--
+@navigation-button-background: rgba(255,255,255,0.3); // #color
+@navigation-button-color: #FFFFFF; // #color
+@navigation-button-border: @gray-200; // #color
+
+// Advanced Configuration *show in editor* *advanced options*
+@welcome-background-cover-mode: false; // A value of true will set the welcome screen background image to cover the avalible space.
+@checkin-button-text-weight:    700; // The default button text weight
+@checkin-button-alttext-weight: @font-weight-light; // The default button alternative text weight (usually lighter)
+
+// Assorted Settings
+@border-radius-base:        6px;
+@border-radius-large:       8px;
+@border-radius-small:       4px;
+
+@btn-border-radius-base:         @border-radius-base;
+@btn-border-radius-large:        @border-radius-large;
+@btn-border-radius-small:        @border-radius-small;
+
+@checkin-keypad-width: 295px;
+@font-size-h1: 36px;
+@headings-font-weight:    @header-font-weight;
+@header-letter-spacing: 0;
+
+
+@input-color:                 @gray-900;  // The text color of inputs.
+@input-border:                @gray-300;  // The border color of inputs.
+@input-border-focus:          #80bdff;
+@input-focus-rgba:            rgba(0,123,255,.25);
+@input-focus-box-shadow:      ~"0 0 0 2px @{input-focus-rgba}";
+@input-focus-transition:      ~"border-color 100ms ease-in-out, outline 100ms ease-in-out";
+
+
+// Custom Select
+@custom-select-padding-y:           @padding-base-vertical;
+@custom-select-padding-x:           @padding-base-horizontal;
+@custom-select-font-family:         @font-family-base;
+@custom-select-font-size:           @font-size-base;
+@custom-select-height:              @line-height-base;
+@custom-select-indicator-padding:   1rem; // Extra padding to account for the presence of the background-image based indicator
+@custom-select-font-weight:         400;
+@custom-select-line-height:         @line-height-base;
+@custom-select-color:               @input-color;
+@custom-select-disabled-color:      @input-color;
+@custom-select-bg:                  @input-bg;
+@custom-select-disabled-bg:         @input-bg-disabled;
+@custom-select-bg-size:             8px 10px; // In pixels because image dimensions
+@custom-select-indicator-color:     #000;
+@custom-select-indicator:           %(~'url("data:image/svg+xml,%s%s%s")', "%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='", "%23000", "' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
+@custom-select-background:          ~"@{custom-select-indicator} no-repeat right @{custom-select-padding-x} center/@{custom-select-bg-size}"; // Used so we can have multiple background elements (e.g., arrow and feedback icon)
+
+// Modal
+@modal-body-bg: #FFFFFF; // The background color of the modal #color
+@modal-body-text-color: @text-color; // The text color of the modal #color
+@modal-header-bg: @modal-body-bg; // The modal's header background color #color
+@modal-header-text-color: @modal-body-text-color; // The modal's header text color #color
+@modal-footer-bg: @modal-body-bg; // The modal's footer background color #color
+@modal-footer-text-color: @modal-body-text-color; // The modal's footer text color #color
+@modal-header-border-color: @modal-body-bg; // The modal's header border color #color
+@modal-footer-border-color: @modal-body-bg; // The modal's footer border color #color
+
+@modal-inner-padding:         24px;
+@modal-title-padding:         @modal-inner-padding;
+
+@enable-global-custom-controls: true;
+@custom-control-indicator-offset: 2px;
