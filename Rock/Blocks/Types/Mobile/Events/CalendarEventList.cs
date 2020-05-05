@@ -273,13 +273,6 @@ namespace Rock.Blocks.Types.Mobile.Events
                             m.EventItem.IsActive &&
                             m.EventItem.IsApproved );
 
-                // Filter by audiences
-                var audiences = GetAudiences().Select( a => a.Id ).ToList();
-                if ( audiences.Any() )
-                {
-                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) );
-                }
-
                 // Get the occurrences
                 var occurrences = qry.ToList()
                     .SelectMany( a =>
