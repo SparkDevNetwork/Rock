@@ -69,7 +69,6 @@ namespace com.bemaservices.MailChimp.Utility
                                                     .ToList();
 
                 mailChimpListValues = definedValueService.GetByDefinedTypeGuid( MailChimp.SystemGuid.SystemDefinedTypes.MAIL_CHIMP_AUDIENCES.AsGuid() ).Where( v => mailChimpListDefinedValueIds.Contains( v.Id ) ).ToList();
-                                        
                 try
                 {
                     var mailChimpListCollection = _mailChimpManager.Lists.GetAllAsync().Result;
@@ -273,12 +272,18 @@ namespace com.bemaservices.MailChimp.Utility
             var firstName = member.MergeFields["FNAME"].ToString();
             var lastName = member.MergeFields["LNAME"].ToString();
             var email = member.EmailAddress;
+            var mailchimpForeignKey = String.Format( "Mailchimp_{0}", member.Id );
+
             string emailNote = null;
             bool isEmailActive = GetIsEmailActive( member.Status, out emailNote );
 
-            var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, null, null, null, null, null );
+            person = personService.Queryable().Where( p => p.ForeignKey == mailchimpForeignKey ).FirstOrDefault();
 
-            person = personService.FindPerson( personQuery, false );
+            if ( person.IsNull() )
+            {
+                var personQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, null, null, null, null, null );
+                person = personService.FindPerson( personQuery, false );
+            }
 
             if ( person.IsNull() )
             {
@@ -291,7 +296,7 @@ namespace com.bemaservices.MailChimp.Utility
                 person.EmailPreference = GetRockEmailPrefernce( member.Status );
                 person.EmailNote = emailNote;
                 person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-
+                person.ForeignKey = mailchimpForeignKey;
                 var familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                 if ( familyGroup != null && familyGroup.Members.Any() )
                 {
