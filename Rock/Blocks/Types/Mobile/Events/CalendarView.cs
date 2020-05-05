@@ -302,13 +302,6 @@ namespace Rock.Blocks.Types.Mobile.Events
                             m.EventItem.IsActive &&
                             m.EventItem.IsApproved );
 
-                // Filter by audiences
-                var audiences = GetAudiences().Select( a => a.Id ).ToList();
-                if ( audiences.Any() )
-                {
-                    qry = qry.Where( i => i.EventItem.EventItemAudiences.Any( c => audiences.Contains( c.DefinedValueId ) ) );
-                }
-
                 // Get the occurrences
                 var occurrences = qry.ToList()
                     .SelectMany( a =>
@@ -356,22 +349,6 @@ namespace Rock.Blocks.Types.Mobile.Events
                 var output = lavaTemplate.ResolveMergeFields( mergeFields );
 
                 return ActionOk( new StringContent( output, Encoding.UTF8, "application/json" ) );
-
-                //foreach ( var occurrence in occurrences )
-                //{
-                //    mergeFields.AddOrReplace( "Item", occurrence );
-
-                //    items.Add( new
-                //    {
-                //        occurrence.EventItemOccurrence.Id,
-                //        occurrence.Name,
-                //        StartDateTime = occurrence.Date,
-                //        Summary = EventSummary.ResolveMergeFields( mergeFields ),
-                //        occurrence.Audiences
-                //    } );
-                //}
-
-                //return items;
             }
         }
 
