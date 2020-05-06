@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web;
-using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -29,6 +28,13 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+/*
+ * BEMA Modified Core Block ( v9.4.1)
+ * Version Number based off of RockVersion.RockHotFixVersion.BemaFeatureVersion
+ * 
+ * Additional Features:
+ * - FE1) Added Ability to limit campuses shown based off of a campus attribute
+ */
 namespace RockWeb.Plugins.com_bemaservices.Core
 {
     /// <summary>
@@ -47,21 +53,21 @@ namespace RockWeb.Plugins.com_bemaservices.Core
     [BooleanField( "Default To Current User's Campus", "Will use the campus of the current user if no context is provided.", order: 7, key: "DefaultToCurrentUser" )]
     [CustomDropdownListField( "Alignment", "Determines the alignment of the dropdown.", "1^Left,2^Right", true, "1", order: 8 )]
     
-     /* BEMA.FE3.Start */
+     /* BEMA.FE1.Start */
       [AttributeField( "Display Campus Boolean Attribute",
-        Key = AttributeKey.DisplayCampusBooleanAttribute,
+        Key = BemaAttributeKey.DisplayCampusBooleanAttribute,
         EntityTypeGuid = "00096BED-9587-415E-8AD4-4E076AE8FBF0",
         Description = "If you want to further narrow down the displayed campuses using a boolean attribute, set it here",
         IsRequired = false,
         Order = 4,
         Category = "BEMA Additional Features" )]
-    /* BEMA.FE3.End */
+    /* BEMA.FE1.End */
 
     public partial class CampusContextSetter : RockBlock
     {
          /* BEMA.Start */
-        #region Attribute Keys
-        private static class AttributeKey
+        #region Bema Attribute Keys
+        private static class BemaAttributeKey
         {
 
             public const string DisplayCampusBooleanAttribute = "DisplayCampusBooleanAttribute";
@@ -160,7 +166,8 @@ namespace RockWeb.Plugins.com_bemaservices.Core
                 .Select( a => new CampusItem { Name = a.Name, Id = a.Id } )
                 .ToList();
 
-            var campusAttributeGuid = GetAttributeValue( AttributeKey.DisplayCampusBooleanAttribute ).AsGuidOrNull();
+            /* BEMA.FE1.Start */
+            var campusAttributeGuid = GetAttributeValue( BemaAttributeKey.DisplayCampusBooleanAttribute ).AsGuidOrNull();
             if ( campusAttributeGuid.HasValue )
             {
                 var campusAttribute = AttributeCache.Get( campusAttributeGuid.Value );
@@ -172,6 +179,7 @@ namespace RockWeb.Plugins.com_bemaservices.Core
                         .ToList();
                 }
             }
+            /* BEMA.FE1.End */
 
             // run lava on each campus
             string dropdownItemTemplate = GetAttributeValue( "DropdownItemTemplate" );
