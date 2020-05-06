@@ -175,7 +175,7 @@ namespace Rock.Blocks.Types.Mobile.Events
             }
 
             sb.Append( $@"<StackLayout>
-    <Label StyleClass=""heading1"" Text=""Pray For"" />
+    <Label StyleClass=""h2"" Text=""Pray For"" />
     <Rock:FieldContainer>
         <Rock:Picker x:Name=""pCategory"" IsRequired=""True"" SelectedValue="""">
             <Rock:PickerItem Value=""{ParentCategory}"" Text=""All Requests"" />
