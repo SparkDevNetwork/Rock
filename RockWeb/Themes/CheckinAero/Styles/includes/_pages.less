@@ -20,7 +20,6 @@
     margin-top: 0;
     font-size: 20px;
     font-weight: 400;
-    color: #fff;
 
     &:empty {
       display: none;
@@ -49,10 +48,10 @@
       height: 60px;
       padding: 0;
       font-size: 0;
-      line-height: 56px;
-      color: #fff;
-      background: rgba(255, 255, 255, .3);
-      border: 1px solid #cbd5e0;
+      line-height: 58px;
+      color: @navigation-button-color;
+      background: @navigation-button-background;
+      border: 1px solid @navigation-button-border;
       border-radius: 50%;
 
       &::before {
@@ -142,6 +141,8 @@
     top: 80px;
   }
 }
+
+//
 
 // No Checkin Avalible Styling
 .group-type-select {

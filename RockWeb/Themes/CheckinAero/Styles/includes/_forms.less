@@ -45,8 +45,6 @@ input[type="text"] {
 
   .checkin-sub-title {
     margin-left: 0;
-    font-size: 18px;
-    font-weight: 300;
     color: @gray-500;
   }
 
@@ -97,7 +95,11 @@ select.form-control {
   display: inline-block;
   width: 100%;
   vertical-align: middle;
-  background: @custom-select-background;
+  background-color: @input-bg;
+  background-image: @custom-select-indicator;
+  background-repeat: no-repeat;
+  background-position: @custom-select-bg-position;
+  background-size: @custom-select-bg-size;
   border-radius: @input-border-radius;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -113,6 +115,7 @@ input.checkin-phone-entry {
   font-weight: 400;
   text-align: center;
 
+  // Hide field X in MS Edge
   &::-ms-clear {
     display: none;
   }

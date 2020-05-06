@@ -30,6 +30,8 @@
 @font-size-base: 18px;
 @font-size-h1: 28px;
 
+@checkin-button-alttext-font-size: 20px;
+
 // 2. Bootstrap Overrides
 // -------------------------
 @import "./FontAwesome/_rock-upgrade-map-variables.less";
@@ -253,7 +255,6 @@ body {
   .checkin-sub-title {
     margin-top: 12px;
     font-size: 24px;
-    font-weight: @subheader-font-weight;
     color: @subheader-text-color;
   }
 }
@@ -261,7 +262,7 @@ body {
 // button sub-text
 .btn .checkin-sub-title {
   margin-left: 20px;
-  font-size: 20px;
+  font-size: @checkin-button-alttext-font-size;
   font-weight: @checkin-button-alttext-weight;
   white-space: normal;
 }
