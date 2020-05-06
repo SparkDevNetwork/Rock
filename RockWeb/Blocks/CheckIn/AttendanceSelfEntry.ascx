@@ -99,59 +99,55 @@
 
                 </asp:Panel>
                 <asp:Panel ID="pnlKnownIndividual" runat="server" Visible="false" CssClass="js-navigation-panel">
-                    <h2>
-                        <asp:Literal ID="lKnownIndividualTitle" runat="server" /></h2>
-                    <asp:Literal ID="lKnownIndividualText" runat="server" />
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="controls checkin-family btn-group" data-toggle="buttons-checkbox">
+                    <div class="margin-b-lg">
+                        <h2>
+                            <asp:Literal ID="lKnownIndividualTitle" runat="server" />
+                        </h2>
+                        <asp:Literal ID="lKnownIndividualText" runat="server" />
+                    </div>
+
+                            <div class="controls checkin-family checkin-buttons d-flex" data-toggle="buttons-checkbox">
                                 <asp:Repeater ID="rptFamilyMembers" runat="server">
                                     <ItemTemplate>
                                         <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
-                                            <i class="fa fa-square-o"></i>
+                                            <i class="fa <%# ((bool)Eval("Selected") ? "fa-check-circle-o" : "fa-circle-o") %>"></i>
                                             <div>
                                                 <%# Eval("FullName") %>
                                                 <br />
-                                                <%# Eval("RelationshipType") %>
+                                                <span class="small"><%# Eval("RelationshipType") %></span>
                                             </div>
                                         </button>
                                     </ItemTemplate>
                                 </asp:Repeater>
                                 <asp:HiddenField ID="hfSelectedFamilyMembers" runat="server"></asp:HiddenField>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="controls checkin-other btn-group" data-toggle="buttons-checkbox">
+
+                            <div class="controls checkin-other checkin-buttons d-flex" data-toggle="buttons-checkbox">
                                 <asp:Repeater ID="rptOtherMembers" runat="server">
                                     <ItemTemplate>
                                         <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
-                                            <i class="fa fa-square-o"></i>
+                                            <i class="fa <%# ((bool)Eval("Selected") ? "fa-check-circle-o" : "fa-circle-o") %>"></i>
                                             <div>
                                                 <%# Eval("FullName") %>
                                                 <br />
-                                                <%# Eval("RelationshipType") %>
+                                                <span class="small"><%# Eval("RelationshipType") %></span>
                                             </div>
                                         </button>
                                     </ItemTemplate>
                                 </asp:Repeater>
                                 <asp:HiddenField ID="hfSelectedOtherMembers" runat="server"></asp:HiddenField>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
+
                             <asp:LinkButton ID="lbAdjustWatchers" runat="server" Text="Adjust Remembered Watchers" CssClass="btn btn-link" OnClick="lbAdjustWatchers_Click" OnClientClick="return GetSelection();" CausesValidation="false" />
-                        </div>
-                    </div>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnCheckIn" runat="server" AccessKey="s" ToolTip="Alt+n" Text="Check-In" ValidationGroup="vgCheckIn" CssClass="btn btn-primary" OnClientClick="return GetSelection(true);" OnClick="btnCheckIn_Click" />
                     </div>
                 </asp:Panel>
                 <asp:Panel ID="pnlThanks" runat="server" Visible="false" CssClass="js-navigation-panel">
                     <h2>
-                        <asp:Literal ID="lSuccessTitle" runat="server" /></h2>
+                        <asp:Literal ID="lSuccessTitle" runat="server" />
+                    </h2>
                     <asp:Literal ID="lSuccessText" runat="server" />
                     <asp:Literal ID="lSuccessDebug" runat="server" Visible="false" />
                 </asp:Panel>
@@ -173,6 +169,10 @@
                         $(this).text('Show Password');
                     }
                 });
+
+                $('button.btn-checkbox').click( function() {{
+                    $(this).find('i').toggleClass('fa-check-circle-o').toggleClass('fa-circle-o');
+                }});
             })
 
             function GetSelection(isCheckIn) {
