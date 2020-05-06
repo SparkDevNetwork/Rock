@@ -69,7 +69,7 @@ namespace Rock.Mobile
             //
             if ( validateApiKey )
             {
-                var appApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
+                var requestApiKey = System.Web.HttpContext.Current?.Request?.Headers?["X-Rock-Mobile-Api-Key"];
                 var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
 
                 //
@@ -81,9 +81,11 @@ namespace Rock.Mobile
                 }
 
                 rockContext = rockContext ?? new Data.RockContext();
-                var userLogin = new UserLoginService( rockContext ).GetByApiKey( appApiKey ).FirstOrDefault();
 
-                if ( userLogin != null && userLogin.Id == additionalSettings.ApiKeyId )
+                // Get user login for the app and verify that it matches the request's key
+                var appUserLogin = new UserLoginService( rockContext ).Get( additionalSettings.ApiKeyId.Value );
+
+                if ( appUserLogin != null && appUserLogin.ApiKey == requestApiKey )
                 {
                     return site;
                 }
@@ -571,7 +573,7 @@ namespace Rock.Mobile
 
             if ( includeHeader )
             {
-                sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"heading1\" />" );
+                sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"h1\" />" );
                 sb.AppendLine( "<BoxView Color=\"#888\" HeightRequest=\"1\" Margin=\"0 0 12 0\" />" );
             }
 
