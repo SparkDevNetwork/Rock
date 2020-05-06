@@ -588,7 +588,6 @@
     <Compile Include="Web\RockCustomSettingsUserControlProvider.cs" />
     <Compile Include="Net\RockRequestContext.cs" />
     <Compile Include="Attribute\TargetTypeAttribute.cs" />
-    <Compile Include="Blocks\Types\Mobile\Cms\ContentChannelItemList.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Content.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
