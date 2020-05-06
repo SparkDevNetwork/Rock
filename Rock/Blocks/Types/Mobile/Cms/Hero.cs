@@ -282,7 +282,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 DynamicContent = additionalSettings.ProcessLavaOnClient || additionalSettings.ProcessLavaOnServer
             };
 
-            if (config.DynamicContent)
+            if ( !config.DynamicContent )
             {
                 config.Content = GetContent();
             }
