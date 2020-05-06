@@ -41,7 +41,7 @@ namespace Rock.Plugin.HotFixes
                 @"<StackLayout Spacing=""0"">
     <StackLayout Orientation=""Horizontal"" Spacing=""20"">
         <StackLayout Orientation=""Vertical"" Spacing=""0"" HorizontalOptions=""FillAndExpand"">
-            <Label StyleClass=""heading1"" Text=""{{ Group.Name | Escape }} Group"" />
+            <Label StyleClass=""h1"" Text=""{{ Group.Name | Escape }} Group"" />
             <Label Text=""{{ Group.Members | Size }} members"" LineHeight=""0.8"" />
         </StackLayout>
         {% if GroupEditPage != '' and AllowedActions.Edit == true %}
@@ -98,7 +98,7 @@ namespace Rock.Plugin.HotFixes
                 Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_VIEW,
                 "Default",
                 @"<StackLayout Spacing=""0"">
-    <Label StyleClass=""heading1"" Text=""{{ Member.Group.Name | Escape }} Group"" />
+    <Label StyleClass=""h1"" Text=""{{ Member.Group.Name | Escape }} Group"" />
     <Label Text=""{{ Member.Group.Members | Size }} members"" LineHeight=""0.8"" />
 
     <StackLayout Orientation=""Horizontal"" Spacing=""20"" Margin=""0, 20, 0, 40"">
@@ -224,7 +224,7 @@ namespace Rock.Plugin.HotFixes
                                           NotFollowingIconColor=""#afafaf"" />
     </StackLayout>
 
-    <Label StyleClass=""heading2"" Text=""Pray for {{ Request.FirstName | Escape }}"" MarginTop=""8"" />
+    <Label StyleClass=""h2"" Text=""Pray for {{ Request.FirstName | Escape }}"" MarginTop=""8"" />
     
     <Label Text=""{{ Request.Campus.Name }}"" />
     <Rock:ParagraphText Margin=""0,30,0,60"">{{ Request.Text }}</Rock:ParagraphText>

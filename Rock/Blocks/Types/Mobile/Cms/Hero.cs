@@ -34,13 +34,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Hero" )]
     [Category( "Mobile > Cms" )]
     [Description( "Displays an image with text overlay on the page." )]
-    [IconCssClass( "fa fa-mask" )]
+    [IconCssClass( "fa fa-heading" )]
 
     #region Block Attributes
 
     [TextField( "Title",
         Description = "The main title to display over the image. <span class='tip tip-lava'></span>",
-        IsRequired = true,
+        IsRequired = false,
         Key = AttributeKeys.Title,
         Order = 0 )]
 
@@ -86,12 +86,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [ColorField( "Title Color",
         Description = "Will override the theme's hero title (.hero-title) color.",
         IsRequired = false,
+        DefaultValue = "#ffffff",
         Key = AttributeKeys.TitleColor,
         Order = 7 )]
 
     [ColorField( "Subtitle Color",
         Description = "Will override the theme's hero subtitle (.hero-subtitle) color.",
         IsRequired = false,
+        DefaultValue = "#ffffff",
         Key = AttributeKeys.SubtitleColor,
         Order = 8 )]
 
