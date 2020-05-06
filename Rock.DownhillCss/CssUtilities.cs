@@ -1116,6 +1116,11 @@ formfield .required-indicator {
     margin-right: 4;
 }
 
+/* Divider */
+.divider {
+    background-color: ?color-gray-400;
+}
+
 ";
         #endregion
     }
