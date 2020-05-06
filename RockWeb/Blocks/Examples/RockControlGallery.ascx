@@ -497,6 +497,11 @@
                         <Rock:FileUploader ID="fuprExampleBinaryFile" runat="server" Label="Rock:FileUploader (BinaryFile mode)" BinaryFileTypeGuid="C1142570-8CD6-4A20-83B1-ACB47C1CD377" />
                     </div>
 
+                    <a id="FileUploaderLg"></a>
+                    <div runat="server" class="r-example">
+                        <Rock:FileUploader ID="fuprExampleUploader" runat="server" DisplayMode="DropZone" IsBinaryFile="true" Required="false" Label="Rock:FileUploader Large (BinaryFile mode)" RequiredErrorMessage="A Document File is required." FormGroupCssClass="fileupload-group-lg" UploadButtonText="Drop File Here or Click to Select"></Rock:FileUploader>
+                    </div>
+
                     <a id="FileUploaderContentFileMode"></a>
                     <div runat="server" class="r-example">
                         <Rock:FileUploader ID="fuprExampleContentFile" runat="server" Label="Rock:FileUploader (Content file mode)" IsBinaryFile="false" RootFolder="~/App_Data/TemporaryFiles" OnFileUploaded="fupContentFile_FileUploaded" />
