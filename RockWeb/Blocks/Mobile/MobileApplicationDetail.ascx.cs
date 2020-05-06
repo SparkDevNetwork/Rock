@@ -503,7 +503,6 @@ namespace RockWeb.Blocks.Mobile
 
                 nbRadiusBase.Text = decimal.ToInt32( additionalSettings.DownhillSettings.RadiusBase ).ToStringSafe();
 
-                nbSpacingBase.Text = decimal.ToInt32( additionalSettings.DownhillSettings.SpacingBase ).ToStringSafe();
                 nbFontSizeDefault.Text = decimal.ToInt32( additionalSettings.DownhillSettings.FontSizeDefault ).ToStringSafe();
 
                 imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
@@ -919,7 +918,6 @@ namespace RockWeb.Blocks.Mobile
 
                 additionalSettings.DownhillSettings.RadiusBase = nbRadiusBase.Text.AsDecimal();
 
-                additionalSettings.DownhillSettings.SpacingBase = nbSpacingBase.Text.AsDecimal();
                 additionalSettings.DownhillSettings.FontSizeDefault = nbFontSizeDefault.Text.AsDecimal();
                 additionalSettings.DownhillSettings.Platform = Rock.DownhillCss.DownhillPlatform.Mobile;
 
