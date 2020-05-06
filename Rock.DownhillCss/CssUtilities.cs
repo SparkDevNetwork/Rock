@@ -158,7 +158,8 @@ namespace Rock.DownhillCss
             cssStyles = cssStyles.Replace( "?color-heading", settings.HeadingColor );
             cssStyles = cssStyles.Replace( "?color-background", settings.BackgroundColor );
 
-            return MinifyCss( cssStyles );
+            // Note for future... Xamarin Forms doesn't like minified CSS (at least that that's created with the minified method below)
+            return cssStyles;
         }
 
         #region Alerts
