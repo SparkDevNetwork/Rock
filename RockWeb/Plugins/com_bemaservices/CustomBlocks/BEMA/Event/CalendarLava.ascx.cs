@@ -144,7 +144,7 @@ namespace RockWeb.Plugins.com_bemaservices.Event
             public const string AreCoreFiltersReplacedWithCustomFilters = "AreCoreFiltersReplacedWithCustomFilters";
             public const string DisplayCampusBooleanAttribute = "DisplayCampusBooleanAttribute";
             public const string DefinedTypeTopicFilterAttribute = "DefinedTypeTopicFilterAttribute";
-            public const string DefinedTypeAudienceFilterAttribute = "DavidsMom";
+            public const string DefinedTypeAudienceFilterAttribute = "DefinedTypeAudienceFilterAttribute";
         }
 
         #endregion
