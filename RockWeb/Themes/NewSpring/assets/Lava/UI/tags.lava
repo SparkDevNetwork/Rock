@@ -1,12 +1,7 @@
-{% taggeditem where:'EntityGuid == "{{ guid }}"' iterator:'tags' limit:'7' %}
-{% assign tagCount = tags | Size %}
-{% if tagCount > 0 %}
-<p class="tag-list sans-serif push-half-bottom">
-    <small>
-        {% for tag in tags %}
-            <a href="/topics/{{ tag.Tag.Name | Replace:' ','-' | Downcase }}" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ tag.Tag.Name }}</a>
-        {% endfor %}
-    </small>
-</p>
+{% if dataset and dataset != empty and cciid and cciid != empty %}
+{% assign cciid = cciid | AsInteger %}
+{% assign tags = dataset | PersistedDataset | Where:'Id',cciid | First | Property:'Tags' %}
 {% endif %}
-{% endtaggeditem %}
+{% if tags and tags != empty %}<p class="tag-list sans-serif push-half-bottom"><small>
+{% for tag in tags %}<a href="/topics/{{ tag.Name | Replace:' ','-' | Downcase }}" class="stronger text-decoration-none letter-spacing-condensed no-breaks"><i class="fas fa-sm fa-tag"></i> {{ tag.Name }}</a>{% endfor %}
+</small></p>{% endif %}

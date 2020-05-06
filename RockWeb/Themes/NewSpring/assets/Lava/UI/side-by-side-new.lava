@@ -34,14 +34,6 @@
 
         {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
             <div class="position-relative ratio-square push-bottom overflow-hidden">
-                {% if cciid and cciid != empty %}
-                    {% assign hasRights = cciid | HasRightsTo:'Edit','Rock.Model.ContentChannelItem' %}
-                    {% if hasRights == 'true' %}
-                        <div class="position-absolute top-zero right-zero bg-info bring-forward" style="border-bottom-left-radius: 8px;">
-                            {[ button linkurl:'/page/344?contentItemId={{ cciid }}' linktext:'Edit This' buttontype:'info' buttonsize:'xs' linktarget:'_blank' ]}
-                        </div>
-                    {% endif %}
-                {% endif %}
                 <div class="full-screen background-cover background-center {% if grayscale == 'Yes' %}grayscale{% endif %} rounded" style="{% if imageblur and imageblur > 0 %}filter: blur({{ imageblur | Times:2 }}px); top: -50px; right: -50px; bottom: -50px; left: -50px;{% endif %} {% if imageflip == 'Yes' %}transform:scaleX(-1);{% endif %} background-image:url('{{ imageurl }}'); {% if imageopacity != null and imageopacity != '' %}opacity: {{ imageopacity }};{% endif %}"></div>
             </div>
         {% if linkurl != empty %}</a>{% endif %}
@@ -52,7 +44,7 @@
                 {% if label != null and label != '' %}
                     <p><small class="label label-default sans-serif letter-spacing-condensed circular">{{ label }}</small></p>
                 {% endif %}
-                
+
                 {% if title != null and title != '' %}
                     <h2 class="block-title push-half-bottom">
                         {% if linkurl != empty %}<a href="{{ linkurl }}">{% endif %}
@@ -66,10 +58,10 @@
                 <p class="sans-serif stronger text-uppercase letter-spacing-condensed text-gray-light push-half-bottom"><small>{{ subtitle }}</small></p>
             {% endif %}
 
-            {% if guid and guid != empty %}
-                {[ tags guid:'{{ guid }}' ]}
+            {% if Item.Tags != empty %}
+                {[ tags ]}
             {% endif %}
-            
+
             {% if content != null and content != '' %}
                 <div>
                     {% if trimcopy == 'Yes' %}
@@ -81,7 +73,7 @@
                 </div>
             {% endif %}
 
-            
+
 
             {% if linkurl and linkurl != empty %}
                 <p>

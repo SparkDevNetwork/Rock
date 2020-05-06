@@ -18,7 +18,7 @@
 {% if pccid and pccid != empty %}
     {%- comment -%}Item has a primary parent channel{%- endcomment -%}
     {% sql %}
-        SELECT 
+        SELECT
             cc.ChannelUrl + '/' as 'channelurl',
             pccis.Slug + '/' + ccis.Slug 'slug'
         FROM ContentChannelItem cci
@@ -44,7 +44,7 @@
 {% else %}
     {%- comment -%}Item has no primary parent channel{%- endcomment -%}
     {% sql %}
-        SELECT 
+        SELECT
             cc.ChannelUrl + '/' as 'channelurl',
             ccis.Slug 'slug'
         FROM ContentChannelItem cci
